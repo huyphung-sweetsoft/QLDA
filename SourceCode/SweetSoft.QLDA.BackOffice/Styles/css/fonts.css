@@ -1,0 +1,341 @@
+:root,
+[data-bs-theme=light] {
+  --bs-gray-dark: rgba(67, 89, 113, 0.8);
+  --bs-gray-25: rgba(67, 89, 113, 0.025);
+  --bs-gray-50: rgba(67, 89, 113, 0.05);
+  --bs-primary-rgb: 74, 19, 135;
+  --bs-secondary-rgb: 133, 146, 163;
+  --bs-success-rgb: 113, 221, 55;
+  --bs-info-rgb: 3, 195, 236;
+  --bs-warning-rgb: 255, 171, 0;
+  --bs-danger-rgb: 255, 62, 29;
+  --bs-light-rgb: 252, 253, 253;
+  --bs-dark-rgb: 35, 52, 70;
+  --bs-gray-rgb: 67, 89, 113;
+  --bs-primary-text-emphasis: #200d38;
+  --bs-secondary-text-emphasis: #353a41;
+  --bs-success-text-emphasis: #2d5816;
+  --bs-info-text-emphasis: #014e5e;
+  --bs-warning-text-emphasis: #664400;
+  --bs-danger-text-emphasis: #66190c;
+  --bs-light-text-emphasis: rgba(67, 89, 113, 0.7);
+  --bs-dark-text-emphasis: rgba(67, 89, 113, 0.7);
+  --bs-primary-bg-subtle: #ebdcfc;
+  --bs-secondary-bg-subtle: #e7e9ed;
+  --bs-success-bg-subtle: #e3f8d7;
+  --bs-info-bg-subtle: #cdf3fb;
+  --bs-warning-bg-subtle: #fefce8;
+  --bs-danger-bg-subtle: #ffd8d2;
+  --bs-light-bg-subtle: rgba(246, 247, 248, 0.55);
+  --bs-dark-bg-subtle: rgba(67, 89, 113, 0.4);
+  --bs-primary-border-subtle: #d0b0f7;
+  --bs-secondary-border-subtle: #ced3da;
+  --bs-success-border-subtle: #c6f1af;
+  --bs-info-border-subtle: #9ae7f7;
+  --bs-warning-border-subtle: #ffdd99;
+  --bs-danger-border-subtle: #ffb2a5;
+  --bs-light-border-subtle: rgba(67, 89, 113, 0.2);
+  --bs-dark-border-subtle: rgba(67, 89, 113, 0.5);
+  --bs-white-rgb: 255, 255, 255;
+  --bs-black-rgb: 67, 89, 113;
+  --bs-font-sans-serif: "Public Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
+  --bs-font-monospace: "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --bs-gradient: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0)
+  );
+  --bs-root-font-size: 16px;
+  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-size: 0.9375rem;
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.53;
+  --bs-body-color: #697a8d;
+  --bs-body-color-rgb: 105, 122, 141;
+  --bs-body-bg: #f5f5f9;
+  --bs-body-bg-rgb: 245, 245, 249;
+  --bs-emphasis-color: #435971;
+  --bs-emphasis-color-rgb: 67, 89, 113;
+  --bs-secondary-color: rgba(105, 122, 141, 0.75);
+  --bs-secondary-color-rgb: 105, 122, 141;
+  --bs-secondary-bg: rgba(67, 89, 113, 0.2);
+  --bs-secondary-bg-rgb: 67, 89, 113;
+  --bs-tertiary-color: rgba(105, 122, 141, 0.5);
+  --bs-tertiary-color-rgb: 105, 122, 141;
+  --bs-tertiary-bg: rgba(67, 89, 113, 0.1);
+  --bs-tertiary-bg-rgb: 67, 89, 113;
+  --bs-heading-color: #020617;
+  --bs-link-color: #4a1387;
+  --bs-link-color-rgb: 74, 19, 135;
+  --bs-link-decoration: none;
+  --bs-link-hover-color: #631bb5;
+  --bs-link-hover-color-rgb: 99, 27, 181;
+  --bs-code-color: #e83e8c;
+  --bs-highlight-color: #697a8d;
+  --bs-highlight-bg: #ffeecc;
+  --bs-border-width: 1px;
+  --bs-border-style: solid;
+  --bs-border-color: #d9dee3;
+  --bs-border-color-translucent: rgba(67, 89, 113, 0.175);
+  --bs-box-shadow: 0 0.25rem 1rem rgba(161, 172, 184, 0.45);
+  --bs-box-shadow-sm: 0 0.125rem 0.25rem rgba(161, 172, 184, 0.4);
+  --bs-box-shadow-lg: 0 0.625rem 1.25rem rgba(161, 172, 184, 0.5);
+  --bs-box-shadow-inset: inset 0 1px 2px rgba(67, 89, 113, 0.075);
+  --bs-focus-ring-width: 0.15rem;
+  --bs-focus-ring-opacity: 0.75;
+  --bs-focus-ring-color: rgba(67, 89, 113, 0.75);
+  --bs-form-valid-color: #71dd37;
+  --bs-form-valid-border-color: #71dd37;
+  --bs-form-invalid-color: #ff3e1d;
+  --bs-form-invalid-border-color: #ff3e1d;
+}
+
+body[data-style=ios] {
+  --bs-radius: 7px;
+  --bs-box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+  --padding: 20px;
+  --bs-border-radius: 7px;
+  --bs-border-radius-sm: 12px;
+  --bs-border-radius-lg: 0.5rem;
+  --bs-border-radius-xl: 0.625rem;
+  --bs-border-radius-xxl: 2rem;
+  --bs-border-radius-2xl: var(--bs-border-radius-xxl);
+  --bs-border-radius-pill: 50rem;
+  --bs-bg-page: #f5f5f7;
+  --bs-color-text: #020617;
+}
+body[data-style=ios] .badge {
+  --bs-badge-padding-x: 0.593em;
+  --bs-badge-padding-y: 0.52em;
+  --bs-badge-font-size: 0.8125em;
+  --bs-badge-font-weight: 500;
+  --bs-badge-color: #fff;
+  --bs-badge-border-radius: 20px;
+  display: inline-block;
+  padding: var(--bs-badge-padding-y) var(--bs-badge-padding-x);
+  font-size: var(--bs-badge-font-size);
+  font-weight: var(--bs-badge-font-weight);
+  line-height: 1;
+  color: var(--bs-badge-color);
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--bs-badge-border-radius);
+}
+
+body[data-style=google] {
+  --bs-radius: 10px;
+  --bs-box-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+  --padding: 15px;
+  --bs-border-radius: 5px;
+  --bs-border-radius-sm: 5px;
+  --bs-border-radius-lg: 0.5rem;
+  --bs-border-radius-xl: 0.625rem;
+  --bs-border-radius-xxl: 2rem;
+  --bs-border-radius-2xl: var(--bs-border-radius-xxl);
+  --bs-border-radius-pill: 50rem;
+  --bs-bg-page: #ffff;
+  --bs-color-text: #020617;
+}
+body[data-style=google] .badge {
+  --bs-badge-padding-x: 0.593em;
+  --bs-badge-padding-y: 0.52em;
+  --bs-badge-font-size: 0.8125em;
+  --bs-badge-font-weight: 500;
+  --bs-badge-color: #fff;
+  --bs-badge-border-radius: 0.25rem;
+  display: inline-block;
+  padding: var(--bs-badge-padding-y) var(--bs-badge-padding-x);
+  font-size: var(--bs-badge-font-size);
+  font-weight: var(--bs-badge-font-weight);
+  line-height: 1;
+  color: var(--bs-badge-color);
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--bs-badge-border-radius);
+}
+
+body[data-color=color-1] {
+  --bs-primary-rgba: rgba(74, 19, 135, 0.3);
+  --bs-primary-rgb: 74, 19, 135;
+  --bs-primary: #4a1387;
+  --bs-primary-hover: #631bb5;
+  --bs-secondary: #8592a3;
+  --bs-secondary-hover: #788393;
+  --bs-success: #22c55e;
+  --bs-success-hover: #22c55e;
+  --bs-info: #6366f1;
+  --bs-info-hover: #6366f1;
+  --bs-warning: #f59e0b;
+  --bs-warning-hover: #f59e0b;
+  --bs-danger: #e11d48;
+  --bs-danger-hover: #e11d48;
+  --bs-light: #fcfdfd;
+  --bs-light-hover: #fcfdfd;
+  --bs-dark: #233446;
+  --bs-dark-hover: #202f3f;
+  --bs-gray: rgba(67, 89, 113, 0.1);
+  --bs-blue: #007bff;
+  --bs-indigo: #6610f2;
+  --bs-purple: #696cff;
+  --bs-pink: #e83e8c;
+  --bs-red: #ff3e1d;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #ffab00;
+  --bs-green: #71dd37;
+  --bs-teal: #20c997;
+  --bs-cyan: #03c3ec;
+  --bs-black: #435971;
+  --bs-white: #fff;
+  --bs-gray: rgba(67, 89, 113, 0.6);
+}
+
+body[data-color=color-2] {
+  --bs-primary-rgba: rgb(76, 20, 141, 0.3);
+  --bs-primary: #6b21a8;
+  --bs-primary-hover: #6b21a8;
+  --bs-secondary: #d8d8d8;
+  --bs-secondary-hover: #d8d8d8;
+  --bs-success: #38ce3c;
+  --bs-success-hover: #38ce3c;
+  --bs-info: #1bdbe0;
+  --bs-info-hover: #1bdbe0;
+  --bs-warning: #eab308;
+  --bs-warning-hover: #eab308;
+  --bs-danger: #ff4d6b;
+  --bs-danger-hover: #ff4d6b;
+  --bs-light: #fcfdfd;
+  --bs-light-hover: #fcfdfd;
+  --bs-dark: #233446;
+  --bs-dark-hover: #202f3f;
+  --bs-gray: rgba(67, 89, 113, 0.1);
+  --bs-blue: #007bff;
+  --bs-indigo: #6610f2;
+  --bs-purple: #696cff;
+  --bs-pink: #e83e8c;
+  --bs-red: #ff3e1d;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #ffab00;
+  --bs-green: #71dd37;
+  --bs-teal: #20c997;
+  --bs-cyan: #03c3ec;
+  --bs-black: #435971;
+  --bs-white: #fff;
+  --bs-gray: rgba(67, 89, 113, 0.6);
+}
+
+body[data-color=color-3] {
+  --bs-primary-rgba: rgb(29, 78, 216, 0.3);
+  --bs-primary: #0090e7;
+  --bs-primary-hover: #0ea5e9;
+  --bs-secondary: #e4eaec;
+  --bs-secondary-hover: #e4eaec;
+  --bs-success: #00d25b;
+  --bs-success-hover: #00d25b;
+  --bs-info: #8f5fe8;
+  --bs-info-hover: #8f5fe8;
+  --bs-warning: #facc15;
+  --bs-warning-hover: #facc15;
+  --bs-danger: #fc424a;
+  --bs-danger-hover: #fc424a;
+  --bs-light: #fcfdfd;
+  --bs-light-hover: #fcfdfd;
+  --bs-dark: #233446;
+  --bs-dark-hover: #202f3f;
+  --bs-gray: rgba(67, 89, 113, 0.1);
+  --bs-blue: #007bff;
+  --bs-indigo: #6610f2;
+  --bs-purple: #696cff;
+  --bs-pink: #e83e8c;
+  --bs-red: #ff3e1d;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #facc15;
+  --bs-green: #71dd37;
+  --bs-teal: #20c997;
+  --bs-cyan: #03c3ec;
+  --bs-black: #435971;
+  --bs-white: #fff;
+  --bs-gray: rgba(67, 89, 113, 0.6);
+}
+
+@font-face {
+  font-family: "OpenSans";
+  src: url(../fonts/OpenSans-Light.ttf);
+  font-weight: 300;
+}
+@font-face {
+  font-family: "OpenSans";
+  src: url(../fonts/OpenSans-Regular.ttf);
+  font-weight: 400;
+}
+@font-face {
+  font-family: "OpenSans";
+  src: url(../fonts/OpenSans-Medium.ttf);
+  font-weight: 500;
+}
+@font-face {
+  font-family: "OpenSans";
+  src: url(../fonts/OpenSans-SemiBold.ttf);
+  font-weight: 600;
+}
+@font-face {
+  font-family: "OpenSans";
+  src: url(../fonts/OpenSans-Bold.ttf);
+  font-weight: 700;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url(../fonts/Nunito-Light.ttf);
+  font-weight: 300;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url(../fonts/Nunito-Regular.ttf);
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url(../fonts/Nunito-Medium.ttf);
+  font-weight: 500;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url(../fonts/Nunito-Bold.ttf);
+  font-weight: 700;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url(../fonts/Roboto-Light.ttf);
+  font-weight: 300;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url(../fonts/Roboto-Regular.ttf);
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url(../fonts/Roboto-Medium.ttf);
+  font-weight: 500;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url(../fonts/Roboto-Bold.ttf);
+  font-weight: 700;
+}
+body[data-font=OpenSans] {
+  font-family: "OpenSans", sans-serif !important;
+}
+
+body[data-font=Nunito] {
+  font-family: "Nunito", sans-serif !important;
+  font-optical-sizing: auto;
+}
+
+body[data-font=Roboto] {
+  font-family: "Roboto", sans-serif !important;
+}

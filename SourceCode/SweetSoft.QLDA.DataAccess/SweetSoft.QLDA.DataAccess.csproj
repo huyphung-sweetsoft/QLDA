@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3B1698A1-3A1A-4170-8881-9BF033652453}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SweetSoft.QLDA.DataAccess</RootNamespace>
+    <AssemblyName>SweetSoft.QLDA.DataAccess</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SubSonic, Version=2.2.0.0, Culture=neutral, PublicKeyToken=eadb47849839a332, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\SubSonic.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccessHelper.cs" />
+    <Compile Include="AllStructs.cs" />
+    <Compile Include="AspnetApplication.cs" />
+    <Compile Include="AspnetApplicationController.cs" />
+    <Compile Include="AspnetAssignRole.cs" />
+    <Compile Include="AspnetAssignRoleController.cs" />
+    <Compile Include="AspnetFunction.cs" />
+    <Compile Include="AspnetFunctionController.cs" />
+    <Compile Include="AspnetFunctionPartial.cs" />
+    <Compile Include="AspnetMembership.cs" />
+    <Compile Include="AspnetMembershipController.cs" />
+    <Compile Include="AspnetPath.cs" />
+    <Compile Include="AspnetPathController.cs" />
+    <Compile Include="AspnetPermission.cs" />
+    <Compile Include="AspnetPermissionController.cs" />
+    <Compile Include="AspnetPersonalizationAllUser.cs" />
+    <Compile Include="AspnetPersonalizationAllUserController.cs" />
+    <Compile Include="AspnetPersonalizationPerUser.cs" />
+    <Compile Include="AspnetPersonalizationPerUserController.cs" />
+    <Compile Include="AspnetProfile.cs" />
+    <Compile Include="AspnetProfileController.cs" />
+    <Compile Include="AspnetRole.cs" />
+    <Compile Include="AspnetRoleController.cs" />
+    <Compile Include="AspnetSchemaVersion.cs" />
+    <Compile Include="AspnetSchemaVersionController.cs" />
+    <Compile Include="AspnetUser.cs" />
+    <Compile Include="AspnetUserController.cs" />
+    <Compile Include="AspnetUserPartial.cs" />
+    <Compile Include="AspnetUsersInRole.cs" />
+    <Compile Include="AspnetUsersInRoleController.cs" />
+    <Compile Include="AspnetWebEventEvent.cs" />
+    <Compile Include="AspnetWebEventEventController.cs" />
+    <Compile Include="ExternalClass.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StoredProcedures.cs" />
+    <Compile Include="SysDataAccessProvider\StoredProcedures.cs" />
+    <Compile Include="SysDataAccessProvider\TblAuditTemp.cs" />
+    <Compile Include="SysDataAccessProvider\TblAuditTempController.cs" />
+    <Compile Include="TblEmailHistory.cs" />
+    <Compile Include="TblEmailHistoryController.cs" />
+    <Compile Include="TblEmailTemplate.cs" />
+    <Compile Include="TblEmailTemplateController.cs" />
+    <Compile Include="TblSetting.cs" />
+    <Compile Include="TblSettingController.cs" />
+    <Compile Include="TblUploadFile.cs" />
+    <Compile Include="TblUploadFileController.cs" />
+    <Compile Include="VwAspnetApplication.cs" />
+    <Compile Include="VwAspnetMembershipUser.cs" />
+    <Compile Include="VwAspnetProfile.cs" />
+    <Compile Include="VwAspnetRole.cs" />
+    <Compile Include="VwAspnetUser.cs" />
+    <Compile Include="VwAspnetUsersInRole.cs" />
+    <Compile Include="VwAspnetWebPartStatePath.cs" />
+    <Compile Include="VwAspnetWebPartStateShared.cs" />
+    <Compile Include="VwAspnetWebPartStateUser.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

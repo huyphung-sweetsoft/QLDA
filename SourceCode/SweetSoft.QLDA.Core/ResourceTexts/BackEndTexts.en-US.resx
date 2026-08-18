@@ -1,0 +1,1041 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ACCOUNT" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="ACCOUNT_INFORMATION" xml:space="preserve">
+    <value>Account information</value>
+  </data>
+  <data name="ACCOUNT_IS_LOCKED" xml:space="preserve">
+    <value>Account is locked!</value>
+  </data>
+  <data name="ACTION" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="ACTIVE" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ADDRESS" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="ADD_NEW" xml:space="preserve">
+    <value>Add new</value>
+  </data>
+  <data name="ADMIN_EMAIL" xml:space="preserve">
+    <value>Admin email</value>
+  </data>
+  <data name="ADVANCED_SEARCH" xml:space="preserve">
+    <value>Advanced search</value>
+  </data>
+  <data name="AFTER_THE_QRCODE_IS_SCANNED_OR_THE_KEY_IS_ENTERED_YOUR_AUTHENTICATOR_APP_GENERATES_A_6_DIGIT_CODE_COPY_THE_CODE_THEN_COME_BACK_HERE_TO_ENTER_IT" xml:space="preserve">
+    <value>After the QR code is scanned or the key is entered, your authenticator app generates a 6-digit code. Copy the code then come back here to enter it.</value>
+  </data>
+  <data name="AGREE" xml:space="preserve">
+    <value>Agree</value>
+  </data>
+  <data name="ALL" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ATTACHING_FILE_FAILED" xml:space="preserve">
+    <value>Attaching file failed.</value>
+  </data>
+  <data name="ATTACHMENTS" xml:space="preserve">
+    <value>Attachments</value>
+  </data>
+  <data name="ATTACHMENTS_ARE_NOT_SAVED_IF_THE_STATUS_IS_SAVE_DRAFT" xml:space="preserve">
+    <value>Attachments are not saved if the status is "Save Draft"</value>
+  </data>
+  <data name="ATTACH_INVOICE" xml:space="preserve">
+    <value>Attach invoice</value>
+  </data>
+  <data name="AUTHENTICATOR_APP_HAS_BEEN_RESET" xml:space="preserve">
+    <value>Authenticator app has been reset</value>
+  </data>
+  <data name="AUTHENTICATOR_APP_IS_REGISTERED" xml:space="preserve">
+    <value>Authenticator app is registered</value>
+  </data>
+  <data name="BACK_TO_LIST" xml:space="preserve">
+    <value>Go back</value>
+  </data>
+  <data name="BASIC_INFORMATION" xml:space="preserve">
+    <value>Basic information</value>
+  </data>
+  <data name="BROWSER" xml:space="preserve">
+    <value>Browser</value>
+  </data>
+  <data name="CACHE_CLEARED" xml:space="preserve">
+    <value>Cache cleared!</value>
+  </data>
+  <data name="CANCEL" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CHANGE_PASSWORD" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="CHECK_SMTP" xml:space="preserve">
+    <value>Check SMTP</value>
+  </data>
+  <data name="CLEAR_CACHE" xml:space="preserve">
+    <value>Clear cache</value>
+  </data>
+  <data name="CLICK_APPLY_TO_SAVE_CHANGES_CLICK_CANCEL_TO_REVERT_THE_CHANGES" xml:space="preserve">
+    <value>Click Apply to save changes. Click Cancel to revert the changes</value>
+  </data>
+  <data name="CLICK_TO_ATTACH_FILE" xml:space="preserve">
+    <value>Click to attach file</value>
+  </data>
+  <data name="CLOSE" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="COMPANY_NAME" xml:space="preserve">
+    <value>Company name</value>
+  </data>
+  <data name="CONFIRM" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="CONFIRM_PASSWORD" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="CONTACT_INFORMATION" xml:space="preserve">
+    <value>Contact information</value>
+  </data>
+  <data name="CONTENT" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="CONTINUE" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="COPY" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="COPYRIGHT" xml:space="preserve">
+    <value>Copyright ©</value>
+  </data>
+  <data name="COPY_AND_ENTER_6_DIGIT_CODE" xml:space="preserve">
+    <value>Copy and enter 6-digit code</value>
+  </data>
+  <data name="COUNTRIES" xml:space="preserve">
+    <value>Countries</value>
+  </data>
+  <data name="COUNTRY" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="CREATED_BY" xml:space="preserve">
+    <value>Created by</value>
+  </data>
+  <data name="CREATED_DATE" xml:space="preserve">
+    <value>Created date</value>
+  </data>
+  <data name="CUSTOMER" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="DASHBOARD" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="DATA_DELETED_SUCCESSFULLY" xml:space="preserve">
+    <value>Data deleted successfully!</value>
+  </data>
+  <data name="DATA_HAS_BEEN_UPDATED_SUCCESSFULLY" xml:space="preserve">
+    <value>Data has been updated successfully!</value>
+  </data>
+  <data name="DATA_NOT_FOUND" xml:space="preserve">
+    <value>Data not found</value>
+  </data>
+  <data name="DATE" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="DELETE" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DETAIL" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="DIFFERENCE" xml:space="preserve">
+    <value>Difference</value>
+  </data>
+  <data name="DISPLAY_NAME" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="DISTRICT" xml:space="preserve">
+    <value>District</value>
+  </data>
+  <data name="DISTRICTS" xml:space="preserve">
+    <value>Districts</value>
+  </data>
+  <data name="DOWNLOAD_AUTHENTICATION_APP" xml:space="preserve">
+    <value>Download an authentication app</value>
+  </data>
+  <data name="EDIT" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="EMAIL_ALREADY_EXISTS" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="EMAIL_DOES_NOT_EXISTS" xml:space="preserve">
+    <value>Email does not exists!</value>
+  </data>
+  <data name="EMAIL_RECEIVED_ERROR_MESSAGE" xml:space="preserve">
+    <value>Email received error message</value>
+  </data>
+  <data name="EMAIL_SUBJECT" xml:space="preserve">
+    <value>Email subject</value>
+  </data>
+  <data name="EMAIL_TEMPLATE_SUCCESSFULLY_DELETED" xml:space="preserve">
+    <value>Email template successfully deleted</value>
+  </data>
+  <data name="ENTER_SEARCH_KEYWORDS" xml:space="preserve">
+    <value>Enter search keywords...</value>
+  </data>
+  <data name="ENTER_THE_6_DIGIT_CODE_GENERATED_BY_YOUR_AUTHENTICATOR_APP" xml:space="preserve">
+    <value>Enter the 6-digit code generated by your authentication app.</value>
+  </data>
+  <data name="ENTER_THE_SECURIRY_CODE" xml:space="preserve">
+    <value>Enter the security code</value>
+  </data>
+  <data name="ENTER_THE_VALUE" xml:space="preserve">
+    <value>Enter the value</value>
+  </data>
+  <data name="ENTER_YOUR_CURRENT_AUTHENTICATOR_APP_CODE_TO_TURN_OFF_THIS_FEATURE" xml:space="preserve">
+    <value>Enter your current authenticator app code to turn off this feature</value>
+  </data>
+  <data name="ENTER_YOUR_PASSWORD_TO_UNLOCK_THE_SCREEN" xml:space="preserve">
+    <value>Enter your password to unlock the screen!</value>
+  </data>
+  <data name="EXPORT_DATE" xml:space="preserve">
+    <value>Export date</value>
+  </data>
+  <data name="EXPORT_EXCEL" xml:space="preserve">
+    <value>Export excel</value>
+  </data>
+  <data name="FEMALE" xml:space="preserve">
+    <value>Female</value>
+  </data>
+  <data name="FILTER" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="FORGOT_PASSWORD" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+  <data name="FROM" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="FROM_EMAIL" xml:space="preserve">
+    <value>From email</value>
+  </data>
+  <data name="FULL_NAME" xml:space="preserve">
+    <value>Full name</value>
+  </data>
+  <data name="FUNCTION" xml:space="preserve">
+    <value>Function</value>
+  </data>
+  <data name="HANDLER" xml:space="preserve">
+    <value>Handler</value>
+  </data>
+  <data name="HOUR" xml:space="preserve">
+    <value>hour</value>
+  </data>
+  <data name="IMAGE" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="INACCURATE_DATA_PLEASE_RELOAD_THE_PAGE_AND_TRY_AGAIN" xml:space="preserve">
+    <value>Inaccurate data. Please reload the page and try again!</value>
+  </data>
+  <data name="INACTIVE" xml:space="preserve">
+    <value>Inactive</value>
+  </data>
+  <data name="INCORRECT_PIN" xml:space="preserve">
+    <value>Incorrect PIN</value>
+  </data>
+  <data name="INCORRECT_SMTP_CONFIGURATION" xml:space="preserve">
+    <value>Incorrect SMTP configuration</value>
+  </data>
+  <data name="INCORRECT_USERNAME_OR_PASSWORD" xml:space="preserve">
+    <value>Incorrect username or password!</value>
+  </data>
+  <data name="INDEX" xml:space="preserve">
+    <value>Index</value>
+  </data>
+  <data name="INSTRUCTIONS_FOR_SETUP" xml:space="preserve">
+    <value>Instructions for setup</value>
+  </data>
+  <data name="INTERNAL" xml:space="preserve">
+    <value>Internal</value>
+  </data>
+  <data name="INTERNAL_INFORMATION" xml:space="preserve">
+    <value>Internal information</value>
+  </data>
+  <data name="INVALID_DATA" xml:space="preserve">
+    <value>Invalid data</value>
+  </data>
+  <data name="INVALID_EMAIL" xml:space="preserve">
+    <value>Invalid email</value>
+  </data>
+  <data name="INVALID_VALUE" xml:space="preserve">
+    <value>Invalid value</value>
+  </data>
+  <data name="IP_ADDRESS" xml:space="preserve">
+    <value>IP address</value>
+  </data>
+  <data name="ITEM" xml:space="preserve">
+    <value>item</value>
+  </data>
+  <data name="KEYWORD" xml:space="preserve">
+    <value>Keyword</value>
+  </data>
+  <data name="LANGUAGE" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="LINK_TO_ADDRESS" xml:space="preserve">
+    <value>Link to address</value>
+  </data>
+  <data name="LOCK_SCREEN" xml:space="preserve">
+    <value>Lock screen</value>
+  </data>
+  <data name="LOGIN" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="LOGIN_TO_THE_SYSTEM" xml:space="preserve">
+    <value>Login to the system</value>
+  </data>
+  <data name="LOGOUT" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="MALE" xml:space="preserve">
+    <value>Male</value>
+  </data>
+  <data name="NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NEW_DATA_ADDED_SUCCESSFULLY" xml:space="preserve">
+    <value>New data added successfully!</value>
+  </data>
+  <data name="NEW_PASSWORD" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="NEW_PASSWORD_DOES_NOT_MATCH" xml:space="preserve">
+    <value>New password does not match</value>
+  </data>
+  <data name="NICKNAME" xml:space="preserve">
+    <value>Nickname</value>
+  </data>
+  <data name="NO" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="NOTIFICATION" xml:space="preserve">
+    <value>Notification</value>
+  </data>
+  <data name="NOT_SENT" xml:space="preserve">
+    <value>Not sent</value>
+  </data>
+  <data name="NOT_YOU_GO_BACK" xml:space="preserve">
+    <value>Not you? Go back</value>
+  </data>
+  <data name="NO_ACCESS_PERMISSIONS" xml:space="preserve">
+    <value>No access permissions</value>
+  </data>
+  <data name="NO_DATA" xml:space="preserve">
+    <value>No data</value>
+  </data>
+  <data name="OF" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="OFF" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OLD_PASSWORD" xml:space="preserve">
+    <value>Old password</value>
+  </data>
+  <data name="OLD_PASSWORD_IS_INCORRECT" xml:space="preserve">
+    <value>Old password is incorrect</value>
+  </data>
+  <data name="ON" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="OTHER" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="OTHER_SETTINGS" xml:space="preserve">
+    <value>Other settings</value>
+  </data>
+  <data name="OVERVIEW" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="PASSWORD" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="PASSWORD_IS_INCORRECT" xml:space="preserve">
+    <value>Password is incorrect</value>
+  </data>
+  <data name="PASSWORD_MUST_HAVE_MINIMUM_OF_6_CHARACTERS" xml:space="preserve">
+    <value>Password must have a minimum of 6 characters</value>
+  </data>
+  <data name="PHONE_NUMBER" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="PHONE_CODE" xml:space="preserve">
+    <value>Phone code</value>
+  </data>
+  <data name="PLEASE_CONFIRM_TO_DELETE_THESE_DATA" xml:space="preserve">
+    <value>Please confirm to delete these data.</value>
+  </data>
+  <data name="PLEASE_CONFIRM_TO_DELETE_THE_DATA" xml:space="preserve">
+    <value>Are you sure you want to delete this &lt;b&gt;{0}&lt;/b&gt;? This action cannot be undone.</value>
+  </data>
+  <data name="PLEASE_CONFIRM_TO_RESET_PASSWORD_FOR_ACCOUNT" xml:space="preserve">
+    <value>Send reset password link to user's email: {0}?</value>
+  </data>
+  <data name="PLEASE_ENTER_A_6_DIGIT_OTP" xml:space="preserve">
+    <value>Please enter a 6-digit OTP</value>
+  </data>
+  <data name="PLEASE_ENTER_THE_VALUE" xml:space="preserve">
+    <value>Please enter the value</value>
+  </data>
+  <data name="PLEASE_SELECT_THE_VALUE" xml:space="preserve">
+    <value>Please select the value</value>
+  </data>
+  <data name="POSITION" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="PREVENT_RIGHT_CLICK" xml:space="preserve">
+    <value>Prevent right click</value>
+  </data>
+  <data name="PREVIEW" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="PROFILE" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="PROVINCE" xml:space="preserve">
+    <value>Province</value>
+  </data>
+  <data name="PROVINCES" xml:space="preserve">
+    <value>Provinces</value>
+  </data>
+  <data name="READ" xml:space="preserve">
+    <value>Read</value>
+  </data>
+  <data name="RECENT_ACTIVITY_LOG" xml:space="preserve">
+    <value>Recent activity log</value>
+  </data>
+  <data name="REFRESH" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="REMEMBER_ME" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="REMEMBER_PASSWORD" xml:space="preserve">
+    <value>Remember password?</value>
+  </data>
+  <data name="REPORT_FROM_DATE_X_TO_X" xml:space="preserve">
+    <value>Report from date {0} to {1}</value>
+  </data>
+  <data name="REQUIRED" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="RESET_AUTHENTICATOR_APP" xml:space="preserve">
+    <value>Reset authenticator app</value>
+  </data>
+  <data name="RESET_PASSWORD" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="RETURN_TO_THE_DASHBOARD" xml:space="preserve">
+    <value>Return to the Dashboard</value>
+  </data>
+  <data name="RE_ENTER_INCORRECT_PASSWORD" xml:space="preserve">
+    <value>Re-enter incorrect password</value>
+  </data>
+  <data name="SAVE" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SAVE_AND_SEND" xml:space="preserve">
+    <value>Save &amp; send</value>
+  </data>
+  <data name="SAVE_CHANGES" xml:space="preserve">
+    <value>Save changes</value>
+  </data>
+  <data name="SAVE_DRAFT" xml:space="preserve">
+    <value>Save draft</value>
+  </data>
+  <data name="SAVE_LOG" xml:space="preserve">
+    <value>Save log</value>
+  </data>
+  <data name="SCAN_THIS_QRCODE_IN_THE_AUTHENTICATION_APP_OR_COPY_THE_KEY_AND_PASTE_IT_IN_THE_AUTHENTICATION_APP" xml:space="preserve">
+    <value>Scan this QR code in the authentication app or copy the key and paste it in the authentication app.</value>
+  </data>
+  <data name="SCAN_THIS_QRCODE_OR_COPY_THE_KEY" xml:space="preserve">
+    <value>Scan this QR code or copy the key</value>
+  </data>
+  <data name="SCHEDULE" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="SEARCH" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SECURIRY_CODE" xml:space="preserve">
+    <value>Security Code</value>
+  </data>
+  <data name="SECURIRY_CODE_IS_INCORRECT" xml:space="preserve">
+    <value>Security code is incorrect</value>
+  </data>
+  <data name="SELECTION_PANE_ON_THE_PAGE" xml:space="preserve">
+    <value>Prevent selection on page</value>
+  </data>
+  <data name="SELECT_DATE" xml:space="preserve">
+    <value>Select date</value>
+  </data>
+  <data name="SELECT_VALUE" xml:space="preserve">
+    <value>Select value</value>
+  </data>
+  <data name="SEND" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="SENDING_EMAIL_FAILED" xml:space="preserve">
+    <value>Sending email failed</value>
+  </data>
+  <data name="SEND_MAIL" xml:space="preserve">
+    <value>Send mail</value>
+  </data>
+  <data name="SENT" xml:space="preserve">
+    <value>Sent</value>
+  </data>
+  <data name="SEPARATED_BY_COMMAS" xml:space="preserve">
+    <value>separated by ','</value>
+  </data>
+  <data name="SERVER_TIME" xml:space="preserve">
+    <value>Server time</value>
+  </data>
+  <data name="SHOW" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="SIZE" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="SORT" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="PERMISSION" xml:space="preserve">
+    <value>Permission</value>
+  </data>
+  <data name="SUMMARY" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="SYSTEM_CONFIGURATION" xml:space="preserve">
+    <value>System configuration</value>
+  </data>
+  <data name="SYSTEM_ERROR_PLEASE_RELOAD_THE_PAGE_AND_TRY_AGAIN" xml:space="preserve">
+    <value>System error. Please reload the page and try again!</value>
+  </data>
+  <data name="SYSTEM_LOG" xml:space="preserve">
+    <value>System log</value>
+  </data>
+  <data name="SYSTEM_TIME_ZONE" xml:space="preserve">
+    <value>System time zone</value>
+  </data>
+  <data name="TASK_SCHEDULER" xml:space="preserve">
+    <value>Task Scheduler</value>
+  </data>
+  <data name="TAX_CODE" xml:space="preserve">
+    <value>Tax code</value>
+  </data>
+  <data name="THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION" xml:space="preserve">
+    <value>The account does not have permission to perform this action!</value>
+  </data>
+  <data name="THE_ACCOUNT_HAS_NOT_BEEN_AUTHORIZED_ON_THE_SYSTEM" xml:space="preserve">
+    <value>The account has not been authorized on the system!</value>
+  </data>
+  <data name="THE_FOLLOWING_WORDS_ARE_NOT_IN_THE_CORRECT_EMAI_FORMAT" xml:space="preserve">
+    <value>The following words are not in the correct email format</value>
+  </data>
+  <data name="THE_NEW_PASSWORD_HAS_BEEN_SENT_TO_THE_ACCOUNT_S_EMAIL_ADDRESS" xml:space="preserve">
+    <value>The new password has been sent to the account email address!</value>
+  </data>
+  <data name="THE_REQUESTED_LINK_IS_INCORRECT_OR_HAS_EXPIRED" xml:space="preserve">
+    <value>The requested link is incorrect or has expired!</value>
+  </data>
+  <data name="TIME_ZONE_SETTINGS" xml:space="preserve">
+    <value>Time zone settings</value>
+  </data>
+  <data name="TITLE" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="TITLE_OF_WEBSITE" xml:space="preserve">
+    <value>Title of website</value>
+  </data>
+  <data name="TO" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="TO_EMAIL" xml:space="preserve">
+    <value>To email</value>
+  </data>
+  <data name="TWO_FACTOR_AUTHENTICATION" xml:space="preserve">
+    <value>Two-factor authentication</value>
+  </data>
+  <data name="TWO_FACTOR_AUTHENTICATION_IS" xml:space="preserve">
+    <value>Two-factor authentication is</value>
+  </data>
+  <data name="TYPE" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="UNABLE_TO_UPDATE_PASSWORD_FOR_ACCOUNT" xml:space="preserve">
+    <value>Unable to update password for account!</value>
+  </data>
+  <data name="UNLOCK" xml:space="preserve">
+    <value>Unlock</value>
+  </data>
+  <data name="UNREAD" xml:space="preserve">
+    <value>Unread</value>
+  </data>
+  <data name="UNSENT" xml:space="preserve">
+    <value>Unsent</value>
+  </data>
+  <data name="UPDATE" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="UPDATED_BY" xml:space="preserve">
+    <value>Updated by</value>
+  </data>
+  <data name="UPDATED_DATE" xml:space="preserve">
+    <value>Updated date</value>
+  </data>
+  <data name="UPLOAD" xml:space="preserve">
+    <value>Upload</value>
+  </data>
+  <data name="USER_NAME" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="USERNAME_ALREADY_EXISTS" xml:space="preserve">
+    <value>Username already exists</value>
+  </data>
+  <data name="USER_GROUP" xml:space="preserve">
+    <value>User group</value>
+  </data>
+  <data name="USER_LIST" xml:space="preserve">
+    <value>Admin account</value>
+  </data>
+  <data name="USING_SSL" xml:space="preserve">
+    <value>Using SSL</value>
+  </data>
+  <data name="VERIFY" xml:space="preserve">
+    <value>Verify</value>
+  </data>
+  <data name="VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="VIEW" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="VIEW_ALL" xml:space="preserve">
+    <value>View all</value>
+  </data>
+  <data name="VIEW_MORE" xml:space="preserve">
+    <value>View more</value>
+  </data>
+  <data name="WARD" xml:space="preserve">
+    <value>Ward</value>
+  </data>
+  <data name="WE_RECOMMEND_DOWNLOADING_GOOGLE_AUTHENTICATOR_IF_YOU_DONT_HAVE_ONE_INSTALLED" xml:space="preserve">
+    <value>We recommend downloading Google Authenticator if you don't have one installed.</value>
+  </data>
+  <data name="YES" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="YOUR_PASSWORD_HAS_BEEN_UPDATED" xml:space="preserve">
+    <value>Your password has been updated!</value>
+  </data>
+  <data name="SYSTEM_IS_PROCESSING_YOUR_REQUEST" xml:space="preserve">
+    <value>System is processing your request. Please do not navigate away.</value>
+  </data>
+  <data name="SELECT_ACCOUNT" xml:space="preserve">
+    <value>Select account</value>
+  </data>
+  <data name="NUMBER_OF_RESULTS_ON_THE_GRID" xml:space="preserve">
+    <value>Number of results on the grid</value>
+  </data>
+  <data name="NAME_ALREADY_EXISTS" xml:space="preserve">
+    <value>Name already exists</value>
+  </data>
+  <data name="TAX_CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Tax Code already exists</value>
+  </data>
+  <data name="CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Code already exists</value>
+  </data>
+  <data name="LEVEL" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="HOME" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="ENTER_THE_PASSWORD" xml:space="preserve">
+    <value>Enter the password</value>
+  </data>
+  <data name="LAST_LOGIN_DATE" xml:space="preserve">
+    <value>Last activity date</value>
+  </data>
+  <data name="SETTINGS" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="IMPORT_EXCEL" xml:space="preserve">
+    <value>Import excel file</value>
+  </data>
+  <data name="SHORT_TITLE_ALREADY_EXISTS" xml:space="preserve">
+    <value>The abbreviation already exists.</value>
+  </data>
+  <data name="PARENT_FULL_NAME" xml:space="preserve">
+    <value>Parent's name</value>
+  </data>
+  <data name="REQUEST_DATE" xml:space="preserve">
+    <value>Request date</value>
+  </data>
+  <data name="NO_DATA_SELECTED_FOR_DELETE" xml:space="preserve">
+    <value>Please select the data to delete</value>
+  </data>
+  <data name="ROLE_LIST" xml:space="preserve">
+    <value>Role list</value>
+  </data>
+  <data name="USER_IN_ROLE" xml:space="preserve">
+    <value>Accounts in groups</value>
+  </data>
+  <data name="ACCOUNT_LIST" xml:space="preserve">
+    <value>Account list</value>
+  </data>
+  <data name="PARTICIPANT" xml:space="preserve">
+    <value>Participant</value>
+  </data>
+  <data name="SYSTEM_MANAGEMENT" xml:space="preserve">
+    <value>System Management</value>
+  </data>
+  <data name="CATEGORY" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="PARTICIPANT_LIST" xml:space="preserve">
+    <value>Participants</value>
+  </data>
+  <data name="NOTE" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="DOCUMENT_CATEGORY" xml:space="preserve">
+    <value>Document category</value>
+  </data>
+  <data name="DOCUMENT_CATEGORY_INFORMATION" xml:space="preserve">
+    <value>Document category information</value>
+  </data>
+  <data name="MEETING_ROOM_CATEGORY" xml:space="preserve">
+    <value>Meeting room categories</value>
+  </data>
+  <data name="MEETING_ROOM_CATEGORY_INFORMATION" xml:space="preserve">
+    <value>Room category information</value>
+  </data>
+  <data name="EMAIL_TEMPLATE" xml:space="preserve">
+    <value>Email template</value>
+  </data>
+  <data name="TEMPLATE_KEY" xml:space="preserve">
+    <value>Email type</value>
+  </data>
+  <data name="TEMPLATE_ACCOUNT_INFORMATION" xml:space="preserve">
+    <value>Account information email template</value>
+  </data>
+  <data name="TEMPLATE_FORGOT_PASSWORD" xml:space="preserve">
+    <value>Email template when forgot password</value>
+  </data>
+  <data name="TEMPLATE_CHANGE_PASSWORD" xml:space="preserve">
+    <value>Email template when change password</value>
+  </data>
+  <data name="TEMPLATE_MEETING_NOTIFICATION" xml:space="preserve">
+    <value>Meeting notification email template</value>
+  </data>
+  <data name="END_TIME" xml:space="preserve">
+    <value>End time</value>
+  </data>
+  <data name="MEETING_ROOM" xml:space="preserve">
+    <value>Meeting room</value>
+  </data>
+  <data name="MEETING" xml:space="preserve">
+    <value>Meeting</value>
+  </data>
+  <data name="MEETING_HOST" xml:space="preserve">
+    <value>Meeting host</value>
+  </data>
+  <data name="MEETING_INFORMATION" xml:space="preserve">
+    <value>Meeting information</value>
+  </data>
+  <data name="MEETING_SECRETARY" xml:space="preserve">
+    <value>Meeting secretary</value>
+  </data>
+  <data name="MEETING_TIME" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="MEETING_TYPE" xml:space="preserve">
+    <value>Meeting type</value>
+  </data>
+  <data name="REMINDER_MINUTES" xml:space="preserve">
+    <value>Reminder minutes</value>
+  </data>
+  <data name="START_TIME" xml:space="preserve">
+    <value>Start time</value>
+  </data>
+  <data name="DURATION" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="PARTICIPANT_MANAGEMENT" xml:space="preserve">
+    <value>Participant Management</value>
+  </data>
+  <data name="MEETING_MANAGEMENT" xml:space="preserve">
+    <value>Meeting Management</value>
+  </data>
+  <data name="MEETING_LIST" xml:space="preserve">
+    <value>Meeting list</value>
+  </data>
+  <data name="FILE_MANAGER" xml:space="preserve">
+    <value>Uploaded files</value>
+  </data>
+  <data name="CREATE" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="EXPORT" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="DRIVER_LIST" xml:space="preserve">
+    <value>Driver list</value>
+  </data>
+  <data name="DRIVER" xml:space="preserve">
+    <value>Driver</value>
+  </data>
+  <data name="DRIVER_MANAGEMENT" xml:space="preserve">
+    <value>Driver Management</value>
+  </data>
+  <data name="VEHICLE_LIST" xml:space="preserve">
+    <value>Vehicle list</value>
+  </data>
+  <data name="VEHICLE" xml:space="preserve">
+    <value>Vehicle</value>
+  </data>
+  <data name="LICENSE_PLATE" xml:space="preserve">
+    <value>License Plate</value>
+  </data>
+  <data name="LICENSE_PLATE_ALREADY_EXISTS" xml:space="preserve">
+    <value>License plate already exists</value>
+  </data>
+  <data name="VEHICLE_TYPE" xml:space="preserve">
+    <value>Vehicle type</value>
+  </data>
+  <data name="FRAME_NUMBER" xml:space="preserve">
+    <value>Frame number</value>
+  </data>
+  <data name="ENGINE_NUMBER" xml:space="preserve">
+    <value>Engine number</value>
+  </data>
+  <data name="VEHICLE_REQUEST_LIST" xml:space="preserve">
+    <value>Vehicle request list</value>
+  </data>
+  <data name="VEHICLE_REQUEST" xml:space="preserve">
+    <value>Vehicle request</value>
+  </data>
+  <data name="REQUEST_NUMBER" xml:space="preserve">
+    <value>Request number</value>
+  </data>
+  <data name="REQUEST_NUMBER_ALREADY_EXISTS" xml:space="preserve">
+    <value>Request number already exists</value>
+  </data>
+  <data name="DRIVER_HAS_INCOMPLETE_REQUEST" xml:space="preserve">
+    <value>Driver has incomplete request</value>
+  </data>
+  <data name="YOU_DO_NOT_HAVE_PERMISSION_TO_THIS_ACTION" xml:space="preserve">
+    <value>You do not have permission to this action</value>
+  </data>
+  <data name="DESTINATION" xml:space="preserve">
+    <value>Destination</value>
+  </data>
+  <data name="ACCOMPANYING_PERSON" xml:space="preserve">
+    <value>Accompanying person</value>
+  </data>
+  <data name="AN_EMAIL_HAS_BEEN_SENT_TO_EMAIL" xml:space="preserve">
+    <value>An email has been sent to {0}</value>
+  </data>
+  <data name="ADD_NEW_REQUEST" xml:space="preserve">
+    <value>Add new request</value>
+  </data>
+  <data name="VEHICLE_MANAGEMENT" xml:space="preserve">
+    <value>Vehicle Management</value>
+  </data>
+  <data name="VEHICLE_USER" xml:space="preserve">
+    <value>Vehicle users</value>
+  </data>
+  <data name="WORK_CONTENT" xml:space="preserve">
+    <value>Work content</value>
+  </data>
+  <data name="REPORT" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="ATTENDANCE_RATE_REPORT" xml:space="preserve">
+    <value>Report attendance rate report</value>
+  </data>
+  <data name="MEETING_THE_WEEK_REPORT" xml:space="preserve">
+    <value>Meetings the week report</value>
+  </data>
+  <data name="REPORT_NUMBER_MEETING" xml:space="preserve">
+    <value>Report number meeting</value>
+  </data>
+  <data name="SPEECHES_OF_ATTENDEES_REPORT" xml:space="preserve">
+    <value>Speeches off attendees report</value>
+  </data>
+  <data name="ATTENDANCE_RATE" xml:space="preserve">
+    <value>Attendance rate</value>
+  </data>
+  <data name="ATTENDEES" xml:space="preserve">
+    <value>Attendees quantity</value>
+  </data>
+  <data name="MEETING_NAME" xml:space="preserve">
+    <value>Meeting name</value>
+  </data>
+  <data name="MEETING_QUANTITY" xml:space="preserve">
+    <value>Meeting quantity</value>
+  </data>
+  <data name="TOTAL" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="RATE_SPEECHES_OF_ATTENDEES" xml:space="preserve">
+    <value>Rate number of speeches</value>
+  </data>
+  <data name="SPEECHES_OF_ATTENDEES" xml:space="preserve">
+    <value>Number of speeches</value>
+  </data>
+  <data name="MC" xml:space="preserve">
+    <value>MC</value>
+  </data>
+  <data name="MODERATOR" xml:space="preserve">
+    <value>Moderator</value>
+  </data>
+  <data name="SECRETARY" xml:space="preserve">
+    <value>Secretary</value>
+  </data>
+  <data name="JOIN_COMPETITIONS" xml:space="preserve">
+    <value>Join competition</value>
+  </data>
+  <data name="COMPETITION_NAME" xml:space="preserve">
+    <value>Competition name</value>
+  </data>
+</root>

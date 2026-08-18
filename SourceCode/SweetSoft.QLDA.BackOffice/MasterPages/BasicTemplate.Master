@@ -1,0 +1,195 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="BasicTemplate.master.cs" Inherits="SweetSoft.QLDA.BackOffice.MasterPages.BasicTemplate" %>
+
+<%@ Import Namespace="SweetSoft.QLDA.Core.Helpers" %>
+<%@ Import Namespace="SweetSoft.QLDA.Core.Infrastructure" %>
+<%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+
+<%--//------------------PROGRAMER LOGS------------------------
+//Created by
+--%>
+
+<!DOCTYPE html>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html lang="<%= SweetContext.Current.CurrentLanguageCode.Substring(0,2) %>">
+<head id="Head1" runat="server">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Đăng nhập - PM Quản Lý Dự Án</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <script src="/Styles/plugins/jquery/jquery.min.js"></script>
+    <script src="/Styles/js/toastr.js"></script>
+    <script type="text/javascript">
+        var timerStart = Date.now();
+        var CMSMasterJs = {
+            get HostPath() {
+                return window.location.origin;
+            }
+        };
+        CMSMasterJs.InitNotify = () => {
+            if (typeof toastr !== 'undefined') {
+                toastr.options = {
+                    'closeButton': true,
+                    'debug': false,
+                    'newestOnTop': false,
+                    'progressBar': false,
+                    'positionClass': 'toast-bottom-right',
+                    'preventDuplicates': false,
+                    'showDuration': '1000',
+                    'hideDuration': '1000',
+                    'timeOut': '5000',
+                    'extendedTimeOut': '1000',
+                    'showEasing': 'swing',
+                    'hideEasing': 'linear',
+                    'showMethod': 'fadeIn',
+                    'hideMethod': 'fadeOut',
+                }
+            }
+        }
+        CMSMasterJs.InitNotify();
+        CMSMasterJs.ShowNotify = ($message, $type) => {
+            var $title = '<%= GetResourceText(BackEndResourceKeys.NOTIFICATION)%>';
+            if ($message == undefined || $message == '')
+                return;
+            if (typeof (toastr) == 'undefined')
+                return;
+            switch ($type) {
+                case 'danger':
+                case 'error':
+                    toastr.error($message, $title);
+                    break;
+                case 'warning':
+                    toastr.warning($message, $title);
+                    break;
+                case 'success':
+                    toastr.success($message, $title);
+                    break;
+                default:
+                    toastr.info($message, $title);
+                    break;
+            }
+        };
+    </script>
+    <%-- Tell the browser to be responsive to screen width --%>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta id="MetaDescription" name="description" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <meta id="MetaKeywords" name="keywords" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <link id="ImageLink" rel="/styles/images/image-share.png" type="image/jpg" href="/styles/images/image-share.png" />
+    <meta name="theme-color" content="#4a1387" />
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Đăng nhập - PM Quản Lý Dự Án">
+    <meta property="og:description" content="Đăng nhập - PM Quản Lý Dự Án">
+    <meta property="og:image" content="/styles/images/image-share.png">
+    <meta property="og:type" content='website' />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="/styles/images/image-share.png">
+    <meta name="twitter:title" content="Đăng nhập - PM Quản Lý Dự Án">
+    <meta name="twitter:description" content="Đăng nhập - PM Quản Lý Dự Án">
+    <meta name="twitter:image" content="/styles/images/image-share.png">
+
+    <!-- Author -->
+    <meta name="dc.created" content="2020-05-18" />
+    <meta name="dc.publisher" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <meta name="dc.rights.copyright" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <meta name="dc.creator.name" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <meta name="dc.creator.email" content="info@sotaichinh.com.vn" />
+
+    <!-- Meta robots -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="revisit-after" content="3 days" />
+    <meta name="rating" content="general" />
+    <!-- Canonial Link -->
+    <link href="https://sotaichinh.com.vn" rel="canonical" id="canonicalLink" />
+    <meta name="copyright" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <meta name="author" content="Đăng nhập - PM Quản Lý Dự Án" />
+    <link href="/Styles/css/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/icon.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/Boxicon.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/toastr.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/app.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/custom-style.css" rel="stylesheet" type="text/css" />
+    <link href="<%= GetRelativeClientPath("/Styles/plugins/validationEngine/validationEngine.jquery.css") %>" rel="stylesheet" />
+
+    <%--Render from server--%>
+    <asp:ContentPlaceHolder ID="cpHeadVendor" runat="server"></asp:ContentPlaceHolder>
+    <%--Render from client--%>
+    <asp:ContentPlaceHolder ID="cpHead" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body class="loadingPage" data-layout="horizontal" data-font="Nunito" data-color="color-1" data-style="ios">
+    <form runat="server" id="aspnet">
+        <asp:ScriptManager runat="server" ID="scriptMain" EnableCdn="false" LoadScriptsBeforeUI="true"></asp:ScriptManager>
+        <SweetSoft:ExtraScriptRegister runat="server" ID="scriptRegister"></SweetSoft:ExtraScriptRegister>
+        <div class="auth-page">
+            <div class="container-fluid p-0">
+                <div class="row g-0">
+                    <!-- end col -->
+                    <div class="col-xxl-9 col-lg-8 col-md-7">
+                        <div class="auth-bg pt-md-5 p-4 d-flex">
+                        </div>
+                    </div>
+                    <div class="col-xxl-3 col-lg-4 col-md-5">
+                        <div class="auth-full-page-content d-flex p-sm-5 p-4">
+                            <div class="w-100">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="auth-content my-auto">
+                                        <div class="mb-4 mb-md-5 text-center">
+                                            <a href="/" class="d-block auth-logo">
+                                                <img src="/Styles/images/logo.png" alt="PM Quản Lý Dự Án" style="max-width: 300px;">
+                                            </a>
+                                        </div>
+                                        <asp:ContentPlaceHolder ID="cpMain" runat="server"></asp:ContentPlaceHolder>
+                                    </div>
+                                    <div class="mt-4 mt-md-5 text-center">
+                                        <p class="mb-0">
+                                            ©
+                        <script>document.write(new Date().getFullYear())</script>
+                                            PM Quản Lý Dự Án . <%=GetResourceText(BackEndResourceKeys.VERSION) %>: <span runat="server" id="lbVersion"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end auth full page content -->
+                    </div>
+                    <!-- end col -->
+                </div>
+                <!-- end row -->
+            </div>
+            <!-- end container fluid -->
+        </div>
+        <asp:ContentPlaceHolder ID="cpModalMain" runat="server">
+        </asp:ContentPlaceHolder>
+        <%--SCRIPT--%>
+        <script src="<%= GetRelativeClientPath("/Styles/plugins/bootstrap/js/bootstrap.bundle.min.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/plugins/simplebar/simplebar.min.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/plugins/metismenu/metisMenu.min.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/plugins/pace-js/pace.min.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/plugins/validationEngine/jquery.validationEngine.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/plugins/validationEngine/jquery.validationEngine-" + SweetContext.Current.CurrentLanguageCode + ".js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/js/latinise.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/js/app.js") %>" type="text/javascript"></script>
+        <script src="<%= GetRelativeClientPath("/Styles/js/main.js") %>" type="text/javascript"></script>
+        <%--Render from server--%>
+        <asp:ContentPlaceHolder runat="server" ID="cpVendorScript"></asp:ContentPlaceHolder>
+        <%--Render from client--%>
+        <asp:ContentPlaceHolder ID="cpBottomScript" runat="server"></asp:ContentPlaceHolder>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('body').removeClass('loadingPage');
+                CMSMasterJs.AddEndRequest(CMSMasterJs.DisableContentChanged);
+            })
+        </script>
+    </form>
+</body>
+</html>

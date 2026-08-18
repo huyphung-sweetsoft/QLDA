@@ -1,0 +1,639 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterTemplate.master.cs" Inherits="SweetSoft.QLDA.BackOffice.MasterPages.MasterTemplate" %>
+
+<%--//-----------------------PROGRAMER LOGS-----------------------------%>
+<%--
+    Change 01: 18 Oct 2024, Doan - Task 1208486512936003: UI/UX Customization options
+--%>
+<%@ Import Namespace="SweetSoft.QLDA.Core.Infrastructure" %>
+<%@ Import Namespace="SweetSoft.QLDA.Core.Helpers" %>
+<%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+
+<!DOCTYPE html>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html lang="<%= SweetContext.Current.CurrentLanguageCode.Substring(0,2) %>">
+<head id="Head1" runat="server">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>System Management - Control Panel - PM Quản Lý Dự Án</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <asp:PlaceHolder runat="server">
+        <script type="text/javascript">
+            var timerStart = Date.now();
+            var CMSMasterJs = {
+                get HostPath() {
+                    return window.location.origin;
+                }
+            };
+            CMSMasterJs.InitNotify = () => {
+                if (typeof toastr !== 'undefined') {
+                    toastr.options = {
+                        'closeButton': true,
+                        'debug': false,
+                        'newestOnTop': false,
+                        'progressBar': false,
+                        'positionClass': 'toast-bottom-right',
+                        'preventDuplicates': false,
+                        'showDuration': '1000',
+                        'hideDuration': '1000',
+                        'timeOut': '5000',
+                        'extendedTimeOut': '1000',
+                        'showEasing': 'swing',
+                        'hideEasing': 'linear',
+                        'showMethod': 'fadeIn',
+                        'hideMethod': 'fadeOut',
+                    }
+                }
+            }
+            CMSMasterJs.InitNotify();
+            var $title = '<%= GetResourceText(BackEndResourceKeys.NOTIFICATION)%>';
+            (() => {
+                let notifyTimeout;
+
+                CMSMasterJs.ShowNotify = ($message, $type) => {
+                    if (!$message || typeof (toastr) === 'undefined')
+                        return;
+
+                    if (notifyTimeout) clearTimeout(notifyTimeout);
+
+                    notifyTimeout = setTimeout(() => {
+                        toastr.clear();
+                        switch ($type) {
+                            case 'danger':
+                            case 'error':
+                                toastr.error($message);
+                                break;
+                            case 'warning':
+                                toastr.warning($message);
+                                break;
+                            case 'success':
+                                toastr.success($message);
+                                break;
+                            default:
+                                toastr.info($message);
+                                break;
+                        }
+                    }, 300);
+                };
+            })();
+        </script>
+    </asp:PlaceHolder>
+
+    <%-- Tell the browser to be responsive to screen width --%>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta id="MetaDescription" name="description" content="System Management - Control Panel" />
+    <meta id="MetaKeywords" name="keywords" content="System Management - Control Panel" />
+    <link id="ImageLink" rel="/styles/images/image-share.png" type="image/jpg" href="/styles/images/image-share.png" />
+    <meta name="theme-color" content="#4a1387" />
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="System Management - Control Panel">
+    <meta property="og:description" content="System Management - Control Panel">
+    <meta property="og:image" content="/styles/images/image-share.png">
+    <meta property="og:type" content='website' />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="/styles/images/image-share.png">
+    <meta name="twitter:title" content="System Management - Control Panel">
+    <meta name="twitter:description" content="System Management - Control Panel">
+    <meta name="twitter:image" content="/styles/images/image-share.png">
+
+    <!-- Author -->
+    <meta name="dc.created" content="2024-05-10" />
+    <meta name="dc.publisher" content="System Management - Control Panel" />
+    <meta name="dc.rights.copyright" content="System Management - Control Panel" />
+    <meta name="dc.creator.name" content="System Management - Control Panel" />
+    <meta name="dc.creator.email" content="info@sotaichinh.com.vn" />
+
+    <!-- Meta robots -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="revisit-after" content="3 days" />
+    <meta name="rating" content="general" />
+
+    <!-- Canonial Link -->
+    <link href="https://sotaichinh.com.vn" rel="canonical" id="canonicalLink" />
+    <meta name="copyright" content="System Management - Control Panel" />
+    <meta name="author" content="System Management - Control Panel" />
+    <%--CSS--%>
+    <link href="/Styles/css/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/icon.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/Boxicon.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/toastr.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/app.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/css/custom-style.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/plugins/validationEngine/validationEngine.jquery.css" rel="stylesheet" type="text/css" />
+    <%--INIT JS--%>
+    <link href="/Styles/css/custom.css" rel="stylesheet" type="text/css" />
+    <%--Render from server--%>
+    <style>
+        .html2canvas-container {
+            width: 9999px !important;
+            height: 9999px !important;
+        }
+
+        .logo-lg img {
+            max-width: 150px;
+        }
+
+        .help-block {
+            font-style: italic;
+            color: #4a1387;
+            font-size: 12px;
+        }
+
+        .notification {
+            width: 400px;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+            .notification .notification-body {
+                overflow-y: auto;
+                max-height: 60vh;
+                height: 100%;
+            }
+
+            .notification .notification-close {
+                border: 1px solid lightgray;
+                padding: 2px 10px;
+                border-radius: 6px;
+            }
+
+        .dropdown-notification.dropdown-toggle::after {
+            content: unset;
+        }
+
+        .notification .notification-item:hover {
+            background: #f9fafc;
+        }
+
+        .notification-item .notification-icon {
+            width: 36px;
+            height: 36px;
+        }
+
+        .fs-14 {
+            font-size: 14px;
+        }
+
+        .ext-error .select2-selection--single {
+            border-color: #fd625e !important;
+        }
+
+        .open-autocomplete {
+            /*overflow: visible !important;*/
+            /*position: relative;*/
+        }
+
+        .btn-outline-primary {
+            gap: 8px;
+        }
+
+/*Menu*/
+ body[data-style=ios].showMenu .wrapHeader .wrapMenuHeader .listMenuHeader .linkMenuHeader, body[data-style=google].showMenu .wrapHeader .wrapMenuHeader .listMenuHeader .linkMenuHeader{
+    color: #4a1387;
+}
+ body[data-style=ios].showMenu .wrapHeader .wrapMenuHeader .listMenuHeader .itemMenuHeader .btnDropdownMenuSub, body[data-style=google].showMenu .wrapHeader .wrapMenuHeader .listMenuHeader .itemMenuHeader .btnDropdownMenuSub
+{
+    color: #4a1387;
+}
+ body[data-style=ios].showMenu .wrapHeader .listMenuHeader.Rootmenu, body[data-style=google].showMenu .wrapHeader .listMenuHeader.Rootmenu{
+     justify-content: center;
+    align-items: unset;
+ } body[data-style=ios].showMenu .wrapHeader .listMenuHeader.Rootmenu .border-right, body[data-style=google].showMenu .wrapHeader .listMenuHeader.Rootmenu .border-right{
+     height: 0;
+ }
+
+    </style>
+    <asp:ContentPlaceHolder ID="cpHeadVendor" runat="server"></asp:ContentPlaceHolder>
+    <asp:ContentPlaceHolder ID="cpHead" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body class="loadingPage" data-layout="horizontal" data-font="Nunito" data-color="color-1" data-style="ios">
+    <form runat="server" id="aspnet" onsubmit="return CMSMasterJs.CheckPageIsValid();">
+        <asp:ScriptManager
+            ID="scriptMain"
+            runat="server"
+            EnableCdn="false"
+            ScriptMode="Release"
+            AjaxFrameworkMode="Enabled"
+            LoadScriptsBeforeUI="true">
+            <CompositeScript ScriptMode="Release">
+                <Scripts>
+                    <asp:ScriptReference Path="~/Styles/plugins/jquery/jquery.min.js" />
+                    <asp:ScriptReference Path="~/Styles/js/toastr.js" />
+                    <asp:ScriptReference Path="~/Styles/js/clipboard.min.js" />
+                    <asp:ScriptReference Path="~/Styles/plugins/bootstrap/js/bootstrap.bundle.min.js" />
+                    <asp:ScriptReference Path="~/Styles/plugins/simplebar/simplebar.min.js" />
+                    <asp:ScriptReference Path="~/Styles/plugins/metismenu/metisMenu.min.js" />
+                    <asp:ScriptReference Path="~/Styles/plugins/pace-js/pace.min.js" />
+                    <asp:ScriptReference Path="~/Styles/plugins/validationEngine/jquery.validationEngine.js" />
+                    <asp:ScriptReference Path="~/Styles/plugins/validationEngine/jquery.validationEngine-vi-VN.js" />
+                    <asp:ScriptReference Path="~/Styles/js/latinise.js" />
+                    <asp:ScriptReference Path="~/Styles/js/app.js" />
+                    <asp:ScriptReference Path="~/Styles/js/main.js" />
+                </Scripts>
+            </CompositeScript>
+        </asp:ScriptManager>
+
+        <SweetSoft:ExtraScriptRegister runat="server" ID="scriptRegister"></SweetSoft:ExtraScriptRegister>
+        <input type="file" id="fileAvatar" data-selector="fileAvatar" accept="image/*" class="hidden d-none">
+        <input runat="server" id="hdfFolderKey" data-selector="hdfFolderKey" type="hidden" />
+        <input type="hidden" runat="server" id="hdfCSRF" data-selector="hdfCSRF" />
+        <a data-selector="btnRefreshUser" id="btnRefreshUser" runat="server" onserverclick="btnRefreshUser_ServerClick"></a>
+        <!-- Begin page -->
+        <div class="wrapperBgPage" style='background-image: url(<%= GetRelativeClientPath("/Styles/images/background.png") %>)'></div>
+        <div class="layout-wrapper" id="layout-wrapper">
+            <div class="layout-content">
+                <!-- ============================================================== -->
+                <!-- Start header content here -->
+                <!-- ============================================================== -->
+                <div class="wrapHeader">
+                    <div class="contentHeader">
+                        <div class="headerTop">
+                            <div class="container-fluid">
+                                <div class="wrapperContentTop">
+                                    <div class="wrapBtnCtrMenuHeader d-block d-xl-none">
+                                        <div class="btnCtrMenu"><i class='bx bx-menu'></i></div>
+                                    </div>
+                                    <div class="wrapLogoHeader">
+                                        <a class="linkLogoHeader" href="<%= GetRelativeClientPath("/") %>" title="Trang chủ">
+                                            <img class="imgLogoHeader" src="<%=GetRelativeClientPath("/Styles/images/SweetSoft-logo-light.png") %>" alt="Trang chủ" />
+                                        </a>
+                                    </div>
+                                    <div class="wrapCloseMenuHeaderMobile"></div>
+                                    <div class="wrapMenuMainHeader">
+                                        <div class="wrapMenuMainContentHeader">
+                                            <div class="wrapperMenuTopMobile">
+                                                <div class="wrapperBtncloseMobile">
+                                                    <div class="icon">
+                                                        <i class='mdi mdi-close-circle-outline'></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="wrapSearchMobile d-xl-none p-15 border-bottom d-none">
+                                                <div class="input-group d-flex">
+                                                    <input name="search-menu" class="form-control" type="text" placeholder="Tìm kiếm danh mục">
+                                                    <a class="btn bg-primary" href="javascript:void(0);" type="button" id="button-addon2"><i class='bx bx-search'></i></a>
+                                                </div>
+                                            </div>
+                                            <div class="wrapMenuHeader">
+                                                <ul runat="server" id="itemTemplateBasic" visible="false" enableviewstate="false">
+                                                    <li class="itemMenuHeader">
+                                                        <a class="linkMenuHeader ps-0" href="{0}" title="{1}">
+                                                            <span class="ms-1">{1}</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <ul runat="server" id="itemTemplateSingle" visible="false" enableviewstate="false">
+                                                    <li class="itemMenuHeader">
+                                                        <a class="linkMenuHeader" href="{0}" title="{1}">
+                                                            <i class="{2} d-none"></i><span class="ms-1">{1}</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <ul runat="server" id="itemTemplateMulplite" visible="false" enableviewstate="false">
+                                                    <li class="itemMenuHeader menuSub">
+                                                        <a class="linkMenuHeader" href="javascript:;" role="button" title="{0}" id="menu-item-{3}">
+                                                            <i class="{1}"></i><span class="ms-1">{0}</span>
+                                                            <div class="btnDropdownMenuSub"><i class='bx bxs-chevron-down'></i></div>
+                                                        </a>
+                                                        <div class="wrapMenuHeader" aria-labelledby="menu-item-{3}">
+                                                            <ul class="listMenuHeader">
+                                                                {2}
+                                                            </ul>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                                <ul runat="server" id="itemTemplateSingleParent" visible="false" enableviewstate="false">
+                                                    <li class="itemMenuHeader menuSub">
+                                                        <a class="linkMenuHeader" href="{2}" role="button" title="{0}">
+                                                            <i class="{1}"></i><span class="ms-1">{0}</span>
+                                                        </a>
+                                                        
+                                                    </li>
+                                                </ul>
+                                                <ul class="listMenuHeader Rootmenu">
+                                                    <%--<li class="itemMenuHeader"><a class="linkMenuHeader" href="<%= GetRelativeClientPath("/") %>" title="Bảng điều khiển">Bảng điều khiển<i class='bx bx-home'></i></a></li>--%>
+                                                    <asp:Literal runat="server" ID="ltrMenu" EnableViewState="false"></asp:Literal>
+                                                    <li class="btn-show-more d-none"><i class='bx bx-dots-vertical-rounded'></i></li>
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <asp:UpdatePanel runat="server" ID="pnlInfo" UpdateMode="Conditional">
+                                        <ContentTemplate>
+                                            <div class="flex justify-content-center align-items-center">
+                                                <ul runat="server" visible="false" class="flex justify-content-center align-items-center list-style-none mb-0 me-4">
+                                                    <li class="dropdown dropdown-language">
+                                                        <button class="btn dropdown-toggle d-block text-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <img runat="server" id="imgLanguage" src="/Administration/styles/images/flags/vi.jpg" alt="Header Language" height="16">
+                                                        </button>
+                                                        <ul class="dropdown-menu py-0" style="min-width: 50px;">
+                                                            <asp:UpdatePanel runat="server" UpdateMode="Conditional">
+                                                                <ContentTemplate>
+                                                                    <asp:Repeater runat="server" ID="rptLanguages">
+                                                                        <ItemTemplate>
+                                                                            <li>
+                                                                                <asp:LinkButton runat="server" ID="lbtChangeContentLanguage" CssClass="dropdown-item"
+                                                                                    CommandName="change-language" CommandArgument='<%# Eval("LangId") %>'
+                                                                                    OnCommand="lbtChangeContentLanguage_Command">
+                                                                                    <img src='<%# Eval("ImageUrl") %>' alt='<%# Eval("Name") %>' height="16" />
+                                                                                </asp:LinkButton>
+                                                                            </li>
+                                                                        </ItemTemplate>
+                                                                    </asp:Repeater>
+                                                                </ContentTemplate>
+                                                            </asp:UpdatePanel>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                <div class="wrapperRight">
+                                                    <div class="avatar__image-box flex-center gap-2 cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <div class="avatar__image">
+                                                            <div class="wrapImgResize imgSquare rounded-circle">
+                                                                <img runat="server" id="imgAvatar" />
+                                                            </div>
+                                                        </div>
+                                                        <i class="mdi mdi-chevron-down"></i>
+                                                    </div>
+                                                    <ul class="dropdown-menu p-2">
+                                                        <li>
+                                                            <h3 runat="server" id="tagName" class="mb-0 fw-bold fs-5 py-2"></h3>
+                                                        </li>
+                                                        <li>
+                                                            <hr class="dropdown-divider">
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item flex-center gap-2 ps-0 pt-1 pb-1 text-dark" href="<%= GetRelativeClientPath("/Profile") %>">
+                                                                <i class='bx bx-user-pin font-size-16 align-middle me-1'></i><%= GetResourceText(BackEndResourceKeys.PROFILE) %>
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <asp:LinkButton runat="server" ID="lbtLockScreen" data-selector="lbtLockScreen" OnClick="lbtLockScreen_Click" CssClass="dropdown-item flex-center gap-2 ps-0 pt-1 pb-1 text-dark">
+                            <i class="mdi mdi-lock font-size-16 align-middle me-1"></i><%= GetResourceText(BackEndResourceKeys.LOCK_SCREEN) %>
+                                                            </asp:LinkButton>
+                                                        </li>
+                                                        <li>
+                                                            <hr class="dropdown-divider">
+                                                        </li>
+                                                        <li>
+                                                            <asp:LinkButton runat="server" ID="lbtLogOut" OnClick="lbtLogOut_Click" CssClass="btn btn-danger flex-center gap-2">
+                            <i class="mdi mdi-logout font-size-16 align-middle"></i><%= GetResourceText(BackEndResourceKeys.LOGOUT) %>
+                                                            </asp:LinkButton>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                        </ContentTemplate>
+                                    </asp:UpdatePanel>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- Start Content here -->
+                <!-- ============================================================== -->
+                <div class="main-content">
+                    <div class="page-content">
+                        <div class="container-fluid">
+                            <asp:ContentPlaceHolder ID="cpMain" runat="server"></asp:ContentPlaceHolder>
+                        </div>
+                    </div>
+                    <!-- Start footer content here -->
+                    <!-- ============================================================== -->
+                    <footer class="footer wrapperFooter bg-white position-fixed">
+                        <div class="container-fluid ps-3">
+                            <div class="wrapperContent">
+                                <span class="text"><%= GetResourceText(BackEndResourceKeys.COPYRIGHT) %> PM Quản Lý Dự Án.
+                                    <span class="text-primary"><b>Ngày:</b> <span id="realtimeClock"></span></span>
+                                </span>
+                                <span class="text pe-4 performance-loading">
+                                    <%--<i class="font-size-12">The page finished loading in <span class="timing-loading">0.52s</span></i>--%>
+                                    <%=GetResourceText(BackEndResourceKeys.VERSION) %>: <span runat="server" id="lbVersion"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+        <div class="loading-page-animation">
+            <div class="loading-container">
+                <div class="loading-text">
+                    <span>Preparing</span>
+                    <span>data</span>
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                </div>
+            </div>
+        </div>
+        <!-- Right bar overlay-->
+        <div class="rightbar-overlay"></div>
+        <div id="modal-notify" class="modal fade" tabindex="-1" data-bs-scroll="true">
+            <asp:UpdatePanel runat="server" ID="pnlDialog" UpdateMode="Always">
+                <ContentTemplate>
+                    <div class="modal-dialog modal-dialog-centered text-center">
+                        <div class="modal-content">
+                            <div runat="server" id="modalHeader" class="modal-header">
+                                <h5 class="modal-title" id="myModalLabel" runat="server"></h5>
+                                <a href="javascript:;" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></a>
+                            </div>
+                            <div class="modal-body">
+                                <asp:Literal ID="lbMessage" runat="server"></asp:Literal>
+                            </div>
+                            <div class="modal-footer p-1">
+                                <SweetSoft:ExtraButton runat="server" ID="btnAccept" CssClass="btn-primary waves-effect waves-light" OnClientClick="return CMSMasterJs.HideModalMessage();" OnClick="btnAccept_Click"></SweetSoft:ExtraButton>
+                                <SweetSoft:ExtraButton runat="server" ID="btnCancel" CssClass="btn-secondary waves-effect" ButtonIcon="Close"
+                                    OnClick="btnCancel_Click" OnClientClick="CMSMasterJs.CloseMessageBox('#modal-notify');">Close</SweetSoft:ExtraButton>
+                            </div>
+                        </div>
+                    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </div>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <img src="/Styles/images/bell-ring.png" alt="" class="me-2" height="18">
+                    <strong class="me-auto"><%= GetResourceText(BackEndResourceKeys.NOTIFICATION) %></strong>
+                    <small class="text-muted">just done</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"
+                        aria-label="Close">
+                    </button>
+                </div>
+                <div class="toast-body">
+                    <span class="js-toast-message"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="file-box-viewer">
+            <a id="downloadLink" href="javascript:;" download class="hidden btn-file-download"><i class="fas fa-download"></i></a>
+            <span onclick="$('.body-preview').empty(); $('#file-box-viewer').hide();" class="close">&times;</span>
+            <div class="body-preview">
+            </div>
+        </div>
+
+        <input type="hidden" runat="server" id="hdfTabKey" data-selector="hdfTabKey" />
+        <a runat="server" id="btnLoadTab" data-selector="btnLoadTab" onserverclick="btnLoadTab_ServerClick"></a>
+        <a runat="server" id="btnRefreshPermission" data-selector="btnRefreshPermission" onserverclick="btnRefreshPermission_ServerClick"></a>
+        <asp:ContentPlaceHolder ID="cpModalMain" runat="server">
+        </asp:ContentPlaceHolder>
+
+        <div class="loader-content">
+            <div class="loader">
+                <div class="justify-content-center jimu-primary-loading"></div>
+            </div>
+            <span class="server-message"><%= GetResourceText(BackEndResourceKeys.SYSTEM_IS_PROCESSING_YOUR_REQUEST) %></span>
+        </div>
+        <%--Render from server--%>
+        <asp:ContentPlaceHolder runat="server" ID="cpVendorScript"></asp:ContentPlaceHolder>
+
+        <asp:ContentPlaceHolder ID="cpBottomScript" runat="server"></asp:ContentPlaceHolder>
+        <%--<script src="/styles/js/app.js"></script>--%>
+        <script>
+            $(".wrapBtnCtrMenuHeader .btnCtrMenu").on("click", function (e) {
+                $("body").toggleClass("showMenu wrapHidden");
+                e.preventDefault();
+            });
+            $(".wrapperBtncloseMobile").on("click", function (e) {
+                $("body").removeClass("showMenu wrapHidden");
+
+                if ($(".showContact").length) {
+                    $("body").removeClass("showContact wrapHidden");
+                }
+
+                e.preventDefault();
+            });
+            //$(document).on("click", ".Rootmenu .itemMenuHeader.menuSub", function () {
+            //    if ($('.menuSetting').hasClass('showSub')) {
+            //        $('.menuSetting .show-menu').toggle();
+            //        $('.menuSetting').removeClass('showSub')
+            //    }
+            //});
+        </script>
+        <script type="text/javascript">
+            var isEnabledLoading = true;
+            //Sys.Application.add_init(function () {
+            //    var prm = Sys.WebForms.PageRequestManager.getInstance();
+
+            //    prm.add_initializeRequest(function (sender, args) {
+            //        console.log({ isEnabledLoading })
+            //        if (!isEnabledLoading) return;
+            //        const loader = document.querySelector('.loader-content');
+            //        if (loader) loader.style.display = 'flex';
+            //    });
+
+            //    prm.add_endRequest(function (sender, args) {
+            //        const loader = document.querySelector('.loader-content');
+            //        if (loader) {
+            //            setTimeout(() => {
+            //                loader.style.display = 'none';
+            //            }, 50);
+            //        }
+            //    });
+            //});
+
+            $(document).on('click', '.nav-item a[data-bs-toggle="tab"]', function () {
+                var $dataBtn = $(this).attr('data-selector');
+                if ($dataBtn != undefined) {
+                    $('[data-selector-group-btn]').hide();
+                    $(`[data-selector-group-btn="${$dataBtn}"]`).show();
+                }
+            });
+        </script>
+
+        <script>
+            var scrollToTarget = function (target, containerEl) {
+                // Moved up here for readability:
+                var isElement = target && target.nodeType === 1,
+                    isNumber = Object.prototype.toString.call(target) === '[object Number]';
+
+                if (isElement) {
+                    containerEl.scrollTop = target.offsetTop;
+                } else if (isNumber) {
+                    containerEl.scrollTop = target;
+                } else if (target === 'bottom') {
+                    containerEl.scrollTop = containerEl.scrollHeight - containerEl.offsetHeight;
+                } else if (target === 'top') {
+                    containerEl.scrollTop = 0;
+                }
+            };
+            $(document).ready(function () {
+                $('body').removeClass('loadingPage');
+            })
+            function provinceQuery(params) {
+                const id = parseInt($('[data-selector="ddlCountry"]').val());
+                var obj = {
+                    keyword: params.term || "",
+                    countryId: id || 'd8842bf3-7071-44d3-80eb-92b31a133bcc',
+                    page: params.page || 1,
+                    page_limit: 10
+                };
+                return JSON.stringify(obj);
+            }
+
+            function wardQuery(params) {
+                const id = $('[data-selector="ddlProvince"]').val();
+                var obj = {
+                    keyword: params.term || "",
+                    districtId: id || '00000000-0000-0000-0000-000000000000',
+                    page: params.page || 1,
+                    page_limit: 10
+                };
+                return JSON.stringify(obj);
+            }
+            CMSMasterJs.ChangeTarget = () => {
+                $('[data-selector="ddlTargetId"]').select2("val", "");
+            }
+            $(document).on('select2:open', () => {
+                document.querySelector('.select2-search__field').focus();
+            });
+        </script>
+        <script>
+            function AllUser() {
+                return '/WebService.asmx/GetUsers';
+            }
+            function AllCustomer() {
+                return '/WebService.asmx/AllCustomer';
+            }
+            function AllVehicles() {
+                return '/api/v1/AllVehicles';
+            }
+            function AllDrivers() {
+                return '/api/v1/AllDrivers';
+            }
+        </script>
+        <script>
+            function updateTime() {
+                const now = new Date();
+
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+
+                const formatted = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+
+                document.getElementById('realtimeClock').textContent = formatted;
+            }
+            updateTime();
+            setInterval(updateTime, 1000);
+        </script>
+    </form>
+</body>
+</html>
+

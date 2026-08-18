@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CD5834E6-4790-46B8-83CC-1652D2C88395}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SweetSoft.QLDA.Controls</RootNamespace>
+    <AssemblyName>SweetSoft.QLDA.Controls</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EnumHelper.cs" />
+    <Compile Include="ExtraCheckbox.cs" />
+    <Compile Include="ExtraDateTime.cs" />
+    <Compile Include="ExtraDropdown.cs" />
+    <Compile Include="ExtraButton.cs" />
+    <Compile Include="BootstrapDropdown.cs" />
+    <Compile Include="ExtraModal.cs" />
+    <Compile Include="ExtraSearchBox.cs" />
+    <Compile Include="ExtraTextBox.cs" />
+    <Compile Include="GridSearchType.cs" />
+    <Compile Include="GridviewExtension.cs" />
+    <Compile Include="GridviewPaging.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Helpers\DateTimeHelper.cs" />
+    <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\ExtraControlEventArg.cs" />
+    <Compile Include="Helpers\ExtraIcon.cs" />
+    <Compile Include="ExtraScriptRegister.cs" />
+    <Compile Include="Helpers\HtmlAttribute.cs" />
+    <Compile Include="Helpers\HtmlElement.cs" />
+    <Compile Include="Helpers\HtmlRender.cs" />
+    <Compile Include="Helpers\RenderAttribute.cs" />
+    <Compile Include="Interfaces\IDateTimeConverter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SmartLinkButton.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
