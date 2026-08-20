@@ -489,6 +489,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetUsersInRoles[e.NewIndex].UserId = UserId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblNhanVienCollection colTblNhanVienRecords;
+		public SweetSoft.QLDA.DataAccess.TblNhanVienCollection TblNhanVienRecords()
+		{
+			if(colTblNhanVienRecords == null)
+			{
+				colTblNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblNhanVienCollection().Where(TblNhanVien.Columns.MaTaiKhoan, UserId).Load();
+				colTblNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblNhanVienRecords_ListChanged);
+			}
+			return colTblNhanVienRecords;
+		}
+				
+		void colTblNhanVienRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblNhanVienRecords[e.NewIndex].MaTaiKhoan = UserId;
+            }
+		}
 		#endregion
 		
 			
@@ -824,6 +843,17 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colTblNhanVienRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblNhanVien item in colTblNhanVienRecords)
+                    {
+                        if (item.MaTaiKhoan == null ||item.MaTaiKhoan != UserId)
+                        {
+                            item.MaTaiKhoan = UserId;
+                        }
+                    }
+               }
 		}
         #endregion
     
@@ -846,6 +876,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colAspnetUsersInRoles != null)
                 {
                     colAspnetUsersInRoles.SaveAll();
+               }
+		
+                if (colTblNhanVienRecords != null)
+                {
+                    colTblNhanVienRecords.SaveAll();
                }
 		}
         #endregion

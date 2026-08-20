@@ -48,13 +48,39 @@ namespace SweetSoft.QLDA.DataAccess
         
 		public static readonly string TblAuditLog2026 = @"TblAuditLog_2026";
         
+		public static readonly string TblChucDanh = @"TblChucDanh";
+        
+		public static readonly string TblDuAn = @"TblDuAn";
+        
 		public static readonly string TblEmailHistory = @"TblEmailHistory";
         
 		public static readonly string TblEmailTemplate = @"TblEmailTemplate";
         
+		public static readonly string TblGiaiDoan = @"TblGiaiDoan";
+        
+		public static readonly string TblGiaiDoanDuAn = @"TblGiaiDoanDuAn";
+        
+		public static readonly string TblHopDongThucHien = @"TblHopDongThucHien";
+        
+		public static readonly string TblKhachHang = @"TblKhachHang";
+        
+		public static readonly string TblLichSuDuAn = @"TblLichSuDuAn";
+        
+		public static readonly string TblLoaiDuAn = @"TblLoaiDuAn";
+        
+		public static readonly string TblLoaiKhachHang = @"TblLoaiKhachHang";
+        
+		public static readonly string TblNhanVien = @"TblNhanVien";
+        
+		public static readonly string TblPhongBan = @"TblPhongBan";
+        
 		public static readonly string TblSetting = @"TblSettings";
         
+		public static readonly string TblThanhVienDuAn = @"TblThanhVienDuAn";
+        
 		public static readonly string TblUploadFile = @"TblUploadFile";
+        
+		public static readonly string TblVaiTroDuAn = @"TblVaiTroDuAn";
         
 	}
 	#endregion
@@ -136,6 +162,16 @@ namespace SweetSoft.QLDA.DataAccess
             get { return DataService.GetSchema("TblAuditLog_2026", "DataAccessProvider"); }
 		}
         
+		public static TableSchema.Table TblChucDanh
+		{
+            get { return DataService.GetSchema("TblChucDanh", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblDuAn
+		{
+            get { return DataService.GetSchema("TblDuAn", "DataAccessProvider"); }
+		}
+        
 		public static TableSchema.Table TblEmailHistory
 		{
             get { return DataService.GetSchema("TblEmailHistory", "DataAccessProvider"); }
@@ -146,14 +182,69 @@ namespace SweetSoft.QLDA.DataAccess
             get { return DataService.GetSchema("TblEmailTemplate", "DataAccessProvider"); }
 		}
         
+		public static TableSchema.Table TblGiaiDoan
+		{
+            get { return DataService.GetSchema("TblGiaiDoan", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblGiaiDoanDuAn
+		{
+            get { return DataService.GetSchema("TblGiaiDoanDuAn", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblHopDongThucHien
+		{
+            get { return DataService.GetSchema("TblHopDongThucHien", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblKhachHang
+		{
+            get { return DataService.GetSchema("TblKhachHang", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblLichSuDuAn
+		{
+            get { return DataService.GetSchema("TblLichSuDuAn", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblLoaiDuAn
+		{
+            get { return DataService.GetSchema("TblLoaiDuAn", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblLoaiKhachHang
+		{
+            get { return DataService.GetSchema("TblLoaiKhachHang", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblNhanVien
+		{
+            get { return DataService.GetSchema("TblNhanVien", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblPhongBan
+		{
+            get { return DataService.GetSchema("TblPhongBan", "DataAccessProvider"); }
+		}
+        
 		public static TableSchema.Table TblSetting
 		{
             get { return DataService.GetSchema("TblSettings", "DataAccessProvider"); }
 		}
         
+		public static TableSchema.Table TblThanhVienDuAn
+		{
+            get { return DataService.GetSchema("TblThanhVienDuAn", "DataAccessProvider"); }
+		}
+        
 		public static TableSchema.Table TblUploadFile
 		{
             get { return DataService.GetSchema("TblUploadFile", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblVaiTroDuAn
+		{
+            get { return DataService.GetSchema("TblVaiTroDuAn", "DataAccessProvider"); }
 		}
         
 	
