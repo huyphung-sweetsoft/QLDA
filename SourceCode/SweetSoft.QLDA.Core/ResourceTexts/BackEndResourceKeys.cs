@@ -260,6 +260,11 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
         public const string CREATE = "CREATE";
         public const string EXPORT = "EXPORT";
+        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
+        public const string PROJECT_LIST = "PROJECT_LIST";
+        public const string PROJECT_MANAGEMENT = "PROJECT_MANAGEMENT";
+        public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";
+        public const string EMPLOYEE_MANAGEMENT = "EMPLOYEE_MANAGEMENT";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
@@ -309,6 +314,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MODERATOR = "MODERATOR";
         public const string JOIN_COMPETITIONS = "JOIN_COMPETITIONS";
         public const string COMPETITION_NAME = "COMPETITION_NAME";
-
+        //
     }
 }

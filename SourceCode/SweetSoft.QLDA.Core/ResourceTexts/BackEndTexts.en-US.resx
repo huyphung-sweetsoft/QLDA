@@ -1038,4 +1038,19 @@
   <data name="COMPETITION_NAME" xml:space="preserve">
     <value>Competition name</value>
   </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value>Danh sách khách hàng</value>
+  </data>
+  <data name="PROJECT_LIST" xml:space="preserve">
+    <value>Danh sách dự án</value>
+  </data>
+  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý dự án</value>
+  </data>
+  <data name="EMPLOYEE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý nhân viên</value>
+  </data>
+  <data name="EMPLOYEE_LIST" xml:space="preserve">
+    <value>Danh sách nhân viên</value>
+  </data>
 </root>
