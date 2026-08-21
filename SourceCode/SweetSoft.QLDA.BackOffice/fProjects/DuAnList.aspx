@@ -2,7 +2,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
-<%@ Register Src="~/fProjects/Controls/CtrlDuAn.aspx" TagPrefix="SweetSoft" TagName="CtrlDuAn" %>
+<%@ Register Src="~/fProjects/Controls/CtrlDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAn" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>

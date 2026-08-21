@@ -1,4 +1,4 @@
-using SubSonic;
+﻿using SubSonic;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
@@ -53,24 +53,31 @@ namespace SweetSoft.QLDA.Core.Respositories
             string sql = $@"
                 DECLARE @startRow INT = {pageNumber};
                 DECLARE @endRow INT = {pageSize};
-                DECLARE @isActivated BIT = {InlineQueryHelpers.SQLEncode(parameters[AspnetUser.Columns.IsActivated])};
-                DECLARE @roleId VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[AspnetRole.Columns.RoleId])}';
+        
+                DECLARE @trangThai VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("TrangThai") ? parameters["TrangThai"] : "")}';
+                DECLARE @idLoaiDuAn VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("MaLoaiDuAn") ? parameters["MaLoaiDuAn"] : "")}';
                 DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
+        
                 select * from (
-					select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
-						select d.*
+			        select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
+				        select d.*
                         , nv.TenNhanVien
                         , kh.TenKhachHang
                         , COUNT(1) OVER() AS total_records
                         from TblDuAn d
-                        join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
-                        join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
+                        left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
+                        left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                         where d.DaXoa = 0 
+                        and (@trangThai = '' or @trangThai = 'null' or d.TrangThai = @trangThai)
+                        and (@idLoaiDuAn = '' or @idLoaiDuAn = 'null' or d.IdLoaiDuAn = @idLoaiDuAn)
+                
                         and (@singleKeyWord = N'%%'
-                        or TenDuAn LIKE @singleKeyWord
-                        or MaDuAn LIKE @singleKeyWord)
-					) as T
+                        or d.TenDuAn LIKE @singleKeyWord
+                        or d.MaDuAn LIKE @singleKeyWord
+                        or kh.TenKhachHang LIKE @singleKeyWord)
+			        ) as T
                 ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
+
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null)
                 return null;
@@ -80,6 +87,8 @@ namespace SweetSoft.QLDA.Core.Respositories
             InlineQueryHelpers.GetTotal(ref dt, out totalRecord);
             return dt;
         }
+
+
         public override DataTable SearchPaging(Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
@@ -99,7 +108,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                         join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                         where d.DaXoa = 0 
                         and (@maDuAn = N'%%' or d.MaDuAn like @maDuAn)
-                        and (@tenDuAn = N'%%' or f.TenDuAn like @tenDuAn)
+                        and (@tenDuAn = N'%%' or d.TenDuAn like @tenDuAn)
                         
 					) as T
                 ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
