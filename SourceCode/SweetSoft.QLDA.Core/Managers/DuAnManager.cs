@@ -32,7 +32,12 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.SearchPaging(searchTerm, orderBy, pageNumber, pageSize, out totalRecord);
         }
 
-        public DataTable SearchUsers(Dictionary<string, object> searchParameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchDuAn(string searchTerm, Dictionary<string, object> searchParameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        {
+            return _repository.SearchPaging(searchTerm, searchParameters, orderBy, pageNumber, pageSize, out totalRecord);
+        }
+
+        public DataTable SearchDuAn(Dictionary<string, object> searchParameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             return _repository.SearchPaging(searchParameters, orderBy, pageNumber, pageSize, out totalRecord);
         }

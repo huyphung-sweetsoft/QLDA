@@ -5,6 +5,7 @@ using SweetSoft.QLDA.BackOffice.Controls.AutoComplete;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Controls.Helpers;
 using SweetSoft.QLDA.Core.EnumHelper;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Language;
 using SweetSoft.QLDA.Core.Managers;
@@ -597,6 +598,26 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.DataTextField = "DisplayName";
             dropdown.DataBind();
             dropdown.SelectedIndex = -1;
+        }
+
+        public void BindDuAnStatus(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
+            {
+                string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
+                string value = ((byte)status).ToString();
+                dropdown.AddItem(text, value);
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindLoaiDuAn(BootstrapDropdown dropdown)
+        {
+
         }
         #endregion
     }

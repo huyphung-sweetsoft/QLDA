@@ -30,6 +30,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrProjects CtrlDuAn1;
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlDuAn CtrlDuAn1;
     }
 }

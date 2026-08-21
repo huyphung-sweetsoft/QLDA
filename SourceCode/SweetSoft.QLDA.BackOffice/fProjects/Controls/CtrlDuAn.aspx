@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlDuAn.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrProjects" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlDuAn.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlDuAn" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <div class="card-header">
