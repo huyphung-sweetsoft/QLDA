@@ -494,7 +494,7 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			if(colTblNhanVienRecords == null)
 			{
-				colTblNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblNhanVienCollection().Where(TblNhanVien.Columns.MaTaiKhoan, UserId).Load();
+				colTblNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblNhanVienCollection().Where(TblNhanVien.Columns.UserId, UserId).Load();
 				colTblNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblNhanVienRecords_ListChanged);
 			}
 			return colTblNhanVienRecords;
@@ -505,7 +505,26 @@ namespace SweetSoft.QLDA.DataAccess
             if (e.ListChangedType == ListChangedType.ItemAdded)
             {
 		        // Set foreign key value
-		        colTblNhanVienRecords[e.NewIndex].MaTaiKhoan = UserId;
+		        colTblNhanVienRecords[e.NewIndex].UserId = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblThongBaoCollection colTblThongBaoRecords;
+		public SweetSoft.QLDA.DataAccess.TblThongBaoCollection TblThongBaoRecords()
+		{
+			if(colTblThongBaoRecords == null)
+			{
+				colTblThongBaoRecords = new SweetSoft.QLDA.DataAccess.TblThongBaoCollection().Where(TblThongBao.Columns.UserId, UserId).Load();
+				colTblThongBaoRecords.ListChanged += new ListChangedEventHandler(colTblThongBaoRecords_ListChanged);
+			}
+			return colTblThongBaoRecords;
+		}
+				
+		void colTblThongBaoRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblThongBaoRecords[e.NewIndex].UserId = UserId;
             }
 		}
 		#endregion
@@ -848,9 +867,20 @@ namespace SweetSoft.QLDA.DataAccess
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblNhanVien item in colTblNhanVienRecords)
                     {
-                        if (item.MaTaiKhoan == null ||item.MaTaiKhoan != UserId)
+                        if (item.UserId == null ||item.UserId != UserId)
                         {
-                            item.MaTaiKhoan = UserId;
+                            item.UserId = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblThongBaoRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblThongBao item in colTblThongBaoRecords)
+                    {
+                        if (item.UserId != UserId)
+                        {
+                            item.UserId = UserId;
                         }
                     }
                }
@@ -881,6 +911,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblNhanVienRecords != null)
                 {
                     colTblNhanVienRecords.SaveAll();
+               }
+		
+                if (colTblThongBaoRecords != null)
+                {
+                    colTblThongBaoRecords.SaveAll();
                }
 		}
         #endregion

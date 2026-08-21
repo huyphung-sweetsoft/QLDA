@@ -261,6 +261,17 @@ namespace SweetSoft.QLDA.DataAccess
 		}
 		
 		
+		/// <summary>
+		/// Returns a AspnetPath ActiveRecord object related to this AspnetPersonalizationPerUser
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.AspnetPath AspnetPathToPathId
+		{
+			get { return SweetSoft.QLDA.DataAccess.AspnetPath.FetchByID(this.PathId); }
+			set { SetColumnValue("PathId", value.PathId); }
+		}
+		
+		
 		#endregion
 		
 		

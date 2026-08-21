@@ -254,6 +254,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetPersonalizationAllUsers[e.NewIndex].PathId = PathId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.AspnetPersonalizationAllUserCollection colAspnetPersonalizationAllUsersFromAspnetPath;
+		public SweetSoft.QLDA.DataAccess.AspnetPersonalizationAllUserCollection AspnetPersonalizationAllUsersFromAspnetPath()
+		{
+			if(colAspnetPersonalizationAllUsersFromAspnetPath == null)
+			{
+				colAspnetPersonalizationAllUsersFromAspnetPath = new SweetSoft.QLDA.DataAccess.AspnetPersonalizationAllUserCollection().Where(AspnetPersonalizationAllUser.Columns.PathId, PathId).Load();
+				colAspnetPersonalizationAllUsersFromAspnetPath.ListChanged += new ListChangedEventHandler(colAspnetPersonalizationAllUsersFromAspnetPath_ListChanged);
+			}
+			return colAspnetPersonalizationAllUsersFromAspnetPath;
+		}
+				
+		void colAspnetPersonalizationAllUsersFromAspnetPath_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetPersonalizationAllUsersFromAspnetPath[e.NewIndex].PathId = PathId;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUserCollection colAspnetPersonalizationPerUserRecords;
 		public SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUserCollection AspnetPersonalizationPerUserRecords()
 		{
@@ -273,6 +292,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetPersonalizationPerUserRecords[e.NewIndex].PathId = PathId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUserCollection colAspnetPersonalizationPerUserRecordsFromAspnetPath;
+		public SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUserCollection AspnetPersonalizationPerUserRecordsFromAspnetPath()
+		{
+			if(colAspnetPersonalizationPerUserRecordsFromAspnetPath == null)
+			{
+				colAspnetPersonalizationPerUserRecordsFromAspnetPath = new SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUserCollection().Where(AspnetPersonalizationPerUser.Columns.PathId, PathId).Load();
+				colAspnetPersonalizationPerUserRecordsFromAspnetPath.ListChanged += new ListChangedEventHandler(colAspnetPersonalizationPerUserRecordsFromAspnetPath_ListChanged);
+			}
+			return colAspnetPersonalizationPerUserRecordsFromAspnetPath;
+		}
+				
+		void colAspnetPersonalizationPerUserRecordsFromAspnetPath_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetPersonalizationPerUserRecordsFromAspnetPath[e.NewIndex].PathId = PathId;
+            }
+		}
 		#endregion
 		
 			
@@ -284,6 +322,17 @@ namespace SweetSoft.QLDA.DataAccess
 		/// 
 		/// </summary>
 		public SweetSoft.QLDA.DataAccess.AspnetApplication AspnetApplication
+		{
+			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
+			set { SetColumnValue("ApplicationId", value.ApplicationId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a AspnetApplication ActiveRecord object related to this AspnetPath
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.AspnetApplication AspnetApplicationToApplicationId
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
 			set { SetColumnValue("ApplicationId", value.ApplicationId); }
@@ -406,9 +455,31 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colAspnetPersonalizationAllUsersFromAspnetPath != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetPersonalizationAllUser item in colAspnetPersonalizationAllUsersFromAspnetPath)
+                    {
+                        if (item.PathId != PathId)
+                        {
+                            item.PathId = PathId;
+                        }
+                    }
+               }
+		
                 if (colAspnetPersonalizationPerUserRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUser item in colAspnetPersonalizationPerUserRecords)
+                    {
+                        if (item.PathId == null ||item.PathId != PathId)
+                        {
+                            item.PathId = PathId;
+                        }
+                    }
+               }
+		
+                if (colAspnetPersonalizationPerUserRecordsFromAspnetPath != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetPersonalizationPerUser item in colAspnetPersonalizationPerUserRecordsFromAspnetPath)
                     {
                         if (item.PathId == null ||item.PathId != PathId)
                         {
@@ -430,9 +501,19 @@ namespace SweetSoft.QLDA.DataAccess
                     colAspnetPersonalizationAllUsers.SaveAll();
                }
 		
+                if (colAspnetPersonalizationAllUsersFromAspnetPath != null)
+                {
+                    colAspnetPersonalizationAllUsersFromAspnetPath.SaveAll();
+               }
+		
                 if (colAspnetPersonalizationPerUserRecords != null)
                 {
                     colAspnetPersonalizationPerUserRecords.SaveAll();
+               }
+		
+                if (colAspnetPersonalizationPerUserRecordsFromAspnetPath != null)
+                {
+                    colAspnetPersonalizationPerUserRecordsFromAspnetPath.SaveAll();
                }
 		}
         #endregion

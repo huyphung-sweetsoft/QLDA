@@ -199,6 +199,17 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		/// <summary>
+		/// Returns a AspnetRole ActiveRecord object related to this AspnetUsersInRole
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.AspnetRole AspnetRoleToRoleId
+		{
+			get { return SweetSoft.QLDA.DataAccess.AspnetRole.FetchByID(this.RoleId); }
+			set { SetColumnValue("RoleId", value.RoleId); }
+		}
+		
+		
+		/// <summary>
 		/// Returns a AspnetUser ActiveRecord object related to this AspnetUsersInRole
 		/// 
 		/// </summary>

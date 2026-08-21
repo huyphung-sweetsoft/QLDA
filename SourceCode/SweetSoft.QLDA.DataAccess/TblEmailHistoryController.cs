@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid Id,string CreatedUser,DateTime CreatedDate,string UpdatedUser,DateTime UpdatedDate,Guid RefId,string RefType,Guid? SenderId,DateTime? SentDate,string Sender,string Subject,string EmailContent,Guid CustomerId,string FromEmail,string ToEmail,string CcEmail,string BccEmail,bool IsSent,bool IsRead,DateTime? ReadDate,int NumberOfSent,string ErrorMessage)
+	    public void Insert(Guid Id,string CreatedUser,DateTime CreatedDate,string UpdatedUser,DateTime UpdatedDate,Guid RefId,string RefType,Guid? SenderId,DateTime? SentDate,string Sender,string Subject,string EmailContent,Guid CustomerId,string ServerMail,string FromEmail,string ToEmail,string CcEmail,string BccEmail,bool IsSent,bool IsRead,DateTime? ReadDate,int NumberOfSent,string ErrorMessage)
 	    {
 		    TblEmailHistory item = new TblEmailHistory();
 		    
@@ -110,6 +110,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.CustomerId = CustomerId;
             
+            item.ServerMail = ServerMail;
+            
             item.FromEmail = FromEmail;
             
             item.ToEmail = ToEmail;
@@ -136,7 +138,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid Id,string CreatedUser,DateTime CreatedDate,string UpdatedUser,DateTime UpdatedDate,Guid RefId,string RefType,Guid? SenderId,DateTime? SentDate,string Sender,string Subject,string EmailContent,Guid CustomerId,string FromEmail,string ToEmail,string CcEmail,string BccEmail,bool IsSent,bool IsRead,DateTime? ReadDate,int NumberOfSent,string ErrorMessage)
+	    public void Update(Guid Id,string CreatedUser,DateTime CreatedDate,string UpdatedUser,DateTime UpdatedDate,Guid RefId,string RefType,Guid? SenderId,DateTime? SentDate,string Sender,string Subject,string EmailContent,Guid CustomerId,string ServerMail,string FromEmail,string ToEmail,string CcEmail,string BccEmail,bool IsSent,bool IsRead,DateTime? ReadDate,int NumberOfSent,string ErrorMessage)
 	    {
 		    TblEmailHistory item = new TblEmailHistory();
 	        item.MarkOld();
@@ -167,6 +169,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.EmailContent = EmailContent;
 				
 			item.CustomerId = CustomerId;
+				
+			item.ServerMail = ServerMail;
 				
 			item.FromEmail = FromEmail;
 				

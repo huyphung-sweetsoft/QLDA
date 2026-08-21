@@ -510,6 +510,113 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
+		private SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection colTblGuiNhanKhachHangRecords;
+		public SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection TblGuiNhanKhachHangRecords()
+		{
+			if(colTblGuiNhanKhachHangRecords == null)
+			{
+				colTblGuiNhanKhachHangRecords = new SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection().Where(TblGuiNhanKhachHang.Columns.IdFileNhanLai, Id).Load();
+				colTblGuiNhanKhachHangRecords.ListChanged += new ListChangedEventHandler(colTblGuiNhanKhachHangRecords_ListChanged);
+			}
+			return colTblGuiNhanKhachHangRecords;
+		}
+				
+		void colTblGuiNhanKhachHangRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblGuiNhanKhachHangRecords[e.NewIndex].IdFileNhanLai = Id;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblMauTaiLieuCollection colTblMauTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblMauTaiLieuCollection TblMauTaiLieuRecords()
+		{
+			if(colTblMauTaiLieuRecords == null)
+			{
+				colTblMauTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblMauTaiLieuCollection().Where(TblMauTaiLieu.Columns.IdFileMau, Id).Load();
+				colTblMauTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblMauTaiLieuRecords_ListChanged);
+			}
+			return colTblMauTaiLieuRecords;
+		}
+				
+		void colTblMauTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblMauTaiLieuRecords[e.NewIndex].IdFileMau = Id;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieuCollection colTblPhienBanTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieuCollection TblPhienBanTaiLieuRecords()
+		{
+			if(colTblPhienBanTaiLieuRecords == null)
+			{
+				colTblPhienBanTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieuCollection().Where(TblPhienBanTaiLieu.Columns.IdFileNoiDung, Id).Load();
+				colTblPhienBanTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblPhienBanTaiLieuRecords_ListChanged);
+			}
+			return colTblPhienBanTaiLieuRecords;
+		}
+				
+		void colTblPhienBanTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblPhienBanTaiLieuRecords[e.NewIndex].IdFileNoiDung = Id;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblTaiLieuCollection colTblTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblTaiLieuCollection TblTaiLieuRecords()
+		{
+			if(colTblTaiLieuRecords == null)
+			{
+				colTblTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblTaiLieuCollection().Where(TblTaiLieu.Columns.IdFileBanChinhThuc, Id).Load();
+				colTblTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblTaiLieuRecords_ListChanged);
+			}
+			return colTblTaiLieuRecords;
+		}
+				
+		void colTblTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTaiLieuRecords[e.NewIndex].IdFileBanChinhThuc = Id;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection colTblTrinhKyTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection TblTrinhKyTaiLieuRecords()
+		{
+			if(colTblTrinhKyTaiLieuRecords == null)
+			{
+				colTblTrinhKyTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection().Where(TblTrinhKyTaiLieu.Columns.IdFileSauKy, Id).Load();
+				colTblTrinhKyTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblTrinhKyTaiLieuRecords_ListChanged);
+			}
+			return colTblTrinhKyTaiLieuRecords;
+		}
+				
+		void colTblTrinhKyTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTrinhKyTaiLieuRecords[e.NewIndex].IdFileSauKy = Id;
+            }
+		}
+		#endregion
+		
 			
 		
 		//no foreign key tables defined (0)
@@ -771,10 +878,96 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
+        public void SetPKValues()
+        {
+                if (colTblGuiNhanKhachHangRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHang item in colTblGuiNhanKhachHangRecords)
+                    {
+                        if (item.IdFileNhanLai == null ||item.IdFileNhanLai != Id)
+                        {
+                            item.IdFileNhanLai = Id;
+                        }
+                    }
+               }
+		
+                if (colTblMauTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblMauTaiLieu item in colTblMauTaiLieuRecords)
+                    {
+                        if (item.IdFileMau == null ||item.IdFileMau != Id)
+                        {
+                            item.IdFileMau = Id;
+                        }
+                    }
+               }
+		
+                if (colTblPhienBanTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu item in colTblPhienBanTaiLieuRecords)
+                    {
+                        if (item.IdFileNoiDung == null ||item.IdFileNoiDung != Id)
+                        {
+                            item.IdFileNoiDung = Id;
+                        }
+                    }
+               }
+		
+                if (colTblTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTaiLieu item in colTblTaiLieuRecords)
+                    {
+                        if (item.IdFileBanChinhThuc == null ||item.IdFileBanChinhThuc != Id)
+                        {
+                            item.IdFileBanChinhThuc = Id;
+                        }
+                    }
+               }
+		
+                if (colTblTrinhKyTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieu item in colTblTrinhKyTaiLieuRecords)
+                    {
+                        if (item.IdFileSauKy == null ||item.IdFileSauKy != Id)
+                        {
+                            item.IdFileSauKy = Id;
+                        }
+                    }
+               }
+		}
         #endregion
     
         #region Deep Save
 		
+        public void DeepSave()
+        {
+            Save();
+            
+                if (colTblGuiNhanKhachHangRecords != null)
+                {
+                    colTblGuiNhanKhachHangRecords.SaveAll();
+               }
+		
+                if (colTblMauTaiLieuRecords != null)
+                {
+                    colTblMauTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblPhienBanTaiLieuRecords != null)
+                {
+                    colTblPhienBanTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblTaiLieuRecords != null)
+                {
+                    colTblTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblTrinhKyTaiLieuRecords != null)
+                {
+                    colTblTrinhKyTaiLieuRecords.SaveAll();
+               }
+		}
         #endregion
 	}
 }
