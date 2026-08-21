@@ -22,6 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Permission => "/Permission";
         public static string TaskSchedules => "/TaskSchedules";
         public static string Users => "/Users";
+        public static string Projects => "/Projects";
 
         public static string ViewUser(Guid userId)
         {
@@ -82,5 +83,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/email-template/{SecurityUtilities.ProtectUrlParameter(emailId.ToString())}";
         }
+
+
     }
 }

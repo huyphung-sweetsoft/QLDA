@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
@@ -151,11 +151,11 @@ namespace SweetSoft.QLDA.Core.Respositories
             return new TblDuAnController().Delete(item.IdDuAn);
         }
 
-        public TblDuAn GetByTrangThai(int state)
+        public TblDuAn GetByTrangThai(byte status)
         {
             return new Select()
                 .From(TblDuAn.Schema)
-                .Where(TblDuAn.TrangThaiColumn).IsEqualTo(state)
+                .Where(TblDuAn.TrangThaiColumn).IsEqualTo(status)
                 .And(TblDuAn.DaXoaColumn).IsEqualTo(false)
                 .ExecuteSingle<TblDuAn>();
         }
