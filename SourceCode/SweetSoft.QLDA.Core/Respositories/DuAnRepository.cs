@@ -18,24 +18,53 @@ namespace SweetSoft.QLDA.Core.Respositories
         public override DataTable SearchPaging(string searchTerm,string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
+            string keyword = InlineQueryHelpers.SQLEncode(searchTerm ?? string.Empty);
             string sql = $@"
-                DECLARE @startRow INT = {pageNumber}
-                DECLARE @endRow INT = {pageSize}
+                DECLARE @startRow INT = {pageNumber};
+                DECLARE @endRow INT = {pageSize};
                 select * from (
-                    select ROW_NUMBER() OVER (ORDER BY {orderBy} AS RowNum, T.* from (
+                    select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
                         select d.*,
                         nv.TenNhanVien,
                         kh.TenKhachHang,
                         COUNT(1) OVER() AS total_records
                         from TblDuAn d
                         left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
-                        left join TblKhahcHang kh on kh.IdKhachHang = d.IdKhachHang
+                        left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                         where d.DaXoa = 0
                     ) as T
                 ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow";
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null)
                 return null;
+            DataTable dt = new DataTable();
+            dt.Load(iDataReader);
+            InlineQueryHelpers.GetTotal(ref dt, out totalRecord);
+            return dt;
+        }
+
+        public override DataTable SearchPaging(Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        {
+            totalRecord = 0;
+            string sql = $@"
+                DECLARE @startRow INT = {pageNumber};
+                DECLARE @endRow INT = {pageSize};
+                select * from (
+                    select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
+                        select d.*,
+                        nv.TenNhanVien,
+                        kh.TenKhachHang,
+                        COUNT(1) OVER() AS total_records
+                        from TblDuAn d
+                        left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
+                        left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
+                        where d.DaXoa = 0
+                    ) as T
+                ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
+            IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
+            if (iDataReader == null)
+                return null;
+            
             DataTable dt = new DataTable();
             dt.Load(iDataReader);
             InlineQueryHelpers.GetTotal(ref dt, out totalRecord);

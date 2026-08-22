@@ -27,7 +27,7 @@
     <div class="row">
         <div class="col-xl-12">
             <div class="card p-2 min-h-sreen">
-                <SweetSoft:Navigation runat="server" ID="Navigation1" MainTitle="Account list" />
+                <SweetSoft:Navigation runat="server" ID="Navigation1" MainTitle="Project list" />
                 <SweetSoft:CtrlDuAn runat="server" id="CtrlDuAn1" />
             </div>
         </div>

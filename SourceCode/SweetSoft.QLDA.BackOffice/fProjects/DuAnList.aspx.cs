@@ -15,6 +15,13 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 {
     public partial class DuAnList : BaseAdminPage
     {
-        
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                CtrlDuAn1.InitControls();
+            }
+        }
+
     }
 }

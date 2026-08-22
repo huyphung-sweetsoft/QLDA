@@ -1050,4 +1050,10 @@
   <data name="PROJECT_MANAGER" xml:space="preserve">
     <value>Nhân viên quản lý</value>
   </data>
+  <data name="PROJECT_IDENTIFIED" xml:space="preserve">
+    <value />
+  </data>
+  <data name="EMPLOYEE_NAME" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
 </root>
