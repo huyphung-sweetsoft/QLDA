@@ -27,56 +27,9 @@ namespace SweetSoft.QLDA.Core.Managers
             _repository = new DuAnRepository(_auditManager);
         }
 
-        public DataTable SearchDuAn(string searchTerm, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchDuAns(string searchTerm, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             return _repository.SearchPaging(searchTerm, orderBy, pageNumber, pageSize, out totalRecord);
-        }
-
-        public DataTable SearchDuAn(string searchTerm, Dictionary<string, object> searchParameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
-        {
-            return _repository.SearchPaging(searchTerm, searchParameters, orderBy, pageNumber, pageSize, out totalRecord);
-        }
-
-        public DataTable SearchDuAn(Dictionary<string, object> searchParameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
-        {
-            return _repository.SearchPaging(searchParameters, orderBy, pageNumber, pageSize, out totalRecord);
-        }
-
-        //public TblDuAn CreateOrUpdate(TblDuAn dto)
-        //{
-        //    BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
-        //    BusinessValidator.ThrowIfNullOrEmpty(dto.TenDuAn, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenDuAn));
-        //    //BusinessValidator.ThrowIfNullOrEmpty(dto.IdNhanVienQuanLy, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.IdNhanVienQuanLy));
-
-        //    TblDuAn project;
-
-        //    if (dto.IdDuAn != Guid.Empty)
-        //    {
-        //        project = _repository.GetById(dto.IdDuAn);
-        //        BusinessValidator.ThrowIfNull(project, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdDuAn), ErrorCodes.NotFound);
-
-        //        if (project.TrangThai == (byte)DuAnStatus.ChoThucHien)
-        //        {
-
-        //        }
-        //    }
-        //}
-
-        public bool Delete(TblDuAn item)
-        {
-            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.INVALID_DATA);
-            //--------------------------------------------
-            return _repository.Delete(item);
-        }
-
-        public TblDuAn GetProjectById(Guid id)
-        {
-            return _repository.GetById(id);
-        }
-
-        public TblDuAn GetProjectByStatus(byte status)
-        {
-            return _repository.GetByTrangThai(status);
         }
     }
 }
