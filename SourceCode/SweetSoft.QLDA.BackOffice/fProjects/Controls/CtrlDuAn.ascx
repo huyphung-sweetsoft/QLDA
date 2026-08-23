@@ -41,7 +41,7 @@
                 ShowHeader="true"
                 ShowHeaderWhenEmpty="true"
                 AutoGenerateColumns="false"
-                CssClass="table-border-bottom-0 table-hover"
+                CssClass="table-bordered table-hover"
                 FocusBtnIcon="fas fa-compress-arrows-alt"
                 DataKeyNames="IdDuAn" GridLines="None"
                 IsEnableSelectColumn="false"
@@ -70,6 +70,7 @@
                             <%# Eval("TenNhanVien") %>
                         </ItemTemplate>
                     </asp:TemplateField>
+                    
                 </Columns>
                 <EmptyDataTemplate>
                     <%= GetResourceText(BackEndResourceKeys.NO_DATA) %>

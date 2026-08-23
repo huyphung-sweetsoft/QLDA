@@ -34,6 +34,44 @@
     </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
+    <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" Title="Project Infomation">
+        <ContentTemplate>
+            <div class="row js-validation validationEngineContainer">
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_IDENTIFIED) %></label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtMaDuAn" Required="true"></SweetSoft:ExtraTextBox>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_NAME) %></label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtTenDuAn" Required="true"></SweetSoft:ExtraTextBox>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_TYPE) %></label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlLoaiDuAn" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+        <FooterTemplate>
+            <asp:UpdatePanel runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true"
+                        OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false">Lưu</SweetSoft:ExtraButton>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>

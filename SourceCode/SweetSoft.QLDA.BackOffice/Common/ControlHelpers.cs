@@ -615,9 +615,43 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.SelectedIndex = -1;
         }
 
-        public void BindLoaiDuAn(BootstrapDropdown dropdown)
+        public void BindLoaiDuAn(BootstrapDropdown ddl)
         {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+            List<TblLoaiDuAn> tblLoaiDuAns = LoaiDuAnManager.Instance.GetAllLoaiDuAn();
+            if (tblLoaiDuAns == null)
+                tblLoaiDuAns = new List<TblLoaiDuAn>();
+            ddl.DataTextField = TblLoaiDuAn.Columns.TenLoaiDuAn;
+            ddl.DataValueField = TblLoaiDuAn.Columns.IdLoaiDuAn;
+            ddl.DataSource = tblLoaiDuAns;
+            ddl.DataBind();
+        }
 
+        public void BindLoaiDuAn(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+            List<TblLoaiDuAn> tblLoaiDuAns = LoaiDuAnManager.Instance.GetAllLoaiDuAn();
+            if (tblLoaiDuAns == null)
+                tblLoaiDuAns = new List<TblLoaiDuAn>();
+            ddl.DataTextField = TblLoaiDuAn.Columns.TenLoaiDuAn;
+            ddl.DataValueField = TblLoaiDuAn.Columns.IdLoaiDuAn;
+            ddl.DataSource = tblLoaiDuAns;
+            ddl.DataBind();
+        }
+
+        public void BindKhachHang(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+            List<TblKhachHang> tblKhachHangs = KhachHangManager.Instance.GetAllKhachHang();
+            if (tblKhachHangs == null)
+                tblKhachHangs = new List<TblKhachHang>();
+            ddl.DataTextField = TblKhachHang.Columns.TenKhachHang;
+            ddl.DataValueField = TblKhachHang.Columns.IdKhachHang;
+            ddl.DataSource = tblKhachHangs;
+            ddl.DataBind();
         }
         #endregion
     }

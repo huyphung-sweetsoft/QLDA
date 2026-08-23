@@ -16,6 +16,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 {
     public partial class CtrlDuAn : BaseAdminUserControl
     {
+        public EventHandler NewProjectHandlerCallBack;
+
+
         protected void Page_Load(object sender, EventArgs e)
         {
             RegisterAsyncButton();
@@ -41,16 +44,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 GetResourceText(BackEndResourceKeys.PROJECT_MANAGER)
             };
             grvData.HeaderTexts = lstTableHeader;
-        }
-
-        protected void btnExport_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        protected void lbtAdd_Click(object sender, EventArgs e)
-        {
-
         }
 
         public void InitControls()
@@ -110,7 +103,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 upMain.Update();
                 pnlButtons.Update();
             }
-            catch (Exception exc) 
+            catch (Exception exc)
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
@@ -127,7 +120,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             // MasterTemplate master = Page.Master as MasterTemplate;
             // master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
             // upSearchTagBox.Update();
-            
+
             // Temporary rebind until search logic is fully implemented
             Rebind();
         }
@@ -144,6 +137,38 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             grvData.CurrentPageIndex = 1;
             grvData.Rebind();
         }
+
+        protected void btnExport_Click(object sender, EventArgs e)
+        {
+            //if (!this.CURRENT_PAGE.IsExportExcel)
+            //{
+            //    ShowAccessDeniedNotify();
+            //    return;
+            //}
+
+            //int totalRows = 0;
+            //int rowIndex = (grvData.CurrentPageIndex - 1) * grvData.CurrentPageSize;
+            //int pageSize = rowIndex + grvData.CurrentPageSize;
+            ////----------------------------------------------
+            //DataTable dt = null;
+            //if (grvData.GridSearchType == GridSearchType.Single)
+            //{
+
+            //}
+        }
+
+        protected void lbtAdd_Click(object sender, EventArgs e)
+        {
+            if (!this.CURRENT_PAGE.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+            if (NewProjectHandlerCallBack != null)
+                NewProjectHandlerCallBack(Guid.Empty, EventArgs.Empty);
+        }
+
+        
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
