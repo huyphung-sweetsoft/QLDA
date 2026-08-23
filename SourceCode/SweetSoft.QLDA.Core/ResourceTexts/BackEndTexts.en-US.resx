@@ -1056,4 +1056,16 @@
   <data name="EMPLOYEE_NAME" xml:space="preserve">
     <value>&#x8;</value>
   </data>
+  <data name="CONTRACT" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+  <data name="CONTRACT_NUMBER" xml:space="preserve">
+    <value>&#x8;Contract number</value>
+  </data>
+  <data name="CONTRACT_VALUE" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="SIGN_DATE" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
 </root>

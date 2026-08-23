@@ -600,7 +600,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.SelectedIndex = -1;
         }
 
-        public void BindDuAnStatus(BootstrapDropdown dropdown)
+        public void BindDuAnStatus(ExtraDropdown dropdown)
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
@@ -609,7 +609,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             {
                 string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
                 string value = ((byte)status).ToString();
-                dropdown.AddItem(text, value);
+                dropdown.Items.Add(new ListItem(text, value));
             }
 
             dropdown.SelectedIndex = -1;

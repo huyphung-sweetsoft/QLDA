@@ -6,6 +6,7 @@ using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.Utils;
+using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -35,12 +36,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             txtSearchSingle.SearchTagItemKey = GetResourceText(BackEndResourceKeys.KEYWORD);
             //-------------------------------------------------
+            lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
+            btnExport.ToolTip = btnExport.Text = GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
+            //-------------------------------------------------
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
                 GetResourceText(BackEndResourceKeys.PROJECT_IDENTIFIED),
                 GetResourceText(BackEndResourceKeys.PROJECT_NAME),
-                GetResourceText(BackEndResourceKeys.CUSTOMER_NAME),
+                GetResourceText(BackEndResourceKeys.CUSTOMER),
                 GetResourceText(BackEndResourceKeys.PROJECT_MANAGER)
             };
             grvData.HeaderTexts = lstTableHeader;
@@ -49,9 +53,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         public void InitControls()
         {
             ApplyControlsText();
-            grvData.CurrentPageIndex = 1;
-            grvData.CurrentPageSize = 10;
-            grvData.CurrentSortExpression = "MaDuAn";
+
+            lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
+            
+            grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
+            grvData.CurrentSortExpression = TblDuAn.Columns.MaDuAn;
             grvData.CurrentSortDerection = "ASC";
 
             tagOther.Visible = true;

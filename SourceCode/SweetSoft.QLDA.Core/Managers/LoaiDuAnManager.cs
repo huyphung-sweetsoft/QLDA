@@ -18,7 +18,7 @@ namespace SweetSoft.QLDA.Core.Managers
         private readonly LoaiDuAnRepository _repository;
         private readonly AuditManager _auditManager;
 
-        public LoaiDuAnManager(IAppContext applicationContext) : base(applicationContext)
+        public LoaiDuAnManager(IAppContext applicationContext = null) : base(applicationContext)
         {
             _auditManager = new AuditManager(GetClientInfo());
             _repository = new LoaiDuAnRepository(_auditManager);

@@ -52,13 +52,64 @@
                 <div class="col-lg-6">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_TYPE) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlLoaiDuAn" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlLoaiDuAn" Required="true" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+                    </div>
+                </div>
+                <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
+                    <ContentTemplate>
+                        <div class="row">
+                             <div class="col-lg-4">
+                                 <div class="mb-3">
+                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
+                                     <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" OnTextChanged="txtSoHopDong_TextChanged" AutoPostBack="true" Required="false"/>
+                                 </div>
+                             </div>
+                             <div class="col-lg-4">
+                                 <div class="mb-3">
+                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %></label>
+                                     <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDong" Enabled="false" Required="false"/>
+                                 </div>
+                             </div>
+                             <div class="col-lg-4">
+                                 <div class="mb-3">
+                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %></label>
+                                     <SweetSoft:ExtraTextBox runat="server" ID="txtNgayKy" Enabled="false" Required="false"/>
+                                 </div>
+                             </div>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
+                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayBatDau" SingleDatePicker="true" PlaceHolder="Select start date" />
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
+                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayKetThuc" SingleDatePicker="true" PlaceHolder="Select end date" />
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" PlaceHolder="Select status" />
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="mb-3">
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SUMMARY) %></label>
+                        <CKEditor:CKEditorControl ID="txtMoTa" Width="100%" CssClass="ck-editor"
+                            Toolbar="Full" BodyId="StatucPageContent" Language="vi-VN" AutoParagraph="false"
+                            BasePath="~/Styles/plugins/ckeditor/" runat="server" Height="200">
+                        </CKEditor:CKEditorControl>
                     </div>
                 </div>
             </div>

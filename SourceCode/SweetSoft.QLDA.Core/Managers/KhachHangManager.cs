@@ -18,7 +18,7 @@ namespace SweetSoft.QLDA.Core.Managers
         private readonly KhachHangRepository _repository;
         private readonly AuditManager _auditManager;
 
-        public KhachHangManager(IAppContext applicationContext) : base(applicationContext)
+        public KhachHangManager(IAppContext applicationContext = null) : base(applicationContext)
         {
             _auditManager = new AuditManager(GetClientInfo());
             _repository = new KhachHangRepository(_auditManager);
