@@ -888,11 +888,23 @@
   <data name="PROJECT_MANAGER" xml:space="preserve">
     <value>Nhân viên quản lý</value>
   </data>
-  <data name="PROJECT_IDENTIFIED" xml:space="preserve">
+  <data name="PROJECT_CODE" xml:space="preserve">
     <value>Mã dự án</value>
   </data>
   <data name="EMPLOYEE_NAME" xml:space="preserve">
     <value>Tên nhân viên</value>
+  </data>
+  <data name="CONTRACT" xml:space="preserve">
+    <value>Hợp đồng</value>
+  </data>
+  <data name="CONTRACT_NUMBER" xml:space="preserve">
+    <value>Số hợp đồng</value>
+  </data>
+  <data name="CONTRACT_VALUE" xml:space="preserve">
+    <value>Giá trị hợp đồng</value>
+  </data>
+  <data name="SIGN_DATE" xml:space="preserve">
+    <value>Ngày ký</value>
   </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
@@ -1023,16 +1035,7 @@
   <data name="PROJECT_MANAGEMENT" xml:space="preserve">
     <value>Quản lý dự án</value>
   </data>
-  <data name="CONTRACT" xml:space="preserve">
-    <value>Hợp đồng</value>
-  </data>
-  <data name="CONTRACT_NUMBER" xml:space="preserve">
-    <value>Số hợp đồng</value>
-  </data>
-  <data name="CONTRACT_VALUE" xml:space="preserve">
-    <value>Giá trị hợp đồng</value>
-  </data>
-  <data name="SIGN_DATE" xml:space="preserve">
-    <value>Ngày ký</value>
+  <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Mã dự án đã tồn tại</value>
   </data>
 </root>

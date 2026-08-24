@@ -1,5 +1,6 @@
 ﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Security;
@@ -65,6 +66,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             ddlKhachHang.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
             ddlLoaiDuAn.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
+            ddlNhanVienQuanLy.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
 
             txtTenDuAn.PlaceHolder = txtGiaTriHopDong.PlaceHolder
                 = txtSoHopDong.PlaceHolder
@@ -77,6 +79,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             new ControlHelpers().BindLoaiDuAn(ddlLoaiDuAn);
             new ControlHelpers().BindKhachHang(ddlKhachHang);
             new ControlHelpers().BindDuAnStatus(ddlTrangThai);
+            new ControlHelpers().BindNhanVien(ddlNhanVienQuanLy);
             lbtSubmit.Visible = false;
             //---------------------------------------------------
             txtMaDuAn.Enabled = false;
@@ -84,8 +87,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 = txtSoHopDong.Text 
                 = txtNgayKy.Text 
                 = txtMaDuAn.Text = "";
-            ddlLoaiDuAn.SelectedIndex = 0;
-            ddlKhachHang.SelectedIndex = 0;
             ddlTrangThai.SelectedIndex = 0;
             this.IdDuAn = Guid.Empty;
         }
@@ -102,7 +103,123 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
         {
+            try
+            {
+                #region Valid
+                ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
+                validationEngine.CheckValidControls(dlDetail.Controls);
 
+                Guid idLoaiDuAn = Guid.Empty;
+                Guid idKhachHang = Guid.Empty;
+                Guid idNhanVienQuanLy = Guid.Empty;
+                byte trangThai = 0;
+
+                if (string.IsNullOrWhiteSpace(txtTenDuAn.Text))
+                {
+                    validationEngine.AddErrorPrompt(txtTenDuAn.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_ENTER_THE_VALUE));
+                }
+                if (!GetValue(ddlNhanVienQuanLy, out idNhanVienQuanLy) || idNhanVienQuanLy == Guid.Empty)
+                {
+                    validationEngine.AddErrorPrompt(ddlNhanVienQuanLy.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
+                }
+                if (!GetValue(ddlKhachHang, out idKhachHang) || idKhachHang == Guid.Empty)
+                {
+                    validationEngine.AddErrorPrompt(ddlKhachHang.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
+                }
+                if (!GetValue(ddlLoaiDuAn, out idLoaiDuAn) || idLoaiDuAn == Guid.Empty)
+                {
+                    validationEngine.AddErrorPrompt(ddlLoaiDuAn.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
+                }
+                if (!byte.TryParse(ddlTrangThai.SelectedValue, out trangThai) || !Enum.IsDefined(typeof(DuAnStatus), trangThai))
+                {
+                    validationEngine.AddErrorPrompt(ddlTrangThai.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
+                }
+                if (!string.IsNullOrWhiteSpace(txtSoHopDong.Text) && IdHopDongThucHien == Guid.Empty)
+                {
+                    validationEngine.AddErrorPrompt(txtSoHopDong.ClientID, "Số hợp đồng không tồn tại.");
+                }
+                if (!dtNgayBatDau.DateValue.HasValue)
+                {
+                    validationEngine.AddErrorPrompt(dtNgayBatDau.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
+                }
+                if (!dtNgayKetThuc.DateValue.HasValue)
+                {
+                    validationEngine.AddErrorPrompt(dtNgayKetThuc.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
+                }
+
+                if (dtNgayBatDau.DateValue.HasValue && dtNgayKetThuc.DateValue.HasValue && dtNgayKetThuc.DateValue.Value.Date < dtNgayBatDau.DateValue.Value.Date)
+                {
+                    validationEngine.AddErrorPrompt(dtNgayKetThuc.ClientID, "Ngày hoàn thành dự kiến phải bằng hoặc sau ngày bắt đầu.");
+                }
+
+                if (!validationEngine.IsValid)
+                {
+                    validationEngine.ShowErrorPrompt();
+                    return;
+                }
+                #endregion
+
+                bool isAdd = true;
+                DuAnManager organiztionDuAnManager = DuAnManager.Instance;
+                TblDuAn duAn = new TblDuAn();
+                if (this.IdDuAn != Guid.Empty)
+                {
+                    duAn.IdDuAn = this.IdDuAn;
+                    if (!this.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    isAdd = false;
+                }
+                else if (!this.IsAdd)
+                {
+                    ShowAccessDeniedNotify();
+                    return;
+                }
+                duAn.TenDuAn = txtTenDuAn.Text.Trim();
+                duAn.MoTa = txtMoTa.Text.Trim();
+                duAn.IdHopDongThucHien = this.IdHopDongThucHien == Guid.Empty ? (Guid?)null : this.IdHopDongThucHien;
+                duAn.TrangThai = trangThai;
+                //duAn.TrangThai = (byte)ddlTrangThai.SelectedValue;
+                if (dtNgayBatDau.DateValue.HasValue)
+                    duAn.NgayBatDau = dtNgayBatDau.DateValue.Value;
+                if (dtNgayKetThuc.DateValue.HasValue)
+                    duAn.NgayDuKienHoanThanh = dtNgayKetThuc.DateValue.Value;
+                if (this.GetValue(ddlLoaiDuAn, out idLoaiDuAn) && idLoaiDuAn != Guid.Empty)
+                    duAn.IdLoaiDuAn = idLoaiDuAn;
+                if (this.GetValue(ddlKhachHang, out idKhachHang) && idKhachHang != Guid.Empty)
+                    duAn.IdKhachHang = idKhachHang;
+                if (this.GetValue(ddlNhanVienQuanLy, out idNhanVienQuanLy) && idNhanVienQuanLy != Guid.Empty)
+                    duAn.IdNhanVienQuanLy = idNhanVienQuanLy;
+                if (isAdd)
+                { 
+                    duAn = organiztionDuAnManager.CreateOrUpdate(duAn);
+                    if (duAn == null)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    ShowNotify(GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY));
+                }
+                else
+                {
+                    duAn = organiztionDuAnManager.CreateOrUpdate(duAn);
+                    if (duAn == null)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    ShowSuccessSaveData();
+                }
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
+                return;
+            }
+            dlDetail.CloseModal();
+            CtrlDuAn1.Rebind();
         }
 
         protected void txtSoHopDong_TextChanged(object sender, EventArgs e)

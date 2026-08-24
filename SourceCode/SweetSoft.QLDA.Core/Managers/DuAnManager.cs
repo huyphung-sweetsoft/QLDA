@@ -1,9 +1,12 @@
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
+using SweetSoft.QLDA.Core.Utils;
+using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -30,6 +33,85 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable SearchDuAns(string searchTerm, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             return _repository.SearchPaging(searchTerm, orderBy, pageNumber, pageSize, out totalRecord);
+        }
+
+        public TblDuAn CreateOrUpdate(TblDuAn dto)
+        {
+            //validate input data
+            BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
+            BusinessValidator.ThrowIfNullOrEmpty(dto.TenDuAn, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenDuAn));
+            BusinessValidator.ThrowIf(dto.IdLoaiDuAn == Guid.Empty, BackEndResourceKeys.PLEASE_SELECT_THE_VALUE, nameof(dto.IdLoaiDuAn));
+            BusinessValidator.ThrowIf(dto.IdKhachHang == Guid.Empty, BackEndResourceKeys.PLEASE_SELECT_THE_VALUE, nameof(dto.IdKhachHang));
+            BusinessValidator.ThrowIf(dto.IdNhanVienQuanLy == Guid.Empty, BackEndResourceKeys.PLEASE_SELECT_THE_VALUE, nameof(dto.IdNhanVienQuanLy));
+            BusinessValidator.ThrowIf(dto.NgayDuKienHoanThanh < dto.NgayBatDau, BackEndResourceKeys.INVALID_DATA, nameof(dto.NgayDuKienHoanThanh));
+
+            if (dto.IdHopDongThucHien.HasValue && dto.IdHopDongThucHien != Guid.Empty)
+            {
+                TblHopDongThucHien hopDong = HopDongThucHienManager.Instance.GetHopDongById(dto.IdHopDongThucHien.Value);
+                BusinessValidator.ThrowIfNull(hopDong, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.NotFound);
+
+                bool hopDongDaSuDung = _repository.IsContractUsed(dto.IdHopDongThucHien.Value, dto.IdDuAn);
+                BusinessValidator.ThrowIfNull(hopDongDaSuDung, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.Conflict);
+            }
+            else
+            {
+                dto.IdHopDongThucHien = null;
+            }
+
+            TblDuAn duAn;
+
+            if (dto.IdDuAn != Guid.Empty)
+            {
+                duAn = _repository.GetById(dto.IdDuAn);
+                BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdDuAn), ErrorCodes.NotFound);
+
+                ObjectHelper.CopyBusinessProperties(
+                     dto,
+                     duAn,
+                     x => x.IdDuAn,
+                     x => x.MaDuAn,
+                     x => x.TrangThai,
+                     x => x.NgayHoanThanhThucTe,
+                     x => x.DaXoa,
+                     x => x.NguoiTao,
+                     x => x.NgayTao,
+                     x => x.NguoiCapNhat,
+                     x => x.NgayCapNhat,
+                     x => x.IdHopDongThucHien);
+
+                Guid? idHopDong = dto.IdHopDongThucHien;
+
+                duAn.IdHopDongThucHien = idHopDong.HasValue && idHopDong.Value != Guid.Empty ? idHopDong : null;
+                duAn.NguoiCapNhat = SweetContext.Current.UserName;
+                duAn.NgayCapNhat = DateTime.UtcNow;
+                duAn = _repository.Update(duAn);
+
+                BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                return duAn;
+            }
+            else
+            {
+                duAn = dto.Clone() as TblDuAn;
+                BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.INVALID_DATA);
+
+                duAn.IdDuAn = UUIDv7.NewGuid();
+                duAn.MaDuAn = GenerateProjectCode();
+                BusinessValidator.ThrowIf(_repository.GetByMaDuAn(duAn.MaDuAn) != null, BackEndResourceKeys.INVALID_DATA, nameof(duAn.MaDuAn), ErrorCodes.Conflict);
+                duAn.DaXoa = false;
+                duAn.NguoiTao = SweetContext.Current.UserName;
+                duAn.NgayTao = DateTime.UtcNow;
+                duAn.NguoiCapNhat = null;
+                duAn.NgayCapNhat = null;
+
+                duAn = _repository.Insert(duAn);
+                BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                return duAn;
+            }
+        }
+
+        public string GenerateProjectCode()
+        {
+            return _repository.GenerateMaDuAn();
         }
     }
 }

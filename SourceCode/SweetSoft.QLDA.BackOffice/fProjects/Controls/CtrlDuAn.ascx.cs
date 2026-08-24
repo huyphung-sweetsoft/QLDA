@@ -42,7 +42,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.PROJECT_IDENTIFIED),
+                GetResourceText(BackEndResourceKeys.PROJECT_CODE),
                 GetResourceText(BackEndResourceKeys.PROJECT_NAME),
                 GetResourceText(BackEndResourceKeys.CUSTOMER),
                 GetResourceText(BackEndResourceKeys.PROJECT_MANAGER)

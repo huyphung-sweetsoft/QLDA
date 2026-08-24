@@ -70,5 +70,86 @@ namespace SweetSoft.QLDA.Core.Respositories
             InlineQueryHelpers.GetTotal(ref dt, out totalRecord);
             return dt;
         }
+
+        public override TblDuAn Insert(TblDuAn item)
+        {
+            item.Save();
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, Guid.Parse(item.GetColumnValue("IdDuAn").ToString())).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log CREATE action for TblDuAn");
+                }
+            });
+            return item;
+        }
+
+        public override TblDuAn Update(TblDuAn duAn)
+        {
+            Guid id = Guid.Parse(duAn.GetColumnValue("IdDuAn").ToString());
+            TblDuAn itemOld = GetById(id);
+            duAn.Save();
+            string updatedBy = string.Empty;
+            try
+            {
+                updatedBy = duAn.GetColumnValue("NguoiCapNhat")?.ToString();
+            }
+            catch { }
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogChangesAsync(itemOld, duAn, _tableName, id, updatedBy).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log changes for TblDuAn");
+                }
+            });
+            return duAn;
+        }
+        public override TblDuAn GetById(Guid id)
+        {
+            return new Select()
+                .From(TblDuAn.Schema)
+                .Where(TblDuAn.IdDuAnColumn).IsEqualTo(id)
+                .And(TblDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblDuAn>();
+        }
+        public TblDuAn GetByMaDuAn(string maDuAn)
+        {
+            if (string.IsNullOrWhiteSpace(maDuAn))
+                return null;
+            return new Select()
+                .From(TblDuAn.Schema)
+                .Where(TblDuAn.MaDuAnColumn).IsEqualTo(maDuAn.Trim())
+                .And(TblDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblDuAn>();
+        }
+
+        public string GenerateMaDuAn()
+        {
+            string sql = @"SELECT NEXT VALUE FOR dbo.SeqMaDuAn;";
+            int nextNumber = new InlineQuery().ExecuteScalar<int>(sql);
+            return string.Format("PRJ-{0:D3}", nextNumber);
+        }
+
+        public bool IsContractUsed(Guid idHopDongThucHien, Guid idDuAn)
+        {
+            Select select = new Select();
+            select.From(TblDuAn.Schema)
+                .Where(TblDuAn.IdHopDongThucHienColumn).IsEqualTo(idHopDongThucHien)
+                .And(TblDuAn.DaXoaColumn).IsEqualTo(false);
+            if (idDuAn != Guid.Empty)
+            {
+                select.And(TblDuAn.IdDuAnColumn).IsNotEqualTo(idDuAn);
+            }
+            TblDuAn duAn = select.ExecuteSingle<TblDuAn>();
+            return duAn != null;
+        }
     }
 }

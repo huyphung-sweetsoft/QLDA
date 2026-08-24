@@ -266,12 +266,13 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROJECT_NAME = "PROJECT_NAME";
         public const string CUSTOMER_NAME = "CUSTOMER_NAME";
         public const string PROJECT_MANAGER = "PROJECT_MANAGER";
-        public const string PROJECT_IDENTIFIED = "PROJECT_IDENTIFIED";
+        public const string PROJECT_CODE = "PROJECT_CODE";
         public const string EMPLOYEE_NAME = "EMPLOYEE_NAME";
         public const string CONTRACT = "CONTRACT";
         public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
         public const string SIGN_DATE = "SIGN_DATE";
+        public const string PROJECT_CODE_ALREADY_EXISTS = "PROJECT_CODE_ALREADY_EXISTS";
 
         ///---------------------------------------------------
         // Class

@@ -24,6 +24,10 @@ namespace SweetSoft.QLDA.Core.Managers
             _repository = new HopDongThucHienRepository(_auditManager);
         }
 
+        public TblHopDongThucHien GetHopDongById(Guid id)
+        {
+            return _repository.GetById(id);
+        }
         public TblHopDongThucHien GetBySoHopDong(string soHopDong)
         {
             return _repository.GetBySoHopDong(soHopDong);

@@ -653,6 +653,19 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataSource = tblKhachHangs;
             ddl.DataBind();
         }
+
+        public void BindNhanVien(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+            if (tblNhanViens == null)
+                tblNhanViens = new List<TblNhanVien>();
+            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
+            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
+            ddl.DataSource = tblNhanViens;
+            ddl.DataBind();
+        }
         #endregion
     }
 }

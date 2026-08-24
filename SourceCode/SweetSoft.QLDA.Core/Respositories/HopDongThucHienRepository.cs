@@ -15,6 +15,15 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
         }
 
+        public TblHopDongThucHien GetById(Guid id)
+        {
+            return new Select()
+                .From(TblHopDongThucHien.Schema)
+                .Where(TblHopDongThucHien.IdHopDongThucHienColumn).IsEqualTo(id)
+                .And(TblHopDongThucHien.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblHopDongThucHien>();
+        }
+
         public TblHopDongThucHien GetBySoHopDong(string soHopDong)
         {
             if (string.IsNullOrWhiteSpace(soHopDong))

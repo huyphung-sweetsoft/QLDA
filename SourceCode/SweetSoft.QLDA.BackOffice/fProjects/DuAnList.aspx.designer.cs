@@ -141,6 +141,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThai;
 
         /// <summary>
+        /// ddlNhanVienQuanLy control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVienQuanLy;
+
+        /// <summary>
         /// txtMoTa control.
         /// </summary>
         /// <remarks>
