@@ -9,6 +9,24 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
     /// </summary>
     public class BackEndResourceKeys
     {
+        // Document management
+        public const string DOCUMENT_MANAGEMENT = "DOCUMENT_MANAGEMENT";
+        public const string DOCUMENT_GROUP = "DOCUMENT_GROUP";
+        public const string DOCUMENT_GROUP_LIST = "DOCUMENT_GROUP_LIST";
+        public const string DOCUMENT_GROUP_NAME = "DOCUMENT_GROUP_NAME";
+        public const string DESCRIPTION = "DESCRIPTION";
+        public const string DISPLAY_ORDER = "DISPLAY_ORDER";
+        public const string DOCUMENT_TYPE = "DOCUMENT_TYPE";
+        public const string DOCUMENT_TYPE_LIST = "DOCUMENT_TYPE_LIST";
+        public const string DOCUMENT_TYPE_NAME = "DOCUMENT_TYPE_NAME";
+        public const string ALLOW_SIGNING = "ALLOW_SIGNING";
+        public const string DEFAULT_SIGNING_METHOD = "DEFAULT_SIGNING_METHOD";
+        public const string ALLOW_SEND_CUSTOMER = "ALLOW_SEND_CUSTOMER";
+        public const string ALLOW_PHYSICAL_STORAGE = "ALLOW_PHYSICAL_STORAGE";
+        public const string PAPER_SIGNING = "PAPER_SIGNING";
+        public const string EXTERNAL_DIGITAL_SIGNING = "EXTERNAL_DIGITAL_SIGNING";
+        public const string SELECT_DOCUMENT_GROUP = "SELECT_DOCUMENT_GROUP";
+
         public const string ADVANCED_SEARCH = "ADVANCED_SEARCH";
         public const string NO_DATA = "NO_DATA";
         public const string CHANGE_PASSWORD = "CHANGE_PASSWORD";

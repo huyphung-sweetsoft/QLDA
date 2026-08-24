@@ -1038,4 +1038,52 @@
   <data name="COMPETITION_NAME" xml:space="preserve">
     <value>Competition name</value>
   </data>
+  <data name="DOCUMENT_MANAGEMENT" xml:space="preserve">
+    <value>Document management</value>
+  </data>
+  <data name="DOCUMENT_GROUP" xml:space="preserve">
+    <value>Document group</value>
+  </data>
+  <data name="DOCUMENT_GROUP_LIST" xml:space="preserve">
+    <value>Document group list</value>
+  </data>
+  <data name="DOCUMENT_GROUP_NAME" xml:space="preserve">
+    <value>Group name</value>
+  </data>
+  <data name="DESCRIPTION" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="DISPLAY_ORDER" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="DOCUMENT_TYPE" xml:space="preserve">
+    <value>Document type</value>
+  </data>
+  <data name="DOCUMENT_TYPE_LIST" xml:space="preserve">
+    <value>Document type list</value>
+  </data>
+  <data name="DOCUMENT_TYPE_NAME" xml:space="preserve">
+    <value>Type name</value>
+  </data>
+  <data name="ALLOW_SIGNING" xml:space="preserve">
+    <value>Requires signing</value>
+  </data>
+  <data name="DEFAULT_SIGNING_METHOD" xml:space="preserve">
+    <value>Default signing method</value>
+  </data>
+  <data name="ALLOW_SEND_CUSTOMER" xml:space="preserve">
+    <value>Requires sending to customer</value>
+  </data>
+  <data name="ALLOW_PHYSICAL_STORAGE" xml:space="preserve">
+    <value>Requires physical storage</value>
+  </data>
+  <data name="PAPER_SIGNING" xml:space="preserve">
+    <value>Paper signing</value>
+  </data>
+  <data name="EXTERNAL_DIGITAL_SIGNING" xml:space="preserve">
+    <value>External digital signing</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP" xml:space="preserve">
+    <value>Select document group</value>
+  </data>
 </root>
