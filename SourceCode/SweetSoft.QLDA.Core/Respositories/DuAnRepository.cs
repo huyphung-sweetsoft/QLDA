@@ -112,6 +112,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             });
             return duAn;
         }
+
         public override TblDuAn GetById(Guid id)
         {
             return new Select()

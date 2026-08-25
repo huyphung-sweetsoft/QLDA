@@ -108,6 +108,21 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
+        public bool Delete(TblDuAn dto)
+        {
+            BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
+            TblDuAn duAn = _repository.GetById(dto.IdDuAn);
+            BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdDuAn), ErrorCodes.NotFound);
+
+            duAn.DaXoa = true;
+            duAn.NguoiCapNhat = SweetContext.Current.UserName;
+            duAn.NgayCapNhat = DateTime.UtcNow;
+            duAn = _repository.Update(duAn);
+            BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+
+            return true;
+        }
+
         public TblDuAn GetDuAnById(Guid id)
         {
             return _repository.GetById(id);

@@ -269,6 +269,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             CtrlDuAn1.Rebind();
         }
 
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            CtrlDuAn1.ConfirmRequest(e);
+        }
+
         protected void txtSoHopDong_TextChanged(object sender, EventArgs e)
         {
             IdHopDongThucHien = Guid.Empty;

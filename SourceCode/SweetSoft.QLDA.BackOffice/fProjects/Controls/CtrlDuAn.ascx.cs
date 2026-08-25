@@ -38,6 +38,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             }
         }
 
+        protected bool IsDelete
+        {
+            get
+            {
+                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Delete, ModuleKeys.Project))
+                    return true;
+                return false;
+            }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             RegisterAsyncButton();
@@ -180,6 +190,38 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     Response.Redirect(RewriteURLHelper.ProjectDetail(idDuAn));
                     Context.ApplicationInstance.CompleteRequest();
                     break;
+                case "ITEM_DELETE":
+                    if (!this.CURRENT_PAGE.IsDelete)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    rowIndex = 0;
+                    if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                    else
+                        rowIndex = Convert.ToInt32(e.CommandArgument);
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idDuAn))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    TblDuAn duAn = DuAnManager.Instance.GetDuAnById(idDuAn);
+                    if (duAn == null)
+                    {
+                        ShowInvalidNotFoundData();
+                        return;
+                    }
+
+                    ConfirmResult result = new ConfirmResult();
+                    result.CommandName = "PROJECT_DELETE";
+                    result.Value = duAn;
+                    this.CURRENT_PAGE.CurrentConfirmResult = result;
+                    MessageBox msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION)
+                        , string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), duAn.TenDuAn)
+                        , MSGButton.DeleteCancel, MSGIcon.Error);
+                    OpenMessageBox(msg, result, false, false);
+                    break;
             }
         }
 
@@ -237,7 +279,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 NewProjectHandlerCallBack(Guid.Empty, EventArgs.Empty);
         }
 
-        
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
@@ -254,6 +295,41 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             //{
             //    ShowNotify(exc.Message, MSGType.Error);
             //}
+        }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null)
+            {
+                if (e.Submit && e.CommandName != null)
+                {
+                    if (e.CommandName.Contains("PROJECT_DELETE"))
+                    {
+                        TblDuAn duAn = e.Value as TblDuAn;
+                        if (duAn == null)
+                        {
+                            ShowInvalidNotFoundData();
+                            return;
+                        }
+                        try
+                        {
+                            DuAnManager.Instance.Delete(duAn);
+                            ShowSuccessDeleteData();
+                            grvData.CurrentPageIndex = 1;
+                            grvData.Rebind();
+                        }
+                        catch (Exception exc)
+                        {
+                            ShowNotify(exc.Message, MSGType.Error);
+                        }
+                    }
+                }
+                else
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+            }
         }
     }
 }
