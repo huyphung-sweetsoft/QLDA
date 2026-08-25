@@ -70,7 +70,6 @@ namespace SweetSoft.QLDA.Core.Managers
                      duAn,
                      x => x.IdDuAn,
                      x => x.MaDuAn,
-                     x => x.TrangThai,
                      x => x.NgayHoanThanhThucTe,
                      x => x.DaXoa,
                      x => x.NguoiTao,
@@ -80,7 +79,7 @@ namespace SweetSoft.QLDA.Core.Managers
                      x => x.IdHopDongThucHien);
 
                 Guid? idHopDong = dto.IdHopDongThucHien;
-
+                duAn.TrangThai = dto.TrangThai;
                 duAn.IdHopDongThucHien = idHopDong.HasValue && idHopDong.Value != Guid.Empty ? idHopDong : null;
                 duAn.NguoiCapNhat = SweetContext.Current.UserName;
                 duAn.NgayCapNhat = DateTime.UtcNow;
@@ -107,6 +106,11 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 return duAn;
             }
+        }
+
+        public TblDuAn GetDuAnById(Guid id)
+        {
+            return _repository.GetById(id);
         }
 
         public string GenerateProjectCode()

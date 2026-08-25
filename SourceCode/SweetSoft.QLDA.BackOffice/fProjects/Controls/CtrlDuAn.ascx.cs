@@ -18,7 +18,25 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
     public partial class CtrlDuAn : BaseAdminUserControl
     {
         public EventHandler NewProjectHandlerCallBack;
+        public EventHandler EditProjectHandlerCallBack;
 
+        protected bool IsEdit
+        {
+            get
+            {
+                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Update, ModuleKeys.Project))
+                    return true;
+                return false;
+            }
+        }
+
+        protected bool IsView
+        {
+            get
+            {
+                return this.CURRENT_PAGE.IsView; 
+            }
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -117,7 +135,52 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-
+            switch (e.CommandName)
+            {
+                case "ITEM_EDIT":
+                    if (!this.CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    //------------------------------------------
+                    int rowIndex = 0;
+                    if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                    else
+                        rowIndex = Convert.ToInt32(e.CommandArgument);
+                    Guid idDuAn = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idDuAn))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    if (EditProjectHandlerCallBack != null)
+                    {
+                        EditProjectHandlerCallBack(idDuAn, EventArgs.Empty);
+                    }
+                    break;
+                case "ITEM_DETAIL":
+                    if (!this.CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify(); 
+                        return;
+                    }
+                    //------------------------------------------
+                    rowIndex = 0;
+                    if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                    else
+                        rowIndex = Convert.ToInt32(e.CommandArgument);
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idDuAn))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    Response.Redirect(RewriteURLHelper.ProjectDetail(idDuAn));
+                    Context.ApplicationInstance.CompleteRequest();
+                    break;
+            }
         }
 
 

@@ -70,7 +70,13 @@
                             <%# Eval("TenNhanVien") %>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    
+                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
+                        <ItemTemplate>
+                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
+                                ID="lbtEdit" CommandName="ITEM_EDIT" CssClass="btn-grid-action text-decoration-underline"
+                                ButtonIcon="fas fa-pencil-alt"></SweetSoft:SmartLinkButton>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                 </Columns>
                 <EmptyDataTemplate>
                     <%= GetResourceText(BackEndResourceKeys.NO_DATA) %>

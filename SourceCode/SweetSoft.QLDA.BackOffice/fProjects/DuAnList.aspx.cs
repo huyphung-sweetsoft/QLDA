@@ -54,6 +54,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlDuAn1.NewProjectHandlerCallBack += NewProjectAction;
+            CtrlDuAn1.EditProjectHandlerCallBack += EditProjectAction;
             if (!IsPostBack)
             {
                 CtrlDuAn1.InitControls();
@@ -83,10 +84,13 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             lbtSubmit.Visible = false;
             //---------------------------------------------------
             txtMaDuAn.Enabled = false;
-            txtTenDuAn.Text = txtGiaTriHopDong.Text 
+            txtMaDuAn.Text = txtTenDuAn.Text 
+                = txtGiaTriHopDong.Text 
                 = txtSoHopDong.Text 
                 = txtNgayKy.Text 
                 = txtMaDuAn.Text = "";
+            dtNgayBatDau.DateValue = null;
+            dtNgayKetThuc.DateValue = null;
             ddlTrangThai.SelectedIndex = 0;
             this.IdDuAn = Guid.Empty;
         }
@@ -99,6 +103,49 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
             dlDetail.OpenModal(true);
             
+        }
+
+        private void EditProjectAction(object sender, EventArgs e)
+        {
+            if (sender == null)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+            Guid idDuAn = (Guid)sender;
+            if (idDuAn == Guid.Empty)
+            {
+                ShowInvalidDataError(); 
+                return;
+            }
+            RefreshProjectInfo();
+            lbtSubmit.Visible = this.IsEdit;
+            TblDuAn duAn = DuAnManager.Instance.GetDuAnById(idDuAn);
+            if (duAn == null || duAn.DaXoa)
+            {
+                Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), false);
+                return;
+            }
+            this.IdDuAn = duAn.IdDuAn;
+            txtMaDuAn.Text = duAn.MaDuAn;
+            txtMaDuAn.Enabled = false;
+            txtTenDuAn.Text = duAn.TenDuAn;
+            txtMoTa.Text = duAn.MoTa;
+            ddlLoaiDuAn.SelectedValue = duAn.IdLoaiDuAn.ToString();
+            ddlKhachHang.SelectedValue = duAn.IdKhachHang.ToString();
+            ddlNhanVienQuanLy.SelectedValue = duAn.IdNhanVienQuanLy.ToString();
+            ddlTrangThai.SelectedValue = duAn.TrangThai.ToString();
+            dtNgayBatDau.DateValue = duAn.NgayBatDau;
+            dtNgayKetThuc.DateValue = duAn.NgayDuKienHoanThanh;
+
+            LoadHopDongThucHien(duAn);
+
+            lbtSubmit.Visible = this.IsEdit;
+
+            lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
+
+            dlDetail.Title = GetResourceText(BackEndResourceKeys.UPDATE);
+            dlDetail.OpenModal(true);
         }
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
@@ -244,6 +291,30 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 upHopDong.Update();
                 return;
             }
+        }
+
+        private void LoadHopDongThucHien(TblDuAn duAn)
+        {
+            this.IdHopDongThucHien = Guid.Empty;
+
+            txtSoHopDong.Text = "";
+            txtGiaTriHopDong.Text = "";
+            txtNgayKy.Text = "";
+
+            if (!duAn.IdHopDongThucHien.HasValue || duAn.IdHopDongThucHien.Value == Guid.Empty)
+            {
+                return;
+            }
+
+            TblHopDongThucHien hd = HopDongThucHienManager.Instance.GetHopDongById(duAn.IdHopDongThucHien.Value);
+
+            if (hd == null)
+                return;
+
+            this.IdHopDongThucHien = hd.IdHopDongThucHien;
+            txtSoHopDong.Text = hd.SoHopDong;
+            txtGiaTriHopDong.Text = hd.GiaTriHopDong.ToString();
+            txtNgayKy.Text = hd.NgayKy.ToString();
         }
     }
 }
