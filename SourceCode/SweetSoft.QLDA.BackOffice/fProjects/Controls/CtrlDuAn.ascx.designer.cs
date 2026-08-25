@@ -15,6 +15,51 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
     {
 
         /// <summary>
+        /// upnlSearchDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlSearchDefault;
+
+        /// <summary>
+        /// pnlSearchDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSearchDefault;
+
+        /// <summary>
+        /// ddlSearchStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchStatus;
+
+        /// <summary>
+        /// ddlSearchProjectType control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchProjectType;
+
+        /// <summary>
+        /// ddlSearchProjectManager control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchProjectManager;
+
+        /// <summary>
         /// txtSearchSingle control.
         /// </summary>
         /// <remarks>

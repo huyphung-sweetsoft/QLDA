@@ -615,7 +615,22 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.SelectedIndex = -1;
         }
 
-        public void BindLoaiDuAn(BootstrapDropdown ddl)
+        public void BindDuAnStatus(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
+            {
+                string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
+                string value = ((byte)status).ToString();
+                dropdown.AddItem(text, value);
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindLoaiDuAn(ExtraDropdown ddl)
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = "";
@@ -628,7 +643,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataBind();
         }
 
-        public void BindLoaiDuAn(ExtraDropdown ddl)
+        public void BindLoaiDuAn(BootstrapDropdown ddl)
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = "";
@@ -655,6 +670,19 @@ namespace SweetSoft.QLDA.BackOffice.Common
         }
 
         public void BindNhanVien(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+            if (tblNhanViens == null)
+                tblNhanViens = new List<TblNhanVien>();
+            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
+            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
+            ddl.DataSource = tblNhanViens;
+            ddl.DataBind();
+        }
+
+        public void BindNhanVien(BootstrapDropdown ddl)
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";

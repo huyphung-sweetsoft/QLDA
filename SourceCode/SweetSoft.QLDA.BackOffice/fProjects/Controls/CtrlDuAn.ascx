@@ -3,10 +3,47 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <div class="card-header">
     <div class="d-flex flex-column flex-xl-row gap-3">
+        <asp:UpdatePanel runat="server" ID="upnlSearchDefault" UpdateMode="Conditional">
+            <ContentTemplate>
+                <asp:Panel runat="server" ID="pnlSearchDefault">
+                    <div class="d-flex">
+                        <SweetSoft:BootstrapDropdown ID="ddlSearchStatus" runat="server"
+                            Text="Trạng thái"
+                            AllowClear="true"
+                            AutoPostBack="true"
+                            SearchColumn="TrangThai"
+                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                        </SweetSoft:BootstrapDropdown>
+                        <SweetSoft:BootstrapDropdown ID="ddlSearchProjectType" runat="server"
+                            Text="Loại dự án"
+                            AllowClear="true"
+                            EnableSearch="true"
+                            ValueIsOfTypeGUID="true"
+                            SearchColumn="IdLoaiDuAn"
+                            SearchPlaceholder="Tìm loại dự án..."
+                            NoResultsText="Không tìm thấy loại dự án"
+                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                        </SweetSoft:BootstrapDropdown>
+                        <SweetSoft:BootstrapDropdown
+                            runat="server"
+                            ID="ddlSearchProjectManager"
+                            Text="Project Manager"
+                            AllowClear="true"
+                            EnableSearch="true"
+                            ValueIsOfTypeGUID="true"
+                            SearchColumn="IdNhanVienQuanLy"
+                            SearchPlaceholder="Tìm nhân viên..."
+                            NoResultsText="Không tìm thấy nhân viên"
+                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                        </SweetSoft:BootstrapDropdown>
+                    </div>
+                </asp:Panel>
+            </ContentTemplate>
+        </asp:UpdatePanel>
         <div class="input-group max-w-500">
-            <a class="btn btn-info font-mobile-small btn-search-filter" onclick="CMSMasterJs.ShowOffcanvasSearch();" href="javascript:;">
-                 <i class='fas fa-filter me-1'></i><%= GetResourceText(BackEndResourceKeys.FILTER) %>
-            </a>
             <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" PlaceHolder="Nhập mã dự án, tên dự án,..." CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
             <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
         </div>

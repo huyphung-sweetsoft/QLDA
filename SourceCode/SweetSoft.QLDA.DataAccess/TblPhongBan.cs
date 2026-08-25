@@ -364,25 +364,6 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		private SweetSoft.QLDA.DataAccess.TblChucDanhCollection colTblChucDanhRecords;
-		public SweetSoft.QLDA.DataAccess.TblChucDanhCollection TblChucDanhRecords()
-		{
-			if(colTblChucDanhRecords == null)
-			{
-				colTblChucDanhRecords = new SweetSoft.QLDA.DataAccess.TblChucDanhCollection().Where(TblChucDanh.Columns.IdPhongBan, IdPhongBan).Load();
-				colTblChucDanhRecords.ListChanged += new ListChangedEventHandler(colTblChucDanhRecords_ListChanged);
-			}
-			return colTblChucDanhRecords;
-		}
-				
-		void colTblChucDanhRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblChucDanhRecords[e.NewIndex].IdPhongBan = IdPhongBan;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblNhanVienCollection colTblNhanVienRecords;
 		public SweetSoft.QLDA.DataAccess.TblNhanVienCollection TblNhanVienRecords()
 		{
@@ -583,17 +564,6 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
-                if (colTblChucDanhRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblChucDanh item in colTblChucDanhRecords)
-                    {
-                        if (item.IdPhongBan == null ||item.IdPhongBan != IdPhongBan)
-                        {
-                            item.IdPhongBan = IdPhongBan;
-                        }
-                    }
-               }
-		
                 if (colTblNhanVienRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblNhanVien item in colTblNhanVienRecords)
@@ -613,11 +583,6 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
-                if (colTblChucDanhRecords != null)
-                {
-                    colTblChucDanhRecords.SaveAll();
-               }
-		
                 if (colTblNhanVienRecords != null)
                 {
                     colTblNhanVienRecords.SaveAll();

@@ -62,7 +62,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void ApplyControlsText()
         {
-            txtSearchSingle.SearchTagItemKey = GetResourceText(BackEndResourceKeys.KEYWORD);
+            txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
+            ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
+            ddlSearchProjectType.SearchTagItemText = GetResourceText(BackEndResourceKeys.PROJECT_TYPE);
+            ddlSearchProjectManager.SearchTagItemText = GetResourceText(BackEndResourceKeys.PROJECT_MANAGER);
             //-------------------------------------------------
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
             btnExport.ToolTip = btnExport.Text = GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
@@ -81,16 +84,35 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         public void InitControls()
         {
             ApplyControlsText();
+            AssignSearchColumns();
+
+            ControlHelpers controlHelpers = new ControlHelpers();
+            controlHelpers.BindDuAnStatus(ddlSearchStatus);
+            controlHelpers.BindLoaiDuAn(ddlSearchProjectType);
+            controlHelpers.BindNhanVien(ddlSearchProjectManager);
+
+            txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
 
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
+
+            MasterTemplate master = Page.Master as MasterTemplate;
+            master.LoadSessionLastSearch(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
             
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = TblDuAn.Columns.MaDuAn;
             grvData.CurrentSortDerection = "ASC";
 
-            tagOther.Visible = true;
             grvData.Rebind();
             pnlButtons.Update();
+            upnlSearchDefault.Update();
+            upSearchTagBox.Update();
+        }
+
+        private void AssignSearchColumns()
+        {
+            ddlSearchProjectManager.SearchColumn = TblDuAn.Columns.IdNhanVienQuanLy;
+            ddlSearchProjectType.SearchColumn = TblDuAn.Columns.IdLoaiDuAn;
+            ddlSearchStatus.SearchColumn = TblDuAn.Columns.TrangThai;
         }
 
         protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
@@ -109,7 +131,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 int pageSize = rowIndex + grid.CurrentPageSize;
                 //--------------------------------------------
                 DataTable dt = null;
-                dt = DuAnManager.Instance.SearchDuAns(string.Empty, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
+                ControlHelpers controlHelpers = new ControlHelpers();
+                keyValueSearchs = controlHelpers.GetControlValues(pnlSearchDefault);
+                dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -225,22 +250,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             }
         }
 
-
-        protected void btnSearch_ServerClick(object sender, EventArgs e)
-        {
-            // MasterTemplate master = Page.Master as MasterTemplate;
-            // master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
-            // upSearchTagBox.Update();
-
-            // Temporary rebind until search logic is fully implemented
-            Rebind();
-        }
-
         protected void ctrlGridviewPaging_PageChanged(object sender, GridviewCustomPageChangeArgs e)
         {
             grvData.CurrentPageSize = e.CurrentPageSize;
             grvData.CurrentPageIndex = e.CurrentPageNumber;
             grvData.Rebind();
+        }
+
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
+            upSearchTagBox.Update();
         }
 
         public void Rebind()
@@ -279,22 +300,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 NewProjectHandlerCallBack(Guid.Empty, EventArgs.Empty);
         }
 
+        protected void btnSearch_ServerClick(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
+            upSearchTagBox.Update();
+            upnlSearchDefault.Update();
+        }
+
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
-            //try
-            //{
-            //    MasterTemplate master = Page.Master as MasterTemplate;
-            //    GridSearchType? searchType;
-            //    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
-            //    pnlSearch.Update();
-            //    string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
-            //    ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
-            //}
-            //catch (Exception exc)
-            //{
-            //    ShowNotify(exc.Message, MSGType.Error);
-            //}
+            try
+            {
+                MasterTemplate master = Page.Master as MasterTemplate;
+                GridSearchType? searchType;
+                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, grvData, txtSearchSingle, out searchType);
+                upnlSearchDefault.Update();
+                upSearchTagBox.Update();
+                string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
+                ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
+            }
         }
 
         public override void ConfirmRequest(ConfirmResult e)
