@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             get
             {
-                return ModuleKeys.Project;
+                return ModuleKeys.Projects;
             }
         }
         private Guid IdHopDongThucHien
@@ -59,6 +59,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             txtSoHopDong.EnterSubmitClientID = btnSearchHopDong.ClientID;
             if (!IsPostBack)
             {
+                if (!this.IsView)
+                    Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
+                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.PROJECT_LIST));
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PROJECT_LIST);
+                Navigation1.keyValuePairUrls = new Dictionary<string, string>()
+                {
+                    {RewriteURLHelper.Projects, GetResourceText(BackEndResourceKeys.PROJECT_LIST) }
+                };
                 CtrlDuAn1.InitControls();
                 ApplyControlsText();
             }

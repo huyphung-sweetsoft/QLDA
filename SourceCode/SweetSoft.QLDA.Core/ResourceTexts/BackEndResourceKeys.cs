@@ -273,6 +273,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
         public const string SIGN_DATE = "SIGN_DATE";
         public const string PROJECT_CODE_ALREADY_EXISTS = "PROJECT_CODE_ALREADY_EXISTS";
+        public const string PROJECT_INFORMATION = "PROJECT_INFORMATION";
+        //public const string END_DATE_PREDICTED = "END_DATE_PREDICTED";
 
         ///---------------------------------------------------
         // Class

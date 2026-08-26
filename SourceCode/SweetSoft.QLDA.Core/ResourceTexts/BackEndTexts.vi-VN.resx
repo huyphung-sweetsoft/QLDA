@@ -906,6 +906,9 @@
   <data name="SIGN_DATE" xml:space="preserve">
     <value>Ngày ký</value>
   </data>
+  <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Mã dự án đã tồn tại</value>
+  </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
   </data>
@@ -1035,7 +1038,7 @@
   <data name="PROJECT_MANAGEMENT" xml:space="preserve">
     <value>Quản lý dự án</value>
   </data>
-  <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
-    <value>Mã dự án đã tồn tại</value>
+  <data name="PROJECT_INFORMATION" xml:space="preserve">
+    <value>Thông tin dự án</value>
   </data>
 </root>

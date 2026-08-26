@@ -131,6 +131,34 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .And(TblDuAn.DaXoaColumn).IsEqualTo(false)
                 .ExecuteSingle<TblDuAn>();
         }
+        public DataTable GetDetailById(Guid id)
+        {
+            string sql = $@"
+                DECLARE @idDuAn UNIQUEIDENTIFIER = '{InlineQueryHelpers.SQLEncode(id)}';
+                select TOP 1
+                    d.*,
+                    dt.TenLoaiDuAn,
+                    kh.TenKhachHang,
+                    hd.SoHopDong,
+                    hd.GiaTriHopDong,
+                    hd.NgayKy,
+                    nv.TenNhanVien,
+                    nv.AnhDaiDien
+                from TblDuAn d
+                left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
+                left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
+                left join TblLoaiDuAn dt on dt.IdLoaiDuAn = d.IdLoaiDuAn
+                left join TblHopDongThucHien hd on hd.IdHopDongThucHien = d.IdHopDongThucHien
+                where d.IdDuAn = @idDuAn
+                and d.DaXoa = 0;";
+
+            IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
+            if (iDataReader == null)
+                return null;
+            DataTable dt = new DataTable();
+            dt.Load(iDataReader);
+            return dt;
+        }
         public TblDuAn GetByMaDuAn(string maDuAn)
         {
             if (string.IsNullOrWhiteSpace(maDuAn))

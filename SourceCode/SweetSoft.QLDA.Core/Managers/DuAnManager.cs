@@ -128,6 +128,11 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetById(id);
         }
 
+        public DataTable GetDetailDuAnById(Guid id)
+        {
+            return _repository.GetDetailById(id);
+        }
+
         public string GenerateProjectCode()
         {
             return _repository.GenerateMaDuAn();
