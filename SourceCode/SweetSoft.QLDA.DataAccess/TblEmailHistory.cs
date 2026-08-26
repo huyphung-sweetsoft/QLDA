@@ -243,7 +243,8 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarSentDate.IsPrimaryKey = false;
 				colvarSentDate.IsForeignKey = false;
 				colvarSentDate.IsReadOnly = false;
-				colvarSentDate.DefaultSetting = @"";
+				
+						colvarSentDate.DefaultSetting = @"(getdate())";
 				colvarSentDate.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarSentDate);
 				
@@ -299,6 +300,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarCustomerId.DefaultSetting = @"";
 				colvarCustomerId.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarCustomerId);
+				
+				TableSchema.TableColumn colvarServerMail = new TableSchema.TableColumn(schema);
+				colvarServerMail.ColumnName = "Server_Mail";
+				colvarServerMail.DataType = DbType.String;
+				colvarServerMail.MaxLength = 250;
+				colvarServerMail.AutoIncrement = false;
+				colvarServerMail.IsNullable = false;
+				colvarServerMail.IsPrimaryKey = false;
+				colvarServerMail.IsForeignKey = false;
+				colvarServerMail.IsReadOnly = false;
+				
+						colvarServerMail.DefaultSetting = @"('')";
+				colvarServerMail.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarServerMail);
 				
 				TableSchema.TableColumn colvarFromEmail = new TableSchema.TableColumn(schema);
 				colvarFromEmail.ColumnName = "From_Email";
@@ -539,6 +554,14 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.CustomerId, value); }
 		}
 		  
+		[XmlAttribute("ServerMail")]
+		[Bindable(true)]
+		public string ServerMail 
+		{
+			get { return GetColumnValue<string>(Columns.ServerMail); }
+			set { SetColumnValue(Columns.ServerMail, value); }
+		}
+		  
 		[XmlAttribute("FromEmail")]
 		[Bindable(true)]
 		public string FromEmail 
@@ -630,7 +653,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varId,string varCreatedUser,DateTime varCreatedDate,string varUpdatedUser,DateTime varUpdatedDate,Guid varRefId,string varRefType,Guid? varSenderId,DateTime? varSentDate,string varSender,string varSubject,string varEmailContent,Guid varCustomerId,string varFromEmail,string varToEmail,string varCcEmail,string varBccEmail,bool varIsSent,bool varIsRead,DateTime? varReadDate,int varNumberOfSent,string varErrorMessage)
+		public static void Insert(Guid varId,string varCreatedUser,DateTime varCreatedDate,string varUpdatedUser,DateTime varUpdatedDate,Guid varRefId,string varRefType,Guid? varSenderId,DateTime? varSentDate,string varSender,string varSubject,string varEmailContent,Guid varCustomerId,string varServerMail,string varFromEmail,string varToEmail,string varCcEmail,string varBccEmail,bool varIsSent,bool varIsRead,DateTime? varReadDate,int varNumberOfSent,string varErrorMessage)
 		{
 			TblEmailHistory item = new TblEmailHistory();
 			
@@ -660,6 +683,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.CustomerId = varCustomerId;
 			
+			item.ServerMail = varServerMail;
+			
 			item.FromEmail = varFromEmail;
 			
 			item.ToEmail = varToEmail;
@@ -688,7 +713,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varId,string varCreatedUser,DateTime varCreatedDate,string varUpdatedUser,DateTime varUpdatedDate,Guid varRefId,string varRefType,Guid? varSenderId,DateTime? varSentDate,string varSender,string varSubject,string varEmailContent,Guid varCustomerId,string varFromEmail,string varToEmail,string varCcEmail,string varBccEmail,bool varIsSent,bool varIsRead,DateTime? varReadDate,int varNumberOfSent,string varErrorMessage)
+		public static void Update(Guid varId,string varCreatedUser,DateTime varCreatedDate,string varUpdatedUser,DateTime varUpdatedDate,Guid varRefId,string varRefType,Guid? varSenderId,DateTime? varSentDate,string varSender,string varSubject,string varEmailContent,Guid varCustomerId,string varServerMail,string varFromEmail,string varToEmail,string varCcEmail,string varBccEmail,bool varIsSent,bool varIsRead,DateTime? varReadDate,int varNumberOfSent,string varErrorMessage)
 		{
 			TblEmailHistory item = new TblEmailHistory();
 			
@@ -717,6 +742,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.EmailContent = varEmailContent;
 			
 				item.CustomerId = varCustomerId;
+			
+				item.ServerMail = varServerMail;
 			
 				item.FromEmail = varFromEmail;
 			
@@ -840,65 +867,72 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn FromEmailColumn
+        public static TableSchema.TableColumn ServerMailColumn
         {
             get { return Schema.Columns[13]; }
         }
         
         
         
-        public static TableSchema.TableColumn ToEmailColumn
+        public static TableSchema.TableColumn FromEmailColumn
         {
             get { return Schema.Columns[14]; }
         }
         
         
         
-        public static TableSchema.TableColumn CcEmailColumn
+        public static TableSchema.TableColumn ToEmailColumn
         {
             get { return Schema.Columns[15]; }
         }
         
         
         
-        public static TableSchema.TableColumn BccEmailColumn
+        public static TableSchema.TableColumn CcEmailColumn
         {
             get { return Schema.Columns[16]; }
         }
         
         
         
-        public static TableSchema.TableColumn IsSentColumn
+        public static TableSchema.TableColumn BccEmailColumn
         {
             get { return Schema.Columns[17]; }
         }
         
         
         
-        public static TableSchema.TableColumn IsReadColumn
+        public static TableSchema.TableColumn IsSentColumn
         {
             get { return Schema.Columns[18]; }
         }
         
         
         
-        public static TableSchema.TableColumn ReadDateColumn
+        public static TableSchema.TableColumn IsReadColumn
         {
             get { return Schema.Columns[19]; }
         }
         
         
         
-        public static TableSchema.TableColumn NumberOfSentColumn
+        public static TableSchema.TableColumn ReadDateColumn
         {
             get { return Schema.Columns[20]; }
         }
         
         
         
-        public static TableSchema.TableColumn ErrorMessageColumn
+        public static TableSchema.TableColumn NumberOfSentColumn
         {
             get { return Schema.Columns[21]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn ErrorMessageColumn
+        {
+            get { return Schema.Columns[22]; }
         }
         
         
@@ -920,6 +954,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string Subject = @"Subject";
 			 public static string EmailContent = @"EmailContent";
 			 public static string CustomerId = @"CustomerId";
+			 public static string ServerMail = @"Server_Mail";
 			 public static string FromEmail = @"From_Email";
 			 public static string ToEmail = @"To_Email";
 			 public static string CcEmail = @"CC_Email";

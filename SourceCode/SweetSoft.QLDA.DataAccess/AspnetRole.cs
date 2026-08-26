@@ -407,6 +407,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetUsersInRoles[e.NewIndex].RoleId = RoleId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.AspnetUsersInRoleCollection colAspnetUsersInRolesFromAspnetRole;
+		public SweetSoft.QLDA.DataAccess.AspnetUsersInRoleCollection AspnetUsersInRolesFromAspnetRole()
+		{
+			if(colAspnetUsersInRolesFromAspnetRole == null)
+			{
+				colAspnetUsersInRolesFromAspnetRole = new SweetSoft.QLDA.DataAccess.AspnetUsersInRoleCollection().Where(AspnetUsersInRole.Columns.RoleId, RoleId).Load();
+				colAspnetUsersInRolesFromAspnetRole.ListChanged += new ListChangedEventHandler(colAspnetUsersInRolesFromAspnetRole_ListChanged);
+			}
+			return colAspnetUsersInRolesFromAspnetRole;
+		}
+				
+		void colAspnetUsersInRolesFromAspnetRole_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetUsersInRolesFromAspnetRole[e.NewIndex].RoleId = RoleId;
+            }
+		}
 		#endregion
 		
 			
@@ -418,6 +437,17 @@ namespace SweetSoft.QLDA.DataAccess
 		/// 
 		/// </summary>
 		public SweetSoft.QLDA.DataAccess.AspnetApplication AspnetApplication
+		{
+			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
+			set { SetColumnValue("ApplicationId", value.ApplicationId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a AspnetApplication ActiveRecord object related to this AspnetRole
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.AspnetApplication AspnetApplicationToApplicationId
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
 			set { SetColumnValue("ApplicationId", value.ApplicationId); }
@@ -696,6 +726,17 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colAspnetUsersInRolesFromAspnetRole != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetUsersInRole item in colAspnetUsersInRolesFromAspnetRole)
+                    {
+                        if (item.RoleId != RoleId)
+                        {
+                            item.RoleId = RoleId;
+                        }
+                    }
+               }
 		}
         #endregion
     
@@ -708,6 +749,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colAspnetUsersInRoles != null)
                 {
                     colAspnetUsersInRoles.SaveAll();
+               }
+		
+                if (colAspnetUsersInRolesFromAspnetRole != null)
+                {
+                    colAspnetUsersInRolesFromAspnetRole.SaveAll();
                }
 		}
         #endregion

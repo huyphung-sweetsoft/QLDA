@@ -514,6 +514,51 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataSource = aspnetRoles;
             ddl.DataBind();
         }
+        //thêm 4 hàm bind cho phòng ban và chức danh, mỗi cái 2
+        public void BindChucDanh(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            List<TblChucDanh> chucDanh = ChucDanhManager.Instance.GetListForDropdown();
+            if (chucDanh == null)
+                chucDanh = new List<TblChucDanh>();
+            ddl.DataTextField = TblChucDanh.Columns.TenChucDanh;
+            ddl.DataValueField = TblChucDanh.Columns.IdChucDanh;
+            ddl.DataSource = chucDanh;
+            ddl.DataBind();
+        }
+        public void BindChucDanh(BootstrapDropdown ddl)
+        {
+            ddl.Items.Clear();
+            List<TblChucDanh> chucDanh = ChucDanhManager.Instance.GetListForDropdown();
+            if (chucDanh == null)
+                chucDanh = new List<TblChucDanh>();
+            ddl.DataTextField = TblChucDanh.Columns.TenChucDanh;
+            ddl.DataValueField = TblChucDanh.Columns.IdChucDanh;
+            ddl.DataSource = chucDanh;
+            ddl.DataBind();
+        }
+        public void BindPhongBan(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            List<TblPhongBan> phongBan = PhongBanManager.Instance.GetListForDropdown();
+            if (phongBan == null)
+                phongBan = new List<TblPhongBan>();
+            ddl.DataTextField = TblPhongBan.Columns.TenPhongBan;
+            ddl.DataValueField = TblPhongBan.Columns.IdPhongBan;
+            ddl.DataSource = phongBan;
+            ddl.DataBind();
+        }
+        public void BindPhongBan(BootstrapDropdown ddl)
+        {
+            ddl.Items.Clear();
+            List<TblPhongBan> phongBan = PhongBanManager.Instance.GetListForDropdown();
+            if (phongBan == null)
+                phongBan = new List<TblPhongBan>();
+            ddl.DataTextField = TblPhongBan.Columns.TenPhongBan;
+            ddl.DataValueField = TblPhongBan.Columns.IdPhongBan;
+            ddl.DataSource = phongBan;
+            ddl.DataBind();
+        }
         public void BindStatusOnOff(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();
@@ -598,6 +643,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.DataBind();
             dropdown.SelectedIndex = -1;
         }
+        //public void BindPhongBan(BootstrapDropdown dropdown, string dataValueField = "TenPhongBan", ) -- sau thêm phòng ban với chức danh rồi làm
         #endregion
     }
 }

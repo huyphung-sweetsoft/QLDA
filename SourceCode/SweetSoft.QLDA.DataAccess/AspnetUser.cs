@@ -489,6 +489,44 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetUsersInRoles[e.NewIndex].UserId = UserId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblNhanVienCollection colTblNhanVienRecords;
+		public SweetSoft.QLDA.DataAccess.TblNhanVienCollection TblNhanVienRecords()
+		{
+			if(colTblNhanVienRecords == null)
+			{
+				colTblNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblNhanVienCollection().Where(TblNhanVien.Columns.UserId, UserId).Load();
+				colTblNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblNhanVienRecords_ListChanged);
+			}
+			return colTblNhanVienRecords;
+		}
+				
+		void colTblNhanVienRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblNhanVienRecords[e.NewIndex].UserId = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblThongBaoCollection colTblThongBaoRecords;
+		public SweetSoft.QLDA.DataAccess.TblThongBaoCollection TblThongBaoRecords()
+		{
+			if(colTblThongBaoRecords == null)
+			{
+				colTblThongBaoRecords = new SweetSoft.QLDA.DataAccess.TblThongBaoCollection().Where(TblThongBao.Columns.UserId, UserId).Load();
+				colTblThongBaoRecords.ListChanged += new ListChangedEventHandler(colTblThongBaoRecords_ListChanged);
+			}
+			return colTblThongBaoRecords;
+		}
+				
+		void colTblThongBaoRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblThongBaoRecords[e.NewIndex].UserId = UserId;
+            }
+		}
 		#endregion
 		
 			
@@ -824,6 +862,28 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colTblNhanVienRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblNhanVien item in colTblNhanVienRecords)
+                    {
+                        if (item.UserId == null ||item.UserId != UserId)
+                        {
+                            item.UserId = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblThongBaoRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblThongBao item in colTblThongBaoRecords)
+                    {
+                        if (item.UserId != UserId)
+                        {
+                            item.UserId = UserId;
+                        }
+                    }
+               }
 		}
         #endregion
     
@@ -846,6 +906,16 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colAspnetUsersInRoles != null)
                 {
                     colAspnetUsersInRoles.SaveAll();
+               }
+		
+                if (colTblNhanVienRecords != null)
+                {
+                    colTblNhanVienRecords.SaveAll();
+               }
+		
+                if (colTblThongBaoRecords != null)
+                {
+                    colTblThongBaoRecords.SaveAll();
                }
 		}
         #endregion

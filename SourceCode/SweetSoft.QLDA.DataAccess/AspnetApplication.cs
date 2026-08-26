@@ -253,6 +253,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetMembershipRecords[e.NewIndex].ApplicationId = ApplicationId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.AspnetMembershipCollection colAspnetMembershipRecordsFromAspnetApplication;
+		public SweetSoft.QLDA.DataAccess.AspnetMembershipCollection AspnetMembershipRecordsFromAspnetApplication()
+		{
+			if(colAspnetMembershipRecordsFromAspnetApplication == null)
+			{
+				colAspnetMembershipRecordsFromAspnetApplication = new SweetSoft.QLDA.DataAccess.AspnetMembershipCollection().Where(AspnetMembership.Columns.ApplicationId, ApplicationId).Load();
+				colAspnetMembershipRecordsFromAspnetApplication.ListChanged += new ListChangedEventHandler(colAspnetMembershipRecordsFromAspnetApplication_ListChanged);
+			}
+			return colAspnetMembershipRecordsFromAspnetApplication;
+		}
+				
+		void colAspnetMembershipRecordsFromAspnetApplication_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetMembershipRecordsFromAspnetApplication[e.NewIndex].ApplicationId = ApplicationId;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.AspnetPathCollection colAspnetPaths;
 		public SweetSoft.QLDA.DataAccess.AspnetPathCollection AspnetPaths()
 		{
@@ -272,6 +291,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colAspnetPaths[e.NewIndex].ApplicationId = ApplicationId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.AspnetPathCollection colAspnetPathsFromAspnetApplication;
+		public SweetSoft.QLDA.DataAccess.AspnetPathCollection AspnetPathsFromAspnetApplication()
+		{
+			if(colAspnetPathsFromAspnetApplication == null)
+			{
+				colAspnetPathsFromAspnetApplication = new SweetSoft.QLDA.DataAccess.AspnetPathCollection().Where(AspnetPath.Columns.ApplicationId, ApplicationId).Load();
+				colAspnetPathsFromAspnetApplication.ListChanged += new ListChangedEventHandler(colAspnetPathsFromAspnetApplication_ListChanged);
+			}
+			return colAspnetPathsFromAspnetApplication;
+		}
+				
+		void colAspnetPathsFromAspnetApplication_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetPathsFromAspnetApplication[e.NewIndex].ApplicationId = ApplicationId;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.AspnetRoleCollection colAspnetRoles;
 		public SweetSoft.QLDA.DataAccess.AspnetRoleCollection AspnetRoles()
 		{
@@ -289,6 +327,25 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colAspnetRoles[e.NewIndex].ApplicationId = ApplicationId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.AspnetRoleCollection colAspnetRolesFromAspnetApplication;
+		public SweetSoft.QLDA.DataAccess.AspnetRoleCollection AspnetRolesFromAspnetApplication()
+		{
+			if(colAspnetRolesFromAspnetApplication == null)
+			{
+				colAspnetRolesFromAspnetApplication = new SweetSoft.QLDA.DataAccess.AspnetRoleCollection().Where(AspnetRole.Columns.ApplicationId, ApplicationId).Load();
+				colAspnetRolesFromAspnetApplication.ListChanged += new ListChangedEventHandler(colAspnetRolesFromAspnetApplication_ListChanged);
+			}
+			return colAspnetRolesFromAspnetApplication;
+		}
+				
+		void colAspnetRolesFromAspnetApplication_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetRolesFromAspnetApplication[e.NewIndex].ApplicationId = ApplicationId;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.AspnetUserCollection colAspnetUsers;
@@ -430,6 +487,17 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colAspnetMembershipRecordsFromAspnetApplication != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetMembership item in colAspnetMembershipRecordsFromAspnetApplication)
+                    {
+                        if (item.ApplicationId != ApplicationId)
+                        {
+                            item.ApplicationId = ApplicationId;
+                        }
+                    }
+               }
+		
                 if (colAspnetPaths != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.AspnetPath item in colAspnetPaths)
@@ -441,9 +509,31 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colAspnetPathsFromAspnetApplication != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetPath item in colAspnetPathsFromAspnetApplication)
+                    {
+                        if (item.ApplicationId != ApplicationId)
+                        {
+                            item.ApplicationId = ApplicationId;
+                        }
+                    }
+               }
+		
                 if (colAspnetRoles != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.AspnetRole item in colAspnetRoles)
+                    {
+                        if (item.ApplicationId != ApplicationId)
+                        {
+                            item.ApplicationId = ApplicationId;
+                        }
+                    }
+               }
+		
+                if (colAspnetRolesFromAspnetApplication != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetRole item in colAspnetRolesFromAspnetApplication)
                     {
                         if (item.ApplicationId != ApplicationId)
                         {
@@ -476,14 +566,29 @@ namespace SweetSoft.QLDA.DataAccess
                     colAspnetMembershipRecords.SaveAll();
                }
 		
+                if (colAspnetMembershipRecordsFromAspnetApplication != null)
+                {
+                    colAspnetMembershipRecordsFromAspnetApplication.SaveAll();
+               }
+		
                 if (colAspnetPaths != null)
                 {
                     colAspnetPaths.SaveAll();
                }
 		
+                if (colAspnetPathsFromAspnetApplication != null)
+                {
+                    colAspnetPathsFromAspnetApplication.SaveAll();
+               }
+		
                 if (colAspnetRoles != null)
                 {
                     colAspnetRoles.SaveAll();
+               }
+		
+                if (colAspnetRolesFromAspnetApplication != null)
+                {
+                    colAspnetRolesFromAspnetApplication.SaveAll();
                }
 		
                 if (colAspnetUsers != null)

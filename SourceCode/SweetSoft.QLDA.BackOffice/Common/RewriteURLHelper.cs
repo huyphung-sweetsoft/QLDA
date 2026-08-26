@@ -22,10 +22,15 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Permission => "/Permission";
         public static string TaskSchedules => "/TaskSchedules";
         public static string Users => "/Users";
+        public static string NhanVien => "/Employees";
 
         public static string ViewUser(Guid userId)
         {
             return $"/Users?userId={SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
+        }
+        public static string ViewNhanVien(Guid idNhanVien)
+        {
+            return $"/NhanViens?idNhanVien={SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
         }
         public static string Profile => "/Profile";
         public static string Roles => "/Roles";

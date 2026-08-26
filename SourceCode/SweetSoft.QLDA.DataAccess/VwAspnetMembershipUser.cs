@@ -132,7 +132,7 @@ namespace SweetSoft.QLDA.DataAccess{
                 TableSchema.TableColumn colvarPasswordAnswer = new TableSchema.TableColumn(schema);
                 colvarPasswordAnswer.ColumnName = "PasswordAnswer";
                 colvarPasswordAnswer.DataType = DbType.String;
-                colvarPasswordAnswer.MaxLength = 128;
+                colvarPasswordAnswer.MaxLength = 500;
                 colvarPasswordAnswer.AutoIncrement = false;
                 colvarPasswordAnswer.IsNullable = true;
                 colvarPasswordAnswer.IsPrimaryKey = false;

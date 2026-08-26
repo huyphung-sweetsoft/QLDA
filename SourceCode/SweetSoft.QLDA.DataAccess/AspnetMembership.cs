@@ -249,7 +249,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarPasswordAnswer = new TableSchema.TableColumn(schema);
 				colvarPasswordAnswer.ColumnName = "PasswordAnswer";
 				colvarPasswordAnswer.DataType = DbType.String;
-				colvarPasswordAnswer.MaxLength = 128;
+				colvarPasswordAnswer.MaxLength = 500;
 				colvarPasswordAnswer.AutoIncrement = false;
 				colvarPasswordAnswer.IsNullable = true;
 				colvarPasswordAnswer.IsPrimaryKey = false;
@@ -592,6 +592,17 @@ namespace SweetSoft.QLDA.DataAccess
 		/// 
 		/// </summary>
 		public SweetSoft.QLDA.DataAccess.AspnetApplication AspnetApplication
+		{
+			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
+			set { SetColumnValue("ApplicationId", value.ApplicationId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a AspnetApplication ActiveRecord object related to this AspnetMembership
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.AspnetApplication AspnetApplicationToApplicationId
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
 			set { SetColumnValue("ApplicationId", value.ApplicationId); }
