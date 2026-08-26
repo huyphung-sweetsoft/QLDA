@@ -17,6 +17,7 @@
                         </SweetSoft:BootstrapDropdown>
                         <SweetSoft:BootstrapDropdown ID="ddlSearchProjectType" runat="server"
                             Text="Loại dự án"
+                            AutoPostBack="true"
                             AllowClear="true"
                             EnableSearch="true"
                             ValueIsOfTypeGUID="true"
@@ -30,6 +31,7 @@
                             runat="server"
                             ID="ddlSearchProjectManager"
                             Text="Project Manager"
+                            AutoPostBack="true"
                             AllowClear="true"
                             EnableSearch="true"
                             ValueIsOfTypeGUID="true"

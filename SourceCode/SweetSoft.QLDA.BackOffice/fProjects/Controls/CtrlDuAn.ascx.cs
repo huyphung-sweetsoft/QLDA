@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.BackOffice.Common;
+﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
@@ -94,6 +94,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
 
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
+            tagOther.Visible = true;
 
             MasterTemplate master = Page.Master as MasterTemplate;
             master.LoadSessionLastSearch(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
@@ -131,9 +132,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 int pageSize = rowIndex + grid.CurrentPageSize;
                 //--------------------------------------------
                 DataTable dt = null;
-                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
-                ControlHelpers controlHelpers = new ControlHelpers();
-                keyValueSearchs = controlHelpers.GetControlValues(pnlSearchDefault);
+                Dictionary<string, object> keyValueSearchs = GetProjectSearchParameters();
                 dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
 
                 if (dt == null || dt.Rows.Count == 0)
@@ -360,6 +359,38 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     return;
                 }
             }
+        }
+
+        private Dictionary<string, object> GetProjectSearchParameters()
+        {
+            ControlHelpers controlHelpers = new ControlHelpers();
+
+            Dictionary<string, object> parameters = controlHelpers.GetControlValues(pnlSearchDefault);
+
+            object value;
+
+            // Loại dự án
+            if (!parameters.TryGetValue(TblDuAn.Columns.IdLoaiDuAn, out value) || value == null 
+                || string.IsNullOrWhiteSpace(Convert.ToString(value)) || Convert.ToString(value) == "null")
+            {
+                parameters[TblDuAn.Columns.IdLoaiDuAn] = Guid.Empty;
+            }
+
+            // Project Manager
+            if (!parameters.TryGetValue(TblDuAn.Columns.IdNhanVienQuanLy,out value) || value == null 
+                || string.IsNullOrWhiteSpace(Convert.ToString(value)) || Convert.ToString(value) == "null")
+            {
+                parameters[TblDuAn.Columns.IdNhanVienQuanLy] = Guid.Empty;
+            }
+
+            // Trạng thái
+            if (!parameters.TryGetValue(TblDuAn.Columns.TrangThai, out value) || value == null 
+                || string.IsNullOrWhiteSpace(Convert.ToString(value)) || Convert.ToString(value) == "null")
+            {
+                parameters[TblDuAn.Columns.TrangThai] = null;
+            }
+
+            return parameters;
         }
     }
 }

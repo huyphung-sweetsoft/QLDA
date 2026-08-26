@@ -68,7 +68,8 @@
                              <div class="col-lg-4">
                                  <div class="mb-3">
                                      <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" OnTextChanged="txtSoHopDong_TextChanged" AutoPostBack="true" Required="false"/>
+                                     <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false"/>
+                                     <asp:Button runat="server" ID="btnSearchHopDong" OnClick="txtSoHopDong_TextChanged" style="display:none;" CausesValidation="false" UseSubmitBehavior="false" />
                                  </div>
                              </div>
                              <div class="col-lg-4">

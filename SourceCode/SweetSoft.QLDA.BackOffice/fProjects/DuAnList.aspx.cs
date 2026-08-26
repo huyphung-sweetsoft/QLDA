@@ -55,6 +55,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             CtrlDuAn1.NewProjectHandlerCallBack += NewProjectAction;
             CtrlDuAn1.EditProjectHandlerCallBack += EditProjectAction;
+
+            txtSoHopDong.EnterSubmitClientID = btnSearchHopDong.ClientID;
             if (!IsPostBack)
             {
                 CtrlDuAn1.InitControls();
@@ -292,10 +294,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 txtNgayKy.Text = hopDong.NgayKy.ToString();
             }
             else
-            {
-                upHopDong.Update();
                 return;
-            }
+            upHopDong.Update();
         }
 
         private void LoadHopDongThucHien(TblDuAn duAn)

@@ -24,7 +24,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @endRow INT = {pageSize};
                 DECLARE @idLoaiDuAn VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdLoaiDuAn])}';
                 DECLARE @idNhanVienQuanLy VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdNhanVienQuanLy])}';
-                DECLARE @trangThai BYTE = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.TrangThai])}'
+                DECLARE @trangThai TINYINT = {(parameters[TblDuAn.Columns.TrangThai] == null ? "NULL" : $"'{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.TrangThai])}'")};
                 DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
                 select * from (
                     select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
@@ -36,8 +36,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                         left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
                         left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                         where d.DaXoa = 0
-                        and (@idLoaiDuAn is null or d.IdLoaiDuAn = @idLoaiDuAn)
-                        and (@idNhanVienQuanLy is null or d.IdNhanVienQuanLy = @idNhanVienQuanLy)
+                        and (@idLoaiDuAn = '{Guid.Empty}' or d.IdLoaiDuAn = @idLoaiDuAn)
+                        and (@idNhanVienQuanLy = '{Guid.Empty}' or d.IdNhanVienQuanLy = @idNhanVienQuanLy)
                         and (@trangThai is null or d.TrangThai = @trangThai)
                         and (@singleKeyWord = N'%%'
                         or d.TenDuAn LIKE @singleKeyWord

@@ -604,7 +604,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
-
             foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
             {
                 string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
@@ -619,7 +618,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
-
             foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
             {
                 string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
