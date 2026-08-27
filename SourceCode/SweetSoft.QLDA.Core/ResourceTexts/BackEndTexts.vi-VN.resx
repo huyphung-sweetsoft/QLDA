@@ -534,9 +534,6 @@
   <data name="PROVINCE" xml:space="preserve">
     <value>Tỉnh</value>
   </data>
-  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý dự án</value>
-  </data>
   <data name="PROVINCES" xml:space="preserve">
     <value>Các tỉnh</value>
   </data>
@@ -870,9 +867,6 @@
   <data name="EXPORT" xml:space="preserve">
     <value>Xuất</value>
   </data>
-  <data name="Client_LIST" xml:space="preserve">
-    <value>Danh sách dự án</value>
-  </data>
   <data name="AN_EMAIL_HAS_BEEN_SENT_TO_EMAIL" xml:space="preserve">
     <value>Vui lòng kiểm tra email để khôi phục tài khoản của bạn.</value>
   </data>
@@ -906,9 +900,6 @@
   <data name="PROJECT_CODE" xml:space="preserve">
     <value>Mã dự án</value>
   </data>
-  <data name="EMPLOYEE_NAME" xml:space="preserve">
-    <value>Tên nhân viên</value>
-  </data>
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
   </data>
@@ -923,6 +914,36 @@
   </data>
   <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
     <value>Mã dự án đã tồn tại</value>
+  </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value>Danh sách khách hàng</value>
+  </data>
+  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý dự án</value>
+  </data>
+  <data name="EMPLOYEE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý nhân viên</value>
+  </data>
+  <data name="EMPLOYEE_LIST" xml:space="preserve">
+    <value>Danh sách nhân viên</value>
+  </data>
+  <data name="CCCD_ALREADY_EXISTS" xml:space="preserve">
+    <value>Căn cước công dân đã tồn tại rồi</value>
+  </data>
+  <data name="EMPLOYEE_NAME" xml:space="preserve">
+    <value>Tên Nhân Viên</value>
+  </data>
+  <data name="EMPLOYEE_CCCD" xml:space="preserve">
+    <value>Số CCCD</value>
+  </data>
+  <data name="EMPLOYEE_JOINDATE" xml:space="preserve">
+    <value>Ngày Gia Nhập</value>
+  </data>
+  <data name="PHONG_BAN" xml:space="preserve">
+    <value>Phòng Ban</value>
+  </data>
+  <data name="CHUC_DANH" xml:space="preserve">
+    <value>Chức Danh</value>
   </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
@@ -1058,5 +1079,8 @@
   </data>
   <data name="PROJECT_INFORMATION" xml:space="preserve">
     <value>Thông tin dự án</value>
+  </data>
+  <data name="GIOI_TINH" xml:space="preserve">
+    <value>Giới tính</value>
   </data>
 </root>

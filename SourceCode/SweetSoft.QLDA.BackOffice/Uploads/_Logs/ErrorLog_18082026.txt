@@ -1,0 +1,17 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-18 23:57:08.921
+                URL: http://localhost:56583/Login.aspx?ReturnUrl=%2ftrang-chu
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: q2cqfakgzhv3kgvxku4k1vjk
+                Exception Type: NullReferenceException
+                Message: Object reference not set to an instance of an object.
+                Stack Trace:    at Microsoft.WebTools.BrowserLink.Runtime.Tracing.PageInspectorHttpModule.OnPreRequestHandlerExecute(Object sender, EventArgs e)
+   at System.Web.HttpApplication.SyncEventExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: None
+                Inner Stack Trace: None
+                ========================
+                

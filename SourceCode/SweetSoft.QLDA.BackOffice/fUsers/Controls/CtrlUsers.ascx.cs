@@ -32,9 +32,9 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         public EventHandler NewUserHandlerCallback;
         public EventHandler EditUserHandlerCallback;
         public EventHandler SendMailHandlerCallback;
-        public Guid RoleId
-        {
-            get
+        public Guid RoleId//Cái roleId này không phải là id nhóm quyền của cái acc đang đăng nhập, cách hoạt động của nó đơn giản là: Khi vào trang  quản lý nhóm quyền
+        {                   //Bấm vào xem chi tiết 1 nhóm quyền nào đó, thì cái RoleId này sẽ được truyền vào cái Id của nhóm quyền đó
+            get             //Nói chung, hầu hết cái RoleId này sẽ liên quan đến việc cái CtrlUsers này ngoài dùng ở trang tài khoản thì còn dùng được ở trang chi tiết nhóm quyền
             {
                 if (ViewState["RoleId"] == null)
                     return Guid.Empty;
@@ -96,7 +96,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
             ddlSearchRole.SearchTagItemText = GetResourceText(BackEndResourceKeys.USER_GROUP);
             //------------------------------------------------
-            lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
+            lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);//tooltip: là cái chú thích nhỏ hiện ra khi mình hover vào cái nút, dùng kĩ thuật gán liên hoàn để gán cái chú thích này chung nội dung vs cái text hiển thị trong nút
             lbtCancel.ToolTip = lbtCancel.Text = GetResourceText(BackEndResourceKeys.REFRESH);
             lbtSearchAdvanced.ToolTip = lbtSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.SEARCH);
             btnExport.ToolTip = btnExport.Text = GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
@@ -141,14 +141,14 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             grvData.Columns[5].Visible 
                 = grvData.Columns[8].Visible
                 = tagOther.Visible  
-                = this.RoleId == null || this.RoleId == Guid.Empty;
+                = this.RoleId == null || this.RoleId == Guid.Empty; //cụm này là lí do mà trong cái role detail bị thiếu mấy cột, mấy thằng phía trên cũng làm ẩn hiện trong role detail
             MasterTemplate master = Page.Master as MasterTemplate;
-            master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);
+            master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);//ví dụ cho dễ: Khi search 1 thằng, bấm enter là load sang list chứa keyword này, xong nếu bấm back về danh sách cũ thì sẽ vẫn giữ cái keyword vừa tìm kiếm trên ô search
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = AspnetUser.Columns.UserName;
             grvData.CurrentSortDerection = "ASC";
             grvData.Rebind();
-            pnlButtons.Update();
+            pnlButtons.Update();//thằng này với bên dưới nói chung là để đảm bảo các nút bấm được cập nhật đúng trạng thái hiển thị trên màn mà ko cần tải lại trang
             pnlSearch.Update();
         }
         private void AssignSearchColumns()
@@ -166,6 +166,10 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         {
             try
             {
+                //Giải thích kĩ thằng này 1 chút: biến sender đại diện cho cái thằng đã kích hoạt sự kiện hàm này, cụ thể là cái bảng grvData trên giao diện
+                //Object là kiểu chung của hệ thống, C# nó ko hiểu đc nó là cái nút bấm, cái textbox hay cái gridview
+                //Vì vậy nên mới cần dòng bên dưới này để ép cái sender về kiểu GirdView, "as": nếu ép thất bại, thì nó trả về grid=null thay vì làm lỗi
+                //dòng if bên dưới là để check nếu grid == null thì dừng rồi báo lỗi ra màn hình lun
                 GridviewExtension grid = sender as GridviewExtension;
                 if (grid == null)
                 {
@@ -178,13 +182,14 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 int pageSize = rowIndex + grid.CurrentPageSize;
                 //--------------------------------------------
                 DataTable dt = null;
-                if (grid.GridSearchType == GridSearchType.Single)
+                if (grid.GridSearchType == GridSearchType.Single)//Single nghĩa là người dùng đang gõ vào ô tìm kiếm nhanh nên hệ thống chỉ truyền giá trị txtSearchSingle xuống hàm Search
+                    //đương nhiên là nó sẽ kết hợp với cả cái đang chọn của 2 dropdown nữa
                 {
                     Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
                     ControlHelpers controlHelpers = new ControlHelpers();
                     keyValueSearchs = controlHelpers.GetControlValues(pnlSearchDefault);
                     // Add RoleId to search criteria
-                    if(this.RoleId != Guid.Empty)
+                    if(this.RoleId != Guid.Empty)//Khi CtrlUsers này được nhúng vào RoleDetail thì cái if dưới đây sẽ đảm bảo là nhét điều kiện RoleId vào bộ lọc để chỉ lấy ra những Users thuộc nhóm quyền này
                     {
                         if (!keyValueSearchs.ContainsKey("RoleId"))
                             keyValueSearchs.Add("RoleId", this.RoleId);
@@ -195,6 +200,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 }    
                 else
                 {
+                    //Chuỗi bắt tham số tìm kiếm, hàm GetControlValues sẽ quét qua các ô nhập nhiệu trong vùng pnlSearchDefault (2 cái dropdown), ô nào có giá trị thì nó sẽ bốc tên cột, như là idRole? và giá trị tương ứng để quăng vô 1 cái từ điển để tạo thành điều kiện lọc
                     Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
                     ControlHelpers controlHelpers = new ControlHelpers();
                     var temp = controlHelpers.GetControlValues(pnlSearchDefault);
@@ -211,7 +217,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     }
                     dt = UserManager.Instance.SearchUsers(keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }
-                if (dt == null || dt.Rows.Count == 0)
+                if (dt == null || dt.Rows.Count == 0)//Kiểm tra xem cái bảng dt vừa lấy từ database có data hay ko, nếu ko thig ẩn phân trang, ẩn nút export dữ liệu,.,...
                 {
                     grvData.DataSource = null;
                     grvData.DataBind();
@@ -222,7 +228,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     if (dt.Rows.Count > 0)
                     {
                         ctrlGridviewPaging.Visible = true;
-                        btnExport.Visible = this.CURRENT_PAGE.IsExportExcel;
+                        btnExport.Visible = this.CURRENT_PAGE.IsExportExcel;//bật phân trang, bật export dữ liệu
                     }
                     else
                         ctrlGridviewPaging.Visible = btnExport.Visible = false;
@@ -244,7 +250,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             }
         }
 
-        protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)
+        protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)//Hàm này bắt bất kì hành động nào tương tác với 1 dòng trên bảng, như xem chi tiết, xóa, sửa,..
         {
             switch (e.CommandName)
             {
@@ -257,25 +263,25 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     //--------------------------------------------
                     int rowIndex = 0;
                     if (e.CommandSource.GetType() != typeof(GridviewExtension))
-                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;//lấy STT của dòng đang bấm hiện tại, thông qua Link Button nó lần ngược lên thẻ bọc ngoài là NamingCaontainer để tìm ra số thứ tự dòng
                     else
                         rowIndex = Convert.ToInt32(e.CommandArgument);
                     Guid userId = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out userId))
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out userId))//ép kiểu id về đúng dạng guid, nếu lỗi database hay html thì báo lỗi
                     {
                         ShowInvalidDataError();
                         return;
                     }
 
-                    if (UserManager.Instance.IsAdministrator(userId) && !SweetContext.Current.IsAdministrator)
+                    if (UserManager.Instance.IsAdministrator(userId) && !SweetContext.Current.IsAdministrator)//Kiểm tra xem cái hàng chứa thằng đang bấm vô có phải Admin hay ko, và cái acc đăng nhập hiện tại có phải của Admin hay ko, nếu ko thì ko cho sửa, xóa j cả
                     {
                         ShowNotify(GetResourceText(BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
                         return;
                     }
-                    if (EditUserHandlerCallback != null && (this.RoleId == null || this.RoleId == Guid.Empty))
+                    if (EditUserHandlerCallback != null && (this.RoleId == null || this.RoleId == Guid.Empty))//Mở popup để sửa nhanh
                         EditUserHandlerCallback(userId, EventArgs.Empty);
                     else
-                        Response.Redirect(RewriteURLHelper.ViewUser(userId));
+                        Response.Redirect(RewriteURLHelper.ViewUser(userId));//Hoặc đẩy sang hẳn 1 trang mới nếu chưa đki Callback
                     break;
                 case "ITEM_DELETE":
                     if (!this.CURRENT_PAGE.IsDelete)
@@ -428,12 +434,12 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         }
         protected void btnExport_Click(object sender, EventArgs e)
         {
-            if (!this.CURRENT_PAGE.IsExportExcel)
+            if (!this.CURRENT_PAGE.IsExportExcel)//Kiểm tra xem acc đang đăng nhập đc quyền xuất ko, ko thì gửi tbao lỗi
             {
                 ShowAccessDeniedNotify();
                 return;
             }
-
+            //cái region này tương tự như cái NeedDataSource
             #region Get data 
             int totalRows = 0;
             int rowIndex = (grvData.CurrentPageIndex - 1) * grvData.CurrentPageSize;
@@ -474,12 +480,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 dt = UserManager.Instance.SearchUsers(keyValueSearchs, $"{grvData.CurrentSortExpression} {grvData.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
             }
             #endregion
+            //Dưới đây là dùng class ExcelExportCore để cấu hình khung excel
             ExcelExportCore excelExportCore = new ExcelExportCore();
             string subject = GetResourceText(BackEndResourceKeys.USER_LIST);
             var options = new ExcelExportOptions
             {
-                SheetName = subject,
-                ColumnStyles = new Dictionary<string, Action<ExcelRange>>()
+                SheetName = subject,//Đặt tên cho tab excel
+                ColumnStyles = new Dictionary<string, Action<ExcelRange>>()//Khai báo định dạng cho các cột đặt thù, ví dụ như thk dưới đây phải ép về kiểu dd-mm-yyyy chuẩn của Excel
                 {
 
                     { "LastActivityDate", range =>
@@ -489,14 +496,14 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                         }
                     },
                 },
-                IsFixedHeader = true,
-                EnableZebraStripe = true,
+                IsFixedHeader = true,//bật tính năng ghim dòng tiêu đề
+                EnableZebraStripe = true,//tô màu dòng xen kẽ, như con ngựa vằn nên đặt ra zebra? hài
                 ImageType = OfficeOpenXml.Drawing.ePictureType.Png,
                 LogoHeight = 80,
                 LogoWidth = 250,
                 LogoCols = 2,
                 IsLogoCenter = true,
-                ColumnNames = new List<string>()
+                ColumnNames = new List<string>()//tiêu đề tiếng việt/anh của các cột tương ứng trong excel, thằng này và thằng ngay bên dưới phải = nhau về số lượng
                 {
                     GetResourceText(BackEndResourceKeys.USER_NAME),
                     GetResourceText(BackEndResourceKeys.FULL_NAME),
@@ -506,7 +513,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     GetResourceText(BackEndResourceKeys.STATUS),
                     GetResourceText(BackEndResourceKeys.CREATED_DATE)
                 },
-                ShowColumns = new HashSet<string>()
+                ShowColumns = new HashSet<string>()//Chỉ chính xác cột vật lý trong CSDL sẽ được truy xuất
                 {
                     "UserName",
                     "DisplayName",
@@ -516,7 +523,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     "IsActivated",
                     "LastActivityDate",
                 },
-                ConditionalMappingTexts = new List<ConditionalMappingText>
+                ConditionalMappingTexts = new List<ConditionalMappingText>//Dùng để dịch dữ liệu hệ thống. í dụ: Cột IsActivated mang giá trị True/False trong database, nó sẽ tự động dịch thành chữ "Active" hoặc "Inactive"
                 {
                      new ConditionalMappingText
                     {
@@ -530,19 +537,19 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     },
                 }
             };
-            byte[] bytes = excelExportCore.ExportExcel(dt, subject, options);
+            byte[] bytes = excelExportCore.ExportExcel(dt, subject, options);//nén toàn bộ data và cấu hình thành một mảng byte, filename: tên file tự động đính kèm ngày giờ hiện tại
             string filename = string.Format("{1} {0:dd-MM-yyyy HH-mm}.xlsx", DateTime.Now, Helpers.NormalizeFileName(subject));
-            Response.Clear();
+            Response.Clear();//Xóa sạch mã html đang chuẩn bị tải lên màn hình 
 
             MemoryStream ms = new MemoryStream(bytes);
-            Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";//đổi contenttype thành .sheet, 
             Response.AddHeader("content-disposition", "attachment;filename=" + filename);
             Response.Buffer = true;
             ms.WriteTo(Response.OutputStream);
             Response.Flush();
             Response.End();
         }
-        public override void ConfirmRequest(ConfirmResult e)
+        public override void ConfirmRequest(ConfirmResult e)//là điểm cuối trong 1 quy trình thực hiện 1 hành động nhạy cảm như xóa hoặc reset password
         {
             if (e != null)
             {

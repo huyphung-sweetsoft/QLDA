@@ -267,7 +267,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string CUSTOMER_NAME = "CUSTOMER_NAME";
         public const string PROJECT_MANAGER = "PROJECT_MANAGER";
         public const string PROJECT_CODE = "PROJECT_CODE";
-        public const string EMPLOYEE_NAME = "EMPLOYEE_NAME";
         public const string CONTRACT = "CONTRACT";
         public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
@@ -275,7 +274,15 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROJECT_CODE_ALREADY_EXISTS = "PROJECT_CODE_ALREADY_EXISTS";
         public const string PROJECT_INFORMATION = "PROJECT_INFORMATION";
         //public const string END_DATE_PREDICTED = "END_DATE_PREDICTED";
-
+        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
+        public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";
+        public const string EMPLOYEE_MANAGEMENT = "EMPLOYEE_MANAGEMENT";
+        public const string EMPLOYEE_NAME = "EMPLOYEE_NAME";
+        public const string EMPLOYEE_CCCD = "EMPLOYEE_CCCD";
+        public const string EMPLOYEE_JOINDATE = "EMPLOYEE_JOINDATE";
+        public const string PHONG_BAN = "PHONG_BAN";
+        public const string CHUC_DANH = "CHUC_DANH";
+        public const string GIOI_TINH = "GIOI_TINH";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
@@ -317,7 +324,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE = "THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE";
         public const string RESULT = "RESULT";
         public const string PLEASE_CHOSE_GRADE = "PLEASE_CHOSE_GRADE";
-
+        
         //public const string JOIN_COMPETITION = "JOIN_COMPETITION";
 
         //Contest
@@ -333,5 +340,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";
         public const string TASK_MANAGEMENT = "TASK_MANAGEMENT";
         public const string TASK_LIST = "TASK_LIST";
+        public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
     }
 }

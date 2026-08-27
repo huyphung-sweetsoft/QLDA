@@ -1074,9 +1074,6 @@
   <data name="PROJECT_CODE" xml:space="preserve">
     <value />
   </data>
-  <data name="EMPLOYEE_NAME" xml:space="preserve">
-    <value />
-  </data>
   <data name="CONTRACT" xml:space="preserve">
     <value>Contract</value>
   </data>
@@ -1095,5 +1092,35 @@
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PROJECT_INFORMATION" xml:space="preserve">
     <value />
+  </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value>Danh sách khách hàng</value>
+  </data>
+  <data name="EMPLOYEE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý nhân viên</value>
+  </data>
+  <data name="EMPLOYEE_LIST" xml:space="preserve">
+    <value>Danh sách nhân viên</value>
+  </data>
+  <data name="CCCD_ALREADY_EXISTS" xml:space="preserve">
+    <value>Căn cước công dân đã tồn tại rồi</value>
+  </data>
+  <data name="EMPLOYEE_NAME" xml:space="preserve">
+    <value>Tên Nhân Viên</value>
+  </data>
+  <data name="EMPLOYEE_CCCD" xml:space="preserve">
+    <value>Số CCCD</value>
+  </data>
+  <data name="EMPLOYEE_JOINDATE" xml:space="preserve">
+    <value>Ngày Gia Nhập</value>
+  </data>
+  <data name="PHONG_BAN" xml:space="preserve">
+    <value>Phòng Ban</value>
+  </data>
+  <data name="CHUC_DANH" xml:space="preserve">
+    <value>Chức Danh</value>
+  </data>
+  <data name="GIOI_TINH" xml:space="preserve">
+    <value>Giới tính</value>
   </data>
 </root>
