@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/MasterPages/BasicTemplate.Master" hash="564ac705" filehash="ffffe07a62795686" flags="110000" assembly="App_Web_4tbogxd4" type="ASP.masterpages_basictemplate_master">
+    <filedeps>
+        <filedep name="/MasterPages/BasicTemplate.Master" />
+    </filedeps>
+</preserve>

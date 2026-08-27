@@ -894,6 +894,36 @@
   <data name="DISPLAY_ORDER" xml:space="preserve">
     <value>Thứ tự hiển thị</value>
   </data>
+  <data name="DOCUMENT_TYPE" xml:space="preserve">
+    <value>Loại tài liệu</value>
+  </data>
+  <data name="DOCUMENT_TYPE_LIST" xml:space="preserve">
+    <value>Danh sách loại tài liệu</value>
+  </data>
+  <data name="DOCUMENT_TYPE_NAME" xml:space="preserve">
+    <value>Tên loại</value>
+  </data>
+  <data name="ALLOW_SIGNING" xml:space="preserve">
+    <value>Cần trình ký</value>
+  </data>
+  <data name="DEFAULT_SIGNING_METHOD" xml:space="preserve">
+    <value>Hình thức ký mặc định</value>
+  </data>
+  <data name="ALLOW_SEND_CUSTOMER" xml:space="preserve">
+    <value>Cần gửi khách hàng</value>
+  </data>
+  <data name="ALLOW_PHYSICAL_STORAGE" xml:space="preserve">
+    <value>Cần lưu bản cứng</value>
+  </data>
+  <data name="PAPER_SIGNING" xml:space="preserve">
+    <value>Ký bản giấy</value>
+  </data>
+  <data name="EXTERNAL_DIGITAL_SIGNING" xml:space="preserve">
+    <value>Ký số bên ngoài</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP" xml:space="preserve">
+    <value>Chọn nhóm tài liệu</value>
+  </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
   </data>
@@ -1017,34 +1047,139 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="DOCUMENT_TYPE" xml:space="preserve">
-    <value>Loại tài liệu</value>
+  <data name="DOCUMENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Nơi lưu trữ</value>
   </data>
-  <data name="DOCUMENT_TYPE_LIST" xml:space="preserve">
-    <value>Danh sách loại tài liệu</value>
+  <data name="DOCUMENT_STORAGE_LOCATION_LIST" xml:space="preserve">
+    <value>Danh sách nơi lưu trữ</value>
   </data>
-  <data name="DOCUMENT_TYPE_NAME" xml:space="preserve">
-    <value>Tên loại</value>
+  <data name="DOCUMENT_STORAGE_LOCATION_NAME" xml:space="preserve">
+    <value>Tên nơi lưu trữ</value>
   </data>
-  <data name="ALLOW_SIGNING" xml:space="preserve">
-    <value>Cần trình ký</value>
+  <data name="DOCUMENT_STORAGE_LOCATION_CODE" xml:space="preserve">
+    <value>Mã nơi lưu trữ</value>
   </data>
-  <data name="DEFAULT_SIGNING_METHOD" xml:space="preserve">
-    <value>Hình thức ký mặc định</value>
+  <data name="STORAGE_LEVEL" xml:space="preserve">
+    <value>Cấp lưu trữ</value>
   </data>
-  <data name="ALLOW_SEND_CUSTOMER" xml:space="preserve">
-    <value>Cần gửi khách hàng</value>
+  <data name="PARENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Nơi lưu trữ cha</value>
   </data>
-  <data name="ALLOW_PHYSICAL_STORAGE" xml:space="preserve">
-    <value>Cần lưu bản cứng</value>
+  <data name="RESPONSIBLE_EMPLOYEE" xml:space="preserve">
+    <value>Người phụ trách</value>
   </data>
-  <data name="PAPER_SIGNING" xml:space="preserve">
-    <value>Ký bản giấy</value>
+  <data name="SELECT_STORAGE_LEVEL" xml:space="preserve">
+    <value>Chọn cấp lưu trữ</value>
   </data>
-  <data name="EXTERNAL_DIGITAL_SIGNING" xml:space="preserve">
-    <value>Ký số bên ngoài</value>
+  <data name="SELECT_PARENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Chọn nơi lưu trữ cha</value>
   </data>
-  <data name="SELECT_DOCUMENT_GROUP" xml:space="preserve">
-    <value>Chọn nhóm tài liệu</value>
+  <data name="DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Mẫu tài liệu</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE_LIST" xml:space="preserve">
+    <value>Danh sách mẫu tài liệu</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE_NAME" xml:space="preserve">
+    <value>Tên mẫu tài liệu</value>
+  </data>
+  <data name="TEMPLATE_VERSION" xml:space="preserve">
+    <value>Phiên bản mẫu</value>
+  </data>
+  <data name="DEFAULT_TEMPLATE" xml:space="preserve">
+    <value>Mẫu mặc định</value>
+  </data>
+  <data name="TEMPLATE_FILE" xml:space="preserve">
+    <value>Tệp mẫu</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TYPE" xml:space="preserve">
+    <value>Chọn loại tài liệu</value>
+  </data>
+  <data name="FILE_NOT_UPLOADED" xml:space="preserve">
+    <value>Chưa tải tệp</value>
+  </data>
+  <data name="SAVE_TEMPLATE_BEFORE_UPLOAD" xml:space="preserve">
+    <value>Thông tin mẫu đã được lưu. Bạn có thể tải lên hoặc thay thế một tệp mẫu tại đây.</value>
+  </data>
+  <data name="DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ</value>
+  </data>
+  <data name="DOCUMENT_LIST" xml:space="preserve">
+    <value>Danh sách hồ sơ</value>
+  </data>
+  <data name="DOCUMENT_CODE" xml:space="preserve">
+    <value>Mã hồ sơ</value>
+  </data>
+  <data name="DOCUMENT_NAME" xml:space="preserve">
+    <value>Tên hồ sơ</value>
+  </data>
+  <data name="DOCUMENT_STATUS" xml:space="preserve">
+    <value>Trạng thái hồ sơ</value>
+  </data>
+  <data name="SIGNING_METHOD" xml:space="preserve">
+    <value>Hình thức ký</value>
+  </data>
+  <data name="CUSTOMER_SEND_STATUS" xml:space="preserve">
+    <value>Trạng thái gửi khách</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_STATUS" xml:space="preserve">
+    <value>Trạng thái lưu bản cứng</value>
+  </data>
+  <data name="OFFICIAL_FILE" xml:space="preserve">
+    <value>File chính thức</value>
+  </data>
+  <data name="COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ công ty</value>
+  </data>
+  <data name="SELECT_RESPONSIBLE_EMPLOYEE" xml:space="preserve">
+    <value>Chọn người phụ trách</value>
+  </data>
+  <data name="DRAFTING" xml:space="preserve">
+    <value>Đang soạn thảo</value>
+  </data>
+  <data name="PENDING_SIGNATURE" xml:space="preserve">
+    <value>Đang trình ký</value>
+  </data>
+  <data name="CHANGES_REQUESTED" xml:space="preserve">
+    <value>Yêu cầu điều chỉnh</value>
+  </data>
+  <data name="SIGNED" xml:space="preserve">
+    <value>Đã ký</value>
+  </data>
+  <data name="WAITING_FOR_RETURN" xml:space="preserve">
+    <value>Chờ nhận lại</value>
+  </data>
+  <data name="RECEIVED_BACK" xml:space="preserve">
+    <value>Đã nhận lại</value>
+  </data>
+  <data name="NOT_STORED" xml:space="preserve">
+    <value>Chưa lưu</value>
+  </data>
+  <data name="STORED" xml:space="preserve">
+    <value>Đã lưu</value>
+  </data>
+  <data name="CHECKED_OUT" xml:space="preserve">
+    <value>Đang lấy ra</value>
+  </data>
+  <data name="DOCUMENT_TYPE_RULE_NOTICE" xml:space="preserve">
+    <value>Các lựa chọn bên dưới được điền mặc định theo loại tài liệu. Bạn có thể thay đổi riêng cho từng hồ sơ trước khi lưu.</value>
+  </data>
+  <data name="RESTORE_DOCUMENT_TYPE_DEFAULTS" xml:space="preserve">
+    <value>Khôi phục mặc định theo loại</value>
+  </data>
+  <data name="DOCUMENT_VERSION_FILES" xml:space="preserve">
+    <value>Phiên bản tệp của hồ sơ</value>
+  </data>
+  <data name="DOCUMENT_VERSION_NOTICE" xml:space="preserve">
+    <value>Mỗi tệp mới tải lên được tạo thành một phiên bản mới và phiên bản mới nhất là bản hiện hành. Tệp phiên bản không tự động trở thành bản chính thức hoặc kết quả ký.</value>
+  </data>
+  <data name="SAVE_DOCUMENT_BEFORE_UPLOAD" xml:space="preserve">
+    <value>Hãy lưu thông tin hồ sơ trước. Sau khi lưu, khu vực tải tệp sẽ xuất hiện ngay tại đây.</value>
+  </data>
+  <data name="CURRENT_VERSION" xml:space="preserve">
+    <value>Hiện hành</value>
+  </data>
+  <data name="FILE_NAME" xml:space="preserve">
+    <value>Tên tệp</value>
   </data>
 </root>

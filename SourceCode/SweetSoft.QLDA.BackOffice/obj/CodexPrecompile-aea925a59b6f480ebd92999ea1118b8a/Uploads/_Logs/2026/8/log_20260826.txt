@@ -1,0 +1,69 @@
+[2026-08-26 03:44:37] [Error] - Failed to create mail message for Test123@gmail.com
+System.ArgumentException: Invalid email address: ..
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.CreateMailAddress(String email, String displayName) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 169
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 133
+[2026-08-26 03:44:37] [Error] - Failed to send email to Test123@gmail.com
+SweetSoft.QLDA.Core.MailManager.Configs.EmailCreationException: Failed to create mail message: Invalid email address: .. ---> System.ArgumentException: Invalid email address: ..
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.CreateMailAddress(String email, String displayName) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 169
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 133
+   --- End of inner exception stack trace ---
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 162
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<SendSingleEmailAsync>d__6.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 80
+[2026-08-26 03:44:37] [Error] - Failed to send email for history ID: 2b3ca001-097b-0070-99f1-a0f119316e2c
+SweetSoft.QLDA.Core.MailManager.EmailSendException: Failed to send email to Test123@gmail.com: Failed to create mail message: Invalid email address: .. ---> SweetSoft.QLDA.Core.MailManager.Configs.EmailCreationException: Failed to create mail message: Invalid email address: .. ---> System.ArgumentException: Invalid email address: ..
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.CreateMailAddress(String email, String displayName) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 169
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 133
+   --- End of inner exception stack trace ---
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 162
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<SendSingleEmailAsync>d__6.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 80
+   --- End of inner exception stack trace ---
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<SendSingleEmailAsync>d__6.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 93
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<>c__DisplayClass5_0.<<SendEmailAsync>b__0>d.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 54
+[2026-08-26 03:44:37] [Debug] - Updated email history 2b3ca001-097b-0070-99f1-a0f119316e2c to status Pending
+[2026-08-26 03:44:37] [Info] - Email retry scheduled for history ID: 2b3ca001-097b-0070-99f1-a0f119316e2c, attempt: 1
+[2026-08-26 03:44:38] [Error] - Failed to create mail message for Test123@gmail.com
+System.ArgumentException: Invalid email address: ..
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.CreateMailAddress(String email, String displayName) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 169
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 133
+[2026-08-26 03:44:38] [Error] - Failed to send email to Test123@gmail.com
+SweetSoft.QLDA.Core.MailManager.Configs.EmailCreationException: Failed to create mail message: Invalid email address: .. ---> System.ArgumentException: Invalid email address: ..
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.CreateMailAddress(String email, String displayName) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 169
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 133
+   --- End of inner exception stack trace ---
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 162
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<SendSingleEmailAsync>d__6.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 80
+[2026-08-26 03:44:38] [Error] - Email retry failed for history ID: 2b3ca001-097b-0070-99f1-a0f119316e2c
+SweetSoft.QLDA.Core.MailManager.EmailSendException: Failed to send email to Test123@gmail.com: Failed to create mail message: Invalid email address: .. ---> SweetSoft.QLDA.Core.MailManager.Configs.EmailCreationException: Failed to create mail message: Invalid email address: .. ---> System.ArgumentException: Invalid email address: ..
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.CreateMailAddress(String email, String displayName) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 169
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 133
+   --- End of inner exception stack trace ---
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<CreateMailMessageAsync>d__8.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 162
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<SendSingleEmailAsync>d__6.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 80
+   --- End of inner exception stack trace ---
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<SendSingleEmailAsync>d__6.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 93
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at SweetSoft.QLDA.Core.MailManager.SmtpService.<RetryEmailSend>d__16.MoveNext() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.Core\MailManager\SmtpService.cs:line 339
+[2026-08-26 03:44:38] [Debug] - Updated email history 2b3ca001-097b-0070-99f1-a0f119316e2c to status Failed

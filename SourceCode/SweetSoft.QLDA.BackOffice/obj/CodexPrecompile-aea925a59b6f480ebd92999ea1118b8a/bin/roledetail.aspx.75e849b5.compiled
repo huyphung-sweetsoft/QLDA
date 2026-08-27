@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fUsers/RoleDetail.aspx" hash="564ac705" filehash="a1c773e064a5ba16" flags="110000" assembly="App_Web_wgssknxl" type="ASP.fusers_roledetail_aspx">
+    <filedeps>
+        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
+        <filedep name="/Controls/GridviewPaging.ascx" />
+        <filedep name="/fUsers/Controls/CtrlPermission.ascx" />
+        <filedep name="/fUsers/Controls/CtrlUsers.ascx" />
+        <filedep name="/fUsers/RoleDetail.aspx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+    </filedeps>
+</preserve>

@@ -5,6 +5,7 @@ using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -35,6 +36,44 @@ namespace SweetSoft.QLDA.Core.Managers
         public List<TblNhomTaiLieu> GetAll(string keyword = null)
         {
             return _repository.GetAll(keyword);
+        }
+
+        /// <summary>
+        /// Tìm kiếm nhanh nhóm tài liệu, có hỗ trợ bộ lọc và phân trang.
+        /// </summary>
+        public DataTable SearchDocumentGroups(
+            string searchTerm,
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            return _repository.SearchPaging(
+                searchTerm,
+                parameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
+        }
+
+        /// <summary>
+        /// Tìm kiếm nâng cao nhóm tài liệu, có hỗ trợ phân trang.
+        /// </summary>
+        public DataTable SearchDocumentGroups(
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            return _repository.SearchPaging(
+                parameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
         }
 
         public TblNhomTaiLieu GetById(Guid idNhomTaiLieu)

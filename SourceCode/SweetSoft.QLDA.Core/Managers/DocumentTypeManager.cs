@@ -5,6 +5,7 @@ using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -53,6 +54,44 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetAll(
                 keyword,
                 idNhomTaiLieu);
+        }
+        /// <summary>
+        /// Tìm kiếm nhanh loại tài liệu,
+        /// có hỗ trợ bộ lọc và phân trang.
+        /// </summary>
+        public DataTable SearchDocumentTypes(
+            string searchTerm,
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            return _repository.SearchPaging(
+                searchTerm,
+                parameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
+        }
+        /// <summary>
+        /// Tìm kiếm nâng cao loại tài liệu,
+        /// có hỗ trợ phân trang.
+        /// </summary>
+        public DataTable SearchDocumentTypes(
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            return _repository.SearchPaging(
+                parameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
         }
 
         /// <summary>

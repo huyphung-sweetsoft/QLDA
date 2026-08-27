@@ -26,6 +26,15 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PAPER_SIGNING = "PAPER_SIGNING";
         public const string EXTERNAL_DIGITAL_SIGNING = "EXTERNAL_DIGITAL_SIGNING";
         public const string SELECT_DOCUMENT_GROUP = "SELECT_DOCUMENT_GROUP";
+        public const string DOCUMENT_STORAGE_LOCATION ="DOCUMENT_STORAGE_LOCATION";
+        public const string DOCUMENT_STORAGE_LOCATION_LIST ="DOCUMENT_STORAGE_LOCATION_LIST";
+        public const string DOCUMENT_STORAGE_LOCATION_NAME ="DOCUMENT_STORAGE_LOCATION_NAME";
+        public const string DOCUMENT_STORAGE_LOCATION_CODE ="DOCUMENT_STORAGE_LOCATION_CODE";
+        public const string STORAGE_LEVEL ="STORAGE_LEVEL";
+        public const string PARENT_STORAGE_LOCATION ="PARENT_STORAGE_LOCATION";
+        public const string RESPONSIBLE_EMPLOYEE ="RESPONSIBLE_EMPLOYEE";
+        public const string SELECT_STORAGE_LEVEL ="SELECT_STORAGE_LEVEL";
+        public const string SELECT_PARENT_STORAGE_LOCATION ="SELECT_PARENT_STORAGE_LOCATION";
 
         public const string ADVANCED_SEARCH = "ADVANCED_SEARCH";
         public const string NO_DATA = "NO_DATA";
@@ -327,6 +336,43 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MODERATOR = "MODERATOR";
         public const string JOIN_COMPETITIONS = "JOIN_COMPETITIONS";
         public const string COMPETITION_NAME = "COMPETITION_NAME";
+
+        public const string DOCUMENT_TEMPLATE = "DOCUMENT_TEMPLATE";
+        public const string DOCUMENT_TEMPLATE_LIST = "DOCUMENT_TEMPLATE_LIST";
+        public const string DOCUMENT_TEMPLATE_NAME = "DOCUMENT_TEMPLATE_NAME";
+        public const string TEMPLATE_VERSION = "TEMPLATE_VERSION";
+        public const string DEFAULT_TEMPLATE = "DEFAULT_TEMPLATE";
+        public const string TEMPLATE_FILE = "TEMPLATE_FILE";
+        public const string SELECT_DOCUMENT_TYPE = "SELECT_DOCUMENT_TYPE";
+        public const string FILE_NOT_UPLOADED = "FILE_NOT_UPLOADED";
+        public const string SAVE_TEMPLATE_BEFORE_UPLOAD = "SAVE_TEMPLATE_BEFORE_UPLOAD";
+        public const string DOCUMENT = "DOCUMENT";
+        public const string DOCUMENT_LIST = "DOCUMENT_LIST";
+        public const string DOCUMENT_CODE = "DOCUMENT_CODE";
+        public const string DOCUMENT_NAME = "DOCUMENT_NAME";
+        public const string DOCUMENT_STATUS = "DOCUMENT_STATUS";
+        public const string SIGNING_METHOD = "SIGNING_METHOD";
+        public const string CUSTOMER_SEND_STATUS = "CUSTOMER_SEND_STATUS";
+        public const string PHYSICAL_STORAGE_STATUS = "PHYSICAL_STORAGE_STATUS";
+        public const string OFFICIAL_FILE = "OFFICIAL_FILE";
+        public const string COMPANY_DOCUMENT = "COMPANY_DOCUMENT";
+        public const string SELECT_RESPONSIBLE_EMPLOYEE = "SELECT_RESPONSIBLE_EMPLOYEE";
+        public const string DRAFTING = "DRAFTING";
+        public const string PENDING_SIGNATURE = "PENDING_SIGNATURE";
+        public const string CHANGES_REQUESTED = "CHANGES_REQUESTED";
+        public const string SIGNED = "SIGNED";
+        public const string WAITING_FOR_RETURN = "WAITING_FOR_RETURN";
+        public const string RECEIVED_BACK = "RECEIVED_BACK";
+        public const string NOT_STORED = "NOT_STORED";
+        public const string STORED = "STORED";
+        public const string CHECKED_OUT = "CHECKED_OUT";
+        public const string DOCUMENT_TYPE_RULE_NOTICE = "DOCUMENT_TYPE_RULE_NOTICE";
+        public const string RESTORE_DOCUMENT_TYPE_DEFAULTS = "RESTORE_DOCUMENT_TYPE_DEFAULTS";
+        public const string DOCUMENT_VERSION_FILES = "DOCUMENT_VERSION_FILES";
+        public const string DOCUMENT_VERSION_NOTICE = "DOCUMENT_VERSION_NOTICE";
+        public const string SAVE_DOCUMENT_BEFORE_UPLOAD = "SAVE_DOCUMENT_BEFORE_UPLOAD";
+        public const string CURRENT_VERSION = "CURRENT_VERSION";
+        public const string FILE_NAME = "FILE_NAME";
 
     }
 }

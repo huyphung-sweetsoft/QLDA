@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/AccessDenied.aspx" hash="564ac705" filehash="9c089dda36ac9395" flags="110000" assembly="App_Web_tcv4j1hj" type="ASP.accessdenied_aspx">
+    <filedeps>
+        <filedep name="/AccessDenied.aspx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+    </filedeps>
+</preserve>

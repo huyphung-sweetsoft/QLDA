@@ -219,6 +219,11 @@
     <Compile Include="MailManager\Interfaces\IEmailManager.cs" />
     <Compile Include="MailManager\Repository\EmailHistoryRepository.cs" />
     <Compile Include="Managers\BaseManager.cs" />
+    <Compile Include="Managers\DocumentGroupManager.cs" />
+    <Compile Include="Managers\DocumentManager.cs" />
+    <Compile Include="Managers\DocumentStorageLocationManager.cs" />
+    <Compile Include="Managers\DocumentTemplateManager.cs" />
+    <Compile Include="Managers\DocumentTypeManager.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationOptions.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationRequest.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfMargins.cs" />
@@ -235,6 +240,7 @@
     <Compile Include="PdfGeneration\Services\NRecoPdfGenerator.cs" />
     <Compile Include="PdfGeneration\Services\PdfGenerationService.cs" />
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
+    <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />
     <Compile Include="SEO\Schemas\AnswerSchema.cs" />
     <Compile Include="SEO\Schemas\ArticleSchema.cs" />
@@ -284,6 +290,10 @@
     <Compile Include="MailManager\SmtpService.cs" />
     <Compile Include="Managers\RoleManager.cs" />
     <Compile Include="Respositories\FileRepository.cs" />
+    <Compile Include="Respositories\DocumentGroupRepository.cs" />
+    <Compile Include="Respositories\DocumentRepository.cs" />
+    <Compile Include="Respositories\DocumentTemplateRepository.cs" />
+    <Compile Include="Respositories\DocumentTypeRepository.cs" />
     <Compile Include="Respositories\RoleRepository.cs" />
     <Compile Include="SysManager\Interfaces\IAuditRepository.cs" />
     <Compile Include="SysManager\Models\AuditConfiguration.cs" />

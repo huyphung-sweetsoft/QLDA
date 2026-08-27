@@ -30,5 +30,8 @@ namespace SweetSoft.QLDA.Core.Functions
         JoinCompetition,
         DocumentGroup,
         DocumentType,
+        DocumentStorageLocation,
+        DocumentTemplate,
+        Document,
     }
 }

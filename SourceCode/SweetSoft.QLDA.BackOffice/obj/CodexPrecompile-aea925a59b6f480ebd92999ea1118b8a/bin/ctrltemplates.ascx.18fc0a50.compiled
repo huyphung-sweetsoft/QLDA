@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fEmailTemplate/Controls/CtrlTemplates.ascx" hash="564ac705" filehash="bf1265d04fff2abf" flags="110000" assembly="App_Web_5gnxfz2u" type="ASP.femailtemplate_controls_ctrltemplates_ascx">
+    <filedeps>
+        <filedep name="/Controls/GridviewPaging.ascx" />
+        <filedep name="/fEmailTemplate/Controls/CtrlTemplates.ascx" />
+    </filedeps>
+</preserve>

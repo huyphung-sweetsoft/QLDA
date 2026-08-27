@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fUsers/UserList.aspx" hash="564ac705" filehash="e5d295e2e3b9c33f" flags="110000" assembly="App_Web_wgssknxl" type="ASP.fusers_userlist_aspx">
+    <filedeps>
+        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
+        <filedep name="/Controls/GridviewPaging.ascx" />
+        <filedep name="/fFilesBox/FilesBox.ascx" />
+        <filedep name="/fUsers/Controls/CtrlUsers.ascx" />
+        <filedep name="/fUsers/UserList.aspx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+    </filedeps>
+</preserve>

@@ -598,6 +598,320 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.DataBind();
             dropdown.SelectedIndex = -1;
         }
+        public void BindDocumentGroups(ExtraDropdown dropdown, bool isAll = false)
+        {
+            dropdown.Items.Clear();
+
+            List<TblNhomTaiLieu> groups =
+                DocumentGroupManager.Instance.GetAll()
+                ?? new List<TblNhomTaiLieu>();
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.DefaultSearchValue = string.Empty;
+                dropdown.Items.Add(
+                    new ListItem(
+                        "Tất cả nhóm tài liệu",
+                        string.Empty));
+            }
+            else
+            {
+                dropdown.Items.Add(
+                    new ListItem(
+                        "Chọn nhóm tài liệu",
+                        string.Empty));
+            }
+
+            foreach (TblNhomTaiLieu group in groups)
+            {
+                string text = group.TenNhom;
+
+                if (!group.KichHoat)
+                    text += " (Đã khóa)";
+
+                dropdown.Items.Add(
+                    new ListItem(
+                        text,
+                        group.IdNhomTaiLieu.ToString()));
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+        public void BindDocumentGroups(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+
+            List<TblNhomTaiLieu> groups =
+                DocumentGroupManager.Instance.GetAll()
+                ?? new List<TblNhomTaiLieu>();
+
+            foreach (TblNhomTaiLieu group in groups)
+            {
+                string text = group.TenNhom;
+
+                if (!group.KichHoat)
+                    text += " (Đã khóa)";
+
+                dropdown.AddItem(
+                    text,
+                    group.IdNhomTaiLieu.ToString());
+            }
+
+            dropdown.ClearSelection();
+        }
+
+        public void BindDocumentTypes(ExtraDropdown dropdown, bool isAll = false)
+        {
+            dropdown.Items.Clear();
+
+            List<TblLoaiTaiLieu> documentTypes =
+                DocumentTypeManager.Instance.GetAll()
+                ?? new List<TblLoaiTaiLieu>();
+
+            Dictionary<Guid, string> groupNames =
+                (DocumentGroupManager.Instance.GetAll()
+                    ?? new List<TblNhomTaiLieu>())
+                .ToDictionary(
+                    group => group.IdNhomTaiLieu,
+                    group => group.TenNhom);
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.DefaultSearchValue = string.Empty;
+                dropdown.Items.Add(new ListItem(
+                    "Tất cả loại tài liệu",
+                    string.Empty));
+            }
+            else
+            {
+                dropdown.Items.Add(new ListItem(
+                    "Chọn loại tài liệu",
+                    string.Empty));
+            }
+
+            foreach (TblLoaiTaiLieu documentType in documentTypes)
+            {
+                string groupName;
+                groupNames.TryGetValue(
+                    documentType.IdNhomTaiLieu,
+                    out groupName);
+
+                string text = string.IsNullOrEmpty(groupName)
+                    ? documentType.TenLoai
+                    : groupName + " / " + documentType.TenLoai;
+
+                if (!documentType.KichHoat)
+                    text += " (Đã khóa)";
+
+                dropdown.Items.Add(new ListItem(
+                    text,
+                    documentType.IdLoaiTaiLieu.ToString()));
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindDocumentTypes(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+
+            List<TblLoaiTaiLieu> documentTypes =
+                DocumentTypeManager.Instance.GetAll()
+                ?? new List<TblLoaiTaiLieu>();
+
+            Dictionary<Guid, string> groupNames =
+                (DocumentGroupManager.Instance.GetAll()
+                    ?? new List<TblNhomTaiLieu>())
+                .ToDictionary(
+                    group => group.IdNhomTaiLieu,
+                    group => group.TenNhom);
+
+            foreach (TblLoaiTaiLieu documentType in documentTypes)
+            {
+                string groupName;
+                groupNames.TryGetValue(
+                    documentType.IdNhomTaiLieu,
+                    out groupName);
+
+                string text = string.IsNullOrEmpty(groupName)
+                    ? documentType.TenLoai
+                    : groupName + " / " + documentType.TenLoai;
+
+                if (!documentType.KichHoat)
+                    text += " (Đã khóa)";
+
+                dropdown.AddItem(
+                    text,
+                    documentType.IdLoaiTaiLieu.ToString());
+            }
+
+            dropdown.ClearSelection();
+        }
+
+        public void BindDocumentSigningMethods(
+            ExtraDropdown dropdown,
+            bool isAll = false)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue =
+                isAll ? "null" : string.Empty;
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.EmptyItemText =
+                    UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.ALL);
+                dropdown.EmptyItemValue = string.Empty;
+            }
+
+            dropdown.Items.Add(
+                new ListItem(
+                    UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.PAPER_SIGNING),
+                    DocumentSigningMethodKeys.Paper));
+
+            dropdown.Items.Add(
+                new ListItem(
+                    UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys
+                            .EXTERNAL_DIGITAL_SIGNING),
+                    DocumentSigningMethodKeys
+                        .DigitalExternal));
+
+            dropdown.SelectedIndex = isAll ? -1 : 0;
+        }
+
+        public void BindDocumentStatuses(
+            ExtraDropdown dropdown,
+            bool isAll = false)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = isAll ? "null" : string.Empty;
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.EmptyItemText =
+                    UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.ALL);
+                dropdown.EmptyItemValue = string.Empty;
+            }
+
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.DRAFTING),
+                DocumentStatusKeys.Drafting));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.PENDING_SIGNATURE),
+                DocumentStatusKeys.PendingSignature));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.CHANGES_REQUESTED),
+                DocumentStatusKeys.ChangesRequested));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.SIGNED),
+                DocumentStatusKeys.Signed));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.COMPLETED),
+                DocumentStatusKeys.Completed));
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindDocumentStatuses(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.AddItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.DRAFTING),
+                DocumentStatusKeys.Drafting);
+            dropdown.AddItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.PENDING_SIGNATURE),
+                DocumentStatusKeys.PendingSignature);
+            dropdown.AddItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.CHANGES_REQUESTED),
+                DocumentStatusKeys.ChangesRequested);
+            dropdown.AddItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.SIGNED),
+                DocumentStatusKeys.Signed);
+            dropdown.AddItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.COMPLETED),
+                DocumentStatusKeys.Completed);
+            dropdown.ClearSelection();
+        }
+
+        public void BindDocumentCustomerStatuses(
+            ExtraDropdown dropdown,
+            bool isAll = false)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = isAll ? "null" : string.Empty;
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.EmptyItemText =
+                    UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.ALL);
+                dropdown.EmptyItemValue = string.Empty;
+            }
+
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.NOT_SENT),
+                DocumentCustomerStatusKeys.NotSent));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.SENT),
+                DocumentCustomerStatusKeys.Sent));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.WAITING_FOR_RETURN),
+                DocumentCustomerStatusKeys.WaitingForReturn));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.RECEIVED_BACK),
+                DocumentCustomerStatusKeys.ReceivedBack));
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindDocumentPhysicalStorageStatuses(
+            ExtraDropdown dropdown,
+            bool isAll = false)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = isAll ? "null" : string.Empty;
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.EmptyItemText =
+                    UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.ALL);
+                dropdown.EmptyItemValue = string.Empty;
+            }
+
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.NOT_STORED),
+                DocumentPhysicalStorageStatusKeys.NotStored));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.STORED),
+                DocumentPhysicalStorageStatusKeys.Stored));
+            dropdown.Items.Add(new ListItem(
+                UITextsReader.GetBackEndResourceText(
+                    BackEndResourceKeys.CHECKED_OUT),
+                DocumentPhysicalStorageStatusKeys.CheckedOut));
+            dropdown.SelectedIndex = -1;
+        }
         #endregion
     }
 }

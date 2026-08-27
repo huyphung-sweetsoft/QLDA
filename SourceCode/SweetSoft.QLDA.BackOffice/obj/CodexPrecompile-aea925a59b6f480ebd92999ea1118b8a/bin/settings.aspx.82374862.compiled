@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fSettings/Settings.aspx" hash="564ac705" filehash="68806b23a82bca20" flags="110000" assembly="App_Web_edi0bmig" type="ASP.fsettings_settings_aspx">
+    <filedeps>
+        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
+        <filedep name="/fSettings/Settings.aspx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+    </filedeps>
+</preserve>

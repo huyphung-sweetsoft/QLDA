@@ -133,7 +133,7 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                     // Đếm số lượng submenu (ParentCode khác rỗng hoặc null)
                     var subMenus = aspnetFunctions.Where(f => !string.IsNullOrEmpty(f.ParentCode)).ToList();
 
-                    if (subMenus.Count < 6)
+                    if (subMenus.Count < 1)
                     {
                         StringBuilder sbBasic = new StringBuilder();
                         var menu = aspnetFunctions.FirstOrDefault(f => f.FunctionCode == ModuleKeys.JoinCompetition.ToString());

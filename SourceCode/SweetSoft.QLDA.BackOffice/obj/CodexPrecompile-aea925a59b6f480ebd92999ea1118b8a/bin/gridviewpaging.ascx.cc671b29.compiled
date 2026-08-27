@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/Controls/GridviewPaging.ascx" hash="564ac705" filehash="1fe1cb0fbcfe" flags="110000" assembly="App_Web_phi4lxbb" type="ASP.controls_gridviewpaging_ascx">
+    <filedeps>
+        <filedep name="/Controls/GridviewPaging.ascx" />
+    </filedeps>
+</preserve>

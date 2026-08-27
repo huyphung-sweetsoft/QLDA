@@ -1,0 +1,118 @@
+.dashboard-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    /*margin: 10px 0;*/
+    padding: 15px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #4a1387 0%, #7b2cb8 100%);
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+    min-height: 400px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.table thead {
+    background: linear-gradient(135deg, #4a1387 0%, #310b5c 100%);
+    color: white;
+}
+
+.table-container .table-responsive {
+    background-color: #f3f6f8 !important;
+}
+
+.badge-status {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.meeting-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    display:block;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -22px;
+        top: 8px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #4a1387;
+    }
+
+    .timeline-item:not(:last-child):after {
+        content: '';
+        position: absolute;
+        left: -17px;
+        top: 20px;
+        width: 2px;
+        height: calc(100% - 12px);
+        background: #e9ecef;
+    }
+
+.card-box-shadow {
+    background: #fff;
+    border-radius: 12px; /* bo góc mềm mại */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* bóng mờ nhẹ */
+    padding: 16px;
+    transition: all 0.3s ease; /* hiệu ứng hover */
+}
+
+    .card-box-shadow:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); /* khi hover nổi bật hơn */
+        transform: translateY(-4px); /* nhấc khung lên */
+    }

@@ -258,6 +258,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     this.CURRENT_PAGE.ShowInvalidDataError();
                     return;
                 }
+
                 //---------------------------------------------
                 #region delete file
                 List<Guid> listFileRemoveId = new List<Guid>();
@@ -269,8 +270,13 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     if(Guid.TryParse(fileRemoveId, out tmpId) && tmpId != Guid.Empty)
                         listFileRemoveId.Add(tmpId);
                 }
-                if(listFileRemoveId.Count > 0)
+                if (listFileRemoveId.Count > 0)
+                {
+                    if (!string.IsNullOrEmpty(this.BeforeSaveDataCallbackKey))
+                        DataCallback(this.BeforeSaveDataCallbackKey, null, null);
+
                     UploadManager.Instance.RemoveFiles(listFileRemoveId, this._refType.Value);
+                }
                 #endregion
 
                 #region permissions
@@ -396,6 +402,19 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 ViewState["SaveDataCallbackKey"] = value;
             }
         }
+
+        public string BeforeSaveDataCallbackKey
+        {
+            get
+            {
+                return (string)ViewState["BeforeSaveDataCallbackKey"];
+            }
+            set
+            {
+                ViewState["BeforeSaveDataCallbackKey"] = value;
+            }
+        }
+
         public void LoadFile(Guid refId, FileUploadTypes refType)
         {
             this.RefId = refId;

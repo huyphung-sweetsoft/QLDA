@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/Controls/Captcha.ascx" hash="564ac705" filehash="11c153bc9b35" flags="110000" assembly="App_Web_phi4lxbb" type="ASP.controls_captcha_ascx">
+    <filedeps>
+        <filedep name="/Controls/Captcha.ascx" />
+    </filedeps>
+</preserve>

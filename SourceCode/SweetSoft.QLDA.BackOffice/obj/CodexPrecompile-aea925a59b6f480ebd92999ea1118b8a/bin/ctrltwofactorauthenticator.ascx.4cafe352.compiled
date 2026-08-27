@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/Controls/TwoFA/CtrlTwoFactorAuthenticator.ascx" hash="564ac705" filehash="fffffd3f84dd7fcc" flags="110000" assembly="App_Web_31pugk45" type="ASP.controls_twofa_ctrltwofactorauthenticator_ascx">
+    <filedeps>
+        <filedep name="/Controls/TwoFA/CtrlTwoFactorAuthenticator.ascx" />
+    </filedeps>
+</preserve>
