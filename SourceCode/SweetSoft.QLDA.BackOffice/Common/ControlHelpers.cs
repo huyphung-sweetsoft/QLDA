@@ -5,6 +5,7 @@ using SweetSoft.QLDA.BackOffice.Controls.AutoComplete;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Controls.Helpers;
 using SweetSoft.QLDA.Core.EnumHelper;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Language;
 using SweetSoft.QLDA.Core.Managers;
@@ -599,6 +600,99 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.DataTextField = "DisplayName";
             dropdown.DataBind();
             dropdown.SelectedIndex = -1;
+        }
+
+        public void BindDuAnStatus(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
+            {
+                string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
+                string value = ((byte)status).ToString();
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindDuAnStatus(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (DuAnStatus status in Enum.GetValues(typeof(DuAnStatus)))
+            {
+                string text = EnumHelpers.GetERenderText(typeof(DuAnStatus), status);
+                string value = ((byte)status).ToString();
+                dropdown.AddItem(text, value);
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindLoaiDuAn(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+            List<TblLoaiDuAn> tblLoaiDuAns = LoaiDuAnManager.Instance.GetAllLoaiDuAn();
+            if (tblLoaiDuAns == null)
+                tblLoaiDuAns = new List<TblLoaiDuAn>();
+            ddl.DataTextField = TblLoaiDuAn.Columns.TenLoaiDuAn;
+            ddl.DataValueField = TblLoaiDuAn.Columns.IdLoaiDuAn;
+            ddl.DataSource = tblLoaiDuAns;
+            ddl.DataBind();
+        }
+
+        public void BindLoaiDuAn(BootstrapDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+            List<TblLoaiDuAn> tblLoaiDuAns = LoaiDuAnManager.Instance.GetAllLoaiDuAn();
+            if (tblLoaiDuAns == null)
+                tblLoaiDuAns = new List<TblLoaiDuAn>();
+            ddl.DataTextField = TblLoaiDuAn.Columns.TenLoaiDuAn;
+            ddl.DataValueField = TblLoaiDuAn.Columns.IdLoaiDuAn;
+            ddl.DataSource = tblLoaiDuAns;
+            ddl.DataBind();
+        }
+
+        public void BindKhachHang(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+            List<TblKhachHang> tblKhachHangs = KhachHangManager.Instance.GetAllKhachHang();
+            if (tblKhachHangs == null)
+                tblKhachHangs = new List<TblKhachHang>();
+            ddl.DataTextField = TblKhachHang.Columns.TenKhachHang;
+            ddl.DataValueField = TblKhachHang.Columns.IdKhachHang;
+            ddl.DataSource = tblKhachHangs;
+            ddl.DataBind();
+        }
+
+        public void BindNhanVien(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+            if (tblNhanViens == null)
+                tblNhanViens = new List<TblNhanVien>();
+            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
+            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
+            ddl.DataSource = tblNhanViens;
+            ddl.DataBind();
+        }
+
+        public void BindNhanVien(BootstrapDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+            if (tblNhanViens == null)
+                tblNhanViens = new List<TblNhanVien>();
+            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
+            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
+            ddl.DataSource = tblNhanViens;
+            ddl.DataBind();
         }
         #endregion
         #region Binding Task Controls

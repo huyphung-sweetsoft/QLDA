@@ -3,6 +3,7 @@
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Utils;
 using System;
+using System.Web.Security;
 
 namespace SweetSoft.QLDA.BackOffice.Common
 {
@@ -102,5 +103,12 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/email-template/{SecurityUtilities.ProtectUrlParameter(emailId.ToString())}";
         }
+
+        public static string Projects => "/Projects";
+        public static string ProjectDetail(Guid idDuAn)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(idDuAn.ToString())}";
+        }
+
     }
 }

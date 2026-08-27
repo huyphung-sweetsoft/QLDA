@@ -537,8 +537,8 @@
   <data name="PROJECT_MANAGEMENT" xml:space="preserve">
     <value>Quản lý dự án</value>
   </data>
-  <data name="PROJECT_LIST" xml:space="preserve">
-    <value>Danh sách dự án</value>
+  <data name="PROVINCES" xml:space="preserve">
+    <value>Các tỉnh</value>
   </data>
   <data name="READ" xml:space="preserve">
     <value>Đọc</value>
@@ -891,6 +891,39 @@
   <data name="COMPETITION_NAME" xml:space="preserve">
     <value>Tên cuộc thi</value>
   </data>
+  <data name="PROJECT_TYPE" xml:space="preserve">
+    <value>Loại dự án</value>
+  </data>
+  <data name="PROJECT_NAME" xml:space="preserve">
+    <value>Tên dự án</value>
+  </data>
+  <data name="CUSTOMER_NAME" xml:space="preserve">
+    <value>Tên khách hàng</value>
+  </data>
+  <data name="PROJECT_MANAGER" xml:space="preserve">
+    <value>Nhân viên quản lý</value>
+  </data>
+  <data name="PROJECT_CODE" xml:space="preserve">
+    <value>Mã dự án</value>
+  </data>
+  <data name="EMPLOYEE_NAME" xml:space="preserve">
+    <value>Tên nhân viên</value>
+  </data>
+  <data name="CONTRACT" xml:space="preserve">
+    <value>Hợp đồng</value>
+  </data>
+  <data name="CONTRACT_NUMBER" xml:space="preserve">
+    <value>Số hợp đồng</value>
+  </data>
+  <data name="CONTRACT_VALUE" xml:space="preserve">
+    <value>Giá trị hợp đồng</value>
+  </data>
+  <data name="SIGN_DATE" xml:space="preserve">
+    <value>Ngày ký</value>
+  </data>
+  <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Mã dự án đã tồn tại</value>
+  </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
   </data>
@@ -916,9 +949,6 @@
     <value>Thông tin khối</value>
   </data>
   <data name="CLASS" xml:space="preserve">
-    <value>Lớp</value>
-  </data>
-  <data name="CLASS1" xml:space="preserve">
     <value>Lớp</value>
   </data>
   <data name="COMPETITION_LIST" xml:space="preserve">
@@ -1022,5 +1052,11 @@
   </data>
   <data name="TASK_LIST" xml:space="preserve">
     <value>Danh sách công việc</value>
+  </data>
+  <data name="PROJECT_LIST" xml:space="preserve">
+    <value>Danh sách dự án</value>
+  </data>
+  <data name="PROJECT_INFORMATION" xml:space="preserve">
+    <value>Thông tin dự án</value>
   </data>
 </root>

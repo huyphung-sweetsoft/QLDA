@@ -1056,7 +1056,44 @@
   <data name="TASK_MANAGEMENT" xml:space="preserve">
     <value>Task Management</value>
   </data>
-  <data name="TASK_LIST" xml:space="preserve">
+	<data name="TASK_LIST" xml:space="preserve">
     <value>Task List</value>
+  </data>
+  <data name="PROJECT_TYPE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PROJECT_NAME" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CUSTOMER_NAME" xml:space="preserve">
+    <value>Tên khách hàng</value>
+  </data>
+  <data name="PROJECT_MANAGER" xml:space="preserve">
+    <value>Nhân viên quản lý</value>
+  </data>
+  <data name="PROJECT_CODE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="EMPLOYEE_NAME" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CONTRACT" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+  <data name="CONTRACT_NUMBER" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CONTRACT_VALUE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SIGN_DATE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Mã dự án đã tồn tại</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="PROJECT_INFORMATION" xml:space="preserve">
+    <value />
   </data>
 </root>

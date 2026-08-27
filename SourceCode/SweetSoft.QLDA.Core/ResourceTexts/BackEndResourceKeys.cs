@@ -260,6 +260,22 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
         public const string CREATE = "CREATE";
         public const string EXPORT = "EXPORT";
+        public const string PROJECT_LIST = "PROJECT_LIST";
+        public const string PROJECT_MANAGEMENT = "PROJECT_MANAGEMENT";
+        public const string PROJECT_TYPE = "PROJECT_TYPE";
+        public const string PROJECT_NAME = "PROJECT_NAME";
+        public const string CUSTOMER_NAME = "CUSTOMER_NAME";
+        public const string PROJECT_MANAGER = "PROJECT_MANAGER";
+        public const string PROJECT_CODE = "PROJECT_CODE";
+        public const string EMPLOYEE_NAME = "EMPLOYEE_NAME";
+        public const string CONTRACT = "CONTRACT";
+        public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
+        public const string CONTRACT_VALUE = "CONTRACT_VALUE";
+        public const string SIGN_DATE = "SIGN_DATE";
+        public const string PROJECT_CODE_ALREADY_EXISTS = "PROJECT_CODE_ALREADY_EXISTS";
+        public const string PROJECT_INFORMATION = "PROJECT_INFORMATION";
+        //public const string END_DATE_PREDICTED = "END_DATE_PREDICTED";
+
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
@@ -301,6 +317,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE = "THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE";
         public const string RESULT = "RESULT";
         public const string PLEASE_CHOSE_GRADE = "PLEASE_CHOSE_GRADE";
+
         //public const string JOIN_COMPETITION = "JOIN_COMPETITION";
 
         //Contest
