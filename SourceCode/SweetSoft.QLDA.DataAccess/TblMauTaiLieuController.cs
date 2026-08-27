@@ -80,15 +80,13 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdMauTaiLieu,Guid IdLoaiTaiLieu,string MaMau,string TenMau,string PhienBanMau,string MoTa,bool LaMauMacDinh,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileMau)
+	    public void Insert(Guid IdMauTaiLieu,Guid IdLoaiTaiLieu,string TenMau,string PhienBanMau,string MoTa,bool LaMauMacDinh,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileMau)
 	    {
 		    TblMauTaiLieu item = new TblMauTaiLieu();
 		    
             item.IdMauTaiLieu = IdMauTaiLieu;
             
             item.IdLoaiTaiLieu = IdLoaiTaiLieu;
-            
-            item.MaMau = MaMau;
             
             item.TenMau = TenMau;
             
@@ -120,7 +118,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdMauTaiLieu,Guid IdLoaiTaiLieu,string MaMau,string TenMau,string PhienBanMau,string MoTa,bool LaMauMacDinh,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileMau)
+	    public void Update(Guid IdMauTaiLieu,Guid IdLoaiTaiLieu,string TenMau,string PhienBanMau,string MoTa,bool LaMauMacDinh,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileMau)
 	    {
 		    TblMauTaiLieu item = new TblMauTaiLieu();
 	        item.MarkOld();
@@ -129,8 +127,6 @@ namespace SweetSoft.QLDA.DataAccess
 			item.IdMauTaiLieu = IdMauTaiLieu;
 				
 			item.IdLoaiTaiLieu = IdLoaiTaiLieu;
-				
-			item.MaMau = MaMau;
 				
 			item.TenMau = TenMau;
 				

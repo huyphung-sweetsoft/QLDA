@@ -80,15 +80,13 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdLoaiTaiLieu,Guid IdNhomTaiLieu,string MaLoai,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdLoaiTaiLieu,Guid IdNhomTaiLieu,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblLoaiTaiLieu item = new TblLoaiTaiLieu();
 		    
             item.IdLoaiTaiLieu = IdLoaiTaiLieu;
             
             item.IdNhomTaiLieu = IdNhomTaiLieu;
-            
-            item.MaLoai = MaLoai;
             
             item.TenLoai = TenLoai;
             
@@ -124,7 +122,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdLoaiTaiLieu,Guid IdNhomTaiLieu,string MaLoai,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdLoaiTaiLieu,Guid IdNhomTaiLieu,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblLoaiTaiLieu item = new TblLoaiTaiLieu();
 	        item.MarkOld();
@@ -133,8 +131,6 @@ namespace SweetSoft.QLDA.DataAccess
 			item.IdLoaiTaiLieu = IdLoaiTaiLieu;
 				
 			item.IdNhomTaiLieu = IdNhomTaiLieu;
-				
-			item.MaLoai = MaLoai;
 				
 			item.TenLoai = TenLoai;
 				

@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdDoUuTien,string MaDoUuTien,string TenDoUuTien,int GiaTriUuTien,int DiemUuTien,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdDoUuTien,string MaDoUuTien,string TenDoUuTien,int DiemUuTien,string MoTa)
 	    {
 		    TblDoUuTien item = new TblDoUuTien();
 		    
@@ -90,25 +90,9 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.TenDoUuTien = TenDoUuTien;
             
-            item.GiaTriUuTien = GiaTriUuTien;
-            
             item.DiemUuTien = DiemUuTien;
             
             item.MoTa = MoTa;
-            
-            item.ThuTuHienThi = ThuTuHienThi;
-            
-            item.KichHoat = KichHoat;
-            
-            item.DaXoa = DaXoa;
-            
-            item.NguoiTao = NguoiTao;
-            
-            item.NgayTao = NgayTao;
-            
-            item.NguoiCapNhat = NguoiCapNhat;
-            
-            item.NgayCapNhat = NgayCapNhat;
             
 	    
 		    item.Save(UserName);
@@ -118,7 +102,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdDoUuTien,string MaDoUuTien,string TenDoUuTien,int GiaTriUuTien,int DiemUuTien,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdDoUuTien,string MaDoUuTien,string TenDoUuTien,int DiemUuTien,string MoTa)
 	    {
 		    TblDoUuTien item = new TblDoUuTien();
 	        item.MarkOld();
@@ -130,25 +114,9 @@ namespace SweetSoft.QLDA.DataAccess
 				
 			item.TenDoUuTien = TenDoUuTien;
 				
-			item.GiaTriUuTien = GiaTriUuTien;
-				
 			item.DiemUuTien = DiemUuTien;
 				
 			item.MoTa = MoTa;
-				
-			item.ThuTuHienThi = ThuTuHienThi;
-				
-			item.KichHoat = KichHoat;
-				
-			item.DaXoa = DaXoa;
-				
-			item.NguoiTao = NguoiTao;
-				
-			item.NgayTao = NgayTao;
-				
-			item.NguoiCapNhat = NguoiCapNhat;
-				
-			item.NgayCapNhat = NgayCapNhat;
 				
 	        item.Save(UserName);
 	    }
