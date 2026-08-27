@@ -93,7 +93,7 @@
     </Reference>
     <Reference Include="SubSonic, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\SubSonic.dll</HintPath>
+      <HintPath>..\..\..\SubSonic2.2\SubCommander\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -219,6 +219,7 @@
     <Compile Include="MailManager\Interfaces\IEmailManager.cs" />
     <Compile Include="MailManager\Repository\EmailHistoryRepository.cs" />
     <Compile Include="Managers\BaseManager.cs" />
+    <Compile Include="Managers\TaskManager.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationOptions.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationRequest.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfMargins.cs" />
@@ -235,6 +236,7 @@
     <Compile Include="PdfGeneration\Services\NRecoPdfGenerator.cs" />
     <Compile Include="PdfGeneration\Services\PdfGenerationService.cs" />
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
+    <Compile Include="Respositories\TaskRepository.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />
     <Compile Include="SEO\Schemas\AnswerSchema.cs" />
     <Compile Include="SEO\Schemas\ArticleSchema.cs" />

@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid Id,string FunctionCode,string ParentCode,string FunctionName,string PageUrl,int DisplayOrder,string Icon)
+	    public void Insert(Guid Id,string FunctionCode,string ParentCode,string FunctionName,string PageUrl,int DisplayOrder,string Icon,bool IsActivated,bool? OfProject)
 	    {
 		    AspnetFunction item = new AspnetFunction();
 		    
@@ -98,6 +98,10 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.Icon = Icon;
             
+            item.IsActivated = IsActivated;
+            
+            item.OfProject = OfProject;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -106,7 +110,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid Id,string FunctionCode,string ParentCode,string FunctionName,string PageUrl,int DisplayOrder,string Icon)
+	    public void Update(Guid Id,string FunctionCode,string ParentCode,string FunctionName,string PageUrl,int DisplayOrder,string Icon,bool IsActivated,bool? OfProject)
 	    {
 		    AspnetFunction item = new AspnetFunction();
 	        item.MarkOld();
@@ -125,6 +129,10 @@ namespace SweetSoft.QLDA.DataAccess
 			item.DisplayOrder = DisplayOrder;
 				
 			item.Icon = Icon;
+				
+			item.IsActivated = IsActivated;
+				
+			item.OfProject = OfProject;
 				
 	        item.Save(UserName);
 	    }

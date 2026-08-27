@@ -31,6 +31,27 @@ namespace SweetSoft.QLDA.BackOffice.Common
 {
     public class BaseAdminPage : System.Web.UI.Page
     {
+        public Guid CurrentProjectId
+        {
+            get
+            {
+                string rawId = Request.QueryString["ProjectId"];
+                if (!string.IsNullOrEmpty(rawId))
+                {
+                    try
+                    {
+                        string plainText = SecurityUtilities.UnprotectUrlParameter(rawId);
+                        if (Guid.TryParse(plainText, out Guid id))
+                            return id;
+
+                        if (Guid.TryParse(rawId, out Guid directId))
+                            return directId;
+                    }
+                    catch { }
+                }
+                return Guid.Empty;
+            }
+        }
         #region Function Format
         public virtual CultureInfo ENCulture
         {

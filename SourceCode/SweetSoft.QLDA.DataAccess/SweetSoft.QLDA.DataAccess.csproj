@@ -36,7 +36,7 @@
   <ItemGroup>
     <Reference Include="SubSonic, Version=2.2.0.0, Culture=neutral, PublicKeyToken=eadb47849839a332, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\SubSonic.dll</HintPath>
+      <HintPath>..\..\..\SubSonic2.2\SubCommander\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -89,14 +89,78 @@
     <Compile Include="SysDataAccessProvider\StoredProcedures.cs" />
     <Compile Include="SysDataAccessProvider\TblAuditTemp.cs" />
     <Compile Include="SysDataAccessProvider\TblAuditTempController.cs" />
+    <Compile Include="TblChiPhi.cs" />
+    <Compile Include="TblChiPhiController.cs" />
+    <Compile Include="TblChucDanh.cs" />
+    <Compile Include="TblChucDanhController.cs" />
+    <Compile Include="TblCongViec.cs" />
+    <Compile Include="TblCongViecController.cs" />
+    <Compile Include="TblCongViecNhanVien.cs" />
+    <Compile Include="TblCongViecNhanVienController.cs" />
+    <Compile Include="TblDoUuTien.cs" />
+    <Compile Include="TblDoUuTienController.cs" />
+    <Compile Include="TblDuAn.cs" />
+    <Compile Include="TblDuAnController.cs" />
     <Compile Include="TblEmailHistory.cs" />
     <Compile Include="TblEmailHistoryController.cs" />
     <Compile Include="TblEmailTemplate.cs" />
     <Compile Include="TblEmailTemplateController.cs" />
+    <Compile Include="TblGiaiDoan.cs" />
+    <Compile Include="TblGiaiDoanController.cs" />
+    <Compile Include="TblGiaiDoanDuAn.cs" />
+    <Compile Include="TblGiaiDoanDuAnController.cs" />
+    <Compile Include="TblGuiNhanKhachHang.cs" />
+    <Compile Include="TblGuiNhanKhachHangController.cs" />
+    <Compile Include="TblHopDongThucHien.cs" />
+    <Compile Include="TblHopDongThucHienController.cs" />
+    <Compile Include="TblKhachHang.cs" />
+    <Compile Include="TblKhachHangController.cs" />
+    <Compile Include="TblLichHop.cs" />
+    <Compile Include="TblLichHopController.cs" />
+    <Compile Include="TblLichSuDuAn.cs" />
+    <Compile Include="TblLichSuDuAnController.cs" />
+    <Compile Include="TblLichSuTaiLieu.cs" />
+    <Compile Include="TblLichSuTaiLieuController.cs" />
+    <Compile Include="TblLoaiDuAn.cs" />
+    <Compile Include="TblLoaiDuAnController.cs" />
+    <Compile Include="TblLoaiKhachHang.cs" />
+    <Compile Include="TblLoaiKhachHangController.cs" />
+    <Compile Include="TblLoaiTaiLieu.cs" />
+    <Compile Include="TblLoaiTaiLieuController.cs" />
+    <Compile Include="TblLuuTruVatLy.cs" />
+    <Compile Include="TblLuuTruVatLyController.cs" />
+    <Compile Include="TblMauTaiLieu.cs" />
+    <Compile Include="TblMauTaiLieuController.cs" />
+    <Compile Include="TblNhanVien.cs" />
+    <Compile Include="TblNhanVienController.cs" />
+    <Compile Include="TblNhomTaiLieu.cs" />
+    <Compile Include="TblNhomTaiLieuController.cs" />
+    <Compile Include="TblNoiLuuTru.cs" />
+    <Compile Include="TblNoiLuuTruController.cs" />
+    <Compile Include="TblPhienBanTaiLieu.cs" />
+    <Compile Include="TblPhienBanTaiLieuController.cs" />
+    <Compile Include="TblPhongBan.cs" />
+    <Compile Include="TblPhongBanController.cs" />
+    <Compile Include="TblRuiRo.cs" />
+    <Compile Include="TblRuiRoController.cs" />
     <Compile Include="TblSetting.cs" />
     <Compile Include="TblSettingController.cs" />
+    <Compile Include="TblTaiLieu.cs" />
+    <Compile Include="TblTaiLieuController.cs" />
+    <Compile Include="TblThanhToan.cs" />
+    <Compile Include="TblThanhToanController.cs" />
+    <Compile Include="TblThanhVienDuAn.cs" />
+    <Compile Include="TblThanhVienDuAnController.cs" />
+    <Compile Include="TblThongBao.cs" />
+    <Compile Include="TblThongBaoController.cs" />
+    <Compile Include="TblTrinhKyTaiLieu.cs" />
+    <Compile Include="TblTrinhKyTaiLieuController.cs" />
     <Compile Include="TblUploadFile.cs" />
     <Compile Include="TblUploadFileController.cs" />
+    <Compile Include="TblVaiTroDuAn.cs" />
+    <Compile Include="TblVaiTroDuAnController.cs" />
+    <Compile Include="TblVanDe.cs" />
+    <Compile Include="TblVanDeController.cs" />
     <Compile Include="VwAspnetApplication.cs" />
     <Compile Include="VwAspnetMembershipUser.cs" />
     <Compile Include="VwAspnetProfile.cs" />

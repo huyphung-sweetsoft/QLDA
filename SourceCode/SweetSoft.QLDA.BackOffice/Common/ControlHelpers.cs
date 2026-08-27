@@ -13,10 +13,12 @@ using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using static SweetSoft.QLDA.Core.Managers.TaskManager;
 
 namespace SweetSoft.QLDA.BackOffice.Common
 {
@@ -597,6 +599,197 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.DataTextField = "DisplayName";
             dropdown.DataBind();
             dropdown.SelectedIndex = -1;
+        }
+        #endregion
+        #region Binding Task Controls
+        public void BindPriorities(DropDownList ddl, Guid? selectedId = null, bool isAll = false)
+        {
+            ddl.Items.Clear();
+            if (isAll)
+                ddl.Items.Add(new ListItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL), ""));
+            else
+                ddl.Items.Add(new ListItem("-- Chọn độ ưu tiên --", ""));
+            try
+            {
+                DataTable dt = TaskManager.Instance.GetPrioritiesTable();
+                foreach (DataRow r in dt.Rows)
+                {
+                    string ten = r[TblDoUuTien.Columns.TenDoUuTien].ToString();
+                    string val = r[TblDoUuTien.Columns.IdDoUuTien].ToString().ToLower();
+                    int diem = Convert.ToInt32(r[TblDoUuTien.Columns.DiemUuTien]);
+
+                    ListItem item = new ListItem(ten, val);
+                    switch (diem)
+                    {
+                        case 1: item.Attributes["class"] = "opt-pri-low"; break;
+                        case 2: item.Attributes["class"] = "opt-pri-med"; break;
+                        case 3: item.Attributes["class"] = "opt-pri-high"; break;
+                    }
+                    ddl.Items.Add(item);
+                }
+            }
+            catch { }
+            if (selectedId.HasValue)
+            {
+                ListItem found = ddl.Items.FindByValue(selectedId.Value.ToString().ToLower());
+                if (found != null)
+                {
+                    ddl.ClearSelection();
+                    found.Selected = true;
+                }
+            }
+        }
+
+        public void BindProjectMembers(DropDownList ddl, Guid projectId, Guid? selectedId = null, bool isAll = false)
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem(isAll ? "-- Tất cả --" : "-- Chưa gán nhân viên --", ""));
+            try
+            {
+                DataTable dt = TaskManager.Instance.GetProjectMembers(projectId);
+                foreach (DataRow r in dt.Rows)
+                {
+                    ddl.Items.Add(new ListItem(
+                        r[TblThanhVienDuAn.Columns.IdNhanVien]?.ToString() ?? "Thành viên",
+                        r[TblThanhVienDuAn.Columns.IdNhanVien].ToString()
+                    ));
+                }
+            }
+            catch { }
+            if (selectedId.HasValue)
+            {
+                ListItem found = ddl.Items.FindByValue(selectedId.Value.ToString());
+                if (found != null)
+                {
+                    ddl.ClearSelection();
+                    found.Selected = true;
+                }
+            }
+        }
+        public void BindTaskStatus(DropDownList ddl, byte? selectedStatus = null)
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem("Chưa bắt đầu", "0") { Attributes = { ["class"] = "opt-status-todo" } });
+            ddl.Items.Add(new ListItem("Đang làm", "1") { Attributes = { ["class"] = "opt-status-doing" } });
+            ddl.Items.Add(new ListItem("Hoàn thành", "2") { Attributes = { ["class"] = "opt-status-done" } });
+
+            if (selectedStatus.HasValue)
+            {
+                ddl.SelectedValue = selectedStatus.Value.ToString();
+            }
+        }
+        public void BindParentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedParentId = null)
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem("-- Không có --", ""));
+
+            DataTable dt = TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+            if (dt != null)
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (Guid.TryParse(row[ColIdCongViec]?.ToString(), out Guid id))
+                    {
+                        if (excludeTaskId.HasValue && id == excludeTaskId.Value) continue;
+                        string maCv = row[ColMaCv]?.ToString();
+                        string tenCv = row[ColTenCv]?.ToString();
+                        ddl.Items.Add(new ListItem($"[{maCv}] {tenCv}", id.ToString().ToLower()));
+                    }
+                }
+            }
+
+            if (selectedParentId.HasValue)
+            {
+                ListItem found = ddl.Items.FindByValue(selectedParentId.Value.ToString().ToLower());
+                if (found != null)
+                {
+                    ddl.ClearSelection();
+                    found.Selected = true;
+                }
+            }
+        }
+        public void BindDependentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedDepId = null, string currentOrNewCode = null)
+        {
+            ddl.Items.Clear();
+            ddl.Items.Add(new ListItem("-- Không có --", ""));
+            DataTable dt = TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+            if (dt != null)
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (Guid.TryParse(row[ColIdCongViec]?.ToString(), out Guid id))
+                    {
+                        if (excludeTaskId.HasValue && id == excludeTaskId.Value) continue;
+                        string maCv = row[ColMaCv]?.ToString() ?? "";
+                        string tenCv = row[ColTenCv]?.ToString() ?? "";
+                        if (!string.IsNullOrEmpty(currentOrNewCode) && TaskManager.Instance.IsAfterOrEqual(maCv, currentOrNewCode))
+                            continue;
+
+                        ddl.Items.Add(new ListItem($"[{maCv}] {tenCv}", id.ToString().ToLower()));
+                    }
+                }
+            }
+
+            if (selectedDepId.HasValue)
+            {
+                ListItem found = ddl.Items.FindByValue(selectedDepId.Value.ToString().ToLower());
+                if (found != null)
+                {
+                    ddl.ClearSelection();
+                    found.Selected = true;
+                }
+            }
+        }
+        public string GetFormattedTaskName(object maCvObj, object tenCvObj)
+        {
+            string maCv = maCvObj?.ToString() ?? "";
+            string tenCv = tenCvObj?.ToString() ?? "";
+            int level = maCv.Split('.').Length;
+
+            if (level == 1)
+            {
+                return $"<span class=\"task-phase-name\">{maCv}. {tenCv}</span>";
+            }
+
+            int indentPx = (level - 1) * 20;
+            return $"<div class=\"task-sub-name\" style=\"padding-left: {indentPx}px;\">" +
+                   $"<span class=\"task-tree-branch me-1\">└──</span>" +
+                   $"<strong>{maCv}.</strong> {tenCv}" +
+                   $"</div>";
+        }
+        public string FormatDateTime(object dateObj, string format = "dd/MM/yyyy", string emptyText = "—")
+        {
+            if (dateObj != null && DateTime.TryParse(dateObj.ToString(), out DateTime date))
+                return date.ToString(format);
+            return emptyText;
+        }
+        public string GetTaskStatusBadge(object statusObj)
+        {
+            if (statusObj == null || statusObj == DBNull.Value)
+                return "<span class=\"badge-pill-custom badge-status-todo\">Chưa bắt đầu</span>";
+            int status = Convert.ToInt32(statusObj);
+            switch (status)
+            {
+                case 1: return "<span class=\"badge-pill-custom badge-status-doing\">Đang làm</span>";
+                case 2: return "<span class=\"badge-pill-custom badge-status-done\">Hoàn thành</span>";
+                default: return "<span class=\"badge-pill-custom badge-status-todo\">Chưa bắt đầu</span>";
+            }
+        }
+        public string GetTaskPriorityBadge(object tenDoUuTienObj, object diemUuTienObj)
+        {
+            string tenDoUuTien = tenDoUuTienObj != null ? tenDoUuTienObj.ToString() : "—";
+            if (diemUuTienObj != null && int.TryParse(diemUuTienObj.ToString(), out int diem))
+            {
+                string cssClass = "badge-pill-custom badge-pri-med";
+                switch (diem)
+                {
+                    case 1: cssClass = "badge-pill-custom badge-pri-low"; break;
+                    case 2: cssClass = "badge-pill-custom badge-pri-med"; break;
+                    case 3: cssClass = "badge-pill-custom badge-pri-high"; break;
+                }
+                return $"<span class=\"{cssClass}\">{tenDoUuTien}</span>";
+            }
+            return $"<span class=\"badge-pill-custom badge-pri-med\">{tenDoUuTien}</span>";
         }
         #endregion
     }

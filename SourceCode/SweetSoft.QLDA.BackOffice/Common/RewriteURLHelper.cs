@@ -23,6 +23,26 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string TaskSchedules => "/TaskSchedules";
         public static string Users => "/Users";
 
+        //Project
+        public static string Projects => "/Projects";
+        public static string ProjectDetail(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}";
+        }
+        public static string ProjectTasks(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Tasks";
+        }
+        public static string AddTask(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Task/Add";
+        }
+
+        public static string TaskDetail(Guid taskId, Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Task/{SecurityUtilities.ProtectUrlParameter(taskId.ToString())}";
+        }
+        //
         public static string ViewUser(Guid userId)
         {
             return $"/Users?userId={SecurityUtilities.ProtectUrlParameter(userId.ToString())}";

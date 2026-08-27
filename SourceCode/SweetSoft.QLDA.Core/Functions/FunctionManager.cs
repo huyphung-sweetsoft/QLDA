@@ -63,6 +63,18 @@ namespace SweetSoft.QLDA.Core.Functions
             }
             return modules;
         }
+
+        public List<AspnetFunction> GetProjectFunctionByUserId(Guid userId, Guid projectId)
+        {
+            List<AspnetFunction> modules = null;
+            string cacheKey = $"ProjectModule_{userId}_{projectId}";
+            if (!CacheManager.GetCacheData(cacheKey, out modules) || modules == null)
+            {
+                modules = _repository.GetProjectFunctionByUserId(userId, projectId);
+                CacheManager.SetCacheData(cacheKey, modules);
+            }
+            return modules;
+        }
         public List<string> GetAllModules(Guid userId, bool isDev)
         {
             List<AspnetFunction> permissions = GetAspnetFunctionByUserId(userId, isDev);

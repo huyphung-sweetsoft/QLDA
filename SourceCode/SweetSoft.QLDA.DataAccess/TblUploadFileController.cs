@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid Id,Guid OwnerId,DateTime CreatedDate,bool IsDeleted,string Name,string FileUrl,string FileType,string Ext,Guid RefId,string RefType,int DisplayOrder,int FileSize,string MimeType,string OriginalFileName)
+	    public void Insert(Guid Id,Guid OwnerId,DateTime CreatedDate,bool IsDeleted,string Name,string FileUrl,string FileType,string Ext,Guid RefId,string RefType,int DisplayOrder,int FileSize,string MimeType,string OriginalFileName,bool IsHost,bool IsSecretary,bool IsParticipant)
 	    {
 		    TblUploadFile item = new TblUploadFile();
 		    
@@ -112,6 +112,12 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.OriginalFileName = OriginalFileName;
             
+            item.IsHost = IsHost;
+            
+            item.IsSecretary = IsSecretary;
+            
+            item.IsParticipant = IsParticipant;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -120,7 +126,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid Id,Guid OwnerId,DateTime CreatedDate,bool IsDeleted,string Name,string FileUrl,string FileType,string Ext,Guid RefId,string RefType,int DisplayOrder,int FileSize,string MimeType,string OriginalFileName)
+	    public void Update(Guid Id,Guid OwnerId,DateTime CreatedDate,bool IsDeleted,string Name,string FileUrl,string FileType,string Ext,Guid RefId,string RefType,int DisplayOrder,int FileSize,string MimeType,string OriginalFileName,bool IsHost,bool IsSecretary,bool IsParticipant)
 	    {
 		    TblUploadFile item = new TblUploadFile();
 	        item.MarkOld();
@@ -153,6 +159,12 @@ namespace SweetSoft.QLDA.DataAccess
 			item.MimeType = MimeType;
 				
 			item.OriginalFileName = OriginalFileName;
+				
+			item.IsHost = IsHost;
+				
+			item.IsSecretary = IsSecretary;
+				
+			item.IsParticipant = IsParticipant;
 				
 	        item.Save(UserName);
 	    }
