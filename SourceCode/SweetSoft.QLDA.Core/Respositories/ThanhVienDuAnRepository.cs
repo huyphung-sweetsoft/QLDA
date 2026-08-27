@@ -15,7 +15,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
         }
 
-        public TblThanhVienDuAn InsertPM(TblThanhVienDuAn item)
+        public TblThanhVienDuAn Save(TblThanhVienDuAn item)
         {
             item.Save();
             Task.Run(async () =>
@@ -32,6 +32,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             return item;
         }
 
+
         public List<TblThanhVienDuAn> GetByIdDuAn(Guid idDuAn)
         {
             Select select = new Select();
@@ -40,6 +41,16 @@ namespace SweetSoft.QLDA.Core.Respositories
             return select.ExecuteTypedList<TblThanhVienDuAn>();
         }
 
-       
+        public TblThanhVienDuAn GetNhanVienIsActiveInDuAn(Guid idNhanVien, Guid idDuAn)
+        {
+            return new Select()
+                .From(TblThanhVienDuAn.Schema)
+                .Where(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(idNhanVien)
+                .And(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(idDuAn)
+                .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblThanhVienDuAn>();
+        }
+
+        
     }
 }

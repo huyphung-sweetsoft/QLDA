@@ -99,6 +99,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 = txtSoHopDong.Text 
                 = txtNgayKy.Text 
                 = txtMaDuAn.Text = "";
+            this.IdHopDongThucHien = Guid.Empty;
             dtNgayBatDau.DateValue = null;
             dtNgayKetThuc.DateValue = null;
             ddlTrangThai.SelectedIndex = 0;

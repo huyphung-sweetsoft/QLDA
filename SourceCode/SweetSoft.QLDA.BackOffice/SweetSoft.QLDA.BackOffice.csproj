@@ -194,6 +194,28 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
+      <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\DuAnDetail.aspx.cs">
+      <DependentUpon>DuAnDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
+      <DependentUpon>DuAnDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\DuAnList.aspx.cs">
+      <DependentUpon>DuAnList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\DuAnList.aspx.designer.cs">
+      <DependentUpon>DuAnList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
@@ -219,6 +241,64 @@
     <Content Include="android-chrome-192x192.png" />
     <Content Include="android-chrome-512x512.png" />
     <Content Include="apple-touch-icon.png" />
+    <Content Include="bin\CKEditor.NET.dll" />
+    <Content Include="bin\en-US\SweetSoft.QLDA.Core.resources.dll" />
+    <Content Include="bin\EPPlus.dll" />
+    <Content Include="bin\EPPlus.Interfaces.dll" />
+    <Content Include="bin\EPPlus.System.Drawing.dll" />
+    <Content Include="bin\EPPlus.xml" />
+    <Content Include="bin\Google.Authenticator.dll" />
+    <Content Include="bin\Google.Authenticator.pdb" />
+    <Content Include="bin\ImageResizer.dll" />
+    <Content Include="bin\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <Content Include="bin\Microsoft.Bcl.AsyncInterfaces.xml" />
+    <Content Include="bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <Content Include="bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml" />
+    <Content Include="bin\Microsoft.Extensions.DependencyInjection.dll" />
+    <Content Include="bin\Microsoft.Extensions.DependencyInjection.xml" />
+    <Content Include="bin\Microsoft.Web.Infrastructure.dll" />
+    <Content Include="bin\MySql.Data.dll" />
+    <Content Include="bin\Newtonsoft.Json.dll" />
+    <Content Include="bin\Newtonsoft.Json.xml" />
+    <Content Include="bin\NReco.PdfGenerator.dll" />
+    <Content Include="bin\NReco.PdfGenerator.xml" />
+    <Content Include="bin\QRCoder.dll" />
+    <Content Include="bin\Quartz.dll" />
+    <Content Include="bin\Quartz.xml" />
+    <Content Include="bin\RestSharp.dll" />
+    <Content Include="bin\RestSharp.xml" />
+    <Content Include="bin\SubSonic.dll" />
+    <Content Include="bin\SubSonic.pdb" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.dll" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.pdb" />
+    <Content Include="bin\SweetSoft.QLDA.Controls.dll" />
+    <Content Include="bin\SweetSoft.QLDA.Controls.pdb" />
+    <Content Include="bin\SweetSoft.QLDA.Core.dll" />
+    <Content Include="bin\SweetSoft.QLDA.Core.pdb" />
+    <Content Include="bin\SweetSoft.QLDA.DataAccess.dll" />
+    <Content Include="bin\SweetSoft.QLDA.DataAccess.pdb" />
+    <Content Include="bin\System.Buffers.dll" />
+    <Content Include="bin\System.Buffers.xml" />
+    <Content Include="bin\System.Data.SQLite.dll" />
+    <Content Include="bin\System.Diagnostics.DiagnosticSource.dll" />
+    <Content Include="bin\System.Diagnostics.DiagnosticSource.xml" />
+    <Content Include="bin\System.IO.Pipelines.dll" />
+    <Content Include="bin\System.IO.Pipelines.xml" />
+    <Content Include="bin\System.Memory.dll" />
+    <Content Include="bin\System.Memory.xml" />
+    <Content Include="bin\System.Numerics.Vectors.dll" />
+    <Content Include="bin\System.Numerics.Vectors.xml" />
+    <Content Include="bin\System.Runtime.CompilerServices.Unsafe.dll" />
+    <Content Include="bin\System.Runtime.CompilerServices.Unsafe.xml" />
+    <Content Include="bin\System.Text.Encodings.Web.dll" />
+    <Content Include="bin\System.Text.Encodings.Web.xml" />
+    <Content Include="bin\System.Text.Json.dll" />
+    <Content Include="bin\System.Text.Json.xml" />
+    <Content Include="bin\System.Threading.Tasks.Extensions.dll" />
+    <Content Include="bin\System.Threading.Tasks.Extensions.xml" />
+    <Content Include="bin\System.ValueTuple.dll" />
+    <Content Include="bin\System.ValueTuple.xml" />
+    <Content Include="bin\vi-VN\SweetSoft.QLDA.Core.resources.dll" />
     <Content Include="Controls\AutoComplete\Autocomplete-en-US.js" />
     <Content Include="Controls\AutoComplete\Autocomplete-vi-VN.js" />
     <Content Include="Controls\AutoComplete\Autocomplete.css" />
@@ -254,6 +334,9 @@
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
+    <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
+    <Content Include="fProjects\DuAnDetail.aspx" />
+    <Content Include="fProjects\DuAnList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
     <Content Include="fSettings\FileManagers.aspx" />
     <Content Include="fSettings\Settings.aspx" />
@@ -299,6 +382,15 @@
     <Content Include="Styles\plugins\slick\slick.css" />
     <Content Include="Styles\plugins\slick\slick.js" />
     <Content Include="Styles\video\video-trang-chu.mp4" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260820.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_21082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_24082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_26082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -847,6 +939,8 @@
     <Content Include="_RFMng\themes\default\images\wait30trans.gif" />
     <Content Include="_RFMng\themes\default\styles\filemanager.css" />
     <Content Include="_RFMng\themes\default\styles\ie.css" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.dll.config" />
+    <Content Include="bin\SweetSoft.QLDA.Core.dll.config" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
