@@ -140,19 +140,6 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdNhomTaiLieu.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdNhomTaiLieu);
 				
-				TableSchema.TableColumn colvarMaNhom = new TableSchema.TableColumn(schema);
-				colvarMaNhom.ColumnName = "MaNhom";
-				colvarMaNhom.DataType = DbType.AnsiString;
-				colvarMaNhom.MaxLength = 50;
-				colvarMaNhom.AutoIncrement = false;
-				colvarMaNhom.IsNullable = false;
-				colvarMaNhom.IsPrimaryKey = false;
-				colvarMaNhom.IsForeignKey = false;
-				colvarMaNhom.IsReadOnly = false;
-				colvarMaNhom.DefaultSetting = @"";
-				colvarMaNhom.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMaNhom);
-				
 				TableSchema.TableColumn colvarTenNhom = new TableSchema.TableColumn(schema);
 				colvarTenNhom.ColumnName = "TenNhom";
 				colvarTenNhom.DataType = DbType.String;
@@ -292,14 +279,6 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdNhomTaiLieu, value); }
 		}
 		  
-		[XmlAttribute("MaNhom")]
-		[Bindable(true)]
-		public string MaNhom 
-		{
-			get { return GetColumnValue<string>(Columns.MaNhom); }
-			set { SetColumnValue(Columns.MaNhom, value); }
-		}
-		  
 		[XmlAttribute("TenNhom")]
 		[Bindable(true)]
 		public string TenNhom 
@@ -422,13 +401,11 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdNhomTaiLieu,string varMaNhom,string varTenNhom,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdNhomTaiLieu,string varTenNhom,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblNhomTaiLieu item = new TblNhomTaiLieu();
 			
 			item.IdNhomTaiLieu = varIdNhomTaiLieu;
-			
-			item.MaNhom = varMaNhom;
 			
 			item.TenNhom = varTenNhom;
 			
@@ -458,13 +435,11 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdNhomTaiLieu,string varMaNhom,string varTenNhom,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdNhomTaiLieu,string varTenNhom,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblNhomTaiLieu item = new TblNhomTaiLieu();
 			
 				item.IdNhomTaiLieu = varIdNhomTaiLieu;
-			
-				item.MaNhom = varMaNhom;
 			
 				item.TenNhom = varTenNhom;
 			
@@ -504,72 +479,65 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn MaNhomColumn
+        public static TableSchema.TableColumn TenNhomColumn
         {
             get { return Schema.Columns[1]; }
         }
         
         
         
-        public static TableSchema.TableColumn TenNhomColumn
+        public static TableSchema.TableColumn MoTaColumn
         {
             get { return Schema.Columns[2]; }
         }
         
         
         
-        public static TableSchema.TableColumn MoTaColumn
+        public static TableSchema.TableColumn ThuTuHienThiColumn
         {
             get { return Schema.Columns[3]; }
         }
         
         
         
-        public static TableSchema.TableColumn ThuTuHienThiColumn
+        public static TableSchema.TableColumn KichHoatColumn
         {
             get { return Schema.Columns[4]; }
         }
         
         
         
-        public static TableSchema.TableColumn KichHoatColumn
+        public static TableSchema.TableColumn DaXoaColumn
         {
             get { return Schema.Columns[5]; }
         }
         
         
         
-        public static TableSchema.TableColumn DaXoaColumn
+        public static TableSchema.TableColumn NguoiTaoColumn
         {
             get { return Schema.Columns[6]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiTaoColumn
+        public static TableSchema.TableColumn NgayTaoColumn
         {
             get { return Schema.Columns[7]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayTaoColumn
+        public static TableSchema.TableColumn NguoiCapNhatColumn
         {
             get { return Schema.Columns[8]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiCapNhatColumn
-        {
-            get { return Schema.Columns[9]; }
-        }
-        
-        
-        
         public static TableSchema.TableColumn NgayCapNhatColumn
         {
-            get { return Schema.Columns[10]; }
+            get { return Schema.Columns[9]; }
         }
         
         
@@ -579,7 +547,6 @@ namespace SweetSoft.QLDA.DataAccess
 		public struct Columns
 		{
 			 public static string IdNhomTaiLieu = @"IdNhomTaiLieu";
-			 public static string MaNhom = @"MaNhom";
 			 public static string TenNhom = @"TenNhom";
 			 public static string MoTa = @"MoTa";
 			 public static string ThuTuHienThi = @"ThuTuHienThi";

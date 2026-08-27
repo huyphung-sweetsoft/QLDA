@@ -154,19 +154,6 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdLoaiTaiLieu.ForeignKeyTableName = "TblLoaiTaiLieu";
 				schema.Columns.Add(colvarIdLoaiTaiLieu);
 				
-				TableSchema.TableColumn colvarMaMau = new TableSchema.TableColumn(schema);
-				colvarMaMau.ColumnName = "MaMau";
-				colvarMaMau.DataType = DbType.AnsiString;
-				colvarMaMau.MaxLength = 50;
-				colvarMaMau.AutoIncrement = false;
-				colvarMaMau.IsNullable = false;
-				colvarMaMau.IsPrimaryKey = false;
-				colvarMaMau.IsForeignKey = false;
-				colvarMaMau.IsReadOnly = false;
-				colvarMaMau.DefaultSetting = @"";
-				colvarMaMau.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMaMau);
-				
 				TableSchema.TableColumn colvarTenMau = new TableSchema.TableColumn(schema);
 				colvarTenMau.ColumnName = "TenMau";
 				colvarTenMau.DataType = DbType.String;
@@ -341,14 +328,6 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdLoaiTaiLieu, value); }
 		}
 		  
-		[XmlAttribute("MaMau")]
-		[Bindable(true)]
-		public string MaMau 
-		{
-			get { return GetColumnValue<string>(Columns.MaMau); }
-			set { SetColumnValue(Columns.MaMau, value); }
-		}
-		  
 		[XmlAttribute("TenMau")]
 		[Bindable(true)]
 		public string TenMau 
@@ -480,15 +459,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdMauTaiLieu,Guid varIdLoaiTaiLieu,string varMaMau,string varTenMau,string varPhienBanMau,string varMoTa,bool varLaMauMacDinh,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileMau)
+		public static void Insert(Guid varIdMauTaiLieu,Guid varIdLoaiTaiLieu,string varTenMau,string varPhienBanMau,string varMoTa,bool varLaMauMacDinh,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileMau)
 		{
 			TblMauTaiLieu item = new TblMauTaiLieu();
 			
 			item.IdMauTaiLieu = varIdMauTaiLieu;
 			
 			item.IdLoaiTaiLieu = varIdLoaiTaiLieu;
-			
-			item.MaMau = varMaMau;
 			
 			item.TenMau = varTenMau;
 			
@@ -522,15 +499,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdMauTaiLieu,Guid varIdLoaiTaiLieu,string varMaMau,string varTenMau,string varPhienBanMau,string varMoTa,bool varLaMauMacDinh,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileMau)
+		public static void Update(Guid varIdMauTaiLieu,Guid varIdLoaiTaiLieu,string varTenMau,string varPhienBanMau,string varMoTa,bool varLaMauMacDinh,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileMau)
 		{
 			TblMauTaiLieu item = new TblMauTaiLieu();
 			
 				item.IdMauTaiLieu = varIdMauTaiLieu;
 			
 				item.IdLoaiTaiLieu = varIdLoaiTaiLieu;
-			
-				item.MaMau = varMaMau;
 			
 				item.TenMau = varTenMau;
 			
@@ -581,86 +556,79 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn MaMauColumn
+        public static TableSchema.TableColumn TenMauColumn
         {
             get { return Schema.Columns[2]; }
         }
         
         
         
-        public static TableSchema.TableColumn TenMauColumn
+        public static TableSchema.TableColumn PhienBanMauColumn
         {
             get { return Schema.Columns[3]; }
         }
         
         
         
-        public static TableSchema.TableColumn PhienBanMauColumn
+        public static TableSchema.TableColumn MoTaColumn
         {
             get { return Schema.Columns[4]; }
         }
         
         
         
-        public static TableSchema.TableColumn MoTaColumn
+        public static TableSchema.TableColumn LaMauMacDinhColumn
         {
             get { return Schema.Columns[5]; }
         }
         
         
         
-        public static TableSchema.TableColumn LaMauMacDinhColumn
+        public static TableSchema.TableColumn KichHoatColumn
         {
             get { return Schema.Columns[6]; }
         }
         
         
         
-        public static TableSchema.TableColumn KichHoatColumn
+        public static TableSchema.TableColumn DaXoaColumn
         {
             get { return Schema.Columns[7]; }
         }
         
         
         
-        public static TableSchema.TableColumn DaXoaColumn
+        public static TableSchema.TableColumn NguoiTaoColumn
         {
             get { return Schema.Columns[8]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiTaoColumn
+        public static TableSchema.TableColumn NgayTaoColumn
         {
             get { return Schema.Columns[9]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayTaoColumn
+        public static TableSchema.TableColumn NguoiCapNhatColumn
         {
             get { return Schema.Columns[10]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiCapNhatColumn
+        public static TableSchema.TableColumn NgayCapNhatColumn
         {
             get { return Schema.Columns[11]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayCapNhatColumn
-        {
-            get { return Schema.Columns[12]; }
-        }
-        
-        
-        
         public static TableSchema.TableColumn IdFileMauColumn
         {
-            get { return Schema.Columns[13]; }
+            get { return Schema.Columns[12]; }
         }
         
         
@@ -671,7 +639,6 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			 public static string IdMauTaiLieu = @"IdMauTaiLieu";
 			 public static string IdLoaiTaiLieu = @"IdLoaiTaiLieu";
-			 public static string MaMau = @"MaMau";
 			 public static string TenMau = @"TenMau";
 			 public static string PhienBanMau = @"PhienBanMau";
 			 public static string MoTa = @"MoTa";

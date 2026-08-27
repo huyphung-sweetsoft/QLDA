@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdThanhVienDuAn,Guid IdDuAn,Guid? IdNhanVien,Guid IdVaiTroDuAn,DateTime NgayThamGia,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdThanhVienDuAn,Guid IdDuAn,Guid? IdNhanVien,Guid? IdVaiTroDuAn,DateTime NgayThamGia,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblThanhVienDuAn item = new TblThanhVienDuAn();
 		    
@@ -114,7 +114,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdThanhVienDuAn,Guid IdDuAn,Guid? IdNhanVien,Guid IdVaiTroDuAn,DateTime NgayThamGia,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdThanhVienDuAn,Guid IdDuAn,Guid? IdNhanVien,Guid? IdVaiTroDuAn,DateTime NgayThamGia,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblThanhVienDuAn item = new TblThanhVienDuAn();
 	        item.MarkOld();

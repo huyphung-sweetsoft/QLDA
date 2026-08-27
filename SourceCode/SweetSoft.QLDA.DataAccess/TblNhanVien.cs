@@ -491,6 +491,25 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
+		private SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection colTblCongViecNhanVienRecords;
+		public SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection TblCongViecNhanVienRecords()
+		{
+			if(colTblCongViecNhanVienRecords == null)
+			{
+				colTblCongViecNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection().Where(TblCongViecNhanVien.Columns.IdNhanVien, IdNhanVien).Load();
+				colTblCongViecNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblCongViecNhanVienRecords_ListChanged);
+			}
+			return colTblCongViecNhanVienRecords;
+		}
+				
+		void colTblCongViecNhanVienRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblCongViecNhanVienRecords[e.NewIndex].IdNhanVien = IdNhanVien;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
 		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
 		{
@@ -508,25 +527,6 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblChiPhiRecords[e.NewIndex].IdNhanVienDeNghi = IdNhanVien;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colTblCongViecRecords;
-		public SweetSoft.QLDA.DataAccess.TblCongViecCollection TblCongViecRecords()
-		{
-			if(colTblCongViecRecords == null)
-			{
-				colTblCongViecRecords = new SweetSoft.QLDA.DataAccess.TblCongViecCollection().Where(TblCongViec.Columns.IdNhanVienPhuTrach, IdNhanVien).Load();
-				colTblCongViecRecords.ListChanged += new ListChangedEventHandler(colTblCongViecRecords_ListChanged);
-			}
-			return colTblCongViecRecords;
-		}
-				
-		void colTblCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblCongViecRecords[e.NewIndex].IdNhanVienPhuTrach = IdNhanVien;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblDuAnCollection colTblDuAnRecords;
@@ -838,7 +838,80 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		
-		//no ManyToMany tables defined (0)
+		#region Many To Many Helpers
+		
+		 
+		public SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection() { return TblNhanVien.GetTblCongViecCollection(this.IdNhanVien); }
+		public static SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection(Guid varIdNhanVien)
+		{
+		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[TblCongViec] INNER JOIN [TblCongViec_NhanVien] ON [TblCongViec].[IdCongViec] = [TblCongViec_NhanVien].[IdCongViec] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", TblNhanVien.Schema.Provider.Name);
+			cmd.AddParameter("@IdNhanVien", varIdNhanVien, DbType.Guid);
+			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
+			TblCongViecCollection coll = new TblCongViecCollection();
+			coll.LoadAndCloseReader(rdr);
+			return coll;
+		}
+		
+		public static void SaveTblCongViecMap(Guid varIdNhanVien, TblCongViecCollection items)
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", TblNhanVien.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varIdNhanVien, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (TblCongViec item in items)
+			{
+				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varIdNhanVien);
+				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item.GetPrimaryKeyValue());
+				varTblCongViecNhanVien.Save();
+			}
+		}
+		public static void SaveTblCongViecMap(Guid varIdNhanVien, System.Web.UI.WebControls.ListItemCollection itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", TblNhanVien.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varIdNhanVien, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
+			{
+				if (l.Selected) 
+				{
+					TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+					varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varIdNhanVien);
+					varTblCongViecNhanVien.SetColumnValue("IdCongViec", l.Value);
+					varTblCongViecNhanVien.Save();
+				}
+			}
+		}
+		public static void SaveTblCongViecMap(Guid varIdNhanVien , Guid[] itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", TblNhanVien.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varIdNhanVien, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (Guid item in itemList) 
+			{
+				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varIdNhanVien);
+				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item);
+				varTblCongViecNhanVien.Save();
+			}
+		}
+		
+		public static void DeleteTblCongViecMap(Guid varIdNhanVien) 
+		{
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", TblNhanVien.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varIdNhanVien, DbType.Guid);
+			DataService.ExecuteQuery(cmdDel);
+		}
+		
+		#endregion
 		
         
         
@@ -1083,6 +1156,17 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
+                if (colTblCongViecNhanVienRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblCongViecNhanVien item in colTblCongViecNhanVienRecords)
+                    {
+                        if (item.IdNhanVien != IdNhanVien)
+                        {
+                            item.IdNhanVien = IdNhanVien;
+                        }
+                    }
+               }
+		
                 if (colTblChiPhiRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
@@ -1090,17 +1174,6 @@ namespace SweetSoft.QLDA.DataAccess
                         if (item.IdNhanVienDeNghi == null ||item.IdNhanVienDeNghi != IdNhanVien)
                         {
                             item.IdNhanVienDeNghi = IdNhanVien;
-                        }
-                    }
-               }
-		
-                if (colTblCongViecRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colTblCongViecRecords)
-                    {
-                        if (item.IdNhanVienPhuTrach == null ||item.IdNhanVienPhuTrach != IdNhanVien)
-                        {
-                            item.IdNhanVienPhuTrach = IdNhanVien;
                         }
                     }
                }
@@ -1267,14 +1340,14 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
+                if (colTblCongViecNhanVienRecords != null)
+                {
+                    colTblCongViecNhanVienRecords.SaveAll();
+               }
+		
                 if (colTblChiPhiRecords != null)
                 {
                     colTblChiPhiRecords.SaveAll();
-               }
-		
-                if (colTblCongViecRecords != null)
-                {
-                    colTblCongViecRecords.SaveAll();
                }
 		
                 if (colTblDuAnRecords != null)

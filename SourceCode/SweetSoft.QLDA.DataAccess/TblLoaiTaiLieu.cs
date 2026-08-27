@@ -154,19 +154,6 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdNhomTaiLieu.ForeignKeyTableName = "TblNhomTaiLieu";
 				schema.Columns.Add(colvarIdNhomTaiLieu);
 				
-				TableSchema.TableColumn colvarMaLoai = new TableSchema.TableColumn(schema);
-				colvarMaLoai.ColumnName = "MaLoai";
-				colvarMaLoai.DataType = DbType.AnsiString;
-				colvarMaLoai.MaxLength = 50;
-				colvarMaLoai.AutoIncrement = false;
-				colvarMaLoai.IsNullable = false;
-				colvarMaLoai.IsPrimaryKey = false;
-				colvarMaLoai.IsForeignKey = false;
-				colvarMaLoai.IsReadOnly = false;
-				colvarMaLoai.DefaultSetting = @"";
-				colvarMaLoai.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMaLoai);
-				
 				TableSchema.TableColumn colvarTenLoai = new TableSchema.TableColumn(schema);
 				colvarTenLoai.ColumnName = "TenLoai";
 				colvarTenLoai.DataType = DbType.String;
@@ -369,14 +356,6 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdNhomTaiLieu, value); }
 		}
 		  
-		[XmlAttribute("MaLoai")]
-		[Bindable(true)]
-		public string MaLoai 
-		{
-			get { return GetColumnValue<string>(Columns.MaLoai); }
-			set { SetColumnValue(Columns.MaLoai, value); }
-		}
-		  
 		[XmlAttribute("TenLoai")]
 		[Bindable(true)]
 		public string TenLoai 
@@ -563,15 +542,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLoaiTaiLieu,Guid varIdNhomTaiLieu,string varMaLoai,string varTenLoai,string varMoTa,bool varCanTrinhKy,string varHinhThucKyMacDinh,bool varCanGuiKhachHang,bool varCanLuuVatLy,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdLoaiTaiLieu,Guid varIdNhomTaiLieu,string varTenLoai,string varMoTa,bool varCanTrinhKy,string varHinhThucKyMacDinh,bool varCanGuiKhachHang,bool varCanLuuVatLy,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblLoaiTaiLieu item = new TblLoaiTaiLieu();
 			
 			item.IdLoaiTaiLieu = varIdLoaiTaiLieu;
 			
 			item.IdNhomTaiLieu = varIdNhomTaiLieu;
-			
-			item.MaLoai = varMaLoai;
 			
 			item.TenLoai = varTenLoai;
 			
@@ -609,15 +586,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLoaiTaiLieu,Guid varIdNhomTaiLieu,string varMaLoai,string varTenLoai,string varMoTa,bool varCanTrinhKy,string varHinhThucKyMacDinh,bool varCanGuiKhachHang,bool varCanLuuVatLy,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdLoaiTaiLieu,Guid varIdNhomTaiLieu,string varTenLoai,string varMoTa,bool varCanTrinhKy,string varHinhThucKyMacDinh,bool varCanGuiKhachHang,bool varCanLuuVatLy,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblLoaiTaiLieu item = new TblLoaiTaiLieu();
 			
 				item.IdLoaiTaiLieu = varIdLoaiTaiLieu;
 			
 				item.IdNhomTaiLieu = varIdNhomTaiLieu;
-			
-				item.MaLoai = varMaLoai;
 			
 				item.TenLoai = varTenLoai;
 			
@@ -672,100 +647,93 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn MaLoaiColumn
+        public static TableSchema.TableColumn TenLoaiColumn
         {
             get { return Schema.Columns[2]; }
         }
         
         
         
-        public static TableSchema.TableColumn TenLoaiColumn
+        public static TableSchema.TableColumn MoTaColumn
         {
             get { return Schema.Columns[3]; }
         }
         
         
         
-        public static TableSchema.TableColumn MoTaColumn
+        public static TableSchema.TableColumn CanTrinhKyColumn
         {
             get { return Schema.Columns[4]; }
         }
         
         
         
-        public static TableSchema.TableColumn CanTrinhKyColumn
+        public static TableSchema.TableColumn HinhThucKyMacDinhColumn
         {
             get { return Schema.Columns[5]; }
         }
         
         
         
-        public static TableSchema.TableColumn HinhThucKyMacDinhColumn
+        public static TableSchema.TableColumn CanGuiKhachHangColumn
         {
             get { return Schema.Columns[6]; }
         }
         
         
         
-        public static TableSchema.TableColumn CanGuiKhachHangColumn
+        public static TableSchema.TableColumn CanLuuVatLyColumn
         {
             get { return Schema.Columns[7]; }
         }
         
         
         
-        public static TableSchema.TableColumn CanLuuVatLyColumn
+        public static TableSchema.TableColumn ThuTuHienThiColumn
         {
             get { return Schema.Columns[8]; }
         }
         
         
         
-        public static TableSchema.TableColumn ThuTuHienThiColumn
+        public static TableSchema.TableColumn KichHoatColumn
         {
             get { return Schema.Columns[9]; }
         }
         
         
         
-        public static TableSchema.TableColumn KichHoatColumn
+        public static TableSchema.TableColumn DaXoaColumn
         {
             get { return Schema.Columns[10]; }
         }
         
         
         
-        public static TableSchema.TableColumn DaXoaColumn
+        public static TableSchema.TableColumn NguoiTaoColumn
         {
             get { return Schema.Columns[11]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiTaoColumn
+        public static TableSchema.TableColumn NgayTaoColumn
         {
             get { return Schema.Columns[12]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayTaoColumn
+        public static TableSchema.TableColumn NguoiCapNhatColumn
         {
             get { return Schema.Columns[13]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiCapNhatColumn
-        {
-            get { return Schema.Columns[14]; }
-        }
-        
-        
-        
         public static TableSchema.TableColumn NgayCapNhatColumn
         {
-            get { return Schema.Columns[15]; }
+            get { return Schema.Columns[14]; }
         }
         
         
@@ -776,7 +744,6 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			 public static string IdLoaiTaiLieu = @"IdLoaiTaiLieu";
 			 public static string IdNhomTaiLieu = @"IdNhomTaiLieu";
-			 public static string MaLoai = @"MaLoai";
 			 public static string TenLoai = @"TenLoai";
 			 public static string MoTa = @"MoTa";
 			 public static string CanTrinhKy = @"CanTrinhKy";

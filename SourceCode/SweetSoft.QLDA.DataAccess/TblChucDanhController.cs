@@ -80,11 +80,13 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdChucDanh,string TenChucDanh,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdChucDanh,Guid? IdPhongBan,string TenChucDanh,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblChucDanh item = new TblChucDanh();
 		    
             item.IdChucDanh = IdChucDanh;
+            
+            item.IdPhongBan = IdPhongBan;
             
             item.TenChucDanh = TenChucDanh;
             
@@ -112,13 +114,15 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdChucDanh,string TenChucDanh,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdChucDanh,Guid? IdPhongBan,string TenChucDanh,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblChucDanh item = new TblChucDanh();
 	        item.MarkOld();
 	        item.IsLoaded = true;
 		    
 			item.IdChucDanh = IdChucDanh;
+				
+			item.IdPhongBan = IdPhongBan;
 				
 			item.TenChucDanh = TenChucDanh;
 				

@@ -1,6 +1,8 @@
-﻿using SweetSoft.QLDA.Core.ExceptionHelpers;
+﻿using SubSonic;
+using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
+using SweetSoft.QLDA.Core.MailManager;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
@@ -10,11 +12,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web.Security;
 using System.Transactions;
+using System.Web.Security;
 namespace SweetSoft.QLDA.Core.Managers
 {
     public class NhanVienManager : BaseManager
@@ -137,13 +140,17 @@ namespace SweetSoft.QLDA.Core.Managers
             BusinessValidator.ThrowIfNullOrEmpty(dto.TenNhanVien, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenNhanVien));
             BusinessValidator.ThrowIfNullOrEmpty(dto.Email, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, "Email");
 
-            // Lấy ID người dùng đang thao tác (Admin)
             Guid currentUserId = SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId;
 
-            // MỞ GIAO DỊCH: Đảm bảo thao tác đa bảng phải thành công toàn bộ, nếu lỗi 1 chỗ sẽ Rollback toàn bộ
+            // --- BƯỚC QUAN TRỌNG: Đưa các biến cần thiết ra ngoài Scope ---
+            bool isInsert = (dto.IdNhanVien == Guid.Empty);
+            string finalUserNameToSend = "";
+            string passwordToSend = "abc@123";
+
+            // 2. MỞ GIAO DỊCH DATABASE
             using (var scope = new TransactionScope(TransactionScopeOption.Required, new TimeSpan(0, 10, 0)))
             {
-                if (dto.IdNhanVien == Guid.Empty)
+                if (isInsert)
                 {
                     // ==========================================
                     // NHÁNH 1: XỬ LÝ THÊM MỚI (INSERT)
@@ -153,40 +160,32 @@ namespace SweetSoft.QLDA.Core.Managers
 
                     string generatedUserName = GenerateUsername(dto.TenNhanVien, dto.NgaySinh);
                     int suffix = 1;
-                    string finalUserName = generatedUserName;
-                    while (_userRepository.GetByUserName(finalUserName) != null)
+                    finalUserNameToSend = generatedUserName;
+
+                    while (_userRepository.GetByUserName(finalUserNameToSend) != null)
                     {
-                        finalUserName = generatedUserName + suffix.ToString();
+                        finalUserNameToSend = generatedUserName + suffix.ToString();
                         suffix++;
                     }
 
-                    // 1. ĐẶT CỨNG MẬT KHẨU MẶC ĐỊNH (Vì Form Nhân viên không còn ô nhập mật khẩu)
-                    string password = "abc@123";
-
                     try
                     {
-                        MembershipUser membershipUser = Membership.CreateUser(finalUserName, password, dto.Email);
-
-                        // 2. MẶC ĐỊNH KÍCH HOẠT TÀI KHOẢN KHI TẠO MỚI
+                        MembershipUser membershipUser = Membership.CreateUser(finalUserNameToSend, passwordToSend, dto.Email);
                         membershipUser.IsApproved = true;
                         Membership.UpdateUser(membershipUser);
 
                         Guid newUserId = (Guid)membershipUser.ProviderUserKey;
-
                         AspnetUser aspnetUser = _userRepository.GetById(newUserId);
                         if (aspnetUser != null)
                         {
                             aspnetUser.MobileAlias = dto.PhoneNumber;
                             aspnetUser.DisplayName = dto.TenNhanVien;
-
-                            // ĐỒNG BỘ DỮ LIỆU
-                            aspnetUser.IsActivated = true; // Mặc định kích hoạt
-                            aspnetUser.IsDeleted = false; // Mới tạo thì chưa xóa
+                            aspnetUser.IsActivated = true;
+                            aspnetUser.IsDeleted = false;
                             aspnetUser.Avatar = dto.AnhDaiDien;
                             _userRepository.Update(aspnetUser);
                         }
 
-                        // Gán các trường liên kết và Audit Trail cho Insert
                         dto.IdNhanVien = Guid.NewGuid();
                         dto.UserId = newUserId;
                         dto.DaXoa = false;
@@ -195,14 +194,11 @@ namespace SweetSoft.QLDA.Core.Managers
                         dto.IsNew = true;
 
                         dto = _nhanVienRepository.Insert(dto);
-
-                        // Chốt giao dịch thành công
                         scope.Complete();
-                        return dto;
                     }
                     catch (MembershipCreateUserException ex)
                     {
-                        throw new Exception("Lỗi tạo tài khoản hệ thống (Có thể Email đã tồn tại): " + ex.StatusCode.ToString());
+                        throw new Exception("Lỗi tạo tài khoản: " + ex.StatusCode.ToString());
                     }
                 }
                 else
@@ -264,6 +260,54 @@ namespace SweetSoft.QLDA.Core.Managers
                     return nhanVienOld;
                 }
             } // Kết thúc using (scope), nếu chưa có lệnh scope.Complete() thì tự động Rollback
+            if (isInsert)
+            {
+                Guid idNhanVienMoi = dto.IdNhanVien;
+                string emailToSend = dto.Email;
+                string tenNhanVien = dto.TenNhanVien;
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        var emailManager = new EmailManager(null);
+                        var placeholdersBody = new Dictionary<string, string>
+                {
+                    { "[[COMPANY_NAME]]", "SweetSoft" },
+                    { "[[FULL_NAME]]", tenNhanVien },
+                    { "[[USER_NAME]]", finalUserNameToSend },
+                    { "[[PASSWORD]]", passwordToSend },
+                    { "[[EMAIL]]", emailToSend },
+                    { "[[SUPPORT_EMAIL]]", "hotro@sweetsoft.vn" },
+                    { "[[LOGIN_URL]]", "http://qlda.local/Login" }
+                };
+
+                        await emailManager.SendEmailWithTemplateAsync(
+                            refId: idNhanVienMoi,
+                            refType: EmailType.Notification,
+                            customerId: idNhanVienMoi,
+                            toEmail: emailToSend,
+                            templateKey: "TemplateAccountInformation",
+
+                            // BẠN HÃY THAY CHỮ 'HTML' DƯỚI ĐÂY BẰNG TỪ KHÓA CHUẨN TRONG FILE EmailFormatTypes.cs
+                            formatType: EmailFormatTypes.Admin,
+
+                            placeholdersBody: placeholdersBody,
+                            attachments: null,
+                            useBackgroundThread: true
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        // BƯỚC BẮT LỖI
+                        string nguyenNhanLoi = ex.ToString();
+                        System.Diagnostics.Debug.WriteLine("=== LỖI GỬI MAIL TẠI ĐÂY ===");
+                        System.Diagnostics.Debug.WriteLine(nguyenNhanLoi);
+                    }
+                });
+            }
+
+            return dto;
         }
         public bool Delete(TblNhanVien item)
         {

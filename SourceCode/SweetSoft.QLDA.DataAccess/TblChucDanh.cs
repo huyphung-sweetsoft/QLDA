@@ -140,6 +140,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdChucDanh.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdChucDanh);
 				
+				TableSchema.TableColumn colvarIdPhongBan = new TableSchema.TableColumn(schema);
+				colvarIdPhongBan.ColumnName = "IdPhongBan";
+				colvarIdPhongBan.DataType = DbType.Guid;
+				colvarIdPhongBan.MaxLength = 0;
+				colvarIdPhongBan.AutoIncrement = false;
+				colvarIdPhongBan.IsNullable = true;
+				colvarIdPhongBan.IsPrimaryKey = false;
+				colvarIdPhongBan.IsForeignKey = true;
+				colvarIdPhongBan.IsReadOnly = false;
+				colvarIdPhongBan.DefaultSetting = @"";
+				
+					colvarIdPhongBan.ForeignKeyTableName = "TblPhongBan";
+				schema.Columns.Add(colvarIdPhongBan);
+				
 				TableSchema.TableColumn colvarTenChucDanh = new TableSchema.TableColumn(schema);
 				colvarTenChucDanh.ColumnName = "TenChucDanh";
 				colvarTenChucDanh.DataType = DbType.String;
@@ -279,6 +293,14 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdChucDanh, value); }
 		}
 		  
+		[XmlAttribute("IdPhongBan")]
+		[Bindable(true)]
+		public Guid? IdPhongBan 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdPhongBan); }
+			set { SetColumnValue(Columns.IdPhongBan, value); }
+		}
+		  
 		[XmlAttribute("TenChucDanh")]
 		[Bindable(true)]
 		public string TenChucDanh 
@@ -387,7 +409,20 @@ namespace SweetSoft.QLDA.DataAccess
 		
 			
 		
-		//no foreign key tables defined (0)
+		#region ForeignKey Properties
+		
+		/// <summary>
+		/// Returns a TblPhongBan ActiveRecord object related to this TblChucDanh
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblPhongBan TblPhongBan
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblPhongBan.FetchByID(this.IdPhongBan); }
+			set { SetColumnValue("IdPhongBan", value.IdPhongBan); }
+		}
+		
+		
+		#endregion
 		
 		
 		
@@ -401,11 +436,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdChucDanh,string varTenChucDanh,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdChucDanh,Guid? varIdPhongBan,string varTenChucDanh,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblChucDanh item = new TblChucDanh();
 			
 			item.IdChucDanh = varIdChucDanh;
+			
+			item.IdPhongBan = varIdPhongBan;
 			
 			item.TenChucDanh = varTenChucDanh;
 			
@@ -435,11 +472,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdChucDanh,string varTenChucDanh,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdChucDanh,Guid? varIdPhongBan,string varTenChucDanh,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblChucDanh item = new TblChucDanh();
 			
 				item.IdChucDanh = varIdChucDanh;
+			
+				item.IdPhongBan = varIdPhongBan;
 			
 				item.TenChucDanh = varTenChucDanh;
 			
@@ -479,65 +518,72 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn TenChucDanhColumn
+        public static TableSchema.TableColumn IdPhongBanColumn
         {
             get { return Schema.Columns[1]; }
         }
         
         
         
-        public static TableSchema.TableColumn MoTaColumn
+        public static TableSchema.TableColumn TenChucDanhColumn
         {
             get { return Schema.Columns[2]; }
         }
         
         
         
-        public static TableSchema.TableColumn ThuTuHienThiColumn
+        public static TableSchema.TableColumn MoTaColumn
         {
             get { return Schema.Columns[3]; }
         }
         
         
         
-        public static TableSchema.TableColumn KichHoatColumn
+        public static TableSchema.TableColumn ThuTuHienThiColumn
         {
             get { return Schema.Columns[4]; }
         }
         
         
         
-        public static TableSchema.TableColumn DaXoaColumn
+        public static TableSchema.TableColumn KichHoatColumn
         {
             get { return Schema.Columns[5]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiTaoColumn
+        public static TableSchema.TableColumn DaXoaColumn
         {
             get { return Schema.Columns[6]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayTaoColumn
+        public static TableSchema.TableColumn NguoiTaoColumn
         {
             get { return Schema.Columns[7]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiCapNhatColumn
+        public static TableSchema.TableColumn NgayTaoColumn
         {
             get { return Schema.Columns[8]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayCapNhatColumn
+        public static TableSchema.TableColumn NguoiCapNhatColumn
         {
             get { return Schema.Columns[9]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NgayCapNhatColumn
+        {
+            get { return Schema.Columns[10]; }
         }
         
         
@@ -547,6 +593,7 @@ namespace SweetSoft.QLDA.DataAccess
 		public struct Columns
 		{
 			 public static string IdChucDanh = @"IdChucDanh";
+			 public static string IdPhongBan = @"IdPhongBan";
 			 public static string TenChucDanh = @"TenChucDanh";
 			 public static string MoTa = @"MoTa";
 			 public static string ThuTuHienThi = @"ThuTuHienThi";

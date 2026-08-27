@@ -237,6 +237,19 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIsActivated.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIsActivated);
 				
+				TableSchema.TableColumn colvarOfProject = new TableSchema.TableColumn(schema);
+				colvarOfProject.ColumnName = "OfProject";
+				colvarOfProject.DataType = DbType.Boolean;
+				colvarOfProject.MaxLength = 0;
+				colvarOfProject.AutoIncrement = false;
+				colvarOfProject.IsNullable = true;
+				colvarOfProject.IsPrimaryKey = false;
+				colvarOfProject.IsForeignKey = false;
+				colvarOfProject.IsReadOnly = false;
+				colvarOfProject.DefaultSetting = @"";
+				colvarOfProject.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarOfProject);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -310,6 +323,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<bool>(Columns.IsActivated); }
 			set { SetColumnValue(Columns.IsActivated, value); }
 		}
+		  
+		[XmlAttribute("OfProject")]
+		[Bindable(true)]
+		public bool? OfProject 
+		{
+			get { return GetColumnValue<bool?>(Columns.OfProject); }
+			set { SetColumnValue(Columns.OfProject, value); }
+		}
 		
 		#endregion
 		
@@ -330,7 +351,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varId,string varFunctionCode,string varParentCode,string varFunctionName,string varPageUrl,int varDisplayOrder,string varIcon,bool varIsActivated)
+		public static void Insert(Guid varId,string varFunctionCode,string varParentCode,string varFunctionName,string varPageUrl,int varDisplayOrder,string varIcon,bool varIsActivated,bool? varOfProject)
 		{
 			AspnetFunction item = new AspnetFunction();
 			
@@ -350,6 +371,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IsActivated = varIsActivated;
 			
+			item.OfProject = varOfProject;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -360,7 +383,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varId,string varFunctionCode,string varParentCode,string varFunctionName,string varPageUrl,int varDisplayOrder,string varIcon,bool varIsActivated)
+		public static void Update(Guid varId,string varFunctionCode,string varParentCode,string varFunctionName,string varPageUrl,int varDisplayOrder,string varIcon,bool varIsActivated,bool? varOfProject)
 		{
 			AspnetFunction item = new AspnetFunction();
 			
@@ -379,6 +402,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.Icon = varIcon;
 			
 				item.IsActivated = varIsActivated;
+			
+				item.OfProject = varOfProject;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -449,6 +474,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn OfProjectColumn
+        {
+            get { return Schema.Columns[8]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -461,6 +493,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string DisplayOrder = @"DisplayOrder";
 			 public static string Icon = @"Icon";
 			 public static string IsActivated = @"IsActivated";
+			 public static string OfProject = @"OfProject";
 						
 		}
 		#endregion

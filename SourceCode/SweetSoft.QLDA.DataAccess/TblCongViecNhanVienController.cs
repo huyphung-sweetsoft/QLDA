@@ -15,13 +15,13 @@ using SubSonic.Utilities;
 namespace SweetSoft.QLDA.DataAccess
 {
     /// <summary>
-    /// Controller class for aspnet_Functions
+    /// Controller class for TblCongViec_NhanVien
     /// </summary>
     [System.ComponentModel.DataObject]
-    public partial class AspnetFunctionController
+    public partial class TblCongViecNhanVienController
     {
         // Preload our schema..
-        AspnetFunction thisSchemaLoad = new AspnetFunction();
+        TblCongViecNhanVien thisSchemaLoad = new TblCongViecNhanVien();
         private string userName = String.Empty;
         protected string UserName
         {
@@ -42,65 +42,67 @@ namespace SweetSoft.QLDA.DataAccess
             }
         }
         [DataObjectMethod(DataObjectMethodType.Select, true)]
-        public AspnetFunctionCollection FetchAll()
+        public TblCongViecNhanVienCollection FetchAll()
         {
-            AspnetFunctionCollection coll = new AspnetFunctionCollection();
-            Query qry = new Query(AspnetFunction.Schema);
+            TblCongViecNhanVienCollection coll = new TblCongViecNhanVienCollection();
+            Query qry = new Query(TblCongViecNhanVien.Schema);
             coll.LoadAndCloseReader(qry.ExecuteReader());
             return coll;
         }
         [DataObjectMethod(DataObjectMethodType.Select, false)]
-        public AspnetFunctionCollection FetchByID(object Id)
+        public TblCongViecNhanVienCollection FetchByID(object IdCongViec)
         {
-            AspnetFunctionCollection coll = new AspnetFunctionCollection().Where("Id", Id).Load();
+            TblCongViecNhanVienCollection coll = new TblCongViecNhanVienCollection().Where("IdCongViec", IdCongViec).Load();
             return coll;
         }
 		
 		[DataObjectMethod(DataObjectMethodType.Select, false)]
-        public AspnetFunctionCollection FetchByQuery(Query qry)
+        public TblCongViecNhanVienCollection FetchByQuery(Query qry)
         {
-            AspnetFunctionCollection coll = new AspnetFunctionCollection();
+            TblCongViecNhanVienCollection coll = new TblCongViecNhanVienCollection();
             coll.LoadAndCloseReader(qry.ExecuteReader()); 
             return coll;
         }
         [DataObjectMethod(DataObjectMethodType.Delete, true)]
-        public bool Delete(object Id)
+        public bool Delete(object IdCongViec)
         {
-            return (AspnetFunction.Delete(Id) == 1);
+            return (TblCongViecNhanVien.Delete(IdCongViec) == 1);
         }
         [DataObjectMethod(DataObjectMethodType.Delete, false)]
-        public bool Destroy(object Id)
+        public bool Destroy(object IdCongViec)
         {
-            return (AspnetFunction.Destroy(Id) == 1);
+            return (TblCongViecNhanVien.Destroy(IdCongViec) == 1);
         }
         
         
+        
+        [DataObjectMethod(DataObjectMethodType.Delete, true)]
+        public bool Delete(Guid IdCongViec,Guid IdNhanVien)
+        {
+            Query qry = new Query(TblCongViecNhanVien.Schema);
+            qry.QueryType = QueryType.Delete;
+            qry.AddWhere("IdCongViec", IdCongViec).AND("IdNhanVien", IdNhanVien);
+            qry.Execute();
+            return (true);
+        }        
+       
+    	
     	
 	    /// <summary>
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid Id,string FunctionCode,string ParentCode,string FunctionName,string PageUrl,int DisplayOrder,string Icon,bool IsActivated,bool? OfProject)
+	    public void Insert(Guid IdCongViec,Guid IdNhanVien,DateTime? NgayPhanCong,string GhiChu)
 	    {
-		    AspnetFunction item = new AspnetFunction();
+		    TblCongViecNhanVien item = new TblCongViecNhanVien();
 		    
-            item.Id = Id;
+            item.IdCongViec = IdCongViec;
             
-            item.FunctionCode = FunctionCode;
+            item.IdNhanVien = IdNhanVien;
             
-            item.ParentCode = ParentCode;
+            item.NgayPhanCong = NgayPhanCong;
             
-            item.FunctionName = FunctionName;
-            
-            item.PageUrl = PageUrl;
-            
-            item.DisplayOrder = DisplayOrder;
-            
-            item.Icon = Icon;
-            
-            item.IsActivated = IsActivated;
-            
-            item.OfProject = OfProject;
+            item.GhiChu = GhiChu;
             
 	    
 		    item.Save(UserName);
@@ -110,29 +112,19 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid Id,string FunctionCode,string ParentCode,string FunctionName,string PageUrl,int DisplayOrder,string Icon,bool IsActivated,bool? OfProject)
+	    public void Update(Guid IdCongViec,Guid IdNhanVien,DateTime? NgayPhanCong,string GhiChu)
 	    {
-		    AspnetFunction item = new AspnetFunction();
+		    TblCongViecNhanVien item = new TblCongViecNhanVien();
 	        item.MarkOld();
 	        item.IsLoaded = true;
 		    
-			item.Id = Id;
+			item.IdCongViec = IdCongViec;
 				
-			item.FunctionCode = FunctionCode;
+			item.IdNhanVien = IdNhanVien;
 				
-			item.ParentCode = ParentCode;
+			item.NgayPhanCong = NgayPhanCong;
 				
-			item.FunctionName = FunctionName;
-				
-			item.PageUrl = PageUrl;
-				
-			item.DisplayOrder = DisplayOrder;
-				
-			item.Icon = Icon;
-				
-			item.IsActivated = IsActivated;
-				
-			item.OfProject = OfProject;
+			item.GhiChu = GhiChu;
 				
 	        item.Save(UserName);
 	    }

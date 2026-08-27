@@ -173,7 +173,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdVaiTroDuAn.DataType = DbType.Guid;
 				colvarIdVaiTroDuAn.MaxLength = 0;
 				colvarIdVaiTroDuAn.AutoIncrement = false;
-				colvarIdVaiTroDuAn.IsNullable = false;
+				colvarIdVaiTroDuAn.IsNullable = true;
 				colvarIdVaiTroDuAn.IsPrimaryKey = false;
 				colvarIdVaiTroDuAn.IsForeignKey = true;
 				colvarIdVaiTroDuAn.IsReadOnly = false;
@@ -312,9 +312,9 @@ namespace SweetSoft.QLDA.DataAccess
 		  
 		[XmlAttribute("IdVaiTroDuAn")]
 		[Bindable(true)]
-		public Guid IdVaiTroDuAn 
+		public Guid? IdVaiTroDuAn 
 		{
-			get { return GetColumnValue<Guid>(Columns.IdVaiTroDuAn); }
+			get { return GetColumnValue<Guid?>(Columns.IdVaiTroDuAn); }
 			set { SetColumnValue(Columns.IdVaiTroDuAn, value); }
 		}
 		  
@@ -428,7 +428,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdThanhVienDuAn,Guid varIdDuAn,Guid? varIdNhanVien,Guid varIdVaiTroDuAn,DateTime varNgayThamGia,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdThanhVienDuAn,Guid varIdDuAn,Guid? varIdNhanVien,Guid? varIdVaiTroDuAn,DateTime varNgayThamGia,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblThanhVienDuAn item = new TblThanhVienDuAn();
 			
@@ -464,7 +464,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdThanhVienDuAn,Guid varIdDuAn,Guid? varIdNhanVien,Guid varIdVaiTroDuAn,DateTime varNgayThamGia,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdThanhVienDuAn,Guid varIdDuAn,Guid? varIdNhanVien,Guid? varIdVaiTroDuAn,DateTime varNgayThamGia,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblThanhVienDuAn item = new TblThanhVienDuAn();
 			

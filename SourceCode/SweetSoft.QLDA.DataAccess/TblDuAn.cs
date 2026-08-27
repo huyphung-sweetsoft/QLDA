@@ -171,7 +171,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdLoaiDuAn.DataType = DbType.Guid;
 				colvarIdLoaiDuAn.MaxLength = 0;
 				colvarIdLoaiDuAn.AutoIncrement = false;
-				colvarIdLoaiDuAn.IsNullable = false;
+				colvarIdLoaiDuAn.IsNullable = true;
 				colvarIdLoaiDuAn.IsPrimaryKey = false;
 				colvarIdLoaiDuAn.IsForeignKey = true;
 				colvarIdLoaiDuAn.IsReadOnly = false;
@@ -185,7 +185,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdKhachHang.DataType = DbType.Guid;
 				colvarIdKhachHang.MaxLength = 0;
 				colvarIdKhachHang.AutoIncrement = false;
-				colvarIdKhachHang.IsNullable = false;
+				colvarIdKhachHang.IsNullable = true;
 				colvarIdKhachHang.IsPrimaryKey = false;
 				colvarIdKhachHang.IsForeignKey = true;
 				colvarIdKhachHang.IsReadOnly = false;
@@ -391,17 +391,17 @@ namespace SweetSoft.QLDA.DataAccess
 		  
 		[XmlAttribute("IdLoaiDuAn")]
 		[Bindable(true)]
-		public Guid IdLoaiDuAn 
+		public Guid? IdLoaiDuAn 
 		{
-			get { return GetColumnValue<Guid>(Columns.IdLoaiDuAn); }
+			get { return GetColumnValue<Guid?>(Columns.IdLoaiDuAn); }
 			set { SetColumnValue(Columns.IdLoaiDuAn, value); }
 		}
 		  
 		[XmlAttribute("IdKhachHang")]
 		[Bindable(true)]
-		public Guid IdKhachHang 
+		public Guid? IdKhachHang 
 		{
-			get { return GetColumnValue<Guid>(Columns.IdKhachHang); }
+			get { return GetColumnValue<Guid?>(Columns.IdKhachHang); }
 			set { SetColumnValue(Columns.IdKhachHang, value); }
 		}
 		  
@@ -787,7 +787,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid varIdLoaiDuAn,Guid varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid? varIdLoaiDuAn,Guid? varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblDuAn item = new TblDuAn();
 			
@@ -835,7 +835,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid varIdLoaiDuAn,Guid varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid? varIdLoaiDuAn,Guid? varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblDuAn item = new TblDuAn();
 			

@@ -80,13 +80,11 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdNhomTaiLieu,string MaNhom,string TenNhom,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdNhomTaiLieu,string TenNhom,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblNhomTaiLieu item = new TblNhomTaiLieu();
 		    
             item.IdNhomTaiLieu = IdNhomTaiLieu;
-            
-            item.MaNhom = MaNhom;
             
             item.TenNhom = TenNhom;
             
@@ -114,15 +112,13 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdNhomTaiLieu,string MaNhom,string TenNhom,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdNhomTaiLieu,string TenNhom,string MoTa,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblNhomTaiLieu item = new TblNhomTaiLieu();
 	        item.MarkOld();
 	        item.IsLoaded = true;
 		    
 			item.IdNhomTaiLieu = IdNhomTaiLieu;
-				
-			item.MaNhom = MaNhom;
 				
 			item.TenNhom = TenNhom;
 				
