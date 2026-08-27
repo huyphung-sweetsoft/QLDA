@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             get
             {
-                return ModuleKeys.Projects;
+                return ModuleKeys.Project;
             }
         }
         private Guid IdHopDongThucHien

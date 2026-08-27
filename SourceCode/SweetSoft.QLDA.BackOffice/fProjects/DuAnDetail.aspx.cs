@@ -24,7 +24,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             get
             {
-                return ModuleKeys.Projects;
+                return ModuleKeys.Project;
             }
         }
 
@@ -34,7 +34,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             {
                 try
                 {
-                    string temp = CommonHelpers.QueryString("Id");
+                    string temp = CommonHelpers.QueryString("ProjectId");
                     if (string.IsNullOrEmpty(temp))
                         return Guid.Empty;
                     return Guid.Parse(SecurityUtilities.UnprotectUrlParameter(temp));

@@ -24,7 +24,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             get
             {
-                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Update, ModuleKeys.Projects))
+                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Update, ModuleKeys.Project))
                     return true;
                 return false;
             }
@@ -42,7 +42,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             get
             {
-                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Delete, ModuleKeys.Projects))
+                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Delete, ModuleKeys.Project))
                     return true;
                 return false;
             }

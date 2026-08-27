@@ -129,7 +129,7 @@
                         <h5 class="text-uppercase fw-bold mb-3">
                             <%= GetResourceText(BackEndResourceKeys.PROJECT_INFORMATION) %>
                         </h5>
-
+                         
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="font-size-8 fw-bold mb-1">

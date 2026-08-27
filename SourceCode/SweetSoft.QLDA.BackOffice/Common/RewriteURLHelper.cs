@@ -26,9 +26,9 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         //Project
         public static string Projects => "/Projects";
-        public static string ProjectDetail(Guid projectId)
+        public static string ProjectDetail(Guid idDuAn)
         {
-            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}";
+            return $"/Projects/{SecurityUtilities.ProtectUrlParameter(idDuAn.ToString())}";
         }
         public static string ProjectTasks(Guid projectId)
         {
@@ -104,11 +104,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             return $"/email-template/{SecurityUtilities.ProtectUrlParameter(emailId.ToString())}";
         }
 
-        public static string Projects => "/Projects";
-        public static string ProjectDetail(Guid idDuAn)
-        {
-            return $"/Project/{SecurityUtilities.ProtectUrlParameter(idDuAn.ToString())}";
-        }
+
 
     }
 }

@@ -226,19 +226,33 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
+      <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\DuAnDetail.aspx.cs">
+      <DependentUpon>DuAnDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
+      <DependentUpon>DuAnDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\DuAnList.aspx.cs">
+      <DependentUpon>DuAnList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\DuAnList.aspx.designer.cs">
+      <DependentUpon>DuAnList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fProject\Controls\CtrlTask.ascx.cs">
       <DependentUpon>CtrlTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fProject\Controls\CtrlTask.ascx.designer.cs">
       <DependentUpon>CtrlTask.ascx</DependentUpon>
-    </Compile>
-    <Compile Include="fProject\ProjectList.aspx.cs">
-      <DependentUpon>ProjectList.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fProject\ProjectList.aspx.designer.cs">
-      <DependentUpon>ProjectList.aspx</DependentUpon>
     </Compile>
     <Compile Include="fProject\TaskList.aspx.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
@@ -247,6 +261,7 @@
     <Compile Include="fProject\TaskList.aspx.designer.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
@@ -272,6 +287,10 @@
     <Content Include="android-chrome-192x192.png" />
     <Content Include="android-chrome-512x512.png" />
     <Content Include="apple-touch-icon.png" />
+    <Content Include="bin\CKEditor.NET.dll" />
+    <Content Include="bin\ImageResizer.dll" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.dll" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.pdb" />
     <Content Include="Content\Site.css" />
     <Content Include="Controls\AutoComplete\Autocomplete-en-US.js" />
     <Content Include="Controls\AutoComplete\Autocomplete-vi-VN.js" />
@@ -308,6 +327,9 @@
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
     <Content Include="ForgotPassword.aspx" />
+    <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
+    <Content Include="fProjects\DuAnDetail.aspx" />
+    <Content Include="fProjects\DuAnList.aspx" />
     <Content Include="fProject\Controls\CtrlTask.ascx" />
     <Content Include="fProject\TaskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
@@ -315,7 +337,6 @@
     <Content Include="fSettings\Settings.aspx" />
     <Content Include="fUsers\Controls\CtrlPermission.ascx" />
     <Content Include="fUsers\Controls\CtrlUsers.ascx" />
-    <Content Include="fProject\ProjectList.aspx" />
     <Content Include="fUsers\RoleDetail.aspx" />
     <Content Include="fUsers\RoleList.aspx" />
     <Content Include="fUsers\UserList.aspx" />
@@ -356,6 +377,16 @@
     <Content Include="Styles\plugins\slick\slick.css" />
     <Content Include="Styles\plugins\slick\slick.js" />
     <Content Include="Styles\video\video-trang-chu.mp4" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260821.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_20082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_21082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_24082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_26082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -1565,6 +1596,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="bin\en-US\" />
+    <Folder Include="bin\vi-VN\" />
     <Folder Include="Controllers\" />
     <Folder Include="Data\" />
     <Folder Include="Views\CtrlTask\" />

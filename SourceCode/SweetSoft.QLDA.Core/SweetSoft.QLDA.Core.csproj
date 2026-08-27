@@ -157,6 +157,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnumHelper\Defines\DuAnStatus.cs" />
     <Compile Include="EnumHelper\Defines\MeetingSpeechesStatus.cs" />
     <Compile Include="ExcelManager\ColumnDisplayInfo.cs" />
     <Compile Include="ExcelManager\ExcelSheetItem.cs" />
@@ -219,7 +220,13 @@
     <Compile Include="MailManager\Interfaces\IEmailManager.cs" />
     <Compile Include="MailManager\Repository\EmailHistoryRepository.cs" />
     <Compile Include="Managers\BaseManager.cs" />
+    <Compile Include="Managers\DuAnManager.cs" />
+    <Compile Include="Managers\HopDongThucHienManager.cs" />
+    <Compile Include="Managers\KhachHangManager.cs" />
+    <Compile Include="Managers\LoaiDuAnManager.cs" />
+    <Compile Include="Managers\NhanVienManager.cs" />
     <Compile Include="Managers\TaskManager.cs" />
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationOptions.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationRequest.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfMargins.cs" />
@@ -236,7 +243,13 @@
     <Compile Include="PdfGeneration\Services\NRecoPdfGenerator.cs" />
     <Compile Include="PdfGeneration\Services\PdfGenerationService.cs" />
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
+    <Compile Include="Respositories\DuAnRepository.cs" />
+    <Compile Include="Respositories\HopDongThucHienRepository.cs" />
+    <Compile Include="Respositories\KhachHangRepository.cs" />
+    <Compile Include="Respositories\LoaiDuAnRepository.cs" />
+    <Compile Include="Respositories\NhanVienRepository.cs" />
     <Compile Include="Respositories\TaskRepository.cs" />
+    <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />
     <Compile Include="SEO\Schemas\AnswerSchema.cs" />
     <Compile Include="SEO\Schemas\ArticleSchema.cs" />
@@ -353,6 +366,8 @@
     <Compile Include="Utils\XORCipher.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="obj\Debug\SweetSoft.QLDA.Core.ResourceTexts.BackEndTexts.en-US.resources" />
+    <EmbeddedResource Include="obj\Debug\SweetSoft.QLDA.Core.ResourceTexts.BackEndTexts.vi-VN.resources" />
     <EmbeddedResource Include="ResourceTexts\BackEndTexts.en-US.resx">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -362,6 +377,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="bin\Debug\SweetSoft.QLDA.Core.dll.config" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\Debug\SweetSof.A33F0DB9.Up2Date" />
+    <None Include="obj\Debug\SweetSoft.QLDA.Core.csproj.AssemblyReference.cache" />
+    <None Include="obj\Debug\SweetSoft.QLDA.Core.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\Debug\SweetSoft.QLDA.Core.csproj.GenerateResource.cache" />
     <None Include="packages.config" />
     <None Include="SEO\structured_data_usage.md" />
   </ItemGroup>
@@ -372,7 +394,84 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="bin\Release\" />
+    <Folder Include="obj\Debug\TempPE\" />
     <Folder Include="Respositories\Interfaces\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\en-US\SweetSoft.QLDA.Core.resources.dll" />
+    <Content Include="bin\Debug\EPPlus.dll" />
+    <Content Include="bin\Debug\EPPlus.Interfaces.dll" />
+    <Content Include="bin\Debug\EPPlus.System.Drawing.dll" />
+    <Content Include="bin\Debug\EPPlus.xml" />
+    <Content Include="bin\Debug\Google.Apis.Auth.dll" />
+    <Content Include="bin\Debug\Google.Apis.Auth.pdb" />
+    <Content Include="bin\Debug\Google.Apis.Auth.xml" />
+    <Content Include="bin\Debug\Google.Apis.Core.dll" />
+    <Content Include="bin\Debug\Google.Apis.Core.pdb" />
+    <Content Include="bin\Debug\Google.Apis.Core.xml" />
+    <Content Include="bin\Debug\Google.Apis.dll" />
+    <Content Include="bin\Debug\Google.Apis.pdb" />
+    <Content Include="bin\Debug\Google.Apis.xml" />
+    <Content Include="bin\Debug\jose-jwt.dll" />
+    <Content Include="bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll" />
+    <Content Include="bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.Abstractions.dll" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.Abstractions.xml" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.JsonWebTokens.dll" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.JsonWebTokens.xml" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.Logging.dll" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.Logging.xml" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.Tokens.dll" />
+    <Content Include="bin\Debug\Microsoft.IdentityModel.Tokens.xml" />
+    <Content Include="bin\Debug\Microsoft.Practices.EnterpriseLibrary.Data.dll" />
+    <Content Include="bin\Debug\MySql.Data.dll" />
+    <Content Include="bin\Debug\Newtonsoft.Json.dll" />
+    <Content Include="bin\Debug\Newtonsoft.Json.xml" />
+    <Content Include="bin\Debug\NReco.PdfGenerator.dll" />
+    <Content Include="bin\Debug\NReco.PdfGenerator.xml" />
+    <Content Include="bin\Debug\QRCoder.dll" />
+    <Content Include="bin\Debug\Quartz.dll" />
+    <Content Include="bin\Debug\Quartz.xml" />
+    <Content Include="bin\Debug\RestSharp.dll" />
+    <Content Include="bin\Debug\RestSharp.xml" />
+    <Content Include="bin\Debug\SubSonic.dll" />
+    <Content Include="bin\Debug\SubSonic.pdb" />
+    <Content Include="bin\Debug\SweetSoft.QLDA.Core.dll" />
+    <Content Include="bin\Debug\SweetSoft.QLDA.Core.pdb" />
+    <Content Include="bin\Debug\SweetSoft.QLDA.DataAccess.dll" />
+    <Content Include="bin\Debug\SweetSoft.QLDA.DataAccess.pdb" />
+    <Content Include="bin\Debug\System.Buffers.dll" />
+    <Content Include="bin\Debug\System.Buffers.xml" />
+    <Content Include="bin\Debug\System.CodeDom.dll" />
+    <Content Include="bin\Debug\System.CodeDom.xml" />
+    <Content Include="bin\Debug\System.Data.SQLite.dll" />
+    <Content Include="bin\Debug\System.Diagnostics.DiagnosticSource.dll" />
+    <Content Include="bin\Debug\System.Diagnostics.DiagnosticSource.xml" />
+    <Content Include="bin\Debug\System.IdentityModel.Tokens.Jwt.dll" />
+    <Content Include="bin\Debug\System.IdentityModel.Tokens.Jwt.xml" />
+    <Content Include="bin\Debug\System.Management.dll" />
+    <Content Include="bin\Debug\System.Management.xml" />
+    <Content Include="bin\Debug\System.Memory.dll" />
+    <Content Include="bin\Debug\System.Memory.xml" />
+    <Content Include="bin\Debug\System.Numerics.Vectors.dll" />
+    <Content Include="bin\Debug\System.Numerics.Vectors.xml" />
+    <Content Include="bin\Debug\System.Runtime.CompilerServices.Unsafe.dll" />
+    <Content Include="bin\Debug\System.Runtime.CompilerServices.Unsafe.xml" />
+    <Content Include="bin\Debug\System.Text.Encodings.Web.dll" />
+    <Content Include="bin\Debug\System.Text.Encodings.Web.xml" />
+    <Content Include="bin\Debug\System.Text.Json.dll" />
+    <Content Include="bin\Debug\System.Text.Json.xml" />
+    <Content Include="bin\Debug\System.Threading.Tasks.Extensions.dll" />
+    <Content Include="bin\Debug\System.Threading.Tasks.Extensions.xml" />
+    <Content Include="bin\Debug\System.ValueTuple.dll" />
+    <Content Include="bin\Debug\System.ValueTuple.xml" />
+    <Content Include="bin\Debug\vi-VN\SweetSoft.QLDA.Core.resources.dll" />
+    <Content Include="obj\Debug\en-US\SweetSoft.QLDA.Core.resources.dll" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.Core.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.Core.dll" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.Core.pdb" />
+    <Content Include="obj\Debug\vi-VN\SweetSoft.QLDA.Core.resources.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
