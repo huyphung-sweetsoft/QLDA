@@ -30,11 +30,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                 select * from (
                     select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
                         select d.*,
-                        nv.TenNhanVien,
+                        u.DisplayName,
                         kh.TenKhachHang,
                         COUNT(1) OVER() AS total_records
                         from TblDuAn d
-                        left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
+                        left join aspnet_Users u on u.UserId = d.IdNhanVienQuanLy
                         left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                         where d.DaXoa = 0
                         and (@idLoaiDuAn = '{Guid.Empty}' or d.IdLoaiDuAn = @idLoaiDuAn)
@@ -144,10 +144,10 @@ namespace SweetSoft.QLDA.Core.Respositories
                     hd.SoHopDong,
                     hd.GiaTriHopDong,
                     hd.NgayKy,
-                    nv.TenNhanVien,
-                    nv.AnhDaiDien
+                    u.DisplayName,
+                    u.Avatar
                 from TblDuAn d
-                left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
+                left join aspnet_Users u on u.UserId = d.IdNhanVienQuanLy
                 left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                 left join TblLoaiDuAn dt on dt.IdLoaiDuAn = d.IdLoaiDuAn
                 left join TblHopDongThucHien hd on hd.IdHopDongThucHien = d.IdHopDongThucHien

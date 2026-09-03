@@ -23,11 +23,11 @@ namespace SweetSoft.QLDA.Core.Managers
             _auditManager = new AuditManager(GetClientInfo());
             _repository = new NhanVienRepository(_auditManager);
         }
-        public TblNhanVien GetNhanVienById(Guid id)
+        public AspnetUser GetNhanVienById(Guid id)
         {
             return _repository.GetById(id);
         }
-        public List<TblNhanVien> GetAllNhanVien()
+        public List<AspnetUser> GetAllNhanVien()
         {
             return _repository.GetAllTblNhanVien();
         }

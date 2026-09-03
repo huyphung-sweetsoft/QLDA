@@ -9,27 +9,27 @@ using System.Threading.Tasks;
 
 namespace SweetSoft.QLDA.Core.Respositories
 {
-    public class NhanVienRepository : BaseRepository<TblNhanVien>
+    public class NhanVienRepository : BaseRepository<AspnetUser>
     {
         public NhanVienRepository(AuditManager auditManager) : base(auditManager)
         {
         }
 
-        public override TblNhanVien GetById(Guid id)
+        public override AspnetUser GetById(Guid id)
         {
             return new Select()
-                .From(TblNhanVien.Schema)
-                .Where(TblNhanVien.IdNhanVienColumn).IsEqualTo(id)
-                .And(TblNhanVien.DaXoaColumn).IsEqualTo(false)
-                .ExecuteSingle <TblNhanVien>();
+                .From(AspnetUser.Schema)
+                .Where(AspnetUser.UserIdColumn).IsEqualTo(id)
+                .And(AspnetUser.IsDeletedColumn).IsEqualTo(false)
+                .ExecuteSingle <AspnetUser>();
         }
 
-        public List<TblNhanVien> GetAllTblNhanVien()
+        public List<AspnetUser> GetAllTblNhanVien()
         {
             Select select = new Select();
-            select.From(TblNhanVien.Schema);
-            select.And(TblNhanVien.DaXoaColumn).IsEqualTo(false);
-            return select.ExecuteTypedList<TblNhanVien>();
+            select.From(AspnetUser.Schema);
+            select.And(AspnetUser.IsDeletedColumn).IsEqualTo(false);
+            return select.ExecuteTypedList<AspnetUser>();
         }
     }
 }

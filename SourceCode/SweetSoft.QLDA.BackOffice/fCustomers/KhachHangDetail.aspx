@@ -107,7 +107,7 @@
                                 </div>
                             </div>
                         </section>
-                        <section class="shadow-none mb-3 rounded-3">
+                        <section class="shadow-none mb-3 rounded-3 fi">
                             <div class="card-body">
                                 <h5 class="text-uppercase fw-bold mb-3">
                                     DỰ ÁN ĐÃ ĐẦU TƯ

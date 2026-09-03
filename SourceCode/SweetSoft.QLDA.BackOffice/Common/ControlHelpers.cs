@@ -667,31 +667,31 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataBind();
         }
 
-        public void BindNhanVien(ExtraDropdown ddl)
-        {
-            ddl.Items.Clear();
-            ddl.DefaultSearchValue = " ";
-            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
-            if (tblNhanViens == null)
-                tblNhanViens = new List<TblNhanVien>();
-            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
-            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
-            ddl.DataSource = tblNhanViens;
-            ddl.DataBind();
-        }
+            public void BindNhanVien(ExtraDropdown ddl)
+            {
+                ddl.Items.Clear();
+                ddl.DefaultSearchValue = " ";
+                List<AspnetUser> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+                if (tblNhanViens == null)
+                    tblNhanViens = new List<AspnetUser>();
+                ddl.DataTextField = AspnetUser.Columns.DisplayName;
+                ddl.DataValueField = TblNhanVien.Columns.UserId;
+                ddl.DataSource = tblNhanViens;
+                ddl.DataBind();
+            }
 
-        public void BindNhanVien(BootstrapDropdown ddl)
-        {
-            ddl.Items.Clear();
-            ddl.DefaultSearchValue = " ";
-            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
-            if (tblNhanViens == null)
-                tblNhanViens = new List<TblNhanVien>();
-            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
-            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
-            ddl.DataSource = tblNhanViens;
-            ddl.DataBind();
-        }
+            public void BindNhanVien(BootstrapDropdown ddl)
+            {
+                ddl.Items.Clear();
+                ddl.DefaultSearchValue = " ";
+                List<AspnetUser> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+                if (tblNhanViens == null)
+                    tblNhanViens = new List<AspnetUser>();
+                ddl.DataTextField = AspnetUser.Columns.DisplayName;
+                ddl.DataValueField = AspnetUser.Columns.UserId;
+                ddl.DataSource = tblNhanViens;
+                ddl.DataBind();
+            }
 
         public void BindLoaiKhachHang(BootstrapDropdown ddl)
         {

@@ -97,9 +97,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             lblNgayHoanThanhDuKien.Text = FormatDate(row, "NgayDuKienHoanThanh");
             lblNgayHoanThanhThucTe.Text = FormatDate(row, "NgayHoanThanhThucTe");
             ltrMoTa.Text = GetHtmlText(row, "MoTa");
-            lblNhanVienQuanLy.Text = GetDisplayText(row, "TenNhanVien");
+            lblNhanVienQuanLy.Text = GetDisplayText(row, "DisplayName");
 
-            string avatarUrl = Convert.ToString(row["AnhDaiDien"]);
+            string avatarUrl = Convert.ToString(row["Avatar"]);
             if (!string.IsNullOrEmpty(avatarUrl) )
             {
                 imgAvatarPM.Src = avatarUrl;
@@ -151,6 +151,22 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
             decimal value = Convert.ToDecimal(row[columnName]);
             return FormatHelpers.ConvertDecimalToStringByLanguage(value, "vi-VN");
+        }
+
+        private int CalculateProgressByDay(DataRow row)
+        {
+            if (!row.Table.Columns.Contains("NgayBatDau") || row["NgayBatDau"] == DBNull.Value)
+                return 0;
+            if (!row.Table.Columns.Contains("NgayDuKienHoanThanh") || row["NgayDuKienHoanThanh"] == DBNull.Value)
+                return 0;
+            DateTime ngayBatDau = Convert.ToDateTime(row["NgayBatDau"]);
+            DateTime ngayDuKien = Convert.ToDateTime(row["NgayDuKienHoanThanh"]);
+            DateTime ngayHienTai = DateTime.Now;
+            double tongNgay = (ngayDuKien - ngayBatDau).TotalDays;
+            if (tongNgay <= 0) return 100;
+            double ngayDaQua = (ngayHienTai - ngayBatDau).TotalDays;
+            int phanTram = (int)Math.Round((ngayDaQua / tongNgay) * 100);
+            return Math.Max(0, Math.Min(100, phanTram));
         }
     }
 }

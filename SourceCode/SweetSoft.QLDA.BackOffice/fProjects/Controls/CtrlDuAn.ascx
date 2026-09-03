@@ -106,7 +106,7 @@
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="ProjectManager" HeaderStyle-CssClass="text-center" SortExpression="TenNhanVien" ItemStyle-CssClass="text-left">
                         <ItemTemplate>
-                            <%# Eval("TenNhanVien") %>
+                            <%# Eval("DisplayName") %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
