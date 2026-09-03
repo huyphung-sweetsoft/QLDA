@@ -1182,4 +1182,34 @@
   <data name="FILE_NAME" xml:space="preserve">
     <value>Tên tệp</value>
   </data>
+  <data name="DOCUMENT_SCOPE" xml:space="preserve">
+    <value>Phạm vi hồ sơ</value>
+  </data>
+  <data name="ALL_DOCUMENTS" xml:space="preserve">
+    <value>Tất cả hồ sơ</value>
+  </data>
+  <data name="COMPANY_DOCUMENTS" xml:space="preserve">
+    <value>Hồ sơ công ty</value>
+  </data>
+  <data name="PROJECT_DOCUMENTS" xml:space="preserve">
+    <value>Hồ sơ dự án</value>
+  </data>
+  <data name="PROJECT" xml:space="preserve">
+    <value>Dự án</value>
+  </data>
+  <data name="ALL_PROJECTS" xml:space="preserve">
+    <value>Tất cả dự án</value>
+  </data>
+  <data name="SELECT_PROJECT" xml:space="preserve">
+    <value>Chọn dự án</value>
+  </data>
+  <data name="DOCUMENT_TYPE_IN_GROUP" xml:space="preserve">
+    <value>Loại tài liệu trong nhóm</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP_FIRST" xml:space="preserve">
+    <value>Hãy chọn nhóm tài liệu trước</value>
+  </data>
+  <data name="DOCUMENT_FILTER_HINT" xml:space="preserve">
+    <value>Chọn phạm vi, nhóm và loại tài liệu để thu hẹp danh sách.</value>
+  </data>
 </root>

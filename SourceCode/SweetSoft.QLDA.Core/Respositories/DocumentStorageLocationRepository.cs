@@ -207,12 +207,13 @@ namespace SweetSoft.QLDA.Core.Respositories
                         storage.NgayCapNhat,
                         storage.Depth,
                         storage.StoragePath,
-                        employee.TenNhanVien,
+                        ISNULL(employee.DisplayName, N'') AS TenNhanVien,
                         COUNT(1) OVER() AS total_records
                     FROM StorageTree storage
-                    LEFT JOIN TblNhanVien employee
-                        ON employee.IdNhanVien = storage.IdNhanVienPhuTrach
-                        AND employee.DaXoa = 0
+                    LEFT JOIN aspnet_Users employee
+                        ON employee.UserId = storage.IdNhanVienPhuTrach
+                        AND employee.IsDeleted = 0
+                        AND employee.LaNhanVien = 1
                     WHERE
                         (
                             @keyword = N'%%'
@@ -220,7 +221,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                             OR storage.TenNoiLuuTru LIKE @keyword
                             OR ISNULL(storage.MoTa, N'') LIKE @keyword
                             OR storage.StoragePath LIKE @keyword
-                            OR ISNULL(employee.TenNhanVien, N'') LIKE @keyword
+                            OR ISNULL(employee.DisplayName, N'') LIKE @keyword
                         )
                         AND
                         (
@@ -379,29 +380,33 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .GetRecordCount() > 0;
         }
 
-        public List<TblNhanVien> GetAvailableEmployees()
+        public List<AspnetUser> GetAvailableEmployees()
         {
             return new Select()
-                .From(TblNhanVien.Schema)
-                .Where(TblNhanVien.DaXoaColumn)
+                .From(AspnetUser.Schema)
+                .Where(AspnetUser.IsDeletedColumn)
                 .IsEqualTo(false)
-                .ExecuteTypedList<TblNhanVien>()
-                .OrderBy(item => item.TenNhanVien)
+                .And(AspnetUser.LaNhanVienColumn)
+                .IsEqualTo(true)
+                .ExecuteTypedList<AspnetUser>()
+                .OrderBy(item => item.DisplayName)
                 .ToList();
         }
 
-        public TblNhanVien GetEmployeeById(Guid id)
+        public AspnetUser GetEmployeeById(Guid id)
         {
             if (id == Guid.Empty)
                 return null;
 
             return new Select()
-                .From(TblNhanVien.Schema)
-                .Where(TblNhanVien.IdNhanVienColumn)
+                .From(AspnetUser.Schema)
+                .Where(AspnetUser.UserIdColumn)
                 .IsEqualTo(id)
-                .And(TblNhanVien.DaXoaColumn)
+                .And(AspnetUser.IsDeletedColumn)
                 .IsEqualTo(false)
-                .ExecuteSingle<TblNhanVien>();
+                .And(AspnetUser.LaNhanVienColumn)
+                .IsEqualTo(true)
+                .ExecuteSingle<AspnetUser>();
         }
 
         public override TblNoiLuuTru Insert(
@@ -643,7 +648,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     break;
 
                 case "TenNhanVien":
-                    sqlColumn = "employee.TenNhanVien";
+                    sqlColumn = "employee.DisplayName";
                     break;
 
                 case "ThuTuHienThi":

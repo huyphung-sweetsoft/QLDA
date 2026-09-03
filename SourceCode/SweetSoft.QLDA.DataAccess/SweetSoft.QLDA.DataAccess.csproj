@@ -135,8 +135,6 @@
     <Compile Include="TblLuuTruVatLyController.cs" />
     <Compile Include="TblMauTaiLieu.cs" />
     <Compile Include="TblMauTaiLieuController.cs" />
-    <Compile Include="TblNhanVien.cs" />
-    <Compile Include="TblNhanVienController.cs" />
     <Compile Include="TblNhomTaiLieu.cs" />
     <Compile Include="TblNhomTaiLieuController.cs" />
     <Compile Include="TblNoiLuuTru.cs" />

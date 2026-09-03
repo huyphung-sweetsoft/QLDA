@@ -76,100 +76,6 @@
         </div>
 
         <div class="card-body">
-            <asp:Panel
-                runat="server"
-                ID="pnlForm"
-                Visible="false"
-                CssClass="js-document-group-form validationEngineContainer border rounded p-3 mb-4">
-
-                <asp:HiddenField
-                    runat="server"
-                    ID="hdfIdNhomTaiLieu" />
-
-                <h5 class="text-primary mb-3">
-                    <asp:Literal
-                        runat="server"
-                        ID="litFormTitle" />
-                </h5>
-
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label label-valid">
-                            <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP_NAME) %>
-                        </label>
-
-                        <SweetSoft:ExtraTextBox
-                            runat="server"
-                            ID="txtTenNhom"
-                            Required="true"
-                            MaxLength="150">
-                        </SweetSoft:ExtraTextBox>
-                    </div>
-
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label">
-                            <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
-                        </label>
-
-                        <SweetSoft:ExtraTextBox
-                            runat="server"
-                            ID="txtMoTa"
-                            TextMode="MultiLine"
-                            Rows="3"
-                            MaxLength="500">
-                        </SweetSoft:ExtraTextBox>
-                    </div>
-
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label label-valid">
-                            <%= GetResourceText(BackEndResourceKeys.DISPLAY_ORDER) %>
-                        </label>
-
-                        <SweetSoft:ExtraTextBox
-                            runat="server"
-                            ID="txtThuTuHienThi"
-                            Required="true"
-                            TextMode="Number"
-                            Text="0">
-                        </SweetSoft:ExtraTextBox>
-                    </div>
-
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label">
-                            <%= GetResourceText(BackEndResourceKeys.STATUS) %>
-                        </label>
-
-                        <div class="mt-2">
-                            <SweetSoft:ExtraCheckbox
-                                runat="server"
-                                ID="chkKichHoat"
-                                Checked="true"
-                                OnText="Kích hoạt"
-                                OffText="Khóa" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <SweetSoft:ExtraButton
-                        runat="server"
-                        ID="btnSave"
-                        OnClick="btnSave_Click"
-                        OnClientClick="return CMSMasterJs.ValidElement('.js-document-group-form');"
-                        ButtonStyle="Primary"
-                        ButtonIcon="Save">
-                    </SweetSoft:ExtraButton>
-
-                    <SweetSoft:ExtraButton
-                        runat="server"
-                        ID="btnCancel"
-                        OnClick="btnCancel_Click"
-                        ButtonStyle="OutLineSecondary"
-                        ButtonIcon="Close">
-                    </SweetSoft:ExtraButton>
-                </div>
-            </asp:Panel>
-
             <div class="table-responsive">
                 <SweetSoft:GridviewExtension
                     runat="server"
@@ -232,28 +138,27 @@
                             ItemStyle-CssClass="text-center"
                             HeaderStyle-Width="160px">
                             <ItemTemplate>
-                                <asp:LinkButton
+                                <SweetSoft:SmartLinkButton
                                     runat="server"
                                     ID="btnEditRow"
                                     CommandName="EDIT_ITEM"
                                     CommandArgument='<%# Eval("IdNhomTaiLieu") %>'
                                     CausesValidation="false"
-                                    Visible='<%# this.IsEdit %>'
-                                    CssClass="btn btn-sm btn-outline-primary me-1"
-                                    Text='<%# GetResourceText(BackEndResourceKeys.EDIT) %>'>
-                                </asp:LinkButton>
+                                    VisibleConditionKey='<%# this.IsEdit %>'
+                                    ResourceKey='<%# BackEndResourceKeys.EDIT %>'
+                                    ButtonIcon="fas fa-pencil-alt">
+                                </SweetSoft:SmartLinkButton>
 
-                                <asp:LinkButton
+                                <SweetSoft:SmartLinkButton
                                     runat="server"
                                     ID="btnDeleteRow"
                                     CommandName="DELETE_ITEM"
                                     CommandArgument='<%# Eval("IdNhomTaiLieu") %>'
                                     CausesValidation="false"
-                                    Visible='<%# this.IsDelete %>'
-                                    CssClass="btn btn-sm btn-outline-danger"
-                                    OnClientClick="return confirm('Bạn có chắc muốn xóa nhóm tài liệu này?');"
-                                    Text='<%# GetResourceText(BackEndResourceKeys.DELETE) %>'>
-                                </asp:LinkButton>
+                                    VisibleConditionKey='<%# this.IsDelete %>'
+                                    ResourceKey='<%# BackEndResourceKeys.DELETE %>'
+                                    ButtonIcon="fas fa-trash">
+                                </SweetSoft:SmartLinkButton>
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
@@ -273,6 +178,106 @@
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="dlDetail"
+    Type="Primary"
+    Size="Large"
+    DefaultButton="btnSave"
+    FooterButtonClose="false">
+
+    <ContentTemplate>
+        <asp:Panel
+            runat="server"
+            ID="pnlForm"
+            CssClass="js-document-group-form validationEngineContainer">
+
+            <asp:HiddenField
+                runat="server"
+                ID="hdfIdNhomTaiLieu" />
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label label-valid">
+                        <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP_NAME) %>
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtTenNhom"
+                        Required="true"
+                        MaxLength="150">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">
+                        <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtMoTa"
+                        TextMode="MultiLine"
+                        Rows="3"
+                        MaxLength="500">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+
+                <div class="col-md-2 mb-3">
+                    <label class="form-label label-valid">
+                        <%= GetResourceText(BackEndResourceKeys.DISPLAY_ORDER) %>
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtThuTuHienThi"
+                        Required="true"
+                        TextMode="Number"
+                        Text="0">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">
+                        <%= GetResourceText(BackEndResourceKeys.STATUS) %>
+                    </label>
+
+                    <div class="mt-2">
+                        <SweetSoft:ExtraCheckbox
+                            runat="server"
+                            ID="chkKichHoat"
+                            Checked="true"
+                            OnText="Kích hoạt"
+                            OffText="Khóa" />
+                    </div>
+                </div>
+            </div>
+        </asp:Panel>
+    </ContentTemplate>
+
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <SweetSoft:ExtraButton
+                runat="server"
+                ID="btnSave"
+                OnClick="btnSave_Click"
+                OnClientClick="return CMSMasterJs.ValidElement('.js-document-group-form');"
+                ButtonStyle="Primary"
+                ButtonIcon="Save">
+            </SweetSoft:ExtraButton>
+
+            <SweetSoft:ExtraButton
+                runat="server"
+                ID="btnCancel"
+                OnClick="btnCancel_Click"
+                ButtonStyle="OutLineSecondary"
+                ButtonIcon="Close">
+            </SweetSoft:ExtraButton>
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
 
 <div
     class="offcanvas offcanvas-end offcanvas-form-search"

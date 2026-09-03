@@ -13,15 +13,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
     {
         protected global::System.Web.UI.UpdatePanel upMain;
         protected global::System.Web.UI.WebControls.Panel pnlSearchDefault;
-        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchTrangThai;
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchPhamVi;
+        protected global::System.Web.UI.WebControls.Panel pnlProjectSelector;
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchDuAn;
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchNhomTaiLieu;
         protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchLoaiTaiLieu;
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchTrangThai;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearch;
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnSearch;
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnAdd;
         protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBox;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
         protected global::System.Web.UI.WebControls.Panel pnlForm;
         protected global::System.Web.UI.WebControls.HiddenField hdfIdTaiLieu;
-        protected global::System.Web.UI.WebControls.Literal litFormTitle;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMaTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlLoaiTaiLieu;
@@ -48,7 +52,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.Panel pnlSearchPopup;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchMaTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTenTaiLieu;
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSearchNhomTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSearchNguoiPhuTrach;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchMoTa;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSearchCanTrinhKy;

@@ -14,13 +14,17 @@ namespace SweetSoft.QLDA.Core.Respositories
     {
         public const string DocumentGroupParameter = "IdNhomTaiLieu";
         public const string HasOfficialFileParameter = "HasOfficialFile";
+        public const string DocumentScopeParameter = "DocumentScope";
+        public const string DocumentScopeAll = "ALL";
+        public const string DocumentScopeCompany = "COMPANY";
+        public const string DocumentScopeProject = "PROJECT";
 
         public DocumentRepository(AuditManager auditManager)
             : base(auditManager)
         {
         }
 
-        public DataTable SearchCompanyDocuments(
+        public DataTable SearchDocuments(
             string searchTerm,
             Dictionary<string, object> parameters,
             string orderBy,
@@ -61,6 +65,16 @@ namespace SweetSoft.QLDA.Core.Respositories
             string ngayTaoTo = Encode(
                 GetParameterText(parameters, TblTaiLieu.Columns.NgayTao + "To"),
                 50);
+            string documentScope = GetParameterText(
+                    parameters,
+                    DocumentScopeParameter)
+                .ToUpperInvariant();
+
+            if (documentScope != DocumentScopeCompany
+                && documentScope != DocumentScopeProject)
+            {
+                documentScope = DocumentScopeAll;
+            }
 
             string idNhomTaiLieuSql = GetGuidSql(
                 parameters,
@@ -68,6 +82,9 @@ namespace SweetSoft.QLDA.Core.Respositories
             string idLoaiTaiLieuSql = GetGuidSql(
                 parameters,
                 TblTaiLieu.Columns.IdLoaiTaiLieu);
+            string idDuAnSql = GetGuidSql(
+                parameters,
+                TblTaiLieu.Columns.IdDuAn);
             string idNhanVienSql = GetGuidSql(
                 parameters,
                 TblTaiLieu.Columns.IdNhanVienPhuTrach);
@@ -92,8 +109,10 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @maTaiLieu VARCHAR(100) = '%{maTaiLieu}%';
                 DECLARE @tenTaiLieu NVARCHAR(255) = N'%{tenTaiLieu}%';
                 DECLARE @moTa NVARCHAR(1000) = N'%{moTa}%';
+                DECLARE @documentScope VARCHAR(20) = '{documentScope}';
                 DECLARE @idNhomTaiLieu UNIQUEIDENTIFIER = {idNhomTaiLieuSql};
                 DECLARE @idLoaiTaiLieu UNIQUEIDENTIFIER = {idLoaiTaiLieuSql};
+                DECLARE @idDuAn UNIQUEIDENTIFIER = {idDuAnSql};
                 DECLARE @idNhanVien UNIQUEIDENTIFIER = {idNhanVienSql};
                 DECLARE @trangThaiTaiLieu VARCHAR(30) = NULLIF('{trangThaiTaiLieu}', '');
                 DECLARE @canTrinhKy BIT = {canTrinhKySql};
@@ -111,6 +130,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     SELECT
                         ROW_NUMBER() OVER (ORDER BY {safeOrderBy}) AS RowNum,
                         t.IdTaiLieu,
+                        t.IdDuAn,
                         t.IdLoaiTaiLieu,
                         t.MaTaiLieu,
                         t.TenTaiLieu,
@@ -130,7 +150,9 @@ namespace SweetSoft.QLDA.Core.Respositories
                         t.IdFileBanChinhThuc,
                         ISNULL(l.TenLoai, N'') AS TenLoai,
                         ISNULL(n.TenNhom, N'') AS TenNhom,
-                        ISNULL(nv.TenNhanVien, N'') AS TenNhanVienPhuTrach,
+                        ISNULL(d.MaDuAn, '') AS MaDuAn,
+                        ISNULL(d.TenDuAn, N'') AS TenDuAn,
+                        ISNULL(nv.DisplayName, N'') AS TenNhanVienPhuTrach,
                         ISNULL(u.Name, N'') AS TenFileChinhThuc,
                         ISNULL(u.OriginalFileName, N'') AS TenFileChinhThucGoc,
                         ISNULL(u.FileUrl, N'') AS FileChinhThucUrl,
@@ -142,14 +164,23 @@ namespace SweetSoft.QLDA.Core.Respositories
                     LEFT JOIN TblNhomTaiLieu n
                         ON n.IdNhomTaiLieu = l.IdNhomTaiLieu
                        AND n.DaXoa = 0
-                    LEFT JOIN TblNhanVien nv
-                        ON nv.IdNhanVien = t.IdNhanVienPhuTrach
-                       AND nv.DaXoa = 0
+                    LEFT JOIN TblDuAn d
+                        ON d.IdDuAn = t.IdDuAn
+                       AND d.DaXoa = 0
+                    LEFT JOIN aspnet_Users nv
+                        ON nv.UserId = t.IdNhanVienPhuTrach
+                       AND nv.IsDeleted = 0
+                       AND nv.LaNhanVien = 1
                     LEFT JOIN TblUploadFile u
                         ON u.Id = t.IdFileBanChinhThuc
                        AND u.IsDeleted = 0
                     WHERE t.DaXoa = 0
-                      AND t.IdDuAn IS NULL
+                      AND
+                      (
+                          @documentScope = 'ALL'
+                          OR (@documentScope = 'COMPANY' AND t.IdDuAn IS NULL)
+                          OR (@documentScope = 'PROJECT' AND t.IdDuAn IS NOT NULL)
+                      )
                       AND
                       (
                           @keyword = N'%%'
@@ -158,13 +189,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                           OR ISNULL(t.MoTa, N'') LIKE @keyword
                           OR ISNULL(l.TenLoai, N'') LIKE @keyword
                           OR ISNULL(n.TenNhom, N'') LIKE @keyword
-                          OR ISNULL(nv.TenNhanVien, N'') LIKE @keyword
+                          OR ISNULL(d.MaDuAn, '') LIKE @keyword
+                          OR ISNULL(d.TenDuAn, N'') LIKE @keyword
+                          OR ISNULL(nv.DisplayName, N'') LIKE @keyword
                       )
                       AND (@maTaiLieu = '%%' OR t.MaTaiLieu LIKE @maTaiLieu)
                       AND (@tenTaiLieu = N'%%' OR t.TenTaiLieu LIKE @tenTaiLieu)
                       AND (@moTa = N'%%' OR ISNULL(t.MoTa, N'') LIKE @moTa)
                       AND (@idNhomTaiLieu IS NULL OR n.IdNhomTaiLieu = @idNhomTaiLieu)
                       AND (@idLoaiTaiLieu IS NULL OR t.IdLoaiTaiLieu = @idLoaiTaiLieu)
+                      AND (@idDuAn IS NULL OR t.IdDuAn = @idDuAn)
                       AND (@idNhanVien IS NULL OR t.IdNhanVienPhuTrach = @idNhanVien)
                       AND (@trangThaiTaiLieu IS NULL OR t.TrangThaiTaiLieu = @trangThaiTaiLieu)
                       AND (@canTrinhKy IS NULL OR t.CanTrinhKy = @canTrinhKy)
@@ -197,6 +231,31 @@ namespace SweetSoft.QLDA.Core.Respositories
             dataTable.Load(reader);
             InlineQueryHelpers.GetTotal(ref dataTable, out totalRecord);
             return dataTable;
+        }
+
+        public DataTable SearchCompanyDocuments(
+            string searchTerm,
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            Dictionary<string, object> companyParameters = parameters == null
+                ? new Dictionary<string, object>()
+                : new Dictionary<string, object>(parameters);
+
+            companyParameters[DocumentScopeParameter] =
+                DocumentScopeCompany;
+            companyParameters.Remove(TblTaiLieu.Columns.IdDuAn);
+
+            return SearchDocuments(
+                searchTerm,
+                companyParameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
         }
 
         public override DataTable SearchPaging(
@@ -245,25 +304,36 @@ namespace SweetSoft.QLDA.Core.Respositories
             return new InlineQuery().ExecuteScalar<int>(sql) > 0;
         }
 
-        public List<TblNhanVien> GetAvailableEmployees()
+        public List<AspnetUser> GetAvailableEmployees()
         {
             return new Select()
-                .From(TblNhanVien.Schema)
-                .Where(TblNhanVien.DaXoaColumn).IsEqualTo(false)
-                .OrderAsc(TblNhanVien.Columns.TenNhanVien)
-                .ExecuteTypedList<TblNhanVien>();
+                .From(AspnetUser.Schema)
+                .Where(AspnetUser.IsDeletedColumn).IsEqualTo(false)
+                .And(AspnetUser.LaNhanVienColumn).IsEqualTo(true)
+                .OrderAsc(AspnetUser.Columns.DisplayName)
+                .ExecuteTypedList<AspnetUser>();
         }
 
-        public TblNhanVien GetEmployeeById(Guid idNhanVien)
+        public List<TblDuAn> GetAvailableProjects()
+        {
+            return new Select()
+                .From(TblDuAn.Schema)
+                .Where(TblDuAn.DaXoaColumn).IsEqualTo(false)
+                .OrderAsc(TblDuAn.Columns.TenDuAn)
+                .ExecuteTypedList<TblDuAn>();
+        }
+
+        public AspnetUser GetEmployeeById(Guid idNhanVien)
         {
             if (idNhanVien == Guid.Empty)
                 return null;
 
             return new Select()
-                .From(TblNhanVien.Schema)
-                .Where(TblNhanVien.IdNhanVienColumn).IsEqualTo(idNhanVien)
-                .And(TblNhanVien.DaXoaColumn).IsEqualTo(false)
-                .ExecuteSingle<TblNhanVien>();
+                .From(AspnetUser.Schema)
+                .Where(AspnetUser.UserIdColumn).IsEqualTo(idNhanVien)
+                .And(AspnetUser.IsDeletedColumn).IsEqualTo(false)
+                .And(AspnetUser.LaNhanVienColumn).IsEqualTo(true)
+                .ExecuteSingle<AspnetUser>();
         }
 
         public List<TblPhienBanTaiLieu> GetDocumentVersions(
@@ -653,8 +723,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                 case "TenNhom":
                     sqlColumn = "n.TenNhom";
                     break;
+                case "TenDuAn":
+                    sqlColumn = "d.TenDuAn";
+                    break;
                 case "TenNhanVienPhuTrach":
-                    sqlColumn = "nv.TenNhanVien";
+                    sqlColumn = "nv.DisplayName";
                     break;
                 case "TrangThaiTaiLieu":
                     sqlColumn = "t.TrangThaiTaiLieu";

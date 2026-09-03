@@ -16,6 +16,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlDocumentGroups : BaseAdminUserControl
     {
+        private const string DeleteConfirmCommand =
+            "DOCUMENT_GROUP_DELETE";
+
         protected bool IsAdd
         {
             get { return CURRENT_PAGE.IsAdd; }
@@ -341,19 +344,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtMoTa.Text = string.Empty;
             txtThuTuHienThi.Text = "0";
             chkKichHoat.Checked = true;
-            pnlForm.Visible = false;
         }
 
         private void ShowAddForm()
         {
             ResetForm();
-            litFormTitle.Text = GetResourceText(
+            dlDetail.Title = GetResourceText(
                     BackEndResourceKeys.ADD_NEW)
                 + " "
                 + GetResourceText(
                     BackEndResourceKeys.DOCUMENT_GROUP);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.OpenModal(true);
         }
 
         private void ShowEditForm(TblNhomTaiLieu item)
@@ -363,13 +364,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtMoTa.Text = item.MoTa;
             txtThuTuHienThi.Text = item.ThuTuHienThi.ToString();
             chkKichHoat.Checked = item.KichHoat;
-            litFormTitle.Text = GetResourceText(
+            dlDetail.Title = GetResourceText(
                     BackEndResourceKeys.EDIT)
                 + " "
                 + GetResourceText(
                     BackEndResourceKeys.DOCUMENT_GROUP);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.OpenModal(true);
         }
 
         protected void btnAdd_Click(object sender, EventArgs e)
@@ -386,7 +386,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             ResetForm();
-            upMain.Update();
+            dlDetail.CloseModal(true);
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
@@ -438,6 +438,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ShowSuccessSaveData();
 
                 ResetForm();
+                dlDetail.CloseModal(true);
                 RebindGridFromFirstPage();
             }
             catch (ArgumentException exc)
@@ -496,6 +497,60 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (!this.IsDelete)
             {
                 ShowAccessDeniedNotify();
+                return;
+            }
+
+            TblNhomTaiLieu deleteItem =
+                DocumentGroupManager.Instance.GetById(idNhomTaiLieu);
+            if (deleteItem == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            ConfirmResult result = new ConfirmResult
+            {
+                CommandName = DeleteConfirmCommand,
+                Value = idNhomTaiLieu.ToString()
+            };
+            CURRENT_PAGE.CurrentConfirmResult = result;
+
+            MessageBox message = new MessageBox(
+                GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys
+                            .PLEASE_CONFIRM_TO_DELETE_THE_DATA),
+                    deleteItem.TenNhom),
+                MSGButton.DeleteCancel,
+                MSGIcon.Error);
+            OpenMessageBox(message, result, false, false);
+        }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e == null
+                || !e.Submit
+                || !string.Equals(
+                    e.CommandName,
+                    DeleteConfirmCommand,
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!this.IsDelete)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idNhomTaiLieu;
+            if (!Guid.TryParse(
+                    Convert.ToString(e.Value),
+                    out idNhomTaiLieu))
+            {
+                ShowInvalidDataError();
                 return;
             }
 

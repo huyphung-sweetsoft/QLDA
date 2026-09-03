@@ -16,6 +16,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlDocumentTypes : BaseAdminUserControl
     {
+        private const string DeleteConfirmCommand =
+            "DOCUMENT_TYPE_DELETE";
+
         protected bool IsAdd
         {
             get { return CURRENT_PAGE.IsAdd; }
@@ -210,15 +213,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             chkCanGuiKhachHang.Checked = false;
             chkCanLuuVatLy.Checked = false;
             chkKichHoat.Checked = true;
-            pnlForm.Visible = false;
         }
 
         private void ShowAddForm()
         {
             ResetForm();
-            litFormTitle.Text = GetResourceText(BackEndResourceKeys.ADD_NEW) + " " + GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.Title =
+                GetResourceText(BackEndResourceKeys.ADD_NEW)
+                + " "
+                + GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE);
+            dlDetail.OpenModal(true);
         }
 
         private void ShowEditForm(TblLoaiTaiLieu item)
@@ -233,9 +237,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             chkCanGuiKhachHang.Checked = item.CanGuiKhachHang;
             chkCanLuuVatLy.Checked = item.CanLuuVatLy;
             chkKichHoat.Checked = item.KichHoat;
-            litFormTitle.Text = GetResourceText(BackEndResourceKeys.EDIT) + " " + GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.Title =
+                GetResourceText(BackEndResourceKeys.EDIT)
+                + " "
+                + GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE);
+            dlDetail.OpenModal(true);
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -327,7 +333,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             ResetForm();
-            upMain.Update();
+            dlDetail.CloseModal(true);
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
@@ -374,6 +380,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 else
                     ShowSuccessSaveData();
                 ResetForm();
+                dlDetail.CloseModal(true);
                 RebindGridFromFirstPage();
             }
             catch (ArgumentException exc)
@@ -431,27 +438,82 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
-                try
+                TblLoaiTaiLieu deleteItem =
+                    DocumentTypeManager.Instance.GetById(idLoaiTaiLieu);
+                if (deleteItem == null)
                 {
-                    bool deleted = DocumentTypeManager.Instance.Delete(idLoaiTaiLieu);
-                    if (!deleted)
-                    {
-                        ShowInvalidNotFoundData();
-                        return;
-                    }
+                    ShowInvalidNotFoundData();
+                    return;
+                }
 
-                    ShowSuccessDeleteData();
-                    ResetForm();
-                    RebindGridFromFirstPage();
-                }
-                catch (InvalidOperationException exc)
+                ConfirmResult result = new ConfirmResult
                 {
-                    ShowNotify(exc.Message, MSGType.Warning);
-                }
-                catch (Exception exc)
+                    CommandName = DeleteConfirmCommand,
+                    Value = idLoaiTaiLieu.ToString()
+                };
+                CURRENT_PAGE.CurrentConfirmResult = result;
+
+                MessageBox message = new MessageBox(
+                    GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                    string.Format(
+                        GetResourceText(
+                            BackEndResourceKeys
+                                .PLEASE_CONFIRM_TO_DELETE_THE_DATA),
+                        deleteItem.TenLoai),
+                    MSGButton.DeleteCancel,
+                    MSGIcon.Error);
+                OpenMessageBox(message, result, false, false);
+            }
+        }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e == null
+                || !e.Submit
+                || !string.Equals(
+                    e.CommandName,
+                    DeleteConfirmCommand,
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!this.IsDelete)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idLoaiTaiLieu;
+            if (!Guid.TryParse(
+                    Convert.ToString(e.Value),
+                    out idLoaiTaiLieu))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                bool deleted =
+                    DocumentTypeManager.Instance.Delete(idLoaiTaiLieu);
+                if (!deleted)
                 {
-                    ShowNotify(exc.Message, MSGType.Error);
+                    ShowInvalidNotFoundData();
+                    return;
                 }
+
+                ShowSuccessDeleteData();
+                ResetForm();
+                RebindGridFromFirstPage();
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
             }
         }
 

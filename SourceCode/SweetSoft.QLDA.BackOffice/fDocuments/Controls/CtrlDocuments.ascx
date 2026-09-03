@@ -16,44 +16,75 @@
 
         <div class="card-header">
             <div class="d-flex flex-column flex-xl-row gap-3 justify-content-between">
-
                 <div class="d-flex flex-column flex-xl-row gap-3">
-
                     <asp:Panel
                         runat="server"
                         ID="pnlSearchDefault">
 
-                        <div class="d-flex">
+                        <div class="d-flex flex-wrap gap-2">
+                            <SweetSoft:BootstrapDropdown
+                                runat="server"
+                                ID="ddlSearchPhamVi"
+                                AutoPostBack="true"
+                                SearchColumn="DocumentScope"
+                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
+                                OnSelectedValueChanged="ddlSearchPhamVi_SelectedValueChanged">
+                            </SweetSoft:BootstrapDropdown>
+
+                            <asp:Panel
+                                runat="server"
+                                ID="pnlProjectSelector"
+                                CssClass="d-flex">
+                                <SweetSoft:BootstrapDropdown
+                                    runat="server"
+                                    ID="ddlSearchDuAn"
+                                    AllowClear="true"
+                                    AutoPostBack="true"
+                                    EnableSearch="true"
+                                    ValueIsOfTypeGUID="true"
+                                    SearchColumn="IdDuAn"
+                                    CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
+                                    OnSelectedValueChanged="ddlSearchDuAn_SelectedValueChanged">
+                                </SweetSoft:BootstrapDropdown>
+                            </asp:Panel>
 
                             <SweetSoft:BootstrapDropdown
                                 runat="server"
-                                ID="ddlSearchTrangThai"
-                                Text="Trạng thái hồ sơ"
+                                ID="ddlSearchNhomTaiLieu"
                                 AllowClear="true"
                                 AutoPostBack="true"
-                                SearchColumn="TrangThaiTaiLieu"
-                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
-                                OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                                EnableSearch="true"
+                                ValueIsOfTypeGUID="true"
+                                SearchColumn="IdNhomTaiLieu"
+                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
+                                OnSelectedValueChanged="ddlSearchNhomTaiLieu_SelectedValueChanged">
                             </SweetSoft:BootstrapDropdown>
 
                             <SweetSoft:BootstrapDropdown
                                 runat="server"
                                 ID="ddlSearchLoaiTaiLieu"
-                                Text="Loại tài liệu"
                                 AllowClear="true"
                                 AutoPostBack="true"
                                 EnableSearch="true"
                                 ValueIsOfTypeGUID="true"
                                 SearchColumn="IdLoaiTaiLieu"
-                                CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
+                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
                                 OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                             </SweetSoft:BootstrapDropdown>
 
+                            <SweetSoft:BootstrapDropdown
+                                runat="server"
+                                ID="ddlSearchTrangThai"
+                                AllowClear="true"
+                                AutoPostBack="true"
+                                SearchColumn="TrangThaiTaiLieu"
+                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
+                                OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                            </SweetSoft:BootstrapDropdown>
                         </div>
                     </asp:Panel>
 
                     <div class="input-group max-w-500">
-
                         <a
                             class="btn btn-info font-mobile-small btn-search-filter"
                             onclick="CMSMasterJs.ShowOffcanvasSearch();"
@@ -76,7 +107,6 @@
                             IsCustomClass="false"
                             ButtonIcon="Search">
                         </SweetSoft:ExtraButton>
-
                     </div>
                 </div>
 
@@ -88,7 +118,6 @@
                     ButtonIcon="Add"
                     Visible="false">
                 </SweetSoft:ExtraButton>
-
             </div>
 
             <div class="listSearchTagBox mt-2">
@@ -102,21 +131,196 @@
 
         <div class="card-body">
 
+            <div class="table-responsive">
+                <SweetSoft:GridviewExtension
+                    runat="server"
+                    ID="grvData"
+                    AllowSorting="true"
+                    ShowHeader="true"
+                    ShowHeaderWhenEmpty="true"
+                    AutoGenerateColumns="false"
+                    DataKeyNames="IdTaiLieu"
+                    GridLines="None"
+                    CssClass="table-bordered table-hover align-middle"
+                    IsEnableSelectColumn="false"
+                    FocusBtnIcon="fas fa-compress-arrows-alt"
+                    OnNeedDataSource="grvData_NeedDataSource"
+                    OnRowCommand="grvData_RowCommand">
+
+                    <Columns>
+
+                        <asp:BoundField
+                            DataField="MaTaiLieu"
+                            HeaderText="Mã hồ sơ"
+                            SortExpression="MaTaiLieu"
+                            HeaderStyle-Width="150px" />
+
+                        <asp:BoundField
+                            DataField="TenTaiLieu"
+                            HeaderText="Tên hồ sơ"
+                            SortExpression="TenTaiLieu" />
+
+                        <asp:TemplateField
+                            HeaderText="Phạm vi"
+                            SortExpression="TenDuAn"
+                            HeaderStyle-Width="180px">
+                            <ItemTemplate>
+                                <span class='<%# GetDocumentScopeCss(Eval("IdDuAn")) %>'>
+                                    <i class='<%# GetDocumentScopeIcon(Eval("IdDuAn")) %>'></i>
+                                    <%#: GetDocumentScopeText(Eval("IdDuAn"), Eval("MaDuAn"), Eval("TenDuAn")) %>
+                                </span>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Loại tài liệu"
+                            SortExpression="TenLoai">
+                            <ItemTemplate>
+                                <%#: GetDocumentTypeText(Eval("TenNhom"), Eval("TenLoai")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Người phụ trách"
+                            SortExpression="TenNhanVienPhuTrach">
+                            <ItemTemplate>
+                                <%#: GetResponsibleEmployeeText(Eval("TenNhanVienPhuTrach")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Trạng thái hồ sơ"
+                            SortExpression="TrangThaiTaiLieu"
+                            HeaderStyle-Width="145px">
+                            <ItemTemplate>
+                                <span class='<%# GetDocumentStatusCss(Eval("TrangThaiTaiLieu")) %>'>
+                                    <%#: GetDocumentStatusText(Eval("TrangThaiTaiLieu")) %>
+                                </span>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Trình ký"
+                            HeaderStyle-Width="130px">
+                            <ItemTemplate>
+                                <%#: GetSigningText(Eval("CanTrinhKy"), Eval("HinhThucKy")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Gửi khách"
+                            SortExpression="TrangThaiGuiKhach"
+                            HeaderStyle-Width="125px">
+                            <ItemTemplate>
+                                <%#: GetCustomerStatusText(Eval("CanGuiKhachHang"), Eval("TrangThaiGuiKhach")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Lưu bản cứng"
+                            SortExpression="TrangThaiLuuTru"
+                            HeaderStyle-Width="125px">
+                            <ItemTemplate>
+                                <%#: GetPhysicalStorageStatusText(Eval("CanLuuVatLy"), Eval("TrangThaiLuuTru")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="File chính thức">
+                            <ItemTemplate>
+                                <asp:HyperLink
+                                    runat="server"
+                                    Visible='<%# HasOfficialFile(Eval("IdFileBanChinhThuc")) %>'
+                                    NavigateUrl='<%# GetFileUrl(Eval("FileChinhThucUrl")) %>'
+                                    Text='<%# GetOfficialFileName(Eval("TenFileChinhThucGoc"), Eval("TenFileChinhThuc")) %>'
+                                    Target="_blank"
+                                    CssClass="text-primary text-decoration-underline" />
+                                <asp:Label
+                                    runat="server"
+                                    Visible='<%# !HasOfficialFile(Eval("IdFileBanChinhThuc")) %>'
+                                    Text='<%# GetResourceText(BackEndResourceKeys.FILE_NOT_UPLOADED) %>'
+                                    CssClass="badge bg-secondary" />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Ngày tạo"
+                            SortExpression="NgayTao"
+                            HeaderStyle-Width="140px">
+                            <ItemTemplate>
+                                <%# ConvertDateTimeToString(Eval("NgayTao")) %>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                        <asp:TemplateField
+                            HeaderText="Thao tác"
+                            ItemStyle-CssClass="text-center"
+                            HeaderStyle-Width="160px">
+
+                            <ItemTemplate>
+                                <SweetSoft:SmartLinkButton
+                                    runat="server"
+                                    ID="btnEditRow"
+                                    CommandName="EDIT_ITEM"
+                                    CommandArgument='<%# Eval("IdTaiLieu") %>'
+                                    CausesValidation="false"
+                                    VisibleConditionKey='<%# this.IsEdit && IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    ResourceKey='<%# BackEndResourceKeys.EDIT %>'
+                                    ButtonIcon="fas fa-pencil-alt">
+                                </SweetSoft:SmartLinkButton>
+
+                                <SweetSoft:SmartLinkButton
+                                    runat="server"
+                                    ID="btnDeleteRow"
+                                    CommandName="DELETE_ITEM"
+                                    CommandArgument='<%# Eval("IdTaiLieu") %>'
+                                    CausesValidation="false"
+                                    VisibleConditionKey='<%# this.IsDelete && IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    ResourceKey='<%# BackEndResourceKeys.DELETE %>'
+                                    ButtonIcon="fas fa-trash">
+                                </SweetSoft:SmartLinkButton>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+
+                    </Columns>
+
+                    <EmptyDataTemplate>
+                        <div class="text-center p-4">
+                            <%= GetResourceText(BackEndResourceKeys.NO_DATA) %>
+                        </div>
+                    </EmptyDataTemplate>
+
+                </SweetSoft:GridviewExtension>
+            </div>
+
+            <SweetSoft:Paging
+                runat="server"
+                ID="ctrlGridviewPaging"
+                OnPageChanged="ctrlGridviewPaging_PageChanged" />
+
+        </div>
+    </ContentTemplate>
+</asp:UpdatePanel>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="dlDetail"
+    Type="Primary"
+    Size="ExtraLarge"
+    Position="modal-dialog-centered modal-dialog-scrollable"
+    DefaultButton="btnSave"
+    FooterButtonClose="false">
+
+    <ContentTemplate>
             <asp:Panel
                 runat="server"
                 ID="pnlForm"
-                Visible="false"
-                CssClass="js-document-form validationEngineContainer border rounded p-3 mb-4">
+                CssClass="js-document-form validationEngineContainer">
 
                 <asp:HiddenField
                     runat="server"
                     ID="hdfIdTaiLieu" />
 
-                <h5 class="text-primary mb-3">
-                    <asp:Literal
-                        runat="server"
-                        ID="litFormTitle" />
-                </h5>
 
                 <div class="row">
 
@@ -184,7 +388,7 @@
                             runat="server"
                             ID="txtMoTa"
                             TextMode="MultiLine"
-                            Rows="3"
+                            Rows="2"
                             MaxLength="1000">
                         </SweetSoft:ExtraTextBox>
                     </div>
@@ -208,7 +412,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-lg-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_SIGNING) %>
                                         </label>
@@ -225,7 +429,7 @@
                                     <div
                                         runat="server"
                                         id="divHinhThucKy"
-                                        class="col-md-4 mb-3">
+                                        class="col-lg-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.SIGNING_METHOD) %>
                                         </label>
@@ -236,7 +440,7 @@
                                         </SweetSoft:ExtraDropdown>
                                     </div>
 
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-lg-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER) %>
                                         </label>
@@ -249,7 +453,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-lg-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE) %>
                                         </label>
@@ -344,8 +548,11 @@
                         </table>
                     </asp:Panel>
                 </asp:Panel>
+            </asp:Panel>
+    </ContentTemplate>
 
-                <div class="d-flex gap-2">
+    <FooterTemplate>
+        <div class="d-flex gap-2">
                     <SweetSoft:ExtraButton
                         runat="server"
                         ID="btnSave"
@@ -363,169 +570,9 @@
                         ButtonStyle="OutLineSecondary"
                         ButtonIcon="Close">
                     </SweetSoft:ExtraButton>
-                </div>
-
-            </asp:Panel>
-
-            <div class="table-responsive">
-                <SweetSoft:GridviewExtension
-                    runat="server"
-                    ID="grvData"
-                    AllowSorting="true"
-                    ShowHeader="true"
-                    ShowHeaderWhenEmpty="true"
-                    AutoGenerateColumns="false"
-                    DataKeyNames="IdTaiLieu"
-                    GridLines="None"
-                    CssClass="table-bordered table-hover align-middle"
-                    IsEnableSelectColumn="false"
-                    FocusBtnIcon="fas fa-compress-arrows-alt"
-                    OnNeedDataSource="grvData_NeedDataSource"
-                    OnRowCommand="grvData_RowCommand">
-
-                    <Columns>
-
-                        <asp:BoundField
-                            DataField="MaTaiLieu"
-                            HeaderText="Mã hồ sơ"
-                            SortExpression="MaTaiLieu"
-                            HeaderStyle-Width="150px" />
-
-                        <asp:BoundField
-                            DataField="TenTaiLieu"
-                            HeaderText="Tên hồ sơ"
-                            SortExpression="TenTaiLieu" />
-
-                        <asp:TemplateField
-                            HeaderText="Loại tài liệu"
-                            SortExpression="TenLoai">
-                            <ItemTemplate>
-                                <%#: GetDocumentTypeText(Eval("TenNhom"), Eval("TenLoai")) %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Người phụ trách"
-                            SortExpression="TenNhanVienPhuTrach">
-                            <ItemTemplate>
-                                <%#: GetResponsibleEmployeeText(Eval("TenNhanVienPhuTrach")) %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Trạng thái hồ sơ"
-                            SortExpression="TrangThaiTaiLieu"
-                            HeaderStyle-Width="145px">
-                            <ItemTemplate>
-                                <span class='<%# GetDocumentStatusCss(Eval("TrangThaiTaiLieu")) %>'>
-                                    <%#: GetDocumentStatusText(Eval("TrangThaiTaiLieu")) %>
-                                </span>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Trình ký"
-                            HeaderStyle-Width="130px">
-                            <ItemTemplate>
-                                <%#: GetSigningText(Eval("CanTrinhKy"), Eval("HinhThucKy")) %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Gửi khách"
-                            SortExpression="TrangThaiGuiKhach"
-                            HeaderStyle-Width="125px">
-                            <ItemTemplate>
-                                <%#: GetCustomerStatusText(Eval("CanGuiKhachHang"), Eval("TrangThaiGuiKhach")) %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Lưu bản cứng"
-                            SortExpression="TrangThaiLuuTru"
-                            HeaderStyle-Width="125px">
-                            <ItemTemplate>
-                                <%#: GetPhysicalStorageStatusText(Eval("CanLuuVatLy"), Eval("TrangThaiLuuTru")) %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="File chính thức">
-                            <ItemTemplate>
-                                <asp:HyperLink
-                                    runat="server"
-                                    Visible='<%# HasOfficialFile(Eval("IdFileBanChinhThuc")) %>'
-                                    NavigateUrl='<%# GetFileUrl(Eval("FileChinhThucUrl")) %>'
-                                    Text='<%# GetOfficialFileName(Eval("TenFileChinhThucGoc"), Eval("TenFileChinhThuc")) %>'
-                                    Target="_blank"
-                                    CssClass="text-primary text-decoration-underline" />
-                                <asp:Label
-                                    runat="server"
-                                    Visible='<%# !HasOfficialFile(Eval("IdFileBanChinhThuc")) %>'
-                                    Text='<%# GetResourceText(BackEndResourceKeys.FILE_NOT_UPLOADED) %>'
-                                    CssClass="badge bg-secondary" />
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Ngày tạo"
-                            SortExpression="NgayTao"
-                            HeaderStyle-Width="140px">
-                            <ItemTemplate>
-                                <%# ConvertDateTimeToString(Eval("NgayTao")) %>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                        <asp:TemplateField
-                            HeaderText="Thao tác"
-                            ItemStyle-CssClass="text-center"
-                            HeaderStyle-Width="160px">
-
-                            <ItemTemplate>
-                                <asp:LinkButton
-                                    runat="server"
-                                    ID="btnEditRow"
-                                    CommandName="EDIT_ITEM"
-                                    CommandArgument='<%# Eval("IdTaiLieu") %>'
-                                    CausesValidation="false"
-                                    Visible='<%# this.IsEdit %>'
-                                    CssClass="btn btn-sm btn-outline-primary me-1"
-                                    Text='<%# GetResourceText(BackEndResourceKeys.EDIT) %>'>
-                                </asp:LinkButton>
-
-                                <asp:LinkButton
-                                    runat="server"
-                                    ID="btnDeleteRow"
-                                    CommandName="DELETE_ITEM"
-                                    CommandArgument='<%# Eval("IdTaiLieu") %>'
-                                    CausesValidation="false"
-                                    Visible='<%# this.IsDelete %>'
-                                    CssClass="btn btn-sm btn-outline-danger"
-                                    OnClientClick="return confirm('Bạn có chắc muốn xóa hồ sơ này?');"
-                                    Text='<%# GetResourceText(BackEndResourceKeys.DELETE) %>'>
-                                </asp:LinkButton>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-
-                    </Columns>
-
-                    <EmptyDataTemplate>
-                        <div class="text-center p-4">
-                            <%= GetResourceText(BackEndResourceKeys.NO_DATA) %>
-                        </div>
-                    </EmptyDataTemplate>
-
-                </SweetSoft:GridviewExtension>
-            </div>
-
-            <SweetSoft:Paging
-                runat="server"
-                ID="ctrlGridviewPaging"
-                OnPageChanged="ctrlGridviewPaging_PageChanged" />
-
         </div>
-    </ContentTemplate>
-</asp:UpdatePanel>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
 
 <div
     class="offcanvas offcanvas-end offcanvas-form-search"
@@ -604,20 +651,6 @@
                                     ID="txtSearchTenTaiLieu"
                                     SearchColumn="TenTaiLieu">
                                 </SweetSoft:ExtraTextBox>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">
-                                    <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %>
-                                </label>
-                                <SweetSoft:ExtraDropdown
-                                    runat="server"
-                                    ID="ddlSearchNhomTaiLieu"
-                                    SearchColumn="IdNhomTaiLieu"
-                                    ValueIsOfTypeGUID="true"
-                                    SimpleInit="true"
-                                    AlowClear="true">
-                                </SweetSoft:ExtraDropdown>
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -746,6 +779,8 @@
                                     SearchColumn="NgayTao"
                                     SingleDatePicker="false"
                                     IsPredefinedDateRanges="true"
+                                    Opens="Left"
+                                    Drops="Down"
                                     AutoUpdateInput="false" />
                             </div>
 

@@ -19,6 +19,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlDocumentTemplates : BaseAdminUserControl
     {
+        private const string DeleteConfirmCommand =
+            "DOCUMENT_TEMPLATE_DELETE";
+
         public const string TemplateFileBeforeSaveCallbackKey =
             "DOCUMENT_TEMPLATE_FILE_BEFORE_SAVE";
         public const string TemplateFileSavedCallbackKey =
@@ -91,6 +94,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 GetResourceText(BackEndResourceKeys.SAVE);
             btnCancel.ToolTip = btnCancel.Text =
                 GetResourceText(BackEndResourceKeys.CANCEL);
+            dlDetail.CloseText =
+                GetResourceText(BackEndResourceKeys.CLOSE);
             btnSearchAdvanced.ToolTip = btnSearchAdvanced.Text =
                 GetResourceText(BackEndResourceKeys.SEARCH);
             btnResetSearch.ToolTip = btnResetSearch.Text =
@@ -281,18 +286,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             chkKichHoat.Checked = true;
             pnlTemplateFile.Visible = false;
             fbTemplate.ClearData();
-            pnlForm.Visible = false;
         }
 
         private void ShowAddForm()
         {
             ResetForm();
-            litFormTitle.Text =
+            dlDetail.Title =
                 GetResourceText(BackEndResourceKeys.ADD_NEW)
                 + " "
                 + GetResourceText(BackEndResourceKeys.DOCUMENT_TEMPLATE);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.OpenModal(true);
         }
 
         private void ShowEditForm(TblMauTaiLieu item)
@@ -306,7 +309,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtMoTa.Text = item.MoTa;
             chkLaMauMacDinh.Checked = item.LaMauMacDinh;
             chkKichHoat.Checked = item.KichHoat;
-            litFormTitle.Text =
+            dlDetail.Title =
                 GetResourceText(BackEndResourceKeys.EDIT)
                 + " "
                 + GetResourceText(BackEndResourceKeys.DOCUMENT_TEMPLATE);
@@ -320,8 +323,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 item.IdMauTaiLieu,
                 FileUploadTypes.DocumentTemplate);
             pnlTemplateFile.Visible = true;
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.OpenModal(true);
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -446,7 +448,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             ResetForm();
-            upMain.Update();
+            dlDetail.CloseModal(true);
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
@@ -503,6 +505,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 {
                     ShowSuccessSaveData();
                     ResetForm();
+                    dlDetail.CloseModal(true);
                 }
 
                 RebindGridFromFirstPage();
@@ -566,6 +569,60 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            TblMauTaiLieu deleteItem =
+                DocumentTemplateManager.Instance.GetById(idMauTaiLieu);
+            if (deleteItem == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            ConfirmResult result = new ConfirmResult
+            {
+                CommandName = DeleteConfirmCommand,
+                Value = idMauTaiLieu.ToString()
+            };
+            CURRENT_PAGE.CurrentConfirmResult = result;
+
+            MessageBox message = new MessageBox(
+                GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys
+                            .PLEASE_CONFIRM_TO_DELETE_THE_DATA),
+                    deleteItem.TenMau),
+                MSGButton.DeleteCancel,
+                MSGIcon.Error);
+            OpenMessageBox(message, result, false, false);
+        }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e == null
+                || !e.Submit
+                || !string.Equals(
+                    e.CommandName,
+                    DeleteConfirmCommand,
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!this.IsDelete)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idMauTaiLieu;
+            if (!Guid.TryParse(
+                    Convert.ToString(e.Value),
+                    out idMauTaiLieu))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
             try
             {
                 bool deleted =
@@ -623,6 +680,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 {
                     DocumentTemplateManager.Instance
                         .SyncTemplateFile(idMauTaiLieu);
+                    dlDetail.UpdateContentModal();
                     grvData.Rebind();
                     upMain.Update();
                 }

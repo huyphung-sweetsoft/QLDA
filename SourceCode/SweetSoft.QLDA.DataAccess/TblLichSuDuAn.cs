@@ -230,7 +230,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdNhanVienThucHien.IsReadOnly = false;
 				colvarIdNhanVienThucHien.DefaultSetting = @"";
 				
-					colvarIdNhanVienThucHien.ForeignKeyTableName = "TblNhanVien";
+					colvarIdNhanVienThucHien.ForeignKeyTableName = "aspnet_Users";
 				schema.Columns.Add(colvarIdNhanVienThucHien);
 				
 				TableSchema.TableColumn colvarNguoiTao = new TableSchema.TableColumn(schema);
@@ -369,13 +369,13 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		/// <summary>
-		/// Returns a TblNhanVien ActiveRecord object related to this TblLichSuDuAn
+		/// Returns a AspnetUser ActiveRecord object related to this TblLichSuDuAn
 		/// 
 		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblNhanVien TblNhanVien
+		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUser
 		{
-			get { return SweetSoft.QLDA.DataAccess.TblNhanVien.FetchByID(this.IdNhanVienThucHien); }
-			set { SetColumnValue("IdNhanVienThucHien", value.IdNhanVien); }
+			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVienThucHien); }
+			set { SetColumnValue("IdNhanVienThucHien", value.UserId); }
 		}
 		
 		

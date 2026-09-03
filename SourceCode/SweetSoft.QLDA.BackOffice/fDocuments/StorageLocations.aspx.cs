@@ -42,5 +42,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
             CtrlStorageLocations1.InitControls();
         }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            CtrlStorageLocations1.ConfirmRequest(e);
+        }
     }
 }

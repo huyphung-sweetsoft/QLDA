@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid ApplicationId,Guid UserId,bool IsDeleted,bool IsActivated,bool IsAnonymous,string UserName,string LoweredUserName,string DisplayName,string Avatar,string MobileAlias,DateTime LastActivityDate,string AuthenticatorKey,string ResetPasswordKey)
+	    public void Insert(Guid ApplicationId,Guid UserId,bool IsDeleted,bool IsActivated,bool IsAnonymous,string UserName,string LoweredUserName,string DisplayName,string Avatar,string MobileAlias,DateTime LastActivityDate,string AuthenticatorKey,string ResetPasswordKey,bool LaNhanVien,Guid? IdPhongBan,Guid? IdChucDanh,DateTime? NgaySinh,string GioiTinh,string IdCCCD,string DiaChi,DateTime? NgayGiaNhap,string NguoiTao,DateTime? NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    AspnetUser item = new AspnetUser();
 		    
@@ -110,6 +110,30 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.ResetPasswordKey = ResetPasswordKey;
             
+            item.LaNhanVien = LaNhanVien;
+            
+            item.IdPhongBan = IdPhongBan;
+            
+            item.IdChucDanh = IdChucDanh;
+            
+            item.NgaySinh = NgaySinh;
+            
+            item.GioiTinh = GioiTinh;
+            
+            item.IdCCCD = IdCCCD;
+            
+            item.DiaChi = DiaChi;
+            
+            item.NgayGiaNhap = NgayGiaNhap;
+            
+            item.NguoiTao = NguoiTao;
+            
+            item.NgayTao = NgayTao;
+            
+            item.NguoiCapNhat = NguoiCapNhat;
+            
+            item.NgayCapNhat = NgayCapNhat;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -118,7 +142,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid ApplicationId,Guid UserId,bool IsDeleted,bool IsActivated,bool IsAnonymous,string UserName,string LoweredUserName,string DisplayName,string Avatar,string MobileAlias,DateTime LastActivityDate,string AuthenticatorKey,string ResetPasswordKey)
+	    public void Update(Guid ApplicationId,Guid UserId,bool IsDeleted,bool IsActivated,bool IsAnonymous,string UserName,string LoweredUserName,string DisplayName,string Avatar,string MobileAlias,DateTime LastActivityDate,string AuthenticatorKey,string ResetPasswordKey,bool LaNhanVien,Guid? IdPhongBan,Guid? IdChucDanh,DateTime? NgaySinh,string GioiTinh,string IdCCCD,string DiaChi,DateTime? NgayGiaNhap,string NguoiTao,DateTime? NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    AspnetUser item = new AspnetUser();
 	        item.MarkOld();
@@ -149,6 +173,30 @@ namespace SweetSoft.QLDA.DataAccess
 			item.AuthenticatorKey = AuthenticatorKey;
 				
 			item.ResetPasswordKey = ResetPasswordKey;
+				
+			item.LaNhanVien = LaNhanVien;
+				
+			item.IdPhongBan = IdPhongBan;
+				
+			item.IdChucDanh = IdChucDanh;
+				
+			item.NgaySinh = NgaySinh;
+				
+			item.GioiTinh = GioiTinh;
+				
+			item.IdCCCD = IdCCCD;
+				
+			item.DiaChi = DiaChi;
+				
+			item.NgayGiaNhap = NgayGiaNhap;
+				
+			item.NguoiTao = NguoiTao;
+				
+			item.NgayTao = NgayTao;
+				
+			item.NguoiCapNhat = NguoiCapNhat;
+				
+			item.NgayCapNhat = NgayCapNhat;
 				
 	        item.Save(UserName);
 	    }

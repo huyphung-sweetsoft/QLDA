@@ -89,7 +89,7 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetById(idNoiLuuTru);
         }
 
-        public List<TblNhanVien> GetAvailableEmployees()
+        public List<AspnetUser> GetAvailableEmployees()
         {
             return _repository.GetAvailableEmployees();
         }

@@ -165,7 +165,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdNguoiGui.IsReadOnly = false;
 				colvarIdNguoiGui.DefaultSetting = @"";
 				
-					colvarIdNguoiGui.ForeignKeyTableName = "TblNhanVien";
+					colvarIdNguoiGui.ForeignKeyTableName = "aspnet_Users";
 				schema.Columns.Add(colvarIdNguoiGui);
 				
 				TableSchema.TableColumn colvarIdNguoiKy = new TableSchema.TableColumn(schema);
@@ -179,7 +179,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdNguoiKy.IsReadOnly = false;
 				colvarIdNguoiKy.DefaultSetting = @"";
 				
-					colvarIdNguoiKy.ForeignKeyTableName = "TblNhanVien";
+					colvarIdNguoiKy.ForeignKeyTableName = "aspnet_Users";
 				schema.Columns.Add(colvarIdNguoiKy);
 				
 				TableSchema.TableColumn colvarTenNguoiKy = new TableSchema.TableColumn(schema);
@@ -488,24 +488,24 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblNhanVien ActiveRecord object related to this TblTrinhKyTaiLieu
+		/// Returns a AspnetUser ActiveRecord object related to this TblTrinhKyTaiLieu
 		/// 
 		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblNhanVien TblNhanVien
+		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUser
 		{
-			get { return SweetSoft.QLDA.DataAccess.TblNhanVien.FetchByID(this.IdNguoiGui); }
-			set { SetColumnValue("IdNguoiGui", value.IdNhanVien); }
+			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNguoiGui); }
+			set { SetColumnValue("IdNguoiGui", value.UserId); }
 		}
 		
 		
 		/// <summary>
-		/// Returns a TblNhanVien ActiveRecord object related to this TblTrinhKyTaiLieu
+		/// Returns a AspnetUser ActiveRecord object related to this TblTrinhKyTaiLieu
 		/// 
 		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblNhanVien TblNhanVienToIdNguoiKy
+		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUserToIdNguoiKy
 		{
-			get { return SweetSoft.QLDA.DataAccess.TblNhanVien.FetchByID(this.IdNguoiKy); }
-			set { SetColumnValue("IdNguoiKy", value.IdNhanVien); }
+			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNguoiKy); }
+			set { SetColumnValue("IdNguoiKy", value.UserId); }
 		}
 		
 		

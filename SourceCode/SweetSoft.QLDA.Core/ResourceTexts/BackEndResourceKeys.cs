@@ -373,6 +373,16 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SAVE_DOCUMENT_BEFORE_UPLOAD = "SAVE_DOCUMENT_BEFORE_UPLOAD";
         public const string CURRENT_VERSION = "CURRENT_VERSION";
         public const string FILE_NAME = "FILE_NAME";
+        public const string DOCUMENT_SCOPE = "DOCUMENT_SCOPE";
+        public const string ALL_DOCUMENTS = "ALL_DOCUMENTS";
+        public const string COMPANY_DOCUMENTS = "COMPANY_DOCUMENTS";
+        public const string PROJECT_DOCUMENTS = "PROJECT_DOCUMENTS";
+        public const string PROJECT = "PROJECT";
+        public const string ALL_PROJECTS = "ALL_PROJECTS";
+        public const string SELECT_PROJECT = "SELECT_PROJECT";
+        public const string DOCUMENT_TYPE_IN_GROUP = "DOCUMENT_TYPE_IN_GROUP";
+        public const string SELECT_DOCUMENT_GROUP_FIRST = "SELECT_DOCUMENT_GROUP_FIRST";
+        public const string DOCUMENT_FILTER_HINT = "DOCUMENT_FILTER_HINT";
 
     }
 }

@@ -1221,4 +1221,34 @@
   <data name="FILE_NAME" xml:space="preserve">
     <value>File name</value>
   </data>
+  <data name="DOCUMENT_SCOPE" xml:space="preserve">
+    <value>Document scope</value>
+  </data>
+  <data name="ALL_DOCUMENTS" xml:space="preserve">
+    <value>All documents</value>
+  </data>
+  <data name="COMPANY_DOCUMENTS" xml:space="preserve">
+    <value>Company documents</value>
+  </data>
+  <data name="PROJECT_DOCUMENTS" xml:space="preserve">
+    <value>Project documents</value>
+  </data>
+  <data name="PROJECT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="ALL_PROJECTS" xml:space="preserve">
+    <value>All projects</value>
+  </data>
+  <data name="SELECT_PROJECT" xml:space="preserve">
+    <value>Select project</value>
+  </data>
+  <data name="DOCUMENT_TYPE_IN_GROUP" xml:space="preserve">
+    <value>Document type in group</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP_FIRST" xml:space="preserve">
+    <value>Select a document group first</value>
+  </data>
+  <data name="DOCUMENT_FILTER_HINT" xml:space="preserve">
+    <value>Select a scope, group, and document type to narrow the list.</value>
+  </data>
 </root>

@@ -17,6 +17,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlStorageLocations : BaseAdminUserControl
     {
+        private const string DeleteConfirmCommand =
+            "DOCUMENT_STORAGE_LOCATION_DELETE";
+
         protected bool IsAdd
         {
             get { return CURRENT_PAGE.IsAdd; }
@@ -164,10 +167,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private void BindEmployees()
         {
-            List<TblNhanVien> employees =
+            List<AspnetUser> employees =
                 DocumentStorageLocationManager.Instance
                     .GetAvailableEmployees()
-                ?? new List<TblNhanVien>();
+                ?? new List<AspnetUser>();
 
             ddlNguoiPhuTrach.Items.Clear();
             ddlNguoiPhuTrach.Items.Add(
@@ -179,11 +182,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ddlSearchNguoiPhuTrach.Items.Add(
                 new ListItem("Tất cả nhân viên", string.Empty));
 
-            foreach (TblNhanVien employee in employees)
+            foreach (AspnetUser employee in employees)
             {
                 ListItem item = new ListItem(
-                    employee.TenNhanVien,
-                    employee.IdNhanVien.ToString());
+                    employee.DisplayName,
+                    employee.UserId.ToString());
                 ddlNguoiPhuTrach.Items.Add(item);
                 ddlSearchNguoiPhuTrach.Items.Add(
                     new ListItem(item.Text, item.Value));
@@ -504,19 +507,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 Guid.Empty,
                 null);
             chkKichHoat.Checked = true;
-            pnlForm.Visible = false;
         }
 
         private void ShowAddForm()
         {
             ResetForm();
-            litFormTitle.Text = GetResourceText(
+            dlDetail.Title = GetResourceText(
                     BackEndResourceKeys.ADD_NEW)
                 + " "
                 + GetResourceText(
                     BackEndResourceKeys.DOCUMENT_STORAGE_LOCATION);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.OpenModal(true);
         }
 
         private void ShowEditForm(TblNoiLuuTru item)
@@ -537,13 +538,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ? item.IdNhanVienPhuTrach.Value.ToString()
                     : string.Empty);
             chkKichHoat.Checked = item.KichHoat;
-            litFormTitle.Text = GetResourceText(
+            dlDetail.Title = GetResourceText(
                     BackEndResourceKeys.EDIT)
                 + " "
                 + GetResourceText(
                     BackEndResourceKeys.DOCUMENT_STORAGE_LOCATION);
-            pnlForm.Visible = true;
-            upMain.Update();
+            dlDetail.OpenModal(true);
         }
 
         protected void btnAdd_Click(object sender, EventArgs e)
@@ -560,7 +560,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             ResetForm();
-            upMain.Update();
+            dlDetail.CloseModal(true);
         }
 
         protected void ddlCapLuuTru_SelectedIndexChanged(
@@ -571,7 +571,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ddlCapLuuTru.SelectedValue,
                 GetCurrentStorageLocationId(),
                 null);
-            upMain.Update();
+            dlDetail.UpdateContentModal();
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
@@ -626,6 +626,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ShowSuccessSaveData();
 
                 ResetForm();
+                dlDetail.CloseModal(true);
                 RebindGridFromFirstPage();
             }
             catch (ArgumentException exc)
@@ -685,6 +686,61 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (!this.IsDelete)
             {
                 ShowAccessDeniedNotify();
+                return;
+            }
+
+            TblNoiLuuTru deleteItem =
+                DocumentStorageLocationManager.Instance.GetById(
+                    idNoiLuuTru);
+            if (deleteItem == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            ConfirmResult result = new ConfirmResult
+            {
+                CommandName = DeleteConfirmCommand,
+                Value = idNoiLuuTru.ToString()
+            };
+            CURRENT_PAGE.CurrentConfirmResult = result;
+
+            MessageBox message = new MessageBox(
+                GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys
+                            .PLEASE_CONFIRM_TO_DELETE_THE_DATA),
+                    deleteItem.TenNoiLuuTru),
+                MSGButton.DeleteCancel,
+                MSGIcon.Error);
+            OpenMessageBox(message, result, false, false);
+        }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e == null
+                || !e.Submit
+                || !string.Equals(
+                    e.CommandName,
+                    DeleteConfirmCommand,
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!this.IsDelete)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idNoiLuuTru;
+            if (!Guid.TryParse(
+                    Convert.ToString(e.Value),
+                    out idNoiLuuTru))
+            {
+                ShowInvalidDataError();
                 return;
             }
 

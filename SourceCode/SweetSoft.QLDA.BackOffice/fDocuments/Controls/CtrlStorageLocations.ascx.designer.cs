@@ -19,9 +19,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnSearch;
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnAdd;
         protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBox;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
         protected global::System.Web.UI.WebControls.Panel pnlForm;
         protected global::System.Web.UI.WebControls.HiddenField hdfIdNoiLuuTru;
-        protected global::System.Web.UI.WebControls.Literal litFormTitle;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMaNoiLuuTru;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenNoiLuuTru;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCapLuuTru;

@@ -42,5 +42,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
             CtrlDocumentGroups1.InitControls();
         }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            CtrlDocumentGroups1.ConfirmRequest(e);
+        }
     }
 }

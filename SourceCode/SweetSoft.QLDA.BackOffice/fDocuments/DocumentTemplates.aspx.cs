@@ -49,5 +49,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         {
             CtrlDocumentTemplates1.HandleFileCallback(key);
         }
+
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            CtrlDocumentTemplates1.ConfirmRequest(e);
+        }
     }
 }

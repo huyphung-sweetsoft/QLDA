@@ -35,6 +35,13 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string CheckedOut = "DANG_LAY_RA";
     }
 
+    public static class DocumentScopeKeys
+    {
+        public const string All = DocumentRepository.DocumentScopeAll;
+        public const string Company = DocumentRepository.DocumentScopeCompany;
+        public const string Project = DocumentRepository.DocumentScopeProject;
+    }
+
     public class DocumentManager : BaseManager
     {
         private static readonly Lazy<DocumentManager> _instance =
@@ -73,6 +80,39 @@ namespace SweetSoft.QLDA.Core.Managers
                 out totalRecord);
         }
 
+        public DataTable SearchDocuments(
+            string searchTerm,
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            return _repository.SearchDocuments(
+                searchTerm,
+                parameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
+        }
+
+        public DataTable SearchDocuments(
+            Dictionary<string, object> parameters,
+            string orderBy,
+            int rowOffset,
+            int endRow,
+            out int totalRecord)
+        {
+            return _repository.SearchDocuments(
+                string.Empty,
+                parameters,
+                orderBy,
+                rowOffset,
+                endRow,
+                out totalRecord);
+        }
+
         public DataTable SearchCompanyDocuments(
             Dictionary<string, object> parameters,
             string orderBy,
@@ -93,9 +133,14 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetById(idTaiLieu);
         }
 
-        public List<TblNhanVien> GetAvailableEmployees()
+        public List<AspnetUser> GetAvailableEmployees()
         {
             return _repository.GetAvailableEmployees();
+        }
+
+        public List<TblDuAn> GetAvailableProjects()
+        {
+            return _repository.GetAvailableProjects();
         }
 
         public TblLoaiTaiLieu GetDocumentTypeDefaults(Guid idLoaiTaiLieu)
