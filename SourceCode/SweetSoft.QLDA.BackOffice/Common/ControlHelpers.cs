@@ -692,6 +692,32 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataSource = tblNhanViens;
             ddl.DataBind();
         }
+
+        public void BindLoaiKhachHang(BootstrapDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            List<TblLoaiKhachHang> tblLoaiKhachHangs = LoaiKhachHangManager.Instance.GetAllLoaiKhachHang();
+            if (tblLoaiKhachHangs == null)
+                tblLoaiKhachHangs = new List<TblLoaiKhachHang>();
+            ddl.DataTextField = TblLoaiKhachHang.Columns.TenLoaiKhachHang;
+            ddl.DataValueField = TblLoaiKhachHang.Columns.IdLoaiKhachHang;
+            ddl.DataSource = tblLoaiKhachHangs;
+            ddl.DataBind();
+        }
+
+        public void BindLoaiKhachHang(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            List<TblLoaiKhachHang> tblLoaiKhachHangs = LoaiKhachHangManager.Instance.GetAllLoaiKhachHang();
+            if (tblLoaiKhachHangs == null)
+                tblLoaiKhachHangs = new List<TblLoaiKhachHang>();
+            ddl.DataTextField = TblLoaiKhachHang.Columns.TenLoaiKhachHang;
+            ddl.DataValueField = TblLoaiKhachHang.Columns.IdLoaiKhachHang;
+            ddl.DataSource = tblLoaiKhachHangs;
+            ddl.DataBind();
+        }
         #endregion
     }
 }

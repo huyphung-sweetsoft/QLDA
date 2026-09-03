@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             get
             {
-                return ModuleKeys.Projects;
+                return ModuleKeys.Project;
             }
         }
         private Guid IdHopDongThucHien
@@ -67,6 +67,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 {
                     {RewriteURLHelper.Projects, GetResourceText(BackEndResourceKeys.PROJECT_LIST) }
                 };
+                CtrlDuAn1.IdKhachHang = Guid.Empty;
                 CtrlDuAn1.InitControls();
                 ApplyControlsText();
             }
@@ -218,7 +219,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 #endregion
 
                 bool isAdd = true;
-                DuAnManager organiztionDuAnManager = DuAnManager.Instance;
+                DuAnManager organizationDuAnManager = DuAnManager.Instance;
                 TblDuAn duAn = new TblDuAn();
                 if (this.IdDuAn != Guid.Empty)
                 {
@@ -252,7 +253,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                     duAn.IdNhanVienQuanLy = idNhanVienQuanLy;
                 if (isAdd)
                 { 
-                    duAn = organiztionDuAnManager.CreateOrUpdate(duAn);
+                    duAn = organizationDuAnManager.CreateOrUpdate(duAn);
                     if (duAn == null)
                     {
                         ShowInvalidDataError();
@@ -262,7 +263,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 }
                 else
                 {
-                    duAn = organiztionDuAnManager.CreateOrUpdate(duAn);
+                    duAn = organizationDuAnManager.CreateOrUpdate(duAn);
                     if (duAn == null)
                     {
                         ShowInvalidDataError();

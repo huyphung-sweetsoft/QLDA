@@ -1045,7 +1045,7 @@
     <value />
   </data>
   <data name="CUSTOMER_NAME" xml:space="preserve">
-    <value>Tên khách hàng</value>
+    <value>&#x8;</value>
   </data>
   <data name="PROJECT_MANAGER" xml:space="preserve">
     <value>Nhân viên quản lý</value>
@@ -1077,5 +1077,20 @@
   </data>
   <data name="PROJECT_INFORMATION" xml:space="preserve">
     <value />
+  </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="CUSTOMER_TYPE" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="CONTACT_PERSON" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="CONTACT_EMAIL" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
+    <value>&#x8;</value>
   </data>
 </root>

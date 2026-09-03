@@ -25,6 +25,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @idLoaiDuAn VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdLoaiDuAn])}';
                 DECLARE @idNhanVienQuanLy VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdNhanVienQuanLy])}';
                 DECLARE @trangThai TINYINT = {(parameters[TblDuAn.Columns.TrangThai] == null ? "NULL" : $"'{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.TrangThai])}'")};
+                DECLARE @idKhachHang VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdKhachHang])}';
                 DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
                 select * from (
                     select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
@@ -39,6 +40,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                         and (@idLoaiDuAn = '{Guid.Empty}' or d.IdLoaiDuAn = @idLoaiDuAn)
                         and (@idNhanVienQuanLy = '{Guid.Empty}' or d.IdNhanVienQuanLy = @idNhanVienQuanLy)
                         and (@trangThai is null or d.TrangThai = @trangThai)
+                        and (@idKhachHang = '{Guid.Empty}' or d.IdKhachHang = @idKhachHang)
                         and (@singleKeyWord = N'%%'
                         or d.TenDuAn LIKE @singleKeyWord
                         or d.MaDuAn LIKE @singleKeyWord)

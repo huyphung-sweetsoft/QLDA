@@ -28,6 +28,7 @@ namespace SweetSoft.QLDA.Core.Functions
         CompetitionRound,
         CompetitionMember,
         JoinCompetition,
-        Projects
+        Project,
+        Customer
     }
 }

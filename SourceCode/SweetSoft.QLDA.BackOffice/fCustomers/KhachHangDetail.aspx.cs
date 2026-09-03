@@ -1,7 +1,4 @@
-using SweetCMS.Controls.Helpers;
 using SweetSoft.QLDA.BackOffice.Common;
-using SweetSoft.QLDA.Core.EnumHelper;
-using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Security;
@@ -16,15 +13,15 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace SweetSoft.QLDA.BackOffice.fProjects
+namespace SweetSoft.QLDA.BackOffice.fCustomers
 {
-    public partial class DuAnDetail : BaseAdminPage
+    public partial class KhachHangDetail : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE
         {
             get
             {
-                return ModuleKeys.Project;
+                return ModuleKeys.Customer;
             }
         }
 
@@ -45,22 +42,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 }
             }
         }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
-                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.PROJECT_LIST));
+                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.CUSTOMER_LIST));
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.CUSTOMER);
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>()
                 {
-                    {RewriteURLHelper.Projects, GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
+                    {RewriteURLHelper.Customers, GetResourceText(BackEndResourceKeys.CUSTOMER_LIST) },
                     {"javascript:", GetResourceText(BackEndResourceKeys.DETAIL) }
                 };
                 if (this.QueryId != Guid.Empty)
                 {
                     BindData();
+                    CtrlDuAn1.IdKhachHang = QueryId;
+                    CtrlDuAn1.InitControls();
                 }
             }
         }
@@ -69,14 +68,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             try
             {
-                DataTable dt = DuAnManager.Instance.GetDetailDuAnById(QueryId);
+                DataTable dt = KhachHangManager.Instance.GetDetailKhachHangById(QueryId);
                 if (dt == null || dt.Rows.Count == 0)
                 {
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), false);
                     return;
                 }
                 DataRow row = dt.Rows[0];
-                BindProjectInformation(row);
+                BindCustomerInformation(row);
             }
             catch (Exception exc)
             {
@@ -84,33 +83,19 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
         }
 
-        private void BindProjectInformation(DataRow row)
+        private void BindCustomerInformation(DataRow row)
         {
-            Navigation1.MainTitle = GetDisplayText(row, "MaDuAn");
-            lblTenDuAn.Text = GetDisplayText(row, "TenDuAn");
-            lblKhachHang.Text = GetDisplayText(row, "TenKhachHang");
-            lblLoaiDuAn.Text = GetDisplayText(row, "TenLoaiDuAn");
-            lblSoHopDong.Text = GetDisplayText(row, "SoHopDong");
-            lblGiaTriHopDong.Text = FormatMoney(row, "GiaTriHopDong");
-            lblNgayKy.Text = FormatDate(row, "NgayKy");
-            lblNgayBatDau.Text = FormatDate(row, "NgayBatDau");
-            lblNgayHoanThanhDuKien.Text = FormatDate(row, "NgayDuKienHoanThanh");
-            lblNgayHoanThanhThucTe.Text = FormatDate(row, "NgayHoanThanhThucTe");
-            ltrMoTa.Text = GetHtmlText(row, "MoTa");
-            lblNhanVienQuanLy.Text = GetDisplayText(row, "TenNhanVien");
-
-            string avatarUrl = Convert.ToString(row["AnhDaiDien"]);
-            if (!string.IsNullOrEmpty(avatarUrl) )
-            {
-                imgAvatarPM.Src = avatarUrl;
-            }
-            else
-            {
-                imgAvatarPM.Src = "~/Styles/images/user-icon.png";
-            }
-
-            byte trangThai = Convert.ToByte(row["TrangThai"]);
-            lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), trangThai));
+            lblTenKhachHang.Text = GetDisplayText(row, "TenKhachHang");
+            lblLoaiKhachHangSubLabel.Text = GetDisplayText(row, "TenLoaiKhachHang");
+            lblLoaiKhachHang.Text = GetDisplayText(row, "TenLoaiKhachHang");
+            lblSoThue.Text = GetDisplayText(row, "IdSoThue");
+            lblSoDienThoai.Text = GetDisplayText(row, "SoDienThoai");
+            lblEmail.Text = GetDisplayText(row, "Email");
+            lblDiaChi.Text = GetDisplayText(row, "DiaChi");
+            lblNguoiLienHe.Text = GetDisplayText(row, "TenNguoiLienHe");
+            lblDienThoaiLienHe.Text = GetDisplayText(row, "DienThoaiLienHe");
+            lblEmailLienHe.Text = GetDisplayText(row, "EmailLienHe");
+            ltrMoTa.Text = GetHtmlText(row, "GhiChu");
         }
 
         private string GetDisplayText(DataRow row, string columnName)
@@ -131,26 +116,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 return "<p class='text-muted'>Chưa có nội dung mô tả</p>";
             }
             return HttpUtility.HtmlDecode(value);
-        }
-
-        private string FormatDate(DataRow row, string columnName)
-        {
-            if (!row.Table.Columns.Contains(columnName) || row[columnName] == null || row[columnName] == DBNull.Value)
-            {
-                return "Chưa có";  
-            }
-            DateTime value = Convert.ToDateTime(row[columnName]);
-            return DateTimeHelper.ConvertDateTime(value, false);
-        }
-
-        private string FormatMoney(DataRow row, string columnName)
-        {
-            if (!row.Table.Columns.Contains(columnName) || row[columnName] == null || row[columnName] == DBNull.Value)
-            {
-                return "Chưa có";
-            }
-            decimal value = Convert.ToDecimal(row[columnName]);
-            return FormatHelpers.ConvertDecimalToStringByLanguage(value, "vi-VN");
         }
     }
 }

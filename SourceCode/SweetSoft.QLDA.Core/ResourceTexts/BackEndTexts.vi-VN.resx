@@ -909,6 +909,24 @@
   <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
     <value>Mã dự án đã tồn tại</value>
   </data>
+  <data name="PROJECT_LIST" xml:space="preserve">
+    <value>Danh sách dự án</value>
+  </data>
+  <data name="PROJECT_INFORMATION" xml:space="preserve">
+    <value>Thông tin dự án</value>
+  </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value>Danh sách khách hàng</value>
+  </data>
+  <data name="CUSTOMER_TYPE" xml:space="preserve">
+    <value>Loại khách hàng</value>
+  </data>
+  <data name="CONTACT_PERSON" xml:space="preserve">
+    <value>Người liên hệ</value>
+  </data>
+  <data name="CONTACT_EMAIL" xml:space="preserve">
+    <value>Email liên hệ</value>
+  </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
   </data>
@@ -1032,13 +1050,10 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="PROJECT_LIST" xml:space="preserve">
-    <value>Danh sách dự án</value>
-  </data>
   <data name="PROJECT_MANAGEMENT" xml:space="preserve">
     <value>Quản lý dự án</value>
   </data>
-  <data name="PROJECT_INFORMATION" xml:space="preserve">
-    <value>Thông tin dự án</value>
+  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
+    <value>Điện thoại liên hệ</value>
   </data>
 </root>
