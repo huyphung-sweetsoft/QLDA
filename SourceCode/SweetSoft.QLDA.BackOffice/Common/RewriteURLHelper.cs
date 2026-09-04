@@ -1,4 +1,4 @@
-﻿//-----------------------PROGRAMER LOGS---------------------------
+//-----------------------PROGRAMER LOGS---------------------------
 
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Utils;
@@ -13,6 +13,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Error500 => "/500";
         public static string Login => "/Login";
         public static string Home => "/Home";
+        public static string DashboardOverview => "/Home/Overview";
+        public static string DashboardResource => "/Home/Resources";
+        public static string DashboardProgress => "/Home/Progress";
+        public static string DashboardCost => "/Home/Costs";
+        public static string DashboardEmployee => "/Home/Employee";
         public static string AuditLogs => "/Audit-logs";
         public static string Settings => "/Settings";
         public static string Countries => "/Countries";

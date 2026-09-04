@@ -66,53 +66,109 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
         }
         protected void Page_Load(object sender, EventArgs e)
         {
-            ScriptManager scriptManager = ScriptManager.GetCurrent(this.Page);
+            ScriptManager scriptManager =
+                ScriptManager.GetCurrent(this.Page);
+
             scriptManager.RegisterAsyncPostBackControl(btnRefreshUser);
             scriptManager.RegisterAsyncPostBackControl(btnLoadTab);
             scriptManager.RegisterAsyncPostBackControl(btnRefreshPermission);
             scriptManager.RegisterAsyncPostBackControl(lbtLogOut);
+
             if (!IsPostBack)
             {
-                string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                string version =
+                    Assembly.GetExecutingAssembly()
+                        .GetName()
+                        .Version
+                        .ToString();
+
                 lbVersion.InnerText = version;
+
                 if (!string.IsNullOrEmpty(FolderPath))
-                    hdfFolderKey.Value = SecurityUtilities.ProtectUrlParameter(FolderPath);
+                {
+                    hdfFolderKey.Value =
+                        SecurityUtilities.ProtectUrlParameter(
+                            FolderPath
+                        );
+                }
+
                 bool isLockScreen = false;
-                object lockCache = AppCache.Get(string.Format("ASP.NET_LockedId_{0}", SweetContext.Current.UserName));
+
+                object lockCache = AppCache.Get(
+                    string.Format(
+                        "ASP.NET_LockedId_{0}",
+                        SweetContext.Current.UserName
+                    )
+                );
+
                 if (lockCache != null)
                 {
                     try
                     {
-                        if (!bool.TryParse(lockCache.ToString(), out isLockScreen))
+                        if (!bool.TryParse(
+                            lockCache.ToString(),
+                            out isLockScreen))
+                        {
                             isLockScreen = false;
+                        }
                     }
                     catch
                     {
                         isLockScreen = false;
                     }
                 }
-                if (isLockScreen)
-                    Response.Redirect(GetRelativeClientPath("/lock-screen"), true);
 
-                //string theme = "light";
-                //if (Request.Cookies["data-layout-mode"] != null)
-                //    theme = Request.Cookies["data-layout-mode"].Value;
-                //tagBody.Attributes["data-layout-mode"] = theme;
-                //tagBody.Attributes["data-topbar"] = theme;
-                //tagBody.Attributes["data-sidebar"] = theme;
-                byte currentLangId = SweetContext.Current.CurrentLanguageId;
+                if (isLockScreen)
+                {
+                    Response.Redirect(
+                        GetRelativeClientPath("/lock-screen"),
+                        true
+                    );
+                }
+
+                byte currentLangId =
+                    SweetContext.Current.CurrentLanguageId;
+
                 BindLanguages(currentLangId);
-                imgLanguage.Src = LanguageHelpers.GetCMSLanguageImage(currentLangId);
-                AspnetUser user = SweetContext.Current.User;
+
+                imgLanguage.Src =
+                    LanguageHelpers.GetCMSLanguageImage(
+                        currentLangId
+                    );
+
+                AspnetUser user =
+                    SweetContext.Current.User;
+
                 if (user != null)
                 {
-                    hdfCSRF.Value = SecurityUtilities.EncryptContent(user.UserId.ToString());
-                    TblUploadFile tblUploadFile = UploadManager.Instance.GetUploadFileByRefIdAndRefType(user.UserId, FileUploadTypes.UserAvatar);
-                    SetUserInfomation(user.DisplayName, tblUploadFile?.FileUrl ?? string.Empty);
+                    hdfCSRF.Value =
+                        SecurityUtilities.EncryptContent(
+                            user.UserId.ToString()
+                        );
+
+                    TblUploadFile tblUploadFile =
+                        UploadManager.Instance
+                            .GetUploadFileByRefIdAndRefType(
+                                user.UserId,
+                                FileUploadTypes.UserAvatar
+                            );
+
+                    SetUserInfomation(
+                        user.DisplayName,
+                        tblUploadFile?.FileUrl ?? string.Empty
+                    );
                 }
-                btnCancel.ToolTip = btnCancel.Text = GetResourceText(BackEndResourceKeys.CLOSE);
-                BindLeftMenu();
+
+                btnCancel.ToolTip =
+                    btnCancel.Text =
+                        GetResourceText(
+                            BackEndResourceKeys.CLOSE
+                        );
             }
+
+            // QUAN TRỌNG:
+            // Menu phải được bind lại cả khi PostBack.
+            BindLeftMenu();
         }
 
         private void BindLeftMenu()
@@ -133,7 +189,7 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                     // Đếm số lượng submenu (ParentCode khác rỗng hoặc null)
                     var subMenus = aspnetFunctions.Where(f => !string.IsNullOrEmpty(f.ParentCode)).ToList();
 
-                    if (subMenus.Count < 6)
+                    if (subMenus.Count < 2)
                     {
                         StringBuilder sbBasic = new StringBuilder();
                         var menu = aspnetFunctions.FirstOrDefault(f => f.FunctionCode == ModuleKeys.JoinCompetition.ToString());

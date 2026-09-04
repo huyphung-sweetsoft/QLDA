@@ -1,4 +1,4 @@
-﻿//--------------------PROGRAMER LOGS------------------------
+//--------------------PROGRAMER LOGS------------------------
 using System.Web;
 using System.Xml.Linq;
 
@@ -310,5 +310,64 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string JOIN_COMPETITIONS = "JOIN_COMPETITIONS";
         public const string COMPETITION_NAME = "COMPETITION_NAME";
 
+        // Dashboard Overview
+        public const string DASHBOARD_OVERVIEW = "DASHBOARD_OVERVIEW";
+        public const string PROJECT_SCOPE = "PROJECT_SCOPE";
+        public const string DATE_RANGE = "DATE_RANGE";
+        public const string THIS_WEEK = "THIS_WEEK";
+        public const string THIS_MONTH = "THIS_MONTH";
+        public const string THIS_QUARTER = "THIS_QUARTER";
+        public const string THIS_YEAR = "THIS_YEAR";
+        public const string APPLY = "APPLY";
+        public const string ALL_PROJECTS = "ALL_PROJECTS";
+        public const string TRACK_OVERALL_PROJECT_STATUS = "TRACK_OVERALL_PROJECT_STATUS";
+        public const string ACTIVE_PROJECTS = "ACTIVE_PROJECTS";
+        public const string PROJECTS_IN_PROGRESS = "PROJECTS_IN_PROGRESS";
+        public const string UPCOMING_MEETINGS = "UPCOMING_MEETINGS";
+        public const string MEETINGS_THIS_WEEK = "MEETINGS_THIS_WEEK";
+        public const string AT_RISK_PROJECTS = "AT_RISK_PROJECTS";
+        public const string RATE_ON_ACTIVE_PROJECTS = "RATE_ON_ACTIVE_PROJECTS";
+        public const string OVERDUE_TASKS = "OVERDUE_TASKS";
+        public const string INCOMPLETE_AND_OVERDUE = "INCOMPLETE_AND_OVERDUE";
+        public const string TOTAL_BUDGET = "TOTAL_BUDGET";
+        public const string TOTAL_CONTRACT_VALUE = "TOTAL_CONTRACT_VALUE";
+        public const string IN_SELECTED_SCOPE = "IN_SELECTED_SCOPE";
+        public const string PROJECT_STATUS_DISTRIBUTION = "PROJECT_STATUS_DISTRIBUTION";
+        public const string PROJECT_COUNT_BY_STATUS = "PROJECT_COUNT_BY_STATUS";
+        public const string PROJECT_PROGRESS = "PROJECT_PROGRESS";
+        public const string PROGRESS_OF_EACH_PROJECT = "PROGRESS_OF_EACH_PROJECT";
+        public const string PROJECTS_NEEDING_ATTENTION = "PROJECTS_NEEDING_ATTENTION";
+        public const string PROJECTS_WITH_MOST_RISKS_OR_ISSUES = "PROJECTS_WITH_MOST_RISKS_OR_ISSUES";
+        public const string PROJECT = "PROJECT";
+        public const string RISK = "RISK";
+        public const string ISSUE = "ISSUE";
+        public const string NO_PROJECTS_WITH_RISKS_OR_ISSUES = "NO_PROJECTS_WITH_RISKS_OR_ISSUES";
+        public const string RESOURCE_OVERVIEW = "RESOURCE_OVERVIEW";
+        public const string HR_AND_MEMBER_ALLOCATION = "HR_AND_MEMBER_ALLOCATION";
+        public const string TOTAL_EMPLOYEES = "TOTAL_EMPLOYEES";
+        public const string PARTICIPATING = "PARTICIPATING";
+        public const string UNASSIGNED = "UNASSIGNED";
+        public const string MULTI_PROJECT_MEMBERS = "MULTI_PROJECT_MEMBERS";
+        public const string ASSIGNED_TO_TASKS = "ASSIGNED_TO_TASKS";
+        public const string NOT_ASSIGNED_TO_TASKS = "NOT_ASSIGNED_TO_TASKS";
+        public const string COST_OVERVIEW = "COST_OVERVIEW";
+        public const string BUDGET_AND_COST_SUMMARY = "BUDGET_AND_COST_SUMMARY";
+        public const string BUDGET = "BUDGET";
+        public const string EXPECTED_COST = "EXPECTED_COST";
+        public const string ACTUAL_COST = "ACTUAL_COST";
+        public const string REMAINING = "REMAINING";
+        public const string RECEIVED_PAYMENT = "RECEIVED_PAYMENT";
+        public const string REMAINING_AFTER_COST = "REMAINING_AFTER_COST";
+        public const string PROJECT_STATUS = "PROJECT_STATUS";
+        public const string SINGLE_PROJECT_OVERVIEW = "SINGLE_PROJECT_OVERVIEW";
+        public const string OVERALL_PROGRESS = "OVERALL_PROGRESS";
+        public const string WARNINGS = "WARNINGS";
+        public const string PROJECT_CODE_NAME = "PROJECT_CODE_NAME";
+        public const string OPEN_RISKS = "OPEN_RISKS";
+        public const string OPEN_ISSUES = "OPEN_ISSUES";
+        public const string SAFE = "SAFE";
+        public const string AT_RISK = "AT_RISK";
+        public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
+        public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
     }
 }

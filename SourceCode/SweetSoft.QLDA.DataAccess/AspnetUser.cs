@@ -305,6 +305,163 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarResetPasswordKey.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarResetPasswordKey);
 				
+				TableSchema.TableColumn colvarLaNhanVien = new TableSchema.TableColumn(schema);
+				colvarLaNhanVien.ColumnName = "LaNhanVien";
+				colvarLaNhanVien.DataType = DbType.Boolean;
+				colvarLaNhanVien.MaxLength = 0;
+				colvarLaNhanVien.AutoIncrement = false;
+				colvarLaNhanVien.IsNullable = false;
+				colvarLaNhanVien.IsPrimaryKey = false;
+				colvarLaNhanVien.IsForeignKey = false;
+				colvarLaNhanVien.IsReadOnly = false;
+				
+						colvarLaNhanVien.DefaultSetting = @"((0))";
+				colvarLaNhanVien.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarLaNhanVien);
+				
+				TableSchema.TableColumn colvarIdPhongBan = new TableSchema.TableColumn(schema);
+				colvarIdPhongBan.ColumnName = "IdPhongBan";
+				colvarIdPhongBan.DataType = DbType.Guid;
+				colvarIdPhongBan.MaxLength = 0;
+				colvarIdPhongBan.AutoIncrement = false;
+				colvarIdPhongBan.IsNullable = true;
+				colvarIdPhongBan.IsPrimaryKey = false;
+				colvarIdPhongBan.IsForeignKey = false;
+				colvarIdPhongBan.IsReadOnly = false;
+				colvarIdPhongBan.DefaultSetting = @"";
+				colvarIdPhongBan.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarIdPhongBan);
+				
+				TableSchema.TableColumn colvarIdChucDanh = new TableSchema.TableColumn(schema);
+				colvarIdChucDanh.ColumnName = "IdChucDanh";
+				colvarIdChucDanh.DataType = DbType.Guid;
+				colvarIdChucDanh.MaxLength = 0;
+				colvarIdChucDanh.AutoIncrement = false;
+				colvarIdChucDanh.IsNullable = true;
+				colvarIdChucDanh.IsPrimaryKey = false;
+				colvarIdChucDanh.IsForeignKey = false;
+				colvarIdChucDanh.IsReadOnly = false;
+				colvarIdChucDanh.DefaultSetting = @"";
+				colvarIdChucDanh.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarIdChucDanh);
+				
+				TableSchema.TableColumn colvarNgaySinh = new TableSchema.TableColumn(schema);
+				colvarNgaySinh.ColumnName = "NgaySinh";
+				colvarNgaySinh.DataType = DbType.DateTime;
+				colvarNgaySinh.MaxLength = 0;
+				colvarNgaySinh.AutoIncrement = false;
+				colvarNgaySinh.IsNullable = true;
+				colvarNgaySinh.IsPrimaryKey = false;
+				colvarNgaySinh.IsForeignKey = false;
+				colvarNgaySinh.IsReadOnly = false;
+				colvarNgaySinh.DefaultSetting = @"";
+				colvarNgaySinh.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNgaySinh);
+				
+				TableSchema.TableColumn colvarGioiTinh = new TableSchema.TableColumn(schema);
+				colvarGioiTinh.ColumnName = "GioiTinh";
+				colvarGioiTinh.DataType = DbType.String;
+				colvarGioiTinh.MaxLength = 10;
+				colvarGioiTinh.AutoIncrement = false;
+				colvarGioiTinh.IsNullable = true;
+				colvarGioiTinh.IsPrimaryKey = false;
+				colvarGioiTinh.IsForeignKey = false;
+				colvarGioiTinh.IsReadOnly = false;
+				colvarGioiTinh.DefaultSetting = @"";
+				colvarGioiTinh.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarGioiTinh);
+				
+				TableSchema.TableColumn colvarIdCCCD = new TableSchema.TableColumn(schema);
+				colvarIdCCCD.ColumnName = "IdCCCD";
+				colvarIdCCCD.DataType = DbType.AnsiString;
+				colvarIdCCCD.MaxLength = 20;
+				colvarIdCCCD.AutoIncrement = false;
+				colvarIdCCCD.IsNullable = true;
+				colvarIdCCCD.IsPrimaryKey = false;
+				colvarIdCCCD.IsForeignKey = false;
+				colvarIdCCCD.IsReadOnly = false;
+				colvarIdCCCD.DefaultSetting = @"";
+				colvarIdCCCD.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarIdCCCD);
+				
+				TableSchema.TableColumn colvarDiaChi = new TableSchema.TableColumn(schema);
+				colvarDiaChi.ColumnName = "DiaChi";
+				colvarDiaChi.DataType = DbType.String;
+				colvarDiaChi.MaxLength = 500;
+				colvarDiaChi.AutoIncrement = false;
+				colvarDiaChi.IsNullable = true;
+				colvarDiaChi.IsPrimaryKey = false;
+				colvarDiaChi.IsForeignKey = false;
+				colvarDiaChi.IsReadOnly = false;
+				colvarDiaChi.DefaultSetting = @"";
+				colvarDiaChi.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDiaChi);
+				
+				TableSchema.TableColumn colvarNgayGiaNhap = new TableSchema.TableColumn(schema);
+				colvarNgayGiaNhap.ColumnName = "NgayGiaNhap";
+				colvarNgayGiaNhap.DataType = DbType.DateTime;
+				colvarNgayGiaNhap.MaxLength = 0;
+				colvarNgayGiaNhap.AutoIncrement = false;
+				colvarNgayGiaNhap.IsNullable = true;
+				colvarNgayGiaNhap.IsPrimaryKey = false;
+				colvarNgayGiaNhap.IsForeignKey = false;
+				colvarNgayGiaNhap.IsReadOnly = false;
+				colvarNgayGiaNhap.DefaultSetting = @"";
+				colvarNgayGiaNhap.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNgayGiaNhap);
+				
+				TableSchema.TableColumn colvarNguoiTao = new TableSchema.TableColumn(schema);
+				colvarNguoiTao.ColumnName = "NguoiTao";
+				colvarNguoiTao.DataType = DbType.String;
+				colvarNguoiTao.MaxLength = 150;
+				colvarNguoiTao.AutoIncrement = false;
+				colvarNguoiTao.IsNullable = true;
+				colvarNguoiTao.IsPrimaryKey = false;
+				colvarNguoiTao.IsForeignKey = false;
+				colvarNguoiTao.IsReadOnly = false;
+				colvarNguoiTao.DefaultSetting = @"";
+				colvarNguoiTao.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNguoiTao);
+				
+				TableSchema.TableColumn colvarNgayTao = new TableSchema.TableColumn(schema);
+				colvarNgayTao.ColumnName = "NgayTao";
+				colvarNgayTao.DataType = DbType.DateTime;
+				colvarNgayTao.MaxLength = 0;
+				colvarNgayTao.AutoIncrement = false;
+				colvarNgayTao.IsNullable = true;
+				colvarNgayTao.IsPrimaryKey = false;
+				colvarNgayTao.IsForeignKey = false;
+				colvarNgayTao.IsReadOnly = false;
+				colvarNgayTao.DefaultSetting = @"";
+				colvarNgayTao.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNgayTao);
+				
+				TableSchema.TableColumn colvarNguoiCapNhat = new TableSchema.TableColumn(schema);
+				colvarNguoiCapNhat.ColumnName = "NguoiCapNhat";
+				colvarNguoiCapNhat.DataType = DbType.String;
+				colvarNguoiCapNhat.MaxLength = 150;
+				colvarNguoiCapNhat.AutoIncrement = false;
+				colvarNguoiCapNhat.IsNullable = true;
+				colvarNguoiCapNhat.IsPrimaryKey = false;
+				colvarNguoiCapNhat.IsForeignKey = false;
+				colvarNguoiCapNhat.IsReadOnly = false;
+				colvarNguoiCapNhat.DefaultSetting = @"";
+				colvarNguoiCapNhat.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNguoiCapNhat);
+				
+				TableSchema.TableColumn colvarNgayCapNhat = new TableSchema.TableColumn(schema);
+				colvarNgayCapNhat.ColumnName = "NgayCapNhat";
+				colvarNgayCapNhat.DataType = DbType.DateTime;
+				colvarNgayCapNhat.MaxLength = 0;
+				colvarNgayCapNhat.AutoIncrement = false;
+				colvarNgayCapNhat.IsNullable = true;
+				colvarNgayCapNhat.IsPrimaryKey = false;
+				colvarNgayCapNhat.IsForeignKey = false;
+				colvarNgayCapNhat.IsReadOnly = false;
+				colvarNgayCapNhat.DefaultSetting = @"";
+				colvarNgayCapNhat.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNgayCapNhat);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -418,6 +575,102 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<string>(Columns.ResetPasswordKey); }
 			set { SetColumnValue(Columns.ResetPasswordKey, value); }
 		}
+		  
+		[XmlAttribute("LaNhanVien")]
+		[Bindable(true)]
+		public bool LaNhanVien 
+		{
+			get { return GetColumnValue<bool>(Columns.LaNhanVien); }
+			set { SetColumnValue(Columns.LaNhanVien, value); }
+		}
+		  
+		[XmlAttribute("IdPhongBan")]
+		[Bindable(true)]
+		public Guid? IdPhongBan 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdPhongBan); }
+			set { SetColumnValue(Columns.IdPhongBan, value); }
+		}
+		  
+		[XmlAttribute("IdChucDanh")]
+		[Bindable(true)]
+		public Guid? IdChucDanh 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdChucDanh); }
+			set { SetColumnValue(Columns.IdChucDanh, value); }
+		}
+		  
+		[XmlAttribute("NgaySinh")]
+		[Bindable(true)]
+		public DateTime? NgaySinh 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.NgaySinh); }
+			set { SetColumnValue(Columns.NgaySinh, value); }
+		}
+		  
+		[XmlAttribute("GioiTinh")]
+		[Bindable(true)]
+		public string GioiTinh 
+		{
+			get { return GetColumnValue<string>(Columns.GioiTinh); }
+			set { SetColumnValue(Columns.GioiTinh, value); }
+		}
+		  
+		[XmlAttribute("IdCCCD")]
+		[Bindable(true)]
+		public string IdCCCD 
+		{
+			get { return GetColumnValue<string>(Columns.IdCCCD); }
+			set { SetColumnValue(Columns.IdCCCD, value); }
+		}
+		  
+		[XmlAttribute("DiaChi")]
+		[Bindable(true)]
+		public string DiaChi 
+		{
+			get { return GetColumnValue<string>(Columns.DiaChi); }
+			set { SetColumnValue(Columns.DiaChi, value); }
+		}
+		  
+		[XmlAttribute("NgayGiaNhap")]
+		[Bindable(true)]
+		public DateTime? NgayGiaNhap 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.NgayGiaNhap); }
+			set { SetColumnValue(Columns.NgayGiaNhap, value); }
+		}
+		  
+		[XmlAttribute("NguoiTao")]
+		[Bindable(true)]
+		public string NguoiTao 
+		{
+			get { return GetColumnValue<string>(Columns.NguoiTao); }
+			set { SetColumnValue(Columns.NguoiTao, value); }
+		}
+		  
+		[XmlAttribute("NgayTao")]
+		[Bindable(true)]
+		public DateTime? NgayTao 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.NgayTao); }
+			set { SetColumnValue(Columns.NgayTao, value); }
+		}
+		  
+		[XmlAttribute("NguoiCapNhat")]
+		[Bindable(true)]
+		public string NguoiCapNhat 
+		{
+			get { return GetColumnValue<string>(Columns.NguoiCapNhat); }
+			set { SetColumnValue(Columns.NguoiCapNhat, value); }
+		}
+		  
+		[XmlAttribute("NgayCapNhat")]
+		[Bindable(true)]
+		public DateTime? NgayCapNhat 
+		{
+			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
+			set { SetColumnValue(Columns.NgayCapNhat, value); }
+		}
 		
 		#endregion
 		
@@ -487,6 +740,291 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colAspnetUsersInRoles[e.NewIndex].UserId = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection colTblCongViecNhanVienRecords;
+		public SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection TblCongViecNhanVienRecords()
+		{
+			if(colTblCongViecNhanVienRecords == null)
+			{
+				colTblCongViecNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection().Where(TblCongViecNhanVien.Columns.IdNhanVien, UserId).Load();
+				colTblCongViecNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblCongViecNhanVienRecords_ListChanged);
+			}
+			return colTblCongViecNhanVienRecords;
+		}
+				
+		void colTblCongViecNhanVienRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblCongViecNhanVienRecords[e.NewIndex].IdNhanVien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
+		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
+		{
+			if(colTblChiPhiRecords == null)
+			{
+				colTblChiPhiRecords = new SweetSoft.QLDA.DataAccess.TblChiPhiCollection().Where(TblChiPhi.Columns.IdNhanVienDeNghi, UserId).Load();
+				colTblChiPhiRecords.ListChanged += new ListChangedEventHandler(colTblChiPhiRecords_ListChanged);
+			}
+			return colTblChiPhiRecords;
+		}
+				
+		void colTblChiPhiRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblChiPhiRecords[e.NewIndex].IdNhanVienDeNghi = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblDuAnCollection colTblDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblDuAnCollection TblDuAnRecords()
+		{
+			if(colTblDuAnRecords == null)
+			{
+				colTblDuAnRecords = new SweetSoft.QLDA.DataAccess.TblDuAnCollection().Where(TblDuAn.Columns.IdNhanVienQuanLy, UserId).Load();
+				colTblDuAnRecords.ListChanged += new ListChangedEventHandler(colTblDuAnRecords_ListChanged);
+			}
+			return colTblDuAnRecords;
+		}
+				
+		void colTblDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblDuAnRecords[e.NewIndex].IdNhanVienQuanLy = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection colTblGuiNhanKhachHangRecords;
+		public SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection TblGuiNhanKhachHangRecords()
+		{
+			if(colTblGuiNhanKhachHangRecords == null)
+			{
+				colTblGuiNhanKhachHangRecords = new SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection().Where(TblGuiNhanKhachHang.Columns.IdNguoiThucHien, UserId).Load();
+				colTblGuiNhanKhachHangRecords.ListChanged += new ListChangedEventHandler(colTblGuiNhanKhachHangRecords_ListChanged);
+			}
+			return colTblGuiNhanKhachHangRecords;
+		}
+				
+		void colTblGuiNhanKhachHangRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblGuiNhanKhachHangRecords[e.NewIndex].IdNguoiThucHien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection colTblLichSuChinhSuaRecords;
+		public SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection TblLichSuChinhSuaRecords()
+		{
+			if(colTblLichSuChinhSuaRecords == null)
+			{
+				colTblLichSuChinhSuaRecords = new SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection().Where(TblLichSuChinhSua.Columns.IdNhanVienThucHien, UserId).Load();
+				colTblLichSuChinhSuaRecords.ListChanged += new ListChangedEventHandler(colTblLichSuChinhSuaRecords_ListChanged);
+			}
+			return colTblLichSuChinhSuaRecords;
+		}
+				
+		void colTblLichSuChinhSuaRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblLichSuChinhSuaRecords[e.NewIndex].IdNhanVienThucHien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblLichSuDuAnCollection colTblLichSuDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblLichSuDuAnCollection TblLichSuDuAnRecords()
+		{
+			if(colTblLichSuDuAnRecords == null)
+			{
+				colTblLichSuDuAnRecords = new SweetSoft.QLDA.DataAccess.TblLichSuDuAnCollection().Where(TblLichSuDuAn.Columns.IdNhanVienThucHien, UserId).Load();
+				colTblLichSuDuAnRecords.ListChanged += new ListChangedEventHandler(colTblLichSuDuAnRecords_ListChanged);
+			}
+			return colTblLichSuDuAnRecords;
+		}
+				
+		void colTblLichSuDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblLichSuDuAnRecords[e.NewIndex].IdNhanVienThucHien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection colTblLichSuTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection TblLichSuTaiLieuRecords()
+		{
+			if(colTblLichSuTaiLieuRecords == null)
+			{
+				colTblLichSuTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection().Where(TblLichSuTaiLieu.Columns.IdNhanVienThucHien, UserId).Load();
+				colTblLichSuTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblLichSuTaiLieuRecords_ListChanged);
+			}
+			return colTblLichSuTaiLieuRecords;
+		}
+				
+		void colTblLichSuTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblLichSuTaiLieuRecords[e.NewIndex].IdNhanVienThucHien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblLuuTruVatLyCollection colTblLuuTruVatLyRecords;
+		public SweetSoft.QLDA.DataAccess.TblLuuTruVatLyCollection TblLuuTruVatLyRecords()
+		{
+			if(colTblLuuTruVatLyRecords == null)
+			{
+				colTblLuuTruVatLyRecords = new SweetSoft.QLDA.DataAccess.TblLuuTruVatLyCollection().Where(TblLuuTruVatLy.Columns.IdNguoiThucHien, UserId).Load();
+				colTblLuuTruVatLyRecords.ListChanged += new ListChangedEventHandler(colTblLuuTruVatLyRecords_ListChanged);
+			}
+			return colTblLuuTruVatLyRecords;
+		}
+				
+		void colTblLuuTruVatLyRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblLuuTruVatLyRecords[e.NewIndex].IdNguoiThucHien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblNoiLuuTruCollection colTblNoiLuuTruRecords;
+		public SweetSoft.QLDA.DataAccess.TblNoiLuuTruCollection TblNoiLuuTruRecords()
+		{
+			if(colTblNoiLuuTruRecords == null)
+			{
+				colTblNoiLuuTruRecords = new SweetSoft.QLDA.DataAccess.TblNoiLuuTruCollection().Where(TblNoiLuuTru.Columns.IdNhanVienPhuTrach, UserId).Load();
+				colTblNoiLuuTruRecords.ListChanged += new ListChangedEventHandler(colTblNoiLuuTruRecords_ListChanged);
+			}
+			return colTblNoiLuuTruRecords;
+		}
+				
+		void colTblNoiLuuTruRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblNoiLuuTruRecords[e.NewIndex].IdNhanVienPhuTrach = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection colTblRuiRoDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection TblRuiRoDuAnRecords()
+		{
+			if(colTblRuiRoDuAnRecords == null)
+			{
+				colTblRuiRoDuAnRecords = new SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection().Where(TblRuiRoDuAn.Columns.IdNhanVienXuLy, UserId).Load();
+				colTblRuiRoDuAnRecords.ListChanged += new ListChangedEventHandler(colTblRuiRoDuAnRecords_ListChanged);
+			}
+			return colTblRuiRoDuAnRecords;
+		}
+				
+		void colTblRuiRoDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblRuiRoDuAnRecords[e.NewIndex].IdNhanVienXuLy = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblTaiLieuCollection colTblTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblTaiLieuCollection TblTaiLieuRecords()
+		{
+			if(colTblTaiLieuRecords == null)
+			{
+				colTblTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblTaiLieuCollection().Where(TblTaiLieu.Columns.IdNhanVienPhuTrach, UserId).Load();
+				colTblTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblTaiLieuRecords_ListChanged);
+			}
+			return colTblTaiLieuRecords;
+		}
+				
+		void colTblTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTaiLieuRecords[e.NewIndex].IdNhanVienPhuTrach = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblThanhVienDuAnCollection colTblThanhVienDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblThanhVienDuAnCollection TblThanhVienDuAnRecords()
+		{
+			if(colTblThanhVienDuAnRecords == null)
+			{
+				colTblThanhVienDuAnRecords = new SweetSoft.QLDA.DataAccess.TblThanhVienDuAnCollection().Where(TblThanhVienDuAn.Columns.IdNhanVien, UserId).Load();
+				colTblThanhVienDuAnRecords.ListChanged += new ListChangedEventHandler(colTblThanhVienDuAnRecords_ListChanged);
+			}
+			return colTblThanhVienDuAnRecords;
+		}
+				
+		void colTblThanhVienDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblThanhVienDuAnRecords[e.NewIndex].IdNhanVien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblThongBaoCollection colTblThongBaoRecords;
+		public SweetSoft.QLDA.DataAccess.TblThongBaoCollection TblThongBaoRecords()
+		{
+			if(colTblThongBaoRecords == null)
+			{
+				colTblThongBaoRecords = new SweetSoft.QLDA.DataAccess.TblThongBaoCollection().Where(TblThongBao.Columns.UserId, UserId).Load();
+				colTblThongBaoRecords.ListChanged += new ListChangedEventHandler(colTblThongBaoRecords_ListChanged);
+			}
+			return colTblThongBaoRecords;
+		}
+				
+		void colTblThongBaoRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblThongBaoRecords[e.NewIndex].UserId = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection colTblTrinhKyTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection TblTrinhKyTaiLieuRecords()
+		{
+			if(colTblTrinhKyTaiLieuRecords == null)
+			{
+				colTblTrinhKyTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection().Where(TblTrinhKyTaiLieu.Columns.IdNguoiGui, UserId).Load();
+				colTblTrinhKyTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblTrinhKyTaiLieuRecords_ListChanged);
+			}
+			return colTblTrinhKyTaiLieuRecords;
+		}
+				
+		void colTblTrinhKyTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTrinhKyTaiLieuRecords[e.NewIndex].IdNguoiGui = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection colTblTrinhKyTaiLieuRecordsFromAspnetUser;
+		public SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection TblTrinhKyTaiLieuRecordsFromAspnetUser()
+		{
+			if(colTblTrinhKyTaiLieuRecordsFromAspnetUser == null)
+			{
+				colTblTrinhKyTaiLieuRecordsFromAspnetUser = new SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuCollection().Where(TblTrinhKyTaiLieu.Columns.IdNguoiKy, UserId).Load();
+				colTblTrinhKyTaiLieuRecordsFromAspnetUser.ListChanged += new ListChangedEventHandler(colTblTrinhKyTaiLieuRecordsFromAspnetUser_ListChanged);
+			}
+			return colTblTrinhKyTaiLieuRecordsFromAspnetUser;
+		}
+				
+		void colTblTrinhKyTaiLieuRecordsFromAspnetUser_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTrinhKyTaiLieuRecordsFromAspnetUser[e.NewIndex].IdNguoiKy = UserId;
             }
 		}
 		#endregion
@@ -583,6 +1121,77 @@ namespace SweetSoft.QLDA.DataAccess
 			DataService.ExecuteQuery(cmdDel);
 		}
 		
+		 
+		public SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection() { return AspnetUser.GetTblCongViecCollection(this.UserId); }
+		public static SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection(Guid varUserId)
+		{
+		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[TblCongViec] INNER JOIN [TblCongViec_NhanVien] ON [TblCongViec].[IdCongViec] = [TblCongViec_NhanVien].[IdCongViec] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmd.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
+			TblCongViecCollection coll = new TblCongViecCollection();
+			coll.LoadAndCloseReader(rdr);
+			return coll;
+		}
+		
+		public static void SaveTblCongViecMap(Guid varUserId, TblCongViecCollection items)
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (TblCongViec item in items)
+			{
+				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
+				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item.GetPrimaryKeyValue());
+				varTblCongViecNhanVien.Save();
+			}
+		}
+		public static void SaveTblCongViecMap(Guid varUserId, System.Web.UI.WebControls.ListItemCollection itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
+			{
+				if (l.Selected) 
+				{
+					TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+					varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
+					varTblCongViecNhanVien.SetColumnValue("IdCongViec", l.Value);
+					varTblCongViecNhanVien.Save();
+				}
+			}
+		}
+		public static void SaveTblCongViecMap(Guid varUserId , Guid[] itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (Guid item in itemList) 
+			{
+				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
+				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item);
+				varTblCongViecNhanVien.Save();
+			}
+		}
+		
+		public static void DeleteTblCongViecMap(Guid varUserId) 
+		{
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			DataService.ExecuteQuery(cmdDel);
+		}
+		
 		#endregion
 		
         
@@ -593,7 +1202,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey)
+		public static void Insert(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey,bool varLaNhanVien,Guid? varIdPhongBan,Guid? varIdChucDanh,DateTime? varNgaySinh,string varGioiTinh,string varIdCCCD,string varDiaChi,DateTime? varNgayGiaNhap,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			AspnetUser item = new AspnetUser();
 			
@@ -623,6 +1232,30 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.ResetPasswordKey = varResetPasswordKey;
 			
+			item.LaNhanVien = varLaNhanVien;
+			
+			item.IdPhongBan = varIdPhongBan;
+			
+			item.IdChucDanh = varIdChucDanh;
+			
+			item.NgaySinh = varNgaySinh;
+			
+			item.GioiTinh = varGioiTinh;
+			
+			item.IdCCCD = varIdCCCD;
+			
+			item.DiaChi = varDiaChi;
+			
+			item.NgayGiaNhap = varNgayGiaNhap;
+			
+			item.NguoiTao = varNguoiTao;
+			
+			item.NgayTao = varNgayTao;
+			
+			item.NguoiCapNhat = varNguoiCapNhat;
+			
+			item.NgayCapNhat = varNgayCapNhat;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -633,7 +1266,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey)
+		public static void Update(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey,bool varLaNhanVien,Guid? varIdPhongBan,Guid? varIdChucDanh,DateTime? varNgaySinh,string varGioiTinh,string varIdCCCD,string varDiaChi,DateTime? varNgayGiaNhap,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			AspnetUser item = new AspnetUser();
 			
@@ -662,6 +1295,30 @@ namespace SweetSoft.QLDA.DataAccess
 				item.AuthenticatorKey = varAuthenticatorKey;
 			
 				item.ResetPasswordKey = varResetPasswordKey;
+			
+				item.LaNhanVien = varLaNhanVien;
+			
+				item.IdPhongBan = varIdPhongBan;
+			
+				item.IdChucDanh = varIdChucDanh;
+			
+				item.NgaySinh = varNgaySinh;
+			
+				item.GioiTinh = varGioiTinh;
+			
+				item.IdCCCD = varIdCCCD;
+			
+				item.DiaChi = varDiaChi;
+			
+				item.NgayGiaNhap = varNgayGiaNhap;
+			
+				item.NguoiTao = varNguoiTao;
+			
+				item.NgayTao = varNgayTao;
+			
+				item.NguoiCapNhat = varNguoiCapNhat;
+			
+				item.NgayCapNhat = varNgayCapNhat;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -767,6 +1424,90 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn LaNhanVienColumn
+        {
+            get { return Schema.Columns[13]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn IdPhongBanColumn
+        {
+            get { return Schema.Columns[14]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn IdChucDanhColumn
+        {
+            get { return Schema.Columns[15]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NgaySinhColumn
+        {
+            get { return Schema.Columns[16]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn GioiTinhColumn
+        {
+            get { return Schema.Columns[17]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn IdCCCDColumn
+        {
+            get { return Schema.Columns[18]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn DiaChiColumn
+        {
+            get { return Schema.Columns[19]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NgayGiaNhapColumn
+        {
+            get { return Schema.Columns[20]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NguoiTaoColumn
+        {
+            get { return Schema.Columns[21]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NgayTaoColumn
+        {
+            get { return Schema.Columns[22]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NguoiCapNhatColumn
+        {
+            get { return Schema.Columns[23]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NgayCapNhatColumn
+        {
+            get { return Schema.Columns[24]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -784,6 +1525,18 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string LastActivityDate = @"LastActivityDate";
 			 public static string AuthenticatorKey = @"AuthenticatorKey";
 			 public static string ResetPasswordKey = @"ResetPasswordKey";
+			 public static string LaNhanVien = @"LaNhanVien";
+			 public static string IdPhongBan = @"IdPhongBan";
+			 public static string IdChucDanh = @"IdChucDanh";
+			 public static string NgaySinh = @"NgaySinh";
+			 public static string GioiTinh = @"GioiTinh";
+			 public static string IdCCCD = @"IdCCCD";
+			 public static string DiaChi = @"DiaChi";
+			 public static string NgayGiaNhap = @"NgayGiaNhap";
+			 public static string NguoiTao = @"NguoiTao";
+			 public static string NgayTao = @"NgayTao";
+			 public static string NguoiCapNhat = @"NguoiCapNhat";
+			 public static string NgayCapNhat = @"NgayCapNhat";
 						
 		}
 		#endregion
@@ -824,6 +1577,172 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colTblCongViecNhanVienRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblCongViecNhanVien item in colTblCongViecNhanVienRecords)
+                    {
+                        if (item.IdNhanVien != UserId)
+                        {
+                            item.IdNhanVien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblChiPhiRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
+                    {
+                        if (item.IdNhanVienDeNghi == null ||item.IdNhanVienDeNghi != UserId)
+                        {
+                            item.IdNhanVienDeNghi = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblDuAnRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblDuAn item in colTblDuAnRecords)
+                    {
+                        if (item.IdNhanVienQuanLy == null ||item.IdNhanVienQuanLy != UserId)
+                        {
+                            item.IdNhanVienQuanLy = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblGuiNhanKhachHangRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHang item in colTblGuiNhanKhachHangRecords)
+                    {
+                        if (item.IdNguoiThucHien != UserId)
+                        {
+                            item.IdNguoiThucHien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblLichSuChinhSuaRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblLichSuChinhSua item in colTblLichSuChinhSuaRecords)
+                    {
+                        if (item.IdNhanVienThucHien == null ||item.IdNhanVienThucHien != UserId)
+                        {
+                            item.IdNhanVienThucHien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblLichSuDuAnRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblLichSuDuAn item in colTblLichSuDuAnRecords)
+                    {
+                        if (item.IdNhanVienThucHien == null ||item.IdNhanVienThucHien != UserId)
+                        {
+                            item.IdNhanVienThucHien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblLichSuTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblLichSuTaiLieu item in colTblLichSuTaiLieuRecords)
+                    {
+                        if (item.IdNhanVienThucHien == null ||item.IdNhanVienThucHien != UserId)
+                        {
+                            item.IdNhanVienThucHien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblLuuTruVatLyRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblLuuTruVatLy item in colTblLuuTruVatLyRecords)
+                    {
+                        if (item.IdNguoiThucHien != UserId)
+                        {
+                            item.IdNguoiThucHien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblNoiLuuTruRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblNoiLuuTru item in colTblNoiLuuTruRecords)
+                    {
+                        if (item.IdNhanVienPhuTrach == null ||item.IdNhanVienPhuTrach != UserId)
+                        {
+                            item.IdNhanVienPhuTrach = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblRuiRoDuAnRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblRuiRoDuAn item in colTblRuiRoDuAnRecords)
+                    {
+                        if (item.IdNhanVienXuLy == null ||item.IdNhanVienXuLy != UserId)
+                        {
+                            item.IdNhanVienXuLy = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTaiLieu item in colTblTaiLieuRecords)
+                    {
+                        if (item.IdNhanVienPhuTrach == null ||item.IdNhanVienPhuTrach != UserId)
+                        {
+                            item.IdNhanVienPhuTrach = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblThanhVienDuAnRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblThanhVienDuAn item in colTblThanhVienDuAnRecords)
+                    {
+                        if (item.IdNhanVien == null ||item.IdNhanVien != UserId)
+                        {
+                            item.IdNhanVien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblThongBaoRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblThongBao item in colTblThongBaoRecords)
+                    {
+                        if (item.UserId != UserId)
+                        {
+                            item.UserId = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblTrinhKyTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieu item in colTblTrinhKyTaiLieuRecords)
+                    {
+                        if (item.IdNguoiGui != UserId)
+                        {
+                            item.IdNguoiGui = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblTrinhKyTaiLieuRecordsFromAspnetUser != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieu item in colTblTrinhKyTaiLieuRecordsFromAspnetUser)
+                    {
+                        if (item.IdNguoiKy == null ||item.IdNguoiKy != UserId)
+                        {
+                            item.IdNguoiKy = UserId;
+                        }
+                    }
+               }
+		
 		}
         #endregion
     
@@ -847,6 +1766,82 @@ namespace SweetSoft.QLDA.DataAccess
                 {
                     colAspnetUsersInRoles.SaveAll();
                }
+		
+                if (colTblCongViecNhanVienRecords != null)
+                {
+                    colTblCongViecNhanVienRecords.SaveAll();
+               }
+		
+                if (colTblChiPhiRecords != null)
+                {
+                    colTblChiPhiRecords.SaveAll();
+               }
+		
+                if (colTblDuAnRecords != null)
+                {
+                    colTblDuAnRecords.SaveAll();
+               }
+		
+                if (colTblGuiNhanKhachHangRecords != null)
+                {
+                    colTblGuiNhanKhachHangRecords.SaveAll();
+               }
+		
+                if (colTblLichSuChinhSuaRecords != null)
+                {
+                    colTblLichSuChinhSuaRecords.SaveAll();
+               }
+		
+                if (colTblLichSuDuAnRecords != null)
+                {
+                    colTblLichSuDuAnRecords.SaveAll();
+               }
+		
+                if (colTblLichSuTaiLieuRecords != null)
+                {
+                    colTblLichSuTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblLuuTruVatLyRecords != null)
+                {
+                    colTblLuuTruVatLyRecords.SaveAll();
+               }
+		
+                if (colTblNoiLuuTruRecords != null)
+                {
+                    colTblNoiLuuTruRecords.SaveAll();
+               }
+		
+                if (colTblRuiRoDuAnRecords != null)
+                {
+                    colTblRuiRoDuAnRecords.SaveAll();
+               }
+		
+                if (colTblTaiLieuRecords != null)
+                {
+                    colTblTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblThanhVienDuAnRecords != null)
+                {
+                    colTblThanhVienDuAnRecords.SaveAll();
+               }
+		
+                if (colTblThongBaoRecords != null)
+                {
+                    colTblThongBaoRecords.SaveAll();
+               }
+		
+                if (colTblTrinhKyTaiLieuRecords != null)
+                {
+                    colTblTrinhKyTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblTrinhKyTaiLieuRecordsFromAspnetUser != null)
+                {
+                    colTblTrinhKyTaiLieuRecordsFromAspnetUser.SaveAll();
+               }
+		
 		}
         #endregion
 	}

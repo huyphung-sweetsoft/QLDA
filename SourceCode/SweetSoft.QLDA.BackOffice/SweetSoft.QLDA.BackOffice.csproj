@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -49,7 +49,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CKEditor.NET">
-      <HintPath>..\Libraries\CKEditor.NET.dll</HintPath>
+      <HintPath>..\Libraries\libraries\CKEditor.NET.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus, Version=6.0.6.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.6.0.6\lib\net35\EPPlus.dll</HintPath>
@@ -64,7 +64,7 @@
       <HintPath>..\packages\GoogleAuthenticator.3.2.0\lib\net462\Google.Authenticator.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer">
-      <HintPath>..\Libraries\ImageResizer.dll</HintPath>
+      <HintPath>..\Libraries\libraries\ImageResizer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.9\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -94,7 +94,7 @@
       <HintPath>..\packages\Quartz.3.13.1\lib\net472\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="SubSonic">
-      <HintPath>..\Libraries\SubSonic.dll</HintPath>
+      <HintPath>..\Libraries\libraries\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -149,6 +149,48 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\SettingDateTimeConverter.cs" />
+    <Compile Include="Controls\Dashboard\CtrlDashboardCost.ascx.cs">
+      <DependentUpon>CtrlDashboardCost.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardCost.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardCost.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.cs">
+      <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.designer.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.cs">
+      <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.cs">
+      <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard.aspx.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Dashboard.aspx.designer.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx.cs">
       <DependentUpon>CtrlEmailTemplateDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -230,8 +272,19 @@
     <Content Include="Controls\Captcha.ascx" />
     <Content Include="Controls\CtrlAutoCompleteUser.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardCost.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardOverview.ascx" />
+    <Content Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardProgress.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
+    <Content Include="Controls\Dashboard\dashboard-overview.js" />
+    <Content Include="Controls\Dashboard\dashboard-cost.js" />
+    <Content Include="Controls\Dashboard\dashboard-progress.js" />
+    <Content Include="Controls\Dashboard\dashboard-resource.js" />
+    <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="Dashboard.aspx" />
     <Content Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx" />
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />

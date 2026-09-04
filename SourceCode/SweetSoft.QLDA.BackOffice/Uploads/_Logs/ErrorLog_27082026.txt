@@ -1,0 +1,487 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 08:02:35.815
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/trang-chu
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_bwpgicle.8.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: There's no column called 'sotiendukien' for this object
+Parameter name: columnName
+                Inner Stack Trace:    at SubSonic.TableSchema.TableColumnSettingCollection.GetValue[T](String columnName)
+   at SubSonic.RecordBase`1.GetColumnValue[CT](String columnName)
+   at SubSonic.ActiveRecord`1.GetColumnValue[CT](String columnName)
+   at SweetSoft.QLDA.DataAccess.TblDuAn.get_SoTienDuKien() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.DataAccess\TblDuAn.cs:line 468
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.<>c.<GetCostOverview>b__17_1(TblDuAn p) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 550
+   at System.Linq.Enumerable.WhereSelectListIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetCostOverview(List`1 contracts, List`1 costs, List`1 projects) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 549
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 154
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 98
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 87
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 37
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 11:24:40.654
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Home/Overview
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_1odfl4wv.3.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Invalid column name 'IdNhanVienPhuTrach'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetTasks() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 217
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 97
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 93
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 86
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 37
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 13:09:24.022
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Home/Overview
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_m5bkdx1o.6.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: ValueFactory attempted to access the Value property of this instance.
+                Inner Stack Trace:    at System.Lazy`1.CreateValue()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Lazy`1.get_Value()
+   at SweetSoft.QLDA.Core.Managers.UserManager.get_Instance() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\UserManager.cs:line 31
+   at SweetSoft.QLDA.Core.Infrastructure.SweetContext.get_User() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Infrastructure\SweetContext.cs:line 298
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnInit(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 802
+   at System.Web.UI.Control.InitRecursive(Control namingContainer)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:01:50.317
+                URL: http://qlda.local/fUsers/RoleDetail.aspx?Id=Vf4SWitLkG4eoIepeU4G2l_kyhV2Q9r83DGWGqy7LHxeRNBJIcZirw
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Roles
+                Session ID: xod41mnx0bpospiibhdaiiry
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fusers_roledetail_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_olp3rhrc.1.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: ValueFactory attempted to access the Value property of this instance.
+                Inner Stack Trace:    at System.Lazy`1.CreateValue()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Lazy`1.get_Value()
+   at SweetSoft.QLDA.Core.Managers.UserManager.get_Instance() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\UserManager.cs:line 31
+   at SweetSoft.QLDA.Core.Infrastructure.SweetContext.get_User() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Infrastructure\SweetContext.cs:line 298
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnInit(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 802
+   at System.Web.UI.Control.InitRecursive(Control namingContainer)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:32:11.232
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/trang-chu
+                Session ID: xod41mnx0bpospiibhdaiiry
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_mj0p3mkj.0.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Guid should contain 32 digits with 4 dashes (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.EmployeeDashboardManager.GetEmployeeOverview(Guid employeeId, DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\EmployeeDashboardManager.cs:line 37
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:32:31.498
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/trang-chu
+                Session ID: xod41mnx0bpospiibhdaiiry
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_cuqn5evw.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Guid should contain 32 digits with 4 dashes (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.EmployeeDashboardManager.GetEmployeeOverview(Guid employeeId, DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\EmployeeDashboardManager.cs:line 0
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:32:31.498
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/trang-chu
+                Session ID: xod41mnx0bpospiibhdaiiry
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_cuqn5evw.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Guid should contain 32 digits with 4 dashes (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.EmployeeDashboardManager.GetEmployeeOverview(Guid employeeId, DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\EmployeeDashboardManager.cs:line 37
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:41:16.782
+                URL: http://qlda.local/Dashboard.aspx?type=employee
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_hcbsp1z1.3.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Guid should contain 32 digits with 4 dashes (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.EmployeeDashboardManager.GetEmployeeOverview(Guid employeeId, DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\EmployeeDashboardManager.cs:line 37
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:50:52.944
+                URL: http://qlda.local/Dashboard.aspx?type=employee
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_0qfut1w2.6.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Guid should contain 32 digits with 4 dashes (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.EmployeeDashboardManager.GetEmployeeOverview(Guid employeeId, DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\EmployeeDashboardManager.cs:line 37
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:54:44.700
+                URL: http://qlda.local/Dashboard.aspx?type=employee
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/trang-chu
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_fo24s4aa.1.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Guid should contain 32 digits with 4 dashes (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.EmployeeDashboardManager.GetEmployeeOverview(Guid employeeId, DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\EmployeeDashboardManager.cs:line 37
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 15:00:01.865
+                URL: http://qlda.local/Tasks.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Home/Employee
+                Session ID: Unknown
+                Exception Type: HttpException
+                Message: The file '/Tasks.aspx' does not exist.
+                Stack Trace:    at System.Web.UI.Util.CheckVirtualFileExists(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: None
+                Inner Stack Trace: None
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 15:17:05.661
+                URL: http://qlda.local/Dashboard.aspx?type=employee
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Profile
+                Session ID: xod41mnx0bpospiibhdaiiry
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_c4jvcgeg.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteSingle[T]()
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 53
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 15:18:11.197
+                URL: http://qlda.local/Dashboard.aspx?type=employee
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Home/Costs
+                Session ID: jxaioshtjzjymhnancm3y4ar
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_c4jvcgeg.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteSingle[T]()
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.LoadData() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 53
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlEmployeeDashboard.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs:line 22
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 15:18:39.809
+                URL: http://qlda.local/Dashboard.aspx?type=overview
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Profile
+                Session ID: xod41mnx0bpospiibhdaiiry
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_c4jvcgeg.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetTasks() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 217
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 97
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 93
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 86
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 37
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                

@@ -10,6 +10,11 @@ namespace SweetSoft.QLDA.Core.Functions
     {
         None,
         Dashboard,
+        DashboardOverview,
+        DashboardResource,
+        DashboardProgress,
+        DashboardCost,
+        DashboardEmployee,
         Country,
         Province,
         Ward,
