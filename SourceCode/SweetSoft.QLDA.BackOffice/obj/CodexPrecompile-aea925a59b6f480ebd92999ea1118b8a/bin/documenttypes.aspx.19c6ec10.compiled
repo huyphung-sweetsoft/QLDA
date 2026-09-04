@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fDocuments/DocumentTypes.aspx" hash="564ac705" filehash="f0a5925e43b0e84a" flags="110000" assembly="App_Web_yhb5r0so" type="ASP.fdocuments_documenttypes_aspx">
+    <filedeps>
+        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
+        <filedep name="/Controls/GridviewPaging.ascx" />
+        <filedep name="/fDocuments/Controls/CtrlDocumentTypes.ascx" />
+        <filedep name="/fDocuments/DocumentTypes.aspx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+    </filedeps>
+</preserve>

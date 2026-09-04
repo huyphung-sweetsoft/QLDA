@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fFilesBox/FilesBox.ascx" hash="564ac705" filehash="ffffd4b9465eaa16" flags="110000" assembly="App_Web_viznyui2" type="ASP.ffilesbox_filesbox_ascx">
+    <filedeps>
+        <filedep name="/fFilesBox/FilesBox.ascx" />
+    </filedeps>
+</preserve>

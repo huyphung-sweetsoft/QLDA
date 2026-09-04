@@ -35,6 +35,11 @@ namespace SweetSoft.QLDA.Core.Functions
         NhanVien,
         Meet,
         Customer,
-        LichBieu
+        LichBieu,
+        DocumentGroup,
+        DocumentType,
+        DocumentStorageLocation,
+        DocumentTemplate,
+        Document,
     }
 }

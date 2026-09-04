@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fFiles/FileListing.aspx" hash="564ac705" filehash="d7ff9cf02151234" flags="110000" assembly="App_Web_i5w5fgm2" type="ASP.ffiles_filelisting_aspx">
+    <filedeps>
+        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
+        <filedep name="/Controls/GridviewPaging.ascx" />
+        <filedep name="/fFiles/Controls/CtrlFiles.ascx" />
+        <filedep name="/fFiles/FileListing.aspx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+    </filedeps>
+</preserve>

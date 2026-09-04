@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/fUsers/Controls/CtrlUsers.ascx" hash="564ac705" filehash="bf1282c5d1366e48" flags="110000" assembly="App_Web_mcbzaany" type="ASP.fusers_controls_ctrlusers_ascx">
+    <filedeps>
+        <filedep name="/Controls/GridviewPaging.ascx" />
+        <filedep name="/fUsers/Controls/CtrlUsers.ascx" />
+    </filedeps>
+</preserve>

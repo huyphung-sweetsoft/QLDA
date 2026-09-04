@@ -202,6 +202,90 @@
     <Compile Include="fCustomers\KhachHangList.aspx.designer.cs">
       <DependentUpon>KhachHangList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.cs">
+      <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentGroups.ascx.cs">
+      <DependentUpon>CtrlDocumentGroups.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentGroups.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentGroups.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocuments.ascx.cs">
+      <DependentUpon>CtrlDocuments.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocuments.ascx.designer.cs">
+      <DependentUpon>CtrlDocuments.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTemplates.ascx.cs">
+      <DependentUpon>CtrlDocumentTemplates.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTemplates.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentTemplates.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTypes.ascx.cs">
+      <DependentUpon>CtrlDocumentTypes.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTypes.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentTypes.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlStorageLocations.ascx.cs">
+      <DependentUpon>CtrlStorageLocations.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlStorageLocations.ascx.designer.cs">
+      <DependentUpon>CtrlStorageLocations.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentDetail.aspx.cs">
+      <DependentUpon>DocumentDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
+      <DependentUpon>DocumentDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentGroups.aspx.cs">
+      <DependentUpon>DocumentGroups.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentGroups.aspx.designer.cs">
+      <DependentUpon>DocumentGroups.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Documents.aspx.cs">
+      <DependentUpon>Documents.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Documents.aspx.designer.cs">
+      <DependentUpon>Documents.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTemplates.aspx.cs">
+      <DependentUpon>DocumentTemplates.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTemplates.aspx.designer.cs">
+      <DependentUpon>DocumentTemplates.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTypes.aspx.cs">
+      <DependentUpon>DocumentTypes.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTypes.aspx.designer.cs">
+      <DependentUpon>DocumentTypes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\StorageLocations.aspx.cs">
+      <DependentUpon>StorageLocations.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\StorageLocations.aspx.designer.cs">
+      <DependentUpon>StorageLocations.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx.cs">
       <DependentUpon>CtrlEmailTemplateDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -260,6 +344,20 @@
     </Compile>
     <Compile Include="fIssues\IssueList.aspx.designer.cs">
       <DependentUpon>IssueList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx.cs">
+      <DependentUpon>CtrlLichNgoaiLe.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx.designer.cs">
+      <DependentUpon>CtrlLichNgoaiLe.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fLichBieu\LichBieu.aspx.cs">
+      <DependentUpon>LichBieu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fLichBieu\LichBieu.aspx.designer.cs">
+      <DependentUpon>LichBieu.aspx</DependentUpon>
     </Compile>
     <Compile Include="fMeets\Controls\CtrlMeet.ascx.cs">
       <DependentUpon>CtrlMeet.ascx</DependentUpon>
@@ -333,6 +431,7 @@
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -398,6 +497,18 @@
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
     <Content Include="fCustomers\KhachHangDetail.aspx" />
     <Content Include="fCustomers\KhachHangList.aspx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentDetail.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentGroups.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocuments.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentTemplates.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
+    <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
+    <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\DocumentGroups.aspx" />
+    <Content Include="fDocuments\Documents.aspx" />
+    <Content Include="fDocuments\DocumentTemplates.aspx" />
+    <Content Include="fDocuments\DocumentTypes.aspx" />
+    <Content Include="fDocuments\StorageLocations.aspx" />
     <Content Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx" />
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
@@ -421,6 +532,8 @@
     <Content Include="favicon.ico" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
+    <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
+    <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />

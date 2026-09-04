@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/Profile.aspx" hash="564ac705" filehash="da186bb20aa913d8" flags="110000" assembly="App_Web_mrncwo1r" type="ASP.profile_aspx">
+    <filedeps>
+        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
+        <filedep name="/Controls/TwoFA/CtrlTwoFactorAuthenticator.ascx" />
+        <filedep name="/fFilesBox/FilesBox.ascx" />
+        <filedep name="/MasterPages/MasterTemplate.Master" />
+        <filedep name="/Profile.aspx" />
+    </filedeps>
+</preserve>

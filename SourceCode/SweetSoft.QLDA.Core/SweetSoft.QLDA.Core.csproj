@@ -245,6 +245,11 @@
     <Compile Include="Managers\ThanhVienDuAnManager.cs" />
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
+    <Compile Include="Managers\DocumentGroupManager.cs" />
+    <Compile Include="Managers\DocumentManager.cs" />
+    <Compile Include="Managers\DocumentStorageLocationManager.cs" />
+    <Compile Include="Managers\DocumentTemplateManager.cs" />
+    <Compile Include="Managers\DocumentTypeManager.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationOptions.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationRequest.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfMargins.cs" />
@@ -280,6 +285,7 @@
     <Compile Include="Respositories\TaskRepository.cs" />
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
     <Compile Include="Respositories\VaiTroDuAnRepository.cs" />
+    <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />
     <Compile Include="SEO\Schemas\AnswerSchema.cs" />
     <Compile Include="SEO\Schemas\ArticleSchema.cs" />
@@ -329,6 +335,10 @@
     <Compile Include="MailManager\SmtpService.cs" />
     <Compile Include="Managers\RoleManager.cs" />
     <Compile Include="Respositories\FileRepository.cs" />
+    <Compile Include="Respositories\DocumentGroupRepository.cs" />
+    <Compile Include="Respositories\DocumentRepository.cs" />
+    <Compile Include="Respositories\DocumentTemplateRepository.cs" />
+    <Compile Include="Respositories\DocumentTypeRepository.cs" />
     <Compile Include="Respositories\RoleRepository.cs" />
     <Compile Include="SysManager\Interfaces\IAuditRepository.cs" />
     <Compile Include="SysManager\Models\AuditConfiguration.cs" />

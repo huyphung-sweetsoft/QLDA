@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="3" virtualPath="/Controls/Notifications/CtrlNotifications.ascx" hash="564ac705" filehash="e10ca3fb864" flags="110000" assembly="App_Web_11vwy5i0" type="ASP.controls_notifications_ctrlnotifications_ascx">
+    <filedeps>
+        <filedep name="/Controls/Notifications/CtrlNotifications.ascx" />
+    </filedeps>
+</preserve>

@@ -134,7 +134,7 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                     aspnetFunctions = aspnetFunctions.Where(s => s.OfProject == false).ToList();
                     var subMenus = aspnetFunctions.Where(f => !string.IsNullOrEmpty(f.ParentCode)).ToList();
 
-                    if (subMenus.Count < 6)
+                    if (subMenus.Count < 1)
                     {
                         StringBuilder sbBasic = new StringBuilder();
                         var menu = aspnetFunctions.FirstOrDefault(f => f.FunctionCode == ModuleKeys.JoinCompetition.ToString());

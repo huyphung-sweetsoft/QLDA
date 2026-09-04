@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<preserve resultType="2" virtualPath="/fFilesBox/SecureFileUploadHandler.ashx" hash="3574fb6" filehash="3bf44b437f1" flags="130000" assembly="SweetSoft.QLDA.BackOffice" type="SweetSoft.QLDA.BackOffice.fFilesBox.SecureFileUploadHandler">
+    <filedeps>
+        <filedep name="/fFilesBox/SecureFileUploadHandler.ashx" />
+    </filedeps>
+</preserve>

@@ -1305,11 +1305,353 @@
   </data>
   <data name="INFORMATION" xml:space="preserve">
     <value>Information</value>
+  <data name="DOCUMENT_MANAGEMENT" xml:space="preserve">
+    <value>Document management</value>
+  </data>
+  <data name="DOCUMENT_GROUP" xml:space="preserve">
+    <value>Document group</value>
+  </data>
+  <data name="DOCUMENT_GROUP_LIST" xml:space="preserve">
+    <value>Document group list</value>
+  </data>
+  <data name="DOCUMENT_GROUP_NAME" xml:space="preserve">
+    <value>Group name</value>
   </data>
   <data name="DESCRIPTION" xml:space="preserve">
     <value>Description</value>
   </data>
   <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
     <value>Schedule Management</value>
+  </data>
+</root>
+  <data name="DISPLAY_ORDER" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="DOCUMENT_TYPE" xml:space="preserve">
+    <value>Document type</value>
+  </data>
+  <data name="DOCUMENT_TYPE_LIST" xml:space="preserve">
+    <value>Document type list</value>
+  </data>
+  <data name="DOCUMENT_TYPE_NAME" xml:space="preserve">
+    <value>Type name</value>
+  </data>
+  <data name="ALLOW_SIGNING" xml:space="preserve">
+    <value>Requires signing</value>
+  </data>
+  <data name="DEFAULT_SIGNING_METHOD" xml:space="preserve">
+    <value>Default signing method</value>
+  </data>
+  <data name="ALLOW_SEND_CUSTOMER" xml:space="preserve">
+    <value>Requires sending to customer</value>
+  </data>
+  <data name="ALLOW_PHYSICAL_STORAGE" xml:space="preserve">
+    <value>Requires physical storage</value>
+  </data>
+  <data name="PAPER_SIGNING" xml:space="preserve">
+    <value>Paper signing</value>
+  </data>
+  <data name="EXTERNAL_DIGITAL_SIGNING" xml:space="preserve">
+    <value>External digital signing</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP" xml:space="preserve">
+    <value>Select document group</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Storage location</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION_LIST" xml:space="preserve">
+    <value>Storage location list</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION_NAME" xml:space="preserve">
+    <value>Storage location name</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION_CODE" xml:space="preserve">
+    <value>Storage location code</value>
+  </data>
+  <data name="STORAGE_LEVEL" xml:space="preserve">
+    <value>Storage level</value>
+  </data>
+  <data name="PARENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Parent storage location</value>
+  </data>
+  <data name="RESPONSIBLE_EMPLOYEE" xml:space="preserve">
+    <value>Responsible employee</value>
+  </data>
+  <data name="SELECT_STORAGE_LEVEL" xml:space="preserve">
+    <value>Select storage level</value>
+  </data>
+  <data name="SELECT_PARENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Select parent storage location</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Document template</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE_LIST" xml:space="preserve">
+    <value>Document template list</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE_NAME" xml:space="preserve">
+    <value>Document template name</value>
+  </data>
+  <data name="TEMPLATE_VERSION" xml:space="preserve">
+    <value>Template version</value>
+  </data>
+  <data name="DEFAULT_TEMPLATE" xml:space="preserve">
+    <value>Default template</value>
+  </data>
+  <data name="TEMPLATE_FILE" xml:space="preserve">
+    <value>Template file</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TYPE" xml:space="preserve">
+    <value>Select document type</value>
+  </data>
+  <data name="FILE_NOT_UPLOADED" xml:space="preserve">
+    <value>No file uploaded</value>
+  </data>
+  <data name="FILE_NOT_AVAILABLE" xml:space="preserve">
+    <value>Physical file unavailable</value>
+  </data>
+  <data name="SAVE_TEMPLATE_BEFORE_UPLOAD" xml:space="preserve">
+    <value>The template information has been saved. You can upload or replace one template file here.</value>
+  </data>
+  <data name="DOCUMENT" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="DOCUMENT_LIST" xml:space="preserve">
+    <value>Document list</value>
+  </data>
+  <data name="DOCUMENT_CODE" xml:space="preserve">
+    <value>Document code</value>
+  </data>
+  <data name="DOCUMENT_NAME" xml:space="preserve">
+    <value>Document name</value>
+  </data>
+  <data name="DOCUMENT_STATUS" xml:space="preserve">
+    <value>Document status</value>
+  </data>
+  <data name="SIGNING_METHOD" xml:space="preserve">
+    <value>Signing method</value>
+  </data>
+  <data name="CUSTOMER_SEND_STATUS" xml:space="preserve">
+    <value>Customer delivery status</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_STATUS" xml:space="preserve">
+    <value>Physical storage status</value>
+  </data>
+  <data name="OFFICIAL_FILE" xml:space="preserve">
+    <value>Official file</value>
+  </data>
+  <data name="COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Company document</value>
+  </data>
+  <data name="SELECT_RESPONSIBLE_EMPLOYEE" xml:space="preserve">
+    <value>Select responsible employee</value>
+  </data>
+  <data name="DRAFTING" xml:space="preserve">
+    <value>Drafting</value>
+  </data>
+  <data name="PENDING_SIGNATURE" xml:space="preserve">
+    <value>Pending signature</value>
+  </data>
+  <data name="CHANGES_REQUESTED" xml:space="preserve">
+    <value>Changes requested</value>
+  </data>
+  <data name="SIGNED" xml:space="preserve">
+    <value>Signed</value>
+  </data>
+  <data name="WAITING_FOR_RETURN" xml:space="preserve">
+    <value>Waiting for return</value>
+  </data>
+  <data name="RECEIVED_BACK" xml:space="preserve">
+    <value>Received back</value>
+  </data>
+  <data name="NOT_STORED" xml:space="preserve">
+    <value>Not stored</value>
+  </data>
+  <data name="STORED" xml:space="preserve">
+    <value>Stored</value>
+  </data>
+  <data name="CHECKED_OUT" xml:space="preserve">
+    <value>Checked out</value>
+  </data>
+  <data name="DOCUMENT_TYPE_RULE_NOTICE" xml:space="preserve">
+    <value>The options below are prefilled from the document type. You may override them for each document before saving.</value>
+  </data>
+  <data name="RESTORE_DOCUMENT_TYPE_DEFAULTS" xml:space="preserve">
+    <value>Restore type defaults</value>
+  </data>
+  <data name="DOCUMENT_VERSION_FILES" xml:space="preserve">
+    <value>Document file versions</value>
+  </data>
+  <data name="DOCUMENT_VERSION_NOTICE" xml:space="preserve">
+    <value>Each newly uploaded file becomes a new version, and the latest version is current. A version file is not automatically treated as the official or signed-result file.</value>
+  </data>
+  <data name="SAVE_DOCUMENT_BEFORE_UPLOAD" xml:space="preserve">
+    <value>Save the document information first. The upload area will appear here immediately after saving.</value>
+  </data>
+  <data name="CURRENT_VERSION" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="FILE_NAME" xml:space="preserve">
+    <value>File name</value>
+  </data>
+  <data name="DOCUMENT_SCOPE" xml:space="preserve">
+    <value>Document scope</value>
+  </data>
+  <data name="ALL_DOCUMENTS" xml:space="preserve">
+    <value>All documents</value>
+  </data>
+  <data name="COMPANY_DOCUMENTS" xml:space="preserve">
+    <value>Company documents</value>
+  </data>
+  <data name="PROJECT_DOCUMENTS" xml:space="preserve">
+    <value>Project documents</value>
+  </data>
+  <data name="PROJECT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="ALL_PROJECTS" xml:space="preserve">
+    <value>All projects</value>
+  </data>
+  <data name="SELECT_PROJECT" xml:space="preserve">
+    <value>Select project</value>
+  </data>
+  <data name="DOCUMENT_TYPE_IN_GROUP" xml:space="preserve">
+    <value>Document type in group</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP_FIRST" xml:space="preserve">
+    <value>Select a document group first</value>
+  </data>
+  <data name="DOCUMENT_FILTER_HINT" xml:space="preserve">
+    <value>Select a scope, group, and document type to narrow the list.</value>
+  </data>
+  <data name="DOCUMENT_DETAIL" xml:space="preserve">
+    <value>Document details</value>
+  </data>
+  <data name="DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>Versions</value>
+  </data>
+  <data name="SIGNING_HISTORY" xml:space="preserve">
+    <value>Signing</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Customer delivery</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Physical storage</value>
+  </data>
+  <data name="DOCUMENT_ACTIVITY_HISTORY" xml:space="preserve">
+    <value>Document activity</value>
+  </data>
+  <data name="NOT_APPLICABLE" xml:space="preserve">
+    <value>Not applicable</value>
+  </data>
+  <data name="NO_DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>This document does not have any file versions yet.</value>
+  </data>
+  <data name="NO_SIGNING_HISTORY" xml:space="preserve">
+    <value>Signing is required, but no signing request has been recorded yet.</value>
+  </data>
+  <data name="NO_CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Customer delivery is required, but no delivery has been recorded yet.</value>
+  </data>
+  <data name="NO_PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Physical storage is required, but no storage location has been recorded yet.</value>
+  </data>
+  <data name="NO_DOCUMENT_ACTIVITY" xml:space="preserve">
+    <value>No activity has been recorded for this document.</value>
+  </data>
+  <data name="OPEN_FILE" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="VERSION_NUMBER" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="FILE_SIZE" xml:space="preserve">
+    <value>File size</value>
+  </data>
+  <data name="SOURCE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SENT_BY" xml:space="preserve">
+    <value>Sent by</value>
+  </data>
+  <data name="SIGNER" xml:space="preserve">
+    <value>Signer</value>
+  </data>
+  <data name="RECIPIENT" xml:space="preserve">
+    <value>Recipient</value>
+  </data>
+  <data name="CHANNEL" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="RESPONSE_DEADLINE" xml:space="preserve">
+    <value>Response deadline</value>
+  </data>
+  <data name="STORAGE_LOCATION" xml:space="preserve">
+    <value>Storage location</value>
+  </data>
+  <data name="CURRENT_LOCATION" xml:space="preserve">
+    <value>Current location</value>
+  </data>
+  <data name="ORIGINAL_COPY_CONDITION" xml:space="preserve">
+    <value>Original copy condition</value>
+  </data>
+  <data name="ACTION_TYPE" xml:space="preserve">
+    <value>Activity type</value>
+  </data>
+  <data name="REFERENCE_TYPE" xml:space="preserve">
+    <value>Related item</value>
+  </data>
+  <data name="OFFICIAL_DOCUMENT_FILE_HINT" xml:space="preserve">
+    <value>This is the primary file shown when users open the document.</value>
+  </data>
+  <data name="NO_OFFICIAL_DOCUMENT_FILE" xml:space="preserve">
+    <value>No official file has been selected for this document.</value>
+  </data>
+  <data name="ADD_COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Add company document</value>
+  </data>
+  <data name="INITIAL_DOCUMENT_CONTENT" xml:space="preserve">
+    <value>Initial content</value>
+  </data>
+  <data name="UPLOAD_NEW_FILE" xml:space="preserve">
+    <value>Upload a new file</value>
+  </data>
+  <data name="USE_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Use a document template</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Select a document template</value>
+  </data>
+  <data name="NO_TEMPLATE_FOR_DOCUMENT_TYPE" xml:space="preserve">
+    <value>This document type has no active template with an uploaded template file.</value>
+  </data>
+  <data name="UPLOAD_AFTER_SAVE_NOTICE" xml:space="preserve">
+    <value>After the document cover is saved, you will be taken to the Versions tab to upload the first file. Future uploads are also managed there.</value>
+  </data>
+  <data name="UPLOAD_NEW_VERSION" xml:space="preserve">
+    <value>Upload new version</value>
+  </data>
+  <data name="VERSION_MANAGEMENT_NOTICE" xml:space="preserve">
+    <value>Each newly uploaded file becomes a version and the latest version is current. Version files do not automatically become the official file or a signed result.</value>
+  </data>
+  <data name="ACTIVITY_CREATE_DOCUMENT" xml:space="preserve">
+    <value>Create document</value>
+  </data>
+  <data name="ACTIVITY_UPDATE_DOCUMENT" xml:space="preserve">
+    <value>Update document</value>
+  </data>
+  <data name="ACTIVITY_DELETE_DOCUMENT" xml:space="preserve">
+    <value>Delete document</value>
+  </data>
+  <data name="ACTIVITY_CREATE_FROM_TEMPLATE" xml:space="preserve">
+    <value>Create from template</value>
+  </data>
+  <data name="ACTIVITY_UPLOAD_VERSION" xml:space="preserve">
+    <value>Upload version</value>
+  </data>
+  <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
+    <value>Delete version</value>
   </data>
 </root>
