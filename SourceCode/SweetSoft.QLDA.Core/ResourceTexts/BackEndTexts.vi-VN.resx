@@ -1161,6 +1161,7 @@
   </data>
   <data name="INFORMATION" xml:space="preserve">
     <value>Thông tin</value>
+  </data>
   <data name="DOCUMENT_MANAGEMENT" xml:space="preserve">
     <value>Quản lý hồ sơ</value>
   </data>
@@ -1356,7 +1357,6 @@
   <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
     <value>Quản lý lịch biểu chung</value>
   </data>
-</root>
   <data name="DOCUMENT_STORAGE_LOCATION" xml:space="preserve">
     <value>Nơi lưu trữ</value>
   </data>

@@ -334,7 +334,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string FROM_DATE = "FROM_DATE";
         public const string TO_DATE = "TO_DATE";
         public const string INFORMATION = "INFORMATION";
-        public const string DESCRIPTION = "DESCRIPTION";
         public const string SCHEDULE_MANAGEMENT = "SCHEDULE_MANAGEMENT";
 
         ///---------------------------------------------------

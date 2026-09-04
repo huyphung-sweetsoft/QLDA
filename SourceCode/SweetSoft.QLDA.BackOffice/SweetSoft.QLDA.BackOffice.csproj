@@ -436,7 +436,6 @@
     <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
-    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.cs">
       <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -451,6 +450,7 @@
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
     </Compile>
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
@@ -560,6 +560,9 @@
     <Content Include="LockScreen.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="NotFound.aspx" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.dll" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.pdb" />
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
@@ -593,6 +596,8 @@
     <Content Include="Styles\plugins\slick\slick.css" />
     <Content Include="Styles\plugins\slick\slick.js" />
     <Content Include="Styles\video\video-trang-chu.mp4" />
+    <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
     <Content Include="Uploads\_Logs\2026\8\log_20260821.txt" />
     <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
     <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
@@ -1152,6 +1157,11 @@
     <Content Include="_RFMng\themes\default\styles\filemanager.css" />
     <Content Include="_RFMng\themes\default\styles\ie.css" />
     <Content Include=".vs\SweetSoft.QLDA.BackOffice.csproj.dtbcache.json" />
+    <Content Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <Content Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <Content Include="obj\Debug\SweetSof.9E5A59E7.Up2Date" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.csproj.AssemblyReference.cache" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.csproj.CoreCompileInputs.cache" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -1598,6 +1608,8 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\web.config" />
+    <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
+    <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1817,6 +1829,7 @@
     <Folder Include="bin\vi-VN\" />
     <Folder Include="Controllers\" />
     <Folder Include="Data\" />
+    <Folder Include="obj\Debug\TempPE\" />
     <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>

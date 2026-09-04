@@ -1305,6 +1305,7 @@
   </data>
   <data name="INFORMATION" xml:space="preserve">
     <value>Information</value>
+  </data>
   <data name="DOCUMENT_MANAGEMENT" xml:space="preserve">
     <value>Document management</value>
   </data>
@@ -1323,7 +1324,6 @@
   <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
     <value>Schedule Management</value>
   </data>
-</root>
   <data name="DISPLAY_ORDER" xml:space="preserve">
     <value>Display order</value>
   </data>
