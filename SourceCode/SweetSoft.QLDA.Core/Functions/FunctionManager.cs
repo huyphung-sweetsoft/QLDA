@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.Caches;
+using SweetSoft.QLDA.Core.Caches;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Interfaces;
@@ -59,7 +59,20 @@ namespace SweetSoft.QLDA.Core.Functions
                     modules = _repository.GetAspnetFunctionByUserId(userId);
                 else
                     modules = _repository.GetAspnetFunctionActiveByUserId(userId);
+
                 CacheManager.SetCacheData($"ModuleByUserId_{userId}", modules);
+            }
+            return modules;
+        }
+
+        public List<AspnetFunction> GetProjectFunctionByUserId(Guid userId, Guid projectId)
+        {
+            List<AspnetFunction> modules = null;
+            string cacheKey = $"ProjectModule_{userId}_{projectId}";
+            if (!CacheManager.GetCacheData(cacheKey, out modules) || modules == null)
+            {
+                modules = _repository.GetProjectFunctionByUserId(userId, projectId);
+                CacheManager.SetCacheData(cacheKey, modules);
             }
             return modules;
         }

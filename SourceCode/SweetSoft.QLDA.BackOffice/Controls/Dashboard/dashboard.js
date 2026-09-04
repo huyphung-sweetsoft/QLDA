@@ -1,4 +1,4 @@
-﻿var DashboardJs = {};
+var DashboardJs = {};
 DashboardJs.ResourceTexts = {
 
 }

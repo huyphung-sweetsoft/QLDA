@@ -1,0 +1,161 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-31 15:40:12.259
+                URL: http://qlda.local/fUsers/UserList.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Audit-logs
+                Session ID: Unknown
+                Exception Type: HttpParseException
+                Message: d:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fUsers\Controls\CtrlUsers.ascx(99): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'GUEST'
+                Stack Trace:    at System.Web.UI.TemplateParser.ProcessException(Exception ex)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseString(String text, VirtualPath virtualPath, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseFile(String physicalPath, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseInternal()
+   at System.Web.UI.TemplateParser.Parse()
+   at System.Web.Compilation.BaseTemplateBuildProvider.get_CodeCompilerType()
+   at System.Web.Compilation.BuildProvider.GetCompilerTypeFromBuildProvider(BuildProvider buildProvider)
+   at System.Web.Compilation.BuildProvidersCompiler.ProcessBuildProviders()
+   at System.Web.Compilation.BuildProvidersCompiler.PerformBuild()
+   at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: d:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fUsers\Controls\CtrlUsers.ascx(99): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'GUEST'
+                Inner Stack Trace:    at System.Web.Compilation.BuildManager.PostProcessFoundBuildResult(BuildResult result, Boolean keyFromVPP, VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetBuildResultFromCacheInternal(String cacheKey, Boolean keyFromVPP, VirtualPath virtualPath, Int64 hashCode, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultFromCacheInternal(VirtualPath virtualPath, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResult(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean ensureIsUpToDate)
+   at System.Web.UI.BaseTemplateParser.GetReferencedType(VirtualPath virtualPath, Boolean allowNoCompile)
+   at System.Web.UI.BaseTemplateParser.GetUserControlType(VirtualPath virtualPath)
+   at System.Web.UI.MainTagNameToTypeMapper.ProcessUserControlRegistration(UserControlRegisterEntry ucRegisterEntry)
+   at System.Web.UI.BaseTemplateParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateControlParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.PageParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-31 16:12:23.238
+                URL: http://qlda.local/fUsers/UserList.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Audit-logs
+                Session ID: yqm2y5qbzzybmiq5bynz2r5u
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fusers_userlist_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\3e529bb7\f2d48f1c\App_Web_vvffxna2.1.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: ValueFactory attempted to access the Value property of this instance.
+                Inner Stack Trace:    at System.Lazy`1.CreateValue()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Lazy`1.get_Value()
+   at SweetSoft.QLDA.Core.Managers.UserManager.get_Instance() in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\UserManager.cs:line 31
+   at SweetSoft.QLDA.Core.Infrastructure.SweetContext.get_User() in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Infrastructure\SweetContext.cs:line 298
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnInit(EventArgs e) in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 802
+   at System.Web.UI.Control.InitRecursive(Control namingContainer)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-31 16:27:25.577
+                URL: http://qlda.local/fUsers/UserList.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Audit-logs
+                Session ID: yqm2y5qbzzybmiq5bynz2r5u
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fusers_userlist_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\3e529bb7\f2d48f1c\App_Web_m44rh0zm.0.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: ValueFactory attempted to access the Value property of this instance.
+                Inner Stack Trace:    at System.Lazy`1.CreateValue()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Lazy`1.get_Value()
+   at SweetSoft.QLDA.Core.Managers.UserManager.get_Instance() in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\UserManager.cs:line 31
+   at SweetSoft.QLDA.Core.Infrastructure.SweetContext.get_User() in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Infrastructure\SweetContext.cs:line 298
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnInit(EventArgs e) in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 802
+   at System.Web.UI.Control.InitRecursive(Control namingContainer)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-31 16:27:50.438
+                URL: http://qlda.local/fUsers/UserList.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Audit-logs
+                Session ID: yqm2y5qbzzybmiq5bynz2r5u
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fusers_userlist_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\3e529bb7\f2d48f1c\App_Web_m44rh0zm.0.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: DataBinding: 'System.Data.DataRowView' does not contain a property with the name 'AnhDaiDien'.
+                Inner Stack Trace:    at System.Web.UI.DataBinder.GetPropertyValue(Object container, String propName)
+   at System.Web.UI.DataBinder.Eval(Object container, String[] expressionParts)
+   at System.Web.UI.DataBinder.Eval(Object container, String expression)
+   at System.Web.UI.TemplateControl.Eval(String expression)
+   at ASP.fusers_controls_ctrlusers_ascx.__DataBind__control12(Object sender, EventArgs e) in d:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fUsers\Controls\CtrlUsers.ascx:line 95
+   at System.Web.UI.Control.OnDataBinding(EventArgs e)
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.WebControls.GridView.CreateRow(Int32 rowIndex, Int32 dataSourceIndex, DataControlRowType rowType, DataControlRowState rowState, Boolean dataBind, Object dataItem, DataControlField[] fields, TableRowCollection rows, PagedDataSource pagedDataSource)
+   at System.Web.UI.WebControls.GridView.CreateChildControls(IEnumerable dataSource, Boolean dataBinding)
+   at System.Web.UI.WebControls.CompositeDataBoundControl.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.GridView.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.DataBoundControl.OnDataSourceViewSelectCallback(IEnumerable data)
+   at System.Web.UI.DataSourceView.Select(DataSourceSelectArguments arguments, DataSourceViewSelectCallback callback)
+   at System.Web.UI.WebControls.DataBoundControl.PerformSelect()
+   at System.Web.UI.WebControls.BaseDataBoundControl.DataBind()
+   at System.Web.UI.WebControls.GridView.DataBind()
+   at SweetSoft.QLDA.Controls.GridviewExtension.LoadDataSource() in D:\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 91
+   at SweetSoft.QLDA.Controls.GridviewExtension.Rebind() in D:\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 68
+   at SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUsers.InitControls() in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fUsers\Controls\CtrlUsers.ascx.cs:line 157
+   at SweetSoft.QLDA.BackOffice.fUsers.UserList.Page_Load(Object sender, EventArgs e) in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fUsers\UserList.aspx.cs:line 73
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 986
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                

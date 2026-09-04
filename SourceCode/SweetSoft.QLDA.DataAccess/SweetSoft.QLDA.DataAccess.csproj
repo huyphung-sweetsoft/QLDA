@@ -34,9 +34,9 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SubSonic, Version=2.2.0.0, Culture=neutral, PublicKeyToken=eadb47849839a332, processorArchitecture=MSIL">
+    <Reference Include="SubSonic, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\SubSonic.dll</HintPath>
+      <HintPath>..\..\..\SubSonic2.2\SubCommander\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -84,19 +84,97 @@
     <Compile Include="AspnetWebEventEvent.cs" />
     <Compile Include="AspnetWebEventEventController.cs" />
     <Compile Include="ExternalClass.cs" />
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StoredProcedures.cs" />
     <Compile Include="SysDataAccessProvider\StoredProcedures.cs" />
     <Compile Include="SysDataAccessProvider\TblAuditTemp.cs" />
     <Compile Include="SysDataAccessProvider\TblAuditTempController.cs" />
+    <Compile Include="TblAuditLog2026.cs" />
+    <Compile Include="TblAuditLog2026Controller.cs" />
+    <Compile Include="TblCauHinhTuanLamViec.cs" />
+    <Compile Include="TblCauHinhTuanLamViecController.cs" />
+    <Compile Include="TblChiPhi.cs" />
+    <Compile Include="TblChiPhiController.cs" />
+    <Compile Include="TblChucDanh.cs" />
+    <Compile Include="TblChucDanhController.cs" />
+    <Compile Include="TblCongViec.cs" />
+    <Compile Include="TblCongViecController.cs" />
+    <Compile Include="TblCongViecNhanVien.cs" />
+    <Compile Include="TblCongViecNhanVienController.cs" />
+    <Compile Include="TblDoUuTien.cs" />
+    <Compile Include="TblDoUuTienController.cs" />
+    <Compile Include="TblDuAn.cs" />
+    <Compile Include="TblDuAnController.cs" />
     <Compile Include="TblEmailHistory.cs" />
     <Compile Include="TblEmailHistoryController.cs" />
     <Compile Include="TblEmailTemplate.cs" />
     <Compile Include="TblEmailTemplateController.cs" />
+    <Compile Include="TblGiaiDoan.cs" />
+    <Compile Include="TblGiaiDoanController.cs" />
+    <Compile Include="TblGiaiDoanDuAn.cs" />
+    <Compile Include="TblGiaiDoanDuAnController.cs" />
+    <Compile Include="TblGuiNhanKhachHang.cs" />
+    <Compile Include="TblGuiNhanKhachHangController.cs" />
+    <Compile Include="TblHopDongThucHien.cs" />
+    <Compile Include="TblHopDongThucHienController.cs" />
+    <Compile Include="TblKhachHang.cs" />
+    <Compile Include="TblKhachHangController.cs" />
+    <Compile Include="TblLichHop.cs" />
+    <Compile Include="TblLichHopController.cs" />
+    <Compile Include="TblLichNgoaiLe.cs" />
+    <Compile Include="TblLichNgoaiLeController.cs" />
+    <Compile Include="TblLichSuChinhSua.cs" />
+    <Compile Include="TblLichSuChinhSuaController.cs" />
+    <Compile Include="TblLichSuDuAn.cs" />
+    <Compile Include="TblLichSuDuAnController.cs" />
+    <Compile Include="TblLichSuTaiLieu.cs" />
+    <Compile Include="TblLichSuTaiLieuController.cs" />
+    <Compile Include="TblLoaiDuAn.cs" />
+    <Compile Include="TblLoaiDuAnController.cs" />
+    <Compile Include="TblLoaiKhachHang.cs" />
+    <Compile Include="TblLoaiKhachHangController.cs" />
+    <Compile Include="TblLoaiTaiLieu.cs" />
+    <Compile Include="TblLoaiTaiLieuController.cs" />
+    <Compile Include="TblLuuTruVatLy.cs" />
+    <Compile Include="TblLuuTruVatLyController.cs" />
+    <Compile Include="TblMauTaiLieu.cs" />
+    <Compile Include="TblMauTaiLieuController.cs" />
+    <Compile Include="TblNhanVien.cs" />
+    <Compile Include="TblNhanVienController.cs" />
+    <Compile Include="TblNhanVienPartial.cs" />
+    <Compile Include="TblNhomTaiLieu.cs" />
+    <Compile Include="TblNhomTaiLieuController.cs" />
+    <Compile Include="TblNoiLuuTru.cs" />
+    <Compile Include="TblNoiLuuTruController.cs" />
+    <Compile Include="TblPhienBanTaiLieu.cs" />
+    <Compile Include="TblPhienBanTaiLieuController.cs" />
+    <Compile Include="TblPhongBan.cs" />
+    <Compile Include="TblPhongBanController.cs" />
+    <Compile Include="TblRuiRo.cs" />
+    <Compile Include="TblRuiRoController.cs" />
+    <Compile Include="TblRuiRoDuAn.cs" />
+    <Compile Include="TblRuiRoDuAnController.cs" />
     <Compile Include="TblSetting.cs" />
     <Compile Include="TblSettingController.cs" />
+    <Compile Include="TblTaiLieu.cs" />
+    <Compile Include="TblTaiLieuController.cs" />
+    <Compile Include="TblThanhToan.cs" />
+    <Compile Include="TblThanhToanController.cs" />
+    <Compile Include="TblThanhVienDuAn.cs" />
+    <Compile Include="TblThanhVienDuAnController.cs" />
+    <Compile Include="TblThongBao.cs" />
+    <Compile Include="TblThongBaoController.cs" />
+    <Compile Include="TblTrinhKyTaiLieu.cs" />
+    <Compile Include="TblTrinhKyTaiLieuController.cs" />
     <Compile Include="TblUploadFile.cs" />
     <Compile Include="TblUploadFileController.cs" />
+    <Compile Include="TblVaiTroDuAn.cs" />
+    <Compile Include="TblVaiTroDuAnController.cs" />
+    <Compile Include="TblVanDe.cs" />
+    <Compile Include="TblVanDeController.cs" />
+    <Compile Include="TblVanDeNhanVien.cs" />
+    <Compile Include="TblVanDeNhanVienController.cs" />
     <Compile Include="VwAspnetApplication.cs" />
     <Compile Include="VwAspnetMembershipUser.cs" />
     <Compile Include="VwAspnetProfile.cs" />
@@ -106,6 +184,19 @@
     <Compile Include="VwAspnetWebPartStatePath.cs" />
     <Compile Include="VwAspnetWebPartStateShared.cs" />
     <Compile Include="VwAspnetWebPartStateUser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\Debug\SweetSoft.QLDA.DataAccess.csproj.AssemblyReference.cache" />
+    <None Include="obj\Debug\SweetSoft.QLDA.DataAccess.csproj.CoreCompileInputs.cache" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="obj\Debug\SweetSoft.QLDA.DataAccess.csproj.FileListAbsolute.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Debug\" />
+    <Folder Include="bin\Release\" />
+    <Folder Include="obj\Debug\TempPE\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

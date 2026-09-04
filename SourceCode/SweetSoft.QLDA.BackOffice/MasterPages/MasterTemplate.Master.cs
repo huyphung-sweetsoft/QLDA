@@ -32,6 +32,7 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
 {
     public partial class MasterTemplate : System.Web.UI.MasterPage
     {
+        int projectRole = 0;
         public string FolderPath
         {
             get
@@ -111,11 +112,12 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                     SetUserInfomation(user.DisplayName, tblUploadFile?.FileUrl ?? string.Empty);
                 }
                 btnCancel.ToolTip = btnCancel.Text = GetResourceText(BackEndResourceKeys.CLOSE);
-                BindLeftMenu();
+                if (CurrentProjectId != Guid.Empty) BindLeftMenuProject();
+                else BindLeftMenuSystem();
             }
         }
 
-        private void BindLeftMenu()
+        private void BindLeftMenuSystem()
         {
             try
             {
@@ -129,11 +131,10 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                         return;
 
                     aspnetFunctions.RemoveAll(s => s == null);
-
-                    // Đếm số lượng submenu (ParentCode khác rỗng hoặc null)
+                    aspnetFunctions = aspnetFunctions.Where(s => s.OfProject == false).ToList();
                     var subMenus = aspnetFunctions.Where(f => !string.IsNullOrEmpty(f.ParentCode)).ToList();
 
-                    if (subMenus.Count < 6)
+                    if (subMenus.Count < 1)
                     {
                         StringBuilder sbBasic = new StringBuilder();
                         var menu = aspnetFunctions.FirstOrDefault(f => f.FunctionCode == ModuleKeys.JoinCompetition.ToString());
@@ -211,7 +212,89 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                 return;
             }
         }
+        public Guid CurrentProjectId
+        {
+            get
+            {
+                if (CURRENT_PAGE != null)
+                    return CURRENT_PAGE.CurrentProjectId;
 
+                return Guid.Empty;
+            }
+        }
+        private void BindLeftMenuProject()
+        {
+            try
+            {
+                if (CurrentProjectId == Guid.Empty)
+                {
+                    BindLeftMenuSystem();
+                    return;
+                }
+                string MENU_CACHE_KEY = $"MENU_LEFT_PROJECT_{SweetContext.Current.UserId}_{CurrentProjectId}_{SweetContext.Current.CurrentLanguageId}";
+                string menuCache = AppCache.Get(MENU_CACHE_KEY) as string;
+                if (string.IsNullOrEmpty(menuCache))
+                {
+                    List<AspnetFunction> projectFunctions = FunctionManager.Instance.GetProjectFunctionByUserId(SweetContext.Current.UserId, CurrentProjectId);
+
+                    if (projectFunctions == null || projectFunctions.Count == 0)
+                    {
+                        BindLeftMenuSystem();
+                        return;
+                    }
+
+                    StringBuilder sb = new StringBuilder();
+                    string encryptedProjectId = SecurityUtilities.ProtectUrlParameter(CurrentProjectId.ToString());
+
+                    Func<string, string> BuildMenu = null;
+                    BuildMenu = (parentId) =>
+                    {
+                        List<AspnetFunction> childs = projectFunctions
+                            .Where(t => t.Id != Guid.Empty && (t.ParentCode ?? string.Empty) == parentId)
+                            .OrderBy(t => t.DisplayOrder)
+                            .ToList();
+
+                        StringBuilder sbSub = new StringBuilder();
+                        foreach (var item in childs)
+                        {
+                            string childHtml = BuildMenu(item.FunctionCode);
+
+                            if (!string.IsNullOrEmpty(childHtml))
+                            {
+                                sbSub.AppendFormat(itemTemplateMulplite.InnerHtml,
+                                    GetResourceText(item.FunctionName),
+                                    item.Icon,
+                                    childHtml,
+                                    item.Id);
+                                sbSub.Append("<li class=\"border-right\"></li>");
+                            }
+                            else
+                            {
+                                string targetUrl = !string.IsNullOrEmpty(item.PageUrl)
+                                    ? GetRelativeClientPath($"/Project/{encryptedProjectId}{item.PageUrl}")
+                                    : "javascript:;";
+
+                                sbSub.AppendFormat(itemTemplateSingle.InnerHtml,
+                                    targetUrl,
+                                    GetResourceText(item.FunctionName),
+                                    item.Icon);
+                                sbSub.Append("<li class=\"border-right\"></li>");
+                            }
+                        }
+                        return sbSub.ToString();
+                    };
+
+                    sb.Append(BuildMenu(string.Empty));
+                    menuCache = sb.ToString();
+                    AppCache.Insert(MENU_CACHE_KEY, menuCache);
+                }
+                ltrMenu.Text = menuCache;
+            }
+            catch
+            {
+                BindLeftMenuSystem();
+            }
+        }
 
         public void OpenMessageBox(MessageBox msg, ConfirmResult result, bool isClosePostBack, bool showmodal, int timeOut = 20000)
         {

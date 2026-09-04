@@ -1,0 +1,1010 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:22.589
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:24.288
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:24.946
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:25.101
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:25.274
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:28.585
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:36.142
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:36.285
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:36.437
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:36.591
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:36.742
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:36.902
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:37.062
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:48:46.885
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:21.933
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.106
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.263
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.403
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.539
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.680
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.813
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:22.957
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:23.111
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:23.266
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:23.397
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:24.391
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:25.456
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 10:51:25.747
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_5k3g0ahb.4.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: FilesBox
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox.btnApplyFile_ServerClick(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fFilesBox\FilesBox.ascx.cs:line 391
+   at System.Web.UI.HtmlControls.HtmlAnchor.OnServerClick(EventArgs e)
+   at System.Web.UI.HtmlControls.HtmlAnchor.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.HtmlControls.HtmlAnchor.System.Web.UI.IPostBackEventHandler.RaisePostBackEvent(String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(IPostBackEventHandler sourceControl, String eventArgument)
+   at System.Web.UI.Page.RaisePostBackEvent(NameValueCollection postData)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 13:48:06.473
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Document-storage-locations
+                Session ID: Unknown
+                Exception Type: HttpParseException
+                Message: d:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx(91): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'DOCUMENT_FILTER_HINT'
+                Stack Trace:    at System.Web.UI.TemplateParser.ProcessException(Exception ex)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseString(String text, VirtualPath virtualPath, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseReader(StreamReader reader, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseFile(String physicalPath, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseInternal()
+   at System.Web.UI.TemplateParser.Parse()
+   at System.Web.Compilation.BaseTemplateBuildProvider.get_CodeCompilerType()
+   at System.Web.Compilation.BuildProvider.GetCompilerTypeFromBuildProvider(BuildProvider buildProvider)
+   at System.Web.Compilation.BuildProvidersCompiler.ProcessBuildProviders()
+   at System.Web.Compilation.BuildProvidersCompiler.PerformBuild()
+   at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: d:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx(91): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'DOCUMENT_FILTER_HINT'
+                Inner Stack Trace:    at System.Web.Compilation.BuildManager.PostProcessFoundBuildResult(BuildResult result, Boolean keyFromVPP, VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetBuildResultFromCacheInternal(String cacheKey, Boolean keyFromVPP, VirtualPath virtualPath, Int64 hashCode, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultFromCacheInternal(VirtualPath virtualPath, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResult(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean ensureIsUpToDate)
+   at System.Web.UI.BaseTemplateParser.GetReferencedType(VirtualPath virtualPath, Boolean allowNoCompile)
+   at System.Web.UI.BaseTemplateParser.GetUserControlType(VirtualPath virtualPath)
+   at System.Web.UI.MainTagNameToTypeMapper.ProcessUserControlRegistration(UserControlRegisterEntry ucRegisterEntry)
+   at System.Web.UI.BaseTemplateParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateControlParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.PageParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 13:48:24.242
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Document-storage-locations
+                Session ID: Unknown
+                Exception Type: HttpParseException
+                Message: d:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx(91): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'DOCUMENT_FILTER_HINT'
+                Stack Trace:    at System.Web.UI.TemplateParser.ProcessException(Exception ex)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseString(String text, VirtualPath virtualPath, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseReader(StreamReader reader, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseFile(String physicalPath, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseInternal()
+   at System.Web.UI.TemplateParser.Parse()
+   at System.Web.Compilation.BaseTemplateBuildProvider.get_CodeCompilerType()
+   at System.Web.Compilation.BuildProvider.GetCompilerTypeFromBuildProvider(BuildProvider buildProvider)
+   at System.Web.Compilation.BuildProvidersCompiler.ProcessBuildProviders()
+   at System.Web.Compilation.BuildProvidersCompiler.PerformBuild()
+   at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: d:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx(91): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'DOCUMENT_FILTER_HINT'
+                Inner Stack Trace:    at System.Web.Compilation.BuildManager.PostProcessFoundBuildResult(BuildResult result, Boolean keyFromVPP, VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetBuildResultFromCacheInternal(String cacheKey, Boolean keyFromVPP, VirtualPath virtualPath, Int64 hashCode, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultFromCacheInternal(VirtualPath virtualPath, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResult(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean ensureIsUpToDate)
+   at System.Web.UI.BaseTemplateParser.GetReferencedType(VirtualPath virtualPath, Boolean allowNoCompile)
+   at System.Web.UI.BaseTemplateParser.GetUserControlType(VirtualPath virtualPath)
+   at System.Web.UI.MainTagNameToTypeMapper.ProcessUserControlRegistration(UserControlRegisterEntry ucRegisterEntry)
+   at System.Web.UI.BaseTemplateParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateControlParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.PageParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:03:59.129
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Roles
+                Session ID: Unknown
+                Exception Type: HttpParseException
+                Message: d:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx(151): error CS1061: 'ASP.fdocuments_controls_ctrldocuments_ascx' does not contain a definition for 'ddlSearchPhamVi_SelectedValueChanged' and no extension method 'ddlSearchPhamVi_SelectedValueChanged' accepting a first argument of type 'ASP.fdocuments_controls_ctrldocuments_ascx' could be found (are you missing a using directive or an assembly reference?)
+                Stack Trace:    at System.Web.UI.TemplateParser.ProcessException(Exception ex)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseString(String text, VirtualPath virtualPath, Encoding fileEncoding)
+   at System.Web.UI.TemplateParser.ParseReader(StreamReader reader, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseFile(String physicalPath, VirtualPath virtualPath)
+   at System.Web.UI.TemplateParser.ParseInternal()
+   at System.Web.UI.TemplateParser.Parse()
+   at System.Web.Compilation.BaseTemplateBuildProvider.get_CodeCompilerType()
+   at System.Web.Compilation.BuildProvider.GetCompilerTypeFromBuildProvider(BuildProvider buildProvider)
+   at System.Web.Compilation.BuildProvidersCompiler.ProcessBuildProviders()
+   at System.Web.Compilation.BuildProvidersCompiler.PerformBuild()
+   at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: d:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx(151): error CS1061: 'ASP.fdocuments_controls_ctrldocuments_ascx' does not contain a definition for 'ddlSearchPhamVi_SelectedValueChanged' and no extension method 'ddlSearchPhamVi_SelectedValueChanged' accepting a first argument of type 'ASP.fdocuments_controls_ctrldocuments_ascx' could be found (are you missing a using directive or an assembly reference?)
+                Inner Stack Trace:    at System.Web.Compilation.BuildManager.PostProcessFoundBuildResult(BuildResult result, Boolean keyFromVPP, VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetBuildResultFromCacheInternal(String cacheKey, Boolean keyFromVPP, VirtualPath virtualPath, Int64 hashCode, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultFromCacheInternal(VirtualPath virtualPath, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResult(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean ensureIsUpToDate)
+   at System.Web.UI.BaseTemplateParser.GetReferencedType(VirtualPath virtualPath, Boolean allowNoCompile)
+   at System.Web.UI.BaseTemplateParser.GetUserControlType(VirtualPath virtualPath)
+   at System.Web.UI.MainTagNameToTypeMapper.ProcessUserControlRegistration(UserControlRegisterEntry ucRegisterEntry)
+   at System.Web.UI.BaseTemplateParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateControlParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.PageParser.ProcessDirective(String directiveName, IDictionary directive)
+   at System.Web.UI.TemplateParser.ParseStringInternal(String text, Encoding fileEncoding)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:15:33.418
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Documents
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_d5xg2mci.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Object reference not set to an instance of an object.
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fDocuments.Controls.CtrlDocuments.ApplyControlsText() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx.cs:line 209
+   at SweetSoft.QLDA.BackOffice.fDocuments.Controls.CtrlDocuments.InitControls() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.fDocuments.Documents.Page_Load(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Documents.aspx.cs:line 42
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 986
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-27 14:15:40.538
+                URL: http://qlda.local/fDocuments/Documents.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0
+                Referrer: http://qlda.local/Document-groups
+                Session ID: izwxzq24ek44vfss4dftf4wu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fdocuments_documents_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\38d84821\5090e401\App_Web_d5xg2mci.2.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Object reference not set to an instance of an object.
+                Inner Stack Trace:    at SweetSoft.QLDA.BackOffice.fDocuments.Controls.CtrlDocuments.ApplyControlsText() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx.cs:line 209
+   at SweetSoft.QLDA.BackOffice.fDocuments.Controls.CtrlDocuments.InitControls() in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Controls\CtrlDocuments.ascx.cs:line 95
+   at SweetSoft.QLDA.BackOffice.fDocuments.Documents.Page_Load(Object sender, EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fDocuments\Documents.aspx.cs:line 42
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in D:\PhanMemQuanLyDuAn\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 986
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                

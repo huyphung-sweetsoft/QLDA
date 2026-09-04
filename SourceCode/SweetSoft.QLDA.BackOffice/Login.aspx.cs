@@ -1,4 +1,4 @@
-using Google.Authenticator;
+﻿using Google.Authenticator;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.Controls;
 using SweetSoft.QLDA.Core.Functions;
@@ -234,7 +234,7 @@ namespace SweetSoft.QLDA.BackOffice
                 return;
             }
             else
-                Response.Redirect(GetRelativeClientPath("/Home"), false);
+                Response.Redirect(GetRelativeClientPath("/Trang-chu"), false);
         }
 
         protected void ChangeLanguage(object sender, EventArgs e)

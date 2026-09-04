@@ -2,15 +2,72 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/SourceCode/.vs
-/SourceCode/packages
-/SourceCode/SweetSoft.QLDA.BackOffice/bin
-/SourceCode/SweetSoft.QLDA.BackOffice/obj/Debug
-/SourceCode/SweetSoft.QLDA.BackOffice/Uploads/_logs/2026/8
-/SourceCode/SweetSoft.QLDA.Controls/bin/Debug
-/SourceCode/SweetSoft.QLDA.Controls/obj/Debug
-/SourceCode/SweetSoft.QLDA.Core/bin/Debug
-/SourceCode/SweetSoft.QLDA.Core/obj/Debug
-/SourceCode/SweetSoft.QLDA.DataAccess/bin/Debug
-/SourceCode/SweetSoft.QLDA.DataAccess/obj/Debug
+################################################################################
+# .gitignore for ASP.NET Web Forms / C# project
+################################################################################
+
+# ========================
+# Visual Studio files
+# ========================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# ========================
+# Build output
+# ========================
+[Bb]in/
+[Oo]bj/
+publish/
+PublishProfiles/
+
+# ========================
+# NuGet packages
+# ========================
+packages/
+*.nupkg
+.nuget/
+
+# ========================
+# Thư mục Upload của ứng dụng
+# (Không commit file user đã upload lên server)
+# ========================
+SourceCode/SweetSoft.QLDA.BackOffice/Uploads/
+
+# ========================
+# File cấu hình nhạy cảm
+# (Chứa connection string, API key)
+# QUAN TRỌNG: Hãy dùng Web.config.example để thay thế
+# ========================
+SourceCode/SweetSoft.QLDA.BackOffice/Web.config
+
+# ========================
+# Log files
+# ========================
+*.log
+Logs/
+
+# ========================
+# Windows thumbnail cache
+# ========================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ========================
+# macOS
+# ========================
+.DS_Store
+
+# ========================
+# JetBrains Rider
+# ========================
+.idea/
+*.sln.iml
+
+*.dll
+*.pdb
+*.xml
