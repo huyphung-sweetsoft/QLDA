@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using OfficeOpenXml.FormulaParsing.ExpressionGraph.FunctionCompilers;
 using OfficeOpenXml.Style;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
@@ -80,7 +81,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
         }
         private void ApplyControlsText()
         {
-            ddlRole.PlaceHolder
+            ddlRole.PlaceHolder = ddlChucDanh.PlaceHolder = ddlPhongBan.PlaceHolder
                 = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
             //------------------------------------------------
             dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
@@ -89,6 +90,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
                 = txtPassword.PlaceHolder
                 = txtPhone.PlaceHolder
                 = txtUserName.PlaceHolder = txtPhone.PlaceHolder
+                = txtCCCD.PlaceHolder = txtDiaChi.PlaceHolder
                 = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
 
             chkStatus.OnText = GetResourceText(BackEndResourceKeys.ACTIVE);
@@ -100,31 +102,42 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
         private void RefreshUserInfo()
         {
             new ControlHelpers().BindRoles(ddlRole);
+            new ControlHelpers().BindChucDanh(ddlChucDanh);
+            new ControlHelpers().BindPhongBan(ddlPhongBan);
             lbtSubmit.Visible = false;
             //---------------------------------------------
             txtUserName.Enabled = true;
             txtUserName.Text = txtPhone.Text
                 = txtFullName.Text = txtEmail.Text
                 = txtPassword.Text = txtConfirmPassword.Text
+                = txtCCCD.Text = txtDiaChi.Text
+                = txtNgaySinh.Text = txtNgayGiaNhap.Text
                 = "";
+            
+            ddlGioiTinh.SelectedIndex = 0;
             ddlRole.SelectedIndex = 0;
             chkStatus.Checked = true;
+            chkLaNhanVien.Checked = false;
             chkChangePassword.Checked = false;
+            divChangePassword.Visible = false;
+            divPassword.Visible = false;
             this.UserId = Guid.Empty;
-            divImage.Visible = false;
-            //---------------------------------------------
-            fbImage.SingleFilePath = "/Styles/images/user-icon.png";
-            fbImage.SingleFilePathType = FileTypes.Internal;
-            fbImage.IsMultiple = false;
-            fbImage.LoadFile(this.UserId, FileUploadTypes.UserAvatar);
-            string script = @"
-                window.addEventListener('load', function() {
-                    if (typeof CMSMasterJs !== 'undefined' && typeof CMSMasterJs.HideChangePwd === 'function') {
-                        CMSMasterJs.HideChangePwd();
-                    }
-                });
-            ";
-            ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "HideChangePwd", script, true);
+            divImage.Visible = true;
+            fbImage.SingleFilePath = "/Styles/images/user-icon.png"; // Cài đặt avt mặc định cho giao diện, khi mở nút thêm mới, vì ko có avt nên nó sẽ hiển thị avt mặc định
+            fbImage.SingleFilePathType = FileTypes.Internal; //Khai báo hệ thống biết đuồng dẫn ở trên là một file nội bộ (internal) nằm ngay trên server của cta, chứ ko phải 1 đường link lấy từ web bên ngàoi
+            fbImage.IsMultiple = false;//Khóa tính năng tải lên nhiều file, ép cái FilesBox chỉ hiện thị 1 ảnh duy nhất, tắt kéo thả hàng loạt
+            fbImage.LoadFile(Guid.Empty, FileUploadTypes.UserAvatar);//truyền guid empty vì tài khoản mới chưa có, định danh file cbi tải lên thuộc nhóm ảnh UserAvatar, được cấu hình ở FileManager vs cái TbluploadFile trong db
+            //string script = @"
+            //    window.addEventListener('load', function() {
+            //        if (typeof CMSMasterJs !== 'undefined' && typeof CMSMasterJs.HideChangePwd === 'function') {
+            //            CMSMasterJs.HideChangePwd();
+            //            CMSMasterJs.ToggleEmployeeInfo(document.getElementById('"" + chkLaNhanVien.ClientID + @""'));
+            //        }
+            //    });
+            //";
+            // Xóa chuỗi gán script cũ dài dòng và thay bằng đoạn này:
+            string script = $"CMSMasterJs.HideChangePwd(); CMSMasterJs.ToggleEmployeeInfo(document.getElementById('{chkLaNhanVien.ClientID}'));";
+            ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "ResetFormUI", script, true);
         }
         private void EditUserAction(object sender, EventArgs e)
         {
@@ -148,6 +161,9 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
                 return;
             }
             this.UserId = user.UserId;
+            fbImage.SingleFilePath = user.Avatar;
+            fbImage.SingleFilePathType = FileTypes.Internal;
+            fbImage.IsMultiple = false;
             fbImage.LoadFile(this.UserId, FileUploadTypes.UserAvatar);
             divImage.Visible = true;
             //--------------------------------------------
@@ -157,7 +173,24 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
             txtPhone.Text = user.MobileAlias;
             divPassword.Attributes["data-edit"] = "true";
             divChangePassword.Visible = true;
+            divPassword.Visible = true;
             chkStatus.Checked = user.IsActivated;
+            chkLaNhanVien.Checked = user.LaNhanVien;
+            if (user.LaNhanVien)
+            {
+                txtCCCD.Text = user.IdCCCD;
+                txtDiaChi.Text = user.DiaChi;
+                txtNgaySinh.Text = user.NgaySinh.HasValue ? user.NgaySinh.Value.ToString("yyyy-MM-dd") : "";
+                txtNgayGiaNhap.Text = user.NgayGiaNhap.HasValue ? user.NgayGiaNhap.Value.ToString("yyyy-MM-dd") : "";
+                if (user.IdPhongBan.HasValue)
+                    ddlPhongBan.SelectedValue = user.IdPhongBan.Value.ToString();
+                if (user.IdChucDanh.HasValue)
+                    ddlChucDanh.SelectedValue = user.IdChucDanh.Value.ToString();
+                if (!string.IsNullOrEmpty(user.GioiTinh))
+                    ddlGioiTinh.SelectedValue = user.GioiTinh;
+            }
+            string script = $"CMSMasterJs.ToggleEmployeeInfo(document.getElementById('{chkLaNhanVien.ClientID}'));";
+            ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "ToggleUI", script, true);
             //---------------------------------------------
             MembershipUser membershipUser = Membership.GetUser(user.UserName);
             if (membershipUser != null)
@@ -186,8 +219,9 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
 
                 if (!string.IsNullOrEmpty(txtPhone.Text) && !RegexUtilities.IsValidPhone(txtPhone.Text))
                     validationEngine.AddErrorPrompt(txtPhone.ClientID, GetResourceText(BackEndResourceKeys.INVALID_PHONE_NUMBER));
-
-                if (chkChangePassword.Checked)
+                if (chkLaNhanVien.Checked && string.IsNullOrEmpty(txtCCCD.Text.Trim()))
+                    validationEngine.AddErrorPrompt(txtCCCD.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_ENTER_THE_VALUE));
+                if (chkChangePassword.Checked && divChangePassword.Visible)
                 {
                     if (string.IsNullOrEmpty(txtPassword.Text.Trim()))
                         validationEngine.AddErrorPrompt(txtPassword.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_ENTER_THE_VALUE));
@@ -236,6 +270,36 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
                 user.Email = txtEmail.Text;
                 user.MobileAlias = txtPhone.Text;
                 user.IsActivated = chkStatus.Checked;
+                user.LaNhanVien = chkLaNhanVien.Checked;
+                if (user.LaNhanVien)
+                {
+                    user.IdCCCD = txtCCCD.Text.Trim();
+                    user.DiaChi = txtDiaChi.Text.Trim();
+                    user.GioiTinh = ddlGioiTinh.SelectedValue;
+                    DateTime tempDate;
+                    if (DateTime.TryParse(txtNgaySinh.Text, out tempDate))
+                        user.NgaySinh = tempDate;
+                    else
+                        user.NgaySinh = null;
+
+                    if (DateTime.TryParse(txtNgayGiaNhap.Text, out tempDate))
+                        user.NgayGiaNhap = tempDate;
+                    else
+                        user.NgayGiaNhap = null;
+
+                    Guid idPhongBan, idChucDanh;
+                    if (this.GetValue(ddlPhongBan, out idPhongBan) && idPhongBan != Guid.Empty)
+                        user.IdPhongBan = idPhongBan;
+                    if (this.GetValue(ddlChucDanh, out idChucDanh) && idChucDanh != Guid.Empty)
+                        user.IdChucDanh = idChucDanh;
+                }
+                else
+                {
+                    // Nếu không phải nhân viên, ép null toàn bộ để tránh rác DB
+                    user.IdCCCD = user.DiaChi = user.GioiTinh = null;
+                    user.NgaySinh = user.NgayGiaNhap = null;
+                    user.IdPhongBan = user.IdChucDanh = null;
+                }
                 string password = string.Empty;
                 if (!string.IsNullOrEmpty(txtPassword.Text))
                     password = txtPassword.Text;
@@ -244,58 +308,84 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
                 Guid roleId = Guid.Empty;
                 if (this.GetValue(ddlRole, out roleId) && roleId != Guid.Empty)
                     user.RoleId = roleId;
-                if (isAdd)
-                {
-                    if (string.IsNullOrEmpty(password))
-                        password = SecurityUtilities.CreateAlphaNumericString(8);
-                    user.Password = password;
-                    user = organizationUserManager.CreateOrUpdate(user);
-                    if (user == null)
-                    {
-                        ShowInvalidDataError();
-                        return;
-                    }
-                    #region Add
-                    //------------------------------------------
-                    if (user.Email != null)
-                    {
-                        if (!user.Email.Contains("no-email.com") && RegexUtilities.IsValidEmail((user.Email)))
-                            SendMail(new
-                            {
-                                User = user,
-                                Password = password,
-                            }, EventArgs.Empty);
-                    }
-                    ShowNotify(GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY));
-                    #endregion
-                }
-                else
-                {
-                    bool isNewPass = false;
-                    if (!string.IsNullOrEmpty(password))
-                    {
-                        user.Password = password;
-                        isNewPass = true;
-                    }
+                //if (isAdd)
+                //{
+                //    if (string.IsNullOrEmpty(password))
+                //        password = SecurityUtilities.CreateAlphaNumericString(8);
+                //    user.Password = password;
+                //    user = organizationUserManager.CreateOrUpdate(user);
+                //    if (user == null)
+                //    {
+                //        ShowInvalidDataError();
+                //        return;
+                //    }
+                //    #region Add
+                //    //------------------------------------------
+                //    if (user.Email != null)
+                //    {
+                //        if (!user.Email.Contains("no-email.com") && RegexUtilities.IsValidEmail((user.Email)))
+                //            SendMail(new
+                //            {
+                //                User = user,
+                //                Password = password,
+                //            }, EventArgs.Empty);
+                //    }
+                //    ShowNotify(GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY));
+                //    #endregion
+                //}
+                //else
+                //{
+                //    bool isNewPass = false;
+                //    if (!string.IsNullOrEmpty(password))
+                //    {
+                //        user.Password = password;
+                //        isNewPass = true;
+                //    }
 
-                    user = organizationUserManager.CreateOrUpdate(user);
-                    if (user != null)
+                //    user = organizationUserManager.CreateOrUpdate(user);
+                //    if (user != null)
+                //    {
+                //        //------------------------------------------
+                //        if (isNewPass && user.Email != null)
+                //        {
+                //            if (!user.Email.Contains("no-email.com") && RegexUtilities.IsValidEmail((user.Email)))
+                //            {
+                //                SendMail(new
+                //                {
+                //                    User = user,
+                //                    Password = txtPassword.Text,
+                //                }, EventArgs.Empty);
+                //            }
+                //        }
+                //    }
+                //    ShowSuccessSaveData();
+                //}
+                user.Password = password;
+                // BỔ SUNG KHỐI NÀY ĐỂ GHI NHẬN LINK ẢNH VÀO OBJECT USER
+                if (fbImage != null)
+                {
+                    string avatarPath = fbImage.SingleFilePath;
+
+                    // Nếu FilesBox trả về chuỗi rác "no-file.png", ta chủ động ép nó thành chuỗi rỗng để DB được sạch
+                    if (!string.IsNullOrEmpty(avatarPath) && avatarPath.Contains("no-file.png"))
                     {
-                        //------------------------------------------
-                        if (isNewPass && user.Email != null)
-                        {
-                            if (!user.Email.Contains("no-email.com") && RegexUtilities.IsValidEmail((user.Email)))
-                            {
-                                SendMail(new
-                                {
-                                    User = user,
-                                    Password = txtPassword.Text,
-                                }, EventArgs.Empty);
-                            }
-                        }
+                        user.Avatar = "";
                     }
-                    ShowSuccessSaveData();
+                    else
+                    {
+                        user.Avatar = avatarPath;
+                    }
                 }
+                user = organizationUserManager.CreateOrUpdate(user);
+                if(user == null)
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+                if (isAdd)
+                    ShowNotify(GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY));
+                else
+                    ShowSuccessSaveData();
             }
             catch (Exception exc)
             {

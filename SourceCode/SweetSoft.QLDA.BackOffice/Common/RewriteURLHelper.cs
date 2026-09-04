@@ -3,6 +3,7 @@
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Utils;
 using System;
+using System.Web.Security;
 
 namespace SweetSoft.QLDA.BackOffice.Common
 {
@@ -35,9 +36,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Profile => "/Profile";
         public static string Roles => "/Roles";
         public static string AddRole => "/Role/Add";
+        public static string LichBieu => "/LichBieu";
         public static string RoleDetail(Guid roleId)
         {
             return $"/Role/{SecurityUtilities.ProtectUrlParameter(roleId.ToString())}";
+        }
+        public static string ViewDetailEmp(Guid userId)
+        {
+            return $"/User/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";//cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
         }
         //-----------------------------------------
         public static string Classes => "/Classes";

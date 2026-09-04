@@ -195,6 +195,20 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx.cs">
+      <DependentUpon>CtrlLichNgoaiLe.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx.designer.cs">
+      <DependentUpon>CtrlLichNgoaiLe.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fLichBieu\LichBieu.aspx.cs">
+      <DependentUpon>LichBieu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fLichBieu\LichBieu.aspx.designer.cs">
+      <DependentUpon>LichBieu.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.cs">
       <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -209,11 +223,11 @@
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
     </Compile>
-    <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
+    <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
+    <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
     <Compile Include="WebService.asmx.cs">
@@ -275,9 +289,11 @@
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
+    <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
+    <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
-    <Content Include="fNhanVien\NhanVienDetail.aspx" />
+    <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
     <Content Include="fSettings\FileManagers.aspx" />
@@ -324,6 +340,16 @@
     <Content Include="Styles\plugins\slick\slick.css" />
     <Content Include="Styles\plugins\slick\slick.js" />
     <Content Include="Styles\video\video-trang-chu.mp4" />
+    <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260820.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260822.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260827.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_20082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />

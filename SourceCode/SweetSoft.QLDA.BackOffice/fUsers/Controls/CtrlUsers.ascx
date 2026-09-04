@@ -24,6 +24,13 @@
                             ValueIsOfTypeGUID="True"
                             SearchPlaceholder="Tìm kiếm nhóm người dùng..."
                             NoResultsText="Không tìm thấy nhóm người dùng"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                        </SweetSoft:BootstrapDropdown>
+                        <SweetSoft:BootstrapDropdown ID="ddlSearchLaNhanVien" runat="server"
+                            Text="Loại tài khoản"
+                            AutoPostBack="true"
+                            AllowClear="true"
+                            SearchColumn="LaNhanVien"
                             CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
                             OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                         </SweetSoft:BootstrapDropdown>
@@ -78,11 +85,37 @@
                 <Columns>
                     <asp:TemplateField HeaderText="Account" HeaderStyle-CssClass="text-center" SortExpression="UserName">
                         <ItemTemplate>
-                            <div class="flex">
-                                <img src="/Styles/images/user-icon.png" class="avatar-sm rounded-circle me-1" onerror="this.src='/Styles/images/user-icon.png'">
-                                <asp:LinkButton runat="server" CssClass="card-link" Visible='<%# this.IsEdit %>'
-                                    ID="lbtView" CommandName="ITEM_DETAIL" Text='<%# string.Format("{0} ({1})", Eval("UserName"), Eval("DisplayName")) %>'></asp:LinkButton>
-                                <span runat="server" id="tagName" visible='<%# !this.IsEdit %>'><%# string.Format("{0} ({1})", Eval("UserName"), Eval("DisplayName")) %></span>
+                            <!-- Bắt buộc cấm rớt dòng xuống dưới avatar bằng flex-nowrap -->
+                            <div class="d-flex align-items-center flex-nowrap text-left">
+            
+                                <!-- 1. KHU VỰC AVATAR (Cố định, không co giãn, chứa Huy hiệu đè lên) -->
+                                <div class="position-relative flex-shrink-0 me-3">
+                                    <!-- Avatar -->
+                                    <!-- Avatar có cơ chế Fallback an toàn -->
+                                    <img src='<%# !string.IsNullOrEmpty(Convert.ToString(Eval("Avatar"))) ? Eval("Avatar") : "/Styles/images/user-icon.png" %>' 
+                                         class="avatar-sm rounded-circle" 
+                                         style="width: 42px; height: 42px; object-fit: cover;" 
+                                         onerror="this.onerror=null; this.src='/Styles/images/user-icon.png'">
+                
+                                    <!-- Huy hiệu (Badge) đè góc phải dưới -->
+                                    <span class="position-absolute bottom-0 start-100 translate-middle badge rounded-pill <%# Convert.ToBoolean(Eval("LaNhanVien")) ? "bg-success" : "bg-secondary" %>" 
+                                          style="font-size: 0.6rem; padding: 0.3em 0.4em; border: 2px solid white;"
+                                          title='<%# Convert.ToBoolean(Eval("LaNhanVien")) ? GetResourceText(BackEndResourceKeys.EMPLOYEE_ACCOUNT) : string.Format("{0}/{1}", GetResourceText(BackEndResourceKeys.SYSTEM_ACCOUNT), GetResourceText(BackEndResourceKeys.GUEST))%>' 
+                                          data-bs-toggle="tooltip">
+                                        <i class='<%# Convert.ToBoolean(Eval("LaNhanVien")) ? "fas fa-user-tie" : "fas fa-desktop" %>'></i>
+                                    </span>
+                                </div>
+            
+                                <!-- 2. KHU VỰC VĂN BẢN (Tự động chiếm phần còn lại, dài quá thì bẻ chữ) -->
+                                <div class="flex-grow-1" style="min-width: 0;">
+                                    <asp:LinkButton runat="server" CssClass="card-link fw-bold text-primary d-block text-break mb-0" Visible='<%# this.IsEdit %>'
+                                        ID="lbtView" CommandName="ITEM_DETAIL" Text='<%# string.Format("{0} ({1})", Eval("UserName"), Eval("DisplayName")) %>'></asp:LinkButton>
+                
+                                    <span runat="server" id="tagName" class="fw-bold text-primary d-block text-break mb-0" visible='<%# !this.IsEdit %>'>
+                                        <%# string.Format("{0} ({1})", Eval("UserName"), Eval("DisplayName")) %>
+                                    </span>
+                                </div>
+            
                             </div>
                         </ItemTemplate>
                     </asp:TemplateField>
@@ -118,23 +151,29 @@
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
-                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline"
-                                ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
-                                ButtonIcon='<%# this.IsView ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
-                            </SweetSoft:SmartLinkButton>
+                            <div class="d-flex justify-content-center gap-2">
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit && Convert.ToBoolean(Eval("LaNhanVien"))%>' ID="lbtEmpDetail" CommandName="VIEW_EMP_DETAIL" CssClass="btn-grid-action text-decoration-underline text-success" ResourceKey='<%# BackEndResourceKeys.EMPLOYEE_DETAIL%>' ButtonIcon='<%# "fas fa-eye" %>'>
 
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit  %>'
-                                ID="lbtResetPassword" CommandName="RESET_PASSWORD" CssClass="btn-grid-action text-decoration-underline ms-2 me-2"
-                                ResourceKey='<%# BackEndResourceKeys.RESET_PASSWORD %>'
-                                ButtonIcon="fas fa-unlock-alt">
-                            </SweetSoft:SmartLinkButton>
+                                </SweetSoft:SmartLinkButton>
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
+                                    ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline"
+                                    ResourceKey='<%# BackEndResourceKeys.EDIT%>'
+                                    ButtonIcon='<%#  "fas fa-pencil-alt" %>'>
+                                </SweetSoft:SmartLinkButton>
 
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
-                                ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
-                                ResourceKey='<%# BackEndResourceKeys.DELETE %>'
-                                ButtonIcon="fas fa-trash">
-                            </SweetSoft:SmartLinkButton>
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit  %>'
+                                    ID="lbtResetPassword" CommandName="RESET_PASSWORD" CssClass="btn-grid-action text-decoration-underline ms-2 me-2"
+                                    ResourceKey='<%# BackEndResourceKeys.RESET_PASSWORD %>'
+                                    ButtonIcon="fas fa-unlock-alt">
+                                </SweetSoft:SmartLinkButton>
+
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
+                                    ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
+                                    ResourceKey='<%# BackEndResourceKeys.DELETE %>'
+                                    ButtonIcon="fas fa-trash">
+                                </SweetSoft:SmartLinkButton>
+                            </div>
+                            
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
@@ -176,8 +215,24 @@
                                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchEmail" SearchColumn="Email" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></label>
+                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchCCCD" SearchColumn="IdCCCD" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CHUC_DANH) %></label>
+                                    <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchChucDanh" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONG_BAN) %></label>
+                                    <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchPhongBan" SimpleInit="true" PlaceHolder="Select the value" ValueIsOfTypeGUID="True"></SweetSoft:ExtraDropdown>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %></label>
-                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchPhone" SearchColumn="PhoneNumber" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
+                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchPhone" SearchColumn="PhoneNumber" PlaceHolder="Enter the value" ValueIsOfTypeGUID="True"></SweetSoft:ExtraTextBox>
                             </div>
                             <div runat="server" visible="false" class="col-md-6 mb-3">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CREATED_DATE) %></label>

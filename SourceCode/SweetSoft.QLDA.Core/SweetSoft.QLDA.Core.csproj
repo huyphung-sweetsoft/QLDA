@@ -220,6 +220,7 @@
     <Compile Include="MailManager\Repository\EmailHistoryRepository.cs" />
     <Compile Include="Managers\BaseManager.cs" />
     <Compile Include="Managers\ChucDanhManager.cs" />
+    <Compile Include="Managers\LichBieuChungManager.cs" />
     <Compile Include="Managers\NhanVienManager.cs" />
     <Compile Include="Managers\PhongBanManager.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationOptions.cs" />
@@ -238,7 +239,9 @@
     <Compile Include="PdfGeneration\Services\NRecoPdfGenerator.cs" />
     <Compile Include="PdfGeneration\Services\PdfGenerationService.cs" />
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
+    <Compile Include="Respositories\CauHinhTuanLamViecRepository.cs" />
     <Compile Include="Respositories\ChucDanhRepository.cs" />
+    <Compile Include="Respositories\LichNgoaiLeRepository.cs" />
     <Compile Include="Respositories\NhanVienRepository.cs" />
     <Compile Include="Respositories\PhongBanRepository.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />

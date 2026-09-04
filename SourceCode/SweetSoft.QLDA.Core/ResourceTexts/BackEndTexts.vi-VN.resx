@@ -909,6 +909,72 @@
   <data name="CHUC_DANH" xml:space="preserve">
     <value>Chức Danh</value>
   </data>
+  <data name="GIOI_TINH" xml:space="preserve">
+    <value>Giới tính</value>
+  </data>
+  <data name="ACCOUNT_TYPE" xml:space="preserve">
+    <value>Loại Tài Khoản</value>
+  </data>
+  <data name="EMPLOYEE_ACCOUNT" xml:space="preserve">
+    <value>Tài khoản nhân viên</value>
+  </data>
+  <data name="SYSTEM_ACCOUNT" xml:space="preserve">
+    <value>Tài khoản hệ thống</value>
+  </data>
+  <data name="PERSONAL_INFORMATION" xml:space="preserve">
+    <value>Thông tin cá nhân</value>
+  </data>
+  <data name="DATE_OF_BIRTH" xml:space="preserve">
+    <value>Ngày Sinh</value>
+  </data>
+  <data name="GENERATE" xml:space="preserve">
+    <value>Khởi tạo</value>
+  </data>
+  <data name="GUEST" xml:space="preserve">
+    <value>Khách</value>
+  </data>
+  <data name="EMPLOYEE_DETAIL" xml:space="preserve">
+    <value>Chi tiết nhân viên</value>
+  </data>
+  <data name="WORKING_WEEK_CONFIG" xml:space="preserve">
+    <value>Cấu hình tuần làm việc</value>
+  </data>
+  <data name="HOLIDAY_AND_MAKEUP_WORK" xml:space="preserve">
+    <value>Lễ tết &amp; Làm bù</value>
+  </data>
+  <data name="STANDARD_WORKING_HOURS" xml:space="preserve">
+    <value>Khung giờ làm việc tiêu chuẩn</value>
+  </data>
+  <data name="WORKING" xml:space="preserve">
+    <value>Làm việc</value>
+  </data>
+  <data name="DAY_OFF" xml:space="preserve">
+    <value>Nghỉ</value>
+  </data>
+  <data name="MORNING_SHIFT" xml:space="preserve">
+    <value>Ca sáng</value>
+  </data>
+  <data name="AFTERNOON_SHIFT" xml:space="preserve">
+    <value>Ca chiều</value>
+  </data>
+  <data name="SAVE_WEEK_CONFIG" xml:space="preserve">
+    <value>Lưu cấu hình tuần</value>
+  </data>
+  <data name="EVENT_NAME" xml:space="preserve">
+    <value>Tên sự kiện</value>
+  </data>
+  <data name="FROM_DATE" xml:space="preserve">
+    <value>Từ ngày</value>
+  </data>
+  <data name="TO_DATE" xml:space="preserve">
+    <value>Đến ngày</value>
+  </data>
+  <data name="INFORMATION" xml:space="preserve">
+    <value>Thông tin</value>
+  </data>
+  <data name="DESCRIPTION" xml:space="preserve">
+    <value>Mô tả</value>
+  </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
   </data>
@@ -1032,7 +1098,7 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="GIOI_TINH" xml:space="preserve">
-    <value>Giới tính</value>
+  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý lịch biểu chung</value>
   </data>
 </root>

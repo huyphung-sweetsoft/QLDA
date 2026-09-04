@@ -63,6 +63,9 @@ namespace SweetSoft.QLDA.Controls
                 string resourceText = GetResourceText(ResourceKey);
                 switch (ResourceKey)
                 {
+                    case "EMPLOYEE_DETAIL":
+                        this.CssClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
+                        break;
                     case "DELETE":
                         this.CssClass = "btn btn-outline-danger btn-sm text-center btn-smart-link";
                         break;
@@ -75,6 +78,7 @@ namespace SweetSoft.QLDA.Controls
                     case "SAVE":
                         this.CssClass = "btn btn-outline-warning btn-sm text-center btn-smart-link";
                         break;
+                    case "RESET_PASSWORD":
                     default:
                         this.CssClass = "btn btn-outline-primary btn-sm text-center btn-smart-link";
                         break;
@@ -88,6 +92,10 @@ namespace SweetSoft.QLDA.Controls
         {
             switch (resourceKey)
             {
+                case "RESET_PASSWORD":
+                    return "Đặt lại mật khẩu";
+                case "EMPLOYEE_DETAIL":
+                    return "Chi tiết nhân viên";
                 case "DELETE":
                     return "Xóa";
                 case "EDIT":
