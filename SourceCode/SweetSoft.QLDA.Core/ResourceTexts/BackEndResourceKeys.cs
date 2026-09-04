@@ -537,7 +537,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string THIS_QUARTER = "THIS_QUARTER";
         public const string THIS_YEAR = "THIS_YEAR";
         public const string APPLY = "APPLY";
-        public const string ALL_PROJECTS = "ALL_PROJECTS";
         public const string TRACK_OVERALL_PROJECT_STATUS = "TRACK_OVERALL_PROJECT_STATUS";
         public const string ACTIVE_PROJECTS = "ACTIVE_PROJECTS";
         public const string PROJECTS_IN_PROGRESS = "PROJECTS_IN_PROGRESS";
@@ -556,7 +555,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROGRESS_OF_EACH_PROJECT = "PROGRESS_OF_EACH_PROJECT";
         public const string PROJECTS_NEEDING_ATTENTION = "PROJECTS_NEEDING_ATTENTION";
         public const string PROJECTS_WITH_MOST_RISKS_OR_ISSUES = "PROJECTS_WITH_MOST_RISKS_OR_ISSUES";
-        public const string PROJECT = "PROJECT";
         public const string RISK = "RISK";
         public const string ISSUE = "ISSUE";
         public const string NO_PROJECTS_WITH_RISKS_OR_ISSUES = "NO_PROJECTS_WITH_RISKS_OR_ISSUES";

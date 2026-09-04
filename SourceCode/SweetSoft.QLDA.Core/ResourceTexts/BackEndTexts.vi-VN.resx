@@ -1654,8 +1654,6 @@
   <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
     <value>Xóa phiên bản</value>
   </data>
-</root>
-  </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
