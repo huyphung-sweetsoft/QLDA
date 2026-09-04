@@ -279,7 +279,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string CONTACT_EMAIL = "CONTACT_EMAIL";
         public const string CONTACT_PHONE_NUMBER = "CONTACT_PHONE_NUMBER";
         //public const string END_DATE_PREDICTED = "END_DATE_PREDICTED";
-        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
         public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";
         public const string EMPLOYEE_MANAGEMENT = "EMPLOYEE_MANAGEMENT";
         public const string EMPLOYEE_NAME = "EMPLOYEE_NAME";

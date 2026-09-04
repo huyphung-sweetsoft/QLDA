@@ -169,6 +169,8 @@
     <Compile Include="TblVaiTroDuAnController.cs" />
     <Compile Include="TblVanDe.cs" />
     <Compile Include="TblVanDeController.cs" />
+    <Compile Include="TblVanDeNhanVien.cs" />
+    <Compile Include="TblVanDeNhanVienController.cs" />
     <Compile Include="VwAspnetApplication.cs" />
     <Compile Include="VwAspnetMembershipUser.cs" />
     <Compile Include="VwAspnetProfile.cs" />
