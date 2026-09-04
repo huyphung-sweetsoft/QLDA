@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -32,13 +32,13 @@ namespace SweetSoft.QLDA.Core.Managers
         private readonly AuditManager _auditManager;
         private readonly UserRepository _userRepository;
         //Contructor tiếp nhận context, khởi tạo Audit rồi truyền xuống các repo phụ thuộc
-        public NhanVienManager(IAppContext applicationContext =  null) : base(applicationContext)
+        public NhanVienManager(IAppContext applicationContext = null) : base(applicationContext)
         {
             _auditManager = new AuditManager(GetClientInfo());//GetClientInfo từ BaseManager để thu thập siêu dữ liệu của phiên làm việc hiện tại,
             //gồm: 4 metadata, qua bên BaseManager xem
-            _nhanVienRepository = new NhanVienRepository (_auditManager);//truyền audit vô để nó kích hoạt Auto Audit Logging
-            _userRepository = new UserRepository (_auditManager);
-        }   
+            _nhanVienRepository = new NhanVienRepository(_auditManager);//truyền audit vô để nó kích hoạt Auto Audit Logging
+            _userRepository = new UserRepository(_auditManager);
+        }
         //3 thằng search
         public DataTable SearchNhanVien(string searchTerm, Guid userId, Guid maPhongBan, Guid maChucDanh, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {

@@ -1,6 +1,8 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlDashboard.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboard" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+
+
 <div class="card mt-3">
     <div class="card-body p-0">
         <div class="d-flex flex-wrap align-items-center mb-1">

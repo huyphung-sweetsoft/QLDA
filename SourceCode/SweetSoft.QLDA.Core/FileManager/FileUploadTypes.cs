@@ -12,8 +12,12 @@ namespace SweetSoft.QLDA.Core.FileManager
         [ERender("Tệp đính kèm email")]
         AttachmentsEmail,
         [ERender("Ảnh đại diện người dùng")]
-        UserAvatar, 
+        UserAvatar,
         [ERender("Ảnh của chướng ngại vật")]
-        OvercomeObstacle 
+        OvercomeObstacle,
+        [ERender("Mẫu tài liệu")]
+        DocumentTemplate,
+        [ERender("Phiên bản tài liệu")]
+        DocumentVersion
     }
 }

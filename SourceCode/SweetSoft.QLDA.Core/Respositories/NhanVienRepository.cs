@@ -1,5 +1,7 @@
 ﻿using SubSonic;
 using SweetSoft.QLDA.Core.SysManager;
+using System.Linq;
+using System.Text;
 using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
@@ -63,7 +65,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             InlineQueryHelpers.GetTotal(ref dt, out totalRecord);
             return dt;
         }
-
         public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
@@ -171,14 +172,6 @@ namespace SweetSoft.QLDA.Core.Respositories
         #endregion
 
         #region CRUD Overrides
-        public override TblNhanVien GetById(Guid id)
-        {
-            return new Select()
-                .From(TblNhanVien.Schema)
-                .Where(TblNhanVien.IdNhanVienColumn).IsEqualTo(id)
-                .And(TblNhanVien.DaXoaColumn).IsEqualTo(false)
-                .ExecuteSingle<TblNhanVien>();
-        }
         public override TblNhanVien Insert(TblNhanVien nhanVien)
         {
             if (nhanVien == null)
@@ -311,6 +304,22 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .And(TblNhanVien.IdNhanVienColumn).IsNotEqualTo(id)
                 .And(TblNhanVien.DaXoaColumn).IsEqualTo(false);
             return select.GetRecordCount() > 0;
+        }
+        public override TblNhanVien GetById(Guid id)
+        {
+            return new Select()
+                .From(TblNhanVien.Schema)
+                .Where(TblNhanVien.UserIdColumn).IsEqualTo(id)
+                .And(TblNhanVien.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle <TblNhanVien>();
+        }
+
+        public List<TblNhanVien> GetAllTblNhanVien()
+        {
+            Select select = new Select();
+            select.From(TblNhanVien.Schema);
+            select.And(TblNhanVien.DaXoaColumn).IsEqualTo(false);
+            return select.ExecuteTypedList<TblNhanVien>();
         }
 
         public bool IsUserAssigned(Guid id, Guid userId)

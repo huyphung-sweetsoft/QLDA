@@ -1,4 +1,4 @@
-﻿//--------------------PROGRAMER LOGS------------------------
+//--------------------PROGRAMER LOGS------------------------
 using System.Web;
 using System.Xml.Linq;
 
@@ -9,6 +9,33 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
     /// </summary>
     public class BackEndResourceKeys
     {
+        // Document management
+        public const string DOCUMENT_MANAGEMENT = "DOCUMENT_MANAGEMENT";
+        public const string DOCUMENT_GROUP = "DOCUMENT_GROUP";
+        public const string DOCUMENT_GROUP_LIST = "DOCUMENT_GROUP_LIST";
+        public const string DOCUMENT_GROUP_NAME = "DOCUMENT_GROUP_NAME";
+        public const string DESCRIPTION = "DESCRIPTION";
+        public const string DISPLAY_ORDER = "DISPLAY_ORDER";
+        public const string DOCUMENT_TYPE = "DOCUMENT_TYPE";
+        public const string DOCUMENT_TYPE_LIST = "DOCUMENT_TYPE_LIST";
+        public const string DOCUMENT_TYPE_NAME = "DOCUMENT_TYPE_NAME";
+        public const string ALLOW_SIGNING = "ALLOW_SIGNING";
+        public const string DEFAULT_SIGNING_METHOD = "DEFAULT_SIGNING_METHOD";
+        public const string ALLOW_SEND_CUSTOMER = "ALLOW_SEND_CUSTOMER";
+        public const string ALLOW_PHYSICAL_STORAGE = "ALLOW_PHYSICAL_STORAGE";
+        public const string PAPER_SIGNING = "PAPER_SIGNING";
+        public const string EXTERNAL_DIGITAL_SIGNING = "EXTERNAL_DIGITAL_SIGNING";
+        public const string SELECT_DOCUMENT_GROUP = "SELECT_DOCUMENT_GROUP";
+        public const string DOCUMENT_STORAGE_LOCATION ="DOCUMENT_STORAGE_LOCATION";
+        public const string DOCUMENT_STORAGE_LOCATION_LIST ="DOCUMENT_STORAGE_LOCATION_LIST";
+        public const string DOCUMENT_STORAGE_LOCATION_NAME ="DOCUMENT_STORAGE_LOCATION_NAME";
+        public const string DOCUMENT_STORAGE_LOCATION_CODE ="DOCUMENT_STORAGE_LOCATION_CODE";
+        public const string STORAGE_LEVEL ="STORAGE_LEVEL";
+        public const string PARENT_STORAGE_LOCATION ="PARENT_STORAGE_LOCATION";
+        public const string RESPONSIBLE_EMPLOYEE ="RESPONSIBLE_EMPLOYEE";
+        public const string SELECT_STORAGE_LEVEL ="SELECT_STORAGE_LEVEL";
+        public const string SELECT_PARENT_STORAGE_LOCATION ="SELECT_PARENT_STORAGE_LOCATION";
+
         public const string ADVANCED_SEARCH = "ADVANCED_SEARCH";
         public const string NO_DATA = "NO_DATA";
         public const string CHANGE_PASSWORD = "CHANGE_PASSWORD";
@@ -260,9 +287,25 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
         public const string CREATE = "CREATE";
         public const string EXPORT = "EXPORT";
-        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
         public const string PROJECT_LIST = "PROJECT_LIST";
         public const string PROJECT_MANAGEMENT = "PROJECT_MANAGEMENT";
+        public const string PROJECT_TYPE = "PROJECT_TYPE";
+        public const string PROJECT_NAME = "PROJECT_NAME";
+        public const string CUSTOMER_NAME = "CUSTOMER_NAME";
+        public const string PROJECT_MANAGER = "PROJECT_MANAGER";
+        public const string PROJECT_CODE = "PROJECT_CODE";
+        public const string CONTRACT = "CONTRACT";
+        public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
+        public const string CONTRACT_VALUE = "CONTRACT_VALUE";
+        public const string SIGN_DATE = "SIGN_DATE";
+        public const string PROJECT_CODE_ALREADY_EXISTS = "PROJECT_CODE_ALREADY_EXISTS";
+        public const string PROJECT_INFORMATION = "PROJECT_INFORMATION";
+        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
+        public const string CUSTOMER_TYPE = "CUSTOMER_TYPE";
+        public const string CONTACT_PERSON = "CONTACT_PERSON";
+        public const string CONTACT_EMAIL = "CONTACT_EMAIL";
+        public const string CONTACT_PHONE_NUMBER = "CONTACT_PHONE_NUMBER";
+        //public const string END_DATE_PREDICTED = "END_DATE_PREDICTED";
         public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";
         public const string EMPLOYEE_MANAGEMENT = "EMPLOYEE_MANAGEMENT";
         public const string EMPLOYEE_NAME = "EMPLOYEE_NAME";
@@ -291,7 +334,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string FROM_DATE = "FROM_DATE";
         public const string TO_DATE = "TO_DATE";
         public const string INFORMATION = "INFORMATION";
-        public const string DESCRIPTION = "DESCRIPTION";
         public const string SCHEDULE_MANAGEMENT = "SCHEDULE_MANAGEMENT";
         public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
 
@@ -336,7 +378,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE = "THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE";
         public const string RESULT = "RESULT";
         public const string PLEASE_CHOSE_GRADE = "PLEASE_CHOSE_GRADE";
-        public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
+        
         //public const string JOIN_COMPETITION = "JOIN_COMPETITION";
 
         //Contest
@@ -345,6 +387,204 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MODERATOR = "MODERATOR";
         public const string JOIN_COMPETITIONS = "JOIN_COMPETITIONS";
         public const string COMPETITION_NAME = "COMPETITION_NAME";
-        //
+
+        //Project
+        public const string USER_MANAGEMENT = "USER_MANAGEMENT";
+        public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
+        //Task
+        public const string TASK_MANAGEMENT = "TASK_MANAGEMENT";
+        public const string TASK_LIST = "TASK_LIST";
+        public const string TASK_CODE = "TASK_CODE";
+        public const string TASK_NAME = "TASK_NAME";
+        public const string OWNER = "OWNER";
+        public const string PRIORITY = "PRIORITY";
+        public const string DURATION = "DURATION";
+        public const string DEPENDENT = "DEPENDENT";
+        public const string PHASE = "PHASE";
+        public const string PARENT_TASK = "PARENT_TASK";
+        //Risk
+        public const string RISK_LIST = "RISK_LIST";
+        public const string RISK_CODE = "RISK_CODE";
+        public const string RISK_NAME = "RISK_NAME";
+        public const string PROBABILITY = "PROBABILITY";
+        public const string RISK_LEVEL = "RISK_LEVEL";
+        public const string IMPACT = "IMPACT";
+        public const string MONITOR = "MONITOR";
+        public const string MITIGATION = "MITIGATION";
+        public const string CONTINGENCY = "CONTINGENCY";
+        public const string NOT_ENTERED = "NOT_ENTERED";
+        public const string CAN_NOT_BE_BLANK = "CAN_NOT_BE_BLANK";
+        public const string VERY_LOW = "VERY_LOW";
+        public const string LOW = "LOW";
+        public const string MEDIUM = "MEDIUM";
+        public const string HIGH = "HIGH";
+        public const string VERY_HIGH = "VERY_HIGH";
+
+        //Issue
+        public const string ISSUE_LIST = "ISSUE_LIST";
+        public const string ISSUE_CODE = "ISSUE_CODE";
+        public const string ISSUE_NAME = "ISSUE_NAME";
+        public const string WORK_AFFECTED = "WORK_AFFECTED";
+        public const string PROCESSING = "PROCESSING";
+        public const string PROCESSED = "PROCESSED";
+        public const string ORIGIN = "ORIGIN";
+        public const string TASK_ISSUE = "TASK_ISSUE";
+        public const string CUSTOMER_FEEDBACK = "CUSTOMER_FEEDBACK";
+        //Meeting
+        public const string MEETING_MANAGEMENT = "MEETING_MANAGEMENT";
+        public const string MEET_SCHE = "MEET_SCHE";
+        public const string MEETING_LIST = "MEETING_LIST";
+        public const string MEETING_CODE = "MEETING_CODE";
+        public const string MEETING_NAME = "MEETING_NAME";
+        public const string GENERAL_CONTENT = "GENERAL_CONTENT";
+        public const string MEETING_ROOM = "MEETING_ROOM";
+        public const string DOCUMENT_TEMPLATE = "DOCUMENT_TEMPLATE";
+        public const string DOCUMENT_TEMPLATE_LIST = "DOCUMENT_TEMPLATE_LIST";
+        public const string DOCUMENT_TEMPLATE_NAME = "DOCUMENT_TEMPLATE_NAME";
+        public const string TEMPLATE_VERSION = "TEMPLATE_VERSION";
+        public const string DEFAULT_TEMPLATE = "DEFAULT_TEMPLATE";
+        public const string TEMPLATE_FILE = "TEMPLATE_FILE";
+        public const string SELECT_DOCUMENT_TYPE = "SELECT_DOCUMENT_TYPE";
+        public const string FILE_NOT_UPLOADED = "FILE_NOT_UPLOADED";
+        public const string FILE_NOT_AVAILABLE = "FILE_NOT_AVAILABLE";
+        public const string SAVE_TEMPLATE_BEFORE_UPLOAD = "SAVE_TEMPLATE_BEFORE_UPLOAD";
+        public const string DOCUMENT = "DOCUMENT";
+        public const string DOCUMENT_LIST = "DOCUMENT_LIST";
+        public const string DOCUMENT_CODE = "DOCUMENT_CODE";
+        public const string DOCUMENT_NAME = "DOCUMENT_NAME";
+        public const string DOCUMENT_STATUS = "DOCUMENT_STATUS";
+        public const string SIGNING_METHOD = "SIGNING_METHOD";
+        public const string CUSTOMER_SEND_STATUS = "CUSTOMER_SEND_STATUS";
+        public const string PHYSICAL_STORAGE_STATUS = "PHYSICAL_STORAGE_STATUS";
+        public const string OFFICIAL_FILE = "OFFICIAL_FILE";
+        public const string COMPANY_DOCUMENT = "COMPANY_DOCUMENT";
+        public const string SELECT_RESPONSIBLE_EMPLOYEE = "SELECT_RESPONSIBLE_EMPLOYEE";
+        public const string DRAFTING = "DRAFTING";
+        public const string PENDING_SIGNATURE = "PENDING_SIGNATURE";
+        public const string CHANGES_REQUESTED = "CHANGES_REQUESTED";
+        public const string SIGNED = "SIGNED";
+        public const string WAITING_FOR_RETURN = "WAITING_FOR_RETURN";
+        public const string RECEIVED_BACK = "RECEIVED_BACK";
+        public const string NOT_STORED = "NOT_STORED";
+        public const string STORED = "STORED";
+        public const string CHECKED_OUT = "CHECKED_OUT";
+        public const string DOCUMENT_TYPE_RULE_NOTICE = "DOCUMENT_TYPE_RULE_NOTICE";
+        public const string RESTORE_DOCUMENT_TYPE_DEFAULTS = "RESTORE_DOCUMENT_TYPE_DEFAULTS";
+        public const string DOCUMENT_VERSION_FILES = "DOCUMENT_VERSION_FILES";
+        public const string DOCUMENT_VERSION_NOTICE = "DOCUMENT_VERSION_NOTICE";
+        public const string SAVE_DOCUMENT_BEFORE_UPLOAD = "SAVE_DOCUMENT_BEFORE_UPLOAD";
+        public const string CURRENT_VERSION = "CURRENT_VERSION";
+        public const string FILE_NAME = "FILE_NAME";
+        public const string DOCUMENT_SCOPE = "DOCUMENT_SCOPE";
+        public const string ALL_DOCUMENTS = "ALL_DOCUMENTS";
+        public const string COMPANY_DOCUMENTS = "COMPANY_DOCUMENTS";
+        public const string PROJECT_DOCUMENTS = "PROJECT_DOCUMENTS";
+        public const string PROJECT = "PROJECT";
+        public const string ALL_PROJECTS = "ALL_PROJECTS";
+        public const string SELECT_PROJECT = "SELECT_PROJECT";
+        public const string DOCUMENT_TYPE_IN_GROUP = "DOCUMENT_TYPE_IN_GROUP";
+        public const string SELECT_DOCUMENT_GROUP_FIRST = "SELECT_DOCUMENT_GROUP_FIRST";
+        public const string DOCUMENT_FILTER_HINT = "DOCUMENT_FILTER_HINT";
+        public const string DOCUMENT_DETAIL = "DOCUMENT_DETAIL";
+        public const string DOCUMENT_VERSIONS = "DOCUMENT_VERSIONS";
+        public const string SIGNING_HISTORY = "SIGNING_HISTORY";
+        public const string CUSTOMER_DELIVERY_HISTORY = "CUSTOMER_DELIVERY_HISTORY";
+        public const string PHYSICAL_STORAGE_HISTORY = "PHYSICAL_STORAGE_HISTORY";
+        public const string DOCUMENT_ACTIVITY_HISTORY = "DOCUMENT_ACTIVITY_HISTORY";
+        public const string NOT_APPLICABLE = "NOT_APPLICABLE";
+        public const string NO_DOCUMENT_VERSIONS = "NO_DOCUMENT_VERSIONS";
+        public const string NO_SIGNING_HISTORY = "NO_SIGNING_HISTORY";
+        public const string NO_CUSTOMER_DELIVERY_HISTORY = "NO_CUSTOMER_DELIVERY_HISTORY";
+        public const string NO_PHYSICAL_STORAGE_HISTORY = "NO_PHYSICAL_STORAGE_HISTORY";
+        public const string NO_DOCUMENT_ACTIVITY = "NO_DOCUMENT_ACTIVITY";
+        public const string OPEN_FILE = "OPEN_FILE";
+        public const string VERSION_NUMBER = "VERSION_NUMBER";
+        public const string FILE_SIZE = "FILE_SIZE";
+        public const string SOURCE = "SOURCE";
+        public const string SENT_BY = "SENT_BY";
+        public const string SIGNER = "SIGNER";
+        public const string RECIPIENT = "RECIPIENT";
+        public const string CHANNEL = "CHANNEL";
+        public const string RESPONSE_DEADLINE = "RESPONSE_DEADLINE";
+        public const string STORAGE_LOCATION = "STORAGE_LOCATION";
+        public const string CURRENT_LOCATION = "CURRENT_LOCATION";
+        public const string ORIGINAL_COPY_CONDITION = "ORIGINAL_COPY_CONDITION";
+        public const string ACTION_TYPE = "ACTION_TYPE";
+        public const string REFERENCE_TYPE = "REFERENCE_TYPE";
+        public const string OFFICIAL_DOCUMENT_FILE_HINT = "OFFICIAL_DOCUMENT_FILE_HINT";
+        public const string NO_OFFICIAL_DOCUMENT_FILE = "NO_OFFICIAL_DOCUMENT_FILE";
+        public const string ADD_COMPANY_DOCUMENT = "ADD_COMPANY_DOCUMENT";
+        public const string INITIAL_DOCUMENT_CONTENT = "INITIAL_DOCUMENT_CONTENT";
+        public const string UPLOAD_NEW_FILE = "UPLOAD_NEW_FILE";
+        public const string USE_DOCUMENT_TEMPLATE = "USE_DOCUMENT_TEMPLATE";
+        public const string SELECT_DOCUMENT_TEMPLATE = "SELECT_DOCUMENT_TEMPLATE";
+        public const string NO_TEMPLATE_FOR_DOCUMENT_TYPE = "NO_TEMPLATE_FOR_DOCUMENT_TYPE";
+        public const string UPLOAD_AFTER_SAVE_NOTICE = "UPLOAD_AFTER_SAVE_NOTICE";
+        public const string UPLOAD_NEW_VERSION = "UPLOAD_NEW_VERSION";
+        public const string VERSION_MANAGEMENT_NOTICE = "VERSION_MANAGEMENT_NOTICE";
+        public const string ACTIVITY_CREATE_DOCUMENT = "ACTIVITY_CREATE_DOCUMENT";
+        public const string ACTIVITY_UPDATE_DOCUMENT = "ACTIVITY_UPDATE_DOCUMENT";
+        public const string ACTIVITY_DELETE_DOCUMENT = "ACTIVITY_DELETE_DOCUMENT";
+        public const string ACTIVITY_CREATE_FROM_TEMPLATE = "ACTIVITY_CREATE_FROM_TEMPLATE";
+        public const string ACTIVITY_UPLOAD_VERSION = "ACTIVITY_UPLOAD_VERSION";
+        public const string ACTIVITY_DELETE_VERSION = "ACTIVITY_DELETE_VERSION";
+
+        // Dashboard Overview
+        public const string DASHBOARD_OVERVIEW = "DASHBOARD_OVERVIEW";
+        public const string PROJECT_SCOPE = "PROJECT_SCOPE";
+        public const string DATE_RANGE = "DATE_RANGE";
+        public const string THIS_WEEK = "THIS_WEEK";
+        public const string THIS_MONTH = "THIS_MONTH";
+        public const string THIS_QUARTER = "THIS_QUARTER";
+        public const string THIS_YEAR = "THIS_YEAR";
+        public const string APPLY = "APPLY";
+        public const string TRACK_OVERALL_PROJECT_STATUS = "TRACK_OVERALL_PROJECT_STATUS";
+        public const string ACTIVE_PROJECTS = "ACTIVE_PROJECTS";
+        public const string PROJECTS_IN_PROGRESS = "PROJECTS_IN_PROGRESS";
+        public const string UPCOMING_MEETINGS = "UPCOMING_MEETINGS";
+        public const string MEETINGS_THIS_WEEK = "MEETINGS_THIS_WEEK";
+        public const string AT_RISK_PROJECTS = "AT_RISK_PROJECTS";
+        public const string RATE_ON_ACTIVE_PROJECTS = "RATE_ON_ACTIVE_PROJECTS";
+        public const string OVERDUE_TASKS = "OVERDUE_TASKS";
+        public const string INCOMPLETE_AND_OVERDUE = "INCOMPLETE_AND_OVERDUE";
+        public const string TOTAL_BUDGET = "TOTAL_BUDGET";
+        public const string TOTAL_CONTRACT_VALUE = "TOTAL_CONTRACT_VALUE";
+        public const string IN_SELECTED_SCOPE = "IN_SELECTED_SCOPE";
+        public const string PROJECT_STATUS_DISTRIBUTION = "PROJECT_STATUS_DISTRIBUTION";
+        public const string PROJECT_COUNT_BY_STATUS = "PROJECT_COUNT_BY_STATUS";
+        public const string PROJECT_PROGRESS = "PROJECT_PROGRESS";
+        public const string PROGRESS_OF_EACH_PROJECT = "PROGRESS_OF_EACH_PROJECT";
+        public const string PROJECTS_NEEDING_ATTENTION = "PROJECTS_NEEDING_ATTENTION";
+        public const string PROJECTS_WITH_MOST_RISKS_OR_ISSUES = "PROJECTS_WITH_MOST_RISKS_OR_ISSUES";
+        public const string RISK = "RISK";
+        public const string ISSUE = "ISSUE";
+        public const string NO_PROJECTS_WITH_RISKS_OR_ISSUES = "NO_PROJECTS_WITH_RISKS_OR_ISSUES";
+        public const string RESOURCE_OVERVIEW = "RESOURCE_OVERVIEW";
+        public const string HR_AND_MEMBER_ALLOCATION = "HR_AND_MEMBER_ALLOCATION";
+        public const string TOTAL_EMPLOYEES = "TOTAL_EMPLOYEES";
+        public const string PARTICIPATING = "PARTICIPATING";
+        public const string UNASSIGNED = "UNASSIGNED";
+        public const string MULTI_PROJECT_MEMBERS = "MULTI_PROJECT_MEMBERS";
+        public const string ASSIGNED_TO_TASKS = "ASSIGNED_TO_TASKS";
+        public const string NOT_ASSIGNED_TO_TASKS = "NOT_ASSIGNED_TO_TASKS";
+        public const string COST_OVERVIEW = "COST_OVERVIEW";
+        public const string BUDGET_AND_COST_SUMMARY = "BUDGET_AND_COST_SUMMARY";
+        public const string BUDGET = "BUDGET";
+        public const string EXPECTED_COST = "EXPECTED_COST";
+        public const string ACTUAL_COST = "ACTUAL_COST";
+        public const string REMAINING = "REMAINING";
+        public const string RECEIVED_PAYMENT = "RECEIVED_PAYMENT";
+        public const string REMAINING_AFTER_COST = "REMAINING_AFTER_COST";
+        public const string PROJECT_STATUS = "PROJECT_STATUS";
+        public const string SINGLE_PROJECT_OVERVIEW = "SINGLE_PROJECT_OVERVIEW";
+        public const string OVERALL_PROGRESS = "OVERALL_PROGRESS";
+        public const string WARNINGS = "WARNINGS";
+        public const string PROJECT_CODE_NAME = "PROJECT_CODE_NAME";
+        public const string OPEN_RISKS = "OPEN_RISKS";
+        public const string OPEN_ISSUES = "OPEN_ISSUES";
+        public const string SAFE = "SAFE";
+        public const string AT_RISK = "AT_RISK";
+        public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
+        public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
     }
 }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -48,8 +48,12 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CKEditor.NET">
-      <HintPath>..\Libraries\libraries\CKEditor.NET.dll</HintPath>
+    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="CKEditor.NET, Version=3.6.6.2, Culture=neutral, PublicKeyToken=e379cdf2f8354999, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\CKEditor.NET.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus, Version=6.0.6.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.6.0.6\lib\net35\EPPlus.dll</HintPath>
@@ -63,8 +67,9 @@
     <Reference Include="Google.Authenticator">
       <HintPath>..\packages\GoogleAuthenticator.3.2.0\lib\net462\Google.Authenticator.dll</HintPath>
     </Reference>
-    <Reference Include="ImageResizer">
-      <HintPath>..\Libraries\libraries\ImageResizer.dll</HintPath>
+    <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\ImageResizer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.9\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -93,9 +98,8 @@
     <Reference Include="Quartz, Version=3.13.1.0, Culture=neutral, PublicKeyToken=f6b8c98a402cc8a4, processorArchitecture=MSIL">
       <HintPath>..\packages\Quartz.3.13.1\lib\net472\Quartz.dll</HintPath>
     </Reference>
-    <Reference Include="SubSonic, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\libraries\SubSonic.dll</HintPath>
+    <Reference Include="SubSonic">
+      <HintPath>..\..\..\SubSonic2.2\SubCommander\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -139,6 +143,27 @@
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.3.0\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.3.0\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.3.0\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
@@ -146,10 +171,163 @@
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
+    <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.cs">
+      <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.designer.cs">
+      <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangDetail.aspx.cs">
+      <DependentUpon>KhachHangDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangDetail.aspx.designer.cs">
+      <DependentUpon>KhachHangDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangList.aspx.cs">
+      <DependentUpon>KhachHangList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangList.aspx.designer.cs">
+      <DependentUpon>KhachHangList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.cs">
+      <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentGroups.ascx.cs">
+      <DependentUpon>CtrlDocumentGroups.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentGroups.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentGroups.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocuments.ascx.cs">
+      <DependentUpon>CtrlDocuments.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocuments.ascx.designer.cs">
+      <DependentUpon>CtrlDocuments.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTemplates.ascx.cs">
+      <DependentUpon>CtrlDocumentTemplates.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTemplates.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentTemplates.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTypes.ascx.cs">
+      <DependentUpon>CtrlDocumentTypes.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentTypes.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentTypes.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlStorageLocations.ascx.cs">
+      <DependentUpon>CtrlStorageLocations.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlStorageLocations.ascx.designer.cs">
+      <DependentUpon>CtrlStorageLocations.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentDetail.aspx.cs">
+      <DependentUpon>DocumentDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
+      <DependentUpon>DocumentDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentGroups.aspx.cs">
+      <DependentUpon>DocumentGroups.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentGroups.aspx.designer.cs">
+      <DependentUpon>DocumentGroups.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Documents.aspx.cs">
+      <DependentUpon>Documents.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Documents.aspx.designer.cs">
+      <DependentUpon>Documents.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTemplates.aspx.cs">
+      <DependentUpon>DocumentTemplates.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTemplates.aspx.designer.cs">
+      <DependentUpon>DocumentTemplates.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTypes.aspx.cs">
+      <DependentUpon>DocumentTypes.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentTypes.aspx.designer.cs">
+      <DependentUpon>DocumentTypes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\StorageLocations.aspx.cs">
+      <DependentUpon>StorageLocations.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\StorageLocations.aspx.designer.cs">
+      <DependentUpon>StorageLocations.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardCost.ascx.cs">
+      <DependentUpon>CtrlDashboardCost.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardCost.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardCost.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.cs">
+      <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.designer.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.cs">
+      <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.cs">
+      <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard.aspx.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Dashboard.aspx.designer.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx.cs">
       <DependentUpon>CtrlEmailTemplateDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -195,6 +373,20 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fIssues\Controls\CtrlIssue.ascx.cs">
+      <DependentUpon>CtrlIssue.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlIssue.ascx.designer.cs">
+      <DependentUpon>CtrlIssue.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fIssues\IssueList.aspx.cs">
+      <DependentUpon>IssueList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\IssueList.aspx.designer.cs">
+      <DependentUpon>IssueList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx.cs">
       <DependentUpon>CtrlLichNgoaiLe.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -208,6 +400,83 @@
     </Compile>
     <Compile Include="fLichBieu\LichBieu.aspx.designer.cs">
       <DependentUpon>LichBieu.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlMeet.ascx.cs">
+      <DependentUpon>CtrlMeet.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlMeet.ascx.designer.cs">
+      <DependentUpon>CtrlMeet.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\MeetList.aspx.cs">
+      <DependentUpon>MeetList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\MeetList.aspx.designer.cs">
+      <DependentUpon>MeetList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
+      <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.cs">
+      <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\DuAnDetail.aspx.cs">
+      <DependentUpon>DuAnDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
+      <DependentUpon>DuAnDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\DuAnList.aspx.cs">
+      <DependentUpon>DuAnList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\DuAnList.aspx.designer.cs">
+      <DependentUpon>DuAnList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlRisk.ascx.cs">
+      <DependentUpon>CtrlRisk.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlRisk.ascx.designer.cs">
+      <DependentUpon>CtrlRisk.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fRisks\RiskList.aspx.cs">
+      <DependentUpon>RiskList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fRisks\RiskList.aspx.designer.cs">
+      <DependentUpon>RiskList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\TaskList.aspx.cs">
+      <DependentUpon>TaskList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\TaskList.aspx.designer.cs">
+      <DependentUpon>TaskList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\NhanVienDetail.aspx.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
     <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.cs">
       <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
@@ -237,6 +506,7 @@
     <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
@@ -262,6 +532,11 @@
     <Content Include="android-chrome-192x192.png" />
     <Content Include="android-chrome-512x512.png" />
     <Content Include="apple-touch-icon.png" />
+    <Content Include="bin\CKEditor.NET.dll" />
+    <Content Include="bin\ImageResizer.dll" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.dll" />
+    <Content Include="bin\SweetSoft.QLDA.BackOffice.pdb" />
+    <Content Include="Content\Site.css" />
     <Content Include="Controls\AutoComplete\Autocomplete-en-US.js" />
     <Content Include="Controls\AutoComplete\Autocomplete-vi-VN.js" />
     <Content Include="Controls\AutoComplete\Autocomplete.css" />
@@ -273,8 +548,34 @@
     <Content Include="Controls\Captcha.ascx" />
     <Content Include="Controls\CtrlAutoCompleteUser.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardCost.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardOverview.ascx" />
+    <Content Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardProgress.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
+    <Content Include="Controls\Dashboard\dashboard-overview.js" />
+    <Content Include="Controls\Dashboard\dashboard-cost.js" />
+    <Content Include="Controls\Dashboard\dashboard-progress.js" />
+    <Content Include="Controls\Dashboard\dashboard-resource.js" />
+    <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
+    <Content Include="fCustomers\KhachHangDetail.aspx" />
+    <Content Include="fCustomers\KhachHangList.aspx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentDetail.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentGroups.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocuments.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentTemplates.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
+    <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
+    <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\DocumentGroups.aspx" />
+    <Content Include="fDocuments\Documents.aspx" />
+    <Content Include="fDocuments\DocumentTemplates.aspx" />
+    <Content Include="fDocuments\DocumentTypes.aspx" />
+    <Content Include="fDocuments\StorageLocations.aspx" />
+    <Content Include="Dashboard.aspx" />
     <Content Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx" />
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
@@ -296,18 +597,31 @@
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
+    <Content Include="fIssues\Controls\CtrlIssue.ascx" />
+    <Content Include="fIssues\IssueList.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
+    <Content Include="fMeets\Controls\CtrlMeet.ascx" />
+    <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
+    <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
+    <Content Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx" />
+    <Content Include="fProjects\DuAnDetail.aspx" />
+    <Content Include="fProjects\DuAnList.aspx" />
+    <Content Include="fRisks\Controls\CtrlRisk.ascx" />
+    <Content Include="fRisks\RiskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
     <Content Include="fSettings\FileManagers.aspx" />
     <Content Include="fSettings\Settings.aspx" />
+    <Content Include="fTasks\Controls\CtrlTask.ascx" />
+    <Content Include="fTasks\TaskList.aspx" />
     <Content Include="fUsers\Controls\CtrlPermission.ascx" />
     <Content Include="fUsers\Controls\CtrlUsers.ascx" />
+    <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="fUsers\RoleDetail.aspx" />
     <Content Include="fUsers\RoleList.aspx" />
     <Content Include="fUsers\UserList.aspx" />
@@ -315,6 +629,9 @@
     <Content Include="LockScreen.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="NotFound.aspx" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.dll" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.pdb" />
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
@@ -349,15 +666,17 @@
     <Content Include="Styles\plugins\slick\slick.js" />
     <Content Include="Styles\video\video-trang-chu.mp4" />
     <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260820.txt" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260822.txt" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260821.txt" />
     <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260827.txt" />
     <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
     <Content Include="Uploads\_Logs\ErrorLog_20082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_21082026.txt" />
     <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
     <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_24082026.txt" />
     <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_26082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -906,6 +1225,12 @@
     <Content Include="_RFMng\themes\default\images\wait30trans.gif" />
     <Content Include="_RFMng\themes\default\styles\filemanager.css" />
     <Content Include="_RFMng\themes\default\styles\ie.css" />
+    <Content Include=".vs\SweetSoft.QLDA.BackOffice.csproj.dtbcache.json" />
+    <Content Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <Content Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <Content Include="obj\Debug\SweetSof.9E5A59E7.Up2Date" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.csproj.AssemblyReference.cache" />
+    <Content Include="obj\Debug\SweetSoft.QLDA.BackOffice.csproj.CoreCompileInputs.cache" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -1337,9 +1662,6 @@
     <Content Include="Styles\plugins\validationEngine\jquery.validationEngine-en-US.js" />
     <Content Include="Styles\plugins\validationEngine\jquery.validationEngine.js" />
     <Content Include="Styles\plugins\validationEngine\validationEngine.jquery.css" />
-    <Content Include="Web.config">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Web.config.release" />
     <Content Include="_RFMng\scripts\jquery.contextmenu\dist\font\context-menu-icons.eot" />
     <Content Include="_RFMng\scripts\jquery.contextmenu\dist\font\context-menu-icons.ttf" />
@@ -1350,6 +1672,19 @@
     <Content Include="_RFMng\scripts\zeroclipboard\dist\.jshintrc" />
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.Core.min.map" />
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.min.map" />
+    <Content Include="Web.config" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\web.config" />
+    <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
+    <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessDenied.aspx.cs">
@@ -1559,7 +1894,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="App_Start\" />
+    <Folder Include="bin\en-US\" />
+    <Folder Include="bin\vi-VN\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Data\" />
+    <Folder Include="obj\Debug\TempPE\" />
+    <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>
   <ItemGroup>
@@ -1621,12 +1961,6 @@
     <Content Include="Styles\fonts\vjs.ttf" />
     <Content Include="Styles\fonts\vjs.woff" />
     <Content Include="site.webmanifest" />
-    <None Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
-    <None Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

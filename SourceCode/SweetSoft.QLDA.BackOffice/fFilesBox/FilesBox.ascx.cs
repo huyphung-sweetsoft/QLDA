@@ -258,19 +258,18 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     this.CURRENT_PAGE.ShowInvalidDataError();
                     return;
                 }
+
                 //---------------------------------------------
                 #region delete file
-                List<Guid> listFileRemoveId = new List<Guid>();
-                foreach (string fileRemoveId in txtArFileRemove.Value.Split(','))
+                List<Guid> listFileRemoveId =
+                    GetPendingRemovedFileIds();
+                if (listFileRemoveId.Count > 0)
                 {
-                    if (string.IsNullOrEmpty(fileRemoveId))
-                        continue;
-                    Guid tmpId = Guid.Empty;
-                    if(Guid.TryParse(fileRemoveId, out tmpId) && tmpId != Guid.Empty)
-                        listFileRemoveId.Add(tmpId);
-                }
-                if(listFileRemoveId.Count > 0)
+                    if (!string.IsNullOrEmpty(this.BeforeSaveDataCallbackKey))
+                        DataCallback(this.BeforeSaveDataCallbackKey, null, null);
+
                     UploadManager.Instance.RemoveFiles(listFileRemoveId, this._refType.Value);
+                }
                 #endregion
 
                 #region permissions
@@ -396,6 +395,37 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 ViewState["SaveDataCallbackKey"] = value;
             }
         }
+
+        public string BeforeSaveDataCallbackKey
+        {
+            get
+            {
+                return (string)ViewState["BeforeSaveDataCallbackKey"];
+            }
+            set
+            {
+                ViewState["BeforeSaveDataCallbackKey"] = value;
+            }
+        }
+
+        public List<Guid> GetPendingRemovedFileIds()
+        {
+            List<Guid> fileIds = new List<Guid>();
+            string value = txtArFileRemove.Value ?? string.Empty;
+            foreach (string fileIdText in value.Split(','))
+            {
+                Guid fileId;
+                if (Guid.TryParse(fileIdText, out fileId)
+                    && fileId != Guid.Empty
+                    && !fileIds.Contains(fileId))
+                {
+                    fileIds.Add(fileId);
+                }
+            }
+
+            return fileIds;
+        }
+
         public void LoadFile(Guid refId, FileUploadTypes refType)
         {
             this.RefId = refId;

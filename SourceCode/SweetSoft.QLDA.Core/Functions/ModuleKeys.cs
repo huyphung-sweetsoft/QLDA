@@ -10,6 +10,11 @@ namespace SweetSoft.QLDA.Core.Functions
     {
         None,
         Dashboard,
+        DashboardOverview,
+        DashboardResource,
+        DashboardProgress,
+        DashboardCost,
+        DashboardEmployee,
         Country,
         Province,
         Ward,
@@ -28,7 +33,18 @@ namespace SweetSoft.QLDA.Core.Functions
         CompetitionRound,
         CompetitionMember,
         JoinCompetition,
+        Project,
+        Task,
+        Risk,
+        Issue,
         NhanVien,
-        LichBieu
+        Meet,
+        Customer,
+        LichBieu,
+        DocumentGroup,
+        DocumentType,
+        DocumentStorageLocation,
+        DocumentTemplate,
+        Document,
     }
 }

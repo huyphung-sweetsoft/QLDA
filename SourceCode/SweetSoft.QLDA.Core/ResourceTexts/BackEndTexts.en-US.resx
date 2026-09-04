@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -186,6 +186,9 @@
   <data name="CANCEL" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="CAN_NOT_BE_BLANK" xml:space="preserve">
+    <value>Can not be blank</value>
+  </data>
   <data name="CHANGE_PASSWORD" xml:space="preserve">
     <value>Change password</value>
   </data>
@@ -225,6 +228,9 @@
   <data name="CONTINUE" xml:space="preserve">
     <value>Continue</value>
   </data>
+  <data name="CONTINGENCY" xml:space="preserve">
+    <value>Contingency</value>
+  </data>
   <data name="COPY" xml:space="preserve">
     <value>Copy</value>
   </data>
@@ -249,6 +255,9 @@
   <data name="CUSTOMER" xml:space="preserve">
     <value>Customer</value>
   </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value>Danh sách khách hàng</value>
+  </data>
   <data name="DASHBOARD" xml:space="preserve">
     <value>Dashboard</value>
   </data>
@@ -269,6 +278,9 @@
   </data>
   <data name="DETAIL" xml:space="preserve">
     <value>Detail</value>
+  </data>
+  <data name="DEPENDENT" xml:space="preserve">
+    <value>Dependent</value>
   </data>
   <data name="DIFFERENCE" xml:space="preserve">
     <value>Difference</value>
@@ -302,6 +314,9 @@
   </data>
   <data name="EMAIL_TEMPLATE_SUCCESSFULLY_DELETED" xml:space="preserve">
     <value>Email template successfully deleted</value>
+  </data>
+  <data name="EMPLOYEE_LIST" xml:space="preserve">
+    <value>Danh sách nhân viên</value>
   </data>
   <data name="ENTER_SEARCH_KEYWORDS" xml:space="preserve">
     <value>Enter search keywords...</value>
@@ -354,8 +369,14 @@
   <data name="HOUR" xml:space="preserve">
     <value>hour</value>
   </data>
+  <data name="HIGH" xml:space="preserve">
+    <value>High</value>
+  </data>
   <data name="IMAGE" xml:space="preserve">
     <value>Image</value>
+  </data>
+  <data name="IMPACT" xml:space="preserve">
+    <value>Impact</value>
   </data>
   <data name="INACCURATE_DATA_PLEASE_RELOAD_THE_PAGE_AND_TRY_AGAIN" xml:space="preserve">
     <value>Inaccurate data. Please reload the page and try again!</value>
@@ -399,6 +420,15 @@
   <data name="ITEM" xml:space="preserve">
     <value>item</value>
   </data>
+  <data name="ISSUE_LIST" xml:space="preserve">
+    <value>Issue list</value>
+  </data>
+  <data name="ISSUE_NAME" xml:space="preserve">
+    <value>Issue name</value>
+  </data>
+  <data name="ISSUE_CODE" xml:space="preserve">
+    <value>Issue code</value>
+  </data>
   <data name="KEYWORD" xml:space="preserve">
     <value>Keyword</value>
   </data>
@@ -419,6 +449,9 @@
   </data>
   <data name="LOGOUT" xml:space="preserve">
     <value>Logout</value>
+  </data>
+  <data name="LOW" xml:space="preserve">
+    <value>Low</value>
   </data>
   <data name="MALE" xml:space="preserve">
     <value>Male</value>
@@ -447,6 +480,9 @@
   <data name="NOT_SENT" xml:space="preserve">
     <value>Not sent</value>
   </data>
+  <data name="NOT_ENTERED" xml:space="preserve">
+    <value>Not entered</value>
+  </data>
   <data name="NOT_YOU_GO_BACK" xml:space="preserve">
     <value>Not you? Go back</value>
   </data>
@@ -465,10 +501,16 @@
   <data name="OLD_PASSWORD" xml:space="preserve">
     <value>Old password</value>
   </data>
+  <data name="ORIGIN" xml:space="preserve">
+    <value>Origin</value>
+  </data>
   <data name="OLD_PASSWORD_IS_INCORRECT" xml:space="preserve">
     <value>Old password is incorrect</value>
   </data>
   <data name="ON" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="OWNER" xml:space="preserve">
     <value>On</value>
   </data>
   <data name="OTHER" xml:space="preserve">
@@ -525,11 +567,23 @@
   <data name="PROFILE" xml:space="preserve">
     <value>Profile</value>
   </data>
+  <data name="PROCESSING" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="PROCESSED" xml:space="preserve">
+    <value>Processed</value>
+  </data>
   <data name="PROVINCE" xml:space="preserve">
     <value>Province</value>
   </data>
-  <data name="PROVINCES" xml:space="preserve">
-    <value>Provinces</value>
+  <data name="PROBABILITY" xml:space="preserve">
+    <value>Probability</value>
+  </data>
+  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
+    <value>Project management</value>
+  </data>
+  <data name="PROJECT_LIST" xml:space="preserve">
+    <value>Project list</value>
   </data>
   <data name="READ" xml:space="preserve">
     <value>Read</value>
@@ -551,6 +605,18 @@
   </data>
   <data name="REQUIRED" xml:space="preserve">
     <value>Required</value>
+  </data>
+  <data name="RISK_LIST" xml:space="preserve">
+    <value>Risk list</value>
+  </data>
+  <data name="RISK_NAME" xml:space="preserve">
+    <value>Risk name</value>
+  </data>
+  <data name="RISK_LEVEL" xml:space="preserve">
+    <value>Risk level</value>
+  </data>
+  <data name="RISK_CODE" xml:space="preserve">
+    <value>Risk code</value>
   </data>
   <data name="RESET_AUTHENTICATOR_APP" xml:space="preserve">
     <value>Reset authenticator app</value>
@@ -639,6 +705,9 @@
   <data name="PERMISSION" xml:space="preserve">
     <value>Permission</value>
   </data>
+  <data name="PHASE" xml:space="preserve">
+    <value>Phase</value>
+  </data>
   <data name="SUMMARY" xml:space="preserve">
     <value>Summary</value>
   </data>
@@ -656,6 +725,12 @@
   </data>
   <data name="TASK_SCHEDULER" xml:space="preserve">
     <value>Task Scheduler</value>
+  </data>
+  <data name="TASK_ISSUE" xml:space="preserve">
+    <value>Task Issue</value>
+  </data>
+  <data name="TASK_CODE" xml:space="preserve">
+    <value>Task Code</value>
   </data>
   <data name="TAX_CODE" xml:space="preserve">
     <value>Tax code</value>
@@ -741,6 +816,12 @@
   <data name="VERIFY" xml:space="preserve">
     <value>Verify</value>
   </data>
+  <data name="VERY_LOW" xml:space="preserve">
+    <value>Very low</value>
+  </data>
+  <data name="VERY_HIGH" xml:space="preserve">
+    <value>Very high</value>
+  </data>
   <data name="VERSION" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -807,6 +888,9 @@
   <data name="PARENT_FULL_NAME" xml:space="preserve">
     <value>Parent's name</value>
   </data>
+  <data name="PARENT_TASK" xml:space="preserve">
+    <value>Parent's task</value>
+  </data>
   <data name="REQUEST_DATE" xml:space="preserve">
     <value>Request date</value>
   </data>
@@ -818,6 +902,9 @@
   </data>
   <data name="USER_IN_ROLE" xml:space="preserve">
     <value>Accounts in groups</value>
+  </data>
+  <data name="USER_MANAGEMENT" xml:space="preserve">
+    <value>User management</value>
   </data>
   <data name="ACCOUNT_LIST" xml:space="preserve">
     <value>Account list</value>
@@ -870,11 +957,11 @@
   <data name="END_TIME" xml:space="preserve">
     <value>End time</value>
   </data>
-  <data name="MEETING_ROOM" xml:space="preserve">
-    <value>Meeting room</value>
-  </data>
   <data name="MEETING" xml:space="preserve">
     <value>Meeting</value>
+  </data>
+  <data name="MEDIUM" xml:space="preserve">
+    <value>Medium</value>
   </data>
   <data name="MEETING_HOST" xml:space="preserve">
     <value>Meeting host</value>
@@ -906,8 +993,8 @@
   <data name="MEETING_MANAGEMENT" xml:space="preserve">
     <value>Meeting Management</value>
   </data>
-  <data name="MEETING_LIST" xml:space="preserve">
-    <value>Meeting list</value>
+  <data name="MEET_SCHE" xml:space="preserve">
+    <value>Meeting schedule</value>
   </data>
   <data name="FILE_MANAGER" xml:space="preserve">
     <value>Uploaded files</value>
@@ -966,6 +1053,9 @@
   <data name="YOU_DO_NOT_HAVE_PERMISSION_TO_THIS_ACTION" xml:space="preserve">
     <value>You do not have permission to this action</value>
   </data>
+  <data name="Client_LIST" xml:space="preserve">
+    <value>List client</value>
+  </data>
   <data name="DESTINATION" xml:space="preserve">
     <value>Destination</value>
   </data>
@@ -983,6 +1073,9 @@
   </data>
   <data name="WORK_CONTENT" xml:space="preserve">
     <value>Work content</value>
+  </data>
+  <data name="WORK_AFFECTED" xml:space="preserve">
+    <value>Work affected</value>
   </data>
   <data name="REPORT" xml:space="preserve">
     <value>Report</value>
@@ -1005,9 +1098,6 @@
   <data name="ATTENDEES" xml:space="preserve">
     <value>Attendees quantity</value>
   </data>
-  <data name="MEETING_NAME" xml:space="preserve">
-    <value>Meeting name</value>
-  </data>
   <data name="MEETING_QUANTITY" xml:space="preserve">
     <value>Meeting quantity</value>
   </data>
@@ -1026,6 +1116,12 @@
   <data name="MODERATOR" xml:space="preserve">
     <value>Moderator</value>
   </data>
+  <data name="MONITOR" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="MITIGATION" xml:space="preserve">
+    <value>Mitigation</value>
+  </data>
   <data name="SECRETARY" xml:space="preserve">
     <value>Secretary</value>
   </data>
@@ -1035,20 +1131,56 @@
   <data name="COMPETITION_NAME" xml:space="preserve">
     <value>Competition name</value>
   </data>
-  <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Danh sách khách hàng</value>
+  <data name="TASK_MANAGEMENT" xml:space="preserve">
+    <value>Task Management</value>
   </data>
-  <data name="PROJECT_LIST" xml:space="preserve">
-    <value>Danh sách dự án</value>
+  <data name="TASK_LIST" xml:space="preserve">
+    <value>Task List</value>
   </data>
-  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý dự án</value>
+  <data name="TASK_NAME" xml:space="preserve">
+    <value>Task List</value>
+  </data>
+  <data name="PROJECT_TYPE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PROJECT_NAME" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CUSTOMER_NAME" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="CUSTOMER_FEEDBACK" xml:space="preserve">
+    <value>Customer Feedback</value>
+  </data>
+  <data name="PROJECT_MANAGER" xml:space="preserve">
+    <value>Nhân viên quản lý</value>
+  </data>
+  <data name="PROJECT_CODE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PRIORITY" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CONTRACT" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+  <data name="CONTRACT_NUMBER" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CONTRACT_VALUE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SIGN_DATE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
+    <value>Mã dự án đã tồn tại</value>
+  </data>
+  <data name="PROJECT_INFORMATION" xml:space="preserve">
+    <value />
   </data>
   <data name="EMPLOYEE_MANAGEMENT" xml:space="preserve">
     <value>Quản lý nhân viên</value>
-  </data>
-  <data name="EMPLOYEE_LIST" xml:space="preserve">
-    <value>Danh sách nhân viên</value>
   </data>
   <data name="CCCD_ALREADY_EXISTS" xml:space="preserve">
     <value>Căn cước công dân đã tồn tại rồi</value>
@@ -1070,6 +1202,46 @@
   </data>
   <data name="GIOI_TINH" xml:space="preserve">
     <value>Giới tính</value>
+  </data>
+  <data name="END_DATE" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="START_DATE" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="NOT_STARTED" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="MEETING_NAME" xml:space="preserve">
+    <value>Meeting name</value>
+  </data>
+  <data name="MEETING_LIST" xml:space="preserve">
+    <value>Meeting list</value>
+  </data>
+  <data name="MEETING_CODE" xml:space="preserve">
+    <value>Meeting code</value>
+  </data>
+  <data name="MEETING_ROOM" xml:space="preserve">
+    <value>Meeting room</value>
+  </data>
+	<data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>General content</value>
+  </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CUSTOMER_TYPE" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CONTACT_PERSON" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CONTACT_EMAIL" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
+    <value> </value>
   </data>
   <data name="ACCOMPANYING_PERSON" xml:space="preserve">
     <value>Accompanying person</value>
@@ -1134,13 +1306,526 @@
   <data name="INFORMATION" xml:space="preserve">
     <value>Information</value>
   </data>
+  <data name="DOCUMENT_MANAGEMENT" xml:space="preserve">
+    <value>Document management</value>
+  </data>
+  <data name="DOCUMENT_GROUP" xml:space="preserve">
+    <value>Document group</value>
+  </data>
+  <data name="DOCUMENT_GROUP_LIST" xml:space="preserve">
+    <value>Document group list</value>
+  </data>
+  <data name="DOCUMENT_GROUP_NAME" xml:space="preserve">
+    <value>Group name</value>
+  </data>
   <data name="DESCRIPTION" xml:space="preserve">
     <value>Description</value>
   </data>
   <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
     <value>Schedule Management</value>
   </data>
+  <data name="DISPLAY_ORDER" xml:space="preserve">
+    <value>Display order</value>
+  </data>
+  <data name="DOCUMENT_TYPE" xml:space="preserve">
+    <value>Document type</value>
+  </data>
+  <data name="DOCUMENT_TYPE_LIST" xml:space="preserve">
+    <value>Document type list</value>
+  </data>
+  <data name="DOCUMENT_TYPE_NAME" xml:space="preserve">
+    <value>Type name</value>
+  </data>
+  <data name="ALLOW_SIGNING" xml:space="preserve">
+    <value>Requires signing</value>
+  </data>
+  <data name="DEFAULT_SIGNING_METHOD" xml:space="preserve">
+    <value>Default signing method</value>
+  </data>
+  <data name="ALLOW_SEND_CUSTOMER" xml:space="preserve">
+    <value>Requires sending to customer</value>
+  </data>
+  <data name="ALLOW_PHYSICAL_STORAGE" xml:space="preserve">
+    <value>Requires physical storage</value>
+  </data>
+  <data name="PAPER_SIGNING" xml:space="preserve">
+    <value>Paper signing</value>
+  </data>
+  <data name="EXTERNAL_DIGITAL_SIGNING" xml:space="preserve">
+    <value>External digital signing</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP" xml:space="preserve">
+    <value>Select document group</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Storage location</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION_LIST" xml:space="preserve">
+    <value>Storage location list</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION_NAME" xml:space="preserve">
+    <value>Storage location name</value>
+  </data>
+  <data name="DOCUMENT_STORAGE_LOCATION_CODE" xml:space="preserve">
+    <value>Storage location code</value>
+  </data>
+  <data name="STORAGE_LEVEL" xml:space="preserve">
+    <value>Storage level</value>
+  </data>
+  <data name="PARENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Parent storage location</value>
+  </data>
+  <data name="RESPONSIBLE_EMPLOYEE" xml:space="preserve">
+    <value>Responsible employee</value>
+  </data>
+  <data name="SELECT_STORAGE_LEVEL" xml:space="preserve">
+    <value>Select storage level</value>
+  </data>
+  <data name="SELECT_PARENT_STORAGE_LOCATION" xml:space="preserve">
+    <value>Select parent storage location</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Document template</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE_LIST" xml:space="preserve">
+    <value>Document template list</value>
+  </data>
+  <data name="DOCUMENT_TEMPLATE_NAME" xml:space="preserve">
+    <value>Document template name</value>
+  </data>
+  <data name="TEMPLATE_VERSION" xml:space="preserve">
+    <value>Template version</value>
+  </data>
+  <data name="DEFAULT_TEMPLATE" xml:space="preserve">
+    <value>Default template</value>
+  </data>
+  <data name="TEMPLATE_FILE" xml:space="preserve">
+    <value>Template file</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TYPE" xml:space="preserve">
+    <value>Select document type</value>
+  </data>
+  <data name="FILE_NOT_UPLOADED" xml:space="preserve">
+    <value>No file uploaded</value>
+  </data>
+  <data name="FILE_NOT_AVAILABLE" xml:space="preserve">
+    <value>Physical file unavailable</value>
+  </data>
+  <data name="SAVE_TEMPLATE_BEFORE_UPLOAD" xml:space="preserve">
+    <value>The template information has been saved. You can upload or replace one template file here.</value>
+  </data>
+  <data name="DOCUMENT" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="DOCUMENT_LIST" xml:space="preserve">
+    <value>Document list</value>
+  </data>
+  <data name="DOCUMENT_CODE" xml:space="preserve">
+    <value>Document code</value>
+  </data>
+  <data name="DOCUMENT_NAME" xml:space="preserve">
+    <value>Document name</value>
+  </data>
+  <data name="DOCUMENT_STATUS" xml:space="preserve">
+    <value>Document status</value>
+  </data>
+  <data name="SIGNING_METHOD" xml:space="preserve">
+    <value>Signing method</value>
+  </data>
+  <data name="CUSTOMER_SEND_STATUS" xml:space="preserve">
+    <value>Customer delivery status</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_STATUS" xml:space="preserve">
+    <value>Physical storage status</value>
+  </data>
+  <data name="OFFICIAL_FILE" xml:space="preserve">
+    <value>Official file</value>
+  </data>
+  <data name="COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Company document</value>
+  </data>
+  <data name="SELECT_RESPONSIBLE_EMPLOYEE" xml:space="preserve">
+    <value>Select responsible employee</value>
+  </data>
+  <data name="DRAFTING" xml:space="preserve">
+    <value>Drafting</value>
+  </data>
+  <data name="PENDING_SIGNATURE" xml:space="preserve">
+    <value>Pending signature</value>
+  </data>
+  <data name="CHANGES_REQUESTED" xml:space="preserve">
+    <value>Changes requested</value>
+  </data>
+  <data name="SIGNED" xml:space="preserve">
+    <value>Signed</value>
+  </data>
+  <data name="WAITING_FOR_RETURN" xml:space="preserve">
+    <value>Waiting for return</value>
+  </data>
+  <data name="RECEIVED_BACK" xml:space="preserve">
+    <value>Received back</value>
+  </data>
+  <data name="NOT_STORED" xml:space="preserve">
+    <value>Not stored</value>
+  </data>
+  <data name="STORED" xml:space="preserve">
+    <value>Stored</value>
+  </data>
+  <data name="CHECKED_OUT" xml:space="preserve">
+    <value>Checked out</value>
+  </data>
+  <data name="DOCUMENT_TYPE_RULE_NOTICE" xml:space="preserve">
+    <value>The options below are prefilled from the document type. You may override them for each document before saving.</value>
+  </data>
+  <data name="RESTORE_DOCUMENT_TYPE_DEFAULTS" xml:space="preserve">
+    <value>Restore type defaults</value>
+  </data>
+  <data name="DOCUMENT_VERSION_FILES" xml:space="preserve">
+    <value>Document file versions</value>
+  </data>
+  <data name="DOCUMENT_VERSION_NOTICE" xml:space="preserve">
+    <value>Each newly uploaded file becomes a new version, and the latest version is current. A version file is not automatically treated as the official or signed-result file.</value>
+  </data>
+  <data name="SAVE_DOCUMENT_BEFORE_UPLOAD" xml:space="preserve">
+    <value>Save the document information first. The upload area will appear here immediately after saving.</value>
+  </data>
+  <data name="CURRENT_VERSION" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="FILE_NAME" xml:space="preserve">
+    <value>File name</value>
+  </data>
+  <data name="DOCUMENT_SCOPE" xml:space="preserve">
+    <value>Document scope</value>
+  </data>
+  <data name="ALL_DOCUMENTS" xml:space="preserve">
+    <value>All documents</value>
+  </data>
+  <data name="COMPANY_DOCUMENTS" xml:space="preserve">
+    <value>Company documents</value>
+  </data>
+  <data name="PROJECT_DOCUMENTS" xml:space="preserve">
+    <value>Project documents</value>
+  </data>
+  <data name="PROJECT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="ALL_PROJECTS" xml:space="preserve">
+    <value>All projects</value>
+  </data>
+  <data name="SELECT_PROJECT" xml:space="preserve">
+    <value>Select project</value>
+  </data>
+  <data name="DOCUMENT_TYPE_IN_GROUP" xml:space="preserve">
+    <value>Document type in group</value>
+  </data>
+  <data name="SELECT_DOCUMENT_GROUP_FIRST" xml:space="preserve">
+    <value>Select a document group first</value>
+  </data>
+  <data name="DOCUMENT_FILTER_HINT" xml:space="preserve">
+    <value>Select a scope, group, and document type to narrow the list.</value>
+  </data>
+  <data name="DOCUMENT_DETAIL" xml:space="preserve">
+    <value>Document details</value>
+  </data>
+  <data name="DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>Versions</value>
+  </data>
+  <data name="SIGNING_HISTORY" xml:space="preserve">
+    <value>Signing</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Customer delivery</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Physical storage</value>
+  </data>
+  <data name="DOCUMENT_ACTIVITY_HISTORY" xml:space="preserve">
+    <value>Document activity</value>
+  </data>
+  <data name="NOT_APPLICABLE" xml:space="preserve">
+    <value>Not applicable</value>
+  </data>
+  <data name="NO_DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>This document does not have any file versions yet.</value>
+  </data>
+  <data name="NO_SIGNING_HISTORY" xml:space="preserve">
+    <value>Signing is required, but no signing request has been recorded yet.</value>
+  </data>
+  <data name="NO_CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Customer delivery is required, but no delivery has been recorded yet.</value>
+  </data>
+  <data name="NO_PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Physical storage is required, but no storage location has been recorded yet.</value>
+  </data>
+  <data name="NO_DOCUMENT_ACTIVITY" xml:space="preserve">
+    <value>No activity has been recorded for this document.</value>
+  </data>
+  <data name="OPEN_FILE" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="VERSION_NUMBER" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="FILE_SIZE" xml:space="preserve">
+    <value>File size</value>
+  </data>
+  <data name="SOURCE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SENT_BY" xml:space="preserve">
+    <value>Sent by</value>
+  </data>
+  <data name="SIGNER" xml:space="preserve">
+    <value>Signer</value>
+  </data>
+  <data name="RECIPIENT" xml:space="preserve">
+    <value>Recipient</value>
+  </data>
+  <data name="CHANNEL" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="RESPONSE_DEADLINE" xml:space="preserve">
+    <value>Response deadline</value>
+  </data>
+  <data name="STORAGE_LOCATION" xml:space="preserve">
+    <value>Storage location</value>
+  </data>
+  <data name="CURRENT_LOCATION" xml:space="preserve">
+    <value>Current location</value>
+  </data>
+  <data name="ORIGINAL_COPY_CONDITION" xml:space="preserve">
+    <value>Original copy condition</value>
+  </data>
+  <data name="ACTION_TYPE" xml:space="preserve">
+    <value>Activity type</value>
+  </data>
+  <data name="REFERENCE_TYPE" xml:space="preserve">
+    <value>Related item</value>
+  </data>
+  <data name="OFFICIAL_DOCUMENT_FILE_HINT" xml:space="preserve">
+    <value>This is the primary file shown when users open the document.</value>
+  </data>
+  <data name="NO_OFFICIAL_DOCUMENT_FILE" xml:space="preserve">
+    <value>No official file has been selected for this document.</value>
+  </data>
+  <data name="ADD_COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Add company document</value>
+  </data>
+  <data name="INITIAL_DOCUMENT_CONTENT" xml:space="preserve">
+    <value>Initial content</value>
+  </data>
+  <data name="UPLOAD_NEW_FILE" xml:space="preserve">
+    <value>Upload a new file</value>
+  </data>
+  <data name="USE_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Use a document template</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Select a document template</value>
+  </data>
+  <data name="NO_TEMPLATE_FOR_DOCUMENT_TYPE" xml:space="preserve">
+    <value>This document type has no active template with an uploaded template file.</value>
+  </data>
+  <data name="UPLOAD_AFTER_SAVE_NOTICE" xml:space="preserve">
+    <value>After the document cover is saved, you will be taken to the Versions tab to upload the first file. Future uploads are also managed there.</value>
+  </data>
+  <data name="UPLOAD_NEW_VERSION" xml:space="preserve">
+    <value>Upload new version</value>
+  </data>
+  <data name="VERSION_MANAGEMENT_NOTICE" xml:space="preserve">
+    <value>Each newly uploaded file becomes a version and the latest version is current. Version files do not automatically become the official file or a signed result.</value>
+  </data>
+  <data name="ACTIVITY_CREATE_DOCUMENT" xml:space="preserve">
+    <value>Create document</value>
+  </data>
+  <data name="ACTIVITY_UPDATE_DOCUMENT" xml:space="preserve">
+    <value>Update document</value>
+  </data>
+  <data name="ACTIVITY_DELETE_DOCUMENT" xml:space="preserve">
+    <value>Delete document</value>
+  </data>
+  <data name="ACTIVITY_CREATE_FROM_TEMPLATE" xml:space="preserve">
+    <value>Create from template</value>
+  </data>
+  <data name="ACTIVITY_UPLOAD_VERSION" xml:space="preserve">
+    <value>Upload version</value>
+  </data>
+  <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
+    <value>Delete version</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="PROJECT_SCOPE" xml:space="preserve">
+    <value>Project scope</value>
+  </data>
+  <data name="DATE_RANGE" xml:space="preserve">
+    <value>Date range</value>
+  </data>
+  <data name="THIS_WEEK" xml:space="preserve">
+    <value>This week</value>
+  </data>
+  <data name="THIS_MONTH" xml:space="preserve">
+    <value>This month</value>
+  </data>
+  <data name="THIS_QUARTER" xml:space="preserve">
+    <value>This quarter</value>
+  </data>
+  <data name="THIS_YEAR" xml:space="preserve">
+    <value>This year</value>
+  </data>
+  <data name="APPLY" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ALL_PROJECTS" xml:space="preserve">
+    <value>All projects</value>
+  </data>
+  <data name="TRACK_OVERALL_PROJECT_STATUS" xml:space="preserve">
+    <value>Track overall project status</value>
+  </data>
+  <data name="ACTIVE_PROJECTS" xml:space="preserve">
+    <value>Active projects</value>
+  </data>
+  <data name="PROJECTS_IN_PROGRESS" xml:space="preserve">
+    <value>Projects in progress</value>
+  </data>
+  <data name="UPCOMING_MEETINGS" xml:space="preserve">
+    <value>Upcoming meetings</value>
+  </data>
+  <data name="MEETINGS_THIS_WEEK" xml:space="preserve">
+    <value>From today until the end of the selected period</value>
+  </data>
+  <data name="AT_RISK_PROJECTS" xml:space="preserve">
+    <value>At-risk projects</value>
+  </data>
+  <data name="RATE_ON_ACTIVE_PROJECTS" xml:space="preserve">
+    <value>Rate on active projects</value>
+  </data>
+  <data name="OVERDUE_TASKS" xml:space="preserve">
+    <value>Overdue tasks</value>
+  </data>
+  <data name="INCOMPLETE_AND_OVERDUE" xml:space="preserve">
+    <value>Incomplete and overdue</value>
+  </data>
+  <data name="TOTAL_BUDGET" xml:space="preserve">
+    <value>Total budget</value>
+  </data>
+  <data name="TOTAL_CONTRACT_VALUE" xml:space="preserve">
+    <value>Total contract value</value>
+  </data>
+  <data name="IN_SELECTED_SCOPE" xml:space="preserve">
+    <value>Within the selected scope</value>
+  </data>
+  <data name="PROJECT_STATUS_DISTRIBUTION" xml:space="preserve">
+    <value>Project status distribution</value>
+  </data>
+  <data name="PROJECT_COUNT_BY_STATUS" xml:space="preserve">
+    <value>Number of projects by current status</value>
+  </data>
+  <data name="PROJECT_PROGRESS" xml:space="preserve">
+    <value>Project progress</value>
+  </data>
+  <data name="PROGRESS_OF_EACH_PROJECT" xml:space="preserve">
+    <value>Progress of each project</value>
+  </data>
+  <data name="PROJECTS_NEEDING_ATTENTION" xml:space="preserve">
+    <value>Projects needing attention</value>
+  </data>
+  <data name="PROJECTS_WITH_MOST_RISKS_OR_ISSUES" xml:space="preserve">
+    <value>Projects with most risks or issues</value>
+  </data>
+  <data name="PROJECT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="RISK" xml:space="preserve">
+    <value>Risk</value>
+  </data>
+  <data name="ISSUE" xml:space="preserve">
+    <value>Issue</value>
+  </data>
+  <data name="NO_PROJECTS_WITH_RISKS_OR_ISSUES" xml:space="preserve">
+    <value>No projects with risks or issues.</value>
+  </data>
+  <data name="RESOURCE_OVERVIEW" xml:space="preserve">
+    <value>Resource overview</value>
+  </data>
+  <data name="HR_AND_MEMBER_ALLOCATION" xml:space="preserve">
+    <value>HR and project member allocation</value>
+  </data>
+  <data name="TOTAL_EMPLOYEES" xml:space="preserve">
+    <value>Total employees</value>
+  </data>
+  <data name="PARTICIPATING" xml:space="preserve">
+    <value>Participating</value>
+  </data>
+  <data name="UNASSIGNED" xml:space="preserve">
+    <value>Unassigned</value>
+  </data>
+  <data name="MULTI_PROJECT_MEMBERS" xml:space="preserve">
+    <value>Multi-project members</value>
+  </data>
+  <data name="ASSIGNED_TO_TASKS" xml:space="preserve">
+    <value>Assigned to tasks</value>
+  </data>
+  <data name="NOT_ASSIGNED_TO_TASKS" xml:space="preserve">
+    <value>Not assigned to tasks</value>
+  </data>
+  <data name="COST_OVERVIEW" xml:space="preserve">
+    <value>Cost overview</value>
+  </data>
+  <data name="BUDGET_AND_COST_SUMMARY" xml:space="preserve">
+    <value>Contract value and project cost summary</value>
+  </data>
+  <data name="BUDGET" xml:space="preserve">
+    <value>Budget</value>
+  </data>
+  <data name="EXPECTED_COST" xml:space="preserve">
+    <value>Expected cost</value>
+  </data>
+  <data name="ACTUAL_COST" xml:space="preserve">
+    <value>Actual cost</value>
+  </data>
+  <data name="REMAINING" xml:space="preserve">
+    <value>Remaining</value>
+  </data>
+  <data name="RECEIVED_PAYMENT" xml:space="preserve">
+    <value>Received</value>
+  </data>
+  <data name="REMAINING_AFTER_COST" xml:space="preserve">
+    <value>Remaining after costs</value>
+  </data>
+  <data name="PROJECT_STATUS" xml:space="preserve">
+    <value>Project status</value>
+  </data>
+  <data name="SINGLE_PROJECT_OVERVIEW" xml:space="preserve">
+    <value>Single project overview</value>
+  </data>
+  <data name="OVERALL_PROGRESS" xml:space="preserve">
+    <value>Overall progress</value>
+  </data>
+  <data name="WARNINGS" xml:space="preserve">
+    <value>Warnings &amp; Issues</value>
+  </data>
+  <data name="PROJECT_CODE_NAME" xml:space="preserve">
+    <value>Project code and name</value>
+  </data>
+  <data name="OPEN_RISKS" xml:space="preserve">
+    <value>Open risks</value>
+  </data>
+  <data name="OPEN_ISSUES" xml:space="preserve">
+    <value>Open issues</value>
+  </data>
+  <data name="SAFE" xml:space="preserve">
+    <value>Safe</value>
+  </data>
+  <data name="AT_RISK" xml:space="preserve">
+    <value>At risk</value>
+  </data>
   <data name="PROJECT_MEMBERS" xml:space="preserve">
-    <value>Project Members</value>
+    <value>Project members</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
+    <value>Employee</value>
   </data>
 </root>

@@ -1,4 +1,8 @@
 ﻿<%@ Page Async="true" Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.Default" %>
+<%@ Register
+    Src="~/Controls/Dashboard/CtrlDashboard.ascx"
+    TagName="CtrlDashboard"
+    TagPrefix="SweetSoft" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
@@ -14,13 +18,19 @@
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
         <div class="col-12">
-            <div class="card min-h-sreen">
-                <asp:Literal runat="server" ID="ltrContent" Visible="false"></asp:Literal>
-            </div>
+            <asp:Literal
+                runat="server"
+                ID="ltrContent"
+                Visible="false">
+            </asp:Literal>
+
+            <SweetSoft:CtrlDashboard
+                ID="ctrlDashboard"
+                runat="server" />
         </div>
     </div>
-
 </asp:Content>
+
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Managers;
@@ -10,7 +10,6 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-
 namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
     public partial class CtrlDashboard : BaseAdminUserControl
@@ -37,12 +36,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected void Page_Load(object sender, EventArgs e)
         {
             ScriptManager scriptManager = ScriptManager.GetCurrent(this.Page);
+
             if (!IsPostBack)
             {
                 InitReports();
             }
         }
-
 
         private void InitReports(bool isForceUpdate = true)
         {

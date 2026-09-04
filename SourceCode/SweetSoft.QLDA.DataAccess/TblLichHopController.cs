@@ -80,15 +80,13 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdLichHop,Guid IdDuAn,Guid? IdNhanVienChuTri,string MaLichHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime? ThoiGianKetThuc,string DiaDiemHop,string DuongDanOnline,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdLichHop,Guid IdDuAn,string MaLichHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime ThoiGianKetThuc,string DiaDiemHop,byte TrangThai,bool DaXoa,Guid IdNguoiTao,DateTime NgayTao,Guid? IdNguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblLichHop item = new TblLichHop();
 		    
             item.IdLichHop = IdLichHop;
             
             item.IdDuAn = IdDuAn;
-            
-            item.IdNhanVienChuTri = IdNhanVienChuTri;
             
             item.MaLichHop = MaLichHop;
             
@@ -102,17 +100,15 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.DiaDiemHop = DiaDiemHop;
             
-            item.DuongDanOnline = DuongDanOnline;
-            
             item.TrangThai = TrangThai;
             
             item.DaXoa = DaXoa;
             
-            item.NguoiTao = NguoiTao;
+            item.IdNguoiTao = IdNguoiTao;
             
             item.NgayTao = NgayTao;
             
-            item.NguoiCapNhat = NguoiCapNhat;
+            item.IdNguoiCapNhat = IdNguoiCapNhat;
             
             item.NgayCapNhat = NgayCapNhat;
             
@@ -124,7 +120,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdLichHop,Guid IdDuAn,Guid? IdNhanVienChuTri,string MaLichHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime? ThoiGianKetThuc,string DiaDiemHop,string DuongDanOnline,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdLichHop,Guid IdDuAn,string MaLichHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime ThoiGianKetThuc,string DiaDiemHop,byte TrangThai,bool DaXoa,Guid IdNguoiTao,DateTime NgayTao,Guid? IdNguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblLichHop item = new TblLichHop();
 	        item.MarkOld();
@@ -133,8 +129,6 @@ namespace SweetSoft.QLDA.DataAccess
 			item.IdLichHop = IdLichHop;
 				
 			item.IdDuAn = IdDuAn;
-				
-			item.IdNhanVienChuTri = IdNhanVienChuTri;
 				
 			item.MaLichHop = MaLichHop;
 				
@@ -148,17 +142,15 @@ namespace SweetSoft.QLDA.DataAccess
 				
 			item.DiaDiemHop = DiaDiemHop;
 				
-			item.DuongDanOnline = DuongDanOnline;
-				
 			item.TrangThai = TrangThai;
 				
 			item.DaXoa = DaXoa;
 				
-			item.NguoiTao = NguoiTao;
+			item.IdNguoiTao = IdNguoiTao;
 				
 			item.NgayTao = NgayTao;
 				
-			item.NguoiCapNhat = NguoiCapNhat;
+			item.IdNguoiCapNhat = IdNguoiCapNhat;
 				
 			item.NgayCapNhat = NgayCapNhat;
 				

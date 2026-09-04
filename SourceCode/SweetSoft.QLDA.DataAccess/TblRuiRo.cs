@@ -135,51 +135,9 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdRuiRo.IsPrimaryKey = true;
 				colvarIdRuiRo.IsForeignKey = false;
 				colvarIdRuiRo.IsReadOnly = false;
-				
-						colvarIdRuiRo.DefaultSetting = @"(newid())";
+				colvarIdRuiRo.DefaultSetting = @"";
 				colvarIdRuiRo.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdRuiRo);
-				
-				TableSchema.TableColumn colvarIdDuAn = new TableSchema.TableColumn(schema);
-				colvarIdDuAn.ColumnName = "IdDuAn";
-				colvarIdDuAn.DataType = DbType.Guid;
-				colvarIdDuAn.MaxLength = 0;
-				colvarIdDuAn.AutoIncrement = false;
-				colvarIdDuAn.IsNullable = false;
-				colvarIdDuAn.IsPrimaryKey = false;
-				colvarIdDuAn.IsForeignKey = true;
-				colvarIdDuAn.IsReadOnly = false;
-				colvarIdDuAn.DefaultSetting = @"";
-				
-					colvarIdDuAn.ForeignKeyTableName = "TblDuAn";
-				schema.Columns.Add(colvarIdDuAn);
-				
-				TableSchema.TableColumn colvarIdNhanVienXuLy = new TableSchema.TableColumn(schema);
-				colvarIdNhanVienXuLy.ColumnName = "IdNhanVienXuLy";
-				colvarIdNhanVienXuLy.DataType = DbType.Guid;
-				colvarIdNhanVienXuLy.MaxLength = 0;
-				colvarIdNhanVienXuLy.AutoIncrement = false;
-				colvarIdNhanVienXuLy.IsNullable = true;
-				colvarIdNhanVienXuLy.IsPrimaryKey = false;
-				colvarIdNhanVienXuLy.IsForeignKey = true;
-				colvarIdNhanVienXuLy.IsReadOnly = false;
-				colvarIdNhanVienXuLy.DefaultSetting = @"";
-				
-					colvarIdNhanVienXuLy.ForeignKeyTableName = "aspnet_Users";
-				schema.Columns.Add(colvarIdNhanVienXuLy);
-				
-				TableSchema.TableColumn colvarMaRuiRo = new TableSchema.TableColumn(schema);
-				colvarMaRuiRo.ColumnName = "MaRuiRo";
-				colvarMaRuiRo.DataType = DbType.AnsiString;
-				colvarMaRuiRo.MaxLength = 50;
-				colvarMaRuiRo.AutoIncrement = false;
-				colvarMaRuiRo.IsNullable = true;
-				colvarMaRuiRo.IsPrimaryKey = false;
-				colvarMaRuiRo.IsForeignKey = false;
-				colvarMaRuiRo.IsReadOnly = false;
-				colvarMaRuiRo.DefaultSetting = @"";
-				colvarMaRuiRo.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMaRuiRo);
 				
 				TableSchema.TableColumn colvarTenRuiRo = new TableSchema.TableColumn(schema);
 				colvarTenRuiRo.ColumnName = "TenRuiRo";
@@ -193,152 +151,6 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarTenRuiRo.DefaultSetting = @"";
 				colvarTenRuiRo.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarTenRuiRo);
-				
-				TableSchema.TableColumn colvarXacSuatXayRa = new TableSchema.TableColumn(schema);
-				colvarXacSuatXayRa.ColumnName = "XacSuatXayRa";
-				colvarXacSuatXayRa.DataType = DbType.Int32;
-				colvarXacSuatXayRa.MaxLength = 0;
-				colvarXacSuatXayRa.AutoIncrement = false;
-				colvarXacSuatXayRa.IsNullable = true;
-				colvarXacSuatXayRa.IsPrimaryKey = false;
-				colvarXacSuatXayRa.IsForeignKey = false;
-				colvarXacSuatXayRa.IsReadOnly = false;
-				colvarXacSuatXayRa.DefaultSetting = @"";
-				colvarXacSuatXayRa.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarXacSuatXayRa);
-				
-				TableSchema.TableColumn colvarMucDoAnhHuong = new TableSchema.TableColumn(schema);
-				colvarMucDoAnhHuong.ColumnName = "MucDoAnhHuong";
-				colvarMucDoAnhHuong.DataType = DbType.Int32;
-				colvarMucDoAnhHuong.MaxLength = 0;
-				colvarMucDoAnhHuong.AutoIncrement = false;
-				colvarMucDoAnhHuong.IsNullable = true;
-				colvarMucDoAnhHuong.IsPrimaryKey = false;
-				colvarMucDoAnhHuong.IsForeignKey = false;
-				colvarMucDoAnhHuong.IsReadOnly = false;
-				colvarMucDoAnhHuong.DefaultSetting = @"";
-				colvarMucDoAnhHuong.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMucDoAnhHuong);
-				
-				TableSchema.TableColumn colvarDiemRuiRo = new TableSchema.TableColumn(schema);
-				colvarDiemRuiRo.ColumnName = "DiemRuiRo";
-				colvarDiemRuiRo.DataType = DbType.Int32;
-				colvarDiemRuiRo.MaxLength = 0;
-				colvarDiemRuiRo.AutoIncrement = false;
-				colvarDiemRuiRo.IsNullable = true;
-				colvarDiemRuiRo.IsPrimaryKey = false;
-				colvarDiemRuiRo.IsForeignKey = false;
-				colvarDiemRuiRo.IsReadOnly = false;
-				colvarDiemRuiRo.DefaultSetting = @"";
-				colvarDiemRuiRo.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarDiemRuiRo);
-				
-				TableSchema.TableColumn colvarKeHoachPhongNgua = new TableSchema.TableColumn(schema);
-				colvarKeHoachPhongNgua.ColumnName = "KeHoachPhongNgua";
-				colvarKeHoachPhongNgua.DataType = DbType.String;
-				colvarKeHoachPhongNgua.MaxLength = -1;
-				colvarKeHoachPhongNgua.AutoIncrement = false;
-				colvarKeHoachPhongNgua.IsNullable = true;
-				colvarKeHoachPhongNgua.IsPrimaryKey = false;
-				colvarKeHoachPhongNgua.IsForeignKey = false;
-				colvarKeHoachPhongNgua.IsReadOnly = false;
-				colvarKeHoachPhongNgua.DefaultSetting = @"";
-				colvarKeHoachPhongNgua.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarKeHoachPhongNgua);
-				
-				TableSchema.TableColumn colvarKeHoachUngPho = new TableSchema.TableColumn(schema);
-				colvarKeHoachUngPho.ColumnName = "KeHoachUngPho";
-				colvarKeHoachUngPho.DataType = DbType.String;
-				colvarKeHoachUngPho.MaxLength = -1;
-				colvarKeHoachUngPho.AutoIncrement = false;
-				colvarKeHoachUngPho.IsNullable = true;
-				colvarKeHoachUngPho.IsPrimaryKey = false;
-				colvarKeHoachUngPho.IsForeignKey = false;
-				colvarKeHoachUngPho.IsReadOnly = false;
-				colvarKeHoachUngPho.DefaultSetting = @"";
-				colvarKeHoachUngPho.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarKeHoachUngPho);
-				
-				TableSchema.TableColumn colvarTrangThaiDuyet = new TableSchema.TableColumn(schema);
-				colvarTrangThaiDuyet.ColumnName = "TrangThaiDuyet";
-				colvarTrangThaiDuyet.DataType = DbType.Byte;
-				colvarTrangThaiDuyet.MaxLength = 0;
-				colvarTrangThaiDuyet.AutoIncrement = false;
-				colvarTrangThaiDuyet.IsNullable = false;
-				colvarTrangThaiDuyet.IsPrimaryKey = false;
-				colvarTrangThaiDuyet.IsForeignKey = false;
-				colvarTrangThaiDuyet.IsReadOnly = false;
-				
-						colvarTrangThaiDuyet.DefaultSetting = @"((0))";
-				colvarTrangThaiDuyet.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarTrangThaiDuyet);
-				
-				TableSchema.TableColumn colvarDaXoa = new TableSchema.TableColumn(schema);
-				colvarDaXoa.ColumnName = "DaXoa";
-				colvarDaXoa.DataType = DbType.Boolean;
-				colvarDaXoa.MaxLength = 0;
-				colvarDaXoa.AutoIncrement = false;
-				colvarDaXoa.IsNullable = false;
-				colvarDaXoa.IsPrimaryKey = false;
-				colvarDaXoa.IsForeignKey = false;
-				colvarDaXoa.IsReadOnly = false;
-				
-						colvarDaXoa.DefaultSetting = @"((0))";
-				colvarDaXoa.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarDaXoa);
-				
-				TableSchema.TableColumn colvarNguoiTao = new TableSchema.TableColumn(schema);
-				colvarNguoiTao.ColumnName = "NguoiTao";
-				colvarNguoiTao.DataType = DbType.String;
-				colvarNguoiTao.MaxLength = 150;
-				colvarNguoiTao.AutoIncrement = false;
-				colvarNguoiTao.IsNullable = false;
-				colvarNguoiTao.IsPrimaryKey = false;
-				colvarNguoiTao.IsForeignKey = false;
-				colvarNguoiTao.IsReadOnly = false;
-				colvarNguoiTao.DefaultSetting = @"";
-				colvarNguoiTao.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarNguoiTao);
-				
-				TableSchema.TableColumn colvarNgayTao = new TableSchema.TableColumn(schema);
-				colvarNgayTao.ColumnName = "NgayTao";
-				colvarNgayTao.DataType = DbType.DateTime;
-				colvarNgayTao.MaxLength = 0;
-				colvarNgayTao.AutoIncrement = false;
-				colvarNgayTao.IsNullable = false;
-				colvarNgayTao.IsPrimaryKey = false;
-				colvarNgayTao.IsForeignKey = false;
-				colvarNgayTao.IsReadOnly = false;
-				
-						colvarNgayTao.DefaultSetting = @"(getdate())";
-				colvarNgayTao.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarNgayTao);
-				
-				TableSchema.TableColumn colvarNguoiCapNhat = new TableSchema.TableColumn(schema);
-				colvarNguoiCapNhat.ColumnName = "NguoiCapNhat";
-				colvarNguoiCapNhat.DataType = DbType.String;
-				colvarNguoiCapNhat.MaxLength = 150;
-				colvarNguoiCapNhat.AutoIncrement = false;
-				colvarNguoiCapNhat.IsNullable = true;
-				colvarNguoiCapNhat.IsPrimaryKey = false;
-				colvarNguoiCapNhat.IsForeignKey = false;
-				colvarNguoiCapNhat.IsReadOnly = false;
-				colvarNguoiCapNhat.DefaultSetting = @"";
-				colvarNguoiCapNhat.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarNguoiCapNhat);
-				
-				TableSchema.TableColumn colvarNgayCapNhat = new TableSchema.TableColumn(schema);
-				colvarNgayCapNhat.ColumnName = "NgayCapNhat";
-				colvarNgayCapNhat.DataType = DbType.DateTime;
-				colvarNgayCapNhat.MaxLength = 0;
-				colvarNgayCapNhat.AutoIncrement = false;
-				colvarNgayCapNhat.IsNullable = true;
-				colvarNgayCapNhat.IsPrimaryKey = false;
-				colvarNgayCapNhat.IsForeignKey = false;
-				colvarNgayCapNhat.IsReadOnly = false;
-				colvarNgayCapNhat.DefaultSetting = @"";
-				colvarNgayCapNhat.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarNgayCapNhat);
 				
 				BaseSchema = schema;
 				//add this schema to the provider
@@ -358,30 +170,6 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdRuiRo, value); }
 		}
 		  
-		[XmlAttribute("IdDuAn")]
-		[Bindable(true)]
-		public Guid IdDuAn 
-		{
-			get { return GetColumnValue<Guid>(Columns.IdDuAn); }
-			set { SetColumnValue(Columns.IdDuAn, value); }
-		}
-		  
-		[XmlAttribute("IdNhanVienXuLy")]
-		[Bindable(true)]
-		public Guid? IdNhanVienXuLy 
-		{
-			get { return GetColumnValue<Guid?>(Columns.IdNhanVienXuLy); }
-			set { SetColumnValue(Columns.IdNhanVienXuLy, value); }
-		}
-		  
-		[XmlAttribute("MaRuiRo")]
-		[Bindable(true)]
-		public string MaRuiRo 
-		{
-			get { return GetColumnValue<string>(Columns.MaRuiRo); }
-			set { SetColumnValue(Columns.MaRuiRo, value); }
-		}
-		  
 		[XmlAttribute("TenRuiRo")]
 		[Bindable(true)]
 		public string TenRuiRo 
@@ -389,125 +177,13 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<string>(Columns.TenRuiRo); }
 			set { SetColumnValue(Columns.TenRuiRo, value); }
 		}
-		  
-		[XmlAttribute("XacSuatXayRa")]
-		[Bindable(true)]
-		public int? XacSuatXayRa 
-		{
-			get { return GetColumnValue<int?>(Columns.XacSuatXayRa); }
-			set { SetColumnValue(Columns.XacSuatXayRa, value); }
-		}
-		  
-		[XmlAttribute("MucDoAnhHuong")]
-		[Bindable(true)]
-		public int? MucDoAnhHuong 
-		{
-			get { return GetColumnValue<int?>(Columns.MucDoAnhHuong); }
-			set { SetColumnValue(Columns.MucDoAnhHuong, value); }
-		}
-		  
-		[XmlAttribute("DiemRuiRo")]
-		[Bindable(true)]
-		public int? DiemRuiRo 
-		{
-			get { return GetColumnValue<int?>(Columns.DiemRuiRo); }
-			set { SetColumnValue(Columns.DiemRuiRo, value); }
-		}
-		  
-		[XmlAttribute("KeHoachPhongNgua")]
-		[Bindable(true)]
-		public string KeHoachPhongNgua 
-		{
-			get { return GetColumnValue<string>(Columns.KeHoachPhongNgua); }
-			set { SetColumnValue(Columns.KeHoachPhongNgua, value); }
-		}
-		  
-		[XmlAttribute("KeHoachUngPho")]
-		[Bindable(true)]
-		public string KeHoachUngPho 
-		{
-			get { return GetColumnValue<string>(Columns.KeHoachUngPho); }
-			set { SetColumnValue(Columns.KeHoachUngPho, value); }
-		}
-		  
-		[XmlAttribute("TrangThaiDuyet")]
-		[Bindable(true)]
-		public byte TrangThaiDuyet 
-		{
-			get { return GetColumnValue<byte>(Columns.TrangThaiDuyet); }
-			set { SetColumnValue(Columns.TrangThaiDuyet, value); }
-		}
-		  
-		[XmlAttribute("DaXoa")]
-		[Bindable(true)]
-		public bool DaXoa 
-		{
-			get { return GetColumnValue<bool>(Columns.DaXoa); }
-			set { SetColumnValue(Columns.DaXoa, value); }
-		}
-		  
-		[XmlAttribute("NguoiTao")]
-		[Bindable(true)]
-		public string NguoiTao 
-		{
-			get { return GetColumnValue<string>(Columns.NguoiTao); }
-			set { SetColumnValue(Columns.NguoiTao, value); }
-		}
-		  
-		[XmlAttribute("NgayTao")]
-		[Bindable(true)]
-		public DateTime NgayTao 
-		{
-			get { return GetColumnValue<DateTime>(Columns.NgayTao); }
-			set { SetColumnValue(Columns.NgayTao, value); }
-		}
-		  
-		[XmlAttribute("NguoiCapNhat")]
-		[Bindable(true)]
-		public string NguoiCapNhat 
-		{
-			get { return GetColumnValue<string>(Columns.NguoiCapNhat); }
-			set { SetColumnValue(Columns.NguoiCapNhat, value); }
-		}
-		  
-		[XmlAttribute("NgayCapNhat")]
-		[Bindable(true)]
-		public DateTime? NgayCapNhat 
-		{
-			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
-			set { SetColumnValue(Columns.NgayCapNhat, value); }
-		}
 		
 		#endregion
 		
 		
 			
 		
-		#region ForeignKey Properties
-		
-		/// <summary>
-		/// Returns a TblDuAn ActiveRecord object related to this TblRuiRo
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblDuAn TblDuAn
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblDuAn.FetchByID(this.IdDuAn); }
-			set { SetColumnValue("IdDuAn", value.IdDuAn); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a AspnetUser ActiveRecord object related to this TblRuiRo
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUser
-		{
-			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVienXuLy); }
-			set { SetColumnValue("IdNhanVienXuLy", value.UserId); }
-		}
-		
-		
-		#endregion
+		//no foreign key tables defined (0)
 		
 		
 		
@@ -521,41 +197,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdRuiRo,Guid varIdDuAn,Guid? varIdNhanVienXuLy,string varMaRuiRo,string varTenRuiRo,int? varXacSuatXayRa,int? varMucDoAnhHuong,int? varDiemRuiRo,string varKeHoachPhongNgua,string varKeHoachUngPho,byte varTrangThaiDuyet,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdRuiRo,string varTenRuiRo)
 		{
 			TblRuiRo item = new TblRuiRo();
 			
 			item.IdRuiRo = varIdRuiRo;
 			
-			item.IdDuAn = varIdDuAn;
-			
-			item.IdNhanVienXuLy = varIdNhanVienXuLy;
-			
-			item.MaRuiRo = varMaRuiRo;
-			
 			item.TenRuiRo = varTenRuiRo;
-			
-			item.XacSuatXayRa = varXacSuatXayRa;
-			
-			item.MucDoAnhHuong = varMucDoAnhHuong;
-			
-			item.DiemRuiRo = varDiemRuiRo;
-			
-			item.KeHoachPhongNgua = varKeHoachPhongNgua;
-			
-			item.KeHoachUngPho = varKeHoachUngPho;
-			
-			item.TrangThaiDuyet = varTrangThaiDuyet;
-			
-			item.DaXoa = varDaXoa;
-			
-			item.NguoiTao = varNguoiTao;
-			
-			item.NgayTao = varNgayTao;
-			
-			item.NguoiCapNhat = varNguoiCapNhat;
-			
-			item.NgayCapNhat = varNgayCapNhat;
 			
 		
 			if (System.Web.HttpContext.Current != null)
@@ -567,41 +215,13 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdRuiRo,Guid varIdDuAn,Guid? varIdNhanVienXuLy,string varMaRuiRo,string varTenRuiRo,int? varXacSuatXayRa,int? varMucDoAnhHuong,int? varDiemRuiRo,string varKeHoachPhongNgua,string varKeHoachUngPho,byte varTrangThaiDuyet,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdRuiRo,string varTenRuiRo)
 		{
 			TblRuiRo item = new TblRuiRo();
 			
 				item.IdRuiRo = varIdRuiRo;
 			
-				item.IdDuAn = varIdDuAn;
-			
-				item.IdNhanVienXuLy = varIdNhanVienXuLy;
-			
-				item.MaRuiRo = varMaRuiRo;
-			
 				item.TenRuiRo = varTenRuiRo;
-			
-				item.XacSuatXayRa = varXacSuatXayRa;
-			
-				item.MucDoAnhHuong = varMucDoAnhHuong;
-			
-				item.DiemRuiRo = varDiemRuiRo;
-			
-				item.KeHoachPhongNgua = varKeHoachPhongNgua;
-			
-				item.KeHoachUngPho = varKeHoachUngPho;
-			
-				item.TrangThaiDuyet = varTrangThaiDuyet;
-			
-				item.DaXoa = varDaXoa;
-			
-				item.NguoiTao = varNguoiTao;
-			
-				item.NgayTao = varNgayTao;
-			
-				item.NguoiCapNhat = varNguoiCapNhat;
-			
-				item.NgayCapNhat = varNgayCapNhat;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -623,107 +243,9 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn IdDuAnColumn
-        {
-            get { return Schema.Columns[1]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn IdNhanVienXuLyColumn
-        {
-            get { return Schema.Columns[2]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn MaRuiRoColumn
-        {
-            get { return Schema.Columns[3]; }
-        }
-        
-        
-        
         public static TableSchema.TableColumn TenRuiRoColumn
         {
-            get { return Schema.Columns[4]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn XacSuatXayRaColumn
-        {
-            get { return Schema.Columns[5]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn MucDoAnhHuongColumn
-        {
-            get { return Schema.Columns[6]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn DiemRuiRoColumn
-        {
-            get { return Schema.Columns[7]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn KeHoachPhongNguaColumn
-        {
-            get { return Schema.Columns[8]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn KeHoachUngPhoColumn
-        {
-            get { return Schema.Columns[9]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn TrangThaiDuyetColumn
-        {
-            get { return Schema.Columns[10]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn DaXoaColumn
-        {
-            get { return Schema.Columns[11]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn NguoiTaoColumn
-        {
-            get { return Schema.Columns[12]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn NgayTaoColumn
-        {
-            get { return Schema.Columns[13]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn NguoiCapNhatColumn
-        {
-            get { return Schema.Columns[14]; }
-        }
-        
-        
-        
-        public static TableSchema.TableColumn NgayCapNhatColumn
-        {
-            get { return Schema.Columns[15]; }
+            get { return Schema.Columns[1]; }
         }
         
         
@@ -733,21 +255,7 @@ namespace SweetSoft.QLDA.DataAccess
 		public struct Columns
 		{
 			 public static string IdRuiRo = @"IdRuiRo";
-			 public static string IdDuAn = @"IdDuAn";
-			 public static string IdNhanVienXuLy = @"IdNhanVienXuLy";
-			 public static string MaRuiRo = @"MaRuiRo";
 			 public static string TenRuiRo = @"TenRuiRo";
-			 public static string XacSuatXayRa = @"XacSuatXayRa";
-			 public static string MucDoAnhHuong = @"MucDoAnhHuong";
-			 public static string DiemRuiRo = @"DiemRuiRo";
-			 public static string KeHoachPhongNgua = @"KeHoachPhongNgua";
-			 public static string KeHoachUngPho = @"KeHoachUngPho";
-			 public static string TrangThaiDuyet = @"TrangThaiDuyet";
-			 public static string DaXoa = @"DaXoa";
-			 public static string NguoiTao = @"NguoiTao";
-			 public static string NgayTao = @"NgayTao";
-			 public static string NguoiCapNhat = @"NguoiCapNhat";
-			 public static string NgayCapNhat = @"NgayCapNhat";
 						
 		}
 		#endregion

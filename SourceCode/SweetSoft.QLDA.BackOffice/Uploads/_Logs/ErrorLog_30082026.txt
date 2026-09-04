@@ -1,0 +1,839 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:52:27.853
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:56:24.171
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:56:24.772
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:56:24.911
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:56:25.074
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:58:43.530
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:58:44.127
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:58:44.895
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:58:45.682
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_z1ca4fbf.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: The parameter count doesn't match up with the values entered - this could be our fault with our parser; please check the list to make sure the count adds up, and if it does, please add some spacing around the parameters in the list
+                Inner Stack Trace:    at SubSonic.InlineQuery.LoadCommandParams(String sql, Object[] values)
+   at SubSonic.InlineQuery.GetCommand(String sql, Object[] values)
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 380
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 102
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 250
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetProjectsForFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 494
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.LoadProjectFilter() in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 240
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 81
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\OneDrive\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 20:59:58.640
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:02:07.861
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:02:11.482
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:02:16.657
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:02:20.839
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Login?ReturnUrl=%2ftrang-chu
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:02:26.209
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:02:26.692
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:03:05.369
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:03:14.288
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-30 21:03:14.683
+                URL: http://qlda.local/Dashboard.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: 2lkxxo24fkv1wgi1v5vkuitu
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.dashboard_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_25ib3qd0.5.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Conversion failed when converting date and/or time from character string.
+                Inner Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   at System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   at System.Data.SqlClient.SqlDataReader.Read()
+   at SubSonic.InlineQuery.ExecuteTypedList[T](String sql, Object[] values)
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](String sql, IDictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 385
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.ExecuteList[T](StringBuilder sql, Dictionary`2 parameters) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 377
+   at SweetSoft.QLDA.Core.Dashboard.DashboardRepository.GetProjects(DashboardFilter filter, Boolean applyDateRange) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardRepository.cs:line 101
+   at SweetSoft.QLDA.Core.Dashboard.DashboardOverviewManager.GetOverview(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Dashboard\DashboardOverviewManager.cs:line 32
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard(DashboardFilter filter) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 94
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.InitDashboard() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 90
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 83
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Controls\Dashboard\CtrlDashboardOverview.ascx.cs:line 34
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                

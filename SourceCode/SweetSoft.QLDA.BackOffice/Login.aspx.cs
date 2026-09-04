@@ -234,7 +234,7 @@ namespace SweetSoft.QLDA.BackOffice
                 return;
             }
             else
-                Response.Redirect(GetRelativeClientPath("/Home"), false);
+                Response.Redirect(GetRelativeClientPath("/Trang-chu"), false);
         }
 
         protected void ChangeLanguage(object sender, EventArgs e)

@@ -16,6 +16,7 @@ using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Configuration;
 using System.Globalization;
 using System.Text;
@@ -31,6 +32,27 @@ namespace SweetSoft.QLDA.BackOffice.Common
 {
     public class BaseAdminPage : System.Web.UI.Page
     {
+        public Guid CurrentProjectId
+        {
+            get
+            {
+                string rawId = Request.QueryString["ProjectId"];
+                if (!string.IsNullOrEmpty(rawId))
+                {
+                    try
+                    {
+                        string plainText = SecurityUtilities.UnprotectUrlParameter(rawId);
+                        if (Guid.TryParse(plainText, out Guid id))
+                            return id;
+
+                        if (Guid.TryParse(rawId, out Guid directId))
+                            return directId;
+                    }
+                    catch { }
+                }
+                return Guid.Empty;
+            }
+        }
         #region Function Format
         public virtual CultureInfo ENCulture
         {
@@ -292,11 +314,22 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             if (userName == null)
                 return string.Empty;
-            List<AspnetUser> aspnetUsers;
-            if (!CacheManager.GetCacheData("SYSTEM_USER_LIST", out aspnetUsers))
+            List<AspnetUser> aspnetUsers = null;
+            object cacheObj = null;
+            if (!CacheManager.GetCacheData("SYSTEM_USER_LIST", out cacheObj) || cacheObj == null)
             {
                 aspnetUsers = UserManager.Instance.GetAllAspnetUsers();
                 CacheManager.SetCacheData("SYSTEM_USER_LIST", aspnetUsers);
+            }
+            else
+            {
+                aspnetUsers = cacheObj as List<AspnetUser>;
+                if (aspnetUsers == null)
+                {
+                    var coll = cacheObj as AspnetUserCollection;
+                    if (coll != null)
+                        aspnetUsers = coll.ToList();
+                }
             }
             if (aspnetUsers == null)
                 return string.Empty;

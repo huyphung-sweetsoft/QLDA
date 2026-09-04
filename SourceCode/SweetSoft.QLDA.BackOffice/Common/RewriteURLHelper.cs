@@ -1,4 +1,4 @@
-﻿//-----------------------PROGRAMER LOGS---------------------------
+//-----------------------PROGRAMER LOGS---------------------------
 
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Utils;
@@ -14,6 +14,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Error500 => "/500";
         public static string Login => "/Login";
         public static string Home => "/Home";
+        public static string DashboardOverview => "/Home/Overview";
+        public static string DashboardResource => "/Home/Resources";
+        public static string DashboardProgress => "/Home/Progress";
+        public static string DashboardCost => "/Home/Costs";
+        public static string DashboardEmployee => "/Home/Employee";
         public static string AuditLogs => "/Audit-logs";
         public static string Settings => "/Settings";
         public static string Countries => "/Countries";
@@ -24,7 +29,49 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string TaskSchedules => "/TaskSchedules";
         public static string Users => "/Users";
         public static string NhanVien => "/Employees";
+        public static string Documents => "/Documents";
+        public static string DocumentDetail(Guid documentId)
+        {
+            return $"/Document/{SecurityUtilities.ProtectUrlParameter(documentId.ToString())}";
+        }
+        public static string DocumentGroups => "/Document-groups";
+        public static string DocumentTypes => "/Document-types";
+        public static string DocumentStorageLocations => "/Document-storage-locations";
+        public static string DocumentTemplates => "/Document-templates";
 
+
+        //Project
+        public static string Projects => "/Projects";
+        public static string ProjectDetail(Guid idDuAn)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(idDuAn.ToString())}";
+        }
+        public static string ProjectTasks(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Tasks";
+        }
+        public static string ProjectRisks(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Risks";
+        }
+        public static string ProjectMeets(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Meets";
+        }
+        public static string ProjectIssues(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Issues";
+        }
+        public static string AddTask(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Task/Add";
+        }
+
+        public static string TaskDetail(Guid taskId, Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Task/{SecurityUtilities.ProtectUrlParameter(taskId.ToString())}";
+        }
+        //
         public static string ViewUser(Guid userId)
         {
             return $"/Users?userId={SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
@@ -93,5 +140,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/email-template/{SecurityUtilities.ProtectUrlParameter(emailId.ToString())}";
         }
+        public static string Customers => "/Customers";
+        public static string CustomerDetail(Guid idKhachHang)
+        {
+            return $"/Customers/{SecurityUtilities.ProtectUrlParameter(idKhachHang.ToString())}";
+        }
+
     }
 }
