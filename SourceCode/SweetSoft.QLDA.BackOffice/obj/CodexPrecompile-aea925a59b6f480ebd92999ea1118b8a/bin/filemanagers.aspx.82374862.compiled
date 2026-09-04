@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/fSettings/FileManagers.aspx" hash="564ac705" filehash="d1b35ce6de8ff847" flags="110000" assembly="App_Web_dd0i12ty" type="ASP.fsettings_filemanagers_aspx">
-    <filedeps>
-        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
-        <filedep name="/fSettings/FileManagers.aspx" />
-        <filedep name="/MasterPages/MasterTemplate.Master" />
-    </filedeps>
-</preserve>

@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/fDocuments/Controls/CtrlDocuments.ascx" hash="564ac705" filehash="10b2b6b6860b6ee3" flags="110000" assembly="App_Web_y2vm0qwq" type="ASP.fdocuments_controls_ctrldocuments_ascx">
-    <filedeps>
-        <filedep name="/Controls/GridviewPaging.ascx" />
-        <filedep name="/fDocuments/Controls/CtrlDocuments.ascx" />
-        <filedep name="/fFilesBox/FilesBox.ascx" />
-    </filedeps>
-</preserve>

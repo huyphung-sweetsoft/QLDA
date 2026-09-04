@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/Controls/AutoComplete/CtrExtraAutoComplete.ascx" hash="564ac705" filehash="100a4e5f6fde" flags="110000" assembly="App_Web_rfkexxtc" type="ASP.controls_autocomplete_ctrextraautocomplete_ascx">
-    <filedeps>
-        <filedep name="/Controls/AutoComplete/CtrExtraAutoComplete.ascx" />
-    </filedeps>
-</preserve>

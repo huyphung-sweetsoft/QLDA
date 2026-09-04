@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="2" virtualPath="/WebService.asmx" hash="3574fb6" filehash="ffffda9a760ce60d" flags="130000" assembly="SweetSoft.QLDA.BackOffice" type="SweetSoft.QLDA.BackOffice.WebService">
-    <filedeps>
-        <filedep name="/WebService.asmx" />
-    </filedeps>
-</preserve>

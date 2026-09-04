@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/fDocuments/Controls/CtrlStorageLocations.ascx" hash="564ac705" filehash="bf1293ed0e5af3dc" flags="110000" assembly="App_Web_y2vm0qwq" type="ASP.fdocuments_controls_ctrlstoragelocations_ascx">
-    <filedeps>
-        <filedep name="/Controls/GridviewPaging.ascx" />
-        <filedep name="/fDocuments/Controls/CtrlStorageLocations.ascx" />
-    </filedeps>
-</preserve>

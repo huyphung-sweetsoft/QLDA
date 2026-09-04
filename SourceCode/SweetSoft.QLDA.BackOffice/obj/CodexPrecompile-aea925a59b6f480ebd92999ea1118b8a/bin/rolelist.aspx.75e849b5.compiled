@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/fUsers/RoleList.aspx" hash="564ac705" filehash="f341609a84e5d762" flags="110000" assembly="App_Web_aaozserd" type="ASP.fusers_rolelist_aspx">
-    <filedeps>
-        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
-        <filedep name="/Controls/GridviewPaging.ascx" />
-        <filedep name="/fUsers/RoleList.aspx" />
-        <filedep name="/MasterPages/MasterTemplate.Master" />
-    </filedeps>
-</preserve>
