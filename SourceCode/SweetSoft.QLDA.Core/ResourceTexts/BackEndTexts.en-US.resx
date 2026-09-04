@@ -1251,4 +1251,115 @@
   <data name="DOCUMENT_FILTER_HINT" xml:space="preserve">
     <value>Select a scope, group, and document type to narrow the list.</value>
   </data>
+  <data name="DOCUMENT_DETAIL" xml:space="preserve">
+    <value>Document details</value>
+  </data>
+  <data name="DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>Versions</value>
+  </data>
+  <data name="SIGNING_HISTORY" xml:space="preserve">
+    <value>Signing</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Customer delivery</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Physical storage</value>
+  </data>
+  <data name="DOCUMENT_ACTIVITY_HISTORY" xml:space="preserve">
+    <value>Document activity</value>
+  </data>
+  <data name="NOT_APPLICABLE" xml:space="preserve">
+    <value>Not applicable</value>
+  </data>
+  <data name="NO_DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>This document does not have any file versions yet.</value>
+  </data>
+  <data name="NO_SIGNING_HISTORY" xml:space="preserve">
+    <value>Signing is required, but no signing request has been recorded yet.</value>
+  </data>
+  <data name="NO_CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Customer delivery is required, but no delivery has been recorded yet.</value>
+  </data>
+  <data name="NO_PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Physical storage is required, but no storage location has been recorded yet.</value>
+  </data>
+  <data name="NO_DOCUMENT_ACTIVITY" xml:space="preserve">
+    <value>No activity has been recorded for this document.</value>
+  </data>
+  <data name="OPEN_FILE" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="VERSION_NUMBER" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="FILE_SIZE" xml:space="preserve">
+    <value>File size</value>
+  </data>
+  <data name="SOURCE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SENT_BY" xml:space="preserve">
+    <value>Sent by</value>
+  </data>
+  <data name="SIGNER" xml:space="preserve">
+    <value>Signer</value>
+  </data>
+  <data name="RECIPIENT" xml:space="preserve">
+    <value>Recipient</value>
+  </data>
+  <data name="CHANNEL" xml:space="preserve">
+    <value>Channel</value>
+  </data>
+  <data name="RESPONSE_DEADLINE" xml:space="preserve">
+    <value>Response deadline</value>
+  </data>
+  <data name="STORAGE_LOCATION" xml:space="preserve">
+    <value>Storage location</value>
+  </data>
+  <data name="CURRENT_LOCATION" xml:space="preserve">
+    <value>Current location</value>
+  </data>
+  <data name="ORIGINAL_COPY_CONDITION" xml:space="preserve">
+    <value>Original copy condition</value>
+  </data>
+  <data name="ACTION_TYPE" xml:space="preserve">
+    <value>Activity type</value>
+  </data>
+  <data name="REFERENCE_TYPE" xml:space="preserve">
+    <value>Related item</value>
+  </data>
+  <data name="OFFICIAL_DOCUMENT_FILE_HINT" xml:space="preserve">
+    <value>This is the primary file shown when users open the document.</value>
+  </data>
+  <data name="NO_OFFICIAL_DOCUMENT_FILE" xml:space="preserve">
+    <value>No official file has been selected for this document.</value>
+  </data>
+  <data name="ADD_COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Add company document</value>
+  </data>
+  <data name="INITIAL_DOCUMENT_CONTENT" xml:space="preserve">
+    <value>Initial content</value>
+  </data>
+  <data name="UPLOAD_NEW_FILE" xml:space="preserve">
+    <value>Upload a new file</value>
+  </data>
+  <data name="USE_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Use a document template</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Select a document template</value>
+  </data>
+  <data name="NO_TEMPLATE_FOR_DOCUMENT_TYPE" xml:space="preserve">
+    <value>This document type has no active template with an uploaded template file.</value>
+  </data>
+  <data name="UPLOAD_AFTER_SAVE_NOTICE" xml:space="preserve">
+    <value>After the document cover is saved, you will be taken to the Versions tab to upload the first file. Future uploads are also managed there.</value>
+  </data>
+  <data name="UPLOAD_NEW_VERSION" xml:space="preserve">
+    <value>Upload new version</value>
+  </data>
+  <data name="VERSION_MANAGEMENT_NOTICE" xml:space="preserve">
+    <value>Each newly uploaded file becomes a version and the latest version is current. Version files do not automatically become the official file or a signed result.</value>
+  </data>
 </root>

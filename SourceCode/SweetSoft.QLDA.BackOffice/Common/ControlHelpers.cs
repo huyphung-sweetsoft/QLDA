@@ -663,10 +663,20 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         public void BindDocumentTypes(ExtraDropdown dropdown, bool isAll = false)
         {
+            BindDocumentTypes(dropdown, null, isAll);
+        }
+
+        public void BindDocumentTypes(
+            ExtraDropdown dropdown,
+            Guid? idNhomTaiLieu,
+            bool isAll = false)
+        {
             dropdown.Items.Clear();
 
             List<TblLoaiTaiLieu> documentTypes =
-                DocumentTypeManager.Instance.GetAll()
+                DocumentTypeManager.Instance.GetAll(
+                    null,
+                    idNhomTaiLieu)
                 ?? new List<TblLoaiTaiLieu>();
 
             Dictionary<Guid, string> groupNames =
@@ -698,7 +708,9 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     documentType.IdNhomTaiLieu,
                     out groupName);
 
-                string text = string.IsNullOrEmpty(groupName)
+                string text = idNhomTaiLieu.HasValue
+                    ? documentType.TenLoai
+                    : string.IsNullOrEmpty(groupName)
                     ? documentType.TenLoai
                     : groupName + " / " + documentType.TenLoai;
 

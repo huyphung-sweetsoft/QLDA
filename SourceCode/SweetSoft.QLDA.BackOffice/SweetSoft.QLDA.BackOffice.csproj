@@ -156,6 +156,20 @@
     <Compile Include="fDocuments\Documents.aspx.designer.cs">
       <DependentUpon>Documents.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\DocumentDetail.aspx.cs">
+      <DependentUpon>DocumentDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
+      <DependentUpon>DocumentDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.cs">
+      <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.designer.cs">
+      <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fDocuments\Controls\CtrlDocuments.ascx.cs">
       <DependentUpon>CtrlDocuments.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -303,11 +317,13 @@
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
     <Content Include="fDocuments\Controls\CtrlDocuments.ascx" />
+    <Content Include="fDocuments\Controls\CtrlDocumentDetail.ascx" />
     <Content Include="fDocuments\Controls\CtrlDocumentGroups.ascx" />
     <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
     <Content Include="fDocuments\Controls\CtrlDocumentTemplates.ascx" />
     <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
     <Content Include="fDocuments\Documents.aspx" />
+    <Content Include="fDocuments\DocumentDetail.aspx" />
     <Content Include="fDocuments\DocumentGroups.aspx" />
     <Content Include="fDocuments\DocumentTypes.aspx" />
     <Content Include="fDocuments\DocumentTemplates.aspx" />

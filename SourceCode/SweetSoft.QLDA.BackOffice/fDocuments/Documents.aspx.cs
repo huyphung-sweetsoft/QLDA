@@ -42,14 +42,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             CtrlDocuments1.InitControls();
         }
 
-        public override void DataCallback(
-            string key,
-            object value,
-            object valueText)
-        {
-            CtrlDocuments1.HandleFileCallback(key);
-        }
-
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlDocuments1.ConfirmRequest(e);

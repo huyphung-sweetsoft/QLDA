@@ -28,6 +28,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.HiddenField hdfIdTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMaTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenTaiLieu;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhomTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlLoaiTaiLieu;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNguoiPhuTrach;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTa;
@@ -35,13 +36,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkCanTrinhKy;
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl divHinhThucKy;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlHinhThucKy;
-        protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkCanGuiKhachHang;
         protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkCanLuuVatLy;
-        protected global::System.Web.UI.WebControls.Panel pnlUploadPlaceholder;
-        protected global::System.Web.UI.WebControls.Panel pnlVersionFiles;
-        protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbVersions;
-        protected global::System.Web.UI.WebControls.Panel pnlVersionHistory;
-        protected global::System.Web.UI.WebControls.Repeater rptVersions;
+        protected global::System.Web.UI.WebControls.Panel pnlInitialContent;
+        protected global::System.Web.UI.WebControls.RadioButton rbInitialUpload;
+        protected global::System.Web.UI.WebControls.RadioButton rbInitialTemplate;
+        protected global::System.Web.UI.WebControls.Panel pnlInitialUploadInfo;
+        protected global::System.Web.UI.WebControls.Panel pnlInitialTemplate;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlInitialTemplate;
+        protected global::System.Web.UI.WebControls.Panel pnlNoInitialTemplates;
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnSave;
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnCancel;
         protected global::SweetSoft.QLDA.Controls.GridviewExtension grvData;

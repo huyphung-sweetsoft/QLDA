@@ -1212,4 +1212,115 @@
   <data name="DOCUMENT_FILTER_HINT" xml:space="preserve">
     <value>Chọn phạm vi, nhóm và loại tài liệu để thu hẹp danh sách.</value>
   </data>
+  <data name="DOCUMENT_DETAIL" xml:space="preserve">
+    <value>Chi tiết hồ sơ</value>
+  </data>
+  <data name="DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>Các phiên bản</value>
+  </data>
+  <data name="SIGNING_HISTORY" xml:space="preserve">
+    <value>Trình ký</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Gửi khách hàng</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Lưu bản cứng</value>
+  </data>
+  <data name="DOCUMENT_ACTIVITY_HISTORY" xml:space="preserve">
+    <value>Nhật ký hồ sơ</value>
+  </data>
+  <data name="NOT_APPLICABLE" xml:space="preserve">
+    <value>Không áp dụng</value>
+  </data>
+  <data name="NO_DOCUMENT_VERSIONS" xml:space="preserve">
+    <value>Hồ sơ chưa có phiên bản tệp nào.</value>
+  </data>
+  <data name="NO_SIGNING_HISTORY" xml:space="preserve">
+    <value>Hồ sơ có yêu cầu trình ký nhưng chưa phát sinh lần trình ký nào.</value>
+  </data>
+  <data name="NO_CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
+    <value>Hồ sơ có yêu cầu gửi khách hàng nhưng chưa phát sinh lần gửi nào.</value>
+  </data>
+  <data name="NO_PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
+    <value>Hồ sơ có yêu cầu lưu bản cứng nhưng chưa được ghi nhận vị trí lưu.</value>
+  </data>
+  <data name="NO_DOCUMENT_ACTIVITY" xml:space="preserve">
+    <value>Chưa có hoạt động nào được ghi vào nhật ký hồ sơ.</value>
+  </data>
+  <data name="OPEN_FILE" xml:space="preserve">
+    <value>Mở tệp</value>
+  </data>
+  <data name="VERSION_NUMBER" xml:space="preserve">
+    <value>Phiên bản</value>
+  </data>
+  <data name="FILE_SIZE" xml:space="preserve">
+    <value>Dung lượng</value>
+  </data>
+  <data name="SOURCE" xml:space="preserve">
+    <value>Nguồn tạo</value>
+  </data>
+  <data name="SENT_BY" xml:space="preserve">
+    <value>Người gửi</value>
+  </data>
+  <data name="SIGNER" xml:space="preserve">
+    <value>Người ký</value>
+  </data>
+  <data name="RECIPIENT" xml:space="preserve">
+    <value>Người nhận</value>
+  </data>
+  <data name="CHANNEL" xml:space="preserve">
+    <value>Kênh gửi</value>
+  </data>
+  <data name="RESPONSE_DEADLINE" xml:space="preserve">
+    <value>Hạn phản hồi</value>
+  </data>
+  <data name="STORAGE_LOCATION" xml:space="preserve">
+    <value>Nơi lưu trữ</value>
+  </data>
+  <data name="CURRENT_LOCATION" xml:space="preserve">
+    <value>Vị trí hiện tại</value>
+  </data>
+  <data name="ORIGINAL_COPY_CONDITION" xml:space="preserve">
+    <value>Tình trạng bản gốc</value>
+  </data>
+  <data name="ACTION_TYPE" xml:space="preserve">
+    <value>Loại hoạt động</value>
+  </data>
+  <data name="REFERENCE_TYPE" xml:space="preserve">
+    <value>Đối tượng liên quan</value>
+  </data>
+  <data name="OFFICIAL_DOCUMENT_FILE_HINT" xml:space="preserve">
+    <value>Đây là tệp ưu tiên hiển thị khi người dùng mở hồ sơ.</value>
+  </data>
+  <data name="NO_OFFICIAL_DOCUMENT_FILE" xml:space="preserve">
+    <value>Chưa chọn tệp chính thức cho hồ sơ này.</value>
+  </data>
+  <data name="ADD_COMPANY_DOCUMENT" xml:space="preserve">
+    <value>Thêm hồ sơ công ty</value>
+  </data>
+  <data name="INITIAL_DOCUMENT_CONTENT" xml:space="preserve">
+    <value>Nội dung ban đầu</value>
+  </data>
+  <data name="UPLOAD_NEW_FILE" xml:space="preserve">
+    <value>Tải tệp mới</value>
+  </data>
+  <data name="USE_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Dùng mẫu tài liệu</value>
+  </data>
+  <data name="SELECT_DOCUMENT_TEMPLATE" xml:space="preserve">
+    <value>Chọn mẫu tài liệu</value>
+  </data>
+  <data name="NO_TEMPLATE_FOR_DOCUMENT_TYPE" xml:space="preserve">
+    <value>Loại tài liệu này chưa có mẫu đang hoạt động và đã tải tệp mẫu.</value>
+  </data>
+  <data name="UPLOAD_AFTER_SAVE_NOTICE" xml:space="preserve">
+    <value>Sau khi lưu bìa hồ sơ, hệ thống sẽ chuyển sang tab Các phiên bản để bạn tải tệp đầu tiên. Các lần tải tệp tiếp theo cũng được thực hiện tại đó.</value>
+  </data>
+  <data name="UPLOAD_NEW_VERSION" xml:space="preserve">
+    <value>Tải phiên bản mới</value>
+  </data>
+  <data name="VERSION_MANAGEMENT_NOTICE" xml:space="preserve">
+    <value>Mỗi tệp mới được tạo thành một phiên bản và phiên bản mới nhất là bản hiện hành. Tệp phiên bản không tự động trở thành tệp chính thức hoặc kết quả ký.</value>
+  </data>
 </root>

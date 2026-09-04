@@ -380,6 +380,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 SELECT
                     p.IdPhienBanTaiLieu,
                     p.SoPhienBan,
+                    p.NguonTao,
                     p.MoTaPhienBan,
                     p.LaPhienBanHienTai,
                     p.NguoiTao,
@@ -387,11 +388,18 @@ namespace SweetSoft.QLDA.Core.Respositories
                     u.Id AS IdFile,
                     u.Name AS TenFile,
                     u.OriginalFileName AS TenFileGoc,
-                    u.FileUrl
+                    u.FileUrl,
+                    u.Ext,
+                    u.FileSize,
+                    ISNULL(NULLIF(creator.DisplayName, N''), p.NguoiTao)
+                        AS TenNguoiTao
                 FROM TblPhienBanTaiLieu p
                 INNER JOIN TblUploadFile u
                     ON u.Id = p.IdFileNoiDung
                    AND u.IsDeleted = 0
+                LEFT JOIN aspnet_Users creator
+                    ON creator.UserName = p.NguoiTao
+                   AND creator.IsDeleted = 0
                 WHERE p.IdTaiLieu = '{idTaiLieu}'
                   AND p.DaXoa = 0
                 ORDER BY
@@ -399,11 +407,207 @@ namespace SweetSoft.QLDA.Core.Respositories
                     p.NgayTao DESC,
                     p.IdPhienBanTaiLieu DESC;";
 
-            IDataReader reader = new InlineQuery().ExecuteReader(sql);
-            DataTable result = new DataTable();
-            if (reader != null)
-                result.Load(reader);
-            return result;
+            return ExecuteDataTable(sql);
+        }
+
+        public DataTable GetCompanyDocumentDetail(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return new DataTable();
+
+            string sql = $@"
+                SELECT TOP 1
+                    t.IdTaiLieu,
+                    t.IdLoaiTaiLieu,
+                    t.MaTaiLieu,
+                    t.TenTaiLieu,
+                    t.MoTa,
+                    t.IdNhanVienPhuTrach,
+                    t.CanTrinhKy,
+                    t.HinhThucKy,
+                    t.TrangThaiTaiLieu,
+                    t.CanGuiKhachHang,
+                    t.TrangThaiGuiKhach,
+                    t.CanLuuVatLy,
+                    t.TrangThaiLuuTru,
+                    t.NguoiTao,
+                    t.NgayTao,
+                    t.NguoiCapNhat,
+                    t.NgayCapNhat,
+                    t.IdFileBanChinhThuc,
+                    ISNULL(l.TenLoai, N'') AS TenLoai,
+                    ISNULL(n.TenNhom, N'') AS TenNhom,
+                    ISNULL(nv.DisplayName, N'') AS TenNhanVienPhuTrach,
+                    ISNULL(u.Name, N'') AS TenFileChinhThuc,
+                    ISNULL(u.OriginalFileName, N'') AS TenFileChinhThucGoc,
+                    ISNULL(u.FileUrl, N'') AS FileChinhThucUrl,
+                    u.FileSize AS DungLuongFileChinhThuc,
+                    ISNULL(u.Ext, N'') AS PhanMoRongFileChinhThuc
+                FROM TblTaiLieu t
+                LEFT JOIN TblLoaiTaiLieu l
+                    ON l.IdLoaiTaiLieu = t.IdLoaiTaiLieu
+                   AND l.DaXoa = 0
+                LEFT JOIN TblNhomTaiLieu n
+                    ON n.IdNhomTaiLieu = l.IdNhomTaiLieu
+                   AND n.DaXoa = 0
+                LEFT JOIN aspnet_Users nv
+                    ON nv.UserId = t.IdNhanVienPhuTrach
+                   AND nv.IsDeleted = 0
+                LEFT JOIN TblUploadFile u
+                    ON u.Id = t.IdFileBanChinhThuc
+                   AND u.IsDeleted = 0
+                WHERE t.IdTaiLieu = '{idTaiLieu}'
+                  AND t.IdDuAn IS NULL
+                  AND t.DaXoa = 0;";
+
+            return ExecuteDataTable(sql);
+        }
+
+        public DataTable GetSigningHistory(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return new DataTable();
+
+            string sql = $@"
+                SELECT
+                    s.IdTrinhKyTaiLieu,
+                    p.SoPhienBan,
+                    s.HinhThucKy,
+                    s.TrangThaiTrinhKy,
+                    s.NgayGui,
+                    s.NgayNhanLai,
+                    s.GhiChu,
+                    ISNULL(sender.DisplayName, N'') AS TenNguoiGui,
+                    COALESCE(NULLIF(s.TenNguoiKy, N''),
+                             NULLIF(signer.DisplayName, N''), N'')
+                        AS TenNguoiKyHienThi,
+                    f.Id AS IdFileSauKy,
+                    ISNULL(f.Name, N'') AS TenFileSauKy,
+                    ISNULL(f.OriginalFileName, N'') AS TenFileSauKyGoc,
+                    ISNULL(f.FileUrl, N'') AS FileSauKyUrl
+                FROM TblTrinhKyTaiLieu s
+                INNER JOIN TblPhienBanTaiLieu p
+                    ON p.IdPhienBanTaiLieu = s.IdPhienBanTaiLieu
+                   AND p.DaXoa = 0
+                LEFT JOIN aspnet_Users sender
+                    ON sender.UserId = s.IdNguoiGui
+                   AND sender.IsDeleted = 0
+                LEFT JOIN aspnet_Users signer
+                    ON signer.UserId = s.IdNguoiKy
+                   AND signer.IsDeleted = 0
+                LEFT JOIN TblUploadFile f
+                    ON f.Id = s.IdFileSauKy
+                   AND f.IsDeleted = 0
+                WHERE p.IdTaiLieu = '{idTaiLieu}'
+                  AND s.DaXoa = 0
+                ORDER BY s.NgayGui DESC, s.IdTrinhKyTaiLieu DESC;";
+
+            return ExecuteDataTable(sql);
+        }
+
+        public DataTable GetCustomerDeliveryHistory(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return new DataTable();
+
+            string sql = $@"
+                SELECT
+                    g.IdGuiNhanKhachHang,
+                    p.SoPhienBan,
+                    ISNULL(k.TenKhachHang, N'') AS TenKhachHang,
+                    ISNULL(actor.DisplayName, N'') AS TenNguoiThucHien,
+                    g.TenNguoiNhan,
+                    g.EmailNguoiNhan,
+                    g.NgayGui,
+                    g.HanPhanHoi,
+                    g.NgayNhanLai,
+                    g.KenhGui,
+                    g.TrangThai,
+                    g.LaBanChinhThuc,
+                    g.GhiChu,
+                    f.Id AS IdFileNhanLai,
+                    ISNULL(f.Name, N'') AS TenFileNhanLai,
+                    ISNULL(f.OriginalFileName, N'') AS TenFileNhanLaiGoc,
+                    ISNULL(f.FileUrl, N'') AS FileNhanLaiUrl
+                FROM TblGuiNhanKhachHang g
+                INNER JOIN TblPhienBanTaiLieu p
+                    ON p.IdPhienBanTaiLieu = g.IdPhienBanTaiLieu
+                   AND p.DaXoa = 0
+                LEFT JOIN TblKhachHang k
+                    ON k.IdKhachHang = g.IdKhachHang
+                   AND k.DaXoa = 0
+                LEFT JOIN aspnet_Users actor
+                    ON actor.UserId = g.IdNguoiThucHien
+                   AND actor.IsDeleted = 0
+                LEFT JOIN TblUploadFile f
+                    ON f.Id = g.IdFileNhanLai
+                   AND f.IsDeleted = 0
+                WHERE p.IdTaiLieu = '{idTaiLieu}'
+                  AND g.DaXoa = 0
+                ORDER BY g.NgayGui DESC, g.IdGuiNhanKhachHang DESC;";
+
+            return ExecuteDataTable(sql);
+        }
+
+        public DataTable GetPhysicalStorageHistory(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return new DataTable();
+
+            string sql = $@"
+                SELECT
+                    v.IdLuuTruVatLy,
+                    v.MaLuuTru,
+                    v.TrangThaiLuuTru,
+                    v.TinhTrangBanGoc,
+                    v.NgayLuu,
+                    v.NgayLayRa,
+                    v.NgayHoanTra,
+                    v.LaViTriHienTai,
+                    v.GhiChu,
+                    ISNULL(n.MaNoiLuuTru, N'') AS MaNoiLuuTru,
+                    ISNULL(n.TenNoiLuuTru, N'') AS TenNoiLuuTru,
+                    ISNULL(actor.DisplayName, N'') AS TenNguoiThucHien
+                FROM TblLuuTruVatLy v
+                LEFT JOIN TblNoiLuuTru n
+                    ON n.IdNoiLuuTru = v.IdNoiLuuTru
+                   AND n.DaXoa = 0
+                LEFT JOIN aspnet_Users actor
+                    ON actor.UserId = v.IdNguoiThucHien
+                   AND actor.IsDeleted = 0
+                WHERE v.IdTaiLieu = '{idTaiLieu}'
+                  AND v.DaXoa = 0
+                ORDER BY
+                    v.LaViTriHienTai DESC,
+                    v.NgayLuu DESC,
+                    v.IdLuuTruVatLy DESC;";
+
+            return ExecuteDataTable(sql);
+        }
+
+        public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return new DataTable();
+
+            string sql = $@"
+                SELECT
+                    h.IdLichSuTaiLieu,
+                    h.LoaiHanhDong,
+                    h.LoaiThamChieu,
+                    h.NoiDungThayDoi,
+                    h.MoTa,
+                    h.NguoiTao,
+                    h.NgayTao,
+                    ISNULL(actor.DisplayName, N'') AS TenNguoiThucHien
+                FROM TblLichSuTaiLieu h
+                LEFT JOIN aspnet_Users actor
+                    ON actor.UserId = h.IdNhanVienThucHien
+                   AND actor.IsDeleted = 0
+                WHERE h.IdTaiLieu = '{idTaiLieu}'
+                ORDER BY h.NgayTao DESC, h.IdLichSuTaiLieu DESC;";
+
+            return ExecuteDataTable(sql);
         }
 
         public void InsertDocumentVersion(TblPhienBanTaiLieu item)
@@ -413,6 +617,12 @@ namespace SweetSoft.QLDA.Core.Respositories
         }
 
         public void UpdateDocumentVersion(TblPhienBanTaiLieu item)
+        {
+            if (item != null)
+                item.Save();
+        }
+
+        public void InsertDocumentHistory(TblLichSuTaiLieu item)
         {
             if (item != null)
                 item.Save();
@@ -525,6 +735,15 @@ namespace SweetSoft.QLDA.Core.Respositories
                 ) THEN 1 ELSE 0 END;";
 
             return new InlineQuery().ExecuteScalar<int>(sql) > 0;
+        }
+
+        private static DataTable ExecuteDataTable(string sql)
+        {
+            IDataReader reader = new InlineQuery().ExecuteReader(sql);
+            DataTable result = new DataTable();
+            if (reader != null)
+                result.Load(reader);
+            return result;
         }
 
         public override TblTaiLieu Insert(TblTaiLieu item)

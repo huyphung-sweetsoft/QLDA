@@ -23,6 +23,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string TaskSchedules => "/TaskSchedules";
         public static string Users => "/Users";
         public static string Documents => "/Documents";
+        public static string DocumentDetail(Guid documentId)
+        {
+            return $"/Document/{SecurityUtilities.ProtectUrlParameter(documentId.ToString())}";
+        }
         public static string DocumentGroups => "/Document-groups";
         public static string DocumentTypes => "/Document-types";
         public static string DocumentStorageLocations => "/Document-storage-locations";

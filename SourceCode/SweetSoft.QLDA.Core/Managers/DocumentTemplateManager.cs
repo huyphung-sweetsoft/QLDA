@@ -68,6 +68,11 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetById(idMauTaiLieu);
         }
 
+        public DataTable GetAvailableTemplatesByType(Guid idLoaiTaiLieu)
+        {
+            return _repository.GetAvailableTemplatesByType(idLoaiTaiLieu);
+        }
+
         public TblMauTaiLieu Save(
             Guid idMauTaiLieu,
             Guid idLoaiTaiLieu,

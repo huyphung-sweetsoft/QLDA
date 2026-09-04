@@ -3,9 +3,6 @@
     CodeBehind="CtrlDocuments.ascx.cs"
     Inherits="SweetSoft.QLDA.BackOffice.fDocuments.Controls.CtrlDocuments" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-<%@ Register Src="~/fFilesBox/FilesBox.ascx"
-    TagPrefix="SweetSoft"
-    TagName="FilesBox" %>
 
 <asp:UpdatePanel
     runat="server"
@@ -255,9 +252,20 @@
                         <asp:TemplateField
                             HeaderText="Thao tác"
                             ItemStyle-CssClass="text-center"
-                            HeaderStyle-Width="160px">
+                            HeaderStyle-Width="220px">
 
                             <ItemTemplate>
+                                <SweetSoft:SmartLinkButton
+                                    runat="server"
+                                    ID="btnViewRow"
+                                    CommandName="VIEW_ITEM"
+                                    CommandArgument='<%# Eval("IdTaiLieu") %>'
+                                    CausesValidation="false"
+                                    VisibleConditionKey='<%# this.IsView && IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    ResourceKey='<%# BackEndResourceKeys.VIEW %>'
+                                    ButtonIcon="fas fa-eye">
+                                </SweetSoft:SmartLinkButton>
+
                                 <SweetSoft:SmartLinkButton
                                     runat="server"
                                     ID="btnEditRow"
@@ -306,7 +314,7 @@
     runat="server"
     ID="dlDetail"
     Type="Primary"
-    Size="ExtraLarge"
+    Size="Large"
     Position="modal-dialog-centered modal-dialog-scrollable"
     DefaultButton="btnSave"
     FooterButtonClose="false">
@@ -349,7 +357,23 @@
                         </SweetSoft:ExtraTextBox>
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label label-valid">
+                            <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %>
+                        </label>
+
+                        <SweetSoft:ExtraDropdown
+                            runat="server"
+                            ID="ddlNhomTaiLieu"
+                            Required="true"
+                            ValueIsOfTypeGUID="true"
+                            SimpleInit="true"
+                            AutoPostBack="true"
+                            OnSelectedIndexChanged="ddlNhomTaiLieu_SelectedIndexChanged">
+                        </SweetSoft:ExtraDropdown>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
                         <label class="form-label label-valid">
                             <%= GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE) %>
                         </label>
@@ -365,7 +389,7 @@
                         </SweetSoft:ExtraDropdown>
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.RESPONSIBLE_EMPLOYEE) %>
                         </label>
@@ -412,7 +436,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="col-lg-4 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_SIGNING) %>
                                         </label>
@@ -429,7 +453,7 @@
                                     <div
                                         runat="server"
                                         id="divHinhThucKy"
-                                        class="col-lg-3 col-md-6 mb-3">
+                                        class="col-lg-4 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.SIGNING_METHOD) %>
                                         </label>
@@ -440,20 +464,7 @@
                                         </SweetSoft:ExtraDropdown>
                                     </div>
 
-                                    <div class="col-lg-3 col-md-6 mb-3">
-                                        <label class="form-label">
-                                            <%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER) %>
-                                        </label>
-                                        <div class="mt-2">
-                                            <SweetSoft:ExtraCheckbox
-                                                runat="server"
-                                                ID="chkCanGuiKhachHang"
-                                                OnText="Có"
-                                                OffText="Không" />
-                                        </div>
-                                    </div>
-
-                                    <div class="col-lg-3 col-md-6 mb-3">
+                                    <div class="col-lg-4 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE) %>
                                         </label>
@@ -470,84 +481,69 @@
                         </div>
                     </div>
 
-                </div>
-
-                <asp:Panel
-                    runat="server"
-                    ID="pnlUploadPlaceholder"
-                    CssClass="alert alert-secondary py-2">
-                    <%= GetResourceText(BackEndResourceKeys.SAVE_DOCUMENT_BEFORE_UPLOAD) %>
-                </asp:Panel>
-
-                <asp:Panel
-                    runat="server"
-                    ID="pnlVersionFiles"
-                    Visible="false"
-                    CssClass="border rounded p-3 mb-3">
-                    <h6 class="text-primary mb-2">
-                        <%= GetResourceText(BackEndResourceKeys.DOCUMENT_VERSION_FILES) %>
-                    </h6>
-                    <div class="alert alert-info py-2">
-                        <%= GetResourceText(BackEndResourceKeys.DOCUMENT_VERSION_NOTICE) %>
-                    </div>
-
-                    <SweetSoft:FilesBox
-                        runat="server"
-                        ID="fbVersions"
-                        IsMultiple="true" />
-
                     <asp:Panel
                         runat="server"
-                        ID="pnlVersionHistory"
-                        Visible="false"
-                        CssClass="table-responsive mt-3">
-                        <table class="table table-sm table-bordered align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 110px;">
-                                        <%= GetResourceText(BackEndResourceKeys.VERSION) %>
-                                    </th>
-                                    <th>
-                                        <%= GetResourceText(BackEndResourceKeys.FILE_NAME) %>
-                                    </th>
-                                    <th style="width: 130px;">
-                                        <%= GetResourceText(BackEndResourceKeys.STATUS) %>
-                                    </th>
-                                    <th style="width: 170px;">
-                                        <%= GetResourceText(BackEndResourceKeys.CREATED_DATE) %>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <asp:Repeater
+                        ID="pnlInitialContent"
+                        CssClass="col-12 mb-3">
+                        <div class="card border shadow-none mb-0">
+                            <div class="card-body">
+                                <h6 class="text-primary mb-3">
+                                    <%= GetResourceText(BackEndResourceKeys.INITIAL_DOCUMENT_CONTENT) %>
+                                </h6>
+
+                                <div class="d-flex flex-wrap gap-4 mb-3">
+                                    <asp:RadioButton
+                                        runat="server"
+                                        ID="rbInitialUpload"
+                                        GroupName="InitialDocumentSource"
+                                        AutoPostBack="true"
+                                        OnCheckedChanged="initialSource_CheckedChanged"
+                                        CssClass="form-check" />
+
+                                    <asp:RadioButton
+                                        runat="server"
+                                        ID="rbInitialTemplate"
+                                        GroupName="InitialDocumentSource"
+                                        AutoPostBack="true"
+                                        OnCheckedChanged="initialSource_CheckedChanged"
+                                        CssClass="form-check" />
+                                </div>
+
+                                <asp:Panel
                                     runat="server"
-                                    ID="rptVersions">
-                                    <ItemTemplate>
-                                        <tr>
-                                            <td><%#: Eval("SoPhienBan") %></td>
-                                            <td>
-                                                <asp:HyperLink
-                                                    runat="server"
-                                                    NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
-                                                    Text='<%# GetVersionFileName(Eval("TenFileGoc"), Eval("TenFile")) %>'
-                                                    Target="_blank"
-                                                    CssClass="text-primary text-decoration-underline" />
-                                            </td>
-                                            <td>
-                                                <asp:Label
-                                                    runat="server"
-                                                    Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
-                                                    Text='<%# GetResourceText(BackEndResourceKeys.CURRENT_VERSION) %>'
-                                                    CssClass="badge bg-success" />
-                                            </td>
-                                            <td><%# ConvertDateTimeToString(Eval("NgayTao")) %></td>
-                                        </tr>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </tbody>
-                        </table>
+                                    ID="pnlInitialUploadInfo"
+                                    CssClass="alert alert-info py-2 mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <%= GetResourceText(BackEndResourceKeys.UPLOAD_AFTER_SAVE_NOTICE) %>
+                                </asp:Panel>
+
+                                <asp:Panel
+                                    runat="server"
+                                    ID="pnlInitialTemplate">
+                                    <label class="form-label label-valid">
+                                        <%= GetResourceText(BackEndResourceKeys.SELECT_DOCUMENT_TEMPLATE) %>
+                                    </label>
+
+                                    <SweetSoft:ExtraDropdown
+                                        runat="server"
+                                        ID="ddlInitialTemplate"
+                                        ValueIsOfTypeGUID="true"
+                                        SimpleInit="true">
+                                    </SweetSoft:ExtraDropdown>
+
+                                    <asp:Panel
+                                        runat="server"
+                                        ID="pnlNoInitialTemplates"
+                                        CssClass="alert alert-warning py-2 mt-2 mb-0">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        <%= GetResourceText(BackEndResourceKeys.NO_TEMPLATE_FOR_DOCUMENT_TYPE) %>
+                                    </asp:Panel>
+                                </asp:Panel>
+                            </div>
+                        </div>
                     </asp:Panel>
-                </asp:Panel>
+
+                </div>
             </asp:Panel>
     </ContentTemplate>
 

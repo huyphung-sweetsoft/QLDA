@@ -1,3 +1,4 @@
+using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
@@ -7,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Web.Hosting;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -49,6 +52,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         private readonly DocumentRepository _repository;
         private readonly DocumentTypeRepository _documentTypeRepository;
+        private readonly DocumentTemplateRepository _documentTemplateRepository;
 
         public static DocumentManager Instance
         {
@@ -61,6 +65,8 @@ namespace SweetSoft.QLDA.Core.Managers
             AuditManager auditManager = new AuditManager(GetClientInfo());
             _repository = new DocumentRepository(auditManager);
             _documentTypeRepository = new DocumentTypeRepository(auditManager);
+            _documentTemplateRepository =
+                new DocumentTemplateRepository(auditManager);
         }
 
         public DataTable SearchCompanyDocuments(
@@ -154,6 +160,31 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable GetDocumentVersions(Guid idTaiLieu)
         {
             return _repository.GetDocumentVersionsWithFiles(idTaiLieu);
+        }
+
+        public DataTable GetCompanyDocumentDetail(Guid idTaiLieu)
+        {
+            return _repository.GetCompanyDocumentDetail(idTaiLieu);
+        }
+
+        public DataTable GetSigningHistory(Guid idTaiLieu)
+        {
+            return _repository.GetSigningHistory(idTaiLieu);
+        }
+
+        public DataTable GetCustomerDeliveryHistory(Guid idTaiLieu)
+        {
+            return _repository.GetCustomerDeliveryHistory(idTaiLieu);
+        }
+
+        public DataTable GetPhysicalStorageHistory(Guid idTaiLieu)
+        {
+            return _repository.GetPhysicalStorageHistory(idTaiLieu);
+        }
+
+        public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
+        {
+            return _repository.GetDocumentActivityHistory(idTaiLieu);
         }
 
         public TblTaiLieu SaveCompanyDocument(
@@ -296,6 +327,186 @@ namespace SweetSoft.QLDA.Core.Managers
                 : _repository.Update(item);
         }
 
+        public TblPhienBanTaiLieu CreateInitialVersionFromTemplate(
+            Guid idTaiLieu,
+            Guid idMauTaiLieu)
+        {
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            if (document == null)
+                throw new InvalidOperationException("Không tìm thấy hồ sơ công ty.");
+
+            if (_repository.GetDocumentVersions(idTaiLieu, false).Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "Hồ sơ đã có phiên bản nên không thể tạo lại phiên bản đầu tiên từ mẫu.");
+            }
+
+            DataTable templateData = _documentTemplateRepository
+                .GetAvailableTemplate(
+                    idMauTaiLieu,
+                    document.IdLoaiTaiLieu);
+            if (templateData.Rows.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    "Mẫu tài liệu không tồn tại, đã bị khóa hoặc chưa có tệp mẫu.");
+            }
+
+            DataRow template = templateData.Rows[0];
+            string sourceUrl = Convert.ToString(template["FileUrl"]);
+            string sourcePath = HostingEnvironment.MapPath(sourceUrl);
+            if (string.IsNullOrWhiteSpace(sourcePath)
+                || !File.Exists(sourcePath))
+            {
+                throw new InvalidOperationException(
+                    "Không tìm thấy tệp vật lý của mẫu tài liệu.");
+            }
+
+            string extension = Convert.ToString(template["Ext"]);
+            if (string.IsNullOrWhiteSpace(extension))
+                extension = Path.GetExtension(sourcePath);
+            if (!string.IsNullOrWhiteSpace(extension)
+                && !extension.StartsWith(".", StringComparison.Ordinal))
+            {
+                extension = "." + extension;
+            }
+
+            string relativeDirectory = "/Uploads/"
+                + FileUploadTypes.DocumentVersion
+                + "/"
+                + DateTime.Now.ToString("yyyy/MM")
+                + "/";
+            string destinationDirectory = HostingEnvironment.MapPath(
+                relativeDirectory);
+            if (string.IsNullOrWhiteSpace(destinationDirectory))
+            {
+                throw new InvalidOperationException(
+                    "Không xác định được thư mục lưu phiên bản tài liệu.");
+            }
+
+            Directory.CreateDirectory(destinationDirectory);
+            string destinationFileName = UUIDv7.NewGuid().ToString("N")
+                + extension;
+            string destinationPath = Path.Combine(
+                destinationDirectory,
+                destinationFileName);
+            string destinationUrl = relativeDirectory
+                + destinationFileName;
+
+            File.Copy(sourcePath, destinationPath, false);
+
+            TblUploadFile copiedFile = null;
+            try
+            {
+                string originalFileName = Convert.ToString(
+                    template["TenFileGoc"]);
+                if (string.IsNullOrWhiteSpace(originalFileName))
+                    originalFileName = Path.GetFileName(sourcePath);
+
+                string displayName = Convert.ToString(template["TenFile"]);
+                if (string.IsNullOrWhiteSpace(displayName))
+                    displayName = Path.GetFileNameWithoutExtension(
+                        originalFileName);
+
+                FileInfo copiedFileInfo = new FileInfo(destinationPath);
+                copiedFile = new UploadManager(_applicationContext).Create(
+                    new TblUploadFile
+                    {
+                        Id = UUIDv7.NewGuid(),
+                        OwnerId = _applicationContext == null
+                            ? Guid.Empty
+                            : _applicationContext.UserId,
+                        CreatedDate = DateTime.UtcNow,
+                        IsDeleted = false,
+                        Name = displayName,
+                        FileUrl = destinationUrl,
+                        FileType = FileTypes.Internal,
+                        Ext = extension ?? string.Empty,
+                        RefId = document.IdTaiLieu,
+                        RefType = FileUploadTypes.DocumentVersion.ToString(),
+                        DisplayOrder = 0,
+                        FileSize = copiedFileInfo.Length > int.MaxValue
+                            ? int.MaxValue
+                            : (int)copiedFileInfo.Length,
+                        MimeType = Convert.ToString(template["MimeType"]),
+                        OriginalFileName = originalFileName,
+                        IsHost = true,
+                        IsSecretary = true,
+                        IsParticipant = true
+                    });
+
+                DateTime currentDate = DateTime.UtcNow;
+                string currentUserName = GetCurrentUserName();
+                string templateName = Convert.ToString(template["TenMau"]);
+                string templateVersion = Convert.ToString(
+                    template["PhienBanMau"]);
+                TblPhienBanTaiLieu version = new TblPhienBanTaiLieu
+                {
+                    IdPhienBanTaiLieu = UUIDv7.NewGuid(),
+                    IdTaiLieu = document.IdTaiLieu,
+                    SoPhienBan = "1.0",
+                    NguonTao = "TEMPLATE",
+                    IdPhienBanNguon = null,
+                    MoTaPhienBan = "Tạo từ mẫu "
+                        + templateName
+                        + (string.IsNullOrWhiteSpace(templateVersion)
+                            ? string.Empty
+                            : " (" + templateVersion + ")"),
+                    NoiDungTrucTiep = null,
+                    LaPhienBanHienTai = true,
+                    DaXoa = false,
+                    NguoiTao = currentUserName,
+                    NgayTao = currentDate,
+                    IdFileNoiDung = copiedFile.Id
+                };
+
+                _repository.InsertDocumentVersion(version);
+                try
+                {
+                    _repository.InsertDocumentHistory(
+                        new TblLichSuTaiLieu
+                        {
+                            IdLichSuTaiLieu = UUIDv7.NewGuid(),
+                            IdTaiLieu = document.IdTaiLieu,
+                            LoaiHanhDong = "TAO_TU_MAU",
+                            LoaiThamChieu = "TblPhienBanTaiLieu",
+                            IdThamChieu = version.IdPhienBanTaiLieu,
+                            NoiDungThayDoi = version.MoTaPhienBan,
+                            MoTa = "Đã tạo phiên bản đầu tiên từ mẫu tài liệu.",
+                            IdNhanVienThucHien =
+                                _applicationContext == null
+                                    ? (Guid?)null
+                                    : _applicationContext.UserId,
+                            NguoiTao = currentUserName,
+                            NgayTao = currentDate
+                        });
+                }
+                catch (Exception historyException)
+                {
+                    SysLogger.LogError(
+                        historyException,
+                        "Failed to log initial document version created from template");
+                }
+
+                return version;
+            }
+            catch
+            {
+                if (copiedFile != null)
+                {
+                    string errorField;
+                    string errorMessage;
+                    new UploadManager(_applicationContext, copiedFile.Id)
+                        .DeleteFile(out errorField, out errorMessage);
+                }
+                else if (File.Exists(destinationPath))
+                {
+                    File.Delete(destinationPath);
+                }
+
+                throw;
+            }
+        }
+
         public void SyncDocumentVersions(Guid idTaiLieu)
         {
             TblTaiLieu document = _repository.GetById(idTaiLieu);
@@ -377,6 +588,59 @@ namespace SweetSoft.QLDA.Core.Managers
                 activeVersions,
                 currentUserName,
                 DateTime.UtcNow);
+        }
+
+        public void PrepareDocumentVersionFilesForDeletion(
+            Guid idTaiLieu,
+            IEnumerable<Guid> fileIds)
+        {
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            if (document == null)
+                throw new InvalidOperationException("Không tìm thấy hồ sơ công ty.");
+
+            HashSet<Guid> removedFileIds = new HashSet<Guid>(
+                (fileIds ?? Enumerable.Empty<Guid>())
+                    .Where(fileId => fileId != Guid.Empty));
+            if (removedFileIds.Count == 0)
+                return;
+
+            DateTime currentDate = DateTime.UtcNow;
+            string currentUserName = GetCurrentUserName();
+            List<TblPhienBanTaiLieu> allVersions = _repository
+                .GetDocumentVersions(idTaiLieu, true)
+                .ToList();
+
+            foreach (TblPhienBanTaiLieu version in allVersions
+                .Where(version =>
+                    !version.DaXoa
+                    && version.IdFileNoiDung.HasValue
+                    && removedFileIds.Contains(
+                        version.IdFileNoiDung.Value)))
+            {
+                version.IdFileNoiDung = null;
+                version.LaPhienBanHienTai = false;
+                version.DaXoa = true;
+                version.NguoiCapNhat = currentUserName;
+                version.NgayCapNhat = currentDate;
+                _repository.UpdateDocumentVersion(version);
+            }
+
+            if (document.IdFileBanChinhThuc.HasValue
+                && removedFileIds.Contains(
+                    document.IdFileBanChinhThuc.Value))
+            {
+                document.IdFileBanChinhThuc = null;
+                document.NguoiCapNhat = currentUserName;
+                document.NgayCapNhat = currentDate;
+                _repository.Update(document);
+            }
+
+            EnsureOneCurrentVersion(
+                allVersions
+                    .Where(version => !version.DaXoa)
+                    .ToList(),
+                currentUserName,
+                currentDate);
         }
 
         public bool DeleteCompanyDocument(Guid idTaiLieu)

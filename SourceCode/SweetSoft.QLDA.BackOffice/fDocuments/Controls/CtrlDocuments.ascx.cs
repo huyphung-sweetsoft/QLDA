@@ -2,7 +2,6 @@ using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
-using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.Respositories;
@@ -21,9 +20,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
     {
         private const string DeleteConfirmCommand =
             "DOCUMENT_DELETE";
-
-        private const string DocumentVersionSavedCallbackKey =
-            "DocumentVersionSaved";
 
         private string SelectedDocumentScope
         {
@@ -70,6 +66,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected bool IsAdd
         {
             get { return CURRENT_PAGE.IsAdd; }
+        }
+
+        protected bool IsView
+        {
+            get { return CURRENT_PAGE.IsView; }
         }
 
         protected bool IsEdit
@@ -119,7 +120,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ddlSearchLoaiTaiLieu);
             scriptManager.RegisterAsyncPostBackControl(
                 ddlSearchTrangThai);
+            scriptManager.RegisterAsyncPostBackControl(ddlNhomTaiLieu);
             scriptManager.RegisterAsyncPostBackControl(ddlLoaiTaiLieu);
+            scriptManager.RegisterAsyncPostBackControl(rbInitialUpload);
+            scriptManager.RegisterAsyncPostBackControl(rbInitialTemplate);
             scriptManager.RegisterAsyncPostBackControl(
                 btnRestoreTypeDefaults);
         }
@@ -166,7 +170,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             btnSearch.ToolTip = btnSearch.Text =
                 GetResourceText(BackEndResourceKeys.SEARCH);
             btnAdd.ToolTip = btnAdd.Text =
-                GetResourceText(BackEndResourceKeys.ADD_NEW);
+                GetResourceText(BackEndResourceKeys.ADD_COMPANY_DOCUMENT);
             btnSave.ToolTip = btnSave.Text =
                 GetResourceText(BackEndResourceKeys.SAVE);
             btnCancel.ToolTip = btnCancel.Text =
@@ -218,18 +222,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
             ddlLoaiTaiLieu.PlaceHolder =
                 GetResourceText(BackEndResourceKeys.SELECT_DOCUMENT_TYPE);
+            ddlNhomTaiLieu.PlaceHolder =
+                GetResourceText(BackEndResourceKeys.SELECT_DOCUMENT_GROUP);
             ddlNguoiPhuTrach.PlaceHolder =
                 GetResourceText(
                     BackEndResourceKeys.SELECT_RESPONSIBLE_EMPLOYEE);
             ddlHinhThucKy.PlaceHolder =
                 GetResourceText(BackEndResourceKeys.SIGNING_METHOD);
+            ddlInitialTemplate.PlaceHolder =
+                GetResourceText(
+                    BackEndResourceKeys.SELECT_DOCUMENT_TEMPLATE);
+            rbInitialUpload.Text =
+                GetResourceText(BackEndResourceKeys.UPLOAD_NEW_FILE);
+            rbInitialTemplate.Text =
+                GetResourceText(
+                    BackEndResourceKeys.USE_DOCUMENT_TEMPLATE);
 
             chkCanTrinhKy.OnText =
-                chkCanGuiKhachHang.OnText =
                 chkCanLuuVatLy.OnText =
                     GetResourceText(BackEndResourceKeys.YES);
             chkCanTrinhKy.OffText =
-                chkCanGuiKhachHang.OffText =
                 chkCanLuuVatLy.OffText =
                     GetResourceText(BackEndResourceKeys.NO);
 
@@ -259,9 +271,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ControlHelpers controlHelpers = new ControlHelpers();
             BindDocumentScopes();
             controlHelpers.BindDocumentGroups(ddlSearchNhomTaiLieu);
+            controlHelpers.BindDocumentGroups(ddlNhomTaiLieu);
             controlHelpers.BindDocumentStatuses(ddlSearchTrangThai);
             BindQuickDocumentTypes();
-            controlHelpers.BindDocumentTypes(ddlLoaiTaiLieu);
+            BindDocumentFormTypes(null);
             controlHelpers.BindDocumentSigningMethods(ddlHinhThucKy);
             controlHelpers.BindStatusYesNo(ddlSearchCanTrinhKy, true);
             controlHelpers.BindDocumentSigningMethods(
@@ -316,6 +329,30 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             controlHelpers.BindDocumentTypes(
                 ddlSearchLoaiTaiLieu,
                 SelectedDocumentGroupId);
+        }
+
+        private void BindDocumentFormTypes(Guid? idNhomTaiLieu)
+        {
+            ddlLoaiTaiLieu.Items.Clear();
+
+            if (!idNhomTaiLieu.HasValue
+                || idNhomTaiLieu.Value == Guid.Empty)
+            {
+                ddlLoaiTaiLieu.Items.Add(
+                    new ListItem(
+                        GetResourceText(
+                            BackEndResourceKeys
+                                .SELECT_DOCUMENT_GROUP_FIRST),
+                        string.Empty));
+                ddlLoaiTaiLieu.SelectedIndex = 0;
+                ddlLoaiTaiLieu.Enabled = false;
+                return;
+            }
+
+            new ControlHelpers().BindDocumentTypes(
+                ddlLoaiTaiLieu,
+                idNhomTaiLieu);
+            ddlLoaiTaiLieu.Enabled = true;
         }
 
         private void BindProjects()
@@ -558,29 +595,27 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtMaTaiLieu.Text = string.Empty;
             txtTenTaiLieu.Text = string.Empty;
             txtMoTa.Text = string.Empty;
-            SelectDropdownValue(ddlLoaiTaiLieu, string.Empty);
+            SelectDropdownValue(ddlNhomTaiLieu, string.Empty);
+            BindDocumentFormTypes(null);
             SelectDropdownValue(ddlNguoiPhuTrach, string.Empty);
             SelectDropdownValue(
                 ddlHinhThucKy,
                 DocumentSigningMethodKeys.Paper);
             chkCanTrinhKy.Checked = false;
-            chkCanGuiKhachHang.Checked = false;
             chkCanLuuVatLy.Checked = false;
-            pnlUploadPlaceholder.Visible = true;
-            pnlVersionFiles.Visible = false;
-            pnlVersionHistory.Visible = false;
-            rptVersions.DataSource = null;
-            rptVersions.DataBind();
-            fbVersions.ClearData();
+            pnlInitialContent.Visible = true;
+            rbInitialUpload.Checked = true;
+            rbInitialTemplate.Checked = false;
+            BindInitialTemplates(Guid.Empty);
+            ApplyInitialSourceState();
         }
 
         private void ShowAddForm()
         {
             ResetForm();
             dlDetail.Title =
-                GetResourceText(BackEndResourceKeys.ADD_NEW)
-                + " "
-                + GetResourceText(BackEndResourceKeys.DOCUMENT);
+                GetResourceText(
+                    BackEndResourceKeys.ADD_COMPANY_DOCUMENT);
             dlDetail.OpenModal(true);
         }
 
@@ -590,6 +625,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtMaTaiLieu.Text = item.MaTaiLieu;
             txtTenTaiLieu.Text = item.TenTaiLieu;
             txtMoTa.Text = item.MoTa;
+            TblLoaiTaiLieu documentType = DocumentManager.Instance
+                .GetDocumentTypeDefaults(item.IdLoaiTaiLieu);
+            Guid? documentGroupId = documentType == null
+                ? (Guid?)null
+                : documentType.IdNhomTaiLieu;
+            SelectDropdownValue(
+                ddlNhomTaiLieu,
+                documentGroupId.HasValue
+                    ? documentGroupId.Value.ToString()
+                    : string.Empty);
+            BindDocumentFormTypes(documentGroupId);
             SelectDropdownValue(
                 ddlLoaiTaiLieu,
                 item.IdLoaiTaiLieu.ToString());
@@ -599,7 +645,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ? item.IdNhanVienPhuTrach.Value.ToString()
                     : string.Empty);
             chkCanTrinhKy.Checked = item.CanTrinhKy;
-            chkCanGuiKhachHang.Checked = item.CanGuiKhachHang;
             chkCanLuuVatLy.Checked = item.CanLuuVatLy;
             SelectDropdownValue(
                 ddlHinhThucKy,
@@ -610,17 +655,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 GetResourceText(BackEndResourceKeys.EDIT)
                 + " "
                 + GetResourceText(BackEndResourceKeys.DOCUMENT);
-
-            fbVersions.IsMultiple = true;
-            fbVersions.IsEnabled = this.IsEdit;
-            fbVersions.SaveDataCallbackKey =
-                DocumentVersionSavedCallbackKey;
-            fbVersions.LoadFile(
-                item.IdTaiLieu,
-                FileUploadTypes.DocumentVersion);
-            BindVersionHistory(item.IdTaiLieu);
-            pnlUploadPlaceholder.Visible = false;
-            pnlVersionFiles.Visible = true;
+            pnlInitialContent.Visible = false;
             dlDetail.OpenModal(true);
         }
 
@@ -633,8 +668,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || idLoaiTaiLieu == Guid.Empty)
             {
                 chkCanTrinhKy.Checked = false;
-                chkCanGuiKhachHang.Checked = false;
                 chkCanLuuVatLy.Checked = false;
+                BindInitialTemplates(Guid.Empty);
                 SelectDropdownValue(
                     ddlHinhThucKy,
                     DocumentSigningMethodKeys.Paper);
@@ -652,8 +687,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
 
             chkCanTrinhKy.Checked = documentType.CanTrinhKy;
-            chkCanGuiKhachHang.Checked = documentType.CanGuiKhachHang;
             chkCanLuuVatLy.Checked = documentType.CanLuuVatLy;
+            BindInitialTemplates(idLoaiTaiLieu);
             SelectDropdownValue(
                 ddlHinhThucKy,
                 string.IsNullOrWhiteSpace(
@@ -662,14 +697,59 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     : documentType.HinhThucKyMacDinh);
         }
 
-        private void BindVersionHistory(Guid idTaiLieu)
+        private void BindInitialTemplates(Guid idLoaiTaiLieu)
         {
-            DataTable versions =
-                DocumentManager.Instance.GetDocumentVersions(idTaiLieu);
-            bool hasVersions = versions != null && versions.Rows.Count > 0;
-            rptVersions.DataSource = hasVersions ? versions : null;
-            rptVersions.DataBind();
-            pnlVersionHistory.Visible = hasVersions;
+            ddlInitialTemplate.Items.Clear();
+            ddlInitialTemplate.Items.Add(
+                new ListItem(
+                    GetResourceText(
+                        BackEndResourceKeys.SELECT_DOCUMENT_TEMPLATE),
+                    string.Empty));
+
+            DataTable templates = idLoaiTaiLieu == Guid.Empty
+                ? new DataTable()
+                : DocumentTemplateManager.Instance
+                    .GetAvailableTemplatesByType(idLoaiTaiLieu);
+            bool hasTemplates = templates != null
+                && templates.Rows.Count > 0;
+            if (hasTemplates)
+            {
+                foreach (DataRow row in templates.Rows)
+                {
+                    string text = Convert.ToString(row["TenMau"]);
+                    string version = Convert.ToString(
+                        row["PhienBanMau"]);
+                    if (!string.IsNullOrWhiteSpace(version))
+                        text += " · " + version;
+                    if (Convert.ToBoolean(row["LaMauMacDinh"]))
+                    {
+                        text += " · "
+                            + GetResourceText(
+                                BackEndResourceKeys.DEFAULT_TEMPLATE);
+                    }
+
+                    ddlInitialTemplate.Items.Add(
+                        new ListItem(
+                            text,
+                            Convert.ToString(row["IdMauTaiLieu"])));
+                }
+
+                ddlInitialTemplate.SelectedIndex = 1;
+            }
+            else
+            {
+                ddlInitialTemplate.SelectedIndex = 0;
+            }
+
+            ddlInitialTemplate.Enabled = hasTemplates;
+            pnlNoInitialTemplates.Visible = !hasTemplates;
+            ApplyInitialSourceState();
+        }
+
+        private void ApplyInitialSourceState()
+        {
+            pnlInitialUploadInfo.Visible = rbInitialUpload.Checked;
+            pnlInitialTemplate.Visible = rbInitialTemplate.Checked;
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -847,6 +927,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             dlDetail.UpdateContentModal();
         }
 
+        protected void ddlNhomTaiLieu_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
+        {
+            Guid idNhomTaiLieu;
+            Guid? selectedGroupId = Guid.TryParse(
+                    ddlNhomTaiLieu.SelectedValue,
+                    out idNhomTaiLieu)
+                && idNhomTaiLieu != Guid.Empty
+                    ? (Guid?)idNhomTaiLieu
+                    : null;
+
+            BindDocumentFormTypes(selectedGroupId);
+            ApplySelectedTypeDefaults();
+            dlDetail.UpdateContentModal();
+        }
+
+        protected void initialSource_CheckedChanged(
+            object sender,
+            EventArgs e)
+        {
+            ApplyInitialSourceState();
+            dlDetail.UpdateContentModal();
+        }
+
         protected void btnRestoreTypeDefaults_Click(
             object sender,
             EventArgs e)
@@ -878,6 +983,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            Guid idNhomTaiLieu;
+            if (!Guid.TryParse(
+                    ddlNhomTaiLieu.SelectedValue,
+                    out idNhomTaiLieu)
+                || idNhomTaiLieu == Guid.Empty)
+            {
+                ShowNotify(
+                    GetResourceText(
+                        BackEndResourceKeys.SELECT_DOCUMENT_GROUP),
+                    MSGType.Warning);
+                return;
+            }
+
             Guid idLoaiTaiLieu;
             if (!Guid.TryParse(
                     ddlLoaiTaiLieu.SelectedValue,
@@ -885,6 +1003,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || idLoaiTaiLieu == Guid.Empty)
             {
                 ShowNotify("Vui lòng chọn loại tài liệu.", MSGType.Warning);
+                return;
+            }
+
+            TblLoaiTaiLieu selectedDocumentType =
+                DocumentManager.Instance
+                    .GetDocumentTypeDefaults(idLoaiTaiLieu);
+            if (selectedDocumentType == null
+                || selectedDocumentType.IdNhomTaiLieu
+                    != idNhomTaiLieu)
+            {
+                ShowNotify(
+                    "Loại tài liệu không thuộc nhóm đã chọn.",
+                    MSGType.Warning);
                 return;
             }
 
@@ -902,6 +1033,22 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 idNhanVienPhuTrach = employeeId;
             }
 
+            Guid idMauTaiLieu = Guid.Empty;
+            if (isNew && rbInitialTemplate.Checked)
+            {
+                if (!Guid.TryParse(
+                        ddlInitialTemplate.SelectedValue,
+                        out idMauTaiLieu)
+                    || idMauTaiLieu == Guid.Empty)
+                {
+                    ShowNotify(
+                        GetResourceText(
+                            BackEndResourceKeys.SELECT_DOCUMENT_TEMPLATE),
+                        MSGType.Warning);
+                    return;
+                }
+            }
+
             try
             {
                 TblTaiLieu savedItem =
@@ -914,11 +1061,38 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     txtMoTa.Text,
                     chkCanTrinhKy.Checked,
                     ddlHinhThucKy.SelectedValue,
-                    chkCanGuiKhachHang.Checked,
+                    false,
                     chkCanLuuVatLy.Checked);
 
                 if (isNew)
+                {
+                    if (idMauTaiLieu != Guid.Empty)
+                    {
+                        try
+                        {
+                            DocumentManager.Instance
+                                .CreateInitialVersionFromTemplate(
+                                    savedItem.IdTaiLieu,
+                                    idMauTaiLieu);
+                        }
+                        catch
+                        {
+                            DocumentManager.Instance
+                                .DeleteCompanyDocument(
+                                    savedItem.IdTaiLieu);
+                            throw;
+                        }
+                    }
+
                     CURRENT_PAGE.ShowSuccessAddNewData();
+                    Response.Redirect(
+                        RewriteURLHelper.DocumentDetail(
+                            savedItem.IdTaiLieu)
+                        + "?tab=versions",
+                        false);
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
                 else
                     ShowSuccessSaveData();
 
@@ -943,7 +1117,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object sender,
             GridViewCommandEventArgs e)
         {
-            if (e.CommandName != "EDIT_ITEM"
+            if (e.CommandName != "VIEW_ITEM"
+                && e.CommandName != "EDIT_ITEM"
                 && e.CommandName != "DELETE_ITEM")
             {
                 return;
@@ -955,6 +1130,27 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     out idTaiLieu))
             {
                 ShowInvalidDataError();
+                return;
+            }
+
+            if (e.CommandName == "VIEW_ITEM")
+            {
+                if (!this.IsView)
+                {
+                    ShowAccessDeniedNotify();
+                    return;
+                }
+
+                TblTaiLieu viewItem =
+                    DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+                if (viewItem == null)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+
+                Response.Redirect(
+                    RewriteURLHelper.DocumentDetail(idTaiLieu));
                 return;
             }
 
@@ -1224,62 +1420,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             return string.IsNullOrWhiteSpace(originalFileName)
                 ? Convert.ToString(fileNameValue)
                 : originalFileName;
-        }
-
-        protected string GetVersionFileName(
-            object originalFileNameValue,
-            object fileNameValue)
-        {
-            string originalFileName =
-                Convert.ToString(originalFileNameValue);
-            return string.IsNullOrWhiteSpace(originalFileName)
-                ? Convert.ToString(fileNameValue)
-                : originalFileName;
-        }
-
-        public void HandleFileCallback(string key)
-        {
-            if (!string.Equals(
-                    key,
-                    DocumentVersionSavedCallbackKey,
-                    StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            Guid idTaiLieu;
-            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
-                || idTaiLieu == Guid.Empty)
-            {
-                ShowInvalidDataError();
-                return;
-            }
-
-            if (!this.IsEdit)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
-            try
-            {
-                DocumentManager.Instance.SyncDocumentVersions(idTaiLieu);
-                fbVersions.LoadFile(
-                    idTaiLieu,
-                    FileUploadTypes.DocumentVersion);
-                BindVersionHistory(idTaiLieu);
-                dlDetail.UpdateContentModal();
-                grvData.Rebind();
-                upMain.Update();
-            }
-            catch (InvalidOperationException exc)
-            {
-                ShowNotify(exc.Message, MSGType.Warning);
-            }
-            catch (Exception exc)
-            {
-                ShowNotify(exc.Message, MSGType.Error);
-            }
         }
 
         protected string GetFileUrl(object value)

@@ -261,15 +261,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
                 //---------------------------------------------
                 #region delete file
-                List<Guid> listFileRemoveId = new List<Guid>();
-                foreach (string fileRemoveId in txtArFileRemove.Value.Split(','))
-                {
-                    if (string.IsNullOrEmpty(fileRemoveId))
-                        continue;
-                    Guid tmpId = Guid.Empty;
-                    if(Guid.TryParse(fileRemoveId, out tmpId) && tmpId != Guid.Empty)
-                        listFileRemoveId.Add(tmpId);
-                }
+                List<Guid> listFileRemoveId =
+                    GetPendingRemovedFileIds();
                 if (listFileRemoveId.Count > 0)
                 {
                     if (!string.IsNullOrEmpty(this.BeforeSaveDataCallbackKey))
@@ -413,6 +406,24 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             {
                 ViewState["BeforeSaveDataCallbackKey"] = value;
             }
+        }
+
+        public List<Guid> GetPendingRemovedFileIds()
+        {
+            List<Guid> fileIds = new List<Guid>();
+            string value = txtArFileRemove.Value ?? string.Empty;
+            foreach (string fileIdText in value.Split(','))
+            {
+                Guid fileId;
+                if (Guid.TryParse(fileIdText, out fileId)
+                    && fileId != Guid.Empty
+                    && !fileIds.Contains(fileId))
+                {
+                    fileIds.Add(fileId);
+                }
+            }
+
+            return fileIds;
         }
 
         public void LoadFile(Guid refId, FileUploadTypes refType)

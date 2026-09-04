@@ -174,6 +174,79 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .ExecuteSingle<TblMauTaiLieu>();
         }
 
+        public DataTable GetAvailableTemplatesByType(Guid idLoaiTaiLieu)
+        {
+            if (idLoaiTaiLieu == Guid.Empty)
+                return new DataTable();
+
+            string sql = $@"
+                SELECT
+                    m.IdMauTaiLieu,
+                    m.IdLoaiTaiLieu,
+                    m.TenMau,
+                    m.PhienBanMau,
+                    m.MoTa,
+                    m.LaMauMacDinh,
+                    m.IdFileMau,
+                    u.Name AS TenFile,
+                    u.OriginalFileName AS TenFileGoc,
+                    u.FileUrl,
+                    u.FileType,
+                    u.Ext,
+                    u.FileSize,
+                    u.MimeType
+                FROM TblMauTaiLieu m
+                INNER JOIN TblUploadFile u
+                    ON u.Id = m.IdFileMau
+                   AND u.IsDeleted = 0
+                WHERE m.IdLoaiTaiLieu = '{idLoaiTaiLieu}'
+                  AND m.DaXoa = 0
+                  AND m.KichHoat = 1
+                ORDER BY
+                    m.LaMauMacDinh DESC,
+                    m.TenMau ASC,
+                    m.PhienBanMau DESC;";
+
+            IDataReader reader = new InlineQuery().ExecuteReader(sql);
+            DataTable dataTable = new DataTable();
+            if (reader != null)
+                dataTable.Load(reader);
+
+            return dataTable;
+        }
+
+        public DataTable GetAvailableTemplate(
+            Guid idMauTaiLieu,
+            Guid idLoaiTaiLieu)
+        {
+            if (idMauTaiLieu == Guid.Empty
+                || idLoaiTaiLieu == Guid.Empty)
+            {
+                return new DataTable();
+            }
+
+            DataTable templates = GetAvailableTemplatesByType(
+                idLoaiTaiLieu);
+            if (!templates.Columns.Contains("IdMauTaiLieu"))
+                return new DataTable();
+
+            DataTable result = templates.Clone();
+            foreach (DataRow row in templates.Rows)
+            {
+                Guid rowId;
+                if (Guid.TryParse(
+                        Convert.ToString(row["IdMauTaiLieu"]),
+                        out rowId)
+                    && rowId == idMauTaiLieu)
+                {
+                    result.ImportRow(row);
+                    break;
+                }
+            }
+
+            return result;
+        }
+
         public bool IsNameAndVersionExisted(
             Guid idLoaiTaiLieu,
             string tenMau,

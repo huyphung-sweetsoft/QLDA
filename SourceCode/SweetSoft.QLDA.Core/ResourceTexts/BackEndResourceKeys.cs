@@ -383,6 +383,43 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DOCUMENT_TYPE_IN_GROUP = "DOCUMENT_TYPE_IN_GROUP";
         public const string SELECT_DOCUMENT_GROUP_FIRST = "SELECT_DOCUMENT_GROUP_FIRST";
         public const string DOCUMENT_FILTER_HINT = "DOCUMENT_FILTER_HINT";
+        public const string DOCUMENT_DETAIL = "DOCUMENT_DETAIL";
+        public const string DOCUMENT_VERSIONS = "DOCUMENT_VERSIONS";
+        public const string SIGNING_HISTORY = "SIGNING_HISTORY";
+        public const string CUSTOMER_DELIVERY_HISTORY = "CUSTOMER_DELIVERY_HISTORY";
+        public const string PHYSICAL_STORAGE_HISTORY = "PHYSICAL_STORAGE_HISTORY";
+        public const string DOCUMENT_ACTIVITY_HISTORY = "DOCUMENT_ACTIVITY_HISTORY";
+        public const string NOT_APPLICABLE = "NOT_APPLICABLE";
+        public const string NO_DOCUMENT_VERSIONS = "NO_DOCUMENT_VERSIONS";
+        public const string NO_SIGNING_HISTORY = "NO_SIGNING_HISTORY";
+        public const string NO_CUSTOMER_DELIVERY_HISTORY = "NO_CUSTOMER_DELIVERY_HISTORY";
+        public const string NO_PHYSICAL_STORAGE_HISTORY = "NO_PHYSICAL_STORAGE_HISTORY";
+        public const string NO_DOCUMENT_ACTIVITY = "NO_DOCUMENT_ACTIVITY";
+        public const string OPEN_FILE = "OPEN_FILE";
+        public const string VERSION_NUMBER = "VERSION_NUMBER";
+        public const string FILE_SIZE = "FILE_SIZE";
+        public const string SOURCE = "SOURCE";
+        public const string SENT_BY = "SENT_BY";
+        public const string SIGNER = "SIGNER";
+        public const string RECIPIENT = "RECIPIENT";
+        public const string CHANNEL = "CHANNEL";
+        public const string RESPONSE_DEADLINE = "RESPONSE_DEADLINE";
+        public const string STORAGE_LOCATION = "STORAGE_LOCATION";
+        public const string CURRENT_LOCATION = "CURRENT_LOCATION";
+        public const string ORIGINAL_COPY_CONDITION = "ORIGINAL_COPY_CONDITION";
+        public const string ACTION_TYPE = "ACTION_TYPE";
+        public const string REFERENCE_TYPE = "REFERENCE_TYPE";
+        public const string OFFICIAL_DOCUMENT_FILE_HINT = "OFFICIAL_DOCUMENT_FILE_HINT";
+        public const string NO_OFFICIAL_DOCUMENT_FILE = "NO_OFFICIAL_DOCUMENT_FILE";
+        public const string ADD_COMPANY_DOCUMENT = "ADD_COMPANY_DOCUMENT";
+        public const string INITIAL_DOCUMENT_CONTENT = "INITIAL_DOCUMENT_CONTENT";
+        public const string UPLOAD_NEW_FILE = "UPLOAD_NEW_FILE";
+        public const string USE_DOCUMENT_TEMPLATE = "USE_DOCUMENT_TEMPLATE";
+        public const string SELECT_DOCUMENT_TEMPLATE = "SELECT_DOCUMENT_TEMPLATE";
+        public const string NO_TEMPLATE_FOR_DOCUMENT_TYPE = "NO_TEMPLATE_FOR_DOCUMENT_TYPE";
+        public const string UPLOAD_AFTER_SAVE_NOTICE = "UPLOAD_AFTER_SAVE_NOTICE";
+        public const string UPLOAD_NEW_VERSION = "UPLOAD_NEW_VERSION";
+        public const string VERSION_MANAGEMENT_NOTICE = "VERSION_MANAGEMENT_NOTICE";
 
     }
 }
