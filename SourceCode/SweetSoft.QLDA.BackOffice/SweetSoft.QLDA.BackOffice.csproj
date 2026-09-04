@@ -138,7 +138,6 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -182,6 +181,24 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
+    <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.cs">
+      <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.designer.cs">
+      <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangDetail.aspx.cs">
+      <DependentUpon>KhachHangDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangList.aspx.cs">
+      <DependentUpon>KhachHangList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\KhachHangList.aspx.designer.cs">
+      <DependentUpon>KhachHangList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx.cs">
       <DependentUpon>CtrlEmailTemplateDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -255,27 +272,6 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
-    <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.cs">
-      <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.designer.cs">
-      <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
-    </Compile>
-    <Compile Include="fNhanVien\ListNhanVien.aspx.cs">
-      <DependentUpon>ListNhanVien.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
-      <DependentUpon>ListNhanVien.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
-      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
-      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
-    </Compile>
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -296,6 +292,20 @@
     </Compile>
     <Compile Include="fProjects\DuAnList.aspx.designer.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProject\Controls\CtrlTask.ascx.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProject\Controls\CtrlTask.ascx.designer.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProject\TaskList.aspx.cs">
+      <DependentUpon>TaskList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProject\TaskList.aspx.designer.cs">
+      <DependentUpon>TaskList.aspx</DependentUpon>
     </Compile>
     <Compile Include="fRisks\Controls\CtrlRisk.ascx.cs">
       <DependentUpon>CtrlRisk.ascx</DependentUpon>
@@ -326,6 +336,27 @@
       <DependentUpon>TaskList.aspx</DependentUpon>
     </Compile>
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
+    <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.cs">
+      <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.designer.cs">
+      <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fNhanVien\ListNhanVien.aspx.cs">
+      <DependentUpon>ListNhanVien.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
+      <DependentUpon>ListNhanVien.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
@@ -369,6 +400,9 @@
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
+    <Content Include="fCustomers\KhachHangDetail.aspx" />
+    <Content Include="fCustomers\KhachHangList.aspx" />
     <Content Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx" />
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
@@ -401,13 +435,15 @@
     <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
     <Content Include="fProjects\DuAnList.aspx" />
+    <Content Include="fProject\Controls\CtrlTask.ascx" />
+    <Content Include="fProject\TaskList.aspx" />
     <Content Include="fRisks\Controls\CtrlRisk.ascx" />
     <Content Include="fRisks\RiskList.aspx" />
-    <Content Include="fTasks\Controls\CtrlTask.ascx" />
-    <Content Include="fTasks\TaskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
     <Content Include="fSettings\FileManagers.aspx" />
     <Content Include="fSettings\Settings.aspx" />
+    <Content Include="fTasks\Controls\CtrlTask.ascx" />
+    <Content Include="fTasks\TaskList.aspx" />
     <Content Include="fUsers\Controls\CtrlPermission.ascx" />
     <Content Include="fUsers\Controls\CtrlUsers.ascx" />
     <Content Include="fUsers\RoleDetail.aspx" />
