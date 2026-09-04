@@ -171,8 +171,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                using (var scope = new TransactionScope())
-                {
                     TblVanDe issue = null;
                     bool isNew = (this.IssueId == Guid.Empty);
 
@@ -225,9 +223,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
 
                     issue.Save();
                     IssueManager.Instance.SyncNhanVienXuLyVanDe(issue.IdVanDe, idCongViecPhatSinh);
-                    scope.Complete();
-                }
-
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlIssue1.Rebind();

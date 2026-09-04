@@ -192,6 +192,9 @@
       <DependentUpon>KhachHangDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="fCustomers\KhachHangDetail.aspx.designer.cs">
+      <DependentUpon>KhachHangDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fCustomers\KhachHangList.aspx.cs">
       <DependentUpon>KhachHangList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

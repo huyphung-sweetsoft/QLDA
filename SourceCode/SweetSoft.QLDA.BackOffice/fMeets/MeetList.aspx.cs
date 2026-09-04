@@ -128,8 +128,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                using (var scope = new TransactionScope())
-                {
                     TblLichHop meet = null;
                     bool isNew = (this.MeetId == Guid.Empty);
 
@@ -174,8 +172,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                         meet.TrangThai = (byte)trangThai; 
 
                     meet.Save();
-                    scope.Complete();
-                }
 
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
