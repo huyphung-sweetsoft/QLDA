@@ -1098,6 +1098,9 @@
   <data name="FILE_NOT_UPLOADED" xml:space="preserve">
     <value>Chưa tải tệp</value>
   </data>
+  <data name="FILE_NOT_AVAILABLE" xml:space="preserve">
+    <value>Không có tệp vật lý</value>
+  </data>
   <data name="SAVE_TEMPLATE_BEFORE_UPLOAD" xml:space="preserve">
     <value>Thông tin mẫu đã được lưu. Bạn có thể tải lên hoặc thay thế một tệp mẫu tại đây.</value>
   </data>

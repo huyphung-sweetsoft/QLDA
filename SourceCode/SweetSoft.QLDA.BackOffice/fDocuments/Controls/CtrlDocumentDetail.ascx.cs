@@ -6,7 +6,9 @@ using SweetSoft.QLDA.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Web.UI;
+using System.Web.Hosting;
 
 namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
@@ -166,6 +168,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
                 DocumentManager.Instance.SyncDocumentVersions(idTaiLieu);
                 InitControls(idTaiLieu);
+                upDetail.Update();
                 ScriptManager.RegisterStartupScript(
                     this.Page,
                     GetType(),
@@ -388,6 +391,34 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected string GetFileUrl(object value)
         {
             return FileHelpers.IsValidPath(Convert.ToString(value));
+        }
+
+        protected bool CanOpenFile(object value)
+        {
+            string path = Convert.ToString(value);
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            Uri absoluteUri;
+            if (Uri.TryCreate(path, UriKind.Absolute, out absoluteUri))
+            {
+                return absoluteUri.Scheme == Uri.UriSchemeHttp
+                    || absoluteUri.Scheme == Uri.UriSchemeHttps;
+            }
+
+            try
+            {
+                string virtualPath = path.StartsWith("/", StringComparison.Ordinal)
+                    ? path
+                    : "/" + path;
+                string physicalPath = HostingEnvironment.MapPath(virtualPath);
+                return !string.IsNullOrWhiteSpace(physicalPath)
+                    && File.Exists(physicalPath);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected string FormatFileSize(object value)

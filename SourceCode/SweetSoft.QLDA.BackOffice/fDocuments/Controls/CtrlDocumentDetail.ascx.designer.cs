@@ -11,6 +11,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlDocumentDetail
     {
+        protected global::System.Web.UI.UpdatePanel upDetail;
         protected global::System.Web.UI.WebControls.HiddenField hdfIdTaiLieu;
         protected global::System.Web.UI.WebControls.Label lblDocumentName;
         protected global::System.Web.UI.WebControls.Label lblDocumentCode;

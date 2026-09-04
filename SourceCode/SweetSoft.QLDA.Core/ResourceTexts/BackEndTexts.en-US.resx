@@ -1137,6 +1137,9 @@
   <data name="FILE_NOT_UPLOADED" xml:space="preserve">
     <value>No file uploaded</value>
   </data>
+  <data name="FILE_NOT_AVAILABLE" xml:space="preserve">
+    <value>Physical file unavailable</value>
+  </data>
   <data name="SAVE_TEMPLATE_BEFORE_UPLOAD" xml:space="preserve">
     <value>The template information has been saved. You can upload or replace one template file here.</value>
   </data>

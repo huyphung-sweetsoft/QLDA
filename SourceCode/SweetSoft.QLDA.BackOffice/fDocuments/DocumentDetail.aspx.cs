@@ -40,6 +40,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            DisableBrowserCache();
+
             if (IsPostBack)
                 return;
 
@@ -97,6 +99,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                     + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
                     true);
             }
+        }
+
+        private void DisableBrowserCache()
+        {
+            Response.Cache.SetCacheability(
+                System.Web.HttpCacheability.NoCache);
+            Response.Cache.SetNoStore();
+            Response.Cache.SetExpires(DateTime.UtcNow.AddDays(-1));
+            Response.Cache.SetRevalidation(
+                System.Web.HttpCacheRevalidation.AllCaches);
+            Response.Cache.SetAllowResponseInBrowserHistory(false);
         }
 
         public override void DataCallback(

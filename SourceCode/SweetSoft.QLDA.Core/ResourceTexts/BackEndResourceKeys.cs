@@ -345,6 +345,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string TEMPLATE_FILE = "TEMPLATE_FILE";
         public const string SELECT_DOCUMENT_TYPE = "SELECT_DOCUMENT_TYPE";
         public const string FILE_NOT_UPLOADED = "FILE_NOT_UPLOADED";
+        public const string FILE_NOT_AVAILABLE = "FILE_NOT_AVAILABLE";
         public const string SAVE_TEMPLATE_BEFORE_UPLOAD = "SAVE_TEMPLATE_BEFORE_UPLOAD";
         public const string DOCUMENT = "DOCUMENT";
         public const string DOCUMENT_LIST = "DOCUMENT_LIST";

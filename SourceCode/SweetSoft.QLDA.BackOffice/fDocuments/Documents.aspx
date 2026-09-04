@@ -26,3 +26,15 @@
     </div>
 
 </asp:Content>
+
+<asp:Content ID="ContentBottomScript"
+    ContentPlaceHolderID="cpBottomScript"
+    runat="server">
+    <script>
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+</asp:Content>

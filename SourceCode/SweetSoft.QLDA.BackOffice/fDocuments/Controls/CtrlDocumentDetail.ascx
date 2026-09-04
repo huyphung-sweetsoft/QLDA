@@ -220,6 +220,12 @@
     }
 </style>
 
+<asp:UpdatePanel
+    runat="server"
+    ID="upDetail"
+    UpdateMode="Conditional"
+    ChildrenAsTriggers="false">
+    <ContentTemplate>
 <div class="document-detail">
     <asp:HiddenField runat="server" ID="hdfIdTaiLieu" />
 
@@ -489,10 +495,15 @@
                                     <td><%#: FormatDate(Eval("NgayTao")) %></td>
                                     <td>
                                         <asp:HyperLink runat="server"
+                                            Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
                                             NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
                                             Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
                                             Target="_blank"
                                             CssClass="btn btn-sm btn-outline-primary" />
+                                        <asp:Label runat="server"
+                                            Visible='<%# !CanOpenFile(Eval("FileUrl")) %>'
+                                            Text='<%# GetResourceText(BackEndResourceKeys.FILE_NOT_AVAILABLE) %>'
+                                            CssClass="badge bg-warning text-dark" />
                                     </td>
                                 </tr></ItemTemplate>
                             </asp:Repeater>
@@ -647,3 +658,5 @@
         </div>
     </div>
 </div>
+    </ContentTemplate>
+</asp:UpdatePanel>

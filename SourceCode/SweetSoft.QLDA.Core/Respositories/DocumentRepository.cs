@@ -397,9 +397,18 @@ namespace SweetSoft.QLDA.Core.Respositories
                 INNER JOIN TblUploadFile u
                     ON u.Id = p.IdFileNoiDung
                    AND u.IsDeleted = 0
-                LEFT JOIN aspnet_Users creator
-                    ON creator.UserName = p.NguoiTao
-                   AND creator.IsDeleted = 0
+                OUTER APPLY
+                (
+                    SELECT
+                        CASE
+                            WHEN COUNT(1) = 1
+                            THEN MAX(NULLIF(account.DisplayName, N''))
+                            ELSE NULL
+                        END AS DisplayName
+                    FROM aspnet_Users account
+                    WHERE account.UserName = p.NguoiTao
+                      AND account.IsDeleted = 0
+                ) creator
                 WHERE p.IdTaiLieu = '{idTaiLieu}'
                   AND p.DaXoa = 0
                 ORDER BY
