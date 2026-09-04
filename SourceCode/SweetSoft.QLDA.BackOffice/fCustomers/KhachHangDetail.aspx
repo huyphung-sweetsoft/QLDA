@@ -52,8 +52,7 @@
 
                                      <asp:Label runat="server" ID="lblSoThue"></asp:Label>
                                 </div>
-
-                                <div class="col-md-6 col-xl-4">
+<div class="col-md-6 col-xl-4">
                                     <div class="font-size-8 fw-bold mb-1">
                                         <%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %>
                                     </div>
@@ -109,7 +108,7 @@
                         </section>
                         <section class="shadow-none mb-3 rounded-3 fi">
                             <div class="card-body">
-                                <h5 class="text-uppercase fw-bold mb-3">
+<h5 class="text-uppercase fw-bold mb-3">
                                     DỰ ÁN ĐÃ ĐẦU TƯ
                                 </h5>
                                 <SweetSoft:CtrlDuAn runat="server" ID="CtrlDuAn1" />

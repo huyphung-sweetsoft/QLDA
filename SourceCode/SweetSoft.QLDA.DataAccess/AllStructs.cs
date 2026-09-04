@@ -48,6 +48,8 @@ namespace SweetSoft.QLDA.DataAccess
         
 		public static readonly string TblAuditLog2026 = @"TblAuditLog_2026";
         
+		public static readonly string TblCauHinhTuanLamViec = @"TblCauHinhTuanLamViec";
+        
 		public static readonly string TblChiPhi = @"TblChiPhi";
         
 		public static readonly string TblChucDanh = @"TblChucDanh";
@@ -75,6 +77,8 @@ namespace SweetSoft.QLDA.DataAccess
 		public static readonly string TblKhachHang = @"TblKhachHang";
         
 		public static readonly string TblLichHop = @"TblLichHop";
+        
+		public static readonly string TblLichNgoaiLe = @"TblLichNgoaiLe";
         
 		public static readonly string TblLichSuChinhSua = @"TblLichSuChinhSua";
         
@@ -204,6 +208,11 @@ namespace SweetSoft.QLDA.DataAccess
             get { return DataService.GetSchema("TblAuditLog_2026", "DataAccessProvider"); }
 		}
         
+		public static TableSchema.Table TblCauHinhTuanLamViec
+		{
+            get { return DataService.GetSchema("TblCauHinhTuanLamViec", "DataAccessProvider"); }
+		}
+        
 		public static TableSchema.Table TblChiPhi
 		{
             get { return DataService.GetSchema("TblChiPhi", "DataAccessProvider"); }
@@ -272,6 +281,11 @@ namespace SweetSoft.QLDA.DataAccess
 		public static TableSchema.Table TblLichHop
 		{
             get { return DataService.GetSchema("TblLichHop", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblLichNgoaiLe
+		{
+            get { return DataService.GetSchema("TblLichNgoaiLe", "DataAccessProvider"); }
 		}
         
 		public static TableSchema.Table TblLichSuChinhSua

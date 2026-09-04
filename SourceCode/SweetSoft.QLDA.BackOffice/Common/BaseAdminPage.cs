@@ -16,6 +16,7 @@ using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Configuration;
 using System.Globalization;
 using System.Text;
@@ -313,11 +314,22 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             if (userName == null)
                 return string.Empty;
-            List<AspnetUser> aspnetUsers;
-            if (!CacheManager.GetCacheData("SYSTEM_USER_LIST", out aspnetUsers))
+            List<AspnetUser> aspnetUsers = null;
+            object cacheObj = null;
+            if (!CacheManager.GetCacheData("SYSTEM_USER_LIST", out cacheObj) || cacheObj == null)
             {
                 aspnetUsers = UserManager.Instance.GetAllAspnetUsers();
                 CacheManager.SetCacheData("SYSTEM_USER_LIST", aspnetUsers);
+            }
+            else
+            {
+                aspnetUsers = cacheObj as List<AspnetUser>;
+                if (aspnetUsers == null)
+                {
+                    var coll = cacheObj as AspnetUserCollection;
+                    if (coll != null)
+                        aspnetUsers = coll.ToList();
+                }
             }
             if (aspnetUsers == null)
                 return string.Empty;

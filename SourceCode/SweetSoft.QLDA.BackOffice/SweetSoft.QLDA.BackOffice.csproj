@@ -350,57 +350,6 @@
     <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
-    <Compile Include="temp\AllStructs.cs" />
-    <Compile Include="temp\AspnetApplication.cs" />
-    <Compile Include="temp\AspnetApplicationController.cs" />
-    <Compile Include="temp\AspnetAssignRole.cs" />
-    <Compile Include="temp\AspnetAssignRoleController.cs" />
-    <Compile Include="temp\AspnetFunction.cs" />
-    <Compile Include="temp\AspnetFunctionController.cs" />
-    <Compile Include="temp\AspnetMembership.cs" />
-    <Compile Include="temp\AspnetMembershipController.cs" />
-    <Compile Include="temp\AspnetPath.cs" />
-    <Compile Include="temp\AspnetPathController.cs" />
-    <Compile Include="temp\AspnetPermission.cs" />
-    <Compile Include="temp\AspnetPermissionController.cs" />
-    <Compile Include="temp\AspnetPersonalizationAllUser.cs" />
-    <Compile Include="temp\AspnetPersonalizationAllUserController.cs" />
-    <Compile Include="temp\AspnetPersonalizationPerUser.cs" />
-    <Compile Include="temp\AspnetPersonalizationPerUserController.cs" />
-    <Compile Include="temp\AspnetProfile.cs" />
-    <Compile Include="temp\AspnetProfileController.cs" />
-    <Compile Include="temp\AspnetRole.cs" />
-    <Compile Include="temp\AspnetRoleController.cs" />
-    <Compile Include="temp\AspnetSchemaVersion.cs" />
-    <Compile Include="temp\AspnetSchemaVersionController.cs" />
-    <Compile Include="temp\AspnetUser.cs" />
-    <Compile Include="temp\AspnetUserController.cs" />
-    <Compile Include="temp\AspnetUsersInRole.cs" />
-    <Compile Include="temp\AspnetUsersInRoleController.cs" />
-    <Compile Include="temp\AspnetWebEventEvent.cs" />
-    <Compile Include="temp\AspnetWebEventEventController.cs" />
-    <Compile Include="temp\StoredProcedures.cs" />
-    <Compile Include="temp\Table1.cs" />
-    <Compile Include="temp\Table1Controller.cs" />
-    <Compile Include="temp\TblAuditLog2026.cs" />
-    <Compile Include="temp\TblAuditLog2026Controller.cs" />
-    <Compile Include="temp\TblEmailHistory.cs" />
-    <Compile Include="temp\TblEmailHistoryController.cs" />
-    <Compile Include="temp\TblEmailTemplate.cs" />
-    <Compile Include="temp\TblEmailTemplateController.cs" />
-    <Compile Include="temp\TblSetting.cs" />
-    <Compile Include="temp\TblSettingController.cs" />
-    <Compile Include="temp\TblUploadFile.cs" />
-    <Compile Include="temp\TblUploadFileController.cs" />
-    <Compile Include="temp\VwAspnetApplication.cs" />
-    <Compile Include="temp\VwAspnetMembershipUser.cs" />
-    <Compile Include="temp\VwAspnetProfile.cs" />
-    <Compile Include="temp\VwAspnetRole.cs" />
-    <Compile Include="temp\VwAspnetUser.cs" />
-    <Compile Include="temp\VwAspnetUsersInRole.cs" />
-    <Compile Include="temp\VwAspnetWebPartStatePath.cs" />
-    <Compile Include="temp\VwAspnetWebPartStateShared.cs" />
-    <Compile Include="temp\VwAspnetWebPartStateUser.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>

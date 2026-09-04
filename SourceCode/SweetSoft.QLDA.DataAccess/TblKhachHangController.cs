@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdKhachHang,string TenKhachHang,Guid IdLoaiKhachHang,string IdSoThue,string SoDienThoai,string ThuDienTu,string DiaChi,string TenNguoiDaiDien,string TenNguoiLienHe,string DienThoaiLienHe,string Email,string GhiChu,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdKhachHang,string TenKhachHang,Guid IdLoaiKhachHang,string IdSoThue,string SoDienThoai,string Email,string DiaChi,string TenNguoiDaiDien,string TenNguoiLienHe,string DienThoaiLienHe,string EmailLienHe,string GhiChu,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblKhachHang item = new TblKhachHang();
 		    
@@ -94,7 +94,7 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.SoDienThoai = SoDienThoai;
             
-            item.ThuDienTu = ThuDienTu;
+            item.Email = Email;
             
             item.DiaChi = DiaChi;
             
@@ -104,7 +104,7 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.DienThoaiLienHe = DienThoaiLienHe;
             
-            item.Email = Email;
+            item.EmailLienHe = EmailLienHe;
             
             item.GhiChu = GhiChu;
             
@@ -128,7 +128,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdKhachHang,string TenKhachHang,Guid IdLoaiKhachHang,string IdSoThue,string SoDienThoai,string ThuDienTu,string DiaChi,string TenNguoiDaiDien,string TenNguoiLienHe,string DienThoaiLienHe,string Email,string GhiChu,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdKhachHang,string TenKhachHang,Guid IdLoaiKhachHang,string IdSoThue,string SoDienThoai,string Email,string DiaChi,string TenNguoiDaiDien,string TenNguoiLienHe,string DienThoaiLienHe,string EmailLienHe,string GhiChu,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblKhachHang item = new TblKhachHang();
 	        item.MarkOld();
@@ -144,7 +144,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 			item.SoDienThoai = SoDienThoai;
 				
-			item.ThuDienTu = ThuDienTu;
+			item.Email = Email;
 				
 			item.DiaChi = DiaChi;
 				
@@ -154,7 +154,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 			item.DienThoaiLienHe = DienThoaiLienHe;
 				
-			item.Email = Email;
+			item.EmailLienHe = EmailLienHe;
 				
 			item.GhiChu = GhiChu;
 				
