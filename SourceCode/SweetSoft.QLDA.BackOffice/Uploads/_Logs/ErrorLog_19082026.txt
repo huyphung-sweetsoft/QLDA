@@ -1,0 +1,227 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 20:33:40.771
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Cannot open database "SweetSoft_QLDA" requested by the login. The login failed.
+Login failed for user 'NT AUTHORITY\SYSTEM'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Cannot open database "SweetSoft_QLDA" requested by the login. The login failed.
+Login failed for user 'NT AUTHORITY\SYSTEM'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 20:34:51.087
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid object name 'dbo.TblSettings'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid object name 'dbo.TblSettings'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 20:54:37.838
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid object name 'dbo.TblSettings'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid object name 'dbo.TblSettings'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:01:20.160
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid object name 'dbo.TblSettings'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid object name 'dbo.TblSettings'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:01:36.180
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid object name 'dbo.TblSettings'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid object name 'dbo.TblSettings'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:02:36.119
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid object name 'dbo.TblSettings'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid object name 'dbo.TblSettings'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:04:27.035
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid column name 'Id'.
+Invalid column name 'SettingName'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid column name 'Id'.
+Invalid column name 'SettingName'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:04:38.436
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid column name 'Id'.
+Invalid column name 'SettingName'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid column name 'Id'.
+Invalid column name 'SettingName'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:04:46.310
+                URL: Unknown
+                User Agent: Unknown
+                Referrer: Unknown
+                Session ID: Unknown
+                Exception Type: SqlQueryException
+                Message: Invalid column name 'Id'.
+Invalid column name 'SettingName'.
+                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]()
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
+   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
+   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
+   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
+   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
+                Inner Exception: Invalid column name 'Id'.
+Invalid column name 'SettingName'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteTypedList[T]()
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-08-19 21:05:34.918
+                URL: http://qlda.local/Login.aspx?ReturnUrl=%2ftrang-chu
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36
+                Referrer: Unknown
+                Session ID: qvg44suhalrghugbwzuudt43
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.login_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\138d2a3f\66bc2b9c\App_Web_zpcuygyk.7.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: Invalid column name 'IsDeleted'.
+Invalid column name 'IsDeleted'.
+Invalid column name 'IsActivated'.
+Invalid column name 'DisplayName'.
+Invalid column name 'Avatar'.
+Invalid column name 'AuthenticatorKey'.
+Invalid column name 'ResetPasswordKey'.
+                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader()
+   at SubSonic.SqlQuery.ExecuteSingle[T]()
+   at SweetSoft.QLDA.Core.Respositories.UserRepository.GetByUserName(String userName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Respositories\UserRepository.cs:line 178
+   at SweetSoft.QLDA.Core.Managers.UserManager.GetUserByUserName(String userName) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\UserManager.cs:line 200
+   at SweetSoft.QLDA.Core.Infrastructure.SweetContext.get_User() in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.Core\Infrastructure\SweetContext.cs:line 298
+   at SweetSoft.QLDA.BackOffice.Login.Page_Load(Object sender, EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Login.aspx.cs:line 41
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in C:\Users\ACER\Documents\GitHub\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 986
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                

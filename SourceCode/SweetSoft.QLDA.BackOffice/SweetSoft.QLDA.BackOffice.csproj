@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -286,6 +286,48 @@
     <Compile Include="fDocuments\StorageLocations.aspx.designer.cs">
       <DependentUpon>StorageLocations.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardCost.ascx.cs">
+      <DependentUpon>CtrlDashboardCost.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardCost.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardCost.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.cs">
+      <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.designer.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.cs">
+      <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.cs">
+      <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.designer.cs">
+      <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard.aspx.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Dashboard.aspx.designer.cs">
+      <DependentUpon>Dashboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx.cs">
       <DependentUpon>CtrlEmailTemplateDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -492,6 +534,16 @@
     <Content Include="Controls\Captcha.ascx" />
     <Content Include="Controls\CtrlAutoCompleteUser.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardCost.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardOverview.ascx" />
+    <Content Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardProgress.ascx" />
+    <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
+    <Content Include="Controls\Dashboard\dashboard-overview.js" />
+    <Content Include="Controls\Dashboard\dashboard-cost.js" />
+    <Content Include="Controls\Dashboard\dashboard-progress.js" />
+    <Content Include="Controls\Dashboard\dashboard-resource.js" />
+    <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
@@ -509,6 +561,7 @@
     <Content Include="fDocuments\DocumentTemplates.aspx" />
     <Content Include="fDocuments\DocumentTypes.aspx" />
     <Content Include="fDocuments\StorageLocations.aspx" />
+    <Content Include="Dashboard.aspx" />
     <Content Include="fEmailTemplate\Controls\CtrlEmailTemplateDetail.ascx" />
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />

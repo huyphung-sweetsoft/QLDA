@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1653,5 +1653,180 @@
   </data>
   <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
     <value>Delete version</value>
+  </data>
+</root>
+  <data name="DASHBOARD_OVERVIEW" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="PROJECT_SCOPE" xml:space="preserve">
+    <value>Project scope</value>
+  </data>
+  <data name="DATE_RANGE" xml:space="preserve">
+    <value>Date range</value>
+  </data>
+  <data name="THIS_WEEK" xml:space="preserve">
+    <value>This week</value>
+  </data>
+  <data name="THIS_MONTH" xml:space="preserve">
+    <value>This month</value>
+  </data>
+  <data name="THIS_QUARTER" xml:space="preserve">
+    <value>This quarter</value>
+  </data>
+  <data name="THIS_YEAR" xml:space="preserve">
+    <value>This year</value>
+  </data>
+  <data name="APPLY" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ALL_PROJECTS" xml:space="preserve">
+    <value>All projects</value>
+  </data>
+  <data name="TRACK_OVERALL_PROJECT_STATUS" xml:space="preserve">
+    <value>Track overall project status</value>
+  </data>
+  <data name="ACTIVE_PROJECTS" xml:space="preserve">
+    <value>Active projects</value>
+  </data>
+  <data name="PROJECTS_IN_PROGRESS" xml:space="preserve">
+    <value>Projects in progress</value>
+  </data>
+  <data name="UPCOMING_MEETINGS" xml:space="preserve">
+    <value>Upcoming meetings</value>
+  </data>
+  <data name="MEETINGS_THIS_WEEK" xml:space="preserve">
+    <value>From today until the end of the selected period</value>
+  </data>
+  <data name="AT_RISK_PROJECTS" xml:space="preserve">
+    <value>At-risk projects</value>
+  </data>
+  <data name="RATE_ON_ACTIVE_PROJECTS" xml:space="preserve">
+    <value>Rate on active projects</value>
+  </data>
+  <data name="OVERDUE_TASKS" xml:space="preserve">
+    <value>Overdue tasks</value>
+  </data>
+  <data name="INCOMPLETE_AND_OVERDUE" xml:space="preserve">
+    <value>Incomplete and overdue</value>
+  </data>
+  <data name="TOTAL_BUDGET" xml:space="preserve">
+    <value>Total budget</value>
+  </data>
+  <data name="TOTAL_CONTRACT_VALUE" xml:space="preserve">
+    <value>Total contract value</value>
+  </data>
+  <data name="IN_SELECTED_SCOPE" xml:space="preserve">
+    <value>Within the selected scope</value>
+  </data>
+  <data name="PROJECT_STATUS_DISTRIBUTION" xml:space="preserve">
+    <value>Project status distribution</value>
+  </data>
+  <data name="PROJECT_COUNT_BY_STATUS" xml:space="preserve">
+    <value>Number of projects by current status</value>
+  </data>
+  <data name="PROJECT_PROGRESS" xml:space="preserve">
+    <value>Project progress</value>
+  </data>
+  <data name="PROGRESS_OF_EACH_PROJECT" xml:space="preserve">
+    <value>Progress of each project</value>
+  </data>
+  <data name="PROJECTS_NEEDING_ATTENTION" xml:space="preserve">
+    <value>Projects needing attention</value>
+  </data>
+  <data name="PROJECTS_WITH_MOST_RISKS_OR_ISSUES" xml:space="preserve">
+    <value>Projects with most risks or issues</value>
+  </data>
+  <data name="PROJECT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="RISK" xml:space="preserve">
+    <value>Risk</value>
+  </data>
+  <data name="ISSUE" xml:space="preserve">
+    <value>Issue</value>
+  </data>
+  <data name="NO_PROJECTS_WITH_RISKS_OR_ISSUES" xml:space="preserve">
+    <value>No projects with risks or issues.</value>
+  </data>
+  <data name="RESOURCE_OVERVIEW" xml:space="preserve">
+    <value>Resource overview</value>
+  </data>
+  <data name="HR_AND_MEMBER_ALLOCATION" xml:space="preserve">
+    <value>HR and project member allocation</value>
+  </data>
+  <data name="TOTAL_EMPLOYEES" xml:space="preserve">
+    <value>Total employees</value>
+  </data>
+  <data name="PARTICIPATING" xml:space="preserve">
+    <value>Participating</value>
+  </data>
+  <data name="UNASSIGNED" xml:space="preserve">
+    <value>Unassigned</value>
+  </data>
+  <data name="MULTI_PROJECT_MEMBERS" xml:space="preserve">
+    <value>Multi-project members</value>
+  </data>
+  <data name="ASSIGNED_TO_TASKS" xml:space="preserve">
+    <value>Assigned to tasks</value>
+  </data>
+  <data name="NOT_ASSIGNED_TO_TASKS" xml:space="preserve">
+    <value>Not assigned to tasks</value>
+  </data>
+  <data name="COST_OVERVIEW" xml:space="preserve">
+    <value>Cost overview</value>
+  </data>
+  <data name="BUDGET_AND_COST_SUMMARY" xml:space="preserve">
+    <value>Contract value and project cost summary</value>
+  </data>
+  <data name="BUDGET" xml:space="preserve">
+    <value>Budget</value>
+  </data>
+  <data name="EXPECTED_COST" xml:space="preserve">
+    <value>Expected cost</value>
+  </data>
+  <data name="ACTUAL_COST" xml:space="preserve">
+    <value>Actual cost</value>
+  </data>
+  <data name="REMAINING" xml:space="preserve">
+    <value>Remaining</value>
+  </data>
+  <data name="RECEIVED_PAYMENT" xml:space="preserve">
+    <value>Received</value>
+  </data>
+  <data name="REMAINING_AFTER_COST" xml:space="preserve">
+    <value>Remaining after costs</value>
+  </data>
+  <data name="PROJECT_STATUS" xml:space="preserve">
+    <value>Project status</value>
+  </data>
+  <data name="SINGLE_PROJECT_OVERVIEW" xml:space="preserve">
+    <value>Single project overview</value>
+  </data>
+  <data name="OVERALL_PROGRESS" xml:space="preserve">
+    <value>Overall progress</value>
+  </data>
+  <data name="WARNINGS" xml:space="preserve">
+    <value>Warnings &amp; Issues</value>
+  </data>
+  <data name="PROJECT_CODE_NAME" xml:space="preserve">
+    <value>Project code and name</value>
+  </data>
+  <data name="OPEN_RISKS" xml:space="preserve">
+    <value>Open risks</value>
+  </data>
+  <data name="OPEN_ISSUES" xml:space="preserve">
+    <value>Open issues</value>
+  </data>
+  <data name="SAFE" xml:space="preserve">
+    <value>Safe</value>
+  </data>
+  <data name="AT_RISK" xml:space="preserve">
+    <value>At risk</value>
+  </data>
+  <data name="PROJECT_MEMBERS" xml:space="preserve">
+    <value>Project members</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
+    <value>Employee</value>
   </data>
 </root>
