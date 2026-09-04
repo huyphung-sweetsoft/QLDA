@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/fEmailTemplate/EmailTemplateDetail.aspx" hash="564ac705" filehash="efa1767e0b0d157c" flags="110000" assembly="App_Web_eptpjerc" type="ASP.femailtemplate_emailtemplatedetail_aspx">
-    <filedeps>
-        <filedep name="/Controls/Breadcrumb/CtrlBreadcrumb.ascx" />
-        <filedep name="/fEmailTemplate/Controls/CtrlEmailTemplateDetail.ascx" />
-        <filedep name="/fEmailTemplate/EmailTemplateDetail.aspx" />
-        <filedep name="/MasterPages/MasterTemplate.Master" />
-    </filedeps>
-</preserve>

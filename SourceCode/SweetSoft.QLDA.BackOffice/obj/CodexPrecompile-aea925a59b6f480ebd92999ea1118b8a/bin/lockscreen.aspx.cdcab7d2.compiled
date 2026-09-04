@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/LockScreen.aspx" hash="564ac705" filehash="e0db56d4ab6e8bb3" flags="110000" assembly="App_Web_mrncwo1r" type="ASP.lockscreen_aspx">
-    <filedeps>
-        <filedep name="/LockScreen.aspx" />
-        <filedep name="/MasterPages/BasicTemplate.Master" />
-    </filedeps>
-</preserve>

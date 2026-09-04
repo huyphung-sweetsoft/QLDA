@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="3" virtualPath="/fFiles/Controls/CtrlFiles.ascx" hash="564ac705" filehash="40eda65a133b9361" flags="110000" assembly="App_Web_42i1horo" type="ASP.ffiles_controls_ctrlfiles_ascx">
-    <filedeps>
-        <filedep name="/Controls/GridviewPaging.ascx" />
-        <filedep name="/fFiles/Controls/CtrlFiles.ascx" />
-    </filedeps>
-</preserve>
