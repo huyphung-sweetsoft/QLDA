@@ -120,8 +120,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/email-template/{SecurityUtilities.ProtectUrlParameter(emailId.ToString())}";
         }
-
-
+        public static string Customers => "/Customers";
+        public static string CustomerDetail(Guid idKhachHang)
+        {
+            return $"/Customers/{SecurityUtilities.ProtectUrlParameter(idKhachHang.ToString())}";
+        }
 
     }
 }

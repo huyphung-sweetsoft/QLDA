@@ -1150,7 +1150,7 @@
     <value />
   </data>
   <data name="CUSTOMER_NAME" xml:space="preserve">
-    <value>Tên khách hàng</value>
+    <value></value>
   </data>
   <data name="CUSTOMER_FEEDBACK" xml:space="preserve">
     <value>Customer Feedback</value>
@@ -1228,7 +1228,22 @@
   <data name="MEETING_ROOM" xml:space="preserve">
     <value>Meeting room</value>
   </data>
-  <data name="GENERAL_CONTENT" xml:space="preserve">
+	<data name="GENERAL_CONTENT" xml:space="preserve">
     <value>General content</value>
+  </data>
+  <data name="CUSTOMER_LIST" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CUSTOMER_TYPE" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CONTACT_PERSON" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CONTACT_EMAIL" xml:space="preserve">
+    <value> </value>
+  </data>
+  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
+    <value> </value>
   </data>
 </root>

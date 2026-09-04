@@ -5,26 +5,27 @@ using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
-using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
+namespace SweetSoft.QLDA.BackOffice.fCustomers.Controls
 {
-    public partial class CtrlDuAn : BaseAdminUserControl
+    public partial class CtrlKhachHang : BaseAdminUserControl
     {
-        public EventHandler NewProjectHandlerCallBack;
-        public EventHandler EditProjectHandlerCallBack;
+        public EventHandler NewCustomerHandlerCallBack;
+        public EventHandler EditCustomerHandlerCallBack;
 
         protected bool IsEdit
         {
             get
             {
-                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Update, ModuleKeys.Project))
+                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Update, ModuleKeys.Customer))
                     return true;
                 return false;
             }
@@ -34,7 +35,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             get
             {
-                return this.CURRENT_PAGE.IsView; 
+                return this.CURRENT_PAGE.IsView;
             }
         }
 
@@ -42,24 +43,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             get
             {
-                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Delete, ModuleKeys.Project))
+                if (this.CURRENT_PAGE.IsUserRight(ActionKeys.Delete, ModuleKeys.Customer))
                     return true;
                 return false;
-            }
-        }
-
-        public Guid IdKhachHang
-        {
-            get
-            {
-                if (ViewState["IdKhachHang"] == null)
-                    return Guid.Empty;
-
-                return (Guid)ViewState["IdKhachHang"];
-            }
-            set
-            {
-                ViewState["IdKhachHang"] = value;
             }
         }
 
@@ -78,20 +64,20 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
+            ddlSearchCustomerType.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
             ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
-            ddlSearchProjectType.SearchTagItemText = GetResourceText(BackEndResourceKeys.PROJECT_TYPE);
-            ddlSearchProjectManager.SearchTagItemText = GetResourceText(BackEndResourceKeys.PROJECT_MANAGER);
-            //-------------------------------------------------
+            //-------------------------------------------
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
             btnExport.ToolTip = btnExport.Text = GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
-            //-------------------------------------------------
+            //-------------------------------------------
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.PROJECT_CODE),
-                GetResourceText(BackEndResourceKeys.PROJECT_NAME),
-                GetResourceText(BackEndResourceKeys.CUSTOMER),
-                GetResourceText(BackEndResourceKeys.PROJECT_MANAGER)
+                GetResourceText(BackEndResourceKeys.CUSTOMER_NAME),
+                GetResourceText(BackEndResourceKeys.CUSTOMER_TYPE),
+                GetResourceText(BackEndResourceKeys.CONTACT_PERSON),
+                GetResourceText(BackEndResourceKeys.CONTACT_EMAIL),
+                "Số dự án hợp tác"
             };
             grvData.HeaderTexts = lstTableHeader;
         }
@@ -102,20 +88,19 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             AssignSearchColumns();
 
             ControlHelpers controlHelpers = new ControlHelpers();
-            controlHelpers.BindDuAnStatus(ddlSearchStatus);
-            controlHelpers.BindLoaiDuAn(ddlSearchProjectType);
-            controlHelpers.BindNhanVien(ddlSearchProjectManager);
+            controlHelpers.BindStatus(ddlSearchStatus);
+            controlHelpers.BindLoaiKhachHang(ddlSearchCustomerType);
 
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
 
-            lbtAdd.Visible = (this.IdKhachHang != Guid.Empty ? false : this.CURRENT_PAGE.IsAdd) ;
+            lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
             tagOther.Visible = true;
 
             MasterTemplate master = Page.Master as MasterTemplate;
             master.LoadSessionLastSearch(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
-            
+
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
-            grvData.CurrentSortExpression = TblDuAn.Columns.MaDuAn;
+            grvData.CurrentSortExpression = TblKhachHang.Columns.TenKhachHang;
             grvData.CurrentSortDerection = "ASC";
 
             grvData.Rebind();
@@ -126,9 +111,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void AssignSearchColumns()
         {
-            ddlSearchProjectManager.SearchColumn = TblDuAn.Columns.IdNhanVienQuanLy;
-            ddlSearchProjectType.SearchColumn = TblDuAn.Columns.IdLoaiDuAn;
-            ddlSearchStatus.SearchColumn = TblDuAn.Columns.TrangThai;
+            ddlSearchCustomerType.SearchColumn = TblKhachHang.Columns.IdLoaiKhachHang;
+            ddlSearchStatus.SearchColumn = TblKhachHang.Columns.KichHoat;
         }
 
         protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
@@ -147,9 +131,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 int pageSize = rowIndex + grid.CurrentPageSize;
                 //--------------------------------------------
                 DataTable dt = null;
-                Dictionary<string, object> keyValueSearchs = GetProjectSearchParameters();
-                dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
-
+                Dictionary<string, object> keyValueSearchs = GetCustomerSearchParameters();
+                dt = KhachHangManager.Instance.SearchKhachHangs(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 if (dt == null || dt.Rows.Count == 0)
                 {
                     grvData.DataSource = null;
@@ -198,21 +181,21 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                         rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
                     else
                         rowIndex = Convert.ToInt32(e.CommandArgument);
-                    Guid idDuAn = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idDuAn))
+                    Guid idKhachHang = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idKhachHang))
                     {
                         ShowInvalidDataError();
                         return;
                     }
-                    if (EditProjectHandlerCallBack != null)
+                    if (EditCustomerHandlerCallBack != null)
                     {
-                        EditProjectHandlerCallBack(idDuAn, EventArgs.Empty);
+                        EditCustomerHandlerCallBack(idKhachHang, EventArgs.Empty);
                     }
                     break;
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsView)
                     {
-                        ShowAccessDeniedNotify(); 
+                        ShowAccessDeniedNotify();
                         return;
                     }
                     //------------------------------------------
@@ -221,12 +204,12 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                         rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
                     else
                         rowIndex = Convert.ToInt32(e.CommandArgument);
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idDuAn))
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idKhachHang))
                     {
                         ShowInvalidDataError();
                         return;
                     }
-                    Response.Redirect(RewriteURLHelper.ProjectDetail(idDuAn));
+                    Response.Redirect(RewriteURLHelper.CustomerDetail(idKhachHang));
                     Context.ApplicationInstance.CompleteRequest();
                     break;
                 case "ITEM_DELETE":
@@ -240,24 +223,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                         rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
                     else
                         rowIndex = Convert.ToInt32(e.CommandArgument);
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idDuAn))
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out idKhachHang))
                     {
                         ShowInvalidDataError();
                         return;
                     }
-                    TblDuAn duAn = DuAnManager.Instance.GetDuAnById(idDuAn);
-                    if (duAn == null)
+                    TblKhachHang khachHang = KhachHangManager.Instance.GetKhachHangById(idKhachHang);
+                    if (khachHang == null)
                     {
                         ShowInvalidNotFoundData();
                         return;
                     }
 
                     ConfirmResult result = new ConfirmResult();
-                    result.CommandName = "PROJECT_DELETE";
-                    result.Value = duAn;
+                    result.CommandName = "CUSTOMER_DELETE";
+                    result.Value = khachHang;
                     this.CURRENT_PAGE.CurrentConfirmResult = result;
                     MessageBox msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION)
-                        , string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), duAn.TenDuAn)
+                        , string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), khachHang.TenKhachHang)
                         , MSGButton.DeleteCancel, MSGIcon.Error);
                     OpenMessageBox(msg, result, false, false);
                     break;
@@ -310,8 +293,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 ShowAccessDeniedNotify();
                 return;
             }
-            if (NewProjectHandlerCallBack != null)
-                NewProjectHandlerCallBack(Guid.Empty, EventArgs.Empty);
+            if (NewCustomerHandlerCallBack != null)
+                NewCustomerHandlerCallBack(Guid.Empty, EventArgs.Empty);
         }
 
         protected void btnSearch_ServerClick(object sender, EventArgs e)
@@ -321,7 +304,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             upSearchTagBox.Update();
             upnlSearchDefault.Update();
         }
-
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
@@ -347,17 +329,17 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             {
                 if (e.Submit && e.CommandName != null)
                 {
-                    if (e.CommandName.Contains("PROJECT_DELETE"))
+                    if (e.CommandName.Contains("CUSTOMER_DELETE"))
                     {
-                        TblDuAn duAn = e.Value as TblDuAn;
-                        if (duAn == null)
+                        TblKhachHang khachHang = e.Value as TblKhachHang;
+                        if (khachHang == null)
                         {
                             ShowInvalidNotFoundData();
                             return;
                         }
                         try
                         {
-                            DuAnManager.Instance.Delete(duAn);
+                            KhachHangManager.Instance.Delete(khachHang);
                             ShowSuccessDeleteData();
                             grvData.CurrentPageIndex = 1;
                             grvData.Rebind();
@@ -376,7 +358,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             }
         }
 
-        private Dictionary<string, object> GetProjectSearchParameters()
+        private Dictionary<string, object> GetCustomerSearchParameters()
         {
             ControlHelpers controlHelpers = new ControlHelpers();
 
@@ -384,28 +366,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             object value;
 
-            // Loại dự án
-            if (!parameters.TryGetValue(TblDuAn.Columns.IdLoaiDuAn, out value) || value == null 
+            // Loại khách hàng
+            if (!parameters.TryGetValue(TblKhachHang.Columns.IdLoaiKhachHang, out value) || value == null
                 || string.IsNullOrWhiteSpace(Convert.ToString(value)) || Convert.ToString(value) == "null")
             {
-                parameters[TblDuAn.Columns.IdLoaiDuAn] = Guid.Empty;
+                parameters[TblKhachHang.Columns.IdLoaiKhachHang] = Guid.Empty;
             }
 
-            // Project Manager
-            if (!parameters.TryGetValue(TblDuAn.Columns.IdNhanVienQuanLy,out value) || value == null 
+            if (!parameters.TryGetValue(TblKhachHang.Columns.KichHoat, out value) || value == null
                 || string.IsNullOrWhiteSpace(Convert.ToString(value)) || Convert.ToString(value) == "null")
             {
-                parameters[TblDuAn.Columns.IdNhanVienQuanLy] = Guid.Empty;
+                parameters[TblKhachHang.Columns.KichHoat] = null;
             }
-
-            // Trạng thái
-            if (!parameters.TryGetValue(TblDuAn.Columns.TrangThai, out value) || value == null 
-                || string.IsNullOrWhiteSpace(Convert.ToString(value)) || Convert.ToString(value) == "null")
-            {
-                parameters[TblDuAn.Columns.TrangThai] = null;
-            }
-
-            parameters[TblDuAn.Columns.IdKhachHang] = IdKhachHang;
 
             return parameters;
         }

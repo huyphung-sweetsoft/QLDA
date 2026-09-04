@@ -76,5 +76,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SmartLinkButton.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\SweetSoft.QLDA.Controls.dll" />
+    <Content Include="bin\Debug\SweetSoft.QLDA.Controls.pdb" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

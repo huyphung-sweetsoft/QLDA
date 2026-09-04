@@ -7,11 +7,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fProjects
+namespace SweetSoft.QLDA.BackOffice.fCustomers
 {
 
 
-    public partial class DuAnDetail
+    public partial class KhachHangList
     {
 
         /// <summary>
@@ -24,129 +24,129 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
 
         /// <summary>
-        /// lblTenDuAn control.
+        /// CtrlKhachHang control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTenDuAn;
+        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHang CtrlKhachHang;
 
         /// <summary>
-        /// lblKhachHang control.
+        /// dlDetail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblKhachHang;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
 
         /// <summary>
-        /// lblGiaTriHopDong control.
+        /// txtTenKhachHang control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblGiaTriHopDong;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenKhachHang;
 
         /// <summary>
-        /// lblNgayKy control.
+        /// ddlLoaiKhachHang control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNgayKy;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlLoaiKhachHang;
 
         /// <summary>
-        /// lblLoaiDuAn control.
+        /// txtIdSoThue control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblLoaiDuAn;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtIdSoThue;
 
         /// <summary>
-        /// lblNgayBatDau control.
+        /// txtSoDienThoai control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNgayBatDau;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSoDienThoai;
 
         /// <summary>
-        /// lblNgayHoanThanhDuKien control.
+        /// txtEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNgayHoanThanhDuKien;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtEmail;
 
         /// <summary>
-        /// lblNgayHoanThanhThucTe control.
+        /// txtDiaChi control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNgayHoanThanhThucTe;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtDiaChi;
 
         /// <summary>
-        /// lblTrangThai control.
+        /// txtNguoiLienHe control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTrangThai;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNguoiLienHe;
 
         /// <summary>
-        /// ltrMoTa control.
+        /// txtEmailLienHe control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrMoTa;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtEmailLienHe;
 
         /// <summary>
-        /// CtrlGiaiDoanDuAn1 control.
+        /// txtSDTLienHe control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlGiaiDoanDuAn CtrlGiaiDoanDuAn1;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSDTLienHe;
 
         /// <summary>
-        /// imgAvatarPM control.
+        /// chkStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlImage imgAvatarPM;
+        protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkStatus;
 
         /// <summary>
-        /// lblNhanVienQuanLy control.
+        /// txtMoTa control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNhanVienQuanLy;
+        protected global::CKEditor.NET.CKEditorControl txtMoTa;
 
         /// <summary>
-        /// lblSoHopDong control.
+        /// lbtSubmit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblSoHopDong;
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
     }
 }

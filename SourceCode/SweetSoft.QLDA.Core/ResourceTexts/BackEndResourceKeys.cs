@@ -273,6 +273,11 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SIGN_DATE = "SIGN_DATE";
         public const string PROJECT_CODE_ALREADY_EXISTS = "PROJECT_CODE_ALREADY_EXISTS";
         public const string PROJECT_INFORMATION = "PROJECT_INFORMATION";
+        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
+        public const string CUSTOMER_TYPE = "CUSTOMER_TYPE";
+        public const string CONTACT_PERSON = "CONTACT_PERSON";
+        public const string CONTACT_EMAIL = "CONTACT_EMAIL";
+        public const string CONTACT_PHONE_NUMBER = "CONTACT_PHONE_NUMBER";
         //public const string END_DATE_PREDICTED = "END_DATE_PREDICTED";
         public const string CUSTOMER_LIST = "CUSTOMER_LIST";
         public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";

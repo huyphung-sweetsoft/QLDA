@@ -51,7 +51,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(hopDong, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.NotFound);
 
                 bool hopDongDaSuDung = _repository.IsContractUsed(dto.IdHopDongThucHien.Value, dto.IdDuAn);
-                BusinessValidator.ThrowIfNull(hopDongDaSuDung, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.Conflict);
+                BusinessValidator.ThrowIf(hopDongDaSuDung, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.Conflict);
             }
             else
             {
@@ -104,6 +104,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 duAn = _repository.Insert(duAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                AddNhanVienQuanLy(duAn);
                 return duAn;
             }
         }
@@ -136,6 +137,22 @@ namespace SweetSoft.QLDA.Core.Managers
         public string GenerateProjectCode()
         {
             return _repository.GenerateMaDuAn();
+        }
+
+        public void AddNhanVienQuanLy(TblDuAn duAn)
+        {
+            BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.NOT_FOUND);
+            if (!duAn.IdNhanVienQuanLy.HasValue || duAn.IdNhanVienQuanLy == Guid.Empty)
+            {
+                return;
+            }
+
+            TblVaiTroDuAn vaiTroQuanLy = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("QUAN_LY_DU_AN");
+            TblThanhVienDuAn tv = new TblThanhVienDuAn();
+            tv.IdDuAn = duAn.IdDuAn;
+            tv.IdNhanVien = duAn.IdNhanVienQuanLy;
+            tv.IdVaiTroDuAn = vaiTroQuanLy.IdVaiTroDuAn;
+            ThanhVienDuAnManager.Instance.AddOrUpdate(tv);
         }
     }
 }

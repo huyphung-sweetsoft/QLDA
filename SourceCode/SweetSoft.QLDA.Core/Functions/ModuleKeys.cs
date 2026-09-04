@@ -33,6 +33,7 @@ namespace SweetSoft.QLDA.Core.Functions
         Risk,
         Issue,
         NhanVien,
-        Meet
+        Meet,
+        Customer
     }
 }

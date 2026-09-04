@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdGiaiDoanDuAn,Guid IdDuAn,Guid IdGiaiDoan,DateTime? NgayBatDau,DateTime? NgayDuKienHoanThanh,DateTime? NgayHoanThanhThucTe,int ThuTuGiaiDoan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdGiaiDoanDuAn,Guid IdDuAn,Guid? IdGiaiDoan,DateTime? NgayBatDau,DateTime? NgayDuKienHoanThanh,DateTime? NgayHoanThanhThucTe,int ThuTuGiaiDoan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,string TenGiaiDoanTuyChinh)
 	    {
 		    TblGiaiDoanDuAn item = new TblGiaiDoanDuAn();
 		    
@@ -110,6 +110,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.NgayCapNhat = NgayCapNhat;
             
+            item.TenGiaiDoanTuyChinh = TenGiaiDoanTuyChinh;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -118,7 +120,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdGiaiDoanDuAn,Guid IdDuAn,Guid IdGiaiDoan,DateTime? NgayBatDau,DateTime? NgayDuKienHoanThanh,DateTime? NgayHoanThanhThucTe,int ThuTuGiaiDoan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdGiaiDoanDuAn,Guid IdDuAn,Guid? IdGiaiDoan,DateTime? NgayBatDau,DateTime? NgayDuKienHoanThanh,DateTime? NgayHoanThanhThucTe,int ThuTuGiaiDoan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,string TenGiaiDoanTuyChinh)
 	    {
 		    TblGiaiDoanDuAn item = new TblGiaiDoanDuAn();
 	        item.MarkOld();
@@ -149,6 +151,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NguoiCapNhat = NguoiCapNhat;
 				
 			item.NgayCapNhat = NgayCapNhat;
+				
+			item.TenGiaiDoanTuyChinh = TenGiaiDoanTuyChinh;
 				
 	        item.Save(UserName);
 	    }
