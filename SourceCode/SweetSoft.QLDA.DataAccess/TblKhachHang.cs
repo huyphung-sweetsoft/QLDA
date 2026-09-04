@@ -258,18 +258,18 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarDienThoaiLienHe.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarDienThoaiLienHe);
 				
-				TableSchema.TableColumn colvarThuDienTuLienHe = new TableSchema.TableColumn(schema);
-				colvarThuDienTuLienHe.ColumnName = "ThuDienTuLienHe";
-				colvarThuDienTuLienHe.DataType = DbType.String;
-				colvarThuDienTuLienHe.MaxLength = 256;
-				colvarThuDienTuLienHe.AutoIncrement = false;
-				colvarThuDienTuLienHe.IsNullable = true;
-				colvarThuDienTuLienHe.IsPrimaryKey = false;
-				colvarThuDienTuLienHe.IsForeignKey = false;
-				colvarThuDienTuLienHe.IsReadOnly = false;
-				colvarThuDienTuLienHe.DefaultSetting = @"";
-				colvarThuDienTuLienHe.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarThuDienTuLienHe);
+				TableSchema.TableColumn colvarEmail = new TableSchema.TableColumn(schema);
+				colvarEmail.ColumnName = "Email";
+				colvarEmail.DataType = DbType.String;
+				colvarEmail.MaxLength = 256;
+				colvarEmail.AutoIncrement = false;
+				colvarEmail.IsNullable = true;
+				colvarEmail.IsPrimaryKey = false;
+				colvarEmail.IsForeignKey = false;
+				colvarEmail.IsReadOnly = false;
+				colvarEmail.DefaultSetting = @"";
+				colvarEmail.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarEmail);
 				
 				TableSchema.TableColumn colvarGhiChu = new TableSchema.TableColumn(schema);
 				colvarGhiChu.ColumnName = "GhiChu";
@@ -455,12 +455,12 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.DienThoaiLienHe, value); }
 		}
 		  
-		[XmlAttribute("ThuDienTuLienHe")]
+		[XmlAttribute("Email")]
 		[Bindable(true)]
-		public string ThuDienTuLienHe 
+		public string Email 
 		{
-			get { return GetColumnValue<string>(Columns.ThuDienTuLienHe); }
-			set { SetColumnValue(Columns.ThuDienTuLienHe, value); }
+			get { return GetColumnValue<string>(Columns.Email); }
+			set { SetColumnValue(Columns.Email, value); }
 		}
 		  
 		[XmlAttribute("GhiChu")]
@@ -620,7 +620,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdKhachHang,string varTenKhachHang,Guid varIdLoaiKhachHang,string varIdSoThue,string varSoDienThoai,string varThuDienTu,string varDiaChi,string varTenNguoiDaiDien,string varTenNguoiLienHe,string varDienThoaiLienHe,string varThuDienTuLienHe,string varGhiChu,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdKhachHang,string varTenKhachHang,Guid varIdLoaiKhachHang,string varIdSoThue,string varSoDienThoai,string varThuDienTu,string varDiaChi,string varTenNguoiDaiDien,string varTenNguoiLienHe,string varDienThoaiLienHe,string varEmail,string varGhiChu,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblKhachHang item = new TblKhachHang();
 			
@@ -644,7 +644,7 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.DienThoaiLienHe = varDienThoaiLienHe;
 			
-			item.ThuDienTuLienHe = varThuDienTuLienHe;
+			item.Email = varEmail;
 			
 			item.GhiChu = varGhiChu;
 			
@@ -670,7 +670,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdKhachHang,string varTenKhachHang,Guid varIdLoaiKhachHang,string varIdSoThue,string varSoDienThoai,string varThuDienTu,string varDiaChi,string varTenNguoiDaiDien,string varTenNguoiLienHe,string varDienThoaiLienHe,string varThuDienTuLienHe,string varGhiChu,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdKhachHang,string varTenKhachHang,Guid varIdLoaiKhachHang,string varIdSoThue,string varSoDienThoai,string varThuDienTu,string varDiaChi,string varTenNguoiDaiDien,string varTenNguoiLienHe,string varDienThoaiLienHe,string varEmail,string varGhiChu,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblKhachHang item = new TblKhachHang();
 			
@@ -694,7 +694,7 @@ namespace SweetSoft.QLDA.DataAccess
 			
 				item.DienThoaiLienHe = varDienThoaiLienHe;
 			
-				item.ThuDienTuLienHe = varThuDienTuLienHe;
+				item.Email = varEmail;
 			
 				item.GhiChu = varGhiChu;
 			
@@ -793,7 +793,7 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn ThuDienTuLienHeColumn
+        public static TableSchema.TableColumn EmailColumn
         {
             get { return Schema.Columns[10]; }
         }
@@ -863,7 +863,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string TenNguoiDaiDien = @"TenNguoiDaiDien";
 			 public static string TenNguoiLienHe = @"TenNguoiLienHe";
 			 public static string DienThoaiLienHe = @"DienThoaiLienHe";
-			 public static string ThuDienTuLienHe = @"ThuDienTuLienHe";
+			 public static string Email = @"Email";
 			 public static string GhiChu = @"GhiChu";
 			 public static string KichHoat = @"KichHoat";
 			 public static string DaXoa = @"DaXoa";

@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdVanDe,Guid IdDuAn,Guid? IdCongViecBiAnhHuong,Guid? IdNhanVienXuLy,string MaVanDe,string TenVanDe,string MoTaChiTiet,int? MucDoAnhHuong,string KeHoachXuLy,byte TrangThaiDuyet,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdVanDe,Guid IdDuAn,Guid? IdCongViecBiAnhHuong,string TenVanDe,string MoTaChiTiet,int? MucDoAnhHuong,string KeHoachXuLy,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,string MaVanDe,Guid? IdCongViecPhatSinh,int? NguonGocVanDe)
 	    {
 		    TblVanDe item = new TblVanDe();
 		    
@@ -90,10 +90,6 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.IdCongViecBiAnhHuong = IdCongViecBiAnhHuong;
             
-            item.IdNhanVienXuLy = IdNhanVienXuLy;
-            
-            item.MaVanDe = MaVanDe;
-            
             item.TenVanDe = TenVanDe;
             
             item.MoTaChiTiet = MoTaChiTiet;
@@ -102,7 +98,7 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.KeHoachXuLy = KeHoachXuLy;
             
-            item.TrangThaiDuyet = TrangThaiDuyet;
+            item.TrangThai = TrangThai;
             
             item.DaXoa = DaXoa;
             
@@ -114,6 +110,12 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.NgayCapNhat = NgayCapNhat;
             
+            item.MaVanDe = MaVanDe;
+            
+            item.IdCongViecPhatSinh = IdCongViecPhatSinh;
+            
+            item.NguonGocVanDe = NguonGocVanDe;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -122,7 +124,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdVanDe,Guid IdDuAn,Guid? IdCongViecBiAnhHuong,Guid? IdNhanVienXuLy,string MaVanDe,string TenVanDe,string MoTaChiTiet,int? MucDoAnhHuong,string KeHoachXuLy,byte TrangThaiDuyet,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdVanDe,Guid IdDuAn,Guid? IdCongViecBiAnhHuong,string TenVanDe,string MoTaChiTiet,int? MucDoAnhHuong,string KeHoachXuLy,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,string MaVanDe,Guid? IdCongViecPhatSinh,int? NguonGocVanDe)
 	    {
 		    TblVanDe item = new TblVanDe();
 	        item.MarkOld();
@@ -134,10 +136,6 @@ namespace SweetSoft.QLDA.DataAccess
 				
 			item.IdCongViecBiAnhHuong = IdCongViecBiAnhHuong;
 				
-			item.IdNhanVienXuLy = IdNhanVienXuLy;
-				
-			item.MaVanDe = MaVanDe;
-				
 			item.TenVanDe = TenVanDe;
 				
 			item.MoTaChiTiet = MoTaChiTiet;
@@ -146,7 +144,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 			item.KeHoachXuLy = KeHoachXuLy;
 				
-			item.TrangThaiDuyet = TrangThaiDuyet;
+			item.TrangThai = TrangThai;
 				
 			item.DaXoa = DaXoa;
 				
@@ -157,6 +155,12 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NguoiCapNhat = NguoiCapNhat;
 				
 			item.NgayCapNhat = NgayCapNhat;
+				
+			item.MaVanDe = MaVanDe;
+				
+			item.IdCongViecPhatSinh = IdCongViecPhatSinh;
+				
+			item.NguonGocVanDe = NguonGocVanDe;
 				
 	        item.Save(UserName);
 	    }

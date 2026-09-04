@@ -376,37 +376,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
-		#region PrimaryKey Methods		
-		
-        protected override void SetPrimaryKey(object oValue)
-        {
-            base.SetPrimaryKey(oValue);
-            
-            SetPKValues();
-        }
-        
-		
-		private SweetSoft.QLDA.DataAccess.TblNhanVienCollection colTblNhanVienRecords;
-		public SweetSoft.QLDA.DataAccess.TblNhanVienCollection TblNhanVienRecords()
-		{
-			if(colTblNhanVienRecords == null)
-			{
-				colTblNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblNhanVienCollection().Where(TblNhanVien.Columns.IdChucDanh, IdChucDanh).Load();
-				colTblNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblNhanVienRecords_ListChanged);
-			}
-			return colTblNhanVienRecords;
-		}
-				
-		void colTblNhanVienRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblNhanVienRecords[e.NewIndex].IdChucDanh = IdChucDanh;
-            }
-		}
-		#endregion
-		
 			
 		
 		#region ForeignKey Properties
@@ -609,32 +578,10 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
-        public void SetPKValues()
-        {
-                if (colTblNhanVienRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblNhanVien item in colTblNhanVienRecords)
-                    {
-                        if (item.IdChucDanh == null ||item.IdChucDanh != IdChucDanh)
-                        {
-                            item.IdChucDanh = IdChucDanh;
-                        }
-                    }
-               }
-		}
         #endregion
     
         #region Deep Save
 		
-        public void DeepSave()
-        {
-            Save();
-            
-                if (colTblNhanVienRecords != null)
-                {
-                    colTblNhanVienRecords.SaveAll();
-               }
-		}
         #endregion
 	}
 }

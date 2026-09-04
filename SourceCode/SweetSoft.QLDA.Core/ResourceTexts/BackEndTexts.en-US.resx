@@ -186,6 +186,9 @@
   <data name="CANCEL" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="CAN_NOT_BE_BLANK" xml:space="preserve">
+    <value>Can not be blank</value>
+  </data>
   <data name="CHANGE_PASSWORD" xml:space="preserve">
     <value>Change password</value>
   </data>
@@ -225,6 +228,9 @@
   <data name="CONTINUE" xml:space="preserve">
     <value>Continue</value>
   </data>
+  <data name="CONTINGENCY" xml:space="preserve">
+    <value>Contingency</value>
+  </data>
   <data name="COPY" xml:space="preserve">
     <value>Copy</value>
   </data>
@@ -250,7 +256,7 @@
     <value>Customer</value>
   </data>
   <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Customer list</value>
+    <value>Danh sách khách hàng</value>
   </data>
   <data name="DASHBOARD" xml:space="preserve">
     <value>Dashboard</value>
@@ -272,6 +278,9 @@
   </data>
   <data name="DETAIL" xml:space="preserve">
     <value>Detail</value>
+  </data>
+  <data name="DEPENDENT" xml:space="preserve">
+    <value>Dependent</value>
   </data>
   <data name="DIFFERENCE" xml:space="preserve">
     <value>Difference</value>
@@ -307,7 +316,7 @@
     <value>Email template successfully deleted</value>
   </data>
   <data name="EMPLOYEE_LIST" xml:space="preserve">
-    <value>Employee list</value>
+    <value>Danh sách nhân viên</value>
   </data>
   <data name="ENTER_SEARCH_KEYWORDS" xml:space="preserve">
     <value>Enter search keywords...</value>
@@ -360,8 +369,14 @@
   <data name="HOUR" xml:space="preserve">
     <value>hour</value>
   </data>
+  <data name="HIGH" xml:space="preserve">
+    <value>High</value>
+  </data>
   <data name="IMAGE" xml:space="preserve">
     <value>Image</value>
+  </data>
+  <data name="IMPACT" xml:space="preserve">
+    <value>Impact</value>
   </data>
   <data name="INACCURATE_DATA_PLEASE_RELOAD_THE_PAGE_AND_TRY_AGAIN" xml:space="preserve">
     <value>Inaccurate data. Please reload the page and try again!</value>
@@ -405,6 +420,15 @@
   <data name="ITEM" xml:space="preserve">
     <value>item</value>
   </data>
+  <data name="ISSUE_LIST" xml:space="preserve">
+    <value>Issue list</value>
+  </data>
+  <data name="ISSUE_NAME" xml:space="preserve">
+    <value>Issue name</value>
+  </data>
+  <data name="ISSUE_CODE" xml:space="preserve">
+    <value>Issue code</value>
+  </data>
   <data name="KEYWORD" xml:space="preserve">
     <value>Keyword</value>
   </data>
@@ -425,6 +449,9 @@
   </data>
   <data name="LOGOUT" xml:space="preserve">
     <value>Logout</value>
+  </data>
+  <data name="LOW" xml:space="preserve">
+    <value>Low</value>
   </data>
   <data name="MALE" xml:space="preserve">
     <value>Male</value>
@@ -453,6 +480,9 @@
   <data name="NOT_SENT" xml:space="preserve">
     <value>Not sent</value>
   </data>
+  <data name="NOT_ENTERED" xml:space="preserve">
+    <value>Not entered</value>
+  </data>
   <data name="NOT_YOU_GO_BACK" xml:space="preserve">
     <value>Not you? Go back</value>
   </data>
@@ -471,10 +501,16 @@
   <data name="OLD_PASSWORD" xml:space="preserve">
     <value>Old password</value>
   </data>
+  <data name="ORIGIN" xml:space="preserve">
+    <value>Origin</value>
+  </data>
   <data name="OLD_PASSWORD_IS_INCORRECT" xml:space="preserve">
     <value>Old password is incorrect</value>
   </data>
   <data name="ON" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="OWNER" xml:space="preserve">
     <value>On</value>
   </data>
   <data name="OTHER" xml:space="preserve">
@@ -531,8 +567,17 @@
   <data name="PROFILE" xml:space="preserve">
     <value>Profile</value>
   </data>
+  <data name="PROCESSING" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="PROCESSED" xml:space="preserve">
+    <value>Processed</value>
+  </data>
   <data name="PROVINCE" xml:space="preserve">
     <value>Province</value>
+  </data>
+  <data name="PROBABILITY" xml:space="preserve">
+    <value>Probability</value>
   </data>
   <data name="PROJECT_MANAGEMENT" xml:space="preserve">
     <value>Project management</value>
@@ -560,6 +605,18 @@
   </data>
   <data name="REQUIRED" xml:space="preserve">
     <value>Required</value>
+  </data>
+  <data name="RISK_LIST" xml:space="preserve">
+    <value>Risk list</value>
+  </data>
+  <data name="RISK_NAME" xml:space="preserve">
+    <value>Risk name</value>
+  </data>
+  <data name="RISK_LEVEL" xml:space="preserve">
+    <value>Risk level</value>
+  </data>
+  <data name="RISK_CODE" xml:space="preserve">
+    <value>Risk code</value>
   </data>
   <data name="RESET_AUTHENTICATOR_APP" xml:space="preserve">
     <value>Reset authenticator app</value>
@@ -648,6 +705,9 @@
   <data name="PERMISSION" xml:space="preserve">
     <value>Permission</value>
   </data>
+  <data name="PHASE" xml:space="preserve">
+    <value>Phase</value>
+  </data>
   <data name="SUMMARY" xml:space="preserve">
     <value>Summary</value>
   </data>
@@ -665,6 +725,12 @@
   </data>
   <data name="TASK_SCHEDULER" xml:space="preserve">
     <value>Task Scheduler</value>
+  </data>
+  <data name="TASK_ISSUE" xml:space="preserve">
+    <value>Task Issue</value>
+  </data>
+  <data name="TASK_CODE" xml:space="preserve">
+    <value>Task Code</value>
   </data>
   <data name="TAX_CODE" xml:space="preserve">
     <value>Tax code</value>
@@ -750,6 +816,12 @@
   <data name="VERIFY" xml:space="preserve">
     <value>Verify</value>
   </data>
+  <data name="VERY_LOW" xml:space="preserve">
+    <value>Very low</value>
+  </data>
+  <data name="VERY_HIGH" xml:space="preserve">
+    <value>Very high</value>
+  </data>
   <data name="VERSION" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -815,6 +887,9 @@
   </data>
   <data name="PARENT_FULL_NAME" xml:space="preserve">
     <value>Parent's name</value>
+  </data>
+  <data name="PARENT_TASK" xml:space="preserve">
+    <value>Parent's task</value>
   </data>
   <data name="REQUEST_DATE" xml:space="preserve">
     <value>Request date</value>
@@ -882,11 +957,11 @@
   <data name="END_TIME" xml:space="preserve">
     <value>End time</value>
   </data>
-  <data name="MEETING_ROOM" xml:space="preserve">
-    <value>Meeting room</value>
-  </data>
   <data name="MEETING" xml:space="preserve">
     <value>Meeting</value>
+  </data>
+  <data name="MEDIUM" xml:space="preserve">
+    <value>Medium</value>
   </data>
   <data name="MEETING_HOST" xml:space="preserve">
     <value>Meeting host</value>
@@ -918,8 +993,8 @@
   <data name="MEETING_MANAGEMENT" xml:space="preserve">
     <value>Meeting Management</value>
   </data>
-  <data name="MEETING_LIST" xml:space="preserve">
-    <value>Meeting list</value>
+  <data name="MEET_SCHE" xml:space="preserve">
+    <value>Meeting schedule</value>
   </data>
   <data name="FILE_MANAGER" xml:space="preserve">
     <value>Uploaded files</value>
@@ -1002,6 +1077,9 @@
   <data name="WORK_CONTENT" xml:space="preserve">
     <value>Work content</value>
   </data>
+  <data name="WORK_AFFECTED" xml:space="preserve">
+    <value>Work affected</value>
+  </data>
   <data name="REPORT" xml:space="preserve">
     <value>Report</value>
   </data>
@@ -1023,9 +1101,6 @@
   <data name="ATTENDEES" xml:space="preserve">
     <value>Attendees quantity</value>
   </data>
-  <data name="MEETING_NAME" xml:space="preserve">
-    <value>Meeting name</value>
-  </data>
   <data name="MEETING_QUANTITY" xml:space="preserve">
     <value>Meeting quantity</value>
   </data>
@@ -1044,6 +1119,12 @@
   <data name="MODERATOR" xml:space="preserve">
     <value>Moderator</value>
   </data>
+  <data name="MONITOR" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="MITIGATION" xml:space="preserve">
+    <value>Mitigation</value>
+  </data>
   <data name="SECRETARY" xml:space="preserve">
     <value>Secretary</value>
   </data>
@@ -1056,7 +1137,10 @@
   <data name="TASK_MANAGEMENT" xml:space="preserve">
     <value>Task Management</value>
   </data>
-	<data name="TASK_LIST" xml:space="preserve">
+  <data name="TASK_LIST" xml:space="preserve">
+    <value>Task List</value>
+  </data>
+  <data name="TASK_NAME" xml:space="preserve">
     <value>Task List</value>
   </data>
   <data name="PROJECT_TYPE" xml:space="preserve">
@@ -1068,10 +1152,16 @@
   <data name="CUSTOMER_NAME" xml:space="preserve">
     <value>Tên khách hàng</value>
   </data>
+  <data name="CUSTOMER_FEEDBACK" xml:space="preserve">
+    <value>Customer Feedback</value>
+  </data>
   <data name="PROJECT_MANAGER" xml:space="preserve">
     <value>Nhân viên quản lý</value>
   </data>
   <data name="PROJECT_CODE" xml:space="preserve">
+    <value />
+  </data>
+  <data name="PRIORITY" xml:space="preserve">
     <value />
   </data>
   <data name="CONTRACT" xml:space="preserve">
@@ -1089,18 +1179,11 @@
   <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
     <value>Mã dự án đã tồn tại</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PROJECT_INFORMATION" xml:space="preserve">
     <value />
   </data>
-  <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Danh sách khách hàng</value>
-  </data>
   <data name="EMPLOYEE_MANAGEMENT" xml:space="preserve">
     <value>Quản lý nhân viên</value>
-  </data>
-  <data name="EMPLOYEE_LIST" xml:space="preserve">
-    <value>Danh sách nhân viên</value>
   </data>
   <data name="CCCD_ALREADY_EXISTS" xml:space="preserve">
     <value>Căn cước công dân đã tồn tại rồi</value>
@@ -1122,5 +1205,30 @@
   </data>
   <data name="GIOI_TINH" xml:space="preserve">
     <value>Giới tính</value>
+  </data>
+  <data name="END_DATE" xml:space="preserve">
+    <value>End date</value>
+  </data>
+  <data name="START_DATE" xml:space="preserve">
+    <value>Start date</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="NOT_STARTED" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="MEETING_NAME" xml:space="preserve">
+    <value>Meeting name</value>
+  </data>
+  <data name="MEETING_LIST" xml:space="preserve">
+    <value>Meeting list</value>
+  </data>
+  <data name="MEETING_CODE" xml:space="preserve">
+    <value>Meeting code</value>
+  </data>
+  <data name="MEETING_ROOM" xml:space="preserve">
+    <value>Meeting room</value>
+  </data>
+  <data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>General content</value>
   </data>
 </root>

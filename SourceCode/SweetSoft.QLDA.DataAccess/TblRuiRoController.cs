@@ -80,41 +80,13 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdRuiRo,Guid IdDuAn,Guid? IdNhanVienXuLy,string MaRuiRo,string TenRuiRo,int? XacSuatXayRa,int? MucDoAnhHuong,int? DiemRuiRo,string KeHoachPhongNgua,string KeHoachUngPho,byte TrangThaiDuyet,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdRuiRo,string TenRuiRo)
 	    {
 		    TblRuiRo item = new TblRuiRo();
 		    
             item.IdRuiRo = IdRuiRo;
             
-            item.IdDuAn = IdDuAn;
-            
-            item.IdNhanVienXuLy = IdNhanVienXuLy;
-            
-            item.MaRuiRo = MaRuiRo;
-            
             item.TenRuiRo = TenRuiRo;
-            
-            item.XacSuatXayRa = XacSuatXayRa;
-            
-            item.MucDoAnhHuong = MucDoAnhHuong;
-            
-            item.DiemRuiRo = DiemRuiRo;
-            
-            item.KeHoachPhongNgua = KeHoachPhongNgua;
-            
-            item.KeHoachUngPho = KeHoachUngPho;
-            
-            item.TrangThaiDuyet = TrangThaiDuyet;
-            
-            item.DaXoa = DaXoa;
-            
-            item.NguoiTao = NguoiTao;
-            
-            item.NgayTao = NgayTao;
-            
-            item.NguoiCapNhat = NguoiCapNhat;
-            
-            item.NgayCapNhat = NgayCapNhat;
             
 	    
 		    item.Save(UserName);
@@ -124,7 +96,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdRuiRo,Guid IdDuAn,Guid? IdNhanVienXuLy,string MaRuiRo,string TenRuiRo,int? XacSuatXayRa,int? MucDoAnhHuong,int? DiemRuiRo,string KeHoachPhongNgua,string KeHoachUngPho,byte TrangThaiDuyet,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdRuiRo,string TenRuiRo)
 	    {
 		    TblRuiRo item = new TblRuiRo();
 	        item.MarkOld();
@@ -132,35 +104,7 @@ namespace SweetSoft.QLDA.DataAccess
 		    
 			item.IdRuiRo = IdRuiRo;
 				
-			item.IdDuAn = IdDuAn;
-				
-			item.IdNhanVienXuLy = IdNhanVienXuLy;
-				
-			item.MaRuiRo = MaRuiRo;
-				
 			item.TenRuiRo = TenRuiRo;
-				
-			item.XacSuatXayRa = XacSuatXayRa;
-				
-			item.MucDoAnhHuong = MucDoAnhHuong;
-				
-			item.DiemRuiRo = DiemRuiRo;
-				
-			item.KeHoachPhongNgua = KeHoachPhongNgua;
-				
-			item.KeHoachUngPho = KeHoachUngPho;
-				
-			item.TrangThaiDuyet = TrangThaiDuyet;
-				
-			item.DaXoa = DaXoa;
-				
-			item.NguoiTao = NguoiTao;
-				
-			item.NgayTao = NgayTao;
-				
-			item.NguoiCapNhat = NguoiCapNhat;
-				
-			item.NgayCapNhat = NgayCapNhat;
 				
 	        item.Save(UserName);
 	    }

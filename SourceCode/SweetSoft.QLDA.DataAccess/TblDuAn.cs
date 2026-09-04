@@ -219,7 +219,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdNhanVienQuanLy.IsReadOnly = false;
 				colvarIdNhanVienQuanLy.DefaultSetting = @"";
 				
-					colvarIdNhanVienQuanLy.ForeignKeyTableName = "TblNhanVien";
+					colvarIdNhanVienQuanLy.ForeignKeyTableName = "aspnet_Users";
 				schema.Columns.Add(colvarIdNhanVienQuanLy);
 				
 				TableSchema.TableColumn colvarNgayBatDau = new TableSchema.TableColumn(schema);
@@ -609,23 +609,23 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblLichSuDuAnRecords[e.NewIndex].IdDuAn = IdDuAn;
             }
 		}
-		private SweetSoft.QLDA.DataAccess.TblRuiRoCollection colTblRuiRoRecords;
-		public SweetSoft.QLDA.DataAccess.TblRuiRoCollection TblRuiRoRecords()
+		private SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection colTblRuiRoDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection TblRuiRoDuAnRecords()
 		{
-			if(colTblRuiRoRecords == null)
+			if(colTblRuiRoDuAnRecords == null)
 			{
-				colTblRuiRoRecords = new SweetSoft.QLDA.DataAccess.TblRuiRoCollection().Where(TblRuiRo.Columns.IdDuAn, IdDuAn).Load();
-				colTblRuiRoRecords.ListChanged += new ListChangedEventHandler(colTblRuiRoRecords_ListChanged);
+				colTblRuiRoDuAnRecords = new SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection().Where(TblRuiRoDuAn.Columns.IdDuAn, IdDuAn).Load();
+				colTblRuiRoDuAnRecords.ListChanged += new ListChangedEventHandler(colTblRuiRoDuAnRecords_ListChanged);
 			}
-			return colTblRuiRoRecords;
+			return colTblRuiRoDuAnRecords;
 		}
 				
-		void colTblRuiRoRecords_ListChanged(object sender, ListChangedEventArgs e)
+		void colTblRuiRoDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
 		{
             if (e.ListChangedType == ListChangedType.ItemAdded)
             {
 		        // Set foreign key value
-		        colTblRuiRoRecords[e.NewIndex].IdDuAn = IdDuAn;
+		        colTblRuiRoDuAnRecords[e.NewIndex].IdDuAn = IdDuAn;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblTaiLieuCollection colTblTaiLieuRecords;
@@ -730,6 +730,17 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
+		/// Returns a AspnetUser ActiveRecord object related to this TblDuAn
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUser
+		{
+			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVienQuanLy); }
+			set { SetColumnValue("IdNhanVienQuanLy", value.UserId); }
+		}
+		
+		
+		/// <summary>
 		/// Returns a TblHopDongThucHien ActiveRecord object related to this TblDuAn
 		/// 
 		/// </summary>
@@ -759,17 +770,6 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblLoaiDuAn.FetchByID(this.IdLoaiDuAn); }
 			set { SetColumnValue("IdLoaiDuAn", value.IdLoaiDuAn); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a TblNhanVien ActiveRecord object related to this TblDuAn
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblNhanVien TblNhanVien
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblNhanVien.FetchByID(this.IdNhanVienQuanLy); }
-			set { SetColumnValue("IdNhanVienQuanLy", value.IdNhanVien); }
 		}
 		
 		
@@ -1089,9 +1089,9 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
-                if (colTblRuiRoRecords != null)
+                if (colTblRuiRoDuAnRecords != null)
                 {
-                    foreach (SweetSoft.QLDA.DataAccess.TblRuiRo item in colTblRuiRoRecords)
+                    foreach (SweetSoft.QLDA.DataAccess.TblRuiRoDuAn item in colTblRuiRoDuAnRecords)
                     {
                         if (item.IdDuAn != IdDuAn)
                         {
@@ -1188,9 +1188,9 @@ namespace SweetSoft.QLDA.DataAccess
                     colTblLichSuDuAnRecords.SaveAll();
                }
 		
-                if (colTblRuiRoRecords != null)
+                if (colTblRuiRoDuAnRecords != null)
                 {
-                    colTblRuiRoRecords.SaveAll();
+                    colTblRuiRoDuAnRecords.SaveAll();
                }
 		
                 if (colTblTaiLieuRecords != null)

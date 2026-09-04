@@ -1,6 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="TaskList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.TaskList" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="TaskList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.TaskList" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-<%@ Register Src="~/fProject/Controls/CtrlTask.ascx" TagPrefix="SweetSoft" TagName="CtrlTask" %>
+<%@ Register Src="~/fTasks/Controls/CtrlTask.ascx" TagPrefix="SweetSoft" TagName="CtrlTask" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
@@ -157,6 +157,27 @@
         cursor: not-allowed !important;
         opacity: 1 !important;
     }
+    .task-phase-box {
+    background-color: #f3e8ff !important;
+    border-left: 4px solid #6f42c1 !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    }
+    .task-phase-text {
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: #4c1d95 !important;
+    }
+    .task-sub-box {
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+    }
+    .task-sub-code {
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
 </style>
 </asp:Content>
 
@@ -188,22 +209,22 @@
                         
                         <div class="row g-2 mb-3">
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Mã công việc</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.TASK_CODE) %></label>
                                 <asp:TextBox ID="txtEditMaCv" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
                             </div>
                             <div class="col-md-9">
-                                <label class="form-label fw-bold">Tên công việc <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %> <span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditTenCv" runat="server" CssClass="form-control" placeholder="Nhập tên đầu việc..."></asp:TextBox>
                             </div>
                         </div>
 
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Thuộc giai đoạn</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.PHASE) %></label>
                                 <asp:TextBox ID="txtEditGiaiDoan" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Công việc cha</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.PARENT_TASK) %></label>
                                 <asp:DropDownList ID="ddlEditCongViecCha" runat="server" CssClass="form-select" 
                                                   AutoPostBack="true" OnSelectedIndexChanged="ddlEditCongViecChaSelected">
                                 </asp:DropDownList>
@@ -212,51 +233,51 @@
 
                         <div class="row g-2 mb-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Phụ thuộc công việc</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DEPENDENT) %></label>
                                 <asp:DropDownList ID="ddlEditPhuThuoc" runat="server" CssClass="form-select"
                                                   AutoPostBack="true" OnSelectedIndexChanged="ddlEditPhuThuocSelected">
                                 </asp:DropDownList>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Độ ưu tiên</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.PRIORITY) %></label>
                                 <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Nhân viên phụ trách</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.OWNER) %></label>
                                 <asp:DropDownList ID="ddlEditNhanVien" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                         </div>
 
                         <div class="row g-2 mb-3">
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Thời hạn (ngày) <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %>) <span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control" TextMode="Number" min="1"></asp:TextBox>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Ngày bắt đầu <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.START_DATE) %><span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Ngày kết thúc</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
                                 <asp:TextBox ID="txtEditNgayKetThuc" runat="server" CssClass="form-control" TextMode="Date" ReadOnly="true"></asp:TextBox>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Trạng thái</label>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
                                 <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                         </div>
 
                         <div>
-                            <label class="form-label fw-bold">Mô tả công việc</label>
+                            <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.SUMMARY) %></label>
                             <asp:TextBox ID="txtEditMoTa" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control"></asp:TextBox>
                         </div>
                     </div>
 
                     <div class="p-3 border-top bg-light d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Quay về</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()"><%= GetResourceText(BackEndResourceKeys.BACK_TO_LIST) %></button>
                         <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary" 
                                         CausesValidation="false" OnClick="btnSaveTask_Click">
-                            <i class="fas fa-save me-1"></i> Lưu thay đổi
+                            <i class="fas fa-save me-1"></i> <%= GetResourceText(BackEndResourceKeys.SAVE) %>
                         </asp:LinkButton>
                     </div>
                 </div>

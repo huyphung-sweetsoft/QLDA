@@ -186,6 +186,9 @@
   <data name="CANCEL" xml:space="preserve">
     <value>Hủy bỏ</value>
   </data>
+  <data name="CAN_NOT_BE_BLANK" xml:space="preserve">
+    <value>Không được để trống</value>
+  </data>
   <data name="CHANGE_PASSWORD" xml:space="preserve">
     <value>Đổi mật khẩu</value>
   </data>
@@ -224,6 +227,9 @@
   </data>
   <data name="CONTINUE" xml:space="preserve">
     <value>Tiếp tục</value>
+  </data>
+  <data name="CONTINGENCY" xml:space="preserve">
+    <value>Kế hoạch xử lý</value>
   </data>
   <data name="COPY" xml:space="preserve">
     <value>Sao chép</value>
@@ -272,6 +278,9 @@
   </data>
   <data name="DETAIL" xml:space="preserve">
     <value>Chi tiết</value>
+  </data>
+  <data name="DEPENDENT" xml:space="preserve">
+    <value>Phụ thuộc</value>
   </data>
   <data name="DIFFERENCE" xml:space="preserve">
     <value>Chênh lệch</value>
@@ -360,8 +369,14 @@
   <data name="HOUR" xml:space="preserve">
     <value>giờ</value>
   </data>
+  <data name="HIGH" xml:space="preserve">
+    <value>Cao</value>
+  </data>
   <data name="IMAGE" xml:space="preserve">
     <value>Hình ảnh</value>
+  </data>
+  <data name="IMPACT" xml:space="preserve">
+    <value>Mức độ ảnh hưởng</value>
   </data>
   <data name="INACCURATE_DATA_PLEASE_RELOAD_THE_PAGE_AND_TRY_AGAIN" xml:space="preserve">
     <value>Dữ liệu không chính xác. Vui lòng kiểm tra và thử lại!</value>
@@ -405,6 +420,15 @@
   <data name="ITEM" xml:space="preserve">
     <value>mục</value>
   </data>
+  <data name="ISSUE_LIST" xml:space="preserve">
+    <value>Danh sách vấn đề</value>
+  </data>
+  <data name="ISSUE_NAME" xml:space="preserve">
+    <value>Tên vấn đề</value>
+  </data>
+  <data name="ISSUE_CODE" xml:space="preserve">
+    <value>Mã vấn đề</value>
+  </data>
   <data name="KEYWORD" xml:space="preserve">
     <value>Từ khóa</value>
   </data>
@@ -425,6 +449,9 @@
   </data>
   <data name="LOGOUT" xml:space="preserve">
     <value>Đăng xuất</value>
+  </data>
+  <data name="LOW" xml:space="preserve">
+    <value>Thấp</value>
   </data>
   <data name="MALE" xml:space="preserve">
     <value>Nam</value>
@@ -453,6 +480,9 @@
   <data name="NOT_SENT" xml:space="preserve">
     <value>Chưa gửi</value>
   </data>
+  <data name="NOT_ENTERED" xml:space="preserve">
+    <value>Chưa nhập</value>
+  </data>
   <data name="NOT_YOU_GO_BACK" xml:space="preserve">
     <value>Không phải bạn? Quay lại!</value>
   </data>
@@ -471,11 +501,17 @@
   <data name="OLD_PASSWORD" xml:space="preserve">
     <value>Mật khẩu cũ</value>
   </data>
+  <data name="ORIGIN" xml:space="preserve">
+    <value>Nguồn gốc vấn đề</value>
+  </data>
   <data name="OLD_PASSWORD_IS_INCORRECT" xml:space="preserve">
     <value>Mật khẩu cũ không đúng</value>
   </data>
   <data name="ON" xml:space="preserve">
     <value>Bật</value>
+  </data>
+  <data name="OWNER" xml:space="preserve">
+    <value>Người thực hiện</value>
   </data>
   <data name="OTHER" xml:space="preserve">
     <value>Khác</value>
@@ -531,11 +567,23 @@
   <data name="PROFILE" xml:space="preserve">
     <value>Hồ sơ</value>
   </data>
+  <data name="PROCESSING" xml:space="preserve">
+    <value>Đang xử lý</value>
+  </data>
+  <data name="PROCESSED" xml:space="preserve">
+    <value>Đã xử lý</value>
+  </data>
   <data name="PROVINCE" xml:space="preserve">
     <value>Tỉnh</value>
   </data>
-  <data name="PROVINCES" xml:space="preserve">
-    <value>Các tỉnh</value>
+  <data name="PROBABILITY" xml:space="preserve">
+    <value>Xác suất</value>
+  </data>
+  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý dự án</value>
+  </data>
+  <data name="PROJECT_LIST" xml:space="preserve">
+    <value>Danh sách dự án</value>
   </data>
   <data name="READ" xml:space="preserve">
     <value>Đọc</value>
@@ -557,6 +605,18 @@
   </data>
   <data name="REQUIRED" xml:space="preserve">
     <value>Yêu cầu</value>
+  </data>
+  <data name="RISK_LIST" xml:space="preserve">
+    <value>Danh sách rủi ro</value>
+  </data>
+  <data name="RISK_NAME" xml:space="preserve">
+    <value>Tên rủi ro</value>
+  </data>
+  <data name="RISK_LEVEL" xml:space="preserve">
+    <value>Mức độ rủi ro</value>
+  </data>
+  <data name="RISK_CODE" xml:space="preserve">
+    <value>Mã rủi ro</value>
   </data>
   <data name="RESET_AUTHENTICATOR_APP" xml:space="preserve">
     <value>Đặt lại ứng dụng xác thực</value>
@@ -645,6 +705,9 @@
   <data name="PERMISSION" xml:space="preserve">
     <value>Phân quyền tài khoản</value>
   </data>
+  <data name="PHASE" xml:space="preserve">
+    <value>Giai đoạn</value>
+  </data>
   <data name="SUMMARY" xml:space="preserve">
     <value>Mô tả</value>
   </data>
@@ -662,6 +725,12 @@
   </data>
   <data name="TASK_SCHEDULER" xml:space="preserve">
     <value>Lập lịch tác vụ</value>
+  </data>
+  <data name="TASK_ISSUE" xml:space="preserve">
+    <value>Vấn đề từ công việc</value>
+  </data>
+  <data name="TASK_CODE" xml:space="preserve">
+    <value>Mã công việc</value>
   </data>
   <data name="TAX_CODE" xml:space="preserve">
     <value>Mã số thuế</value>
@@ -747,6 +816,12 @@
   <data name="VERIFY" xml:space="preserve">
     <value>Xác minh</value>
   </data>
+  <data name="VERY_LOW" xml:space="preserve">
+    <value>Rất thấp</value>
+  </data>
+  <data name="VERY_HIGH" xml:space="preserve">
+    <value>Rất cao</value>
+  </data>
   <data name="VERSION" xml:space="preserve">
     <value>Phiên bản</value>
   </data>
@@ -813,6 +888,9 @@
   <data name="PARENT_FULL_NAME" xml:space="preserve">
     <value>Họ và tên phụ huynh</value>
   </data>
+  <data name="PARENT_TASK" xml:space="preserve">
+    <value>Công việc cha</value>
+  </data>
   <data name="REQUEST_DATE" xml:space="preserve">
     <value>Ngày yêu cầu</value>
   </data>
@@ -846,6 +924,10 @@
   <data name="NOTE" xml:space="preserve">
     <value>Ghi chú</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="MEETING_ROOM_CATEGORY" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="EMAIL_TEMPLATE" xml:space="preserve">
     <value>Mẫu Email</value>
   </data>
@@ -861,20 +943,50 @@
   <data name="TEMPLATE_CHANGE_PASSWORD" xml:space="preserve">
     <value>Mẫu email khi đổi mật khẩu</value>
   </data>
+  <data name="MEDIUM" xml:space="preserve">
+    <value>Trung bình</value>
+  </data>
+  <data name="MEETING_INFORMATION" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="DURATION" xml:space="preserve">
+    <value>Thời hạn</value>
+  </data>
+  <data name="MEETING_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý lịch họp</value>
+  </data>
+  <data name="MEET_SCHE" xml:space="preserve">
+    <value>Lịch họp</value>
+  </data>
   <data name="CREATE" xml:space="preserve">
     <value>Tạo</value>
   </data>
   <data name="EXPORT" xml:space="preserve">
     <value>Xuất</value>
   </data>
+  <data name="DESTINATION" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="AN_EMAIL_HAS_BEEN_SENT_TO_EMAIL" xml:space="preserve">
     <value>Vui lòng kiểm tra email để khôi phục tài khoản của bạn.</value>
+  </data>
+  <data name="WORK_AFFECTED" xml:space="preserve">
+    <value>Công việc bị ảnh hưởng</value>
+  </data>
+  <data name="MEETING_QUANTITY" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
   </data>
   <data name="MC" xml:space="preserve">
     <value>Người dẫn chương trình</value>
   </data>
   <data name="MODERATOR" xml:space="preserve">
     <value>Người điều khiển</value>
+  </data>
+  <data name="MONITOR" xml:space="preserve">
+    <value>Người giám sát</value>
+  </data>
+  <data name="MITIGATION" xml:space="preserve">
+    <value>Phòng ngừa rủi ro</value>
   </data>
   <data name="SECRETARY" xml:space="preserve">
     <value>Thư ký</value>
@@ -885,6 +997,15 @@
   <data name="COMPETITION_NAME" xml:space="preserve">
     <value>Tên cuộc thi</value>
   </data>
+  <data name="TASK_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý công việc</value>
+  </data>
+  <data name="TASK_LIST" xml:space="preserve">
+    <value>Danh sách công việc</value>
+  </data>
+  <data name="TASK_NAME" xml:space="preserve">
+    <value>Tên công việc</value>
+  </data>
   <data name="PROJECT_TYPE" xml:space="preserve">
     <value>Loại dự án</value>
   </data>
@@ -894,11 +1015,17 @@
   <data name="CUSTOMER_NAME" xml:space="preserve">
     <value>Tên khách hàng</value>
   </data>
+  <data name="CUSTOMER_FEEDBACK" xml:space="preserve">
+    <value>Phản hồi từ phía khách hàng</value>
+  </data>
   <data name="PROJECT_MANAGER" xml:space="preserve">
     <value>Nhân viên quản lý</value>
   </data>
   <data name="PROJECT_CODE" xml:space="preserve">
     <value>Mã dự án</value>
+  </data>
+  <data name="PRIORITY" xml:space="preserve">
+    <value>Độ ưu tiên</value>
   </data>
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
@@ -915,17 +1042,11 @@
   <data name="PROJECT_CODE_ALREADY_EXISTS" xml:space="preserve">
     <value>Mã dự án đã tồn tại</value>
   </data>
-  <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Danh sách khách hàng</value>
-  </data>
-  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý dự án</value>
+  <data name="PROJECT_INFORMATION" xml:space="preserve">
+    <value>Thông tin dự án</value>
   </data>
   <data name="EMPLOYEE_MANAGEMENT" xml:space="preserve">
     <value>Quản lý nhân viên</value>
-  </data>
-  <data name="EMPLOYEE_LIST" xml:space="preserve">
-    <value>Danh sách nhân viên</value>
   </data>
   <data name="CCCD_ALREADY_EXISTS" xml:space="preserve">
     <value>Căn cước công dân đã tồn tại rồi</value>
@@ -944,6 +1065,21 @@
   </data>
   <data name="CHUC_DANH" xml:space="preserve">
     <value>Chức Danh</value>
+  </data>
+  <data name="GIOI_TINH" xml:space="preserve">
+    <value>Giới tính</value>
+  </data>
+  <data name="END_DATE" xml:space="preserve">
+    <value>Ngày kết thúc</value>
+  </data>
+  <data name="START_DATE" xml:space="preserve">
+    <value>Ngày bắt đầu</value>
+  </data>
+  <data name="NOT_STARTED" xml:space="preserve">
+    <value>Chưa bắt đầu</value>
+  </data>
+  <data name="PROVINCES" xml:space="preserve">
+    <value>Các tỉnh</value>
   </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
@@ -975,9 +1111,6 @@
   <data name="COMPETITION_LIST" xml:space="preserve">
     <value>Danh sách cuộc thi</value>
   </data>
-  <data name="NOT_STARTED" xml:space="preserve">
-    <value>Chưa bắt đầu</value>
-  </data>
   <data name="IN_PROGRESS" xml:space="preserve">
     <value>Đang thực hiện</value>
   </data>
@@ -989,12 +1122,6 @@
   </data>
   <data name="COMPETITION_MANAGER" xml:space="preserve">
     <value>Quản lý cuộc thi</value>
-  </data>
-  <data name="END_DATE" xml:space="preserve">
-    <value>Ngày kết thúc</value>
-  </data>
-  <data name="START_DATE" xml:space="preserve">
-    <value>Ngày bắt đầu</value>
   </data>
   <data name="COMPETITION" xml:space="preserve">
     <value>Cuộc thi</value>
@@ -1068,19 +1195,19 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="TASK_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý công việc</value>
+  <data name="MEETING_NAME" xml:space="preserve">
+    <value>Tên cuộc họp</value>
   </data>
-  <data name="TASK_LIST" xml:space="preserve">
-    <value>Danh sách công việc</value>
+  <data name="MEETING_LIST" xml:space="preserve">
+    <value>Danh sách cuộc họp</value>
   </data>
-  <data name="PROJECT_LIST" xml:space="preserve">
-    <value>Danh sách dự án</value>
+  <data name="MEETING_CODE" xml:space="preserve">
+    <value>Mã cuộc họp</value>
   </data>
-  <data name="PROJECT_INFORMATION" xml:space="preserve">
-    <value>Thông tin dự án</value>
+  <data name="MEETING_ROOM" xml:space="preserve">
+    <value>Địa điểm họp</value>
   </data>
-  <data name="GIOI_TINH" xml:space="preserve">
-    <value>Giới tính</value>
+  <data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>Nội dung khái quát</value>
   </data>
 </root>

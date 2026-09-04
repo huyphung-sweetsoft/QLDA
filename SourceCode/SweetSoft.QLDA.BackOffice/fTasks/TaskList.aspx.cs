@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Web.UI;
 using static SweetSoft.QLDA.Core.Managers.TaskManager;
 
-namespace SweetSoft.QLDA.BackOffice.fProjects
+namespace SweetSoft.QLDA.BackOffice.fTasks
 {
     public partial class TaskList : BaseAdminPage
     {
@@ -103,10 +103,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
             _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, task.IdCongViec, task.IdCongViecPhuThuoc, task.MaCongViec);
             _controlHelpers.BindPriorities(ddlEditDoUuTien, task.IdDoUuTien);
-            //Sua nay nua
             _controlHelpers.BindProjectMembers(ddlEditNhanVien, CurrentProjectId, null);
             _controlHelpers.BindTaskStatus(ddlEditTrangThai, task.TrangThai);
-            if (!isPhase) UpdateMinStartDate();
+            UpdateMinStartDate();
 
             upModal.Update();
             ScriptManager.RegisterStartupScript(this, this.GetType(), "OpenEditModal", "openEditModal();", true);
@@ -145,7 +144,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             task.IdCongViecCha = idCha;
             task.IdCongViecPhuThuoc = idPhuThuoc;
             if (isAddNew) task.MaCongViec = _taskManager.GenerateNewTaskCode(CurrentProjectId, idCha);
-
+            if (!DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out DateTime ngayBd))
+            {
+                ShowAlert("Vui lòng chọn ngày bắt đầu công việc!");
+                return;
+            }
+            var (minStartAllowed, limitReason) = _taskManager.GetMinStartDate(task.IdCongViecCha, task.IdCongViecPhuThuoc);
+            if (minStartAllowed.HasValue && ngayBd.Date < minStartAllowed.Value.Date)
+            {
+                ShowAlert($"Ngày bắt đầu không hợp lệ! Phải từ ngày {minStartAllowed.Value:dd/MM/yyyy} trở đi (do {limitReason}).");
+                return;
+            }
+            task.NgayBatDau = ngayBd; 
             if (!isPhase)
             {
                 if (!int.TryParse(txtEditThoiHan.Text.Trim(), out int thoiHan) || thoiHan <= 0)
@@ -153,28 +163,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                     ShowAlert("Thời hạn công việc phải là số nguyên dương lớn hơn 0!");
                     return;
                 }
-                if (!DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out DateTime ngayBd))
-                {
-                    ShowAlert("Vui lòng chọn ngày bắt đầu công việc!");
-                    return;
-                }
-
-                var (minStartAllowed, limitReason) = _taskManager.GetMinStartDate(task.IdCongViecCha, task.IdCongViecPhuThuoc);
-                if (minStartAllowed.HasValue && ngayBd.Date < minStartAllowed.Value.Date)
-                {
-                    ShowAlert($"Ngày bắt đầu không hợp lệ! Phải từ ngày {minStartAllowed.Value:dd/MM/yyyy} trở đi (do {limitReason}).");
-                    return;
-                }
-                //Phan nay can sua vi them bang moi
-                //task.IdNhanVienPhuTrach = Guid.TryParse(ddlEditNhanVien.SelectedValue, out Guid idNv) ? (Guid?)idNv : null;
                 task.TrangThai = Convert.ToByte(ddlEditTrangThai.SelectedValue);
                 if (!isFatherTask) task.IdDoUuTien = Guid.TryParse(ddlEditDoUuTien.SelectedValue, out Guid idUt) ? (Guid?)idUt : null;
-
                 task.ThoiHanNgay = thoiHan;
-                task.NgayBatDau = ngayBd;
                 task.NgayKetThuc = ngayBd.AddDays(thoiHan - 1);
             }
-
             task.TenCongViec = tenCv;
             task.MoTa = txtEditMoTa.Text.Trim();
             task.NgayCapNhat = DateTime.Now;

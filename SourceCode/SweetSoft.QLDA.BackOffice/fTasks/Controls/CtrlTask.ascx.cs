@@ -11,7 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using static SweetSoft.QLDA.Core.Managers.TaskManager;
 
-namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
+namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
     public partial class CtrlTask : BaseAdminUserControl
     {
@@ -59,6 +59,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 _dictPriorities = _taskManager.GetDictPriorities();
             }
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
+            txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             Rebind();
         }
 
@@ -67,7 +68,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             DataTable dtTasks = new DataTable();
             _dictTaskCodes.Clear();
             int overdueCount = 0;
-            (dtTasks, _dictTaskCodes, overdueCount) = _taskManager.GetDictTasksAndCountOverdue(this.ProjectId);
+            string searchValue=txtSearchSingle.Text.Trim();
+            (dtTasks, _dictTaskCodes, overdueCount) = _taskManager.GetDictTasksAndCountOverdue(this.ProjectId, searchValue);
 
             lblOverdueCount.InnerText = overdueCount.ToString();
             grvData.DataSource = dtTasks;
@@ -75,9 +77,28 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             upMain.Update();
         }
 
+        public void btnSearch_ServerClick(object sender, EventArgs e)
+        {
+            Rebind();
+        }
+
         private void ApplyControlsText()
         {
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
+            List<string> lstTableHeader = new List<string>
+            {
+                GetResourceText(BackEndResourceKeys.INDEX),
+                GetResourceText(BackEndResourceKeys.TASK_NAME),
+                GetResourceText(BackEndResourceKeys.OWNER),
+                GetResourceText(BackEndResourceKeys.DURATION),
+                GetResourceText(BackEndResourceKeys.START_DATE),
+                GetResourceText(BackEndResourceKeys.END_DATE),
+                GetResourceText(BackEndResourceKeys.PRIORITY),
+                GetResourceText(BackEndResourceKeys.STATUS),
+                GetResourceText(BackEndResourceKeys.DEPENDENT),
+                GetResourceText(BackEndResourceKeys.ACTION)
+            };
+            grvData.HeaderTexts = lstTableHeader;
         }
 
         #region Gridview Events
@@ -218,10 +239,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         #endregion
 
         #region Formatters
+        public string GetFormattedTaskName(object macv, object tencv)
+        {
+            return _controlHelpers.GetFormattedTaskName(macv, tencv);
+        }
         public string GetTaskPriorityBadge(object tenDoUuTien, object diemDoUuTien)
         {
             return _controlHelpers.GetTaskPriorityBadge(tenDoUuTien, diemDoUuTien);
         }
+
 
         public string GetPhuThuoc(object idPhuThuocObj)
         {
@@ -232,12 +258,20 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             }
             return "—";
         }
-
+        public string FormatDateTime(object date)
+        {
+            return _controlHelpers.FormatDateTime(date);
+        }
         public string GetAssigneeDisplay(object maCvObj, object idNhanVienObj)
         {
             string maCv = maCvObj?.ToString() ?? "";
             if (!maCv.Contains(".")) return "";
             return "Chưa có bảng nv, haizz";
+        }
+
+        public string GetTaskStatusBadge(object status)
+        {
+            return _controlHelpers.GetTaskStatusBadge(status);
         }
         #endregion
     }

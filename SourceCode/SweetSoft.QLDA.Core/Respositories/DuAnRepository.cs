@@ -15,35 +15,35 @@ namespace SweetSoft.QLDA.Core.Respositories
     {
         public DuAnRepository(AuditManager auditManager) : base(auditManager) { }
 
-        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters,string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
             string keyword = InlineQueryHelpers.SQLEncode(searchTerm ?? string.Empty);
             string sql = $@"
-                DECLARE @startRow INT = {pageNumber};
-                DECLARE @endRow INT = {pageSize};
-                DECLARE @idLoaiDuAn VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdLoaiDuAn])}';
-                DECLARE @idNhanVienQuanLy VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdNhanVienQuanLy])}';
-                DECLARE @trangThai TINYINT = {(parameters[TblDuAn.Columns.TrangThai] == null ? "NULL" : $"'{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.TrangThai])}'")};
-                DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
-                select * from (
-                    select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
-                        select d.*,
-                        nv.TenNhanVien,
-                        kh.TenKhachHang,
-                        COUNT(1) OVER() AS total_records
-                        from TblDuAn d
-                        left join TblNhanVien nv on nv.IdNhanVien = d.IdNhanVienQuanLy
-                        left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
-                        where d.DaXoa = 0
-                        and (@idLoaiDuAn = '{Guid.Empty}' or d.IdLoaiDuAn = @idLoaiDuAn)
-                        and (@idNhanVienQuanLy = '{Guid.Empty}' or d.IdNhanVienQuanLy = @idNhanVienQuanLy)
-                        and (@trangThai is null or d.TrangThai = @trangThai)
-                        and (@singleKeyWord = N'%%'
-                        or d.TenDuAn LIKE @singleKeyWord
-                        or d.MaDuAn LIKE @singleKeyWord)
-                    ) as T
-                ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow";
+        DECLARE @startRow INT = {pageNumber};
+        DECLARE @endRow INT = {pageSize};
+        DECLARE @idLoaiDuAn VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdLoaiDuAn])}';
+        DECLARE @idNhanVienQuanLy VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdNhanVienQuanLy])}';
+        DECLARE @trangThai TINYINT = {(parameters[TblDuAn.Columns.TrangThai] == null ? "NULL" : $"'{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.TrangThai])}'")};
+        DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
+        select * from (
+            select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from (
+                select d.*,
+                u.DisplayName,
+                kh.TenKhachHang,
+                COUNT(1) OVER() AS total_records
+                from TblDuAn d
+                left join aspnet_Users u on u.UserId = d.IdNhanVienQuanLy
+                left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
+                where d.DaXoa = 0
+                and (@idLoaiDuAn = '{Guid.Empty}' or d.IdLoaiDuAn = @idLoaiDuAn)
+                and (@idNhanVienQuanLy = '{Guid.Empty}' or d.IdNhanVienQuanLy = @idNhanVienQuanLy)
+                and (@trangThai is null or d.TrangThai = @trangThai)
+                and (@singleKeyWord = N'%%'
+                or d.TenDuAn LIKE @singleKeyWord
+                or d.MaDuAn LIKE @singleKeyWord)
+            ) as T
+        ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow";
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null)
                 return null;

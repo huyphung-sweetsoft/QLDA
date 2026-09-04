@@ -92,8 +92,6 @@ namespace SweetSoft.QLDA.DataAccess
         
 		public static readonly string TblMauTaiLieu = @"TblMauTaiLieu";
         
-		public static readonly string TblNhanVien = @"TblNhanVien";
-        
 		public static readonly string TblNhomTaiLieu = @"TblNhomTaiLieu";
         
 		public static readonly string TblNoiLuuTru = @"TblNoiLuuTru";
@@ -103,6 +101,8 @@ namespace SweetSoft.QLDA.DataAccess
 		public static readonly string TblPhongBan = @"TblPhongBan";
         
 		public static readonly string TblRuiRo = @"TblRuiRo";
+        
+		public static readonly string TblRuiRoDuAn = @"TblRuiRo_DuAn";
         
 		public static readonly string TblSetting = @"TblSettings";
         
@@ -121,6 +121,8 @@ namespace SweetSoft.QLDA.DataAccess
 		public static readonly string TblVaiTroDuAn = @"TblVaiTroDuAn";
         
 		public static readonly string TblVanDe = @"TblVanDe";
+        
+		public static readonly string TblVanDeNhanVien = @"TblVanDe_NhanVien";
         
 	}
 	#endregion
@@ -312,11 +314,6 @@ namespace SweetSoft.QLDA.DataAccess
             get { return DataService.GetSchema("TblMauTaiLieu", "DataAccessProvider"); }
 		}
         
-		public static TableSchema.Table TblNhanVien
-		{
-            get { return DataService.GetSchema("TblNhanVien", "DataAccessProvider"); }
-		}
-        
 		public static TableSchema.Table TblNhomTaiLieu
 		{
             get { return DataService.GetSchema("TblNhomTaiLieu", "DataAccessProvider"); }
@@ -340,6 +337,11 @@ namespace SweetSoft.QLDA.DataAccess
 		public static TableSchema.Table TblRuiRo
 		{
             get { return DataService.GetSchema("TblRuiRo", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblRuiRoDuAn
+		{
+            get { return DataService.GetSchema("TblRuiRo_DuAn", "DataAccessProvider"); }
 		}
         
 		public static TableSchema.Table TblSetting
@@ -385,6 +387,11 @@ namespace SweetSoft.QLDA.DataAccess
 		public static TableSchema.Table TblVanDe
 		{
             get { return DataService.GetSchema("TblVanDe", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblVanDeNhanVien
+		{
+            get { return DataService.GetSchema("TblVanDe_NhanVien", "DataAccessProvider"); }
 		}
         
 	

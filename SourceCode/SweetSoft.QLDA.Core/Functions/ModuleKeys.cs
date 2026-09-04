@@ -30,6 +30,9 @@ namespace SweetSoft.QLDA.Core.Functions
         JoinCompetition,
         Project,
         Task,
-        NhanVien
+        Risk,
+        Issue,
+        NhanVien,
+        Meet
     }
 }

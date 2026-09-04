@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlTask" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
 <div class="card-body p-0 mt-2">
@@ -19,7 +19,10 @@
                 </div>
                 <SweetSoft:ExtraButton runat="server" ID="lbtAdd" OnClick="lbtAdd_Click" CssClass="waves-effect waves-light font-mobile-small" ButtonStyle="Info" ButtonIcon="Add" Visible="false">Add new</SweetSoft:ExtraButton>
             </div>
-
+             <div class="input-group max-w-500">
+                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" PlaceHolder="Nhập từ khóa tìm kiếm..." CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
+                 <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
+             </div>
             <SweetSoft:GridviewExtension ID="grvData" runat="server"
                 AllowSorting="false"
                 AutoGenerateColumns="false"
@@ -34,58 +37,58 @@
                 OnRowCommand="grvData_RowCommand"
                 OnRowDataBound="grvData_RowDataBound">
                 <Columns>
-                    <asp:TemplateField HeaderText="Tên công việc" HeaderStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="TaskName" HeaderStyle-CssClass="text-center">
                         <ItemTemplate>
                             <asp:LinkButton runat="server" ID="lbtTaskName" 
                                 CommandName="ITEM_DETAIL" 
                                 CommandArgument='<%# Eval("IdCongViec") %>'
                                 CssClass="text-decoration-none text-dark"
                                 Visible='<%# this.IsEdit %>'>
-                                <%# _controlHelpers.GetFormattedTaskName(Eval("MaCongViec"), Eval("TenCongViec")) %>
+                                <%# GetFormattedTaskName(Eval("MaCongViec"), Eval("TenCongViec")) %>
                             </asp:LinkButton>
                             <span runat="server" visible='<%# !this.IsEdit %>'>
-                                <%# _controlHelpers.GetFormattedTaskName(Eval("MaCongViec"), Eval("TenCongViec")) %>
+                                <%# GetFormattedTaskName(Eval("MaCongViec"), Eval("TenCongViec")) %>
                             </span>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Người thực hiện" HeaderStyle-Width="140px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Owner" HeaderStyle-Width="140px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
                             <%# Eval("TenNhanVien") != DBNull.Value && Eval("TenNhanVien") != null ? Eval("TenNhanVien") : "—" %>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Thời hạn" HeaderStyle-Width="90px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Duration" HeaderStyle-Width="90px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
                             <%# Eval("ThoiHanNgay") != DBNull.Value ? Eval("ThoiHanNgay") + " ngày" : "—" %>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Ngày bắt đầu" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="StartDate" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <%# _controlHelpers.FormatDateTime(Eval("NgayBatDau")) %>
+                            <%# FormatDateTime(Eval("NgayBatDau")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Ngày kết thúc" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="EndDate" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <%# _controlHelpers.FormatDateTime(Eval("NgayKetThuc")) %>
+                            <%# FormatDateTime(Eval("NgayKetThuc")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Độ ưu tiên" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Priority" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
                             <%# GetTaskPriorityBadge(Eval("TenDoUuTien"), Eval("DiemUuTien")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Trạng thái" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Status" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <%# _controlHelpers.GetTaskStatusBadge(Eval("TrangThai")) %>
+                            <%# GetTaskStatusBadge(Eval("TrangThai")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Phụ thuộc" HeaderStyle-Width="90px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center fw-bold">
+                    <asp:TemplateField HeaderText="Dependent" HeaderStyle-Width="90px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center fw-bold">
                         <ItemTemplate>
                             <%# GetPhuThuoc(Eval("IdCongViecPhuThuoc")) %>
                         </ItemTemplate>

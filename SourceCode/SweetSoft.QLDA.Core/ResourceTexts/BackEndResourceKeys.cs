@@ -336,10 +336,54 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
 
         //Project
         public const string USER_MANAGEMENT = "USER_MANAGEMENT";
-        public const string CUSTOMER_LIST = "CUSTOMER_LIST";
-        public const string EMPLOYEE_LIST = "EMPLOYEE_LIST";
+        public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
+        //Task
         public const string TASK_MANAGEMENT = "TASK_MANAGEMENT";
         public const string TASK_LIST = "TASK_LIST";
-        public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
+        public const string TASK_CODE = "TASK_CODE";
+        public const string TASK_NAME = "TASK_NAME";
+        public const string OWNER = "OWNER";
+        public const string PRIORITY = "PRIORITY";
+        public const string DURATION = "DURATION";
+        public const string DEPENDENT = "DEPENDENT";
+        public const string PHASE = "PHASE";
+        public const string PARENT_TASK = "PARENT_TASK";
+        //Risk
+        public const string RISK_LIST = "RISK_LIST";
+        public const string RISK_CODE = "RISK_CODE";
+        public const string RISK_NAME = "RISK_NAME";
+        public const string PROBABILITY = "PROBABILITY";
+        public const string RISK_LEVEL = "RISK_LEVEL";
+        public const string IMPACT = "IMPACT";
+        public const string MONITOR = "MONITOR";
+        public const string MITIGATION = "MITIGATION";
+        public const string CONTINGENCY = "CONTINGENCY";
+        public const string NOT_ENTERED = "NOT_ENTERED";
+        public const string CAN_NOT_BE_BLANK = "CAN_NOT_BE_BLANK";
+        public const string VERY_LOW = "VERY_LOW";
+        public const string LOW = "LOW";
+        public const string MEDIUM = "MEDIUM";
+        public const string HIGH = "HIGH";
+        public const string VERY_HIGH = "VERY_HIGH";
+
+        //Issue
+        public const string ISSUE_LIST = "ISSUE_LIST";
+        public const string ISSUE_CODE = "ISSUE_CODE";
+        public const string ISSUE_NAME = "ISSUE_NAME";
+        public const string WORK_AFFECTED = "WORK_AFFECTED";
+        public const string PROCESSING = "PROCESSING";
+        public const string PROCESSED = "PROCESSED";
+        public const string ORIGIN = "ORIGIN";
+        public const string TASK_ISSUE = "TASK_ISSUE";
+        public const string CUSTOMER_FEEDBACK = "CUSTOMER_FEEDBACK";
+        //Meeting
+        public const string MEETING_MANAGEMENT = "MEETING_MANAGEMENT";
+        public const string MEET_SCHE = "MEET_SCHE";
+        public const string MEETING_LIST = "MEETING_LIST";
+        public const string MEETING_CODE = "MEETING_CODE";
+        public const string MEETING_NAME = "MEETING_NAME";
+        public const string GENERAL_CONTENT = "GENERAL_CONTENT";
+        public const string MEETING_ROOM = "MEETING_ROOM";
+
     }
 }

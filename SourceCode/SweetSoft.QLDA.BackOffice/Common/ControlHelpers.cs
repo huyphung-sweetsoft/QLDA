@@ -14,6 +14,7 @@ using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Web.UI;
@@ -717,11 +718,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+            List<AspnetUser> tblNhanViens = UserManager.Instance.GetAllAspnetUsers();
             if (tblNhanViens == null)
-                tblNhanViens = new List<TblNhanVien>();
-            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
-            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
+                tblNhanViens = new List<AspnetUser>();
+            ddl.DataTextField = AspnetUser.Columns.DisplayName;
+            ddl.DataValueField = TblNhanVien.Columns.UserId;
             ddl.DataSource = tblNhanViens;
             ddl.DataBind();
         }
@@ -730,11 +731,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<TblNhanVien> tblNhanViens = NhanVienManager.Instance.GetAllNhanVien();
+            List<AspnetUser> tblNhanViens = UserManager.Instance.GetAllAspnetUsers();
             if (tblNhanViens == null)
-                tblNhanViens = new List<TblNhanVien>();
-            ddl.DataTextField = TblNhanVien.Columns.TenNhanVien;
-            ddl.DataValueField = TblNhanVien.Columns.IdNhanVien;
+                tblNhanViens = new List<AspnetUser>();
+            ddl.DataTextField = AspnetUser.Columns.DisplayName;
+            ddl.DataValueField = AspnetUser.Columns.UserId;
             ddl.DataSource = tblNhanViens;
             ddl.DataBind();
         }
@@ -778,31 +779,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
             }
         }
 
-        public void BindProjectMembers(DropDownList ddl, Guid projectId, Guid? selectedId = null, bool isAll = false)
+        public void BindProjectMembers(DropDownList ddl, Guid projectId, Guid? taskId = null)
         {
             ddl.Items.Clear();
-            ddl.Items.Add(new ListItem(isAll ? "-- Tất cả --" : "-- Chưa gán nhân viên --", ""));
-            try
-            {
-                DataTable dt = TaskManager.Instance.GetProjectMembers(projectId);
-                foreach (DataRow r in dt.Rows)
-                {
-                    ddl.Items.Add(new ListItem(
-                        r[TblThanhVienDuAn.Columns.IdNhanVien]?.ToString() ?? "Thành viên",
-                        r[TblThanhVienDuAn.Columns.IdNhanVien].ToString()
-                    ));
-                }
-            }
-            catch { }
-            if (selectedId.HasValue)
-            {
-                ListItem found = ddl.Items.FindByValue(selectedId.Value.ToString());
-                if (found != null)
-                {
-                    ddl.ClearSelection();
-                    found.Selected = true;
-                }
-            }
+            ddl.Items.Add(new ListItem("Không có nhân viên", "0"));
         }
         public void BindTaskStatus(DropDownList ddl, byte? selectedStatus = null)
         {
@@ -883,16 +863,17 @@ namespace SweetSoft.QLDA.BackOffice.Common
             string maCv = maCvObj?.ToString() ?? "";
             string tenCv = tenCvObj?.ToString() ?? "";
             int level = maCv.Split('.').Length;
-
             if (level == 1)
             {
-                return $"<span class=\"task-phase-name\">{maCv}. {tenCv}</span>";
+                return $"<div class=\"task-phase-box d-flex align-items-center\">" +
+                       $"<i class=\"far fa-folder-open me-2\" style=\"color: #6f42c1;\"></i>" +
+                       $"<span class=\"task-phase-text\">{maCv}. {tenCv}</span>" +
+                       $"</div>";
             }
-
             int indentPx = (level - 1) * 20;
-            return $"<div class=\"task-sub-name\" style=\"padding-left: {indentPx}px;\">" +
-                   $"<span class=\"task-tree-branch me-1\">└──</span>" +
-                   $"<strong>{maCv}.</strong> {tenCv}" +
+            return $"<div class=\"task-sub-box\" style=\"padding-left: {indentPx}px;\">" +
+                   $"<span class=\"task-tree-branch me-1 text-muted\">└──</span>" +
+                   $"<strong class=\"task-sub-code\">{maCv}.</strong> {tenCv}" +
                    $"</div>";
         }
         public string FormatDateTime(object dateObj, string format = "dd/MM/yyyy", string emptyText = "—")
@@ -928,6 +909,122 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 return $"<span class=\"{cssClass}\">{tenDoUuTien}</span>";
             }
             return $"<span class=\"badge-pill-custom badge-pri-med\">{tenDoUuTien}</span>";
+        }
+        #endregion
+        #region Bingding Risk Controls
+        public void BindNhanVienDuAn(ExtraDropdown ddl, Guid projectId)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            DataTable dt = RiskManager.Instance.GetAllNhanVienDuAnById(projectId);
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                ddl.DataTextField = "TenNhanVien";     
+                ddl.DataValueField = "IdNhanVien";     
+                ddl.DataSource = dt;
+                ddl.DataBind();
+            }
+        }
+
+        public void BindMucDoAnhHuong(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.Items.Add(new ListItem("-- Chọn giá trị --", ""));
+
+            foreach (MucDoAnhHuonEnum score in Enum.GetValues(typeof(MucDoAnhHuonEnum)))
+            {
+                string value = ((int)score).ToString();
+
+                var field = score.GetType().GetField(score.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : score.ToString();
+
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+        }
+        public void BindXacSuatRuiRo(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (XacSuatRuiRoEnum prob in Enum.GetValues(typeof(XacSuatRuiRoEnum)))
+            {
+                string value = ((int)prob).ToString();
+
+                var field = prob.GetType().GetField(prob.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : prob.ToString();
+
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+        public void BindCongViecDuAn(ExtraDropdown ddl, Guid projectId)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = " ";
+            DataTable dt = TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dt.DefaultView.RowFilter = "MaCongViec LIKE '%.%'";
+                DataTable filteredDt = dt.DefaultView.ToTable();
+                if (filteredDt.Rows.Count > 0)
+                {
+                    filteredDt.Columns.Add("DisplayField", typeof(string), "MaCongViec + '. ' + TenCongViec");
+
+                    ddl.DataTextField = "DisplayField";
+                    ddl.DataValueField = "IdCongViec";
+                    ddl.DataSource = filteredDt;
+                    ddl.DataBind();
+                }
+            }
+        }
+        #endregion
+        #region Bind Issue Data
+        public void BindNguonGocVanDe(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (NguonGocVanDeEnum source in Enum.GetValues(typeof(NguonGocVanDeEnum)))
+            {
+                string value = ((int)source).ToString();
+
+                var field = source.GetType().GetField(source.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : source.ToString();
+
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+
+            dropdown.SelectedIndex = -1;
+        }
+        #endregion
+        #region Bind Meeting Data
+        public void BindTrangThaiLichHop(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (TrangThaiCuocHopEnum status in Enum.GetValues(typeof(TrangThaiCuocHopEnum)))
+            {
+                string value = ((int)status).ToString();
+
+                var field = status.GetType().GetField(status.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : status.ToString();
+
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+
+            dropdown.SelectedIndex = -1;
         }
         #endregion
     }

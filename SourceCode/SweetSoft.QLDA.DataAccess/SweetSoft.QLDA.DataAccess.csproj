@@ -138,6 +138,7 @@
     <Compile Include="TblMauTaiLieuController.cs" />
     <Compile Include="TblNhanVien.cs" />
     <Compile Include="TblNhanVienController.cs" />
+    <Compile Include="TblNhanVienPartial.cs" />
     <Compile Include="TblNhomTaiLieu.cs" />
     <Compile Include="TblNhomTaiLieuController.cs" />
     <Compile Include="TblNoiLuuTru.cs" />
@@ -148,6 +149,8 @@
     <Compile Include="TblPhongBanController.cs" />
     <Compile Include="TblRuiRo.cs" />
     <Compile Include="TblRuiRoController.cs" />
+    <Compile Include="TblRuiRoDuAn.cs" />
+    <Compile Include="TblRuiRoDuAnController.cs" />
     <Compile Include="TblSetting.cs" />
     <Compile Include="TblSettingController.cs" />
     <Compile Include="TblTaiLieu.cs" />

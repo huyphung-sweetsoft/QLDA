@@ -142,6 +142,7 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -159,6 +160,11 @@
   <ItemGroup>
     <Compile Include="EnumHelper\Defines\DuAnStatus.cs" />
     <Compile Include="EnumHelper\Defines\MeetingSpeechesStatus.cs" />
+    <Compile Include="EnumHelper\Defines\MucDoAnhHuong.cs" />
+    <Compile Include="EnumHelper\Defines\NguonGocVanDe.cs" />
+    <Compile Include="EnumHelper\Defines\TrangThaiCuocHop.cs" />
+    <Compile Include="EnumHelper\Defines\TrangThaiVanDe.cs" />
+    <Compile Include="EnumHelper\Defines\XacSuatRuiRo.cs" />
     <Compile Include="ExcelManager\ColumnDisplayInfo.cs" />
     <Compile Include="ExcelManager\ExcelSheetItem.cs" />
     <Compile Include="ExceptionHelpers\BusinessExceptionNotifierManager.cs" />
@@ -220,11 +226,16 @@
     <Compile Include="MailManager\Interfaces\IEmailManager.cs" />
     <Compile Include="MailManager\Repository\EmailHistoryRepository.cs" />
     <Compile Include="Managers\BaseManager.cs" />
+    <Compile Include="Managers\ChucDanhManager.cs" />
     <Compile Include="Managers\DuAnManager.cs" />
     <Compile Include="Managers\HopDongThucHienManager.cs" />
+    <Compile Include="Managers\IssueManager.cs" />
     <Compile Include="Managers\KhachHangManager.cs" />
     <Compile Include="Managers\LoaiDuAnManager.cs" />
+    <Compile Include="Managers\MeetManager.cs" />
     <Compile Include="Managers\NhanVienManager.cs" />
+    <Compile Include="Managers\PhongBanManager.cs" />
+    <Compile Include="Managers\RiskManager.cs" />
     <Compile Include="Managers\TaskManager.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="PdfGeneration\Configuration\PdfGenerationOptions.cs" />
@@ -243,11 +254,16 @@
     <Compile Include="PdfGeneration\Services\NRecoPdfGenerator.cs" />
     <Compile Include="PdfGeneration\Services\PdfGenerationService.cs" />
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
+    <Compile Include="Respositories\ChucDanhRepository.cs" />
     <Compile Include="Respositories\DuAnRepository.cs" />
     <Compile Include="Respositories\HopDongThucHienRepository.cs" />
+    <Compile Include="Respositories\IssueRepository.cs" />
     <Compile Include="Respositories\KhachHangRepository.cs" />
     <Compile Include="Respositories\LoaiDuAnRepository.cs" />
+    <Compile Include="Respositories\MeetRepository.cs" />
     <Compile Include="Respositories\NhanVienRepository.cs" />
+    <Compile Include="Respositories\PhongBanRepository.cs" />
+    <Compile Include="Respositories\RiskRepository.cs" />
     <Compile Include="Respositories\TaskRepository.cs" />
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />

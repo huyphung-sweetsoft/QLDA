@@ -168,33 +168,6 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdCongViecBiAnhHuong.ForeignKeyTableName = "TblCongViec";
 				schema.Columns.Add(colvarIdCongViecBiAnhHuong);
 				
-				TableSchema.TableColumn colvarIdNhanVienXuLy = new TableSchema.TableColumn(schema);
-				colvarIdNhanVienXuLy.ColumnName = "IdNhanVienXuLy";
-				colvarIdNhanVienXuLy.DataType = DbType.Guid;
-				colvarIdNhanVienXuLy.MaxLength = 0;
-				colvarIdNhanVienXuLy.AutoIncrement = false;
-				colvarIdNhanVienXuLy.IsNullable = true;
-				colvarIdNhanVienXuLy.IsPrimaryKey = false;
-				colvarIdNhanVienXuLy.IsForeignKey = true;
-				colvarIdNhanVienXuLy.IsReadOnly = false;
-				colvarIdNhanVienXuLy.DefaultSetting = @"";
-				
-					colvarIdNhanVienXuLy.ForeignKeyTableName = "TblNhanVien";
-				schema.Columns.Add(colvarIdNhanVienXuLy);
-				
-				TableSchema.TableColumn colvarMaVanDe = new TableSchema.TableColumn(schema);
-				colvarMaVanDe.ColumnName = "MaVanDe";
-				colvarMaVanDe.DataType = DbType.AnsiString;
-				colvarMaVanDe.MaxLength = 50;
-				colvarMaVanDe.AutoIncrement = false;
-				colvarMaVanDe.IsNullable = true;
-				colvarMaVanDe.IsPrimaryKey = false;
-				colvarMaVanDe.IsForeignKey = false;
-				colvarMaVanDe.IsReadOnly = false;
-				colvarMaVanDe.DefaultSetting = @"";
-				colvarMaVanDe.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMaVanDe);
-				
 				TableSchema.TableColumn colvarTenVanDe = new TableSchema.TableColumn(schema);
 				colvarTenVanDe.ColumnName = "TenVanDe";
 				colvarTenVanDe.DataType = DbType.String;
@@ -247,19 +220,19 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarKeHoachXuLy.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarKeHoachXuLy);
 				
-				TableSchema.TableColumn colvarTrangThaiDuyet = new TableSchema.TableColumn(schema);
-				colvarTrangThaiDuyet.ColumnName = "TrangThaiDuyet";
-				colvarTrangThaiDuyet.DataType = DbType.Byte;
-				colvarTrangThaiDuyet.MaxLength = 0;
-				colvarTrangThaiDuyet.AutoIncrement = false;
-				colvarTrangThaiDuyet.IsNullable = false;
-				colvarTrangThaiDuyet.IsPrimaryKey = false;
-				colvarTrangThaiDuyet.IsForeignKey = false;
-				colvarTrangThaiDuyet.IsReadOnly = false;
+				TableSchema.TableColumn colvarTrangThai = new TableSchema.TableColumn(schema);
+				colvarTrangThai.ColumnName = "TrangThai";
+				colvarTrangThai.DataType = DbType.Byte;
+				colvarTrangThai.MaxLength = 0;
+				colvarTrangThai.AutoIncrement = false;
+				colvarTrangThai.IsNullable = false;
+				colvarTrangThai.IsPrimaryKey = false;
+				colvarTrangThai.IsForeignKey = false;
+				colvarTrangThai.IsReadOnly = false;
 				
-						colvarTrangThaiDuyet.DefaultSetting = @"((0))";
-				colvarTrangThaiDuyet.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarTrangThaiDuyet);
+						colvarTrangThai.DefaultSetting = @"((0))";
+				colvarTrangThai.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarTrangThai);
 				
 				TableSchema.TableColumn colvarDaXoa = new TableSchema.TableColumn(schema);
 				colvarDaXoa.ColumnName = "DaXoa";
@@ -328,6 +301,46 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
+				TableSchema.TableColumn colvarMaVanDe = new TableSchema.TableColumn(schema);
+				colvarMaVanDe.ColumnName = "MaVanDe";
+				colvarMaVanDe.DataType = DbType.AnsiString;
+				colvarMaVanDe.MaxLength = 50;
+				colvarMaVanDe.AutoIncrement = false;
+				colvarMaVanDe.IsNullable = true;
+				colvarMaVanDe.IsPrimaryKey = false;
+				colvarMaVanDe.IsForeignKey = false;
+				colvarMaVanDe.IsReadOnly = false;
+				colvarMaVanDe.DefaultSetting = @"";
+				colvarMaVanDe.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarMaVanDe);
+				
+				TableSchema.TableColumn colvarIdCongViecPhatSinh = new TableSchema.TableColumn(schema);
+				colvarIdCongViecPhatSinh.ColumnName = "IdCongViecPhatSinh";
+				colvarIdCongViecPhatSinh.DataType = DbType.Guid;
+				colvarIdCongViecPhatSinh.MaxLength = 0;
+				colvarIdCongViecPhatSinh.AutoIncrement = false;
+				colvarIdCongViecPhatSinh.IsNullable = true;
+				colvarIdCongViecPhatSinh.IsPrimaryKey = false;
+				colvarIdCongViecPhatSinh.IsForeignKey = true;
+				colvarIdCongViecPhatSinh.IsReadOnly = false;
+				colvarIdCongViecPhatSinh.DefaultSetting = @"";
+				
+					colvarIdCongViecPhatSinh.ForeignKeyTableName = "TblCongViec";
+				schema.Columns.Add(colvarIdCongViecPhatSinh);
+				
+				TableSchema.TableColumn colvarNguonGocVanDe = new TableSchema.TableColumn(schema);
+				colvarNguonGocVanDe.ColumnName = "NguonGocVanDe";
+				colvarNguonGocVanDe.DataType = DbType.Int32;
+				colvarNguonGocVanDe.MaxLength = 0;
+				colvarNguonGocVanDe.AutoIncrement = false;
+				colvarNguonGocVanDe.IsNullable = true;
+				colvarNguonGocVanDe.IsPrimaryKey = false;
+				colvarNguonGocVanDe.IsForeignKey = false;
+				colvarNguonGocVanDe.IsReadOnly = false;
+				colvarNguonGocVanDe.DefaultSetting = @"";
+				colvarNguonGocVanDe.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNguonGocVanDe);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -362,22 +375,6 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdCongViecBiAnhHuong, value); }
 		}
 		  
-		[XmlAttribute("IdNhanVienXuLy")]
-		[Bindable(true)]
-		public Guid? IdNhanVienXuLy 
-		{
-			get { return GetColumnValue<Guid?>(Columns.IdNhanVienXuLy); }
-			set { SetColumnValue(Columns.IdNhanVienXuLy, value); }
-		}
-		  
-		[XmlAttribute("MaVanDe")]
-		[Bindable(true)]
-		public string MaVanDe 
-		{
-			get { return GetColumnValue<string>(Columns.MaVanDe); }
-			set { SetColumnValue(Columns.MaVanDe, value); }
-		}
-		  
 		[XmlAttribute("TenVanDe")]
 		[Bindable(true)]
 		public string TenVanDe 
@@ -410,12 +407,12 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.KeHoachXuLy, value); }
 		}
 		  
-		[XmlAttribute("TrangThaiDuyet")]
+		[XmlAttribute("TrangThai")]
 		[Bindable(true)]
-		public byte TrangThaiDuyet 
+		public byte TrangThai 
 		{
-			get { return GetColumnValue<byte>(Columns.TrangThaiDuyet); }
-			set { SetColumnValue(Columns.TrangThaiDuyet, value); }
+			get { return GetColumnValue<byte>(Columns.TrangThai); }
+			set { SetColumnValue(Columns.TrangThai, value); }
 		}
 		  
 		[XmlAttribute("DaXoa")]
@@ -457,6 +454,30 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
 		}
+		  
+		[XmlAttribute("MaVanDe")]
+		[Bindable(true)]
+		public string MaVanDe 
+		{
+			get { return GetColumnValue<string>(Columns.MaVanDe); }
+			set { SetColumnValue(Columns.MaVanDe, value); }
+		}
+		  
+		[XmlAttribute("IdCongViecPhatSinh")]
+		[Bindable(true)]
+		public Guid? IdCongViecPhatSinh 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdCongViecPhatSinh); }
+			set { SetColumnValue(Columns.IdCongViecPhatSinh, value); }
+		}
+		  
+		[XmlAttribute("NguonGocVanDe")]
+		[Bindable(true)]
+		public int? NguonGocVanDe 
+		{
+			get { return GetColumnValue<int?>(Columns.NguonGocVanDe); }
+			set { SetColumnValue(Columns.NguonGocVanDe, value); }
+		}
 		
 		#endregion
 		
@@ -470,6 +491,17 @@ namespace SweetSoft.QLDA.DataAccess
 		/// 
 		/// </summary>
 		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViec
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViecPhatSinh); }
+			set { SetColumnValue("IdCongViecPhatSinh", value.IdCongViec); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblCongViec ActiveRecord object related to this TblVanDe
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViecToIdCongViecBiAnhHuong
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViecBiAnhHuong); }
 			set { SetColumnValue("IdCongViecBiAnhHuong", value.IdCongViec); }
@@ -487,17 +519,6 @@ namespace SweetSoft.QLDA.DataAccess
 		}
 		
 		
-		/// <summary>
-		/// Returns a TblNhanVien ActiveRecord object related to this TblVanDe
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblNhanVien TblNhanVien
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblNhanVien.FetchByID(this.IdNhanVienXuLy); }
-			set { SetColumnValue("IdNhanVienXuLy", value.IdNhanVien); }
-		}
-		
-		
 		#endregion
 		
 		
@@ -512,7 +533,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdVanDe,Guid varIdDuAn,Guid? varIdCongViecBiAnhHuong,Guid? varIdNhanVienXuLy,string varMaVanDe,string varTenVanDe,string varMoTaChiTiet,int? varMucDoAnhHuong,string varKeHoachXuLy,byte varTrangThaiDuyet,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdVanDe,Guid varIdDuAn,Guid? varIdCongViecBiAnhHuong,string varTenVanDe,string varMoTaChiTiet,int? varMucDoAnhHuong,string varKeHoachXuLy,byte varTrangThai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,string varMaVanDe,Guid? varIdCongViecPhatSinh,int? varNguonGocVanDe)
 		{
 			TblVanDe item = new TblVanDe();
 			
@@ -522,10 +543,6 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdCongViecBiAnhHuong = varIdCongViecBiAnhHuong;
 			
-			item.IdNhanVienXuLy = varIdNhanVienXuLy;
-			
-			item.MaVanDe = varMaVanDe;
-			
 			item.TenVanDe = varTenVanDe;
 			
 			item.MoTaChiTiet = varMoTaChiTiet;
@@ -534,7 +551,7 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.KeHoachXuLy = varKeHoachXuLy;
 			
-			item.TrangThaiDuyet = varTrangThaiDuyet;
+			item.TrangThai = varTrangThai;
 			
 			item.DaXoa = varDaXoa;
 			
@@ -546,6 +563,12 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
+			item.MaVanDe = varMaVanDe;
+			
+			item.IdCongViecPhatSinh = varIdCongViecPhatSinh;
+			
+			item.NguonGocVanDe = varNguonGocVanDe;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -556,7 +579,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdVanDe,Guid varIdDuAn,Guid? varIdCongViecBiAnhHuong,Guid? varIdNhanVienXuLy,string varMaVanDe,string varTenVanDe,string varMoTaChiTiet,int? varMucDoAnhHuong,string varKeHoachXuLy,byte varTrangThaiDuyet,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdVanDe,Guid varIdDuAn,Guid? varIdCongViecBiAnhHuong,string varTenVanDe,string varMoTaChiTiet,int? varMucDoAnhHuong,string varKeHoachXuLy,byte varTrangThai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,string varMaVanDe,Guid? varIdCongViecPhatSinh,int? varNguonGocVanDe)
 		{
 			TblVanDe item = new TblVanDe();
 			
@@ -566,10 +589,6 @@ namespace SweetSoft.QLDA.DataAccess
 			
 				item.IdCongViecBiAnhHuong = varIdCongViecBiAnhHuong;
 			
-				item.IdNhanVienXuLy = varIdNhanVienXuLy;
-			
-				item.MaVanDe = varMaVanDe;
-			
 				item.TenVanDe = varTenVanDe;
 			
 				item.MoTaChiTiet = varMoTaChiTiet;
@@ -578,7 +597,7 @@ namespace SweetSoft.QLDA.DataAccess
 			
 				item.KeHoachXuLy = varKeHoachXuLy;
 			
-				item.TrangThaiDuyet = varTrangThaiDuyet;
+				item.TrangThai = varTrangThai;
 			
 				item.DaXoa = varDaXoa;
 			
@@ -589,6 +608,12 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NguoiCapNhat = varNguoiCapNhat;
 			
 				item.NgayCapNhat = varNgayCapNhat;
+			
+				item.MaVanDe = varMaVanDe;
+			
+				item.IdCongViecPhatSinh = varIdCongViecPhatSinh;
+			
+				item.NguonGocVanDe = varNguonGocVanDe;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -624,86 +649,93 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn IdNhanVienXuLyColumn
+        public static TableSchema.TableColumn TenVanDeColumn
         {
             get { return Schema.Columns[3]; }
         }
         
         
         
-        public static TableSchema.TableColumn MaVanDeColumn
+        public static TableSchema.TableColumn MoTaChiTietColumn
         {
             get { return Schema.Columns[4]; }
         }
         
         
         
-        public static TableSchema.TableColumn TenVanDeColumn
+        public static TableSchema.TableColumn MucDoAnhHuongColumn
         {
             get { return Schema.Columns[5]; }
         }
         
         
         
-        public static TableSchema.TableColumn MoTaChiTietColumn
+        public static TableSchema.TableColumn KeHoachXuLyColumn
         {
             get { return Schema.Columns[6]; }
         }
         
         
         
-        public static TableSchema.TableColumn MucDoAnhHuongColumn
+        public static TableSchema.TableColumn TrangThaiColumn
         {
             get { return Schema.Columns[7]; }
         }
         
         
         
-        public static TableSchema.TableColumn KeHoachXuLyColumn
+        public static TableSchema.TableColumn DaXoaColumn
         {
             get { return Schema.Columns[8]; }
         }
         
         
         
-        public static TableSchema.TableColumn TrangThaiDuyetColumn
+        public static TableSchema.TableColumn NguoiTaoColumn
         {
             get { return Schema.Columns[9]; }
         }
         
         
         
-        public static TableSchema.TableColumn DaXoaColumn
+        public static TableSchema.TableColumn NgayTaoColumn
         {
             get { return Schema.Columns[10]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiTaoColumn
+        public static TableSchema.TableColumn NguoiCapNhatColumn
         {
             get { return Schema.Columns[11]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayTaoColumn
+        public static TableSchema.TableColumn NgayCapNhatColumn
         {
             get { return Schema.Columns[12]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiCapNhatColumn
+        public static TableSchema.TableColumn MaVanDeColumn
         {
             get { return Schema.Columns[13]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayCapNhatColumn
+        public static TableSchema.TableColumn IdCongViecPhatSinhColumn
         {
             get { return Schema.Columns[14]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NguonGocVanDeColumn
+        {
+            get { return Schema.Columns[15]; }
         }
         
         
@@ -715,18 +747,19 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string IdVanDe = @"IdVanDe";
 			 public static string IdDuAn = @"IdDuAn";
 			 public static string IdCongViecBiAnhHuong = @"IdCongViecBiAnhHuong";
-			 public static string IdNhanVienXuLy = @"IdNhanVienXuLy";
-			 public static string MaVanDe = @"MaVanDe";
 			 public static string TenVanDe = @"TenVanDe";
 			 public static string MoTaChiTiet = @"MoTaChiTiet";
 			 public static string MucDoAnhHuong = @"MucDoAnhHuong";
 			 public static string KeHoachXuLy = @"KeHoachXuLy";
-			 public static string TrangThaiDuyet = @"TrangThaiDuyet";
+			 public static string TrangThai = @"TrangThai";
 			 public static string DaXoa = @"DaXoa";
 			 public static string NguoiTao = @"NguoiTao";
 			 public static string NgayTao = @"NgayTao";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
+			 public static string MaVanDe = @"MaVanDe";
+			 public static string IdCongViecPhatSinh = @"IdCongViecPhatSinh";
+			 public static string NguonGocVanDe = @"NguonGocVanDe";
 						
 		}
 		#endregion

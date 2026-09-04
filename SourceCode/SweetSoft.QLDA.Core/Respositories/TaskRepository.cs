@@ -13,24 +13,43 @@ namespace SweetSoft.QLDA.Core.Respositories
         public TaskRepository(AuditManager auditManager) : base(auditManager) { }
 
         #region 1. Truy vấn Công việc
-        public DataTable FetchByIdAndOrderASCMaCV(Guid projectId)
+        public DataTable FetchByIdAndOrderASCMaCV(Guid projectId, string searchValue=null)
         {
+            string searchCondition = "";
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                string keyword = searchValue.Trim().Replace("'", "''"); 
+                searchCondition = $" AND (t.MaCongViec LIKE N'%{keyword}%' OR t.TenCongViec LIKE N'%{keyword}%')";
+            }
             string sql = $@"
-                        SELECT 
-                            t.*, 
-                            nv.IdNhanVien, 
-                            nv.TenNhanVien, 
-                            nv.AnhDaiDien,
-                            ut.TenDoUuTien,
-                            ut.DiemUuTien -- Thêm cột điểm ưu tiên để xử lý CSS badge
-                        FROM [dbo].[TblCongViec] t
-                        LEFT JOIN [dbo].[TblCongViec_NhanVien] cn ON t.IdCongViec = cn.IdCongViec
-                        LEFT JOIN [dbo].[TblNhanVien] nv ON cn.IdNhanVien = nv.IdNhanVien
-                        LEFT JOIN [dbo].[TblDoUuTien] ut ON t.IdDoUuTien = ut.IdDoUuTien
-                        WHERE t.IdDuAn = '{projectId}' 
-                          AND t.DaXoa = 0 
-                          AND (nv.DaXoa = 0 OR nv.DaXoa IS NULL)
-                        ORDER BY t.MaCongViec ASC;";
+                SELECT 
+                    t.*,
+                    ut.TenDoUuTien,
+                    ut.DiemUuTien,
+        
+                    STUFF((
+                        SELECT ', ' + u.DisplayName
+                        FROM [dbo].[TblCongViec_NhanVien] cn
+                        INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId
+                        WHERE cn.IdCongViec = t.IdCongViec
+                           AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS TenNhanVien,
+            
+                    STUFF((
+                        SELECT ',' + CAST(u.UserId AS VARCHAR(50))
+                        FROM [dbo].[TblCongViec_NhanVien] cn
+                        INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId
+                        WHERE cn.IdCongViec = t.IdCongViec
+                           AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS IdNhanVien
+            
+                FROM [dbo].[TblCongViec] t
+                LEFT JOIN [dbo].[TblDoUuTien] ut ON t.IdDoUuTien = ut.IdDoUuTien
+                WHERE t.IdDuAn = '{projectId}'
+                   AND t.DaXoa = 0
+                  {searchCondition}
+                ORDER BY t.MaCongViec ASC;
+            ";
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null)
                 return null;

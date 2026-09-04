@@ -567,25 +567,6 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblGuiNhanKhachHangRecords[e.NewIndex].IdNguoiThucHien = IdNhanVien;
             }
 		}
-		private SweetSoft.QLDA.DataAccess.TblLichHopCollection colTblLichHopRecords;
-		public SweetSoft.QLDA.DataAccess.TblLichHopCollection TblLichHopRecords()
-		{
-			if(colTblLichHopRecords == null)
-			{
-				colTblLichHopRecords = new SweetSoft.QLDA.DataAccess.TblLichHopCollection().Where(TblLichHop.Columns.IdNhanVienChuTri, IdNhanVien).Load();
-				colTblLichHopRecords.ListChanged += new ListChangedEventHandler(colTblLichHopRecords_ListChanged);
-			}
-			return colTblLichHopRecords;
-		}
-				
-		void colTblLichHopRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblLichHopRecords[e.NewIndex].IdNhanVienChuTri = IdNhanVien;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection colTblLichSuChinhSuaRecords;
 		public SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection TblLichSuChinhSuaRecords()
 		{
@@ -681,23 +662,23 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblNoiLuuTruRecords[e.NewIndex].IdNhanVienPhuTrach = IdNhanVien;
             }
 		}
-		private SweetSoft.QLDA.DataAccess.TblRuiRoCollection colTblRuiRoRecords;
-		public SweetSoft.QLDA.DataAccess.TblRuiRoCollection TblRuiRoRecords()
+		private SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection colTblRuiRoDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection TblRuiRoDuAnRecords()
 		{
-			if(colTblRuiRoRecords == null)
+			if(colTblRuiRoDuAnRecords == null)
 			{
-				colTblRuiRoRecords = new SweetSoft.QLDA.DataAccess.TblRuiRoCollection().Where(TblRuiRo.Columns.IdNhanVienXuLy, IdNhanVien).Load();
-				colTblRuiRoRecords.ListChanged += new ListChangedEventHandler(colTblRuiRoRecords_ListChanged);
+				colTblRuiRoDuAnRecords = new SweetSoft.QLDA.DataAccess.TblRuiRoDuAnCollection().Where(TblRuiRoDuAn.Columns.IdNhanVienXuLy, IdNhanVien).Load();
+				colTblRuiRoDuAnRecords.ListChanged += new ListChangedEventHandler(colTblRuiRoDuAnRecords_ListChanged);
 			}
-			return colTblRuiRoRecords;
+			return colTblRuiRoDuAnRecords;
 		}
 				
-		void colTblRuiRoRecords_ListChanged(object sender, ListChangedEventArgs e)
+		void colTblRuiRoDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
 		{
             if (e.ListChangedType == ListChangedType.ItemAdded)
             {
 		        // Set foreign key value
-		        colTblRuiRoRecords[e.NewIndex].IdNhanVienXuLy = IdNhanVien;
+		        colTblRuiRoDuAnRecords[e.NewIndex].IdNhanVienXuLy = IdNhanVien;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblTaiLieuCollection colTblTaiLieuRecords;
@@ -774,25 +755,6 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblTrinhKyTaiLieuRecordsFromTblNhanVien[e.NewIndex].IdNguoiKy = IdNhanVien;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblVanDeCollection colTblVanDeRecords;
-		public SweetSoft.QLDA.DataAccess.TblVanDeCollection TblVanDeRecords()
-		{
-			if(colTblVanDeRecords == null)
-			{
-				colTblVanDeRecords = new SweetSoft.QLDA.DataAccess.TblVanDeCollection().Where(TblVanDe.Columns.IdNhanVienXuLy, IdNhanVien).Load();
-				colTblVanDeRecords.ListChanged += new ListChangedEventHandler(colTblVanDeRecords_ListChanged);
-			}
-			return colTblVanDeRecords;
-		}
-				
-		void colTblVanDeRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblVanDeRecords[e.NewIndex].IdNhanVienXuLy = IdNhanVien;
             }
 		}
 		#endregion
@@ -1200,16 +1162,6 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
-                if (colTblLichHopRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblLichHop item in colTblLichHopRecords)
-                    {
-                        if (item.IdNhanVienChuTri == null ||item.IdNhanVienChuTri != IdNhanVien)
-                        {
-                            item.IdNhanVienChuTri = IdNhanVien;
-                        }
-                    }
-               }
 		
                 if (colTblLichSuChinhSuaRecords != null)
                 {
@@ -1266,9 +1218,9 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
-                if (colTblRuiRoRecords != null)
+                if (colTblRuiRoDuAnRecords != null)
                 {
-                    foreach (SweetSoft.QLDA.DataAccess.TblRuiRo item in colTblRuiRoRecords)
+                    foreach (SweetSoft.QLDA.DataAccess.TblRuiRoDuAn item in colTblRuiRoDuAnRecords)
                     {
                         if (item.IdNhanVienXuLy == null ||item.IdNhanVienXuLy != IdNhanVien)
                         {
@@ -1320,17 +1272,6 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
-		
-                if (colTblVanDeRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblVanDe item in colTblVanDeRecords)
-                    {
-                        if (item.IdNhanVienXuLy == null ||item.IdNhanVienXuLy != IdNhanVien)
-                        {
-                            item.IdNhanVienXuLy = IdNhanVien;
-                        }
-                    }
-               }
 		}
         #endregion
     
@@ -1360,11 +1301,6 @@ namespace SweetSoft.QLDA.DataAccess
                     colTblGuiNhanKhachHangRecords.SaveAll();
                }
 		
-                if (colTblLichHopRecords != null)
-                {
-                    colTblLichHopRecords.SaveAll();
-               }
-		
                 if (colTblLichSuChinhSuaRecords != null)
                 {
                     colTblLichSuChinhSuaRecords.SaveAll();
@@ -1390,9 +1326,9 @@ namespace SweetSoft.QLDA.DataAccess
                     colTblNoiLuuTruRecords.SaveAll();
                }
 		
-                if (colTblRuiRoRecords != null)
+                if (colTblRuiRoDuAnRecords != null)
                 {
-                    colTblRuiRoRecords.SaveAll();
+                    colTblRuiRoDuAnRecords.SaveAll();
                }
 		
                 if (colTblTaiLieuRecords != null)
@@ -1413,11 +1349,6 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblTrinhKyTaiLieuRecordsFromTblNhanVien != null)
                 {
                     colTblTrinhKyTaiLieuRecordsFromTblNhanVien.SaveAll();
-               }
-		
-                if (colTblVanDeRecords != null)
-                {
-                    colTblVanDeRecords.SaveAll();
                }
 		}
         #endregion

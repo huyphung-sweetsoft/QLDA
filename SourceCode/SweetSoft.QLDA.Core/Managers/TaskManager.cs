@@ -1,4 +1,5 @@
-﻿using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
+﻿using SubSonic;
+using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
@@ -22,7 +23,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         #region 1. Lấy dữ liệu & Danh mục
-        public DataTable FetchByIdAndOrderASCMaCV(Guid projectId) => _repository.FetchByIdAndOrderASCMaCV(projectId);
+        public DataTable FetchByIdAndOrderASCMaCV(Guid projectId, string searchValue = null) => _repository.FetchByIdAndOrderASCMaCV(projectId, searchValue);
         public TblCongViec FetchById(Guid taskId) => _repository.FetchById(taskId);
         public DataTable GetChildTasks(Guid projectId, Guid taskId) => _repository.GetChildTasks(projectId, taskId);
         public DataTable GetDependentTasks(Guid projectId, Guid taskId) => _repository.GetDependentTasks(projectId, taskId);
@@ -84,6 +85,35 @@ namespace SweetSoft.QLDA.Core.Managers
                     }
                 }
             }
+        }
+        public string GetNhanVienByCongViec(Guid idCongViec)
+        {
+            string sql = $@"
+                DECLARE @idCongViec VARCHAR(36) = '{idCongViec}';
+    
+                SELECT u.DisplayName AS TenNhanVien
+                FROM TblCongViec_NhanVien cv
+                INNER JOIN [dbo].[aspnet_Users] u ON cv.IdNhanVien = u.UserId
+                WHERE cv.IdCongViec = @idCongViec
+                   AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL); 
+            ";
+
+            IDataReader reader = new InlineQuery().ExecuteReader(sql);
+
+            List<string> danhSachTen = new List<string>();
+
+            if (reader != null)
+            {
+                while (reader.Read())
+                {
+                    if (reader["TenNhanVien"] != DBNull.Value)
+                    {
+                        danhSachTen.Add(reader["TenNhanVien"].ToString());
+                    }
+                }
+                reader.Close();
+            }
+            return string.Join(", ", danhSachTen);
         }
         #endregion
 
@@ -197,9 +227,9 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return (minStartLimit, alert);
         }
-        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId)
+        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue=null)
         {
-            DataTable dt = FetchByIdAndOrderASCMaCV(projectId);
+            DataTable dt = FetchByIdAndOrderASCMaCV(projectId, searchValue);
             var dictCodes = new Dictionary<Guid, string>();
             int overdueCount = 0;
 
