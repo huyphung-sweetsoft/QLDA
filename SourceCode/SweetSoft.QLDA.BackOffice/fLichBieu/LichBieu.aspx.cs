@@ -53,6 +53,7 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                 // Tạm thời cho link về trang chủ, bạn có thể cấu hình lại sau
                 { RewriteURLHelper.LichBieu, GetResourceText(BackEndResourceKeys.SCHEDULE_MANAGEMENT) }
             };
+            btnSaveTuan.Text = btnSaveTuan.ToolTip = GetResourceText(BackEndResourceKeys.SAVE_WEEK_CONFIG);
         }
         private void BindData()
         {
@@ -218,58 +219,82 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
         }
         protected void btnSaveTuan_Click(object sender, EventArgs e)
         {
-            if (!this.IsEdit)
+            try
             {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
-            foreach (RepeaterItem item in rptTuanLamViec.Items)
-            {
-                if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                if (!this.IsEdit)
                 {
-                    HiddenField hdfIdCauHinh = (HiddenField)item.FindControl("hdfIdCauHinh");
-                    HiddenField hdfNgayTrongTuan = (HiddenField)item.FindControl("hdfNgayTrongTuan");
-                    ExtraCheckbox chkIsWorking = (ExtraCheckbox)item.FindControl("chkIsWorking");
-
-                    HtmlInputGenericControl txtGioBatDauSang = (HtmlInputGenericControl)item.FindControl("txtGioBatDauSang");
-                    HtmlInputGenericControl txtGioKetThucSang = (HtmlInputGenericControl)item.FindControl("txtGioKetThucSang");
-                    HtmlInputGenericControl txtGioBatDauChieu = (HtmlInputGenericControl)item.FindControl("txtGioBatDauChieu");
-                    HtmlInputGenericControl txtGioKetThucChieu = (HtmlInputGenericControl)item.FindControl("txtGioKetThucChieu");
-
-                    TblCauHinhTuanLamViec obj = new TblCauHinhTuanLamViec();
-                    obj.IdCauHinh = Guid.Parse(hdfIdCauHinh.Value);
-                    obj.NgayTrongTuan = byte.Parse(hdfNgayTrongTuan.Value);
-                    obj.LaNgayLamViec = chkIsWorking.Checked;
-                    obj.NguoiCapNhat = string.Empty;
-
-                    if (chkIsWorking.Checked)
-                    {
-                        // Đẩy thẳng chuỗi từ giao diện xuống DB, nếu rỗng thì cho NULL
-                        obj.GioBatDauSang = string.IsNullOrEmpty(txtGioBatDauSang.Value) ? null : txtGioBatDauSang.Value;
-                        obj.GioKetThucSang = string.IsNullOrEmpty(txtGioKetThucSang.Value) ? null : txtGioKetThucSang.Value;
-                        obj.GioBatDauChieu = string.IsNullOrEmpty(txtGioBatDauChieu.Value) ? null : txtGioBatDauChieu.Value;
-                        obj.GioKetThucChieu = string.IsNullOrEmpty(txtGioKetThucChieu.Value) ? null : txtGioKetThucChieu.Value;
-                    }
-                    else
-                    {
-                        obj.GioBatDauSang = null;
-                        obj.GioKetThucSang = null;
-                        obj.GioBatDauChieu = null;
-                        obj.GioKetThucChieu = null;
-                    }
-
-                    LichBieuChungManager.Instance.UpdateCauHinhTuan(obj);
+                    ShowAccessDeniedNotify();
+                    return;
                 }
-            }
 
-            ShowSuccessSaveData();
-            BindData();
-            upnlTuanLamViec.Update();
+                // 1. Lấy danh sách cấu hình hiện tại từ DB lên 
+                // Để SubSonic biết đây là dữ liệu cũ (cần chạy lệnh UPDATE)
+                List<TblCauHinhTuanLamViec> currentList = LichBieuChungManager.Instance.GetAllCauHinhTuan();
+
+                foreach (RepeaterItem item in rptTuanLamViec.Items)
+                {
+                    if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                    {
+                        HiddenField hdfIdCauHinh = (HiddenField)item.FindControl("hdfIdCauHinh");
+                        HiddenField hdfNgayTrongTuan = (HiddenField)item.FindControl("hdfNgayTrongTuan");
+                        ExtraCheckbox chkIsWorking = (ExtraCheckbox)item.FindControl("chkIsWorking");
+
+                        HtmlInputGenericControl txtGioBatDauSang = (HtmlInputGenericControl)item.FindControl("txtGioBatDauSang");
+                        HtmlInputGenericControl txtGioKetThucSang = (HtmlInputGenericControl)item.FindControl("txtGioKetThucSang");
+                        HtmlInputGenericControl txtGioBatDauChieu = (HtmlInputGenericControl)item.FindControl("txtGioBatDauChieu");
+                        HtmlInputGenericControl txtGioKetThucChieu = (HtmlInputGenericControl)item.FindControl("txtGioKetThucChieu");
+
+                        Guid idCauHinh = Guid.Parse(hdfIdCauHinh.Value);
+
+                        // 2. Lấy chính xác Object cũ ra khỏi danh sách để cập nhật
+                        TblCauHinhTuanLamViec obj = currentList.Find(x => x.IdCauHinh == idCauHinh);
+
+                        if (obj != null)
+                        {
+                            obj.LaNgayLamViec = chkIsWorking.Checked;
+
+                            if (chkIsWorking.Checked)
+                            {
+                                // Đẩy thẳng chuỗi từ giao diện xuống DB, nếu rỗng thì cho NULL
+                                obj.GioBatDauSang = string.IsNullOrEmpty(txtGioBatDauSang.Value) ? null : txtGioBatDauSang.Value;
+                                obj.GioKetThucSang = string.IsNullOrEmpty(txtGioKetThucSang.Value) ? null : txtGioKetThucSang.Value;
+                                obj.GioBatDauChieu = string.IsNullOrEmpty(txtGioBatDauChieu.Value) ? null : txtGioBatDauChieu.Value;
+                                obj.GioKetThucChieu = string.IsNullOrEmpty(txtGioKetThucChieu.Value) ? null : txtGioKetThucChieu.Value;
+                            }
+                            else
+                            {
+                                obj.GioBatDauSang = null;
+                                obj.GioKetThucSang = null;
+                                obj.GioBatDauChieu = null;
+                                obj.GioKetThucChieu = null;
+                            }
+
+                            // 3. Đẩy xuống Manager (NguoiCapNhat đã được Manager lo)
+                            LichBieuChungManager.Instance.UpdateCauHinhTuan(obj);
+                        }
+                    }
+                }
+
+                // 4. Hiển thị thông báo thành công xanh lá
+                ShowSuccessSaveData();
+                BindData();
+                upnlTuanLamViec.Update();
+            }
+            catch (Exception exc)
+            {
+                // 5. Bắt lỗi: Nếu có trục trặc, hệ thống sẽ báo thông báo đỏ thay vì im lặng
+                ShowNotify(exc.Message, MSGType.Error);
+            }
         }
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlLichNgoaiLe1.ConfirmRequest(e);
+        }
+        // Hàm test gọi Pop-up UserControl
+        protected void btnTestPopup_Click(object sender, EventArgs e)
+        {
+            // Gọi hàm ShowTestModal từ cái Control mà ta đã nhúng
+            CtrlChonNhanVien1.ShowTestModal();
         }
     }
 }

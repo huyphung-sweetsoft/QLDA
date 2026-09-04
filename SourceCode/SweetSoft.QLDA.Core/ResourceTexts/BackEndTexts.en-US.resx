@@ -1140,4 +1140,7 @@
   <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
     <value>Schedule Management</value>
   </data>
+  <data name="PROJECT_MEMBERS" xml:space="preserve">
+    <value>Project Members</value>
+  </data>
 </root>

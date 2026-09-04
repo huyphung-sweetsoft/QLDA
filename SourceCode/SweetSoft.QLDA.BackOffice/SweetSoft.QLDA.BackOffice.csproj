@@ -223,6 +223,13 @@
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -293,6 +300,7 @@
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
+    <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />

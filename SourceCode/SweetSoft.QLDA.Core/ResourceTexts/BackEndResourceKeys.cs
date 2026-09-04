@@ -293,6 +293,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string INFORMATION = "INFORMATION";
         public const string DESCRIPTION = "DESCRIPTION";
         public const string SCHEDULE_MANAGEMENT = "SCHEDULE_MANAGEMENT";
+        public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
 
         ///---------------------------------------------------
         // Class

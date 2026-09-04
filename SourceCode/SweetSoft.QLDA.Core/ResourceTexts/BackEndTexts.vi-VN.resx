@@ -975,6 +975,9 @@
   <data name="DESCRIPTION" xml:space="preserve">
     <value>Mô tả</value>
   </data>
+  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý lịch biểu chung</value>
+  </data>
   <data name="TEMPLATE_NAME" xml:space="preserve">
     <value>Tên mẫu email</value>
   </data>
@@ -1098,7 +1101,7 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý lịch biểu chung</value>
+  <data name="PROJECT_MEMBERS" xml:space="preserve">
+    <value>Thành viên dự án</value>
   </data>
 </root>

@@ -39,6 +39,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public TblCauHinhTuanLamViec UpdateCauHinhTuan(TblCauHinhTuanLamViec item)
         {
+            if (item == null) return null;
+
+            // Lấy ID người dùng đăng nhập hiện tại từ SweetContext (Chuẩn Framework)
+            Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
+
+            // Bơm UserId vào đối tượng trước khi đẩy xuống Repository
+            item.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+
             return _tuanRepository.Update(item);
         }
 
@@ -173,5 +181,6 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         #endregion
+        
     }
 }
