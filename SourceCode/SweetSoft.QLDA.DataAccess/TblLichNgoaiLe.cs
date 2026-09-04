@@ -155,7 +155,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 				TableSchema.TableColumn colvarNgayBatDau = new TableSchema.TableColumn(schema);
 				colvarNgayBatDau.ColumnName = "NgayBatDau";
-				colvarNgayBatDau.DataType = DbType.AnsiString;
+				colvarNgayBatDau.DataType = DbType.DateTime;
 				colvarNgayBatDau.MaxLength = 0;
 				colvarNgayBatDau.AutoIncrement = false;
 				colvarNgayBatDau.IsNullable = false;
@@ -168,7 +168,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 				TableSchema.TableColumn colvarNgayKetThuc = new TableSchema.TableColumn(schema);
 				colvarNgayKetThuc.ColumnName = "NgayKetThuc";
-				colvarNgayKetThuc.DataType = DbType.AnsiString;
+				colvarNgayKetThuc.DataType = DbType.DateTime;
 				colvarNgayKetThuc.MaxLength = 0;
 				colvarNgayKetThuc.AutoIncrement = false;
 				colvarNgayKetThuc.IsNullable = false;
@@ -195,7 +195,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioBatDauSang = new TableSchema.TableColumn(schema);
 				colvarGioBatDauSang.ColumnName = "GioBatDauSang";
 				colvarGioBatDauSang.DataType = DbType.AnsiString;
-				colvarGioBatDauSang.MaxLength = 0;
+				colvarGioBatDauSang.MaxLength = 5;
 				colvarGioBatDauSang.AutoIncrement = false;
 				colvarGioBatDauSang.IsNullable = true;
 				colvarGioBatDauSang.IsPrimaryKey = false;
@@ -208,7 +208,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioKetThucSang = new TableSchema.TableColumn(schema);
 				colvarGioKetThucSang.ColumnName = "GioKetThucSang";
 				colvarGioKetThucSang.DataType = DbType.AnsiString;
-				colvarGioKetThucSang.MaxLength = 0;
+				colvarGioKetThucSang.MaxLength = 5;
 				colvarGioKetThucSang.AutoIncrement = false;
 				colvarGioKetThucSang.IsNullable = true;
 				colvarGioKetThucSang.IsPrimaryKey = false;
@@ -221,7 +221,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioBatDauChieu = new TableSchema.TableColumn(schema);
 				colvarGioBatDauChieu.ColumnName = "GioBatDauChieu";
 				colvarGioBatDauChieu.DataType = DbType.AnsiString;
-				colvarGioBatDauChieu.MaxLength = 0;
+				colvarGioBatDauChieu.MaxLength = 5;
 				colvarGioBatDauChieu.AutoIncrement = false;
 				colvarGioBatDauChieu.IsNullable = true;
 				colvarGioBatDauChieu.IsPrimaryKey = false;
@@ -234,7 +234,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioKetThucChieu = new TableSchema.TableColumn(schema);
 				colvarGioKetThucChieu.ColumnName = "GioKetThucChieu";
 				colvarGioKetThucChieu.DataType = DbType.AnsiString;
-				colvarGioKetThucChieu.MaxLength = 0;
+				colvarGioKetThucChieu.MaxLength = 5;
 				colvarGioKetThucChieu.AutoIncrement = false;
 				colvarGioKetThucChieu.IsNullable = true;
 				colvarGioKetThucChieu.IsPrimaryKey = false;
@@ -274,7 +274,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarNguoiTao = new TableSchema.TableColumn(schema);
 				colvarNguoiTao.ColumnName = "NguoiTao";
 				colvarNguoiTao.DataType = DbType.AnsiString;
-				colvarNguoiTao.MaxLength = 50;
+				colvarNguoiTao.MaxLength = 150;
 				colvarNguoiTao.AutoIncrement = false;
 				colvarNguoiTao.IsNullable = true;
 				colvarNguoiTao.IsPrimaryKey = false;
@@ -300,7 +300,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarNguoiCapNhat = new TableSchema.TableColumn(schema);
 				colvarNguoiCapNhat.ColumnName = "NguoiCapNhat";
 				colvarNguoiCapNhat.DataType = DbType.AnsiString;
-				colvarNguoiCapNhat.MaxLength = 50;
+				colvarNguoiCapNhat.MaxLength = 150;
 				colvarNguoiCapNhat.AutoIncrement = false;
 				colvarNguoiCapNhat.IsNullable = true;
 				colvarNguoiCapNhat.IsPrimaryKey = false;
@@ -351,17 +351,17 @@ namespace SweetSoft.QLDA.DataAccess
 		  
 		[XmlAttribute("NgayBatDau")]
 		[Bindable(true)]
-		public string NgayBatDau 
+		public DateTime NgayBatDau 
 		{
-			get { return GetColumnValue<string>(Columns.NgayBatDau); }
+			get { return GetColumnValue<DateTime>(Columns.NgayBatDau); }
 			set { SetColumnValue(Columns.NgayBatDau, value); }
 		}
 		  
 		[XmlAttribute("NgayKetThuc")]
 		[Bindable(true)]
-		public string NgayKetThuc 
+		public DateTime NgayKetThuc 
 		{
-			get { return GetColumnValue<string>(Columns.NgayKetThuc); }
+			get { return GetColumnValue<DateTime>(Columns.NgayKetThuc); }
 			set { SetColumnValue(Columns.NgayKetThuc, value); }
 		}
 		  
@@ -472,7 +472,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdNgoaiLe,string varTenNgoaiLe,string varNgayBatDau,string varNgayKetThuc,bool varLaNgayLamViec,string varGioBatDauSang,string varGioKetThucSang,string varGioBatDauChieu,string varGioKetThucChieu,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdNgoaiLe,string varTenNgoaiLe,DateTime varNgayBatDau,DateTime varNgayKetThuc,bool varLaNgayLamViec,string varGioBatDauSang,string varGioKetThucSang,string varGioBatDauChieu,string varGioKetThucChieu,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblLichNgoaiLe item = new TblLichNgoaiLe();
 			
@@ -516,7 +516,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdNgoaiLe,string varTenNgoaiLe,string varNgayBatDau,string varNgayKetThuc,bool varLaNgayLamViec,string varGioBatDauSang,string varGioKetThucSang,string varGioBatDauChieu,string varGioKetThucChieu,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdNgoaiLe,string varTenNgoaiLe,DateTime varNgayBatDau,DateTime varNgayKetThuc,bool varLaNgayLamViec,string varGioBatDauSang,string varGioKetThucSang,string varGioBatDauChieu,string varGioKetThucChieu,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblLichNgoaiLe item = new TblLichNgoaiLe();
 			

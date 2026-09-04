@@ -34,6 +34,7 @@ namespace SweetSoft.QLDA.Core.Functions
         Issue,
         NhanVien,
         Meet,
-        Customer
+        Customer,
+        LichBieu
     }
 }

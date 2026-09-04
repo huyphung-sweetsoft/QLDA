@@ -1059,9 +1059,6 @@
   <data name="DESTINATION" xml:space="preserve">
     <value>Destination</value>
   </data>
-  <data name="ACCOMPANYING_PERSON" xml:space="preserve">
-    <value>Accompanying person</value>
-  </data>
   <data name="AN_EMAIL_HAS_BEEN_SENT_TO_EMAIL" xml:space="preserve">
     <value>An email has been sent to {0}</value>
   </data>
@@ -1245,5 +1242,73 @@
   </data>
   <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
     <value> </value>
+  <data name="ACCOMPANYING_PERSON" xml:space="preserve">
+    <value>Accompanying person</value>
+  </data>
+  <data name="ACCOUNT_TYPE" xml:space="preserve">
+    <value>Account type</value>
+  </data>
+  <data name="EMPLOYEE_ACCOUNT" xml:space="preserve">
+    <value>Employee Account</value>
+  </data>
+  <data name="SYSTEM_ACCOUNT" xml:space="preserve">
+    <value>System account</value>
+  </data>
+  <data name="PERSONAL_INFORMATION" xml:space="preserve">
+    <value>Personal information</value>
+  </data>
+  <data name="DATE_OF_BIRTH" xml:space="preserve">
+    <value>Date of birth</value>
+  </data>
+  <data name="GENERATE" xml:space="preserve">
+    <value>Generate</value>
+  </data>
+  <data name="GUEST" xml:space="preserve">
+    <value>Guest</value>
+  </data>
+  <data name="EMPLOYEE_DETAIL" xml:space="preserve">
+    <value>Employee detail</value>
+  </data>
+  <data name="WORKING_WEEK_CONFIG" xml:space="preserve">
+    <value>Working week config</value>
+  </data>
+  <data name="HOLIDAY_AND_MAKEUP_WORK" xml:space="preserve">
+    <value>Holiday and Make up work</value>
+  </data>
+  <data name="STANDARD_WORKING_HOURS" xml:space="preserve">
+    <value>Standard working hours</value>
+  </data>
+  <data name="WORKING" xml:space="preserve">
+    <value>Working</value>
+  </data>
+  <data name="DAY_OFF" xml:space="preserve">
+    <value>Day off</value>
+  </data>
+  <data name="MORNING_SHIFT" xml:space="preserve">
+    <value>Morning shift </value>
+  </data>
+  <data name="AFTERNOON_SHIFT" xml:space="preserve">
+    <value>Afternoon shift</value>
+  </data>
+  <data name="SAVE_WEEK_CONFIG" xml:space="preserve">
+    <value>Save week config</value>
+  </data>
+  <data name="EVENT_NAME" xml:space="preserve">
+    <value>Event name</value>
+  </data>
+  <data name="FROM_DATE" xml:space="preserve">
+    <value>From date</value>
+  </data>
+  <data name="TO_DATE" xml:space="preserve">
+    <value>To date</value>
+  </data>
+  <data name="INFORMATION" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="DESCRIPTION" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
+    <value>Schedule Management</value>
   </data>
 </root>

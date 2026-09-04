@@ -1,6 +1,6 @@
-﻿<%@ Page Title="Chi tiết Nhân viên" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="NhanVienDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fNhanVien.NhanVienDetail" %>
+﻿<%@ Page Title="Chi tiết Nhân viên" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="NhanVienDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fUsers.NhanVienDetail" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-
+ 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHead" runat="server">
     <style>
         .project-card {
@@ -50,9 +50,7 @@
     <div class="container-fluid px-0">
         
         <!-- BREADCRUMB QUAY LẠI -->
-        <a href="ListNhanVien.aspx" class="text-primary text-decoration-none fw-bold mb-3 d-inline-block">
-            <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách
-        </a>
+        <SweetSoft:Navigation ID="Navigation1" MainTitle="Chi tiết nhân viên" runat="server"/>
 
         <!-- GIAO DIỆN CHÍNH 2 CỘT -->
         <div class="row align-items-stretch">

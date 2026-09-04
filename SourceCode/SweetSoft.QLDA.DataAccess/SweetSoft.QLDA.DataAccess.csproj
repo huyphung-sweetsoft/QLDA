@@ -92,6 +92,8 @@
     <Compile Include="SysDataAccessProvider\TblAuditTempController.cs" />
     <Compile Include="TblAuditLog2026.cs" />
     <Compile Include="TblAuditLog2026Controller.cs" />
+    <Compile Include="TblCauHinhTuanLamViec.cs" />
+    <Compile Include="TblCauHinhTuanLamViecController.cs" />
     <Compile Include="TblChiPhi.cs" />
     <Compile Include="TblChiPhiController.cs" />
     <Compile Include="TblChucDanh.cs" />
@@ -120,6 +122,8 @@
     <Compile Include="TblKhachHangController.cs" />
     <Compile Include="TblLichHop.cs" />
     <Compile Include="TblLichHopController.cs" />
+    <Compile Include="TblLichNgoaiLe.cs" />
+    <Compile Include="TblLichNgoaiLeController.cs" />
     <Compile Include="TblLichSuChinhSua.cs" />
     <Compile Include="TblLichSuChinhSuaController.cs" />
     <Compile Include="TblLichSuDuAn.cs" />

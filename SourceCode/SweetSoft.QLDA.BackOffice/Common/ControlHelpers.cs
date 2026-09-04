@@ -496,6 +496,29 @@ namespace SweetSoft.QLDA.BackOffice.Common
             dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.INACTIVE), "0");
             dropdown.SelectedIndex = -1;
         }
+        public void BindLaNhanVien(ExtraDropdown dropdown, bool isAll = false)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.PlaceHolder = string.Empty;
+                dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL);
+                dropdown.EmptyItemValue = "";
+            }
+            dropdown.Items.Add(new ListItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.EMPLOYEE_ACCOUNT), "1"));
+            dropdown.Items.Add(new ListItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.SYSTEM_ACCOUNT), "0"));
+            dropdown.SelectedIndex = -1;
+        }
+        public void BindLaNhanVien(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.EMPLOYEE_ACCOUNT), "1");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.SYSTEM_ACCOUNT), "0");
+            dropdown.SelectedIndex = -1;
+        }
         public void BindRoles(ExtraDropdown ddl)
         {
             ddl.Items.Clear();

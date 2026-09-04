@@ -1,4 +1,4 @@
-using Google.Authenticator;
+﻿using Google.Authenticator;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.Controls;
 using SweetSoft.QLDA.Core.Functions;

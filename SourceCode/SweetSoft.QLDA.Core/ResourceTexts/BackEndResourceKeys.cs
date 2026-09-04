@@ -287,6 +287,29 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PHONG_BAN = "PHONG_BAN";
         public const string CHUC_DANH = "CHUC_DANH";
         public const string GIOI_TINH = "GIOI_TINH";
+        public const string ACCOUNT_TYPE = "ACCOUNT_TYPE";
+        public const string EMPLOYEE_ACCOUNT = "EMPLOYEE_ACCOUNT";
+        public const string SYSTEM_ACCOUNT = "SYSTEM_ACCOUNT";
+        public const string PERSONAL_INFORMATION = "PERSONAL_INFORMATION";
+        public const string DATE_OF_BIRTH = "DATE_OF_BIRTH";
+        public const string GENERATE = "GENERATE";
+        public const string GUEST = "GUEST";
+        public const string EMPLOYEE_DETAIL = "EMPLOYEE_DETAIL";
+        public const string WORKING_WEEK_CONFIG = "WORKING_WEEK_CONFIG";
+        public const string HOLIDAY_AND_MAKEUP_WORK = "HOLIDAY_AND_MAKEUP_WORK";
+        public const string STANDARD_WORKING_HOURS = "STANDARD_WORKING_HOURS";
+        public const string WORKING = "WORKING";
+        public const string DAY_OFF = "DAY_OFF";
+        public const string MORNING_SHIFT = "MORNING_SHIFT";
+        public const string AFTERNOON_SHIFT = "AFTERNOON_SHIFT";
+        public const string SAVE_WEEK_CONFIG = "SAVE_WEEK_CONFIG";
+        public const string EVENT_NAME = "EVENT_NAME";
+        public const string FROM_DATE = "FROM_DATE";
+        public const string TO_DATE = "TO_DATE";
+        public const string INFORMATION = "INFORMATION";
+        public const string DESCRIPTION = "DESCRIPTION";
+        public const string SCHEDULE_MANAGEMENT = "SCHEDULE_MANAGEMENT";
+
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

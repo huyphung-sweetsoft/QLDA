@@ -39,7 +39,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.USER_GROUP));
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>()
                 {
-                    {RewriteURLHelper.Roles, GetResourceText(BackEndResourceKeys.USER_GROUP) }
+                    {RewriteURLHelper.LichBieu, GetResourceText(BackEndResourceKeys.DASHBOARD) }
                 };
                 ApplyControlsText();
                 AssignSearchColumns();

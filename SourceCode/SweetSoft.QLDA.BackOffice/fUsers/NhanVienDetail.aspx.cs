@@ -1,22 +1,23 @@
-﻿using System;
-using System.Data;
-using System.Web.UI;
+﻿using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Security;
+using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
-using SubSonic;
-using SweetSoft.QLDA.Core.Managers;
-namespace SweetSoft.QLDA.BackOffice.fNhanVien
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Web.UI;
+namespace SweetSoft.QLDA.BackOffice.fUsers
 {
     public partial class NhanVienDetail : BaseAdminPage
     {
         // 1. Kế thừa quyền phân quyền Module Nhân Viên
         public override ModuleKeys PAGE_FUNCTION_CODE
         {
-            get { return ModuleKeys.NhanVien; }
+            get { return ModuleKeys.User; }
         }
 
         private Guid CurrentIdNhanVien
@@ -34,6 +35,10 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             if (!IsPostBack)
             {
+                Navigation1.keyValuePairUrls = new Dictionary<string, string>()
+                {
+                    { RewriteURLHelper.Users, GetResourceText(BackEndResourceKeys.USER_LIST) }
+                };
                 // Kiểm tra quyền XEM
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
@@ -64,7 +69,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
         private void LoadDataDetail(Guid idNhanVien)
         {
-            DataTable dt = NhanVienManager.Instance.GetNhanVienForDetail(idNhanVien);
+            DataTable dt = UserManager.Instance.GetUserForDetail(idNhanVien);
             // Kiểm tra xem có dữ liệu không
             if (dt.Rows.Count == 0)
             {
@@ -76,7 +81,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             DataRow row = dt.Rows[0];
 
             // 1. Đổ dữ liệu cơ bản
-            ltrTenNhanVien.Text = row["TenNhanVien"].ToString();
+            ltrTenNhanVien.Text = row["DisplayName"].ToString();
             ltrCCCD.Text = !string.IsNullOrEmpty(row["IdCCCD"].ToString()) ? row["IdCCCD"].ToString() : "Chưa cập nhật";
             ltrGioiTinh.Text = !string.IsNullOrEmpty(row["GioiTinh"].ToString()) ? row["GioiTinh"].ToString() : "Chưa cập nhật";
             ltrDiaChi.Text = !string.IsNullOrEmpty(row["DiaChi"].ToString()) ? row["DiaChi"].ToString() : "Chưa cập nhật địa chỉ";
@@ -90,7 +95,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             ltrChucDanh.Text = !string.IsNullOrEmpty(row["TenChucDanh"].ToString()) ? row["TenChucDanh"].ToString() : "Chưa cập nhật";
             ltrPhongBan.Text = !string.IsNullOrEmpty(row["TenPhongBan"].ToString()) ? row["TenPhongBan"].ToString() : "Chưa cập nhật";
             ltrEmail.Text = !string.IsNullOrEmpty(row["Email"].ToString()) && !row["Email"].ToString().Contains("no-email.com") ? row["Email"].ToString() : "Chưa cập nhật";
-            ltrPhone.Text = !string.IsNullOrEmpty(row["PhoneNumber"].ToString()) ? row["PhoneNumber"].ToString() : "Chưa cập nhật";
+            ltrPhone.Text = !string.IsNullOrEmpty(row["MobileAlias"].ToString()) ? row["MobileAlias"].ToString() : "Chưa cập nhật";
 
             // 3. Xử lý logic Thâm niên & Ngày gia nhập
             if (row["NgayGiaNhap"] != DBNull.Value)
@@ -106,7 +111,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             }
 
             // 4. Hình ảnh
-            string avatar = row["AnhDaiDien"].ToString();
+            string avatar = row["Avatar"].ToString();
             if (!string.IsNullOrEmpty(avatar))
                 imgAvatar.Src = avatar;
 
@@ -139,7 +144,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             if (CurrentIdNhanVien != Guid.Empty)
             {
-                string editUrl = $"{RewriteURLHelper.NhanVien}?id={SecurityUtilities.ProtectUrlParameter(CurrentIdNhanVien.ToString())}";
+                string editUrl = $"{RewriteURLHelper.Users}?userId={SecurityUtilities.ProtectUrlParameter(CurrentIdNhanVien.ToString())}";
                 Response.Redirect(editUrl);
             }
         }

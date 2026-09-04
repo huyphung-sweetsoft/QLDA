@@ -237,6 +237,7 @@
     <Compile Include="Managers\LoaiDuAnManager.cs" />
     <Compile Include="Managers\LoaiKhachHangManager.cs" />
     <Compile Include="Managers\MeetManager.cs" />
+    <Compile Include="Managers\LichBieuChungManager.cs" />
     <Compile Include="Managers\NhanVienManager.cs" />
     <Compile Include="Managers\PhongBanManager.cs" />
     <Compile Include="Managers\RiskManager.cs" />
@@ -260,6 +261,7 @@
     <Compile Include="PdfGeneration\Services\NRecoPdfGenerator.cs" />
     <Compile Include="PdfGeneration\Services\PdfGenerationService.cs" />
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
+    <Compile Include="Respositories\CauHinhTuanLamViecRepository.cs" />
     <Compile Include="Respositories\ChucDanhRepository.cs" />
     <Compile Include="Respositories\DuAnRepository.cs" />
     <Compile Include="Respositories\GiaiDoanDuAnRepository.cs" />
@@ -271,6 +273,7 @@
     <Compile Include="Respositories\LoaiDuAnRepository.cs" />
     <Compile Include="Respositories\LoaiKhachHangRepository.cs" />
     <Compile Include="Respositories\MeetRepository.cs" />
+    <Compile Include="Respositories\LichNgoaiLeRepository.cs" />
     <Compile Include="Respositories\NhanVienRepository.cs" />
     <Compile Include="Respositories\PhongBanRepository.cs" />
     <Compile Include="Respositories\RiskRepository.cs" />
