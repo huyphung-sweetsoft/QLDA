@@ -502,9 +502,64 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object changeValue)
         {
             string description = Convert.ToString(descriptionValue);
-            return string.IsNullOrWhiteSpace(description)
-                ? GetValueText(changeValue)
-                : description;
+            string changes = Convert.ToString(changeValue);
+            if (string.IsNullOrWhiteSpace(description))
+                return GetValueText(changes);
+            if (string.IsNullOrWhiteSpace(changes))
+                return description;
+
+            return description + " " + changes;
+        }
+
+        protected string GetActivityTypeText(object value)
+        {
+            string activityType = Convert.ToString(value);
+            if (activityType == DocumentActivityTypeKeys.CreateDocument)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_CREATE_DOCUMENT);
+            }
+            if (activityType == DocumentActivityTypeKeys.UpdateDocument)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_UPDATE_DOCUMENT);
+            }
+            if (activityType == DocumentActivityTypeKeys.DeleteDocument)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_DELETE_DOCUMENT);
+            }
+            if (activityType == DocumentActivityTypeKeys.CreateFromTemplate)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_CREATE_FROM_TEMPLATE);
+            }
+            if (activityType == DocumentActivityTypeKeys.UploadVersion)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_UPLOAD_VERSION);
+            }
+            if (activityType == DocumentActivityTypeKeys.DeleteVersion)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_DELETE_VERSION);
+            }
+
+            return GetValueText(value);
+        }
+
+        protected string GetActivityReferenceText(object value)
+        {
+            string referenceType = Convert.ToString(value);
+            if (referenceType == DocumentActivityReferenceKeys.Document)
+                return GetResourceText(BackEndResourceKeys.DOCUMENT);
+            if (referenceType
+                == DocumentActivityReferenceKeys.DocumentVersion)
+            {
+                return GetResourceText(BackEndResourceKeys.VERSION);
+            }
+
+            return GetValueText(value);
         }
 
         protected string GetYesNoText(object value)

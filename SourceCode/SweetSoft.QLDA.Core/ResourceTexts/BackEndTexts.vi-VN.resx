@@ -1326,4 +1326,22 @@
   <data name="VERSION_MANAGEMENT_NOTICE" xml:space="preserve">
     <value>Mỗi tệp mới được tạo thành một phiên bản và phiên bản mới nhất là bản hiện hành. Tệp phiên bản không tự động trở thành tệp chính thức hoặc kết quả ký.</value>
   </data>
+  <data name="ACTIVITY_CREATE_DOCUMENT" xml:space="preserve">
+    <value>Tạo hồ sơ</value>
+  </data>
+  <data name="ACTIVITY_UPDATE_DOCUMENT" xml:space="preserve">
+    <value>Cập nhật hồ sơ</value>
+  </data>
+  <data name="ACTIVITY_DELETE_DOCUMENT" xml:space="preserve">
+    <value>Xóa hồ sơ</value>
+  </data>
+  <data name="ACTIVITY_CREATE_FROM_TEMPLATE" xml:space="preserve">
+    <value>Tạo từ mẫu</value>
+  </data>
+  <data name="ACTIVITY_UPLOAD_VERSION" xml:space="preserve">
+    <value>Tải lên phiên bản</value>
+  </data>
+  <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
+    <value>Xóa phiên bản</value>
+  </data>
 </root>

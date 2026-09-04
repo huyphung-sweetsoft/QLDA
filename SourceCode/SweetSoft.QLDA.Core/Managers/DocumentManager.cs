@@ -45,6 +45,22 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string Project = DocumentRepository.DocumentScopeProject;
     }
 
+    public static class DocumentActivityTypeKeys
+    {
+        public const string CreateDocument = "TAO_HO_SO";
+        public const string UpdateDocument = "CAP_NHAT_HO_SO";
+        public const string DeleteDocument = "XOA_HO_SO";
+        public const string CreateFromTemplate = "TAO_TU_MAU";
+        public const string UploadVersion = "TAI_LEN_PHIEN_BAN";
+        public const string DeleteVersion = "XOA_PHIEN_BAN";
+    }
+
+    public static class DocumentActivityReferenceKeys
+    {
+        public const string Document = "TblTaiLieu";
+        public const string DocumentVersion = "TblPhienBanTaiLieu";
+    }
+
     public class DocumentManager : BaseManager
     {
         private static readonly Lazy<DocumentManager> _instance =
@@ -276,6 +292,26 @@ namespace SweetSoft.QLDA.Core.Managers
             DateTime currentDate = DateTime.UtcNow;
             string currentUserName = GetCurrentUserName();
             bool isNew = item == null;
+            string historyDetails = isNew
+                ? BuildDocumentCreationDetails(
+                    maTaiLieu,
+                    tenTaiLieu,
+                    documentType,
+                    idNhanVienPhuTrach,
+                    canTrinhKy,
+                    hinhThucKy,
+                    canLuuVatLy)
+                : BuildDocumentUpdateDetails(
+                    item,
+                    idLoaiTaiLieu,
+                    idNhanVienPhuTrach,
+                    maTaiLieu,
+                    tenTaiLieu,
+                    moTa,
+                    canTrinhKy,
+                    hinhThucKy,
+                    canGuiKhachHang,
+                    canLuuVatLy);
 
             if (isNew)
             {
@@ -322,9 +358,34 @@ namespace SweetSoft.QLDA.Core.Managers
                     DocumentPhysicalStorageStatusKeys.NotStored;
             }
 
-            return isNew
+            TblTaiLieu savedItem = isNew
                 ? _repository.Insert(item)
                 : _repository.Update(item);
+
+            if (isNew)
+            {
+                WriteDocumentHistory(
+                    savedItem.IdTaiLieu,
+                    DocumentActivityTypeKeys.CreateDocument,
+                    DocumentActivityReferenceKeys.Document,
+                    savedItem.IdTaiLieu,
+                    historyDetails,
+                    "Đã tạo hồ sơ công ty.",
+                    currentDate);
+            }
+            else if (!string.IsNullOrWhiteSpace(historyDetails))
+            {
+                WriteDocumentHistory(
+                    savedItem.IdTaiLieu,
+                    DocumentActivityTypeKeys.UpdateDocument,
+                    DocumentActivityReferenceKeys.Document,
+                    savedItem.IdTaiLieu,
+                    historyDetails,
+                    "Đã cập nhật thông tin hồ sơ.",
+                    currentDate);
+            }
+
+            return savedItem;
         }
 
         public TblPhienBanTaiLieu CreateInitialVersionFromTemplate(
@@ -460,32 +521,22 @@ namespace SweetSoft.QLDA.Core.Managers
                 };
 
                 _repository.InsertDocumentVersion(version);
-                try
-                {
-                    _repository.InsertDocumentHistory(
-                        new TblLichSuTaiLieu
-                        {
-                            IdLichSuTaiLieu = UUIDv7.NewGuid(),
-                            IdTaiLieu = document.IdTaiLieu,
-                            LoaiHanhDong = "TAO_TU_MAU",
-                            LoaiThamChieu = "TblPhienBanTaiLieu",
-                            IdThamChieu = version.IdPhienBanTaiLieu,
-                            NoiDungThayDoi = version.MoTaPhienBan,
-                            MoTa = "Đã tạo phiên bản đầu tiên từ mẫu tài liệu.",
-                            IdNhanVienThucHien =
-                                _applicationContext == null
-                                    ? (Guid?)null
-                                    : _applicationContext.UserId,
-                            NguoiTao = currentUserName,
-                            NgayTao = currentDate
-                        });
-                }
-                catch (Exception historyException)
-                {
-                    SysLogger.LogError(
-                        historyException,
-                        "Failed to log initial document version created from template");
-                }
+                WriteDocumentHistory(
+                    document.IdTaiLieu,
+                    DocumentActivityTypeKeys.CreateFromTemplate,
+                    DocumentActivityReferenceKeys.DocumentVersion,
+                    version.IdPhienBanTaiLieu,
+                    "Phiên bản: v"
+                        + version.SoPhienBan
+                        + "; Mẫu: "
+                        + templateName
+                        + (string.IsNullOrWhiteSpace(templateVersion)
+                            ? string.Empty
+                            : " (" + templateVersion + ")")
+                        + "; Tệp: "
+                        + originalFileName,
+                    "Đã tạo phiên bản đầu tiên từ mẫu tài liệu.",
+                    currentDate);
 
                 return version;
             }
@@ -578,6 +629,17 @@ namespace SweetSoft.QLDA.Core.Managers
                 };
 
                 _repository.InsertDocumentVersion(newVersion);
+                WriteDocumentHistory(
+                    idTaiLieu,
+                    DocumentActivityTypeKeys.UploadVersion,
+                    DocumentActivityReferenceKeys.DocumentVersion,
+                    newVersion.IdPhienBanTaiLieu,
+                    "Phiên bản: v"
+                        + newVersion.SoPhienBan
+                        + "; Tệp: "
+                        + GetUploadFileName(file),
+                    "Đã tải lên một phiên bản tài liệu mới.",
+                    currentDate);
                 allVersions.Add(newVersion);
                 activeVersions.Add(newVersion);
                 linkedFileIds.Add(file.Id);
@@ -609,6 +671,10 @@ namespace SweetSoft.QLDA.Core.Managers
             List<TblPhienBanTaiLieu> allVersions = _repository
                 .GetDocumentVersions(idTaiLieu, true)
                 .ToList();
+            Dictionary<Guid, TblUploadFile> removedFiles = _repository
+                .GetDocumentVersionFiles(idTaiLieu)
+                .Where(file => removedFileIds.Contains(file.Id))
+                .ToDictionary(file => file.Id);
 
             foreach (TblPhienBanTaiLieu version in allVersions
                 .Where(version =>
@@ -617,12 +683,28 @@ namespace SweetSoft.QLDA.Core.Managers
                     && removedFileIds.Contains(
                         version.IdFileNoiDung.Value)))
             {
+                Guid removedFileId = version.IdFileNoiDung.Value;
                 version.IdFileNoiDung = null;
                 version.LaPhienBanHienTai = false;
                 version.DaXoa = true;
                 version.NguoiCapNhat = currentUserName;
                 version.NgayCapNhat = currentDate;
                 _repository.UpdateDocumentVersion(version);
+
+                TblUploadFile removedFile;
+                removedFiles.TryGetValue(removedFileId, out removedFile);
+                WriteDocumentHistory(
+                    idTaiLieu,
+                    DocumentActivityTypeKeys.DeleteVersion,
+                    DocumentActivityReferenceKeys.DocumentVersion,
+                    version.IdPhienBanTaiLieu,
+                    "Phiên bản: v"
+                        + version.SoPhienBan
+                        + (removedFile == null
+                            ? string.Empty
+                            : "; Tệp: " + GetUploadFileName(removedFile)),
+                    "Đã xóa một phiên bản tài liệu.",
+                    currentDate);
             }
 
             if (document.IdFileBanChinhThuc.HasValue
@@ -653,12 +735,246 @@ namespace SweetSoft.QLDA.Core.Managers
                 || _repository.HasRelatedRecords(idTaiLieu))
             {
                 throw new InvalidOperationException(
-                    "Hồ sơ đã có file, phiên bản hoặc lịch sử nghiệp vụ nên không thể xóa.");
+                    "Hồ sơ đã có file, phiên bản hoặc nghiệp vụ liên quan nên không thể xóa.");
             }
 
             item.NguoiCapNhat = GetCurrentUserName();
             item.NgayCapNhat = DateTime.UtcNow;
-            return _repository.Delete(item);
+            bool isDeleted = _repository.Delete(item);
+            if (isDeleted)
+            {
+                WriteDocumentHistory(
+                    item.IdTaiLieu,
+                    DocumentActivityTypeKeys.DeleteDocument,
+                    DocumentActivityReferenceKeys.Document,
+                    item.IdTaiLieu,
+                    "Mã hồ sơ: "
+                        + GetHistoryValue(item.MaTaiLieu)
+                        + "; Tên hồ sơ: "
+                        + GetHistoryValue(item.TenTaiLieu),
+                    "Đã xóa hồ sơ công ty.",
+                    item.NgayCapNhat);
+            }
+
+            return isDeleted;
+        }
+
+        private string BuildDocumentCreationDetails(
+            string documentCode,
+            string documentName,
+            TblLoaiTaiLieu documentType,
+            Guid? responsibleEmployeeId,
+            bool requiresSigning,
+            string signingMethod,
+            bool requiresPhysicalStorage)
+        {
+            List<string> details = new List<string>
+            {
+                "Mã hồ sơ: " + GetHistoryValue(documentCode),
+                "Tên hồ sơ: " + GetHistoryValue(documentName),
+                "Loại tài liệu: " + GetHistoryValue(
+                    documentType == null ? null : documentType.TenLoai),
+                "Người phụ trách: " + GetEmployeeHistoryName(
+                    responsibleEmployeeId),
+                "Cần trình ký: " + GetBooleanHistoryText(requiresSigning),
+                "Cần lưu bản cứng: "
+                    + GetBooleanHistoryText(requiresPhysicalStorage)
+            };
+
+            if (requiresSigning)
+            {
+                details.Add(
+                    "Hình thức ký: "
+                    + GetSigningMethodHistoryText(signingMethod));
+            }
+
+            return string.Join("; ", details);
+        }
+
+        private string BuildDocumentUpdateDetails(
+            TblTaiLieu currentItem,
+            Guid documentTypeId,
+            Guid? responsibleEmployeeId,
+            string documentCode,
+            string documentName,
+            string description,
+            bool requiresSigning,
+            string signingMethod,
+            bool requiresCustomerDelivery,
+            bool requiresPhysicalStorage)
+        {
+            if (currentItem == null)
+                return string.Empty;
+
+            List<string> changes = new List<string>();
+            AddHistoryChange(
+                changes,
+                "Mã hồ sơ",
+                currentItem.MaTaiLieu,
+                documentCode);
+            AddHistoryChange(
+                changes,
+                "Tên hồ sơ",
+                currentItem.TenTaiLieu,
+                documentName);
+            AddHistoryChange(
+                changes,
+                "Loại tài liệu",
+                GetDocumentTypeHistoryName(currentItem.IdLoaiTaiLieu),
+                GetDocumentTypeHistoryName(documentTypeId));
+            AddHistoryChange(
+                changes,
+                "Người phụ trách",
+                GetEmployeeHistoryName(currentItem.IdNhanVienPhuTrach),
+                GetEmployeeHistoryName(responsibleEmployeeId));
+            AddHistoryChange(
+                changes,
+                "Mô tả",
+                currentItem.MoTa,
+                description);
+            AddHistoryChange(
+                changes,
+                "Cần trình ký",
+                GetBooleanHistoryText(currentItem.CanTrinhKy),
+                GetBooleanHistoryText(requiresSigning));
+            AddHistoryChange(
+                changes,
+                "Hình thức ký",
+                currentItem.CanTrinhKy
+                    ? GetSigningMethodHistoryText(currentItem.HinhThucKy)
+                    : "Không áp dụng",
+                requiresSigning
+                    ? GetSigningMethodHistoryText(signingMethod)
+                    : "Không áp dụng");
+            AddHistoryChange(
+                changes,
+                "Cần gửi khách hàng",
+                GetBooleanHistoryText(currentItem.CanGuiKhachHang),
+                GetBooleanHistoryText(requiresCustomerDelivery));
+            AddHistoryChange(
+                changes,
+                "Cần lưu bản cứng",
+                GetBooleanHistoryText(currentItem.CanLuuVatLy),
+                GetBooleanHistoryText(requiresPhysicalStorage));
+
+            return string.Join("; ", changes);
+        }
+
+        private string GetDocumentTypeHistoryName(Guid documentTypeId)
+        {
+            TblLoaiTaiLieu documentType = _documentTypeRepository
+                .GetById(documentTypeId);
+            return documentType == null
+                ? documentTypeId.ToString()
+                : documentType.TenLoai;
+        }
+
+        private string GetEmployeeHistoryName(Guid? employeeId)
+        {
+            if (!employeeId.HasValue || employeeId.Value == Guid.Empty)
+                return "Không có";
+
+            AspnetUser employee = _repository.GetEmployeeById(
+                employeeId.Value);
+            if (employee == null)
+                return employeeId.Value.ToString();
+
+            return string.IsNullOrWhiteSpace(employee.DisplayName)
+                ? employee.UserName
+                : employee.DisplayName;
+        }
+
+        private void WriteDocumentHistory(
+            Guid documentId,
+            string activityType,
+            string referenceType,
+            Guid? referenceId,
+            string changes,
+            string description,
+            DateTime? activityDate)
+        {
+            try
+            {
+                Guid currentUserId = _applicationContext == null
+                    ? Guid.Empty
+                    : _applicationContext.UserId;
+                _repository.InsertDocumentHistory(
+                    new TblLichSuTaiLieu
+                    {
+                        IdLichSuTaiLieu = UUIDv7.NewGuid(),
+                        IdTaiLieu = documentId,
+                        LoaiHanhDong = activityType,
+                        LoaiThamChieu = referenceType,
+                        IdThamChieu = referenceId,
+                        NoiDungThayDoi = changes,
+                        MoTa = description,
+                        IdNhanVienThucHien = currentUserId == Guid.Empty
+                            ? (Guid?)null
+                            : currentUserId,
+                        NguoiTao = GetCurrentUserName(),
+                        NgayTao = activityDate ?? DateTime.UtcNow
+                    });
+            }
+            catch (Exception exception)
+            {
+                SysLogger.LogError(
+                    exception,
+                    "Failed to log document activity " + activityType);
+            }
+        }
+
+        private static void AddHistoryChange(
+            ICollection<string> changes,
+            string fieldName,
+            string oldValue,
+            string newValue)
+        {
+            string normalizedOldValue = GetHistoryValue(oldValue);
+            string normalizedNewValue = GetHistoryValue(newValue);
+            if (string.Equals(
+                    normalizedOldValue,
+                    normalizedNewValue,
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            changes.Add(
+                fieldName
+                + ": “"
+                + normalizedOldValue
+                + "” → “"
+                + normalizedNewValue
+                + "”");
+        }
+
+        private static string GetHistoryValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "Không có";
+
+            string normalized = value
+                .Replace("\r", " ")
+                .Replace("\n", " ")
+                .Trim();
+            return normalized.Length <= 500
+                ? normalized
+                : normalized.Substring(0, 497) + "...";
+        }
+
+        private static string GetBooleanHistoryText(bool value)
+        {
+            return value ? "Có" : "Không";
+        }
+
+        private static string GetSigningMethodHistoryText(string value)
+        {
+            return string.Equals(
+                value,
+                DocumentSigningMethodKeys.DigitalExternal,
+                StringComparison.OrdinalIgnoreCase)
+                ? "Ký số bên ngoài"
+                : "Ký bản giấy";
         }
 
         private void ValidateRequirementChanges(

@@ -647,10 +647,10 @@
                         </tr></thead>
                         <tbody><asp:Repeater runat="server" ID="rptActivity"><ItemTemplate><tr>
                             <td><%#: FormatDate(Eval("NgayTao")) %></td>
-                            <td><%#: GetValueText(Eval("LoaiHanhDong")) %></td>
+                            <td><%#: GetActivityTypeText(Eval("LoaiHanhDong")) %></td>
                             <td><%#: GetActorText(Eval("TenNguoiThucHien"), Eval("NguoiTao")) %></td>
                             <td><%#: GetActivityDescription(Eval("MoTa"), Eval("NoiDungThayDoi")) %></td>
-                            <td><%#: GetValueText(Eval("LoaiThamChieu")) %></td>
+                            <td><%#: GetActivityReferenceText(Eval("LoaiThamChieu")) %></td>
                         </tr></ItemTemplate></asp:Repeater></tbody>
                     </table>
                 </asp:Panel>

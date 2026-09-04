@@ -421,6 +421,18 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string UPLOAD_AFTER_SAVE_NOTICE = "UPLOAD_AFTER_SAVE_NOTICE";
         public const string UPLOAD_NEW_VERSION = "UPLOAD_NEW_VERSION";
         public const string VERSION_MANAGEMENT_NOTICE = "VERSION_MANAGEMENT_NOTICE";
+        public const string ACTIVITY_CREATE_DOCUMENT =
+            "ACTIVITY_CREATE_DOCUMENT";
+        public const string ACTIVITY_UPDATE_DOCUMENT =
+            "ACTIVITY_UPDATE_DOCUMENT";
+        public const string ACTIVITY_DELETE_DOCUMENT =
+            "ACTIVITY_DELETE_DOCUMENT";
+        public const string ACTIVITY_CREATE_FROM_TEMPLATE =
+            "ACTIVITY_CREATE_FROM_TEMPLATE";
+        public const string ACTIVITY_UPLOAD_VERSION =
+            "ACTIVITY_UPLOAD_VERSION";
+        public const string ACTIVITY_DELETE_VERSION =
+            "ACTIVITY_DELETE_VERSION";
 
     }
 }

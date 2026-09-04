@@ -689,11 +689,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                     )
                     OR EXISTS
                     (
-                        SELECT 1 FROM TblLichSuTaiLieu
-                        WHERE IdTaiLieu = '{idTaiLieu}'
-                    )
-                    OR EXISTS
-                    (
                         SELECT 1 FROM TblLuuTruVatLy
                         WHERE IdTaiLieu = '{idTaiLieu}' AND DaXoa = 0
                     )

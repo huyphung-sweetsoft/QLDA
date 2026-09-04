@@ -1365,4 +1365,22 @@
   <data name="VERSION_MANAGEMENT_NOTICE" xml:space="preserve">
     <value>Each newly uploaded file becomes a version and the latest version is current. Version files do not automatically become the official file or a signed result.</value>
   </data>
+  <data name="ACTIVITY_CREATE_DOCUMENT" xml:space="preserve">
+    <value>Create document</value>
+  </data>
+  <data name="ACTIVITY_UPDATE_DOCUMENT" xml:space="preserve">
+    <value>Update document</value>
+  </data>
+  <data name="ACTIVITY_DELETE_DOCUMENT" xml:space="preserve">
+    <value>Delete document</value>
+  </data>
+  <data name="ACTIVITY_CREATE_FROM_TEMPLATE" xml:space="preserve">
+    <value>Create from template</value>
+  </data>
+  <data name="ACTIVITY_UPLOAD_VERSION" xml:space="preserve">
+    <value>Upload version</value>
+  </data>
+  <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
+    <value>Delete version</value>
+  </data>
 </root>
