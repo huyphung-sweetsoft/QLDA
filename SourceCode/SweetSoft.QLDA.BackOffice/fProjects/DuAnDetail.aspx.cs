@@ -1,5 +1,6 @@
 using SweetCMS.Controls.Helpers;
 using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.fProjects.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
@@ -48,6 +49,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -61,6 +63,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 if (this.QueryId != Guid.Empty)
                 {
                     BindData();
+                    CtrlGiaiDoanDuAn1.InitControls();
                 }
             }
         }

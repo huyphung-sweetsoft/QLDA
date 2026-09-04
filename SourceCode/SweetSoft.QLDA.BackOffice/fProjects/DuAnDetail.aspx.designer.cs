@@ -114,6 +114,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Literal ltrMoTa;
 
         /// <summary>
+        /// CtrlGiaiDoanDuAn1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlGiaiDoanDuAn CtrlGiaiDoanDuAn1;
+
+        /// <summary>
         /// imgAvatarPM control.
         /// </summary>
         /// <remarks>

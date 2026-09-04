@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnDetail" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/fProjects/Controls/CtrlGiaiDoanDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlGiaiDoanDuAn" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -266,88 +267,7 @@
 
                     <%-- Giai đoạn --%>
                     <section>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="text-uppercase fw-bold mb-0">
-                                Giai đoạn
-                            </h5>
-
-                            <a
-                                href="javascript:;"
-                                class="small text-primary text-decoration-none">
-
-                                Quản lý giai đoạn
-                                <i class="fas fa-arrow-right ms-1"></i>
-                            </a>
-                        </div>
-
-                        <div class="card border shadow-none">
-                            <div class="card-body py-2 px-3">
-
-                                <%-- Điểm và đường nối --%>
-                                <div class="d-flex align-items-center px-2">
-                                    <span class="badge rounded-circle bg-primary p-2">
-                                        <span class="visually-hidden">Khởi tạo</span>
-                                    </span>
-
-                                    <div class="border-top border-primary flex-grow-1"></div>
-
-                                    <span class="badge rounded-circle bg-primary p-2">
-                                        <span class="visually-hidden">Phân tích</span>
-                                    </span>
-
-                                    <div class="border-top border-primary flex-grow-1"></div>
-
-                                    <span class="badge rounded-circle bg-light text-primary border border-primary p-2">
-                                        <span class="visually-hidden">Triển khai</span>
-                                    </span>
-
-                                    <div class="border-top flex-grow-1"></div>
-
-                                    <span class="badge rounded-circle bg-light text-secondary border p-2">
-                                        <span class="visually-hidden">Kiểm thử</span>
-                                    </span>
-                                </div>
-
-                                <%-- Tên giai đoạn --%>
-                                <div class="row row-cols-4 g-0 mt-2">
-                                    <div class="col">
-                                        <div class="small">
-                                            Khởi tạo
-                                        </div>
-                                        <div class="small fw-semibold text-primary">
-                                            100%
-                                        </div>
-                                    </div>
-
-                                    <div class="col text-center">
-                                        <div class="small">
-                                            Phân tích
-                                        </div>
-                                        <div class="small fw-semibold text-primary">
-                                            100%
-                                        </div>
-                                    </div>
-
-                                    <div class="col text-center">
-                                        <div class="small">
-                                            Triển khai
-                                        </div>
-                                        <div class="small fw-semibold text-primary">
-                                            45%
-                                        </div>
-                                    </div>
-
-                                    <div class="col text-end">
-                                        <div class="small">
-                                            Kiểm thử
-                                        </div>
-                                        <div class="small text-muted">
-                                            0%
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <SweetSoft:CtrlGiaiDoanDuAn runat="server" ID="CtrlGiaiDoanDuAn1" />
                     </section>
                 </div>
 

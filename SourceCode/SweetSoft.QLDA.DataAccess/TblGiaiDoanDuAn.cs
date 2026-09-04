@@ -159,7 +159,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdGiaiDoan.DataType = DbType.Guid;
 				colvarIdGiaiDoan.MaxLength = 0;
 				colvarIdGiaiDoan.AutoIncrement = false;
-				colvarIdGiaiDoan.IsNullable = false;
+				colvarIdGiaiDoan.IsNullable = true;
 				colvarIdGiaiDoan.IsPrimaryKey = false;
 				colvarIdGiaiDoan.IsForeignKey = true;
 				colvarIdGiaiDoan.IsReadOnly = false;
@@ -301,6 +301,19 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
+				TableSchema.TableColumn colvarTenGiaiDoanTuyChinh = new TableSchema.TableColumn(schema);
+				colvarTenGiaiDoanTuyChinh.ColumnName = "TenGiaiDoanTuyChinh";
+				colvarTenGiaiDoanTuyChinh.DataType = DbType.String;
+				colvarTenGiaiDoanTuyChinh.MaxLength = 250;
+				colvarTenGiaiDoanTuyChinh.AutoIncrement = false;
+				colvarTenGiaiDoanTuyChinh.IsNullable = true;
+				colvarTenGiaiDoanTuyChinh.IsPrimaryKey = false;
+				colvarTenGiaiDoanTuyChinh.IsForeignKey = false;
+				colvarTenGiaiDoanTuyChinh.IsReadOnly = false;
+				colvarTenGiaiDoanTuyChinh.DefaultSetting = @"";
+				colvarTenGiaiDoanTuyChinh.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarTenGiaiDoanTuyChinh);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -329,9 +342,9 @@ namespace SweetSoft.QLDA.DataAccess
 		  
 		[XmlAttribute("IdGiaiDoan")]
 		[Bindable(true)]
-		public Guid IdGiaiDoan 
+		public Guid? IdGiaiDoan 
 		{
-			get { return GetColumnValue<Guid>(Columns.IdGiaiDoan); }
+			get { return GetColumnValue<Guid?>(Columns.IdGiaiDoan); }
 			set { SetColumnValue(Columns.IdGiaiDoan, value); }
 		}
 		  
@@ -414,6 +427,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
 		}
+		  
+		[XmlAttribute("TenGiaiDoanTuyChinh")]
+		[Bindable(true)]
+		public string TenGiaiDoanTuyChinh 
+		{
+			get { return GetColumnValue<string>(Columns.TenGiaiDoanTuyChinh); }
+			set { SetColumnValue(Columns.TenGiaiDoanTuyChinh, value); }
+		}
 		
 		#endregion
 		
@@ -458,7 +479,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdGiaiDoanDuAn,Guid varIdDuAn,Guid varIdGiaiDoan,DateTime? varNgayBatDau,DateTime? varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,int varThuTuGiaiDoan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdGiaiDoanDuAn,Guid varIdDuAn,Guid? varIdGiaiDoan,DateTime? varNgayBatDau,DateTime? varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,int varThuTuGiaiDoan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,string varTenGiaiDoanTuyChinh)
 		{
 			TblGiaiDoanDuAn item = new TblGiaiDoanDuAn();
 			
@@ -488,6 +509,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
+			item.TenGiaiDoanTuyChinh = varTenGiaiDoanTuyChinh;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -498,7 +521,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdGiaiDoanDuAn,Guid varIdDuAn,Guid varIdGiaiDoan,DateTime? varNgayBatDau,DateTime? varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,int varThuTuGiaiDoan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdGiaiDoanDuAn,Guid varIdDuAn,Guid? varIdGiaiDoan,DateTime? varNgayBatDau,DateTime? varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,int varThuTuGiaiDoan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,string varTenGiaiDoanTuyChinh)
 		{
 			TblGiaiDoanDuAn item = new TblGiaiDoanDuAn();
 			
@@ -527,6 +550,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NguoiCapNhat = varNguoiCapNhat;
 			
 				item.NgayCapNhat = varNgayCapNhat;
+			
+				item.TenGiaiDoanTuyChinh = varTenGiaiDoanTuyChinh;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -632,6 +657,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn TenGiaiDoanTuyChinhColumn
+        {
+            get { return Schema.Columns[13]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -649,6 +681,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NgayTao = @"NgayTao";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
+			 public static string TenGiaiDoanTuyChinh = @"TenGiaiDoanTuyChinh";
 						
 		}
 		#endregion
