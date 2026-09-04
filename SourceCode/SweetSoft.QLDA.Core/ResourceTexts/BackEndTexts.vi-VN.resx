@@ -1098,6 +1098,7 @@
   </data>
   <data name="CONTACT_EMAIL" xml:space="preserve">
     <value>Email liên hệ</value>
+  </data>
   <data name="ACCOUNT_TYPE" xml:space="preserve">
     <value>Loại Tài Khoản</value>
   </data>
@@ -1295,6 +1296,7 @@
   </data>
   <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
     <value>Điện thoại liên hệ</value>
+  </data>
   <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
     <value>Quản lý lịch biểu chung</value>
   </data>

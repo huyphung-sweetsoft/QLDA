@@ -331,6 +331,12 @@
     <Compile Include="fTasks\TaskList.aspx.designer.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fUsers\NhanVienDetail.aspx.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="fNhanVien\Controls\CtrlNhanViens.ascx.cs">
       <DependentUpon>CtrlNhanViens.ascx</DependentUpon>
@@ -345,12 +351,6 @@
     </Compile>
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
-      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
-      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
@@ -425,7 +425,6 @@
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
-    <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
     <Content Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx" />
@@ -440,6 +439,7 @@
     <Content Include="fTasks\TaskList.aspx" />
     <Content Include="fUsers\Controls\CtrlPermission.ascx" />
     <Content Include="fUsers\Controls\CtrlUsers.ascx" />
+    <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="fUsers\RoleDetail.aspx" />
     <Content Include="fUsers\RoleList.aspx" />
     <Content Include="fUsers\UserList.aspx" />
