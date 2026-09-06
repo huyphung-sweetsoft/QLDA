@@ -741,7 +741,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<AspnetUser> tblNhanViens = UserManager.Instance.GetAllAspnetUsers();
+            List<AspnetUser> tblNhanViens = UserManager.Instance.GetAllActiveNhanVien();
             if (tblNhanViens == null)
                 tblNhanViens = new List<AspnetUser>();
             ddl.DataTextField = AspnetUser.Columns.DisplayName;
@@ -754,7 +754,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<AspnetUser> tblNhanViens = UserManager.Instance.GetAllAspnetUsers();
+            List<AspnetUser> tblNhanViens = UserManager.Instance.GetAllActiveNhanVien();
             if (tblNhanViens == null)
                 tblNhanViens = new List<AspnetUser>();
             ddl.DataTextField = AspnetUser.Columns.DisplayName;

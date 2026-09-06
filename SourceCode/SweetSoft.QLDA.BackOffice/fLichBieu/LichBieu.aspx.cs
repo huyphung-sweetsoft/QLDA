@@ -291,10 +291,6 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
             CtrlLichNgoaiLe1.ConfirmRequest(e);
         }
         // Hàm test gọi Pop-up UserControl
-        protected void btnTestPopup_Click(object sender, EventArgs e)
-        {
-            // Gọi hàm ShowTestModal từ cái Control mà ta đã nhúng
-            CtrlChonNhanVien1.ShowTestModal();
-        }
+      
     }
 }

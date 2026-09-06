@@ -31,9 +31,9 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             BusinessValidator.ThrowIf(dto.IdNhanVien == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
             BusinessValidator.ThrowIf(dto.IdDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
-            BusinessValidator.ThrowIf(dto.IdVaiTroDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
+            BusinessValidator.ThrowIf(!dto.IdVaiTroDuAn.HasValue || dto.IdVaiTroDuAn.Value == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
 
-            TblThanhVienDuAn thanhVienDuAn = _repository.GetNhanVienIsActiveInDuAn(dto.IdNhanVien.Value, dto.IdDuAn);
+            TblThanhVienDuAn thanhVienDuAn = _repository.GetNhanVienIsActiveInDuAn(dto.IdNhanVien.Value, dto.IdDuAn, dto.IdVaiTroDuAn.Value);
 
             if (thanhVienDuAn != null)
             {
@@ -59,6 +59,33 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(thanhVienDuAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 return _repository.Save(thanhVienDuAn);
             }
+        }
+        //Thêm đống hàm dưới đây
+        //1. tHằng này là xóa mềm có ngoại lệ nói chung để từ PM A sang PM B, qua DuAnManager coi
+        public void DeleteByDuAnAndVaiTroExcept(Guid idDuAn, Guid idVaiTro, Guid idNhanVienGiuLai)
+        {
+            foreach (var tv in _repository.GetByIdDuAnAndVaiTroExcept(idDuAn, idVaiTro, idNhanVienGiuLai))
+            {
+                tv.DaXoa = true;
+                tv.NguoiCapNhat = SweetContext.Current.UserName;
+                tv.NgayCapNhat = DateTime.UtcNow;
+                _repository.Save(tv);
+            }
+        }
+
+        public List<Guid> GetIdNhanVienByDuAnAndVaiTro(Guid idDuAn, Guid idVaiTro)
+        {
+            return _repository.GetIdNhanVienByDuAnAndVaiTro(idDuAn, idVaiTro);   // chỉ còn 1 dòng, gọi thẳng xuống Repository
+        }
+        public void DeleteOne(Guid idDuAn, Guid idVaiTro, Guid idNhanVien) //Cái này dùng cho logic cập nhật danh sách nhân viên được chọn, qua DuAnManager coi
+        {
+            TblThanhVienDuAn tv = _repository.GetNhanVienIsActiveInDuAn(idNhanVien, idDuAn, idVaiTro);
+            if (tv == null) return;   // không active thì thôi, khỏi làm gì
+
+            tv.DaXoa = true;
+            tv.NguoiCapNhat = SweetContext.Current.UserName;
+            tv.NgayCapNhat = DateTime.UtcNow;
+            _repository.Save(tv);
         }
     }
 }
