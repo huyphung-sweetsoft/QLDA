@@ -336,6 +336,12 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string INFORMATION = "INFORMATION";
         public const string SCHEDULE_MANAGEMENT = "SCHEDULE_MANAGEMENT";
         public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
+        public const string PLEASE_SELECT_START_AND_END_DATE = "PLEASE_SELECT_START_AND_END_DATE";
+        public const string SELECT_EMPLOYEE = "SELECT_EMPLOYEE";
+        public const string SCHEDULE_INFO_FORMAT = "SCHEDULE_INFO_FORMAT";
+        public const string FREE = "FREE";
+        public const string WEEKEND = "WEEKEND";
+        public const string HOLIDAY = "HOLIDAY";
 
         ///---------------------------------------------------
         // Class
@@ -584,7 +590,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string OPEN_ISSUES = "OPEN_ISSUES";
         public const string SAFE = "SAFE";
         public const string AT_RISK = "AT_RISK";
-        public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
         public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
     }
 }
