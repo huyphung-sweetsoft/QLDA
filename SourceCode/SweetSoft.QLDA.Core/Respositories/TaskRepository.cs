@@ -93,6 +93,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                                .OrderAsc(TblCongViec.Columns.MaCongViec)
                                .ExecuteSingle<TblCongViec>();
         }
+
+        public TblCongViec GetRootTaskByStageId(Guid idGiaiDoanDuAn)
+        {
+            if (idGiaiDoanDuAn == Guid.Empty)
+                return null;
+
+            return new Select()
+                .From(TblCongViec.Schema)
+                .Where(TblCongViec.Columns.IdGiaiDoanDuAn).IsEqualTo(idGiaiDoanDuAn)
+                .And(TblCongViec.Columns.IdCongViecCha).IsNull()
+                .And(TblCongViec.Columns.DaXoa).IsEqualTo(false)
+                .ExecuteSingle<TblCongViec>();
+        }
         #endregion
 
         #region 2. Truy vấn Danh mục & Thành viên

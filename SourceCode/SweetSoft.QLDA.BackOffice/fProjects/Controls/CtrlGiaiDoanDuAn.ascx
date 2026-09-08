@@ -477,13 +477,17 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Thứ tự</label>
+                            <label class="form-label">
+                                Thứ tự
+                                <span class="text-muted fw-normal small ms-1">(tự động)</span>
+                            </label>
 
                             <asp:TextBox
                                 runat="server"
                                 ID="txtStageOrder"
                                 TextMode="Number"
-                                CssClass="form-control">
+                                ReadOnly="true"
+                                CssClass="form-control bg-light">
                             </asp:TextBox>
                         </div>
 
@@ -549,7 +553,8 @@
                 <%-- Bảng giai đoạn --%>
                 <asp:Repeater
                     runat="server"
-                    ID="rptStageManagement">
+                    ID="rptStageManagement"
+                    OnItemCommand="rptStageManagement_ItemCommand">
 
                     <HeaderTemplate>
                         <div class="stage-mgmt-table px-4">
@@ -607,6 +612,17 @@
                                         </span>
                                     </div>
                                 </div>
+
+                                <asp:LinkButton
+                                    runat="server"
+                                    ID="lbtEditStage"
+                                    CommandName="EDIT_STAGE"
+                                    CommandArgument='<%# Eval("IdGiaiDoanDuAn") %>'
+                                    CssClass="btn btn-sm btn-outline-primary">
+
+                                    <i class="fas fa-pencil-alt me-1"></i>
+                                    Sửa
+                                </asp:LinkButton>
                             </div>
                     </ItemTemplate>
 
