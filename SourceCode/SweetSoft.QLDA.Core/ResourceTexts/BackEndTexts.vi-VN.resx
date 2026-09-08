@@ -628,7 +628,7 @@
     <value>Đặt lại mật khẩu</value>
   </data>
   <data name="RETURN_TO_THE_DASHBOARD" xml:space="preserve">
-    <value>Quay lại Bảng điều khiển</value>
+    <value>Quay lại Dashboard</value>
   </data>
   <data name="RE_ENTER_INCORRECT_PASSWORD" xml:space="preserve">
     <value>Nhập lại mật khẩu không đúng</value>
