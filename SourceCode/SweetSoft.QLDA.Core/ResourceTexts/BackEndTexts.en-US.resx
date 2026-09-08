@@ -258,7 +258,7 @@
   <data name="CUSTOMER_LIST" xml:space="preserve">
     <value>Danh sách khách hàng</value>
   </data>
-  <data name="DASHBOARD" xml:space="preserve">
+  <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
   <data name="DATA_DELETED_SUCCESSFULLY" xml:space="preserve">
@@ -1654,8 +1654,17 @@
   <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
     <value>Delete version</value>
   </data>
-  <data name="DASHBOARD_OVERVIEW" xml:space="preserve">
-    <value>Overview</value>
+  <data name="Dashboard_Overview" xml:space="preserve">
+    <value>Overview dashboard</value>
+  </data>
+  <data name="Dashboard_Resource" xml:space="preserve">
+    <value>Resource dashboard</value>
+  </data>
+  <data name="Dashboard_Progress" xml:space="preserve">
+    <value>Progress dashboard</value>
+  </data>
+  <data name="Dashboard_Cost" xml:space="preserve">
+    <value>Cost dashboard</value>
   </data>
   <data name="PROJECT_SCOPE" xml:space="preserve">
     <value>Project scope</value>

@@ -40,7 +40,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string NO_DATA = "NO_DATA";
         public const string CHANGE_PASSWORD = "CHANGE_PASSWORD";
         public const string COPYRIGHT = "COPYRIGHT";
-        public const string DASHBOARD = "DASHBOARD";
+        // These values mirror aspnet_Functions.FunctionName so the common
+        // menu renderer can resolve dashboard labels without special mapping.
+        public const string DASHBOARD = "Dashboard";
         public const string CONFIRM_PASSWORD = "CONFIRM_PASSWORD";
         public const string DELETE = "DELETE";
         public const string DISPLAY_NAME = "DISPLAY_NAME";
@@ -529,7 +531,10 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string ACTIVITY_DELETE_VERSION = "ACTIVITY_DELETE_VERSION";
 
         // Dashboard Overview
-        public const string DASHBOARD_OVERVIEW = "DASHBOARD_OVERVIEW";
+        public const string DASHBOARD_OVERVIEW = "Dashboard_Overview";
+        public const string DASHBOARD_RESOURCE = "Dashboard_Resource";
+        public const string DASHBOARD_PROGRESS = "Dashboard_Progress";
+        public const string DASHBOARD_COST = "Dashboard_Cost";
         public const string PROJECT_SCOPE = "PROJECT_SCOPE";
         public const string DATE_RANGE = "DATE_RANGE";
         public const string THIS_WEEK = "THIS_WEEK";

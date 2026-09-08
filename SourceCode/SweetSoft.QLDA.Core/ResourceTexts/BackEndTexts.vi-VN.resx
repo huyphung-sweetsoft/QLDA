@@ -258,8 +258,8 @@
   <data name="CUSTOMER_LIST" xml:space="preserve">
     <value>Danh sách khách hàng</value>
   </data>
-  <data name="DASHBOARD" xml:space="preserve">
-    <value>Bảng điều khiển</value>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
   </data>
   <data name="DATA_DELETED_SUCCESSFULLY" xml:space="preserve">
     <value>Đã xóa dữ liệu thành công!</value>
@@ -1657,8 +1657,17 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="DASHBOARD_OVERVIEW" xml:space="preserve">
-    <value>Tổng quan</value>
+  <data name="Dashboard_Overview" xml:space="preserve">
+    <value>Dashboard tổng quan</value>
+  </data>
+  <data name="Dashboard_Resource" xml:space="preserve">
+    <value>Dashboard nguồn lực</value>
+  </data>
+  <data name="Dashboard_Progress" xml:space="preserve">
+    <value>Dashboard tiến độ</value>
+  </data>
+  <data name="Dashboard_Cost" xml:space="preserve">
+    <value>Dashboard chi phí</value>
   </data>
   <data name="PROJECT_SCOPE" xml:space="preserve">
     <value>Phạm vi dự án</value>

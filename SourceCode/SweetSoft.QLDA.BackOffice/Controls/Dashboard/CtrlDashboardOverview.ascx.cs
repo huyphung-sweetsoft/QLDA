@@ -61,6 +61,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected ResourceOverviewModel ResourceOverview { get; private set; }
         protected int UpcomingMeetingCount { get; private set; }
 
+        protected List<UpcomingMeetingSummary> UpcomingMeetings { get; private set; }
+
         protected bool IsProjectView { get; private set; }
 
         protected string SelectedProjectCode { get; private set; }
@@ -80,6 +82,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected DateTime? SelectedProjectActualCompletionDate { get; private set; }
 
         protected int SelectedProjectDueSoonTaskCount { get; private set; }
+
+        protected int SelectedProjectTaskCount { get; private set; }
+
+        protected int SelectedProjectCompletedTaskCount { get; private set; }
 
         protected ProjectScheduleHealth SelectedProjectHealth { get; private set; }
 
@@ -119,6 +125,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             SelectedProjectExpectedEndDate = null;
             SelectedProjectActualCompletionDate = null;
             SelectedProjectDueSoonTaskCount = 0;
+            SelectedProjectTaskCount = 0;
+            SelectedProjectCompletedTaskCount = 0;
             SelectedProjectHealth = ProjectScheduleHealth.NotStarted;
 
             OpenRiskCount = 0;
@@ -142,6 +150,9 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         project.ActualCompletionDate;
                     SelectedProjectDueSoonTaskCount =
                         project.DueSoonTaskCount;
+                    SelectedProjectTaskCount = project.TaskCount;
+                    SelectedProjectCompletedTaskCount =
+                        project.CompletedTaskCount;
                     SelectedProjectHealth = project.Health;
                 }
 
@@ -186,6 +197,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
             UpcomingMeetingCount =
                 overview.UpcomingMeetingCount;
+
+            UpcomingMeetings =
+                overview.UpcomingMeetings ??
+                new List<UpcomingMeetingSummary>();
 
             AtRiskProjectRate =
                 overview.AtRiskProjectRate;

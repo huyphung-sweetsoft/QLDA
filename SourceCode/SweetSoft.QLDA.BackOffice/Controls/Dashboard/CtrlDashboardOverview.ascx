@@ -80,9 +80,9 @@
     </div>
 
     <!-- ========================= -->
-    <!-- 5 KPI -->
+    <!-- KPI trọng tâm: 4 mục khi chọn một dự án, 5 mục ở phạm vi tất cả dự án -->
     <!-- ========================= -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3">
+    <div class="row row-cols-1 row-cols-md-2 <%= IsProjectView ? "row-cols-xl-4" : "row-cols-xl-5" %> g-3">
 
         <!-- Dự án đang triển khai -->
         <div class="col">
@@ -93,7 +93,7 @@
                         <div class="flex-grow-1">
                             <p class="text-muted mb-1">
                                 <% if (IsProjectView) { %>
-                                    <%= GetResourceText(BackEndResourceKeys.PROJECT_STATUS) %>
+                                    Tiến độ thực tế
                                 <% } else { %>
                                     <%= GetResourceText(BackEndResourceKeys.ACTIVE_PROJECTS) %>
                                 <% } %>
@@ -101,14 +101,16 @@
 
                             <h3 class="mb-0">
                                 <% if (IsProjectView) { %>
-                                    <%= SingleProjectStatusText %>
+                                    <%= OverallProgress.ToString("0.##") %>%
                                 <% } else { %>
                                     <%= ActiveProjectCount %>
                                 <% } %>
                             </h3>
 
                             <small class="text-muted">
-                                <% if (!IsProjectView) { %>
+                                <% if (IsProjectView) { %>
+                                    So với toàn bộ công việc của dự án
+                                <% } else { %>
                                     <%= GetResourceText(BackEndResourceKeys.PROJECTS_IN_PROGRESS) %>
                                 <% } %>
                             </small>
@@ -116,7 +118,7 @@
 
                         <div class="avatar-sm">
                             <span class="avatar-title rounded-circle bg-primary-subtle text-primary">
-                                <i class="bx bx-briefcase-alt-2 fs-4"></i>
+                                <i class="bx <%= IsProjectView ? "bx-line-chart" : "bx-briefcase-alt-2" %> fs-4"></i>
                             </span>
                         </div>
 
@@ -134,9 +136,9 @@
                     <div class="flex-grow-1">
 
                         <% if (IsProjectView) { %>
-                        <p class="text-muted mb-1">Tiến độ thực tế</p>
-                        <h3 class="mb-0 text-primary"><%= OverallProgress.ToString("0.##") %>%</h3>
-                        <small class="text-muted">Trung bình toàn bộ công việc</small>
+                        <p class="text-muted mb-1">Công việc hoàn thành</p>
+                        <h3 class="mb-0 text-success"><%= SelectedProjectCompletedTaskCount %>/<%= SelectedProjectTaskCount %></h3>
+                        <small class="text-muted">Đã hoàn thành trên tổng số</small>
                         <% } else { %>
                         <p class="text-muted mb-1">
                             <%= GetResourceText(BackEndResourceKeys.UPCOMING_MEETINGS) %>
@@ -151,7 +153,7 @@
 
                     <div class="avatar-sm">
                         <span class="avatar-title rounded-circle bg-info-subtle text-info">
-                            <i class="bx <%= IsProjectView ? "bx-line-chart" : "bx-calendar-event" %> fs-4"></i>
+                                <i class="bx <%= IsProjectView ? "bx-check-circle" : "bx-calendar-event" %> fs-4"></i>
                         </span>
                     </div>
 
@@ -168,9 +170,9 @@
 
                         <div class="flex-grow-1">
                             <% if (IsProjectView) { %>
-                            <p class="text-muted mb-1">Tiến độ kế hoạch</p>
-                            <h3 class="mb-0 text-warning"><%= SelectedProjectPlannedProgress.ToString("0.##") %>%</h3>
-                            <small class="text-muted">Theo thời gian đã sử dụng</small>
+                            <p class="text-muted mb-1">Công việc quá hạn</p>
+                            <h3 class="mb-0 <%= OverdueTaskCount > 0 ? "text-danger" : "text-success" %>"><%= OverdueTaskCount %></h3>
+                            <small class="text-muted"><%= SelectedProjectDueSoonTaskCount %> công việc sắp đến hạn</small>
                             <% } else { %>
                             <p class="text-muted mb-1">
                                 <%= GetResourceText(BackEndResourceKeys.AT_RISK_PROJECTS) %>
@@ -183,8 +185,8 @@
                         </div>
 
                         <div class="avatar-sm">
-                            <span class="avatar-title rounded-circle <%= IsProjectView ? "bg-warning-subtle text-warning" : "bg-info-subtle text-info" %>">
-                                <i class="bx <%= IsProjectView ? "bx-time-five" : "bx-task" %> fs-4"></i>
+                            <span class="avatar-title rounded-circle <%= IsProjectView ? "bg-danger-subtle text-danger" : "bg-info-subtle text-info" %>">
+                                <i class="bx <%= IsProjectView ? "bx-error-circle" : "bx-task" %> fs-4"></i>
                             </span>
                         </div>
 
@@ -201,11 +203,9 @@
 
                         <div class="flex-grow-1">
                             <% if (IsProjectView) { %>
-                            <p class="text-muted mb-1">Độ lệch</p>
-                            <h3 class="mb-0 <%= GetVarianceCss(SelectedProjectVariance) %>">
-                                <%= GetVarianceText(SelectedProjectVariance) %>
-                            </h3>
-                            <small class="text-muted">Thực tế − Kế hoạch</small>
+                            <p class="text-muted mb-1">Nhân sự tham gia</p>
+                            <h3 class="mb-0"><%= ResourceOverview == null ? 0 : ResourceOverview.ParticipatingEmployeeCount %></h3>
+                            <small class="text-muted">Thành viên thuộc dự án</small>
                             <% } else { %>
                             <p class="text-muted mb-1">
                                 <%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %>
@@ -219,7 +219,7 @@
 
                         <div class="avatar-sm">
                             <span class="avatar-title rounded-circle <%= IsProjectView ? "bg-primary-subtle text-primary" : "bg-danger-subtle text-danger" %>">
-                                <i class="bx <%= IsProjectView ? "bx-git-compare" : "bx-error-circle" %> fs-4"></i>
+                                <i class="bx <%= IsProjectView ? "bx-group" : "bx-error-circle" %> fs-4"></i>
                             </span>
                         </div>
 
@@ -229,19 +229,13 @@
         </div>
 
         <!-- Ngân sách -->
+        <% if (!IsProjectView) { %>
         <div class="col">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
 
                         <div class="flex-grow-1">
-                            <% if (IsProjectView) { %>
-                            <p class="text-muted mb-1">
-                                <%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %>
-                            </p>
-                            <h3 class="mb-0 <%= OverdueTaskCount > 0 ? "text-danger" : "text-success" %>"><%= OverdueTaskCount %></h3>
-                            <small class="text-muted"><%= SelectedProjectDueSoonTaskCount %> công việc sắp đến hạn</small>
-                            <% } else { %>
                             <p class="text-muted mb-1">
                                 <%= GetResourceText(BackEndResourceKeys.TOTAL_CONTRACT_VALUE) %>
                             </p>
@@ -249,12 +243,11 @@
                             <small class="text-muted">
                                 <%= GetResourceText(BackEndResourceKeys.IN_SELECTED_SCOPE) %>
                             </small>
-                            <% } %>
                         </div>
 
                         <div class="avatar-sm">
-                            <span class="avatar-title rounded-circle <%= IsProjectView ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-warning" %>">
-                                <i class="bx <%= IsProjectView ? "bx-error-circle" : "bx-money" %> fs-4"></i>
+                            <span class="avatar-title rounded-circle bg-warning-subtle text-warning">
+                                <i class="bx bx-money fs-4"></i>
                             </span>
                         </div>
 
@@ -262,9 +255,10 @@
                 </div>
             </div>
         </div>
+        <% } %>
 
     </div>
-    <!-- END 5 KPI -->
+    <!-- END KPI -->
 
 <!-- ========================= -->
 <!-- PHÂN BỐ + TIẾN ĐỘ + CẦN CHÚ Ý -->
@@ -376,6 +370,7 @@
                                 <th class="text-center">
                                     <%= GetResourceText(BackEndResourceKeys.ISSUE) %>
                                 </th>
+                                <th>Nguyên nhân</th>
                             </tr>
                         </thead>
 
@@ -442,6 +437,16 @@
 
                                         </td>
 
+                                        <td class="small text-muted">
+                                            <% if (item.RiskCount > 0 && item.IssueCount > 0) { %>
+                                                Rủi ro và vấn đề
+                                            <% } else if (item.RiskCount > 0) { %>
+                                                Rủi ro
+                                            <% } else { %>
+                                                Vấn đề
+                                            <% } %>
+                                        </td>
+
                                     </tr>
 
                                 <% } %>
@@ -451,7 +456,7 @@
                             { %>
 
                                 <tr>
-                                    <td colspan="3"
+                                    <td colspan="4"
                                         class="text-center text-muted py-4">
                                         <%= GetResourceText(BackEndResourceKeys.NO_PROJECTS_WITH_RISKS_OR_ISSUES) %>
                                     </td>
@@ -495,6 +500,9 @@
                 <div class="overview-project-identity p-3 rounded mb-3">
                     <div class="small text-muted mb-1"><%: SelectedProjectCode %></div>
                     <div class="fw-bold fs-5"><%: SelectedProjectName %></div>
+                    <div class="small text-muted mt-2">
+                        Công việc: <span class="fw-semibold text-dark"><%= SelectedProjectCompletedTaskCount %>/<%= SelectedProjectTaskCount %> đã hoàn thành</span>
+                    </div>
                 </div>
 
                 <div class="row g-3 mb-4">
@@ -613,12 +621,78 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="border-top mt-3 pt-3">
+                    <div class="small text-muted mb-2">Điểm cần theo dõi</div>
+                    <ul class="list-unstyled small mb-0">
+                        <% if (OverdueTaskCount > 0) { %>
+                        <li class="mb-1 text-danger"><i class="bx bx-error-circle me-1"></i><%= OverdueTaskCount %> công việc chưa hoàn thành và đã quá hạn.</li>
+                        <% } %>
+                        <% if (SelectedProjectDueSoonTaskCount > 0) { %>
+                        <li class="mb-1 text-warning"><i class="bx bx-time-five me-1"></i><%= SelectedProjectDueSoonTaskCount %> công việc sẽ đến hạn trong 7 ngày tới.</li>
+                        <% } %>
+                        <% if (OpenRiskCount > 0) { %>
+                        <li class="mb-1 text-warning"><i class="bx bx-error me-1"></i><%= OpenRiskCount %> rủi ro đang được ghi nhận.</li>
+                        <% } %>
+                        <% if (OpenIssueCount > 0) { %>
+                        <li class="mb-1 text-danger"><i class="bx bx-bug me-1"></i><%= OpenIssueCount %> vấn đề cần theo dõi.</li>
+                        <% } %>
+                        <% if (OverdueTaskCount == 0 && SelectedProjectDueSoonTaskCount == 0 && OpenRiskCount == 0 && OpenIssueCount == 0) { %>
+                        <li class="text-success"><i class="bx bx-check-circle me-1"></i>Chưa ghi nhận cảnh báo trong phạm vi lọc.</li>
+                        <% } %>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 <% } %>
 
 </div>
+<!-- ========================= -->
+<!-- SẮP TỚI -->
+<!-- ========================= -->
+
+<div class="row mt-3">
+    <div class="col-12 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h5 class="card-title mb-1">Sắp tới</h5>
+                        <p class="text-muted mb-0">Các lịch họp gần nhất trong khoảng thời gian đã chọn.</p>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary">
+                        <%= UpcomingMeetings == null ? 0 : UpcomingMeetings.Count %> lịch
+                    </span>
+                </div>
+
+                <% if (UpcomingMeetings != null && UpcomingMeetings.Count > 0) { %>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-2">
+                    <% foreach (var meeting in UpcomingMeetings) { %>
+                    <div class="col">
+                        <div class="border rounded p-3 h-100 bg-light-subtle">
+                            <div class="small text-primary fw-semibold mb-1">
+                                <%= meeting.StartTime.ToString("dd/MM/yyyy HH:mm") %>
+                            </div>
+                            <div class="fw-semibold text-truncate" title="<%: meeting.Title %>"><%: meeting.Title %></div>
+                            <% if (!IsProjectView && !string.IsNullOrEmpty(meeting.ProjectCode)) { %>
+                            <div class="small text-muted mt-1"><%: meeting.ProjectCode %></div>
+                            <% } %>
+                            <% if (!string.IsNullOrWhiteSpace(meeting.Location)) { %>
+                            <div class="small text-muted mt-1"><i class="bx bx-map me-1"></i><%: meeting.Location %></div>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+                <% } else { %>
+                <div class="text-muted small py-2">Không có lịch họp sắp tới trong khoảng thời gian đã chọn.</div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ========================= -->
 <!-- NGUỒN LỰC + CHI PHÍ -->
 <!-- ========================= -->
