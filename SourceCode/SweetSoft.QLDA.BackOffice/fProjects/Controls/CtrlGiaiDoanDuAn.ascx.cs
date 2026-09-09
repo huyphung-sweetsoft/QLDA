@@ -42,6 +42,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 ViewState["CurrentEditId"] = value.ToString();
             }
         }
+
         protected void Page_Load(object sender, EventArgs e) { }
 
         public void InitControls()
@@ -52,31 +53,20 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 return;
             }
 
-            BindProjectStages();
+            BindData();
             BindCommonStages();
         }
 
-        private void BindProjectStages()
+        private void BindData()
         {
-            DataTable dt =
-                GiaiDoanDuAnManager.Instance
-                    .GetByIdDuAn(IdDuAn);
+            DataTable dt = GiaiDoanDuAnManager.Instance.GetByIdDuAn(IdDuAn);
 
-            bool hasData =
-                dt != null &&
-                dt.Rows.Count > 0;
+            bool hasData = dt != null && dt.Rows.Count > 0;
 
-            pnlEmpty.Visible =
-                !hasData;
-
-            pnlEmptyManagement.Visible =
-                !hasData;
-
-            rptStages.Visible =
-                hasData;
-
-            rptStageManagement.Visible =
-                hasData;
+            pnlEmpty.Visible = !hasData;
+            pnlEmptyManagement.Visible = !hasData;
+            rptStages.Visible = hasData;
+            rptStageManagement.Visible = hasData;
 
             if (!hasData)
             {
@@ -85,11 +75,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
                 rptStageManagement.DataSource = null;
                 rptStageManagement.DataBind();
-
                 return;
             }
-
-            AddDisplayColumns(dt);
 
             rptStages.DataSource = dt;
             rptStages.DataBind();
@@ -98,9 +85,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             rptStageManagement.DataBind();
         }
 
-        protected void rblStageType_SelectedIndexChanged(
-    object sender,
-    EventArgs e)
+        protected void rblStageType_SelectedIndexChanged(object sender, EventArgs e)
         {
             ToggleStageTypeControls();
 
@@ -111,12 +96,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             }
             else
             {
-                txtCustomStageName.Text =
-                    string.Empty;
+                txtCustomStageName.Text = string.Empty;
             }
 
             upnlStageManagement.Update();
-
             OpenDrawer();
         }
 
@@ -124,166 +107,86 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             rptStages.DataSource = null;
             rptStages.DataBind();
-
             rptStages.Visible = false;
             pnlEmpty.Visible = true;
         }
 
-        private void AddDisplayColumns(DataTable dt)
+        // ---- UI Helpers for ASPX markup ----
+        protected string GetStageStatus(object startDateObj, object completedDateObj)
         {
-            if (!dt.Columns.Contains("TrangThaiHienThi"))
-                dt.Columns.Add("TrangThaiHienThi", typeof(string));
-
-            if (!dt.Columns.Contains("KhoangThoiGian"))
-                dt.Columns.Add("KhoangThoiGian", typeof(string));
-
-            if (!dt.Columns.Contains("DotCssClass"))
-                dt.Columns.Add("DotCssClass", typeof(string));
-
-            if (!dt.Columns.Contains("PhanTramHienThi"))
-                dt.Columns.Add("PhanTramHienThi", typeof(string));
-
-            foreach (DataRow row in dt.Rows)
-            {
-                string status = GetStageStatus(row);
-
-                row["TrangThaiHienThi"] = status;
-                row["KhoangThoiGian"]   = GetStageDateRange(row);
-                row["DotCssClass"]      = GetDotCssClass(status);
-                row["PhanTramHienThi"]  = GetPhanTramHienThi(row, status);
-            }
-        }
-
-        private string GetStageStatus(
-            DataRow row)
-        {
-            DateTime today =
-                DateTime.Now.Date;
-
-            DateTime? startDate =
-                GetNullableDate(
-                    row,
-                    "NgayBatDau");
-
-            DateTime? completedDate =
-                GetNullableDate(
-                    row,
-                    "NgayHoanThanhThucTe");
+            DateTime today = DateTime.Now.Date;
+            DateTime? startDate = GetNullableDate(startDateObj);
+            DateTime? completedDate = GetNullableDate(completedDateObj);
 
             if (completedDate.HasValue)
                 return "Đã hoàn thành";
 
-            if (!startDate.HasValue ||
-                startDate.Value.Date > today)
-            {
+            if (!startDate.HasValue || startDate.Value.Date > today)
                 return "Chưa thực hiện";
-            }
 
             return "Đang thực hiện";
         }
 
-        private string GetStageDateRange(
-            DataRow row)
+        protected string GetStageDateRange(object startDateObj, object expectedEndDateObj)
         {
-            DateTime? startDate =
-                GetNullableDate(
-                    row,
-                    "NgayBatDau");
+            DateTime? startDate = GetNullableDate(startDateObj);
+            DateTime? expectedEndDate = GetNullableDate(expectedEndDateObj);
 
-            DateTime? expectedEndDate =
-                GetNullableDate(
-                    row,
-                    "NgayDuKienHoanThanh");
-
-            if (!startDate.HasValue &&
-                !expectedEndDate.HasValue)
-            {
+            if (!startDate.HasValue && !expectedEndDate.HasValue)
                 return "Chưa thiết lập thời gian";
-            }
 
-            string startText =
-                startDate.HasValue
-                    ? startDate.Value.ToString(
-                        "dd/MM/yyyy")
-                    : "Chưa có";
+            string startText = startDate.HasValue ? startDate.Value.ToString("dd/MM/yyyy") : "Chưa có";
+            string endText = expectedEndDate.HasValue ? expectedEndDate.Value.ToString("dd/MM/yyyy") : "Chưa có";
 
-            string endText =
-                expectedEndDate.HasValue
-                    ? expectedEndDate.Value.ToString(
-                        "dd/MM/yyyy")
-                    : "Chưa có";
-
-            return string.Format(
-                "{0} - {1}",
-                startText,
-                endText);
+            return string.Format("{0} - {1}", startText, endText);
         }
 
-        private DateTime? GetNullableDate(
-            DataRow row,
-            string columnName)
+        private DateTime? GetNullableDate(object objValue)
         {
-            if (!row.Table.Columns.Contains(
-                    columnName) ||
-                row[columnName] == null ||
-                row[columnName] == DBNull.Value)
-            {
+            if (objValue == null || objValue == DBNull.Value)
                 return null;
-            }
 
-            return Convert.ToDateTime(
-                row[columnName]);
+            DateTime date;
+            if (DateTime.TryParse(objValue.ToString(), out date))
+                return date;
+            return null;
         }
 
-        private string GetDotCssClass(string status)
+        protected string GetDotCssClass(string status)
         {
             switch (status)
             {
-                case "Đã hoàn thành":  return "stage-done";
+                case "Đã hoàn thành": return "stage-done";
                 case "Đang thực hiện": return "stage-active";
-                default:               return string.Empty;
+                default: return string.Empty;
             }
         }
 
-        private string GetPhanTramHienThi(DataRow row, string status)
+        protected string GetPhanTramHienThi(object expectedEndObj, object completedDateObj, string status)
         {
-            // Hiển thị ngày hoàn thành thực tế nếu đã xong,
-            // hoặc khoảng thời gian dự kiến nếu chưa xong
             if (status == "Đã hoàn thành")
             {
-                DateTime? completedDate = GetNullableDate(row, "NgayHoanThanhThucTe");
-                return completedDate.HasValue
-                    ? completedDate.Value.ToString("dd/MM/yyyy")
-                    : "Hoàn thành";
+                DateTime? completedDate = GetNullableDate(completedDateObj);
+                return completedDate.HasValue ? completedDate.Value.ToString("dd/MM/yyyy") : "Hoàn thành";
             }
 
-            DateTime? expectedEnd = GetNullableDate(row, "NgayDuKienHoanThanh");
-            return expectedEnd.HasValue
-                ? "DK: " + expectedEnd.Value.ToString("dd/MM/yyyy")
-                : string.Empty;
+            DateTime? expectedEnd = GetNullableDate(expectedEndObj);
+            return expectedEnd.HasValue ? "DK: " + expectedEnd.Value.ToString("dd/MM/yyyy") : string.Empty;
         }
-
-        // ---- Helpers cho rptStageManagement ----
 
         protected string GetFormattedDate(object value)
         {
-            if (value == null || value == DBNull.Value)
-                return "—";
-
-            DateTime date;
-            if (!DateTime.TryParse(value.ToString(), out date))
-                return "—";
-
-            return date.ToString("dd/MM/yyyy");
+            DateTime? date = GetNullableDate(value);
+            return date.HasValue ? date.Value.ToString("dd/MM/yyyy") : "—";
         }
 
         protected string GetStatusBadgeClass(string status)
         {
             switch (status)
             {
-                case "Đã hoàn thành":  return "badge-done";
+                case "Đã hoàn thành": return "badge-done";
                 case "Đang thực hiện": return "badge-active";
-                default:               return "badge-pending";
+                default: return "badge-pending";
             }
         }
 
@@ -291,192 +194,95 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             switch (status)
             {
-                case "Đã hoàn thành":  return "fill-done";
+                case "Đã hoàn thành": return "fill-done";
                 case "Đang thực hiện": return "fill-active";
-                default:               return string.Empty;
+                default: return string.Empty;
             }
         }
 
         protected int GetHardCodedPercent(string status)
         {
-            // TODO: thay bằng dữ liệu thực tế sau
             switch (status)
             {
-                case "Đã hoàn thành":  return 100;
+                case "Đã hoàn thành": return 100;
                 case "Đang thực hiện": return 45;
-                default:               return 0;
+                default: return 0;
             }
         }
 
         private void BindCommonStages()
         {
-            List<TblGiaiDoan> data =
-                GiaiDoanManager.Instance
-                    .GetAllActive();
+            List<TblGiaiDoan> data = GiaiDoanManager.Instance.GetAllActive();
 
-            ddlCommonStage.DataSource =
-                data;
-
-            ddlCommonStage.DataValueField =
-                TblGiaiDoan.Columns.IdGiaiDoan;
-
-            ddlCommonStage.DataTextField =
-                TblGiaiDoan.Columns.TenGiaiDoan;
-
+            ddlCommonStage.DataSource = data;
+            ddlCommonStage.DataValueField = TblGiaiDoan.Columns.IdGiaiDoan;
+            ddlCommonStage.DataTextField = TblGiaiDoan.Columns.TenGiaiDoan;
             ddlCommonStage.DataBind();
 
-            ddlCommonStage.Items.Insert(
-                0,
-                new ListItem(
-                    "-- Chọn giai đoạn --",
-                    string.Empty));
+            ddlCommonStage.Items.Insert(0, new ListItem("-- Chọn giai đoạn --", string.Empty));
         }
 
         private void OpenDrawer()
         {
-            ScriptManager.RegisterStartupScript(
-                Page,
-                Page.GetType(),
-                "OpenProjectStageDrawer",
-                "ProjectStageJs.ShowOffcanvas();",
-                true);
+            ScriptManager.RegisterStartupScript(Page, Page.GetType(), "OpenProjectStageDrawer", "ProjectStageJs.ShowOffcanvas();", true);
         }
 
         protected void lbtCancelStage_Click(object sender, EventArgs e)
         {
             ResetForm();
-
             pnlStageForm.Visible = false;
-
             upnlStageManagement.Update();
             OpenDrawer();
         }
 
         private void ResetForm()
         {
-            CurrentEditId =
-                Guid.Empty;
-
-            rblStageType.SelectedValue =
-                "COMMON";
-
-            pnlCommonStage.Visible =
-                true;
-
-            pnlCustomStage.Visible =
-                false;
+            CurrentEditId = Guid.Empty;
+            rblStageType.SelectedValue = "COMMON";
+            pnlCommonStage.Visible = true;
+            pnlCustomStage.Visible = false;
 
             if (ddlCommonStage.Items.Count > 0)
-            {
-                ddlCommonStage.SelectedIndex =
-                    0;
-            }
+                ddlCommonStage.SelectedIndex = 0;
 
-            txtCustomStageName.Text =
-                string.Empty;
-
-            txtStartDate.Text =
-                string.Empty;
-
-            txtExpectedEndDate.Text =
-                string.Empty;
-
-            txtExpectedEndDate.ReadOnly =
-                false;
-
-            RemoveCssClass(
-                txtExpectedEndDate,
-                "bg-light");
-
-            txtActualEndDate.Text =
-                string.Empty;
-
-            txtStageOrder.Text =
-                string.Empty;
-
-            txtStageDescription.Text =
-                string.Empty;
-
-            lblStageError.Text =
-                string.Empty;
-
-            lblStageError.Visible =
-                false;
-
-            lblStageFormTitle.Text =
-                "Thêm giai đoạn";
+            txtCustomStageName.Text = string.Empty;
+            txtStartDate.Text = string.Empty;
+            txtExpectedEndDate.Text = string.Empty;
+            txtExpectedEndDate.ReadOnly = false;
+            RemoveCssClass(txtExpectedEndDate, "bg-light");
+            txtActualEndDate.Text = string.Empty;
+            txtStageOrder.Text = string.Empty;
+            txtStageDescription.Text = string.Empty;
+            lblStageError.Text = string.Empty;
+            lblStageError.Visible = false;
+            lblStageFormTitle.Text = "Thêm giai đoạn";
         }
 
         private TblGiaiDoanDuAn BuildStageDto()
         {
-            TblGiaiDoanDuAn dto =
-                new TblGiaiDoanDuAn();
+            TblGiaiDoanDuAn dto = new TblGiaiDoanDuAn();
+            dto.IdGiaiDoanDuAn = CurrentEditId;
+            dto.IdDuAn = IdDuAn;
 
-            /*
-             * Guid.Empty: thêm mới.
-             * Có ID: cập nhật.
-             */
-            dto.IdGiaiDoanDuAn =
-                CurrentEditId;
-
-            dto.IdDuAn =
-                IdDuAn;
-
-            bool isCustom =
-                rblStageType.SelectedValue ==
-                "CUSTOM";
+            bool isCustom = rblStageType.SelectedValue == "CUSTOM";
 
             if (isCustom)
             {
-                dto.IdGiaiDoan =
-                    null;
-
-                dto.TenGiaiDoanTuyChinh =
-                    string.IsNullOrWhiteSpace(
-                        txtCustomStageName.Text)
-                            ? null
-                            : txtCustomStageName.Text.Trim();
+                dto.IdGiaiDoan = null;
+                dto.TenGiaiDoanTuyChinh = string.IsNullOrWhiteSpace(txtCustomStageName.Text) ? null : txtCustomStageName.Text.Trim();
             }
             else
             {
                 Guid idGiaiDoan;
-
-                dto.IdGiaiDoan =
-                    Guid.TryParse(
-                        ddlCommonStage.SelectedValue,
-                        out idGiaiDoan)
-                        ? idGiaiDoan
-                        : (Guid?)null;
-
-                dto.TenGiaiDoanTuyChinh =
-                    null;
+                dto.IdGiaiDoan = Guid.TryParse(ddlCommonStage.SelectedValue, out idGiaiDoan) ? idGiaiDoan : (Guid?)null;
+                dto.TenGiaiDoanTuyChinh = null;
             }
 
-            dto.NgayBatDau =
-                ParseNullableDate(
-                    txtStartDate.Text);
-
-            dto.NgayDuKienHoanThanh =
-                ParseNullableDate(
-                    txtExpectedEndDate.Text);
-
-            dto.NgayHoanThanhThucTe =
-                ParseNullableDate(
-                    txtActualEndDate.Text);
-
-            /*
-             * Không lấy thứ tự từ giao diện.
-             * Khi thêm, Manager tự sinh.
-             * Khi sửa, Manager giữ giá trị trong DB.
-             */
-            dto.ThuTuGiaiDoan =
-                0;
-
-            dto.MoTa =
-                string.IsNullOrWhiteSpace(
-                    txtStageDescription.Text)
-                        ? null
-                        : txtStageDescription.Text.Trim();
+            dto.NgayBatDau = ParseNullableDate(txtStartDate.Text);
+            dto.NgayDuKienHoanThanh = ParseNullableDate(txtExpectedEndDate.Text);
+            dto.NgayHoanThanhThucTe = ParseNullableDate(txtActualEndDate.Text);
+            dto.ThuTuGiaiDoan = 0;
+            dto.MoTa = string.IsNullOrWhiteSpace(txtStageDescription.Text) ? null : txtStageDescription.Text.Trim();
 
             return dto;
         }
@@ -487,101 +293,74 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             return DateTime.TryParse(value, out date) ? date : (DateTime?)null;
         }
 
-        protected void lbtSaveStage_Click(
-    object sender,
-    EventArgs e)
+        protected void lbtAddStage_Click(object sender, EventArgs e)
+        {
+            ResetForm();
+            lblStageFormTitle.Text = "Thêm giai đoạn";
+            pnlStageForm.Visible = true;
+            upnlStageManagement.Update();
+            OpenDrawer();
+        }
+
+        protected void lbtSaveStage_Click(object sender, EventArgs e)
         {
             if (ddlCommonStage.Items.Count == 0)
             {
                 BindCommonStages();
             }
 
-            bool isCustom =
-                rblStageType.SelectedValue ==
-                "CUSTOM";
+            bool isCustom = rblStageType.SelectedValue == "CUSTOM";
 
             if (isCustom)
             {
-                if (string.IsNullOrWhiteSpace(
-                    txtCustomStageName.Text))
+                if (string.IsNullOrWhiteSpace(txtCustomStageName.Text))
                 {
-                    ShowError(
-                        "Vui lòng nhập tên giai đoạn.");
-
+                    ShowError("Vui lòng nhập tên giai đoạn.");
                     upnlStageManagement.Update();
                     OpenDrawer();
-
                     return;
                 }
             }
             else
             {
                 Guid idGiaiDoan;
-
-                bool validCommonStage =
-                    Guid.TryParse(
-                        ddlCommonStage.SelectedValue,
-                        out idGiaiDoan) &&
-                    idGiaiDoan != Guid.Empty;
+                bool validCommonStage = Guid.TryParse(ddlCommonStage.SelectedValue, out idGiaiDoan) && idGiaiDoan != Guid.Empty;
 
                 if (!validCommonStage)
                 {
-                    ShowError(
-                        "Vui lòng chọn giai đoạn từ danh sách.");
-
+                    ShowError("Vui lòng chọn giai đoạn từ danh sách.");
                     upnlStageManagement.Update();
                     OpenDrawer();
-
                     return;
                 }
             }
 
             try
             {
-                bool isEdit =
-                    CurrentEditId != Guid.Empty;
-
-                TblGiaiDoanDuAn dto =
-                    BuildStageDto();
-
-                TblGiaiDoanDuAn result =
-                    GiaiDoanDuAnManager.Instance
-                        .CreateOrUpdate(dto);
+                bool isEdit = CurrentEditId != Guid.Empty;
+                TblGiaiDoanDuAn dto = BuildStageDto();
+                TblGiaiDoanDuAn result = GiaiDoanDuAnManager.Instance.CreateOrUpdate(dto);
 
                 if (result == null)
                 {
-                    ShowError(
-                        "Không thể lưu giai đoạn.");
-
+                    ShowError("Không thể lưu giai đoạn.");
                     upnlStageManagement.Update();
                     OpenDrawer();
-
                     return;
                 }
 
                 ResetForm();
-
-                pnlStageForm.Visible =
-                    false;
-
-                BindProjectStages();
-
+                pnlStageForm.Visible = false;
+                BindData();
                 upnlStageManagement.Update();
-
                 OpenDrawer();
 
-                ShowNotify(
-                    isEdit
-                        ? "Cập nhật giai đoạn thành công."
-                        : "Thêm giai đoạn thành công.",
-                    MSGType.Success);
+                ShowNotify(isEdit ? "Cập nhật giai đoạn thành công." : "Thêm giai đoạn thành công.", MSGType.Success);
             }
             catch (Exception exc)
             {
                 ShowError(exc.Message);
-
                 upnlStageManagement.Update();
-
                 OpenDrawer();
             }
         }
@@ -592,15 +371,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 return;
 
             Guid idGiaiDoanDuAn;
-
             bool isValidId = Guid.TryParse(Convert.ToString(e.CommandArgument), out idGiaiDoanDuAn);
 
             if (!isValidId)
             {
-                ShowNotify(
-                    "Giai đoạn không hợp lệ.",
-                    MSGType.Error);
-
+                ShowNotify("Giai đoạn không hợp lệ.", MSGType.Error);
                 return;
             }
 
@@ -608,10 +383,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             if (stage == null)
             {
-                ShowNotify(
-                    "Không tìm thấy giai đoạn.",
-                    MSGType.Error);
-
+                ShowNotify("Không tìm thấy giai đoạn.", MSGType.Error);
                 return;
             }
 
@@ -619,21 +391,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             if (rootTask == null)
             {
-                ShowNotify(
-                    "Không tìm thấy công việc gốc của giai đoạn.",
-                    MSGType.Error);
-
+                ShowNotify("Không tìm thấy công việc gốc của giai đoạn.", MSGType.Error);
                 return;
             }
 
             CurrentEditId = idGiaiDoanDuAn;
-
             BindStageEditForm(stage, rootTask);
-
             lblStageFormTitle.Text = "Sửa giai đoạn";
-
             pnlStageForm.Visible = true;
-
             upnlStageManagement.Update();
             OpenDrawer();
         }
@@ -641,7 +406,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         private void BindStageEditForm(TblGiaiDoanDuAn stage, TblCongViec rootTask)
         {
             bool isCommonStage = stage.IdGiaiDoan.HasValue && stage.IdGiaiDoan.Value != Guid.Empty;
-
             rblStageType.SelectedValue = isCommonStage ? "COMMON" : "CUSTOM";
 
             if (isCommonStage)
@@ -652,48 +416,22 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             else
             {
                 ddlCommonStage.SelectedValue = string.Empty;
-
                 txtCustomStageName.Text = stage.TenGiaiDoanTuyChinh ?? string.Empty;
             }
 
-            txtStartDate.Text = stage.NgayBatDau.HasValue
-                ? stage.NgayBatDau.Value.ToString("yyyy-MM-dd")
-                : string.Empty;
-
-            txtExpectedEndDate.Text = stage.NgayDuKienHoanThanh.HasValue
-                    ? stage.NgayDuKienHoanThanh.Value.ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtActualEndDate.Text = stage.NgayHoanThanhThucTe.HasValue
-                ? stage.NgayHoanThanhThucTe.Value.ToString("yyyy-MM-dd")
-                : string.Empty;
-
+            txtStartDate.Text = stage.NgayBatDau.HasValue ? stage.NgayBatDau.Value.ToString("yyyy-MM-dd") : string.Empty;
+            txtExpectedEndDate.Text = stage.NgayDuKienHoanThanh.HasValue ? stage.NgayDuKienHoanThanh.Value.ToString("yyyy-MM-dd") : string.Empty;
+            txtActualEndDate.Text = stage.NgayHoanThanhThucTe.HasValue ? stage.NgayHoanThanhThucTe.Value.ToString("yyyy-MM-dd") : string.Empty;
             txtStageDescription.Text = stage.MoTa ?? string.Empty;
 
             bool hasChildTasks = TaskManager.Instance.CheckHasChildTasks(stage.IdDuAn, rootTask);
 
-            /*
-            * Chưa có công việc con:
-            * người dùng được sửa ngày dự kiến hoàn thành.
-            *
-            * Đã có công việc con:
-            * ngày kết thúc được tính từ công việc con.
-            */
-            txtExpectedEndDate.ReadOnly =
-                hasChildTasks;
-
-            RemoveCssClass(
-    txtExpectedEndDate,
-    "bg-light");
+            txtExpectedEndDate.ReadOnly = hasChildTasks;
+            RemoveCssClass(txtExpectedEndDate, "bg-light");
 
             if (hasChildTasks)
             {
-                txtExpectedEndDate.CssClass =
-                    string.IsNullOrWhiteSpace(
-                        txtExpectedEndDate.CssClass)
-                            ? "bg-light"
-                            : txtExpectedEndDate.CssClass +
-                                " bg-light";
+                txtExpectedEndDate.CssClass = string.IsNullOrWhiteSpace(txtExpectedEndDate.CssClass) ? "bg-light" : txtExpectedEndDate.CssClass + " bg-light";
             }
 
             ToggleStageTypeControls();
@@ -701,50 +439,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void ShowError(string message)
         {
-            lblStageError.Text    = HttpUtility.HtmlEncode(message);
+            lblStageError.Text = HttpUtility.HtmlEncode(message);
             lblStageError.Visible = true;
         }
 
         private void ToggleStageTypeControls()
         {
-            bool isCustom =
-                rblStageType.SelectedValue ==
-                "CUSTOM";
-
-            pnlCommonStage.Visible =
-                !isCustom;
-
-            pnlCustomStage.Visible =
-                isCustom;
+            bool isCustom = rblStageType.SelectedValue == "CUSTOM";
+            pnlCommonStage.Visible = !isCustom;
+            pnlCustomStage.Visible = isCustom;
         }
 
-        private void RemoveCssClass(
-    WebControl control,
-    string cssClass)
+        private void RemoveCssClass(WebControl control, string cssClass)
         {
-            if (control == null ||
-                string.IsNullOrWhiteSpace(
-                    control.CssClass))
-            {
+            if (control == null || string.IsNullOrWhiteSpace(control.CssClass))
                 return;
-            }
 
-            control.CssClass =
-                string.Join(
-                    " ",
-                    control.CssClass
-                        .Split(
-                            new[] { ' ' },
-                            StringSplitOptions
-                                .RemoveEmptyEntries)
-                        .Where(
-                            item =>
-                                !item.Equals(
-                                    cssClass,
-                                    StringComparison
-                                        .OrdinalIgnoreCase)));
+            control.CssClass = string.Join(" ", control.CssClass.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Where(item => !item.Equals(cssClass, StringComparison.OrdinalIgnoreCase)));
         }
-
-
     }
 }

@@ -443,10 +443,6 @@ namespace SweetSoft.QLDA.Core.Managers
             rootTask.IdGiaiDoanDuAn =
                 stage.IdGiaiDoanDuAn;
 
-            // Có thể null đối với giai đoạn tùy chỉnh.
-            rootTask.IdGiaiDoan =
-                stage.IdGiaiDoan;
-
             rootTask.TenCongViec =
                 stageName.Trim();
 

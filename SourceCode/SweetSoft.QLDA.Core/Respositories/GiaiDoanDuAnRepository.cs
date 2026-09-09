@@ -218,7 +218,7 @@ namespace SweetSoft.QLDA.Core.Respositories
           AND NgayBatDau IS NOT NULL
         ORDER BY ThuTuGiaiDoan DESC;";
 
-            return new InlineQuery().ExecuteScalar<DateTime>(sql);
+            return ExecuteNullableDate(sql);
         }
 
         public DateTime? GetNextStageStartDate(
@@ -247,7 +247,35 @@ namespace SweetSoft.QLDA.Core.Respositories
           AND NgayBatDau IS NOT NULL
         ORDER BY ThuTuGiaiDoan ASC;";
 
-            return new InlineQuery().ExecuteScalar<DateTime>(sql);
+            return ExecuteNullableDate(sql);
+        }
+
+        private DateTime? ExecuteNullableDate(
+    string sql)
+        {
+            using (IDataReader reader =
+                new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader == null ||
+                    !reader.Read())
+                {
+                    return null;
+                }
+
+                if (reader[0] == null ||
+                    reader[0] == DBNull.Value)
+                {
+                    return null;
+                }
+
+                DateTime value;
+
+                return DateTime.TryParse(
+                    Convert.ToString(reader[0]),
+                    out value)
+                        ? value
+                        : (DateTime?)null;
+            }
         }
     }
 }

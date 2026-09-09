@@ -261,7 +261,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             congViec.IdCongViec = UUIDv7.NewGuid();
             congViec.IdDuAn = giaiDoan.IdDuAn;
-            congViec.IdGiaiDoan = giaiDoan.IdGiaiDoanDuAn;
+            congViec.IdGiaiDoanDuAn = giaiDoan.IdGiaiDoanDuAn;
             congViec.IdCongViecCha = null;
             congViec.IdCongViecPhuThuoc = null;
             congViec.IdDoUuTien = null;

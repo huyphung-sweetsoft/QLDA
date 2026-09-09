@@ -94,16 +94,23 @@ namespace SweetSoft.QLDA.Core.Respositories
                                .ExecuteSingle<TblCongViec>();
         }
 
-        public TblCongViec GetRootTaskByStageId(Guid idGiaiDoanDuAn)
+        public TblCongViec GetRootTaskByStageId(
+    Guid idGiaiDoanDuAn)
         {
             if (idGiaiDoanDuAn == Guid.Empty)
                 return null;
 
             return new Select()
                 .From(TblCongViec.Schema)
-                .Where(TblCongViec.Columns.IdGiaiDoanDuAn).IsEqualTo(idGiaiDoanDuAn)
-                .And(TblCongViec.Columns.IdCongViecCha).IsNull()
-                .And(TblCongViec.Columns.DaXoa).IsEqualTo(false)
+                .Where(
+                    TblCongViec.IdGiaiDoanDuAnColumn)
+                .IsEqualTo(idGiaiDoanDuAn)
+                .And(
+                    TblCongViec.IdCongViecChaColumn)
+                .IsNull()
+                .And(
+                    TblCongViec.DaXoaColumn)
+                .IsEqualTo(false)
                 .ExecuteSingle<TblCongViec>();
         }
         #endregion
