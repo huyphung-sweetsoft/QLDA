@@ -9,6 +9,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
     public partial class CtrlDashboardOverview : BaseAdminUserControl
     {
+        private const string AllProjectsValue = "__all_projects__";
+
         #region RegisterCSSAndJS
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -408,11 +410,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             ddlProjectFilter.Items.Clear();
 
-            ddlProjectFilter.Items.Add(
-                new ListItem(
-                    GetResourceText(Core.ResourceTexts.BackEndResourceKeys.ALL_PROJECTS),
-                    "")
-            );
+            ListItem allProjects = new ListItem(
+                GetResourceText(
+                    Core.ResourceTexts.BackEndResourceKeys.ALL_PROJECTS),
+                AllProjectsValue);
+            allProjects.Selected = true;
+            ddlProjectFilter.Items.Add(allProjects);
 
             var projects =
                 DashboardOverviewManager.Instance.GetProjectsForFilter();
