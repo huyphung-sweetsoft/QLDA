@@ -2,6 +2,7 @@
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fProjects/Controls/CtrlGiaiDoanDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlGiaiDoanDuAn" %>
+<%@ Register Src="~/fProjects/Controls/CtrlLichSuDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlLichSuDuAn" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -349,11 +350,24 @@
                                     Hoạt động gần đây
                                 </h5>
 
-                                <a
-                                    href="javascript:;"
-                                    class="small text-primary text-decoration-none">
-                                    Xem tất cả
-                                </a>
+<asp:UpdatePanel
+    runat="server"
+    ID="upnlOpenProjectHistory"
+    UpdateMode="Conditional"
+    RenderMode="Inline">
+
+    <ContentTemplate>
+        <asp:LinkButton
+            runat="server"
+            ID="lbtViewAllHistory"
+            CausesValidation="false"
+            CssClass="small text-primary text-decoration-none"
+            OnClick="lbtViewAllHistory_Click">
+
+            Xem tất cả
+        </asp:LinkButton>
+    </ContentTemplate>
+</asp:UpdatePanel>
                             </div>
 
                             <div class="list-group list-group-flush">
@@ -408,6 +422,8 @@
 </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
+    <SweetSoft:CtrlLichSuDuAn runat="server" ID="CtrlLichSuDuAn1" />
+
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>

@@ -207,5 +207,10 @@ namespace SweetSoft.QLDA.Core.Managers
             return ThanhVienDuAnManager.Instance.GetIdNhanVienByDuAnAndVaiTro(idDuAn, vaiTroThanhVien.IdVaiTroDuAn);
         }
 
+        public DataTable GetProjectHistory(Guid idDuAn, Guid? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            return _auditManager.GetProjectHistory(idDuAn, userId, fromDate, toDate);
+        }
+
     }
 }

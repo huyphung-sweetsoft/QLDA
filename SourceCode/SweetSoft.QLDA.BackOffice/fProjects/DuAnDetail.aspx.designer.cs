@@ -150,6 +150,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblSoHopDong;
 
         /// <summary>
+        /// upnlOpenProjectHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlOpenProjectHistory;
+
+        /// <summary>
+        /// lbtViewAllHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtViewAllHistory;
+
+        /// <summary>
         /// rptRecentProjectHistory control.
         /// </summary>
         /// <remarks>
@@ -166,5 +184,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlEmptyRecentHistory;
+
+        /// <summary>
+        /// CtrlLichSuDuAn1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlLichSuDuAn CtrlLichSuDuAn1;
     }
 }

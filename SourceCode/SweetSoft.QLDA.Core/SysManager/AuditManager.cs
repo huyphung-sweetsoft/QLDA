@@ -290,9 +290,14 @@ namespace SweetSoft.QLDA.Core.SysManager
             return _auditRepository.GetProjectHistory(idDuAn,null,null,null,numberOfRecords);
         }
 
+        public DataTable GetProjectHistory(Guid idDuAn, Guid? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            return _auditRepository.GetProjectHistory(idDuAn, userId, fromDate, toDate, null);
+        }
+
         #endregion
 
-        #region Private Methods
+            #region Private Methods
 
         private async Task<AuditLog> CreateAuditLogAsync<T>(LogActions.Actions action, T entity, string tableName, Guid entityId, string changeBy, Guid? referenceId, string title, string description)
         {

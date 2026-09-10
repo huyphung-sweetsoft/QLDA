@@ -54,6 +54,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
+            CtrlLichSuDuAn1.IdDuAn = QueryId;
             if (_auditManager == null)
                 _auditManager = new AuditManager(new Core.SysManager.Models.ClientInfo()
                 {
@@ -141,6 +142,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                     FormatHistoryTime(
                         row.Row);
             }
+        }
+
+        protected void lbtViewAllHistory_Click(
+    object sender,
+    EventArgs e)
+        {
+            CtrlLichSuDuAn1.IdDuAn =
+                QueryId;
+
+            CtrlLichSuDuAn1.OpenDrawer();
         }
 
         private string BuildHistoryContent(
