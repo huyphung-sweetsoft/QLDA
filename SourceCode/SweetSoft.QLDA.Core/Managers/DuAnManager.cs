@@ -85,9 +85,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn.NguoiCapNhat = SweetContext.Current.UserName;
                 duAn.NgayCapNhat = DateTime.UtcNow;
                 duAn = _repository.Update(duAn);
-
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
-                //Thêm update thằng PM, code zin ko có, thiếu
                 AddNhanVienQuanLy(duAn);
                 return duAn;
             }

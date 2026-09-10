@@ -48,6 +48,7 @@ namespace SweetSoft.QLDA.Core.SysManager.Repository
                     RecordId UNIQUEIDENTIFIER NULL,
                     ActionType NVARCHAR(10) NOT NULL CHECK (ActionType IN ('CREATE', 'UPDATE', 'DELETE', 'EXPORT', 'LOGIN', 'LOGOUT')),
                     Changes NVARCHAR(MAX),
+                    Description VARCHAR(150) NULL,
                     IPAddress NVARCHAR(50),
                     UserAgent NVARCHAR(MAX),
                     UserId UNIQUEIDENTIFIER NULL,
@@ -80,10 +81,10 @@ namespace SweetSoft.QLDA.Core.SysManager.Repository
                 string sql = $@"
 INSERT INTO TblAuditLog_{year} (
     Id, Title, CustomerId, ReferenceId, TableName, RecordId, 
-    ActionType, [Changes], IPAddress, UserAgent, UserId, ChangedBy, ChangedAt
+    ActionType, [Changes], Description, IPAddress, UserAgent, UserId, ChangedBy, ChangedAt
 ) VALUES (
     @Id, @Title, @CustomerId, @ReferenceId, @TableName, @RecordId,
-    @ActionType, @Changes, @IPAddress, @UserAgent, @UserId, @ChangedBy, @ChangedAt
+    @ActionType, @Changes, @Description, @IPAddress, @UserAgent, @UserId, @ChangedBy, @ChangedAt
 )";
 
                 var cmd = new QueryCommand(sql, _dataProvider.Name);
@@ -102,6 +103,7 @@ INSERT INTO TblAuditLog_{year} (
                 cmd.AddParameter("@UserId", auditLog.UserId?.ToString(), DbType.String);
                 cmd.AddParameter("@ChangedBy", auditLog.ChangedBy, DbType.String);
                 cmd.AddParameter("@ChangedAt", auditLog.ChangedAt, DbType.DateTime);
+                cmd.AddParameter("@Description", auditLog.Description, DbType.String);
 
                 DataService.ExecuteQuery(cmd);
             }
@@ -228,7 +230,8 @@ INSERT INTO TblAuditLog_{year} (
                         UserAgent = row["UserAgent"]?.ToString(),
                         UserId = row["UserId"] as Guid?,
                         ChangedBy = row["ChangedBy"]?.ToString(),
-                        ChangedAt = (DateTime)row["ChangedAt"]
+                        ChangedAt = (DateTime)row["ChangedAt"],
+                        Description = row["Description"]?.ToString()
                     });
                 }
 
@@ -338,7 +341,7 @@ INSERT INTO TblAuditLog_{year} (
                         var parameters = new Dictionary<string, object> { { "@Id", auditLogId } };
 
                         var auditLogList = new InlineQuery(_dataProvider)
-                            .ExecuteTypedList<TblAuditTemp>(sql, parameters);
+                            .ExecuteTypedList<TblAuditLog2026>(sql, parameters);
 
                         var entity = auditLogList?.FirstOrDefault();
                         if (entity == null)
@@ -358,7 +361,8 @@ INSERT INTO TblAuditLog_{year} (
                             UserAgent = entity.UserAgent,
                             UserId = entity.UserId,
                             ChangedBy = entity.ChangedBy,
-                            ChangedAt = entity.ChangedAt
+                            ChangedAt = entity.ChangedAt,
+                            Description = entity.Description
                         };
                         return Task.FromResult(result);
                     }
@@ -421,7 +425,7 @@ INSERT INTO TblAuditLog_{year} (
                     WHERE {string.Join(" AND ", whereConditions)}
                     ORDER BY ChangedAt ASC";
 
-                        var tblAuditTemps = new InlineQuery(_dataProvider).ExecuteTypedList<TblAuditTemp>(sql, parameters);
+                        var tblAuditTemps = new InlineQuery(_dataProvider).ExecuteTypedList<TblAuditLog2026>(sql, parameters);
                         tblAuditTemps?.ForEach(entity =>
                         {
                             auditLogs.Add(new AuditLogDto
@@ -438,7 +442,8 @@ INSERT INTO TblAuditLog_{year} (
                                 UserAgent = entity.UserAgent,
                                 UserId = entity.UserId,
                                 ChangedBy = entity.ChangedBy,
-                                ChangedAt = entity.ChangedAt
+                                ChangedAt = entity.ChangedAt,
+                                Description = entity.Description
                             });
                         });
                     }
@@ -604,6 +609,178 @@ INSERT INTO TblAuditLog_{year} (
                 SysLogger.LogError($"{exc.Message} - {exc.StackTrace}");
                 throw;
             }
+        }
+
+        public DataTable GetProjectHistory(
+    Guid idDuAn,
+    Guid? userId,
+    DateTime? fromDate,
+    DateTime? toDate,
+    int? numberOfRecords = null)
+        {
+            DataTable result =
+                new DataTable();
+
+            if (idDuAn == Guid.Empty)
+                return result;
+
+            int currentYear =
+                DateTime.UtcNow.Year;
+
+            int startYear =
+                fromDate?.Year ??
+                currentYear - 5;
+
+            int endYear =
+                toDate?.Year ??
+                currentYear;
+
+            if (startYear > endYear)
+                return result;
+
+            List<string> queries =
+                new List<string>();
+
+            for (int year = startYear;
+                 year <= endYear;
+                 year++)
+            {
+                string tableName =
+                    $"dbo.TblAuditLog_{year}";
+
+                string checkTableSql = $@"
+            SELECT CASE
+                WHEN OBJECT_ID(
+                    N'{tableName}',
+                    N'U'
+                ) IS NULL
+                    THEN 0
+                ELSE 1
+            END;";
+
+                int tableExists =
+                    new InlineQuery(_dataProvider)
+                        .ExecuteScalar<int>(
+                            checkTableSql);
+
+                if (tableExists == 0)
+                    continue;
+
+                queries.Add($@"
+            SELECT
+                Id,
+                Title,
+                CustomerId,
+                ReferenceId,
+                TableName,
+                RecordId,
+                ActionType,
+                Changes,
+                Description,
+                IPAddress,
+                UserAgent,
+                UserId,
+                ChangedBy,
+                ChangedAt
+            FROM {tableName}
+            WHERE ReferenceId = @idDuAn
+              AND Description IS NOT NULL
+              AND
+              (
+                  @userId IS NULL
+                  OR UserId = @userId
+              )
+              AND
+              (
+                  @fromDate IS NULL
+                  OR ChangedAt >= @fromDate
+              )
+              AND
+              (
+                  @toDate IS NULL
+                  OR ChangedAt <
+                     DATEADD(
+                         DAY,
+                         1,
+                         CAST(@toDate AS DATE)
+                     )
+              )");
+            }
+
+            if (queries.Count == 0)
+                return result;
+
+            string idDuAnSql =
+                InlineQueryHelpers.SQLEncode(
+                    idDuAn);
+
+            string userIdSql =
+                userId.HasValue &&
+                userId.Value != Guid.Empty
+                    ? "'" +
+                      InlineQueryHelpers.SQLEncode(
+                          userId.Value) +
+                      "'"
+                    : "NULL";
+
+            string fromDateSql =
+                fromDate.HasValue
+                    ? "'" +
+                      fromDate.Value.ToString(
+                          "yyyy-MM-ddTHH:mm:ss.fff") +
+                      "'"
+                    : "NULL";
+
+            string toDateSql =
+                toDate.HasValue
+                    ? "'" +
+                      toDate.Value.ToString(
+                          "yyyy-MM-ddTHH:mm:ss.fff") +
+                      "'"
+                    : "NULL";
+
+            string topClause =
+                numberOfRecords.HasValue? $"TOP ({Math.Max(1, numberOfRecords.Value)})"
+                    : string.Empty;
+
+            string sql = $@"
+        DECLARE @idDuAn UNIQUEIDENTIFIER =
+            '{idDuAnSql}';
+
+        DECLARE @userId UNIQUEIDENTIFIER =
+            {userIdSql};
+
+        DECLARE @fromDate DATETIME =
+            {fromDateSql};
+
+        DECLARE @toDate DATETIME =
+            {toDateSql};
+
+        SELECT {topClause}
+            ProjectHistory.*
+        FROM
+        (
+            {string.Join(
+                        Environment.NewLine +
+                        "UNION ALL" +
+                        Environment.NewLine,
+                        queries)}
+        ) AS ProjectHistory
+        ORDER BY
+            ProjectHistory.ChangedAt DESC;";
+
+            using (IDataReader reader =
+                new InlineQuery(_dataProvider)
+                    .ExecuteReader(sql))
+            {
+                if (reader != null &&
+                    !reader.IsClosed)
+                {
+                    result.Load(reader);
+                }
+            }
+
+            return result;
         }
     }
 }

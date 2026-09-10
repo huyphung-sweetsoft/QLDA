@@ -99,12 +99,13 @@ namespace SweetSoft.QLDA.Core.SysManager
     {
         "IsNew", "Errors", "IsDirty", "IsLoaded", "TableName",
         "DirtyColumns", "ProviderName", "NullExceptionMessage",
-        "InvalidTypeExceptionMessage", "LengthExceptionMessage", "ValidateWhenSaving"
+        "InvalidTypeExceptionMessage", "LengthExceptionMessage", "ValidateWhenSaving",
+        "NgayCapNhat", "NguoiCapNhat"
     };
 
         private static readonly HashSet<string> RefIdProperties = new HashSet<string>
     {
-        "RefId", "OrderId", "PhysicalGoldConversionId"
+        "RefId", "OrderId", "PhysicalGoldConversionId", "IdDuAn"
     };
 
         public AuditManager(ClientInfo clientInfo,
@@ -118,14 +119,14 @@ namespace SweetSoft.QLDA.Core.SysManager
 
         #region IAuditManager Implementation
 
-        public async Task LogActionAsync<T>(LogActions.Actions action, T entity, string tableName, Guid entityId, string user = "[System]")
+        public async Task LogActionAsync<T>(LogActions.Actions action, T entity, string tableName, Guid entityId, string user = "[System]", Guid? referenceId = null, string title = null, string description = null)
         {
             if (!_configuration.IsAuditEnabled || entity == null)
                 return;
 
             try
             {
-                var auditLog = await CreateAuditLogAsync(action, entity, tableName, entityId, user).ConfigureAwait(false);
+                var auditLog = await CreateAuditLogAsync(action, entity, tableName, entityId, user, referenceId, title, description).ConfigureAwait(false);
                 await _auditRepository.AddAuditLogAsync(auditLog).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -138,7 +139,7 @@ namespace SweetSoft.QLDA.Core.SysManager
             }
         }
 
-        public async Task LogChangesAsync<T>(T oldEntity, T newEntity, string tableName, Guid entityId, string user = "[System]")
+        public async Task LogChangesAsync<T>(T oldEntity, T newEntity, string tableName, Guid entityId, string user = "[System]", Guid? referenceId = null, string title = null, string description = null)
         {
             if (!_configuration.IsAuditEnabled || oldEntity == null || newEntity == null)
                 return;
@@ -149,7 +150,7 @@ namespace SweetSoft.QLDA.Core.SysManager
                 if (!changes.Any())
                     return;
 
-                var auditLog = await CreateChangeAuditLogAsync(oldEntity, newEntity, tableName, entityId, user, changes).ConfigureAwait(false);
+                var auditLog = await CreateChangeAuditLogAsync(oldEntity, newEntity, tableName, entityId, user, changes, referenceId, title, description).ConfigureAwait(false);
                 await _auditRepository.AddAuditLogAsync(auditLog).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -270,7 +271,7 @@ namespace SweetSoft.QLDA.Core.SysManager
                 }
 
                 // Log changes
-                await LogChangesAsync(oldData.First(), newData.First(), tableName, recordId, changedBy).ConfigureAwait(false);
+                await LogChangesAsync(oldData.First(), newData.First(), tableName, recordId, changedBy, refId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -279,11 +280,21 @@ namespace SweetSoft.QLDA.Core.SysManager
             }
         }
 
+        public DataTable GetRecentProjectHistory(Guid idDuAn, int numberOfRecords = 5)
+        {
+            if (idDuAn == Guid.Empty)
+                return new DataTable();
+
+            numberOfRecords = Math.Max(1, Math.Min(numberOfRecords, 20));
+
+            return _auditRepository.GetProjectHistory(idDuAn,null,null,null,numberOfRecords);
+        }
+
         #endregion
 
         #region Private Methods
 
-        private async Task<AuditLog> CreateAuditLogAsync<T>(LogActions.Actions action, T entity, string tableName, Guid entityId, string changeBy)
+        private async Task<AuditLog> CreateAuditLogAsync<T>(LogActions.Actions action, T entity, string tableName, Guid entityId, string changeBy, Guid? referenceId, string title, string description)
         {
             var (customerId, refId) = await ExtractIdentifiersAsync(entity).ConfigureAwait(false);
             var changes = await GetEntityPropertiesAsync(entity).ConfigureAwait(false);
@@ -291,13 +302,14 @@ namespace SweetSoft.QLDA.Core.SysManager
             return new AuditLog
             {
                 Id = UUIDv7.NewGuid(),
-                Title = GetAuditTitle(tableName, action),
+                Title = string.IsNullOrWhiteSpace(title) ? GetEntityTitle(entity, tableName) : title.Trim(),
                 CustomerId = customerId,
-                RefId = refId,
+                RefId = referenceId ?? refId,
                 TableName = tableName,
                 RecordId = entityId,
                 ActionType = action.ToString(),
                 Changes = changes,
+                Description = string.IsNullOrWhiteSpace(description) ? GetHistoryDescription(action) : description.Trim(),
                 ChangedBy = !string.IsNullOrEmpty(changeBy) ? changeBy : _clientInfo.UserName,
                 UserId = _clientInfo.UserId,
                 IPAddress = _clientInfo.IpAddress,
@@ -306,19 +318,20 @@ namespace SweetSoft.QLDA.Core.SysManager
             };
         }
 
-        private async Task<AuditLog> CreateChangeAuditLogAsync<T>(T oldEntity, T newEntity, string tableName, Guid entityId, string changeBy, Dictionary<string, ChangeInfo> changes)
+        private async Task<AuditLog> CreateChangeAuditLogAsync<T>(T oldEntity, T newEntity, string tableName, Guid entityId, string changeBy, Dictionary<string, ChangeInfo> changes, Guid? referenceId, string title, string description)
         {
             var (customerId, refId) = await ExtractIdentifiersAsync(newEntity, oldEntity).ConfigureAwait(false);
             return new AuditLog
             {
                 Id = UUIDv7.NewGuid(),
-                Title = GetAuditTitle(tableName, LogActions.Actions.UPDATE),
+                Title = string.IsNullOrWhiteSpace(title) ? GetEntityTitle(newEntity, tableName) : title.Trim(),
                 CustomerId = customerId,
-                RefId = refId,
+                RefId = referenceId ?? refId,
                 TableName = tableName,
                 RecordId = entityId,
                 ActionType = LogActions.Actions.UPDATE.ToString(),
                 Changes = changes.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
+                Description = string.IsNullOrWhiteSpace(description) ? GetHistoryDescription(LogActions.Actions.UPDATE) : description.Trim(),
                 ChangedBy = !string.IsNullOrEmpty(changeBy) ? changeBy : _clientInfo.UserName,
                 UserId = _clientInfo.UserId,
                 IPAddress = _clientInfo.IpAddress,
@@ -507,6 +520,123 @@ namespace SweetSoft.QLDA.Core.SysManager
 
             if (searchRequest.PageSize < 1 || searchRequest.PageSize > 1000)
                 throw new ArgumentException("PageSize must be between 1 and 1000", nameof(searchRequest.PageSize));
+        }
+
+        private string GetHistoryDescription( LogActions.Actions action)
+        {
+            switch (action)
+            {
+                case LogActions.Actions.CREATE:
+                    return BackEndResourceKeys
+                        .HISTORY_CREATED_ENTITY;
+
+                case LogActions.Actions.UPDATE:
+                    return BackEndResourceKeys
+                        .HISTORY_UPDATED_ENTITY;
+
+                case LogActions.Actions.DELETE:
+                    return BackEndResourceKeys
+                        .HISTORY_DELETED_ENTITY;
+
+                default:
+                    return null;
+            }
+        }
+
+        private string GetEntityTitle<T>(
+    T entity,
+    string tableName)
+        {
+            if (entity == null)
+                return null;
+
+            string[] propertyNames =
+                GetTitlePropertyNames(tableName);
+
+            foreach (string propertyName
+                in propertyNames)
+            {
+                PropertyInfo property =
+                    typeof(T).GetProperty(
+                        propertyName,
+                        BindingFlags.Public |
+                        BindingFlags.Instance |
+                        BindingFlags.IgnoreCase);
+
+                if (property == null ||
+                    !property.CanRead)
+                {
+                    continue;
+                }
+
+                string value =
+                    SafeGetPropertyValue(
+                        entity,
+                        property);
+
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value.Trim();
+            }
+
+            return GetAuditTitle(
+                tableName,
+                LogActions.Actions.UPDATE);
+        }
+
+        private string[] GetTitlePropertyNames(
+    string tableName)
+        {
+            switch (tableName)
+            {
+                case nameof(TblDuAn):
+                    return new[]
+                    {
+                "TenDuAn",
+                "MaDuAn"
+            };
+
+                case nameof(TblGiaiDoanDuAn):
+                    return new[]
+                    {
+                "TenGiaiDoanTuyChinh",
+
+                /*
+                 * Theo dữ liệu audit bạn gửi,
+                 * SubSonic trả tên giai đoạn chung
+                 * trong property TblGiaiDoan.
+                 */
+                "TblGiaiDoan"
+            };
+
+                case nameof(TblCongViec):
+                    return new[]
+                    {
+                "TenCongViec",
+                "MaCongViec"
+            };
+
+                case nameof(TblKhachHang):
+                    return new[]
+                    {
+                "TenKhachHang"
+            };
+
+                case nameof(TblHopDongThucHien):
+                    return new[]
+                    {
+                "SoHopDong",
+                "TenHopDong"
+            };
+
+                default:
+                    return new[]
+                    {
+                "Ten",
+                "Name",
+                "Title",
+                "Ma"
+            };
+            }
         }
 
         #endregion

@@ -280,6 +280,7 @@
                                             <%# GetPhanTramHienThi(Eval("NgayDuKienHoanThanh"), Eval("NgayHoanThanhThucTe"), GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>
                                         </div>
                                     </div>
+                                </div><%-- /.stage-item --%>
                 </ItemTemplate>
 
                 <FooterTemplate>

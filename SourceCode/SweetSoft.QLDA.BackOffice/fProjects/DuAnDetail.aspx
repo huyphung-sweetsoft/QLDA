@@ -358,62 +358,45 @@
 
                             <div class="list-group list-group-flush">
 
-                                <div class="list-group-item px-0 py-3">
-                                    <div class="d-flex gap-3">
-                                        <span class="text-primary">
-                                            <i class="far fa-circle"></i>
-                                        </span>
+                                <asp:Repeater
+        runat="server"
+        ID="rptRecentProjectHistory"
+        OnItemDataBound="rptRecentProjectHistory_ItemDataBound">
 
-                                        <div>
-                                            <div class="small">
-                                                Lê Việt Thắng đã cập nhật
-                                                <strong>Tiến độ</strong>
-                                            </div>
+        <ItemTemplate>
+            <div class="list-group-item px-0 py-3">
+                <div class="d-flex gap-3">
+                    <span class="text-primary pt-1">
+                        <i class="far fa-circle"></i>
+                    </span>
 
-                                            <div class="small text-muted mt-1">
-                                                2 giờ trước
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                    <div class="flex-grow-1">
+                        <asp:Label
+                            runat="server"
+                            ID="lblHistoryContent"
+                            CssClass="small">
+                        </asp:Label>
 
-                                <div class="list-group-item px-0 py-3">
-                                    <div class="d-flex gap-3">
-                                        <span class="text-primary">
-                                            <i class="far fa-circle"></i>
-                                        </span>
+                        <div class="small text-muted mt-1">
+                            <asp:Label
+                                runat="server"
+                                ID="lblHistoryTime">
+                            </asp:Label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
 
-                                        <div>
-                                            <div class="small">
-                                                Nguyễn Văn Hùng đã thêm
-                                                <strong>Thành viên</strong>
-                                            </div>
+    <asp:Panel
+        runat="server"
+        ID="pnlEmptyRecentHistory"
+        Visible="false"
+        CssClass="text-muted small py-3">
 
-                                            <div class="small text-muted mt-1">
-                                                3 giờ trước
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="list-group-item px-0 py-3">
-                                    <div class="d-flex gap-3">
-                                        <span class="text-primary">
-                                            <i class="far fa-circle"></i>
-                                        </span>
-
-                                        <div>
-                                            <div class="small">
-                                                Admin đã liên kết
-                                                <strong>Hợp đồng</strong>
-                                            </div>
-
-                                            <div class="small text-muted mt-1">
-                                                5 giờ trước
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        Chưa có hoạt động nào.
+    </asp:Panel>
 
                             </div>
                         </div>

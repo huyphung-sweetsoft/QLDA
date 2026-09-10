@@ -15,14 +15,16 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
         }
 
-        public TblThanhVienDuAn Save(TblThanhVienDuAn item)
+        public TblThanhVienDuAn Insert(TblThanhVienDuAn item, string description = null)
         {
+            Guid id = Guid.Parse(item.GetColumnValue("IdThanhVienDuAn").ToString());
+            Guid idDuAn = Guid.Parse(item.GetColumnValue("IdDuAn").ToString());
             item.Save();
             Task.Run(async () =>
             {
                 try
                 {
-                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, Guid.Parse(item.GetColumnValue("IdDuAn").ToString())).ConfigureAwait(false);
+                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, id, item.NguoiTao, idDuAn, GetNhanVienDisplayName(item.IdNhanVien.Value), description).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -32,6 +34,40 @@ namespace SweetSoft.QLDA.Core.Respositories
             return item;
         }
 
+        public TblThanhVienDuAn Update(TblThanhVienDuAn thanhVienDuAn, string description = null)
+        {
+            Guid id = Guid.Parse(thanhVienDuAn.GetColumnValue("IdThanhVienDuAn").ToString());
+            Guid idDuAn = Guid.Parse(thanhVienDuAn.GetColumnValue("IdDuAn").ToString());
+            TblThanhVienDuAn itemOld = GetById(id);
+            thanhVienDuAn.Save();
+            string updatedBy = string.Empty;
+            try
+            {
+                updatedBy = thanhVienDuAn.GetColumnValue("NguoiCapNhat")?.ToString();
+            }
+            catch { }
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogChangesAsync(itemOld, thanhVienDuAn, _tableName, id, updatedBy, idDuAn, GetNhanVienDisplayName(thanhVienDuAn.IdNhanVien.Value), description).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log changes for TblDuAn");
+                }
+            });
+            return thanhVienDuAn;
+        }
+
+        public override TblThanhVienDuAn GetById(Guid id)
+        {
+            return new Select()
+                .From(TblThanhVienDuAn.Schema)
+                .Where(TblThanhVienDuAn.IdThanhVienDuAnColumn).IsEqualTo(id)
+                .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblThanhVienDuAn>();
+        }
 
         public List<TblThanhVienDuAn> GetByIdDuAn(Guid idDuAn)
         {
@@ -89,6 +125,28 @@ namespace SweetSoft.QLDA.Core.Respositories
             return list.Where(x => x.IdNhanVien.HasValue)
                 .Select(x => x.IdNhanVien.Value)
                 .ToList();
+        }
+
+        public string GetNhanVienDisplayName(
+    Guid idNhanVien)
+        {
+            string sql = $@"
+        DECLARE @idNhanVien UNIQUEIDENTIFIER =
+            '{idNhanVien}';
+
+        SELECT TOP 1
+            COALESCE
+            (
+                NULLIF(
+                    LTRIM(RTRIM(DisplayName)),
+                    N''
+                ),
+                UserName
+            )
+        FROM dbo.aspnet_Users
+        WHERE UserId = @idNhanVien;";
+
+            return new InlineQuery().ExecuteScalar<string>(sql);
         }
     }
 }

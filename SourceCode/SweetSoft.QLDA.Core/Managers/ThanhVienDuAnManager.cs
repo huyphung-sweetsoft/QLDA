@@ -1,8 +1,9 @@
-﻿using SweetSoft.QLDA.Core.ExceptionHelpers;
+﻿using SubSonic;
+using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
-using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.ResourceTexts;
+using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
@@ -41,7 +42,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 thanhVienDuAn.GhiChu = dto.GhiChu;
                 thanhVienDuAn.NguoiCapNhat = SweetContext.Current.UserName;
                 thanhVienDuAn.NgayCapNhat = DateTime.UtcNow;
-                return _repository.Save(thanhVienDuAn);
+                return _repository.Update(thanhVienDuAn);
             }
             else
             {
@@ -55,9 +56,9 @@ namespace SweetSoft.QLDA.Core.Managers
                 thanhVienDuAn.NgayTao = DateTime.UtcNow;
                 thanhVienDuAn.NguoiCapNhat = null;
                 thanhVienDuAn.NgayCapNhat = null;
-                thanhVienDuAn = _repository.Save(thanhVienDuAn);
+                thanhVienDuAn = _repository.Insert(thanhVienDuAn, BackEndResourceKeys.HISTORY_ADDED_TO_CONTAINER);
                 BusinessValidator.ThrowIfNull(thanhVienDuAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
-                return _repository.Save(thanhVienDuAn);
+                return thanhVienDuAn;
             }
         }
         //Thêm đống hàm dưới đây
@@ -69,7 +70,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 tv.DaXoa = true;
                 tv.NguoiCapNhat = SweetContext.Current.UserName;
                 tv.NgayCapNhat = DateTime.UtcNow;
-                _repository.Save(tv);
+                _repository.Update(tv);
             }
         }
 
@@ -85,7 +86,7 @@ namespace SweetSoft.QLDA.Core.Managers
             tv.DaXoa = true;
             tv.NguoiCapNhat = SweetContext.Current.UserName;
             tv.NgayCapNhat = DateTime.UtcNow;
-            _repository.Save(tv);
+            _repository.Update(tv, BackEndResourceKeys.HISTORY_REMOVED_FROM_CONTAINER);
         }
     }
 }

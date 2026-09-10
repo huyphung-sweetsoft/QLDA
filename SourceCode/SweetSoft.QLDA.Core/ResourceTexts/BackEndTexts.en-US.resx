@@ -256,7 +256,7 @@
     <value>Customer</value>
   </data>
   <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Danh sách khách hàng</value>
+    <value> </value>
   </data>
   <data name="DASHBOARD" xml:space="preserve">
     <value>Dashboard</value>
@@ -1147,7 +1147,7 @@
     <value />
   </data>
   <data name="CUSTOMER_NAME" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="CUSTOMER_FEEDBACK" xml:space="preserve">
     <value>Customer Feedback</value>
@@ -1225,11 +1225,8 @@
   <data name="MEETING_ROOM" xml:space="preserve">
     <value>Meeting room</value>
   </data>
-	<data name="GENERAL_CONTENT" xml:space="preserve">
+  <data name="GENERAL_CONTENT" xml:space="preserve">
     <value>General content</value>
-  </data>
-  <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value> </value>
   </data>
   <data name="CUSTOMER_TYPE" xml:space="preserve">
     <value> </value>
@@ -1678,9 +1675,6 @@
   <data name="APPLY" xml:space="preserve">
     <value>Apply</value>
   </data>
-  <data name="ALL_PROJECTS" xml:space="preserve">
-    <value>All projects</value>
-  </data>
   <data name="TRACK_OVERALL_PROJECT_STATUS" xml:space="preserve">
     <value>Track overall project status</value>
   </data>
@@ -1734,9 +1728,6 @@
   </data>
   <data name="PROJECTS_WITH_MOST_RISKS_OR_ISSUES" xml:space="preserve">
     <value>Projects with most risks or issues</value>
-  </data>
-  <data name="PROJECT" xml:space="preserve">
-    <value>Project</value>
   </data>
   <data name="RISK" xml:space="preserve">
     <value>Risk</value>
@@ -1827,5 +1818,11 @@
   </data>
   <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
     <value>Employee</value>
+  </data>
+  <data name="PROJECT_STAGE_TYPE" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="PROJECT_STAGE_NAME" xml:space="preserve">
+    <value>Tên giai đoạn</value>
   </data>
 </root>

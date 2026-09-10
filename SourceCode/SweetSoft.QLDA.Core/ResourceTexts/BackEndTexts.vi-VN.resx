@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -585,9 +585,6 @@
   <data name="PROJECT_LIST" xml:space="preserve">
     <value>Danh sách dự án</value>
   </data>
-  <data name="PROVINCES" xml:space="preserve">
-    <value>Các tỉnh</value>
-  </data>
   <data name="READ" xml:space="preserve">
     <value>Đọc</value>
   </data>
@@ -1081,17 +1078,20 @@
   <data name="NOT_STARTED" xml:space="preserve">
     <value>Chưa bắt đầu</value>
   </data>
-  <data name="PROVINCES" xml:space="preserve">
-    <value>Các tỉnh</value>
+  <data name="MEETING_NAME" xml:space="preserve">
+    <value>Tên cuộc họp</value>
   </data>
-  <data name="PROJECT_LIST" xml:space="preserve">
-    <value>Danh sách dự án</value>
+  <data name="MEETING_LIST" xml:space="preserve">
+    <value>Danh sách cuộc họp</value>
   </data>
-  <data name="PROJECT_INFORMATION" xml:space="preserve">
-    <value>Thông tin dự án</value>
+  <data name="MEETING_CODE" xml:space="preserve">
+    <value>Mã cuộc họp</value>
   </data>
-  <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Danh sách khách hàng</value>
+  <data name="MEETING_ROOM" xml:space="preserve">
+    <value>Địa điểm họp</value>
+  </data>
+  <data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>Nội dung khái quát</value>
   </data>
   <data name="CUSTOMER_TYPE" xml:space="preserve">
     <value>Loại khách hàng</value>
@@ -1101,6 +1101,9 @@
   </data>
   <data name="CONTACT_EMAIL" xml:space="preserve">
     <value>Email liên hệ</value>
+  </data>
+  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
+    <value>Điện thoại liên hệ</value>
   </data>
   <data name="ACCOUNT_TYPE" xml:space="preserve">
     <value>Loại Tài Khoản</value>
@@ -1177,6 +1180,9 @@
   <data name="DESCRIPTION" xml:space="preserve">
     <value>Mô tả</value>
   </data>
+  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý lịch biểu chung</value>
+  </data>
   <data name="DISPLAY_ORDER" xml:space="preserve">
     <value>Thứ tự hiển thị</value>
   </data>
@@ -1209,159 +1215,6 @@
   </data>
   <data name="SELECT_DOCUMENT_GROUP" xml:space="preserve">
     <value>Chọn nhóm tài liệu</value>
-  </data>
-  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý lịch biểu chung</value>
-  </data>
-  <data name="TEMPLATE_NAME" xml:space="preserve">
-    <value>Tên mẫu email</value>
-  </data>
-  <data name="BULK_DELETE" xml:space="preserve">
-    <value>Xóa hàng loạt</value>
-  </data>
-  <data name="GRADE_CLASS" xml:space="preserve">
-    <value>Khối - lớp</value>
-  </data>
-  <data name="CLASS_LIST" xml:space="preserve">
-    <value>Danh sách lớp</value>
-  </data>
-  <data name="GRADE_LIST" xml:space="preserve">
-    <value>Danh sách khối</value>
-  </data>
-  <data name="GRADE" xml:space="preserve">
-    <value>Khối</value>
-  </data>
-  <data name="CLASS_INFORMATION" xml:space="preserve">
-    <value>Thông tin lớp học</value>
-  </data>
-  <data name="GRADE_INFORMATION" xml:space="preserve">
-    <value>Thông tin khối</value>
-  </data>
-  <data name="CLASS" xml:space="preserve">
-    <value>Lớp</value>
-  </data>
-  <data name="COMPETITION_LIST" xml:space="preserve">
-    <value>Danh sách cuộc thi</value>
-  </data>
-  <data name="NOT_STARTED" xml:space="preserve">
-    <value>Chưa bắt đầu</value>
-  </data>
-  <data name="IN_PROGRESS" xml:space="preserve">
-    <value>Đang thực hiện</value>
-  </data>
-  <data name="COMPLETED" xml:space="preserve">
-    <value>Hoàn thành</value>
-  </data>
-  <data name="CANCELLED" xml:space="preserve">
-    <value>Đã hủy</value>
-  </data>
-  <data name="COMPETITION_MANAGER" xml:space="preserve">
-    <value>Quản lý cuộc thi</value>
-  </data>
-  <data name="END_DATE" xml:space="preserve">
-    <value>Ngày kết thúc</value>
-  </data>
-  <data name="START_DATE" xml:space="preserve">
-    <value>Ngày bắt đầu</value>
-  </data>
-  <data name="COMPETITION" xml:space="preserve">
-    <value>Cuộc thi</value>
-  </data>
-  <data name="COMPETITION_ROUND" xml:space="preserve">
-    <value>Vòng thi</value>
-  </data>
-  <data name="COMPETITION_ROUND_LIST" xml:space="preserve">
-    <value>Danh sách vòng thi</value>
-  </data>
-  <data name="COMPETITION_ROUND_MEMBER_LIST" xml:space="preserve">
-    <value>Danh sách đội thi</value>
-  </data>
-  <data name="COMPETITION_ROUND_MEMBER" xml:space="preserve">
-    <value>Đội thi</value>
-  </data>
-  <data name="COMPETITION_ROUND_INFORMATION" xml:space="preserve">
-    <value>Thông tin vòng thi</value>
-  </data>
-  <data name="PLEASE_ENTER_MEMBER_LIST" xml:space="preserve">
-    <value>Vui lòng thêm thành viên cho vòng thi</value>
-  </data>
-  <data name="START" xml:space="preserve">
-    <value>Khởi động</value>
-  </data>
-  <data name="OVERCOME_OBSTACLE" xml:space="preserve">
-    <value>Vượt chướng ngại vật</value>
-  </data>
-  <data name="FINISH" xml:space="preserve">
-    <value>Về đích</value>
-  </data>
-  <data name="QUESTION" xml:space="preserve">
-    <value>Câu hỏi</value>
-  </data>
-  <data name="UPDATE_START_QUESTION" xml:space="preserve">
-    <value>Cập nhật câu hỏi phần thi Khởi động</value>
-  </data>
-  <data name="UPDATE_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
-    <value>Cập nhật câu hỏi phần thi Vượt chướng ngại vật</value>
-  </data>
-  <data name="UPDATE_FINISH_QUESTION" xml:space="preserve">
-    <value>Cập nhật câu hỏi phần thi Về đích</value>
-  </data>
-  <data name="PLEASE_COMFIRM_COMPETITION_UPDATE_COMPLETE" xml:space="preserve">
-    <value>Vui lòng xác nhận hoàn thành cuộc thi, sau khi hoàn thành các dữ liệu sẽ không thể chỉnh sửa. </value>
-  </data>
-  <data name="PLEASE_COMFIRM_COMPETITION_ROUND_UPDATE_COMPLETE" xml:space="preserve">
-    <value>Vui lòng xác nhận hoàn thành vòng thi, sau khi hoàn thành các dữ liệu trong vòng thi này sẽ không thể chỉnh sửa. </value>
-  </data>
-  <data name="DATA_ALREADY_UPDATED" xml:space="preserve">
-    <value>Dữ liệu đã được cập nhật trước đó!</value>
-  </data>
-  <data name="VIEW_START_QUESTION" xml:space="preserve">
-    <value>Xem câu hỏi phần thi Khởi động</value>
-  </data>
-  <data name="VIEW_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
-    <value>Xem câu hỏi phần thi Vượt chướng ngại vật</value>
-  </data>
-  <data name="VIEW_FINISH_QUESTION" xml:space="preserve">
-    <value>Xem câu hỏi phần thi Về đích</value>
-  </data>
-  <data name="THIS_ROUND_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
-    <value>Vòng thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
-  </data>
-  <data name="THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
-    <value>Cuộc thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
-  </data>
-  <data name="RESULT" xml:space="preserve">
-    <value>Kết quả</value>
-  </data>
-  <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
-    <value>Vui lòng chọn khối</value>
-  </data>
-  <data name="MEETING_NAME" xml:space="preserve">
-    <value>Tên cuộc họp</value>
-  </data>
-  <data name="MEETING_LIST" xml:space="preserve">
-    <value>Danh sách cuộc họp</value>
-  </data>
-  <data name="MEETING_CODE" xml:space="preserve">
-    <value>Mã cuộc họp</value>
-  </data>
-  <data name="MEETING_ROOM" xml:space="preserve">
-    <value>Địa điểm họp</value>
-  </data>
-  <data name="GENERAL_CONTENT" xml:space="preserve">
-    <value>Nội dung khái quát</value>
-  </data>
-  <data name="PROJECT_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý dự án</value>
-  </data>
-  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
-    <value>Điện thoại liên hệ</value>
-  </data>
-  <data name="SCHEDULE_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý lịch biểu chung</value>
-  </data>
-  <data name="PROJECT_MEMBERS" xml:space="preserve">
-    <value>Thành viên dự án</value>
   </data>
   <data name="DOCUMENT_STORAGE_LOCATION" xml:space="preserve">
     <value>Nơi lưu trữ</value>
@@ -1660,9 +1513,6 @@
   <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
     <value>Xóa phiên bản</value>
   </data>
-  <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
-    <value>Vui lòng chọn khối</value>
-  </data>
   <data name="DASHBOARD_OVERVIEW" xml:space="preserve">
     <value>Tổng quan</value>
   </data>
@@ -1686,9 +1536,6 @@
   </data>
   <data name="APPLY" xml:space="preserve">
     <value>Áp dụng</value>
-  </data>
-  <data name="ALL_PROJECTS" xml:space="preserve">
-    <value>Tất cả dự án</value>
   </data>
   <data name="TRACK_OVERALL_PROJECT_STATUS" xml:space="preserve">
     <value>Theo dõi tình hình tổng thể của các dự án</value>
@@ -1743,9 +1590,6 @@
   </data>
   <data name="PROJECTS_WITH_MOST_RISKS_OR_ISSUES" xml:space="preserve">
     <value>Các dự án có nhiều rủi ro hoặc vấn đề nhất</value>
-  </data>
-  <data name="PROJECT" xml:space="preserve">
-    <value>Dự án</value>
   </data>
   <data name="RISK" xml:space="preserve">
     <value>Rủi ro</value>
@@ -1837,4 +1681,178 @@
   <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
     <value>Nhân sự</value>
   </data>
+  <data name="PROJECT_STAGE_TYPE" xml:space="preserve">
+    <value>Loại giai đoạn</value>
+  </data>
+  <data name="PROJECT_STAGE_NAME" xml:space="preserve">
+    <value>Tên giai đoạn</value>
+  </data>
+  <data name="PROVINCES" xml:space="preserve">
+    <value>Các tỉnh</value>
+  </data>
+  <data name="TEMPLATE_NAME" xml:space="preserve">
+    <value>Tên mẫu email</value>
+  </data>
+  <data name="BULK_DELETE" xml:space="preserve">
+    <value>Xóa hàng loạt</value>
+  </data>
+  <data name="GRADE_CLASS" xml:space="preserve">
+    <value>Khối - lớp</value>
+  </data>
+  <data name="CLASS_LIST" xml:space="preserve">
+    <value>Danh sách lớp</value>
+  </data>
+  <data name="GRADE_LIST" xml:space="preserve">
+    <value>Danh sách khối</value>
+  </data>
+  <data name="GRADE" xml:space="preserve">
+    <value>Khối</value>
+  </data>
+  <data name="CLASS_INFORMATION" xml:space="preserve">
+    <value>Thông tin lớp học</value>
+  </data>
+  <data name="GRADE_INFORMATION" xml:space="preserve">
+    <value>Thông tin khối</value>
+  </data>
+  <data name="CLASS" xml:space="preserve">
+    <value>Lớp</value>
+  </data>
+  <data name="COMPETITION_LIST" xml:space="preserve">
+    <value>Danh sách cuộc thi</value>
+  </data>
+  <data name="IN_PROGRESS" xml:space="preserve">
+    <value>Đang thực hiện</value>
+  </data>
+  <data name="COMPLETED" xml:space="preserve">
+    <value>Hoàn thành</value>
+  </data>
+  <data name="CANCELLED" xml:space="preserve">
+    <value>Đã hủy</value>
+  </data>
+  <data name="COMPETITION_MANAGER" xml:space="preserve">
+    <value>Quản lý cuộc thi</value>
+  </data>
+  <data name="COMPETITION" xml:space="preserve">
+    <value>Cuộc thi</value>
+  </data>
+  <data name="COMPETITION_ROUND" xml:space="preserve">
+    <value>Vòng thi</value>
+  </data>
+  <data name="COMPETITION_ROUND_LIST" xml:space="preserve">
+    <value>Danh sách vòng thi</value>
+  </data>
+  <data name="COMPETITION_ROUND_MEMBER_LIST" xml:space="preserve">
+    <value>Danh sách đội thi</value>
+  </data>
+  <data name="COMPETITION_ROUND_MEMBER" xml:space="preserve">
+    <value>Đội thi</value>
+  </data>
+  <data name="COMPETITION_ROUND_INFORMATION" xml:space="preserve">
+    <value>Thông tin vòng thi</value>
+  </data>
+  <data name="PLEASE_ENTER_MEMBER_LIST" xml:space="preserve">
+    <value>Vui lòng thêm thành viên cho vòng thi</value>
+  </data>
+  <data name="START" xml:space="preserve">
+    <value>Khởi động</value>
+  </data>
+  <data name="OVERCOME_OBSTACLE" xml:space="preserve">
+    <value>Vượt chướng ngại vật</value>
+  </data>
+  <data name="FINISH" xml:space="preserve">
+    <value>Về đích</value>
+  </data>
+  <data name="QUESTION" xml:space="preserve">
+    <value>Câu hỏi</value>
+  </data>
+  <data name="UPDATE_START_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Khởi động</value>
+  </data>
+  <data name="UPDATE_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Vượt chướng ngại vật</value>
+  </data>
+  <data name="UPDATE_FINISH_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Về đích</value>
+  </data>
+  <data name="PLEASE_COMFIRM_COMPETITION_UPDATE_COMPLETE" xml:space="preserve">
+    <value>Vui lòng xác nhận hoàn thành cuộc thi, sau khi hoàn thành các dữ liệu sẽ không thể chỉnh sửa. </value>
+  </data>
+  <data name="PLEASE_COMFIRM_COMPETITION_ROUND_UPDATE_COMPLETE" xml:space="preserve">
+    <value>Vui lòng xác nhận hoàn thành vòng thi, sau khi hoàn thành các dữ liệu trong vòng thi này sẽ không thể chỉnh sửa. </value>
+  </data>
+  <data name="DATA_ALREADY_UPDATED" xml:space="preserve">
+    <value>Dữ liệu đã được cập nhật trước đó!</value>
+  </data>
+  <data name="VIEW_START_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Khởi động</value>
+  </data>
+  <data name="VIEW_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Vượt chướng ngại vật</value>
+  </data>
+  <data name="VIEW_FINISH_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Về đích</value>
+  </data>
+  <data name="THIS_ROUND_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
+    <value>Vòng thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
+  </data>
+  <data name="THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
+    <value>Cuộc thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
+  </data>
+  <data name="RESULT" xml:space="preserve">
+    <value>Kết quả</value>
+  </data>
+  <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
+    <value>Vui lòng chọn khối</value>
+  </data>
+	<data name="HISTORY_CREATED_ENTITY" xml:space="preserve">
+    <value>{0} đã tạo {1} &quot;{2}&quot;.</value>
+  </data>
+	<data name="HISTORY_UPDATED_ENTITY" xml:space="preserve">
+    <value>{0} đã cập nhật {1} &quot;{2}&quot;.</value>
+  </data>
+	<data name="HISTORY_DELETED_ENTITY" xml:space="preserve">
+    <value>{0} đã xóa {1} &quot;{2}&quot;.</value>
+  </data>
+	<data name="HISTORY_ADDED_TO_CONTAINER" xml:space="preserve">
+    <value>{0} đã thêm {1} vào {2}.</value>
+  </data>
+	<data name="HISTORY_REMOVED_FROM_CONTAINER" xml:space="preserve">
+    <value>{0} đã xóa {1} khỏi {2}.</value>
+  </data>
+	<data name="HISTORY_CHANGED_VALUE" xml:space="preserve">
+    <value>{0} đã thay đổi {1} từ {2} thành {3}.</value>
+  </data>
+	<data name="HISTORY_LINKED_ENTITY" xml:space="preserve">
+    <value>{0} đã liên kết {1} với {2}.</value>
+  </data>
+	<data name="HISTORY_UNLINKED_ENTITY" xml:space="preserve">
+    <value>{0} đã hủy liên kết {1} khỏi {2}.</value>
+  </data>
+	<data name="HISTORY_ENTITY_PROJECT" xml:space="preserve">
+  <value>dự án</value>
+</data>
+
+	<data name="HISTORY_ENTITY_STAGE" xml:space="preserve">
+  <value>giai đoạn</value>
+</data>
+
+	<data name="HISTORY_ENTITY_TASK" xml:space="preserve">
+  <value>công việc</value>
+</data>
+
+	<data name="HISTORY_ENTITY_MEMBER" xml:space="preserve">
+  <value>thành viên</value>
+</data>
+
+	<data name="HISTORY_ENTITY_CONTRACT" xml:space="preserve">
+  <value>hợp đồng</value>
+</data>
+
+	<data name="HISTORY_ENTITY_DOCUMENT" xml:space="preserve">
+  <value>hồ sơ</value>
+</data>
+
+	<data name="HISTORY_ENTITY_RISK" xml:space="preserve">
+  <value>rủi ro</value>
+</data>
 </root>

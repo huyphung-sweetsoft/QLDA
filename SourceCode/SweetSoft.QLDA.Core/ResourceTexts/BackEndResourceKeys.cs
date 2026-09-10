@@ -591,5 +591,43 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SAFE = "SAFE";
         public const string AT_RISK = "AT_RISK";
         public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
+
+        //Project history
+        public const string PROJECT_STAGE_TYPE = "PROJECT_STAGE_TYPE";
+        public const string PROJECT_STAGE_NAME = "PROJECT_STAGE_NAME";
+        public const string EXPECTED_COMPLETION_DATE = "EXPECTED_COMPLETION_DATE";
+        public const string ACTUAL_COMPLETION_DATE = "ACTUAL_COMPLETION_DATE";
+        public const string COMMON_STAGE = "COMMON_STAGE";
+        public const string CUSTOM_STAGE = "CUSTOM_STAGE";
+
+        public const string HISTORY_CREATED_ENTITY = "HISTORY_CREATED_ENTITY";
+        public const string HISTORY_UPDATED_ENTITY = "HISTORY_UPDATED_ENTITY";
+        public const string HISTORY_DELETED_ENTITY = "HISTORY_DELETED_ENTITY";
+        public const string HISTORY_ADDED_TO_CONTAINER = "HISTORY_ADDED_TO_CONTAINER";
+        public const string HISTORY_REMOVED_FROM_CONTAINER = "HISTORY_REMOVED_FROM_CONTAINER";
+        public const string HISTORY_CHANGED_VALUE = "HISTORY_CHANGED_VALUE";
+        public const string HISTORY_LINKED_ENTITY = "HISTORY_LINKED_ENTITY";
+        public const string HISTORY_UNLINKED_ENTITY = "HISTORY_UNLINKED_ENTITY";
+
+        public const string HISTORY_ENTITY_PROJECT =
+    "HISTORY_ENTITY_PROJECT";
+
+        public const string HISTORY_ENTITY_STAGE =
+            "HISTORY_ENTITY_STAGE";
+
+        public const string HISTORY_ENTITY_TASK =
+            "HISTORY_ENTITY_TASK";
+
+        public const string HISTORY_ENTITY_MEMBER =
+            "HISTORY_ENTITY_MEMBER";
+
+        public const string HISTORY_ENTITY_CONTRACT =
+            "HISTORY_ENTITY_CONTRACT";
+
+        public const string HISTORY_ENTITY_DOCUMENT =
+            "HISTORY_ENTITY_DOCUMENT";
+
+        public const string HISTORY_ENTITY_RISK =
+            "HISTORY_ENTITY_RISK";
     }
 }
