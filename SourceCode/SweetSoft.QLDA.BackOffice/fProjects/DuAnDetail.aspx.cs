@@ -58,9 +58,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             if (_auditManager == null)
                 _auditManager = new AuditManager(new Core.SysManager.Models.ClientInfo()
                 {
-                    UserId = SweetContext.Current.UserId,
-                    IpAddress = SweetContext.Current.CurrentUserIp,
-                    UserAgent = SweetContext.Current.CurrentUserAgent
+                    UserId = SweetContext.Current.UserId, IpAddress = SweetContext.Current.CurrentUserIp, UserAgent = SweetContext.Current.CurrentUserAgent
                 });
             if (!IsPostBack)
             {
@@ -69,8 +67,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.PROJECT_LIST));
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>()
                 {
-                    {RewriteURLHelper.Projects, GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
-                    {"javascript:", GetResourceText(BackEndResourceKeys.DETAIL) }
+                    {RewriteURLHelper.Projects, GetResourceText(BackEndResourceKeys.PROJECT_LIST) }, {"javascript:", GetResourceText(BackEndResourceKeys.DETAIL) }
                 };
                 if (this.QueryId != Guid.Empty)
                 {
@@ -100,88 +97,51 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
         }
 
-        protected void rptRecentProjectHistory_ItemDataBound(
-    object sender,
-    RepeaterItemEventArgs e)
+        protected void rptRecentProjectHistory_ItemDataBound( object sender, RepeaterItemEventArgs e)
         {
-            if (e.Item.ItemType !=
-                    ListItemType.Item &&
-                e.Item.ItemType !=
-                    ListItemType.AlternatingItem)
+            if (e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem)
             {
                 return;
             }
 
-            DataRowView row =
-                e.Item.DataItem as DataRowView;
+            DataRowView row = e.Item.DataItem as DataRowView;
 
             if (row == null)
                 return;
 
-            Label lblHistoryContent =
-                e.Item.FindControl(
-                    "lblHistoryContent")
-                as Label;
+            Label lblHistoryContent = e.Item.FindControl( "lblHistoryContent") as Label;
 
-            Label lblHistoryTime =
-                e.Item.FindControl(
-                    "lblHistoryTime")
-                as Label;
+            Label lblHistoryTime = e.Item.FindControl( "lblHistoryTime") as Label;
 
             if (lblHistoryContent != null)
             {
-                lblHistoryContent.Text =
-                    HttpUtility.HtmlEncode(
-                        BuildHistoryContent(
-                            row.Row));
+                lblHistoryContent.Text = HttpUtility.HtmlEncode( BuildHistoryContent( row.Row));
             }
 
             if (lblHistoryTime != null)
             {
-                lblHistoryTime.Text =
-                    FormatHistoryTime(
-                        row.Row);
+                lblHistoryTime.Text = FormatHistoryTime( row.Row);
             }
         }
 
-        protected void lbtViewAllHistory_Click(
-    object sender,
-    EventArgs e)
+        protected void lbtViewAllHistory_Click( object sender, EventArgs e)
         {
-            CtrlLichSuDuAn1.IdDuAn =
-                QueryId;
+            CtrlLichSuDuAn1.IdDuAn = QueryId;
 
             CtrlLichSuDuAn1.OpenDrawer();
         }
 
-        private string BuildHistoryContent(
-    DataRow row)
+        private string BuildHistoryContent( DataRow row)
         {
-            string resourceKey =
-                GetColumnText(
-                    row,
-                    "Description");
+            string resourceKey = GetColumnText( row, "Description");
 
-            string actor =
-                GetColumnText(
-                    row,
-                    "ChangedBy");
+            string actor = GetColumnText( row, "ChangedBy");
 
-            string tableName =
-                GetColumnText(
-                    row,
-                    "TableName");
+            string tableName = GetColumnText( row, "TableName");
 
-            string title =
-                GetColumnText(
-                    row,
-                    "Title");
+            string title = GetColumnText( row, "Title");
 
-            if (string.IsNullOrWhiteSpace(actor) ||
-                string.Equals(
-                    actor,
-                    "[System]",
-                    StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(actor) || string.Equals( actor, "[System]", StringComparison.OrdinalIgnoreCase))
             {
                 actor = "Hệ thống";
             }
@@ -189,161 +149,90 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             if (string.IsNullOrWhiteSpace(title))
                 title = "Chưa xác định";
 
-            string entityName =
-                GetHistoryEntityName(
-                    tableName);
+            string entityName = GetHistoryEntityName( tableName);
 
-            string template =
-                string.IsNullOrWhiteSpace(resourceKey)
+            string template = string.IsNullOrWhiteSpace(resourceKey)
                     ? null
                     : GetResourceText(resourceKey);
 
-            if (string.IsNullOrWhiteSpace(template) ||
-                string.Equals(
-                    template,
-                    resourceKey,
-                    StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(template) || string.Equals( template, resourceKey, StringComparison.OrdinalIgnoreCase))
             {
-                return BuildDefaultHistoryContent(
-                    row,
-                    actor,
-                    entityName,
-                    title);
+                return BuildDefaultHistoryContent( row, actor, entityName, title);
             }
 
-            bool isContainerAction = string.Equals(resourceKey, BackEndResourceKeys.HISTORY_ADDED_TO_CONTAINER,StringComparison.OrdinalIgnoreCase) ||
-                                    string.Equals(resourceKey,BackEndResourceKeys.HISTORY_REMOVED_FROM_CONTAINER,StringComparison.OrdinalIgnoreCase);
+            bool isContainerAction = string.Equals(resourceKey, BackEndResourceKeys.HISTORY_ADDED_TO_CONTAINER, StringComparison.OrdinalIgnoreCase) || string.Equals(resourceKey, BackEndResourceKeys.HISTORY_REMOVED_FROM_CONTAINER, StringComparison.OrdinalIgnoreCase);
             if (isContainerAction)
             {
                 string containerName = GetResourceText(BackEndResourceKeys.PROJECT);
-                return string.Format(
-                    template,
-                    actor,          // {0}: Administrator
+                return string.Format( template, actor,          // {0}: Administrator
                     title,          // {1}: Nguyễn Thị A
                     containerName);
             }
 
-                try
+            try
             {
-                return string.Format(
-                    template,
-                    actor,
-                    entityName,
-                    title);
+                return string.Format( template, actor, entityName, title);
             }
             catch (FormatException)
             {
-                return BuildDefaultHistoryContent(
-                    row,
-                    actor,
-                    entityName,
-                    title);
+                return BuildDefaultHistoryContent( row, actor, entityName, title);
             }
         }
 
-        private string GetHistoryEntityName(
-    string tableName)
+        private string GetHistoryEntityName( string tableName)
         {
             switch (tableName)
             {
-                case nameof(TblDuAn):
-                    return "dự án";
+                case nameof(TblDuAn): return "dự án";
 
-                case nameof(TblGiaiDoanDuAn):
-                    return "giai đoạn";
+                case nameof(TblGiaiDoanDuAn): return "giai đoạn";
 
-                case nameof(TblCongViec):
-                    return "công việc";
+                case nameof(TblCongViec): return "công việc";
 
-                case nameof(TblThanhVienDuAn):
-                    return "thành viên dự án";
+                case nameof(TblThanhVienDuAn): return "thành viên dự án";
 
-                case nameof(TblHopDongThucHien):
-                    return "hợp đồng";
+                case nameof(TblHopDongThucHien): return "hợp đồng";
 
-                default:
-                    return "thông tin";
+                default: return "thông tin";
             }
         }
 
-        private string BuildDefaultHistoryContent(
-    DataRow row,
-    string actor,
-    string entityName,
-    string title)
+        private string BuildDefaultHistoryContent( DataRow row, string actor, string entityName, string title)
         {
-            string actionType =
-                GetColumnText(
-                    row,
-                    "ActionType");
+            string actionType = GetColumnText( row, "ActionType");
 
             switch (actionType)
             {
-                case "CREATE":
-                    return string.Format(
-                        "{0} đã thêm {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                case "CREATE": return string.Format( "{0} đã thêm {1} \"{2}\".", actor, entityName, title);
 
-                case "UPDATE":
-                    return string.Format(
-                        "{0} đã cập nhật {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                case "UPDATE": return string.Format( "{0} đã cập nhật {1} \"{2}\".", actor, entityName, title);
 
-                case "DELETE":
-                    return string.Format(
-                        "{0} đã xóa {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                case "DELETE": return string.Format( "{0} đã xóa {1} \"{2}\".", actor, entityName, title);
 
-                default:
-                    return string.Format(
-                        "{0} đã thao tác trên {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                default: return string.Format( "{0} đã thao tác trên {1} \"{2}\".", actor, entityName, title);
             }
         }
 
-        private string FormatHistoryTime(
-    DataRow row)
+        private string FormatHistoryTime( DataRow row)
         {
-            if (!row.Table.Columns.Contains(
-                    "ChangedAt") ||
-                row["ChangedAt"] == null ||
-                row["ChangedAt"] == DBNull.Value)
+            if (!row.Table.Columns.Contains( "ChangedAt") || row["ChangedAt"] == null || row["ChangedAt"] == DBNull.Value)
             {
                 return string.Empty;
             }
 
-            DateTime changedAt =
-                Convert.ToDateTime(
-                    row["ChangedAt"]);
+            DateTime changedAt = Convert.ToDateTime( row["ChangedAt"]);
 
-            return changedAt
-                .ToLocalTime()
-                .ToString("dd/MM/yyyy HH:mm");
+            return changedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
         }
 
-        private string GetColumnText(
-    DataRow row,
-    string columnName)
+        private string GetColumnText( DataRow row, string columnName)
         {
-            if (row == null ||
-                !row.Table.Columns.Contains(
-                    columnName) ||
-                row[columnName] == null ||
-                row[columnName] == DBNull.Value)
+            if (row == null || !row.Table.Columns.Contains( columnName) || row[columnName] == null || row[columnName] == DBNull.Value)
             {
                 return string.Empty;
             }
 
-            return Convert.ToString(
-                row[columnName]);
+            return Convert.ToString( row[columnName]);
         }
 
         private void BindProjectInformation(DataRow row)
@@ -362,7 +251,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             lblNhanVienQuanLy.Text = GetDisplayText(row, "DisplayName");
 
             string avatarUrl = Convert.ToString(row["Avatar"]);
-            if (!string.IsNullOrEmpty(avatarUrl) )
+            if (!string.IsNullOrEmpty(avatarUrl))
             {
                 imgAvatarPM.Src = avatarUrl;
             }
@@ -399,7 +288,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             if (!row.Table.Columns.Contains(columnName) || row[columnName] == null || row[columnName] == DBNull.Value)
             {
-                return "Chưa có";  
+                return "Chưa có";
             }
             DateTime value = Convert.ToDateTime(row[columnName]);
             return DateTimeHelper.ConvertDateTime(value, false);
@@ -435,41 +324,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             if (rptRecentProjectHistory == null)
             {
-                throw new InvalidOperationException(
-                    "Không tìm thấy control rptRecentProjectHistory trong DuAnDetail.aspx.");
+                throw new InvalidOperationException( "Không tìm thấy control rptRecentProjectHistory trong DuAnDetail.aspx.");
             }
 
             if (pnlEmptyRecentHistory == null)
             {
-                throw new InvalidOperationException(
-                    "Không tìm thấy control pnlEmptyRecentHistory trong DuAnDetail.aspx.");
+                throw new InvalidOperationException( "Không tìm thấy control pnlEmptyRecentHistory trong DuAnDetail.aspx.");
             }
 
-            DataTable history = _auditManager.GetRecentProjectHistory(
-                        QueryId,
-                        5);
+            DataTable history = _auditManager.GetRecentProjectHistory( QueryId, 5);
 
-            bool hasData =
-                history != null &&
-                history.Rows.Count > 0;
+            bool hasData = history != null && history.Rows.Count > 0;
 
-            rptRecentProjectHistory.Visible =
-                hasData;
+            rptRecentProjectHistory.Visible = hasData;
 
-            pnlEmptyRecentHistory.Visible =
-                !hasData;
+            pnlEmptyRecentHistory.Visible = !hasData;
 
             if (!hasData)
             {
-                rptRecentProjectHistory.DataSource =
-                    null;
+                rptRecentProjectHistory.DataSource = null;
 
                 rptRecentProjectHistory.DataBind();
                 return;
             }
 
-            rptRecentProjectHistory.DataSource =
-                history;
+            rptRecentProjectHistory.DataSource = history;
 
             rptRecentProjectHistory.DataBind();
         }

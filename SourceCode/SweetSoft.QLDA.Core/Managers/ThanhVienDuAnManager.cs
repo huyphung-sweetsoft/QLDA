@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
-    public class ThanhVienDuAnManager :BaseManager
+    public class ThanhVienDuAnManager : BaseManager
     {
         private static readonly Lazy<ThanhVienDuAnManager> _instance = new Lazy<ThanhVienDuAnManager>(() => new ThanhVienDuAnManager());
         public static ThanhVienDuAnManager Instance => _instance.Value;

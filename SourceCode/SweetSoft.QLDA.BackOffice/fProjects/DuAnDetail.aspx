@@ -29,11 +29,7 @@
 
                     <%-- Dropdown trạng thái --%>
                     <div class="dropdown">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
 
                             <i class="fas fa-circle text-info me-2 small"></i>
                             Đang thực hiện
@@ -77,19 +73,13 @@
                         </ul>
                     </div>
 
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary">
+                    <button type="button" class="btn btn-outline-secondary">
                         <i class="fas fa-pencil-alt me-1"></i>
                         Sửa
                     </button>
 
                     <div class="dropdown">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
 
@@ -211,16 +201,9 @@
                                         </strong>
                                     </div>
 
-                                    <div
-                                        class="progress"
-                                        role="progressbar"
-                                        aria-valuenow="62"
-                                        aria-valuemin="0"
-                                        aria-valuemax="100">
+                                    <div class="progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100">
 
-                                        <div
-                                            class="progress-bar bg-primary"
-                                            style="width: 62%">
+                                        <div class="progress-bar bg-primary" style="width: 62%">
                                         </div>
                                     </div>
                                 </div>
@@ -236,16 +219,9 @@
                                         </strong>
                                     </div>
 
-                                    <div
-                                        class="progress"
-                                        role="progressbar"
-                                        aria-valuenow="58"
-                                        aria-valuemin="0"
-                                        aria-valuemax="100">
+                                    <div class="progress" role="progressbar" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100">
 
-                                        <div
-                                            class="progress-bar bg-primary"
-                                            style="width: 58%">
+                                        <div class="progress-bar bg-primary" style="width: 58%">
                                         </div>
                                     </div>
                                 </div>
@@ -330,9 +306,7 @@
                                 Hợp đồng thực hiện
                             </h6>
 
-                            <a
-                                href="javascript:;"
-                                class="text-primary text-decoration-none">
+                            <a href="javascript:;" class="text-primary text-decoration-none">
 
                                 <i class="fas fa-file-contract me-2"></i>
                                 <asp:Label runat="server" ID="lblSoHopDong"></asp:Label>
@@ -350,19 +324,10 @@
                                     Hoạt động gần đây
                                 </h5>
 
-<asp:UpdatePanel
-    runat="server"
-    ID="upnlOpenProjectHistory"
-    UpdateMode="Conditional"
-    RenderMode="Inline">
+<asp:UpdatePanel runat="server" ID="upnlOpenProjectHistory" UpdateMode="Conditional" RenderMode="Inline">
 
     <ContentTemplate>
-        <asp:LinkButton
-            runat="server"
-            ID="lbtViewAllHistory"
-            CausesValidation="false"
-            CssClass="small text-primary text-decoration-none"
-            OnClick="lbtViewAllHistory_Click">
+        <asp:LinkButton runat="server" ID="lbtViewAllHistory" CausesValidation="false" CssClass="small text-primary text-decoration-none" OnClick="lbtViewAllHistory_Click">
 
             Xem tất cả
         </asp:LinkButton>
@@ -372,10 +337,7 @@
 
                             <div class="list-group list-group-flush">
 
-                                <asp:Repeater
-        runat="server"
-        ID="rptRecentProjectHistory"
-        OnItemDataBound="rptRecentProjectHistory_ItemDataBound">
+                                <asp:Repeater runat="server" ID="rptRecentProjectHistory" OnItemDataBound="rptRecentProjectHistory_ItemDataBound">
 
         <ItemTemplate>
             <div class="list-group-item px-0 py-3">
@@ -385,16 +347,11 @@
                     </span>
 
                     <div class="flex-grow-1">
-                        <asp:Label
-                            runat="server"
-                            ID="lblHistoryContent"
-                            CssClass="small">
+                        <asp:Label runat="server" ID="lblHistoryContent" CssClass="small">
                         </asp:Label>
 
                         <div class="small text-muted mt-1">
-                            <asp:Label
-                                runat="server"
-                                ID="lblHistoryTime">
+                            <asp:Label runat="server" ID="lblHistoryTime">
                             </asp:Label>
                         </div>
                     </div>
@@ -403,11 +360,7 @@
         </ItemTemplate>
     </asp:Repeater>
 
-    <asp:Panel
-        runat="server"
-        ID="pnlEmptyRecentHistory"
-        Visible="false"
-        CssClass="text-muted small py-3">
+    <asp:Panel runat="server" ID="pnlEmptyRecentHistory" Visible="false" CssClass="text-muted small py-3">
 
         Chưa có hoạt động nào.
     </asp:Panel>

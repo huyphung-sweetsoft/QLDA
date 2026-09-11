@@ -289,24 +289,24 @@ INSERT INTO TblAuditLog_{year} (
         {
             totalRecord = 0;
             string sql = $@"
-        DECLARE @startRow INT = {pageNumber};
-        DECLARE @endRow INT = {pageSize};
-        DECLARE @ipAddress NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters["IPAddress"])}%';
-        DECLARE @userName NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters["ChangedBy"])}%';
-        DECLARE @actionType NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters["ActionType"])}%';
-		DECLARE	@createDateFrom VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters["ChangedAtFrom"])}';
-		DECLARE	@createDateTo VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters["ChangedAtTo"])}';
-        select * from (
-            select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum
-                , M.*
-                , COUNT(1) OVER() AS total_records
-                from TblAuditLog_{year} M 
-				where (@ipAddress = N'%%' or M.IpAddress LIKE @ipAddress) 
-            and (@userName = N'%%' or M.ChangedBy LIKE @userName)
-			and (@actionType = N'%%' or M.ActionType LIKE @actionType)
-			and (@createDateFrom = '' or M.ChangedAt >= @createDateFrom)
-			and (@createDateTo = '' or M.ChangedAt <= @createDateTo)
-        ) T WHERE RowNum >= @startRow AND RowNum <= @endRow";
+                DECLARE @startRow INT = {pageNumber};
+                DECLARE @endRow INT = {pageSize};
+                DECLARE @ipAddress NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters["IPAddress"])}%';
+                DECLARE @userName NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters["ChangedBy"])}%';
+                DECLARE @actionType NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters["ActionType"])}%';
+		        DECLARE	@createDateFrom VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters["ChangedAtFrom"])}';
+		        DECLARE	@createDateTo VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters["ChangedAtTo"])}';
+                select * from (
+                    select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum
+                        , M.*
+                        , COUNT(1) OVER() AS total_records
+                        from TblAuditLog_{year} M 
+				        where (@ipAddress = N'%%' or M.IpAddress LIKE @ipAddress) 
+                    and (@userName = N'%%' or M.ChangedBy LIKE @userName)
+			        and (@actionType = N'%%' or M.ActionType LIKE @actionType)
+			        and (@createDateFrom = '' or M.ChangedAt >= @createDateFrom)
+			        and (@createDateTo = '' or M.ChangedAt <= @createDateTo)
+                ) T WHERE RowNum >= @startRow AND RowNum <= @endRow";
             IDataReader iDataReader = new InlineQuery(_dataProvider).ExecuteReader(sql);
             if (iDataReader == null || iDataReader.IsClosed)
                 return null;
@@ -329,9 +329,9 @@ INSERT INTO TblAuditLog_{year} (
 
                     // Check if table exists
                     string checkTableSql = $@"
-                SELECT COUNT(1) 
-                FROM INFORMATION_SCHEMA.TABLES 
-                WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{tableName}'";
+                        SELECT COUNT(1) 
+                        FROM INFORMATION_SCHEMA.TABLES 
+                        WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{tableName}'";
 
                     var tableExists = new InlineQuery(_dataProvider).ExecuteScalar<int>(checkTableSql);
 
@@ -393,9 +393,9 @@ INSERT INTO TblAuditLog_{year} (
 
                     // Check if table exists
                     string checkTableSql = $@"
-                SELECT COUNT(1) 
-                FROM INFORMATION_SCHEMA.TABLES 
-                WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{auditTableName}'";
+                        SELECT COUNT(1) 
+                        FROM INFORMATION_SCHEMA.TABLES 
+                        WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{auditTableName}'";
 
                     var tableExists = new InlineQuery(_dataProvider).ExecuteScalar<int>(checkTableSql);
 
@@ -421,9 +421,9 @@ INSERT INTO TblAuditLog_{year} (
                         }
 
                         string sql = $@"
-                    SELECT * FROM {auditTableName}
-                    WHERE {string.Join(" AND ", whereConditions)}
-                    ORDER BY ChangedAt ASC";
+                            SELECT * FROM {auditTableName}
+                            WHERE {string.Join(" AND ", whereConditions)}
+                            ORDER BY ChangedAt ASC";
 
                         var tblAuditTemps = new InlineQuery(_dataProvider).ExecuteTypedList<TblAuditLog2026>(sql, parameters);
                         tblAuditTemps?.ForEach(entity =>
@@ -503,9 +503,9 @@ INSERT INTO TblAuditLog_{year} (
 
                     // Check if table exists
                     string checkTableSql = $@"
-                SELECT COUNT(1) 
-                FROM INFORMATION_SCHEMA.TABLES 
-                WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{auditTableName}'";
+                        SELECT COUNT(1) 
+                        FROM INFORMATION_SCHEMA.TABLES 
+                        WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{auditTableName}'";
 
                     var tableExists = new InlineQuery(_dataProvider).ExecuteScalar<int>(checkTableSql);
 
@@ -518,9 +518,9 @@ INSERT INTO TblAuditLog_{year} (
 
                         // Get action type breakdown
                         string actionTypesSql = $@"
-                    SELECT ActionType, COUNT(1) as Count 
-                    FROM {auditTableName} {whereClause}
-                    GROUP BY ActionType";
+                            SELECT ActionType, COUNT(1) as Count 
+                            FROM {auditTableName} {whereClause}
+                            GROUP BY ActionType";
 
                         IDataReader dataReader = new InlineQuery(_dataProvider).ExecuteReader(actionTypesSql, parameters);
                         if (dataReader == null)
@@ -542,11 +542,11 @@ INSERT INTO TblAuditLog_{year} (
 
                         // Get top users
                         string topUsersSql = $@"
-                    SELECT TOP 10 ChangedBy, COUNT(1) as Count 
-                    FROM {auditTableName} {whereClause}
-                    AND ChangedBy IS NOT NULL
-                    GROUP BY ChangedBy
-                    ORDER BY COUNT(1) DESC";
+                            SELECT TOP 10 ChangedBy, COUNT(1) as Count 
+                            FROM {auditTableName} {whereClause}
+                            AND ChangedBy IS NOT NULL
+                            GROUP BY ChangedBy
+                            ORDER BY COUNT(1) DESC";
                         dataReader = new InlineQuery(_dataProvider).ExecuteReader(topUsersSql, parameters);
                         if (dataReader == null)
                             return null;
@@ -611,12 +611,7 @@ INSERT INTO TblAuditLog_{year} (
             }
         }
 
-        public DataTable GetProjectHistory(
-    Guid idDuAn,
-    Guid? userId,
-    DateTime? fromDate,
-    DateTime? toDate,
-    int? numberOfRecords = null)
+        public DataTable GetProjectHistory(Guid idDuAn, Guid? userId, DateTime? fromDate, DateTime? toDate, int? numberOfRecords = null)
         {
             DataTable result =
                 new DataTable();
@@ -740,7 +735,7 @@ INSERT INTO TblAuditLog_{year} (
                     : "NULL";
 
             string topClause =
-                numberOfRecords.HasValue? $"TOP ({Math.Max(1, numberOfRecords.Value)})"
+                numberOfRecords.HasValue ? $"TOP ({Math.Max(1, numberOfRecords.Value)})"
                     : string.Empty;
 
             string sql = $@"

@@ -415,6 +415,13 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -428,6 +435,13 @@
     </Compile>
     <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.designer.cs">
       <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.cs">
+      <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
@@ -605,6 +619,8 @@
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
+    <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
