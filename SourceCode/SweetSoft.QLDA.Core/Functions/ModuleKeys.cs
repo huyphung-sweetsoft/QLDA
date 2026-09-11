@@ -47,5 +47,6 @@ namespace SweetSoft.QLDA.Core.Functions
         DocumentTemplate,
         Document,
         Cost
+        Payment,
     }
 }

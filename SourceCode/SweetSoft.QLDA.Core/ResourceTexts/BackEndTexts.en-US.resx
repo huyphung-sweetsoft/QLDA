@@ -258,7 +258,7 @@
   <data name="CUSTOMER_LIST" xml:space="preserve">
     <value> </value>
   </data>
-  <data name="DASHBOARD" xml:space="preserve">
+  <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
   <data name="DATA_DELETED_SUCCESSFULLY" xml:space="preserve">
@@ -1678,8 +1678,17 @@
   <data name="ACTIVITY_DELETE_VERSION" xml:space="preserve">
     <value>Delete version</value>
   </data>
-  <data name="DASHBOARD_OVERVIEW" xml:space="preserve">
-    <value>Overview</value>
+  <data name="Dashboard_Overview" xml:space="preserve">
+    <value>Overview dashboard</value>
+  </data>
+  <data name="Dashboard_Resource" xml:space="preserve">
+    <value>Resource dashboard</value>
+  </data>
+  <data name="Dashboard_Progress" xml:space="preserve">
+    <value>Progress dashboard</value>
+  </data>
+  <data name="Dashboard_Cost" xml:space="preserve">
+    <value>Cost dashboard</value>
   </data>
   <data name="PROJECT_SCOPE" xml:space="preserve">
     <value>Project scope</value>
@@ -2023,5 +2032,51 @@
   </data>
   <data name="VIEW_DETAIL" xml:space="preserve">
     <value>View Detail</value>
+  </data>
+</root>
+  <data name="PAYMENT_LIST" xml:space="preserve">
+    <value>Payment list</value>
+  </data>
+  <data name="PAYMENT_CODE" xml:space="preserve">
+    <value>Payment code</value>
+  </data>
+  <data name="PAYMENT_NAME" xml:space="preserve">
+    <value>Payment name</value>
+  </data>
+  <data name="PAYMENT_AMOUNT" xml:space="preserve">
+    <value>Amount (VND)</value>
+  </data>
+  <data name="PAYMENT_DUE_DATE" xml:space="preserve">
+    <value>Due date</value>
+  </data>
+  <data name="PAYMENT_ACTUAL_DATE" xml:space="preserve">
+    <value>Actual payment date</value>
+  </data>
+  <data name="PAYMENT_UNPAID" xml:space="preserve">
+    <value>Unpaid</value>
+  </data>
+  <data name="PAYMENT_OVERDUE" xml:space="preserve">
+    <value>Overdue</value>
+  </data>
+  <data name="PAYMENT_PAID" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="PAYMENT_EDIT_STATUS" xml:space="preserve">
+    <value>Update payment</value>
+  </data>
+  <data name="PAYMENT_SEARCH_PLACEHOLDER" xml:space="preserve">
+    <value>Search payment code or name...</value>
+  </data>
+  <data name="PAYMENT_DATE_REQUIRED" xml:space="preserve">
+    <value>Select an actual payment date no later than today.</value>
+  </data>
+  <data name="PAYMENT_QUICK_APPROVE" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="PAYMENT_QUICK_APPROVE_CONFIRM" xml:space="preserve">
+    <value>Are you sure you want to approve payment {0}?</value>
+  </data>
+  <data name="PAYMENT_DELETE_CONFIRM" xml:space="preserve">
+    <value>Are you sure you want to delete payment {0}?</value>
   </data>
 </root>

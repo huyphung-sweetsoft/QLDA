@@ -68,6 +68,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             int upcomingMeetingCount = GetUpcomingMeetingCount(
                 meetings,
                 generatedAt);
+            List<UpcomingMeetingSummary> upcomingMeetings =
+                GetUpcomingMeetingSummaries(meetings, projects, generatedAt);
             int overdueTaskCount = allTasks.Count(x =>
                 IsTaskOverdue(x, today));
 
@@ -117,6 +119,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
                 ActiveProjectCount = activeProjectCount,
                 UpcomingMeetingCount = upcomingMeetingCount,
+                UpcomingMeetings = upcomingMeetings,
 
                 AtRiskProjectRate = atRiskProjectRate,
             };
@@ -219,6 +222,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     IsTaskOverdue(x, today));
                 int dueSoonTaskCount = projectTasks.Count(x =>
                     IsTaskDueSoon(x, today));
+                int completedTaskCount = projectTasks.Count(IsTaskCompleted);
 
                 result.Add(new ProjectProgressStatistic
                 {
@@ -229,6 +233,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     Variance = variance,
                     OverdueTaskCount = overdueTaskCount,
                     DueSoonTaskCount = dueSoonTaskCount,
+                    CompletedTaskCount = completedTaskCount,
+                    TaskCount = projectTasks.Count,
                     Health = GetProjectHealth(
                         project,
                         variance,
@@ -420,6 +426,31 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return meetings.Count(m =>
                 m.ThoiGianBatDau >= currentTime
             );
+        }
+
+        private static List<UpcomingMeetingSummary> GetUpcomingMeetingSummaries(
+            List<TblLichHop> meetings,
+            List<TblDuAn> projects,
+            DateTime currentTime)
+        {
+            var projectCodes = projects.ToDictionary(
+                x => x.IdDuAn,
+                x => x.MaDuAn);
+
+            return meetings
+                .Where(m => m.ThoiGianBatDau >= currentTime)
+                .OrderBy(m => m.ThoiGianBatDau)
+                .Take(5)
+                .Select(m => new UpcomingMeetingSummary
+                {
+                    ProjectCode = projectCodes.ContainsKey(m.IdDuAn)
+                        ? projectCodes[m.IdDuAn]
+                        : string.Empty,
+                    Title = m.TenCuocHop,
+                    StartTime = m.ThoiGianBatDau,
+                    Location = m.DiaDiemHop
+                })
+                .ToList();
         }
 
 
