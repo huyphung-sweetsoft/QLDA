@@ -179,8 +179,21 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return currentDate;
         }
+        public int CountWorkingDaysInRange(DateTime start, DateTime end)
+        {
+            if (end.Date < start.Date) return 0;
 
+            int count = 0;
+            DateTime curr = start.Date;
+            while (curr <= end.Date)
+            {
+                if (CheckIsWorkingDay(curr))
+                    count++;
+                curr = curr.AddDays(1);
+            }
+            return count;
+        }
         #endregion
-        
+
     }
 }

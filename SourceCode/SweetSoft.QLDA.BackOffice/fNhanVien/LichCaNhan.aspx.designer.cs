@@ -7,83 +7,110 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
+namespace SweetSoft.QLDA.BackOffice.fNhanVien
 {
 
 
-    public partial class CtrlTask
+    public partial class LichCaNhan
     {
 
         /// <summary>
-        /// upMain control.
+        /// upCalendar control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upMain;
+        protected global::System.Web.UI.UpdatePanel upCalendar;
 
         /// <summary>
-        /// hfDeletingTaskId control.
+        /// hfScheduleDataJSON control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfDeletingTaskId;
+        protected global::System.Web.UI.WebControls.HiddenField hfScheduleDataJSON;
 
         /// <summary>
-        /// lblOverdueCount control.
+        /// hfViewMode control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblOverdueCount;
+        protected global::System.Web.UI.WebControls.HiddenField hfViewMode;
 
         /// <summary>
-        /// lbtAdd control.
+        /// hfCurrentDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtAdd;
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentDate;
 
         /// <summary>
-        /// txtSearchSingle control.
+        /// btnPrev control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchSingle;
+        protected global::System.Web.UI.WebControls.LinkButton btnPrev;
 
         /// <summary>
-        /// lbtSearchSingle control.
+        /// btnToday control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchSingle;
+        protected global::System.Web.UI.WebControls.LinkButton btnToday;
 
         /// <summary>
-        /// grvData control.
+        /// btnNext control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.GridviewExtension grvData;
+        protected global::System.Web.UI.WebControls.LinkButton btnNext;
 
         /// <summary>
-        /// CtrlChonNhanVienTask1 control.
+        /// litTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlChonNhanVienTask CtrlChonNhanVienTask1;
+        protected global::System.Web.UI.WebControls.Literal litTitle;
+
+        /// <summary>
+        /// litDateRange control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litDateRange;
+
+        /// <summary>
+        /// btnViewMonth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnViewMonth;
+
+        /// <summary>
+        /// btnViewWeek control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnViewWeek;
     }
 }

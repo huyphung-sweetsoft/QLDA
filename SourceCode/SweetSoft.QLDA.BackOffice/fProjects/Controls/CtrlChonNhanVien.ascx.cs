@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using SweetSoft.QLDA.Core.ScheduleManager;
 namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 {
     public partial class CtrlChonNhanVien : BaseAdminUserControl
@@ -54,10 +54,23 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         private void BindData()
         {
             List<AspnetUser> allUsers = UserManager.Instance.GetAllActiveNhanVien();
-            // MỚI: loại PM ra khỏi danh sách chọn
+
+            // Loại PM ra khỏi danh sách chọn 
             if (IdNhanVienQuanLy.HasValue && IdNhanVienQuanLy.Value != Guid.Empty)
             {
                 allUsers = allUsers.Where(u => u.UserId != IdNhanVienQuanLy.Value).ToList();
+            }
+            //THUẬT TOÁN SORT (Người đã được chọn lên đầu -> Còn lại xếp ABC)
+            if (SelectedUserIds != null && SelectedUserIds.Count > 0)
+            {
+                allUsers = allUsers
+                    .OrderByDescending(u => SelectedUserIds.Contains(u.UserId))
+                    .ThenBy(u => u.DisplayName)
+                    .ToList();
+            }
+            else
+            {
+                allUsers = allUsers.OrderBy(u => u.DisplayName).ToList();
             }
 
             var listMembers = new List<object>();
@@ -80,40 +93,37 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private string GenerateScheduleJson(Guid userId, DateTime start, DateTime end)
         {
-            var scheduleDict = new Dictionary<string, object>();
-            DateTime currDate = start.Date;
+            // DÙNG CHUNG LOGIC LỊCH TRÌNH VỚI BÊN TASK (ĐÃ CÓ TRẠNG THÁI BUSY)
+            var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, start, end);
+            var dict = new Dictionary<string, object>();
 
-            while (currDate <= end.Date)
+            foreach (var ngay in lich)
             {
-                string dateKey = currDate.ToString("yyyy-MM-dd");
-                int dayOfWeek = (int)currDate.DayOfWeek;
-                string dayName = dayOfWeek == 0 ? "CN" : dayOfWeek == 6 ? "T7" : $"T{dayOfWeek + 1}";
+                int dow = (int)ngay.Ngay.DayOfWeek;
+                string dayName = dow == 0 ? "CN" : dow == 6 ? "T7" : $"T{dow + 1}";
 
-                string status = "free";
-                // Lấy chữ "Trống" từ cấu hình
-                string text = "🟢 " + GetResourceText(BackEndResourceKeys.FREE);
-
-                bool isWorkingDay = LichBieuChungManager.Instance.CheckIsWorkingDay(currDate);
-
-                if (!isWorkingDay)
+                string text;
+                switch (ngay.TrangThaiLich)
                 {
-                    if (dayOfWeek == 0 || dayOfWeek == 6)
-                    {
-                        status = "weekend";
+                    case "holiday":
+                        text = "🎉 " + (!string.IsNullOrEmpty(ngay.TenNgoaiLe) ? ngay.TenNgoaiLe : GetResourceText(BackEndResourceKeys.HOLIDAY));
+                        break;
+                    case "weekend":
                         text = "⬜ " + GetResourceText(BackEndResourceKeys.WEEKEND);
-                    }
-                    else
-                    {
-                        status = "holiday";
-                        text = "🎉 " + GetResourceText(BackEndResourceKeys.HOLIDAY);
-                    }
+                        break;
+                    case "busy":
+                        // Hiển thị số lượng công việc y hệt bên Task
+                        text = $"🔴 {ngay.DanhSachCongViec.Count} {GetResourceText(BackEndResourceKeys.TASK).ToLower()}";
+                        break;
+                    default:
+                        text = "🟢 " + GetResourceText(BackEndResourceKeys.FREE);
+                        break;
                 }
 
-                scheduleDict.Add(dateKey, new { status = status, dayName = dayName, text = text });
-                currDate = currDate.AddDays(1);
+                dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName, text });
             }
 
-            return JsonConvert.SerializeObject(scheduleDict);
+            return JsonConvert.SerializeObject(dict);
         }
 
         protected void rptCompanyMembers_ItemDataBound(object sender, RepeaterItemEventArgs e)

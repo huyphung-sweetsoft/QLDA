@@ -41,8 +41,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                         INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId
                         WHERE cn.IdCongViec = t.IdCongViec
                            AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)
-                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS IdNhanVien
-            
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS IdNhanVien,
+                    STUFF((
+                        SELECT ',' + ISNULL(u.Avatar, '')
+                        FROM [dbo].[TblCongViec_NhanVien] cn
+                        INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId
+                        WHERE cn.IdCongViec = t.IdCongViec
+                           AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS Avatars
                 FROM [dbo].[TblCongViec] t
                 LEFT JOIN [dbo].[TblDoUuTien] ut ON t.IdDoUuTien = ut.IdDoUuTien
                 WHERE t.IdDuAn = '{projectId}'
@@ -154,6 +160,93 @@ namespace SweetSoft.QLDA.Core.Respositories
                     NgayCapNhat = GETDATE()
                 WHERE IdCongViec IN (SELECT IdCongViec FROM TaskHierarchy);";
             new SubSonic.InlineQuery().Execute(sqlDelete);
+        }
+        #endregion
+        #region 5. Lấy task phục vụ Lịch biểu cá nhân
+        public DataTable GetActiveTasksByNhanVienInRange(Guid idNhanVien, DateTime start, DateTime end)
+        {
+            // Đã bổ sung LEFT JOIN TblDuAn để lấy TenDuAn, MaDuAn
+            string sql = $@"
+        SELECT DISTINCT t.*, 
+               da.TenDuAn, 
+               da.MaDuAn
+        FROM [dbo].[TblCongViec] t
+        INNER JOIN [dbo].[TblCongViec_NhanVien] cn ON cn.IdCongViec = t.IdCongViec
+        LEFT JOIN [dbo].[TblDuAn] da ON t.IdDuAn = da.IdDuAn
+        WHERE cn.IdNhanVien = '{idNhanVien}'
+          AND t.DaXoa = 0
+          AND t.TrangThai <> 2
+          AND t.NgayBatDau IS NOT NULL
+          AND t.NgayKetThuc IS NOT NULL
+          AND t.NgayBatDau <= '{end:yyyy-MM-dd}'
+          AND t.NgayKetThuc >= '{start:yyyy-MM-dd}'
+        ORDER BY t.NgayBatDau;
+    ";
+            IDataReader reader = new InlineQuery().ExecuteReader(sql);
+            if (reader == null) return null;
+            DataTable dt = new DataTable();
+            dt.Load(reader);
+            return dt;
+        }
+
+        public DataTable GetActiveTasksByNhanViensInRange(List<Guid> idNhanViens, DateTime start, DateTime end)
+        {
+            if (idNhanViens == null || idNhanViens.Count == 0) return null;
+            string idList = string.Join(",", idNhanViens.ConvertAll(id => $"'{id}'"));
+
+            string sql = $@"
+        SELECT DISTINCT t.*, cn.IdNhanVien AS AssignedNhanVienId
+        FROM [dbo].[TblCongViec] t
+        INNER JOIN [dbo].[TblCongViec_NhanVien] cn ON cn.IdCongViec = t.IdCongViec
+        WHERE cn.IdNhanVien IN ({idList})
+          AND t.DaXoa = 0
+          AND t.TrangThai <> 2
+          AND t.NgayBatDau IS NOT NULL
+          AND t.NgayKetThuc IS NOT NULL
+          AND t.NgayBatDau <= '{end:yyyy-MM-dd}'
+          AND t.NgayKetThuc >= '{start:yyyy-MM-dd}'
+        ORDER BY t.NgayBatDau;
+    ";
+            IDataReader reader = new InlineQuery().ExecuteReader(sql);
+            if (reader == null) return null;
+            DataTable dt = new DataTable();
+            dt.Load(reader);
+            return dt;
+        }
+        #endregion
+        #region 6. Gán / Gỡ nhân viên cho Công việc
+        public List<Guid> GetAssignedNhanVienIds(Guid idCongViec)
+        {
+            var list = new Select()
+                .From(TblCongViecNhanVien.Schema)
+                .Where(TblCongViecNhanVien.Columns.IdCongViec).IsEqualTo(idCongViec)
+                .ExecuteTypedList<TblCongViecNhanVien>();
+
+            List<Guid> result = new List<Guid>();
+            foreach (var item in list)
+            {
+                result.Add(item.IdNhanVien);
+            }
+            return result;
+        }
+
+        public void AddAssignment(Guid idCongViec, Guid idNhanVien)
+        {
+            // Dùng trực tiếp Entity (ActiveRecord)
+            TblCongViecNhanVien item = new TblCongViecNhanVien();
+            item.IdCongViec = idCongViec;
+            item.IdNhanVien = idNhanVien;
+            item.NgayPhanCong = DateTime.Now;
+            item.Save();
+        }
+
+        public void RemoveAssignment(Guid idCongViec, Guid idNhanVien)
+        {
+            // Sửa lại chuẩn cú pháp SubSonic 2.x: new Delete().From(...)
+            new Delete().From(TblCongViecNhanVien.Schema)
+                .Where(TblCongViecNhanVien.Columns.IdCongViec).IsEqualTo(idCongViec)
+                .And(TblCongViecNhanVien.Columns.IdNhanVien).IsEqualTo(idNhanVien)
+                .Execute();
         }
         #endregion
     }

@@ -11,79 +11,88 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
 
 
-    public partial class CtrlTask
+    public partial class CtrlChonNhanVienTask
     {
 
         /// <summary>
-        /// upMain control.
+        /// mdlTaskMemberPicker control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upMain;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlTaskMemberPicker;
 
         /// <summary>
-        /// hfDeletingTaskId control.
+        /// ltrTaskInfoNote control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfDeletingTaskId;
+        protected global::System.Web.UI.WebControls.Literal ltrTaskInfoNote;
 
         /// <summary>
-        /// lblOverdueCount control.
+        /// accGroupProject control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblOverdueCount;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl accGroupProject;
 
         /// <summary>
-        /// lbtAdd control.
+        /// ltrCountProj control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtAdd;
+        protected global::System.Web.UI.WebControls.Literal ltrCountProj;
 
         /// <summary>
-        /// txtSearchSingle control.
+        /// rptProjectMembers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchSingle;
+        protected global::System.Web.UI.WebControls.Repeater rptProjectMembers;
 
         /// <summary>
-        /// lbtSearchSingle control.
+        /// accGroupCompany control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchSingle;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl accGroupCompany;
 
         /// <summary>
-        /// grvData control.
+        /// ltrCountCompany control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.GridviewExtension grvData;
+        protected global::System.Web.UI.WebControls.Literal ltrCountCompany;
 
         /// <summary>
-        /// CtrlChonNhanVienTask1 control.
+        /// rptCompanyMembers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlChonNhanVienTask CtrlChonNhanVienTask1;
+        protected global::System.Web.UI.WebControls.Repeater rptCompanyMembers;
+
+        /// <summary>
+        /// btnConfirmTaskAssign control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnConfirmTaskAssign;
     }
 }

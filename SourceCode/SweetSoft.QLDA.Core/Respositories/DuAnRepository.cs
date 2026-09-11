@@ -192,5 +192,9 @@ namespace SweetSoft.QLDA.Core.Respositories
             TblDuAn duAn = select.ExecuteSingle<TblDuAn>();
             return duAn != null;
         }
+        public Guid? GetIdNhanVienQuanLy(Guid idDuan)
+        {
+            return new Select(TblDuAn.IdNhanVienQuanLyColumn).From(TblDuAn.Schema).Where(TblDuAn.IdDuAnColumn).IsEqualTo(idDuan).And(TblDuAn.DaXoaColumn).IsEqualTo(false).ExecuteScalar<Guid?>();
+        }
     }
 }

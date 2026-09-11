@@ -820,7 +820,7 @@
     <value>Nhóm người dùng</value>
   </data>
   <data name="USER_LIST" xml:space="preserve">
-    <value>Tài khoản quản trị</value>
+    <value>Danh sách tài khoản</value>
   </data>
   <data name="USING_SSL" xml:space="preserve">
     <value>Sử dụng SSL</value>
@@ -919,7 +919,7 @@
     <value>Tài khoản trong nhóm</value>
   </data>
   <data name="USER_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý nhân viên</value>
+    <value>Quản lý tài khoản</value>
   </data>
   <data name="ACCOUNT_LIST" xml:space="preserve">
     <value>Danh sách tài khoản</value>
@@ -1137,14 +1137,17 @@
   <data name="GENERAL_CONTENT" xml:space="preserve">
     <value>Nội dung khái quát</value>
   </data>
+  <data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>Nội dung khái quát</value>
+  </data>
   <data name="CUSTOMER_TYPE" xml:space="preserve">
     <value>Loại khách hàng</value>
   </data>
   <data name="CONTACT_PERSON" xml:space="preserve">
     <value>Người liên hệ</value>
   </data>
-  <data name="CONTACT_EMAIL" xml:space="preserve">
-    <value>Email liên hệ</value>
+  <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
+    <value>Điện thoại liên hệ</value>
   </data>
   <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
     <value>Điện thoại liên hệ</value>
@@ -1176,14 +1179,14 @@
   <data name="WORKING_WEEK_CONFIG" xml:space="preserve">
     <value>Cấu hình tuần làm việc</value>
   </data>
-  <data name="HOLIDAY_AND_MAKEUP_WORK" xml:space="preserve">
-    <value>Lễ tết &amp; Làm bù</value>
+  <data name="HOLIDAY" xml:space="preserve">
+    <value>Nghỉ lễ</value>
   </data>
   <data name="STANDARD_WORKING_HOURS" xml:space="preserve">
     <value>Khung giờ làm việc tiêu chuẩn</value>
   </data>
   <data name="WORKING" xml:space="preserve">
-    <value>Làm việc</value>
+    <value>Đang làm việc</value>
   </data>
   <data name="DAY_OFF" xml:space="preserve">
     <value>Nghỉ</value>
@@ -1950,4 +1953,135 @@
 	<data name="HISTORY_ENTITY_RISK" xml:space="preserve">
   <value>rủi ro</value>
 </data>
+</root>
+  <data name="OTHER_EMPLOYEES" xml:space="preserve">
+    <value>Nhân sự khác</value>
+  </data>
+  <data name="AUTO_ADD_MEMBER_WARNING_MSG" xml:space="preserve">
+    <value>Lưu ý: Nếu chọn nhân sự thuộc danh sách Khác, hệ thống sẽ tự động cấp quyền tham gia Dự án cho nhân sự đó.</value>
+  </data>
+  <data name="WEEKEND" xml:space="preserve">
+    <value>Cuối tuần</value>
+  </data>
+  <data name="FREE" xml:space="preserve">
+    <value>Trống</value>
+  </data>
+  <data name="PLEASE_SELECT_START_AND_END_DATE" xml:space="preserve">
+    <value>Vui lòng thiết lập ngày bắt đầu và ngày kết thúc!</value>
+  </data>
+  <data name="ASSIGN_TASK" xml:space="preserve">
+    <value>Phân công nhân sự</value>
+  </data>
+  <data name="SELECT_EMPLOYEE" xml:space="preserve">
+    <value>Chọn nhân viên</value>
+  </data>
+  <data name="SCHEDULE_INFO_FORMAT" xml:space="preserve">
+    <value>Hiển thị lịch trình từ {0} đến {1}</value>
+  </data>
+  <data name="EXECUTION_TIME" xml:space="preserve">
+    <value>Thời gian thực hiện</value>
+  </data>
+  <data name="TASK" xml:space="preserve">
+    <value>Công việc</value>
+  </data>
+  <data name="OPEN_SCHEDULE" xml:space="preserve">
+    <value>Mở lịch biểu</value>
+  </data>
+  <data name="PROVINCES" xml:space="preserve">
+    <value>Các tỉnh</value>
+  </data>
+  <data name="TEMPLATE_NAME" xml:space="preserve">
+    <value>Tên mẫu email</value>
+  </data>
+  <data name="BULK_DELETE" xml:space="preserve">
+    <value>Xóa hàng loạt</value>
+  </data>
+  
+  <data name="UPDATE_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Vượt chướng ngại vật</value>
+  </data>
+  <data name="UPDATE_FINISH_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Về đích</value>
+  </data>
+  <data name="PLEASE_COMFIRM_COMPETITION_UPDATE_COMPLETE" xml:space="preserve">
+    <value>Vui lòng xác nhận hoàn thành cuộc thi, sau khi hoàn thành các dữ liệu sẽ không thể chỉnh sửa. </value>
+  </data>
+  <data name="PLEASE_COMFIRM_COMPETITION_ROUND_UPDATE_COMPLETE" xml:space="preserve">
+    <value>Vui lòng xác nhận hoàn thành vòng thi, sau khi hoàn thành các dữ liệu trong vòng thi này sẽ không thể chỉnh sửa. </value>
+  </data>
+  <data name="DATA_ALREADY_UPDATED" xml:space="preserve">
+    <value>Dữ liệu đã được cập nhật trước đó!</value>
+  </data>
+  <data name="VIEW_START_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Khởi động</value>
+  </data>
+  <data name="VIEW_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Vượt chướng ngại vật</value>
+  </data>
+  <data name="VIEW_FINISH_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Về đích</value>
+  </data>
+  <data name="THIS_ROUND_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
+    <value>Vòng thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
+  </data>
+  <data name="THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
+    <value>Cuộc thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
+  </data>
+  <data name="RESULT" xml:space="preserve">
+    <value>Kết quả</value>
+  </data>
+  <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
+    <value>Vui lòng chọn khối</value>
+  </data>
+  <data name="EDIT_INFORMATION" xml:space="preserve">
+    <value>Sửa thông tin</value>
+  </data>
+  <data name="PERSONAL_AND_WORK_INFORMATION" xml:space="preserve">
+    <value>Thông tin Cá nhân &amp; Công tác</value>
+  </data>
+  <data name="JOIN_DATE" xml:space="preserve">
+    <value>Ngày gia nhập</value>
+  </data>
+  <data name="SENIORITY" xml:space="preserve">
+    <value>Thâm niên công tác</value>
+  </data>
+  <data name="WORK_STATUS" xml:space="preserve">
+    <value>Trạng thái công tác</value>
+  </data>
+  <data name="ACCEPTED_PROJECTS" xml:space="preserve">
+    <value>Dự án đã nghiệm thu</value>
+  </data>
+  <data name="PERSONAL_SCHEDULE" xml:space="preserve">
+    <value>Lịch biểu cá nhân</value>
+  </data>
+  <data name="VIEW_WORK_SCHEDULE" xml:space="preserve">
+    <value>Xem lịch làm việc</value>
+  </data>
+  <data name="NOT_UPDATED_YET" xml:space="preserve">
+    <value>Chưa cập nhật</value>
+  </data>
+  <data name="ADDRESS_NOT_UPDATED_YET" xml:space="preserve">
+    <value>Chưa cập nhật địa chỉ</value>
+  </data>
+  <data name="UNIDENTIFIED" xml:space="preserve">
+    <value>Chưa xác định</value>
+  </data>
+  <data name="NOT_STARTED_WORKING_YET" xml:space="preserve">
+    <value>Chưa bắt đầu làm việc</value>
+  </data>
+  <data name="CONTACT_EMAIL" xml:space="preserve">
+    <value>Email liên hệ</value>
+  </data>
+  <data name="DAY" xml:space="preserve">
+    <value>Ngày</value>
+  </data>
+  <data name="MONTH" xml:space="preserve">
+    <value>Tháng</value>
+  </data>
+  <data name="YEAR" xml:space="preserve">
+    <value>Năm</value>
+  </data>
+  <data name="VIEW_DETAIL" xml:space="preserve">
+    <value>Xem chi tiết</value>
+  </data>
 </root>
