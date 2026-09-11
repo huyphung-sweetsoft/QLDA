@@ -146,6 +146,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowNotify("Vui lòng thiết lập 'Ngày bắt đầu' và 'Thời hạn' cho công việc trước khi phân công nhân sự!", MSGType.Warning);
                         return;
                     }
+                    if (_taskManager.CheckHasChildTasks(this.ProjectId, task))
+                    {
+                        ShowNotify("Không thể phân công cho Giai đoạn/Công việc cha. Vui lòng chọn công việc chi tiết ở cấp thấp nhất!", MSGType.Warning);
+                        return;
+                    }
                     Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.ProjectId);
                     ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OpenPicker(this.ProjectId, taskIdAssign, task.NgayBatDau.Value, task.NgayKetThuc.Value, task.TenCongViec, pmId);
                     break;
