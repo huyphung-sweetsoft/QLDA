@@ -92,7 +92,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid Id,string Title,Guid? CustomerId,Guid? ReferenceId,string TableName,Guid? RecordId,string ActionType,string Changes,string IPAddress,string UserAgent,Guid? UserId,string ChangedBy,DateTime ChangedAt)
+	    public void Insert(Guid Id,string Title,Guid? CustomerId,Guid? ReferenceId,string TableName,Guid? RecordId,string ActionType,string Changes,string IPAddress,string UserAgent,Guid? UserId,string ChangedBy,DateTime ChangedAt,string Description)
 	    {
 		    TblAuditLog2026 item = new TblAuditLog2026();
 		    
@@ -122,6 +122,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.ChangedAt = ChangedAt;
             
+            item.Description = Description;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -130,7 +132,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid Id,string Title,Guid? CustomerId,Guid? ReferenceId,string TableName,Guid? RecordId,string ActionType,string Changes,string IPAddress,string UserAgent,Guid? UserId,string ChangedBy,DateTime ChangedAt)
+	    public void Update(Guid Id,string Title,Guid? CustomerId,Guid? ReferenceId,string TableName,Guid? RecordId,string ActionType,string Changes,string IPAddress,string UserAgent,Guid? UserId,string ChangedBy,DateTime ChangedAt,string Description)
 	    {
 		    TblAuditLog2026 item = new TblAuditLog2026();
 	        item.MarkOld();
@@ -161,6 +163,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.ChangedBy = ChangedBy;
 				
 			item.ChangedAt = ChangedAt;
+				
+			item.Description = Description;
 				
 	        item.Save(UserName);
 	    }

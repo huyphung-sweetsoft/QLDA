@@ -1,8 +1,7 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" 
-    CodeBehind="CtrlNhanViens.ascx.cs" 
-    Inherits="SweetSoft.QLDA.BackOffice.fNhanVien.Controls.CtrlNhanViens" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlNhanViens.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fNhanVien.Controls.CtrlNhanViens" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+
 <div class="card-header">
     <div class="d-flex flex-column flex-xl-row gap-3">
         <asp:UpdatePanel runat="server" ID="upnlSearchDefault" UpdateMode="Conditional">
@@ -77,75 +76,91 @@
                 AutoGenerateColumns="false"
                 CssClass="table-bordered table-hover"
                 FocusBtnIcon="fas fa-compress-arrows-alt"
-                DataKeyNames="IdNhanVien" GridLines="None"
+                DataKeyNames="UserId" GridLines="None"
                 IsEnableSelectColumn="false"
                 OnNeedDataSource="grvData_NeedDataSource"
                 OnRowCommand="grvData_RowCommand">
-          <Columns>
-    <asp:TemplateField HeaderText="Nhân viên" HeaderStyle-CssClass="text-center" SortExpression="TenNhanVien" ItemStyle-CssClass="text-left">
-        <ItemTemplate>
-            <div class="d-flex align-items-center">
-                <img src='<%# !string.IsNullOrEmpty(Convert.ToString(Eval("AnhDaiDien"))) ? Eval("AnhDaiDien") : "/Styles/images/user-icon.png" %>' 
-                     class="avatar-sm rounded-circle me-3" 
-                     style="width: 45px; height: 45px; object-fit: cover;" 
-                     onerror="this.src='/Styles/images/user-icon.png'">
-                <div>
-                    <asp:LinkButton runat="server" CssClass="card-link fw-bold d-block text-primary" Visible='<%# this.IsEdit %>'
-                        ID="lbtView" CommandName="VIEW_DETAIL" Text='<%# Eval("TenNhanVien")%>'></asp:LinkButton>
-                    <span runat="server" id="tagName" class="fw-bold d-block text-primary" visible='<%# !this.IsEdit %>'><%# Eval("TenNhanVien") %></span>
-                    <small class="text-muted"><%# Eval("GioiTinh") %></small>
-                </div>
-            </div>
-        </ItemTemplate>
-    </asp:TemplateField>
-    <asp:TemplateField HeaderText="Liên hệ" HeaderStyle-CssClass="text-center" SortExpression="Email" ItemStyle-CssClass="text-left">
-        <ItemTemplate>
-            <div class="d-block mb-1" title="Email">
-                <i class="fas fa-envelope text-muted me-1"></i> <%# Eval("Email") %>
-            </div>
-            <div class="d-block text-muted" title="Số điện thoại">
-                <i class="fas fa-phone-alt me-1"></i> <%# Eval("PhoneNumber") %>
-            </div>
-        </ItemTemplate>
-    </asp:TemplateField>
-    <asp:TemplateField HeaderText="Phòng ban" HeaderStyle-CssClass="text-center" SortExpression="TenPhongBan" ItemStyle-CssClass="text-left">
-        <ItemTemplate><%# Eval("TenPhongBan") %></ItemTemplate>
-    </asp:TemplateField>
+                <Columns>
+                    <asp:TemplateField HeaderText="Nhân viên" HeaderStyle-CssClass="text-center" SortExpression="DisplayName" ItemStyle-CssClass="text-left">
+                        <ItemTemplate>
+                            <div class="d-flex align-items-center">
+                                <img src='<%# !string.IsNullOrEmpty(Convert.ToString(Eval("Avatar"))) ? Eval("Avatar") : "/Styles/images/user-icon.png" %>' 
+                                     class="avatar-sm rounded-circle me-3" 
+                                     style="width: 45px; height: 45px; object-fit: cover;" 
+                                     onerror="this.src='/Styles/images/user-icon.png'">
+                                <div>
+                                    <asp:LinkButton runat="server" CssClass="card-link fw-bold d-block text-primary" Visible='<%# this.IsEdit %>'
+                                        ID="lbtView" CommandName="VIEW_DETAIL" Text='<%# Eval("DisplayName")%>'></asp:LinkButton>
+                                    <span runat="server" id="tagName" class="fw-bold d-block text-primary" visible='<%# !this.IsEdit %>'><%# Eval("DisplayName") %></span>
+                                    <small class="text-muted"><%# Eval("GioiTinh") %></small>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    
+                    <asp:TemplateField HeaderText="Liên hệ" HeaderStyle-CssClass="text-center" SortExpression="Email" ItemStyle-CssClass="text-left">
+                        <ItemTemplate>
+                            <div class="d-block mb-1" title="Email">
+                                <i class="fas fa-envelope text-muted me-1"></i> <%# Eval("Email") %>
+                            </div>
+                            <div class="d-block text-muted" title="Số điện thoại">
+                                <i class="fas fa-phone-alt me-1"></i> <%# Eval("MobileAlias") %>
+                            </div>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    
+                    <asp:TemplateField HeaderText="Phòng ban" HeaderStyle-CssClass="text-center" SortExpression="TenPhongBan" ItemStyle-CssClass="text-left">
+                        <ItemTemplate><%# Eval("TenPhongBan") %></ItemTemplate>
+                    </asp:TemplateField>
 
-    <asp:TemplateField HeaderText="Chức danh" HeaderStyle-CssClass="text-center" SortExpression="TenChucDanh" ItemStyle-CssClass="text-left">
-        <ItemTemplate><%# Eval("TenChucDanh") %></ItemTemplate>
-    </asp:TemplateField>
+                    <asp:TemplateField HeaderText="Chức danh" HeaderStyle-CssClass="text-center" SortExpression="TenChucDanh" ItemStyle-CssClass="text-left">
+                        <ItemTemplate><%# Eval("TenChucDanh") %></ItemTemplate>
+                    </asp:TemplateField>
 
-    <asp:TemplateField HeaderText="Định danh" HeaderStyle-CssClass="text-center" SortExpression="IdCCCD" ItemStyle-CssClass="text-left">
-        <ItemTemplate>
-            <div class="d-block mb-1">
-                <strong>ID:</strong> <%# Eval("IdCCCD") %>
-            </div>
-            <div class="d-block text-muted" title="Ngày sinh">
-                <i class="fas fa-birthday-cake me-1"></i> <%# this.ConvertDateTimeToString(Eval("NgaySinh"), false) %>
-            </div>
-        </ItemTemplate>
-    </asp:TemplateField>
-    <asp:TemplateField HeaderStyle-Width="120px" ItemStyle-CssClass="text-center" HeaderText="Join date" HeaderStyle-CssClass="text-center" SortExpression="NgayGiaNhap">
-        <ItemTemplate>
-            <%# this.ConvertDateTimeToString(Eval("NgayGiaNhap"), false) %>
-        </ItemTemplate>
-    </asp:TemplateField>
-    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="100px">
-        <ItemTemplate>
-            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
-                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline"
-                ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
-                ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
-            </SweetSoft:SmartLinkButton>
-            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
-                ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
-                ResourceKey='<%# BackEndResourceKeys.DELETE %>'
-                ButtonIcon="fas fa-trash">
-            </SweetSoft:SmartLinkButton>
-        </ItemTemplate>
-    </asp:TemplateField>
-</Columns>
+                    <asp:TemplateField HeaderText="Định danh" HeaderStyle-CssClass="text-center" SortExpression="IdCCCD" ItemStyle-CssClass="text-left">
+                        <ItemTemplate>
+                            <div class="d-block mb-1">
+                                <strong>CCCD:</strong> <%# Eval("IdCCCD") %>
+                            </div>
+                            <div class="d-block text-muted" title="Ngày sinh">
+                                <i class="fas fa-birthday-cake me-1"></i> <%# this.ConvertDateTimeToString(Eval("NgaySinh"), false) %>
+                            </div>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    
+                    <asp:TemplateField HeaderStyle-Width="120px" ItemStyle-CssClass="text-center" HeaderText="Join date" HeaderStyle-CssClass="text-center" SortExpression="NgayGiaNhap">
+                        <ItemTemplate>
+                            <%# this.ConvertDateTimeToString(Eval("NgayGiaNhap"), false) %>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    
+                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
+                        <ItemTemplate>
+                            <div class="d-flex justify-content-center gap-2">
+                                <!-- 1. NÚT XEM CHI TIẾT: Hình con mắt, gọi lệnh VIEW_DETAIL để chuyển trang -->
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
+                                    ID="lbtViewDetail" CommandName="VIEW_DETAIL" CssClass="btn-grid-action text-decoration-underline text-info"
+                                    ResourceKey='<%# "EMPLOYEE_DETAIL" %>'
+                                    ButtonIcon="fas fa-eye">
+                                </SweetSoft:SmartLinkButton>
+
+                                <!-- 2. NÚT SỬA NHANH: Hình cây bút, gọi lệnh ITEM_DETAIL để mở Popup -->
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
+                                    ID="lbtEdit" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline text-warning"
+                                    ResourceKey='<%# BackEndResourceKeys.EDIT %>'
+                                    ButtonIcon="fas fa-pencil-alt">
+                                </SweetSoft:SmartLinkButton>
+
+                                <!-- 3. NÚT XÓA: Hình thùng rác, gọi lệnh ITEM_DELETE -->
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
+                                    ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
+                                    ResourceKey='<%# BackEndResourceKeys.DELETE %>'
+                                    ButtonIcon="fas fa-trash">
+                                </SweetSoft:SmartLinkButton>
+                            </div>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                </Columns>
                 <EmptyDataTemplate>
                     <%= GetResourceText(BackEndResourceKeys.NO_DATA) %>
                 </EmptyDataTemplate>
@@ -154,6 +169,8 @@
         </ContentTemplate>
     </asp:UpdatePanel>
 </div>
+
+<!-- OFF-CANVAS SEARCH -->
 <div class="offcanvas offcanvas-end offcanvas-form-search" id="search-offcanvas" aria-hidden="true">
     <div class="offcanvas-header">
         <div class="flex flex-column flex-md-row align-items-center gap-3">
@@ -173,7 +190,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME) %></label>
-                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchTenNhanVien" SearchColumn="TenNhanVien" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
+                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchTenNhanVien" SearchColumn="DisplayName" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label"><%=GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></label>
@@ -185,11 +202,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %></label>
-                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchPhone" SearchColumn="PhoneNumber" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
-                            </div>
-                            <div runat="server" visible="false" class="col-md-6 mb-3">
-                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CREATED_DATE) %></label>
-                                <SweetSoft:ExtraDateTime runat="server" ID="txtSearchCreatedDate" SearchColumn="CreatedDate" SingleDatePicker="false" IsPredefinedDateRanges="true" AutoUpdateInput="false" AutoApply="true" />
+                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchPhone" SearchColumn="MobileAlias" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
                             </div>
                         </div>
                     </asp:Panel>

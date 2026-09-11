@@ -41,6 +41,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.Panel pnlVersions;
         protected global::System.Web.UI.WebControls.Repeater rptVersions;
         protected global::System.Web.UI.WebControls.PlaceHolder phSigningPane;
+        protected global::System.Web.UI.WebControls.Panel pnlSigningActions;
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnOpenSubmitSigning;
         protected global::System.Web.UI.WebControls.Panel pnlNoSigning;
         protected global::System.Web.UI.WebControls.Panel pnlSigning;
         protected global::System.Web.UI.WebControls.Repeater rptSigning;
@@ -55,5 +57,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.Panel pnlNoActivity;
         protected global::System.Web.UI.WebControls.Panel pnlActivity;
         protected global::System.Web.UI.WebControls.Repeater rptActivity;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlSubmitSigning;
+        protected global::System.Web.UI.WebControls.Panel pnlSubmitSigningForm;
+        protected global::System.Web.UI.WebControls.HiddenField hdfSubmitSigningDocumentId;
+        protected global::System.Web.UI.WebControls.HiddenField hdfSubmitSigningSigner;
+        protected global::System.Web.UI.WebControls.Label lblSubmitSigningVersion;
+        protected global::System.Web.UI.WebControls.Label lblSubmitSigningMethod;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSubmitSigningSigner;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSubmitSigningNote;
+        protected global::System.Web.UI.WebControls.Button btnSubmitSigning;
+        protected global::System.Web.UI.WebControls.Button btnCancelSubmitSigning;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlSigningResult;
+        protected global::System.Web.UI.WebControls.HiddenField hdfSigningResultId;
+        protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbSigningResult;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSigningResultNote;
+        protected global::System.Web.UI.WebControls.Button btnCompleteSigning;
+        protected global::System.Web.UI.WebControls.Button btnCancelSigningResult;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlSigningChanges;
+        protected global::System.Web.UI.WebControls.HiddenField hdfSigningChangesId;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSigningChangeReason;
+        protected global::System.Web.UI.WebControls.Button btnRequestSigningChanges;
+        protected global::System.Web.UI.WebControls.Button btnCancelSigningChanges;
     }
 }

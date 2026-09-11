@@ -39,6 +39,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public TblCauHinhTuanLamViec UpdateCauHinhTuan(TblCauHinhTuanLamViec item)
         {
+            if (item == null) return null;
+
+            // Lấy ID người dùng đăng nhập hiện tại từ SweetContext (Chuẩn Framework)
+            Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
+
+            // Bơm UserId vào đối tượng trước khi đẩy xuống Repository
+            item.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+
             return _tuanRepository.Update(item);
         }
 
@@ -171,7 +179,21 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return currentDate;
         }
+        public int CountWorkingDaysInRange(DateTime start, DateTime end)
+        {
+            if (end.Date < start.Date) return 0;
 
+            int count = 0;
+            DateTime curr = start.Date;
+            while (curr <= end.Date)
+            {
+                if (CheckIsWorkingDay(curr))
+                    count++;
+                curr = curr.AddDays(1);
+            }
+            return count;
+        }
         #endregion
+
     }
 }

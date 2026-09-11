@@ -155,8 +155,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return costs
                 .GroupBy(x => new
                 {
-                    x.NgayPhatSinh.Year,
-                    x.NgayPhatSinh.Month
+                    x.NgayTao.Year,
+                    x.NgayTao.Month
                 })
                 .Select(group => new CostTrendStatistic
                 {
@@ -179,7 +179,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             return costs
                 .OrderByDescending(x => x.SoTien)
-                .ThenByDescending(x => x.NgayPhatSinh)
+                .ThenByDescending(x => x.NgayTao)
                 .Take(15)
                 .Select(cost =>
                 {
@@ -189,7 +189,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     return new CostItemInfo
                     {
                         CostId = cost.IdChiPhi,
-                        CostCode = cost.MaKhoanChi,
+                        CostCode = cost.MaChiPhi,
                         CostName = cost.TenKhoanChi,
                         ProjectCode = project == null
                             ? string.Empty
@@ -197,7 +197,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         ProjectName = project == null
                             ? string.Empty
                             : project.TenDuAn,
-                        OccurredDate = cost.NgayPhatSinh,
+                        OccurredDate = cost.NgayTao,
                         Amount = cost.SoTien
                     };
                 })

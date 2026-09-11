@@ -4,7 +4,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.EnumHelper.Defines" %>
 <%@ Register Src="~/fProjects/Controls/CtrlDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAn" %>
-
+<%@ Register Src="~/fProjects/Controls/CtrlChonNhanVien.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVien" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -105,10 +105,37 @@
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" PlaceHolder="Select status" />
                     </div>
                 </div>
-                <div class="col-lg-12">
+                <div class="col-lg-6">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_MANAGEMENT) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlNhanVienQuanLy" Required="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
+        
+                        <!-- Bọc UpdatePanel và bật AutoPostBack để chạy ngầm Ajax khi đổi PM -->
+                        <asp:UpdatePanel runat="server" ID="upPM" UpdateMode="Conditional">
+                            <ContentTemplate>
+                                <SweetSoft:ExtraDropdown runat="server" ID="ddlNhanVienQuanLy" Required="true" 
+                                    PlaceHolder="Select the value"
+                                    AutoPostBack="true" 
+                                    OnSelectedIndexChanged="ddlNhanVienQuanLy_SelectedIndexChanged">
+                                </SweetSoft:ExtraDropdown>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
+
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PROJECT_MEMBERS) %></label>
+                        <asp:UpdatePanel runat="server" ID="upNhanVienThamGia" UpdateMode="Conditional">
+                            <ContentTemplate>
+                                <div class="input-group">
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtSoLuongNhanVien" Enabled="false" PlaceHolder="Chưa chọn nhân viên nào" />
+                                    <!-- Xóa chữ, đổi ButtonIcon thành UserPlus (tương đương person-add) -->
+                                    <SweetSoft:ExtraButton runat="server" ID="btnChonNhanVien" ButtonStyle="Secondary" ButtonIcon="UserPlus"
+                                        CausesValidation="false" OnClick="btnChonNhanVien_Click" ToolTip="Thêm thành viên">
+                                    </SweetSoft:ExtraButton>
+                                </div>
+                            </ContentTemplate>
+                        </asp:UpdatePanel>
                     </div>
                 </div>
                 <div class="col-lg-12">
@@ -131,6 +158,7 @@
             </asp:UpdatePanel>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
+    <SweetSoft:CtrlChonNhanVien runat="server" ID="CtrlChonNhanVien1"/>
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>

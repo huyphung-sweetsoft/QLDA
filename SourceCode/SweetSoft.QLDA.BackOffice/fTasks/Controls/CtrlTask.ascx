@@ -1,6 +1,39 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-
+<%@ Register Src="~/fTasks/Controls/CtrlChonNhanVienTask.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVienTask" %>
+<style>
+    /* CSS CHO AVATAR STACK CỦA OWNER */
+    .avatar-group { 
+        display: inline-flex !important; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 6px !important; 
+        flex-wrap: nowrap !important; 
+        white-space: nowrap !important; /* KHÓA CHẾT: Cấm tuyệt đối việc rớt dòng */
+    }  
+    .avatar-stack-container { 
+        display: flex; 
+        align-items: center; 
+    }    
+    .avatar-circle { 
+        width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        font-size: 11px; font-weight: 700; color: #ffffff; border: 2px solid #ffffff; 
+        margin-left: -8px; position: relative; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }    
+    .avatar-circle:first-child { margin-left: 0; }    
+    .avatar-more { 
+        background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; z-index: 0; font-weight: 800; font-size: 10px; 
+    }    
+    .btn-assign-task { 
+        width: 26px; height: 26px; border-radius: 6px; background-color: #2563eb; color: white; 
+        display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; 
+        text-decoration: none; font-size: 12px; transition: background 0.2s, transform 0.1s;
+        flex-shrink: 0; /* Giữ nguyên hình vuông cứng, không bị bóp méo hay rớt dòng */
+    }
+    .btn-assign-task:hover { 
+        background-color: #1d4ed8; color: white; transform: scale(1.05); 
+    }
+</style>
 <div class="card-body p-0 mt-2">
     <asp:UpdatePanel ID="upMain" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
@@ -52,9 +85,22 @@
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Owner" HeaderStyle-Width="140px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Owner" HeaderStyle-Width="160px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" ItemStyle-Wrap="false">
                         <ItemTemplate>
-                            <%# Eval("TenNhanVien") != DBNull.Value && Eval("TenNhanVien") != null ? Eval("TenNhanVien") : "—" %>
+                            <div class="avatar-group">
+                                <div class="avatar-stack-container">
+                                    <%# GetAssigneeDisplay(Eval("TenNhanVien"), Eval("Avatars")) %>
+                                </div>
+                                <!-- Nút Gán Việc (Dấu +) -->
+                                <asp:LinkButton runat="server" ID="lbtAssign" 
+                                    CommandName="ASSIGN_TASK" 
+                                    CommandArgument='<%# Eval("IdCongViec") %>' 
+                                    CssClass="btn-assign-task" 
+                                    ToolTip="Phân công nhân sự" 
+                                    Visible='<%# this.IsEdit %>'>
+                                    <i class="fas fa-plus"></i>
+                                </asp:LinkButton>
+                            </div>
                         </ItemTemplate>
                     </asp:TemplateField>
 
@@ -116,6 +162,7 @@
                     </div>
                 </EmptyDataTemplate>
             </SweetSoft:GridviewExtension>
+            <SweetSoft:CtrlChonNhanVienTask runat="server" ID="CtrlChonNhanVienTask1" />
         </ContentTemplate>
     </asp:UpdatePanel>
 </div>

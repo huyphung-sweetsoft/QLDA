@@ -195,6 +195,16 @@ namespace SweetSoft.QLDA.Controls
             set => SetViewState("DefaultButton", value);
         }
 
+        [Category("Behavior")]
+        [Description("Create templated child controls during Init on postback")]
+        [DefaultValue(false)]
+        [Browsable(false)]
+        public bool EnsureChildControlsOnPostback
+        {
+            get => GetViewState("EnsureChildControlsOnPostback", false);
+            set => SetViewState("EnsureChildControlsOnPostback", value);
+        }
+
         [Category("Appearance")]
         [Description("Style modal")]
         [DefaultValue(ModalStyle.Info)]
@@ -257,7 +267,7 @@ namespace SweetSoft.QLDA.Controls
         {
             ExtraScriptRegister.RegisterModal = true;
             Page page = this.Page;
-            if (page != null && !page.IsPostBack)
+            if (page != null && (!page.IsPostBack || EnsureChildControlsOnPostback))
                 EnsureChildControls();
             base.OnInit(e);
         }
@@ -416,6 +426,7 @@ namespace SweetSoft.QLDA.Controls
                 control.RenderControl(writer);
             }
         }
+
         #region function
         public void CloseModal(bool isUpdate = false)
         {

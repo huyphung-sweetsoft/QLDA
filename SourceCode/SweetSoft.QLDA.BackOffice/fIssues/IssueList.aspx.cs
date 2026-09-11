@@ -34,6 +34,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlIssue1.NewIssueHandlerCallback += NewIssueAction;
             CtrlIssue1.EditIssueHandlerCallback += EditIssueAction;
 
@@ -132,7 +133,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             }
 
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
-            dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT) ?? "Thông tin vấn đề";
+            dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT);
 
             if (!IsPostBack)
                 dlDetail.OpenModal(true, 1000);
@@ -171,58 +172,44 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                    TblVanDe issue = null;
-                    bool isNew = (this.IssueId == Guid.Empty);
 
-                    if (isNew)
-                    {
-                        issue = new TblVanDe();
-                        issue.IdVanDe = Guid.NewGuid();
-                        issue.IdDuAn = CtrlIssue1.ProjectId;
-                        issue.DaXoa = false;
-                        issue.TrangThai = 0;
-                        issue.NgayTao = DateTime.Now;
-                        issue.NguoiTao = SweetContext.Current.UserName;
-                        issue.MaVanDe = IssueManager.Instance.GenerateMaVanDe(CtrlIssue1.ProjectId);
-                    }
-                    else
-                    {
-                        issue = TblVanDe.FetchByID(this.IssueId);
-                        if (issue == null)
-                        {
-                            ShowInvalidNotFoundData();
-                            return;
-                        }
-                        issue.NgayCapNhat = DateTime.Now;
-                        issue.NguoiCapNhat = SweetContext.Current.UserName;
-                    }
+                TblVanDe issueDto = new TblVanDe();
+                bool isNew = (this.IssueId == Guid.Empty);
 
-                    issue.TenVanDe = txtTenVanDe.Text.Trim();
-                    issue.MoTaChiTiet = !string.IsNullOrEmpty(txtMoTaChiTiet.Text.Trim()) ? txtMoTaChiTiet.Text.Trim() : null;
-                    issue.KeHoachXuLy = !string.IsNullOrEmpty(txtKeHoachXuLy.Text.Trim()) ? txtKeHoachXuLy.Text.Trim() : null;
+                if (!isNew)
+                {
+                    issueDto.IdVanDe = this.IssueId;
+                }
 
-                    Guid idCongViecBiAnhHuong = Guid.Empty;
-                    if (this.GetValue(ddlCongViecBiAnhHuong, out idCongViecBiAnhHuong) && idCongViecBiAnhHuong != Guid.Empty)
-                        issue.IdCongViecBiAnhHuong = idCongViecBiAnhHuong;
-                    else
-                        issue.IdCongViecBiAnhHuong = null;
+                issueDto.IdDuAn = CtrlIssue1.ProjectId;
+                issueDto.TenVanDe = txtTenVanDe.Text.Trim();
+                issueDto.MoTaChiTiet = !string.IsNullOrEmpty(txtMoTaChiTiet.Text.Trim()) ? txtMoTaChiTiet.Text.Trim() : null;
+                issueDto.KeHoachXuLy = !string.IsNullOrEmpty(txtKeHoachXuLy.Text.Trim()) ? txtKeHoachXuLy.Text.Trim() : null;
 
-                    Guid idCongViecPhatSinh = Guid.Empty;
-                    if (this.GetValue(ddlCongViecPhatSinh, out idCongViecPhatSinh) && idCongViecPhatSinh != Guid.Empty)
-                        issue.IdCongViecPhatSinh = idCongViecPhatSinh;
-                    else
-                        issue.IdCongViecPhatSinh = null;
+                Guid idCongViecBiAnhHuong = Guid.Empty;
+                if (this.GetValue(ddlCongViecBiAnhHuong, out idCongViecBiAnhHuong) && idCongViecBiAnhHuong != Guid.Empty)
+                    issueDto.IdCongViecBiAnhHuong = idCongViecBiAnhHuong;
 
-                    int mucDoAnhHuong = 0;
-                    if (this.GetValue(ddlMucDoAnhHuong, out mucDoAnhHuong) && mucDoAnhHuong > 0)
-                        issue.MucDoAnhHuong = mucDoAnhHuong;
+                Guid idCongViecPhatSinh = Guid.Empty;
+                if (this.GetValue(ddlCongViecPhatSinh, out idCongViecPhatSinh) && idCongViecPhatSinh != Guid.Empty)
+                    issueDto.IdCongViecPhatSinh = idCongViecPhatSinh;
 
-                    int nguonGoc = 0;
-                    if (this.GetValue(ddlNguonGocVanDe, out nguonGoc)) 
-                        issue.NguonGocVanDe = nguonGoc;
+                int mucDoAnhHuong = 0;
+                if (this.GetValue(ddlMucDoAnhHuong, out mucDoAnhHuong) && mucDoAnhHuong > 0)
+                    issueDto.MucDoAnhHuong = mucDoAnhHuong;
 
-                    issue.Save();
-                    IssueManager.Instance.SyncNhanVienXuLyVanDe(issue.IdVanDe, idCongViecPhatSinh);
+                int nguonGoc = 0;
+                if (this.GetValue(ddlNguonGocVanDe, out nguonGoc))
+                    issueDto.NguonGocVanDe = nguonGoc;
+
+                TblVanDe savedIssue = IssueManager.Instance.CreateOrUpdate(issueDto);
+
+                if (savedIssue == null)
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlIssue1.Rebind();

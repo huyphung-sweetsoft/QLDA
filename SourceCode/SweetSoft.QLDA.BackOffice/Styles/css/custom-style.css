@@ -2710,6 +2710,59 @@ body[data-style=google].fullHeightBox .main-content {
     color: #ffff;
 }
 
+/* Tabs điều hướng các nghiệp vụ thuộc một dự án.
+   Giữ cùng ngôn ngữ hiển thị với tabs-horizontal nhưng cho phép nhiều tab. */
+.project-feature-tabs .nav-pills {
+    margin-right: unset;
+    margin-left: unset;
+    border: 1px solid var(--bs-primary);
+    border-radius: var(--bs-radius);
+    /* Bootstrap .nav là flex block nên mặc định kéo hết chiều ngang card.
+       Để inline-flex, viền chỉ ôm phần tab đang có; max-width giữ menu
+       trong khung và flex-wrap cho phép xuống hàng khi sau này có nhiều tab. */
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    align-items: center;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+.project-feature-tabs .nav-item:not(:last-child) {
+    border-right: 1px solid var(--bs-primary);
+}
+
+.project-feature-tabs .nav-link {
+    border-radius: 0;
+    font-size: 14px;
+    padding: 4.5px 10px;
+    white-space: nowrap;
+}
+
+.project-feature-tabs .nav-link:hover {
+    color: var(--bs-primary);
+}
+
+.project-feature-tabs .nav-link.active {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+
+@media only screen and (max-width: 576px) {
+    .project-feature-tabs .nav-pills {
+        border: none;
+        border-radius: 0;
+    }
+
+    .project-feature-tabs .nav-item:not(:last-child) {
+        border-right: 0;
+    }
+
+    .project-feature-tabs .nav-link {
+        border-radius: var(--bs-radius);
+    }
+}
+
 .tab-menu-vertical {
     height: 500px;
     position: relative;
