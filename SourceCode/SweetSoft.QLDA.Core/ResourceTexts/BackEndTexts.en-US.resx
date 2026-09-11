@@ -1900,4 +1900,34 @@
   <data name="VIEW_DETAIL" xml:space="preserve">
     <value>View Detail</value>
   </data>
+  <data name="COMPLETED_100_PERCENT" xml:space="preserve">
+    <value>100% Completed</value>
+  </data>
+  <data name="DURATION_D" xml:space="preserve">
+    <value>Priority (P)</value>
+  </data>
+  <data name="PRIORITY_P" xml:space="preserve">
+    <value>Priority (P)</value>
+  </data>
+  <data name="WORKLOAD" xml:space="preserve">
+    <value>Workload (D x P)</value>
+  </data>
+  <data name="STANDARD_DAYS" xml:space="preserve">
+    <value>Standard days</value>
+  </data>
+  <data name="ALLOCATION_PERCENTAGE" xml:space="preserve">
+    <value>% Allocation =</value>
+  </data>
+  <data name="TIME_FRAME" xml:space="preserve">
+    <value>Time frame</value>
+  </data>
+  <data name="ROLE" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="COEFFICIENT" xml:space="preserve">
+    <value>Coefficient</value>
+  </data>
+  <data name="CAPACITY" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
 </root>

@@ -1711,6 +1711,57 @@
   <data name="OPEN_SCHEDULE" xml:space="preserve">
     <value>Mở lịch biểu</value>
   </data>
+  <data name="EDIT_INFORMATION" xml:space="preserve">
+    <value>Sửa thông tin</value>
+  </data>
+  <data name="PERSONAL_AND_WORK_INFORMATION" xml:space="preserve">
+    <value>Thông tin Cá nhân &amp; Công tác</value>
+  </data>
+  <data name="JOIN_DATE" xml:space="preserve">
+    <value>Ngày gia nhập</value>
+  </data>
+  <data name="SENIORITY" xml:space="preserve">
+    <value>Thâm niên công tác</value>
+  </data>
+  <data name="WORK_STATUS" xml:space="preserve">
+    <value>Trạng thái công tác</value>
+  </data>
+  <data name="ACCEPTED_PROJECTS" xml:space="preserve">
+    <value>Dự án đã nghiệm thu</value>
+  </data>
+  <data name="PERSONAL_SCHEDULE" xml:space="preserve">
+    <value>Lịch biểu cá nhân</value>
+  </data>
+  <data name="VIEW_WORK_SCHEDULE" xml:space="preserve">
+    <value>Xem lịch làm việc</value>
+  </data>
+  <data name="NOT_UPDATED_YET" xml:space="preserve">
+    <value>Chưa cập nhật</value>
+  </data>
+  <data name="ADDRESS_NOT_UPDATED_YET" xml:space="preserve">
+    <value>Chưa cập nhật địa chỉ</value>
+  </data>
+  <data name="UNIDENTIFIED" xml:space="preserve">
+    <value>Chưa xác định</value>
+  </data>
+  <data name="NOT_STARTED_WORKING_YET" xml:space="preserve">
+    <value>Chưa bắt đầu làm việc</value>
+  </data>
+  <data name="CONTACT_EMAIL" xml:space="preserve">
+    <value>Email liên hệ</value>
+  </data>
+  <data name="DAY" xml:space="preserve">
+    <value>Ngày</value>
+  </data>
+  <data name="MONTH" xml:space="preserve">
+    <value>Tháng</value>
+  </data>
+  <data name="YEAR" xml:space="preserve">
+    <value>Năm</value>
+  </data>
+  <data name="VIEW_DETAIL" xml:space="preserve">
+    <value>Xem chi tiết</value>
+  </data>
   <data name="PROVINCES" xml:space="preserve">
     <value>Các tỉnh</value>
   </data>
@@ -1828,55 +1879,34 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="EDIT_INFORMATION" xml:space="preserve">
-    <value>Sửa thông tin</value>
+  <data name="COMPLETED_100_PERCENT" xml:space="preserve">
+    <value>Hoàn tất 100%</value>
   </data>
-  <data name="PERSONAL_AND_WORK_INFORMATION" xml:space="preserve">
-    <value>Thông tin Cá nhân &amp; Công tác</value>
+  <data name="DURATION_D" xml:space="preserve">
+    <value>Ưu tiên (P)</value>
   </data>
-  <data name="JOIN_DATE" xml:space="preserve">
-    <value>Ngày gia nhập</value>
+  <data name="PRIORITY_P" xml:space="preserve">
+    <value>Ưu tiên (P)</value>
   </data>
-  <data name="SENIORITY" xml:space="preserve">
-    <value>Thâm niên công tác</value>
+  <data name="WORKLOAD" xml:space="preserve">
+    <value>Workload (D x P)</value>
   </data>
-  <data name="WORK_STATUS" xml:space="preserve">
-    <value>Trạng thái công tác</value>
+  <data name="STANDARD_DAYS" xml:space="preserve">
+    <value>Ngày chuẩn</value>
   </data>
-  <data name="ACCEPTED_PROJECTS" xml:space="preserve">
-    <value>Dự án đã nghiệm thu</value>
+  <data name="ALLOCATION_PERCENTAGE" xml:space="preserve">
+    <value>% Allocation =</value>
   </data>
-  <data name="PERSONAL_SCHEDULE" xml:space="preserve">
-    <value>Lịch biểu cá nhân</value>
+  <data name="TIME_FRAME" xml:space="preserve">
+    <value>Khung thời gian</value>
   </data>
-  <data name="VIEW_WORK_SCHEDULE" xml:space="preserve">
-    <value>Xem lịch làm việc</value>
+  <data name="ROLE" xml:space="preserve">
+    <value>Vai trò</value>
   </data>
-  <data name="NOT_UPDATED_YET" xml:space="preserve">
-    <value>Chưa cập nhật</value>
+  <data name="COEFFICIENT" xml:space="preserve">
+    <value>Hệ số</value>
   </data>
-  <data name="ADDRESS_NOT_UPDATED_YET" xml:space="preserve">
-    <value>Chưa cập nhật địa chỉ</value>
-  </data>
-  <data name="UNIDENTIFIED" xml:space="preserve">
-    <value>Chưa xác định</value>
-  </data>
-  <data name="NOT_STARTED_WORKING_YET" xml:space="preserve">
-    <value>Chưa bắt đầu làm việc</value>
-  </data>
-  <data name="CONTACT_EMAIL" xml:space="preserve">
-    <value>Email liên hệ</value>
-  </data>
-  <data name="DAY" xml:space="preserve">
-    <value>Ngày</value>
-  </data>
-  <data name="MONTH" xml:space="preserve">
-    <value>Tháng</value>
-  </data>
-  <data name="YEAR" xml:space="preserve">
-    <value>Năm</value>
-  </data>
-  <data name="VIEW_DETAIL" xml:space="preserve">
-    <value>Xem chi tiết</value>
+  <data name="CAPACITY" xml:space="preserve">
+    <value>Capacity (Sức chứa)</value>
   </data>
 </root>

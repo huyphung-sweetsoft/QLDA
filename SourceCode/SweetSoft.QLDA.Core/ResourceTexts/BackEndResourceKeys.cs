@@ -364,11 +364,16 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DAY = "DAY";
         public const string JOIN_DATE = "JOIN_DATE";
         public const string VIEW_DETAIL = "VIEW_DETAIL";
-        
-        
-
-
-
+        public const string COMPLETED_100_PERCENT = "COMPLETED_100_PERCENT";
+        public const string DURATION_D = "DURATION_D";
+        public const string PRIORITY_P = "PRIORITY_P";
+        public const string WORKLOAD = "WORKLOAD";
+        public const string STANDARD_DAYS = "STANDARD_DAYS";
+        public const string TIME_FRAME = "TIME_FRAME";
+        public const string ALLOCATION_PERCENTAGE = "ALLOCATION_PERCENTAGE";
+        public const string COEFFICIENT = "COEFFICIENT";
+        public const string ROLE = "ROLE";
+        public const string CAPACITY = "CAPACITY";
 
         ///---------------------------------------------------
         // Class

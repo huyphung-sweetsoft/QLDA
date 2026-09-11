@@ -10,6 +10,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Web.UI;
 
 namespace SweetSoft.QLDA.BackOffice.fNhanVien
@@ -124,6 +125,62 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             btnEditProfile.Visible = this.IsEdit;
             lnkSchedule.HRef = GetRelativeClientPath(RewriteURLHelper.ViewLichCaNhan(idNhanVien));
             lnkSchedule.Visible = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien);
+
+            // ==========================================
+            // GỌI HÀM BIND DỮ LIỆU DỰ ÁN CHO MODULE MỚI
+            // ==========================================
+            BindProjectData(idNhanVien);
+        }
+
+        private void BindProjectData(Guid idNhanVien)
+        {
+            // 1. Lấy bộ DTO Dự án từ Tầng Manager
+            var allProjects = ThanhVienDuAnManager.Instance.GetChiTietDuAnCuaNhanVien(idNhanVien);
+
+            // LUÔN BẬT 2 SECTION ĐỂ NÚT CUỘN KHÔNG BỊ GÃY LINK
+            section_active_projects.Visible = true;
+            section_done_projects.Visible = true;
+
+            if (allProjects != null && allProjects.Count > 0)
+            {
+                // 2. Tách làm 2 luồng: Đang thực hiện & Đã hoàn thành
+                var activeProjects = allProjects.Where(p => p.TrangThaiDuAn != "Đã hoàn thành").ToList();
+                var doneProjects = allProjects.Where(p => p.TrangThaiDuAn == "Đã hoàn thành").ToList();
+
+                // 3. Đổ dữ liệu vào Nhóm 1
+                rptActiveProjects.DataSource = activeProjects;
+                rptActiveProjects.DataBind();
+                emptyActive.Visible = (activeProjects.Count == 0); // Hiện thông báo rỗng nếu list = 0
+
+                // 4. Đổ dữ liệu vào Nhóm 2
+                rptDoneProjects.DataSource = doneProjects;
+                rptDoneProjects.DataBind();
+                emptyDone.Visible = (doneProjects.Count == 0);
+
+                // 5. Cập nhật Số lượng trên các Header Section
+                ltrActiveCount.Text = activeProjects.Count.ToString();
+                ltrDoneCount.Text = doneProjects.Count.ToString();
+
+                // 6. Cập nhật Số lượng trên 2 Card Summary Cột Phải
+                ltrCountActiveProj.Text = activeProjects.Count.ToString();
+                ltrCountDoneProj.Text = doneProjects.Count.ToString();
+            }
+            else
+            {
+                // Xử lý Ngoại lệ: Chưa từng tham gia dự án
+                rptActiveProjects.DataSource = null;
+                rptActiveProjects.DataBind();
+                emptyActive.Visible = true;
+
+                rptDoneProjects.DataSource = null;
+                rptDoneProjects.DataBind();
+                emptyDone.Visible = true;
+
+                ltrActiveCount.Text = "0";
+                ltrDoneCount.Text = "0";
+                ltrCountActiveProj.Text = "0";
+                ltrCountDoneProj.Text = "0";
+            }
         }
 
         private string CalculateSeniority(DateTime joinDate)
@@ -155,6 +212,12 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             {
                 CtrlUserDetail1.Edit(CurrentIdNhanVien);
             }
+        }
+        // Hàm hỗ trợ render URL Dự án cho ngoài giao diện (.aspx)
+        protected string GetProjectUrl(object idDuAn)
+        {
+            if (idDuAn == null) return "#";
+            return GetRelativeClientPath(RewriteURLHelper.ProjectDetail(Guid.Parse(idDuAn.ToString())));
         }
     }
 }

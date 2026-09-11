@@ -3,6 +3,7 @@ using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,7 +32,47 @@ namespace SweetSoft.QLDA.Core.Respositories
             });
             return item;
         }
+        // TRUY VẤN BẢNG PHẲNG: Lấy toàn bộ Dự án, Phase và Task của 1 nhân viên
+        public DataTable GetProjectDetailByNhanVien(Guid idNhanVien)
+        {
+            // BỌC CAST( AS VARCHAR(50)) VÀO TẤT CẢ CÁC KHÓA JOIN
+            // ĐỂ NGĂN SQL SERVER BÁO LỖI KHI GẶP CHUỖI RỖNG HOẶC CHUỖI SAI FORMAT GUID
+            string sql = $@"
+            SELECT 
+                da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn,
+                vt.TenVaiTro AS VaiTro,
+                ISNULL(tp.IdCongViec, tc.IdCongViec) AS IdPhase,
+                ISNULL(tp.TenCongViec, tc.TenCongViec) AS TenPhase,
+                tc.IdCongViec AS IdTask, tc.MaCongViec AS MaTask, tc.TenCongViec AS TenTask,
+                tc.NgayBatDau, tc.NgayKetThuc, tc.ThoiHanNgay, 
+                ISNULL(ut.DiemUuTien, 1) AS DiemUuTien, 
+                tc.TrangThai AS TrangThaiTask
+            FROM [dbo].[TblThanhVienDuAn] tv
+            
+            INNER JOIN [dbo].[TblDuAn] da ON CAST(tv.IdDuAn AS VARCHAR(50)) = CAST(da.IdDuAn AS VARCHAR(50))
+            INNER JOIN [dbo].[TblCongViec_NhanVien] cvnv ON CAST(tv.IdNhanVien AS VARCHAR(50)) = CAST(cvnv.IdNhanVien AS VARCHAR(50))
+            INNER JOIN [dbo].[TblCongViec] tc ON CAST(cvnv.IdCongViec AS VARCHAR(50)) = CAST(tc.IdCongViec AS VARCHAR(50)) 
+                                             AND CAST(tc.IdDuAn AS VARCHAR(50)) = CAST(da.IdDuAn AS VARCHAR(50))
+            
+            LEFT JOIN [dbo].[TblVaiTroDuAn] vt ON CAST(tv.IdVaiTroDuAn AS VARCHAR(50)) = CAST(vt.IdVaiTro AS VARCHAR(50))
+            LEFT JOIN [dbo].[TblCongViec] tp ON CAST(tc.IdCongViecCha AS VARCHAR(50)) = CAST(tp.IdCongViec AS VARCHAR(50))
+            LEFT JOIN [dbo].[TblDoUuTien] ut ON CAST(tc.IdDoUuTien AS VARCHAR(50)) = CAST(ut.IdDoUuTien AS VARCHAR(50))
+            
+            WHERE CAST(tv.IdNhanVien AS VARCHAR(50)) = '{idNhanVien}'
+              AND tv.DaXoa = 0 
+              AND da.DaXoa = 0 
+              AND tc.DaXoa = 0
+              AND tc.NgayBatDau IS NOT NULL 
+              AND tc.NgayKetThuc IS NOT NULL
+            ORDER BY da.NgayTao DESC, tp.MaCongViec, tc.NgayBatDau ASC;
+            ";
 
+            IDataReader reader = new InlineQuery().ExecuteReader(sql);
+            if (reader == null) return null;
+            DataTable dt = new DataTable();
+            dt.Load(reader);
+            return dt;
+        }
 
         public List<TblThanhVienDuAn> GetByIdDuAn(Guid idDuAn)
         {
