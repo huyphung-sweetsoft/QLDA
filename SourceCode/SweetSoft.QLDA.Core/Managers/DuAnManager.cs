@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.Core.EnumHelper.Defines;
+﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -14,6 +14,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -84,8 +85,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn.NguoiCapNhat = SweetContext.Current.UserName;
                 duAn.NgayCapNhat = DateTime.UtcNow;
                 duAn = _repository.Update(duAn);
-
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                AddNhanVienQuanLy(duAn);
                 return duAn;
             }
             else
@@ -108,7 +109,17 @@ namespace SweetSoft.QLDA.Core.Managers
                 return duAn;
             }
         }
-
+        //Thêm 1 cái overload cho CreateOrUpdate cái này gộp chung với cục trên cũng đc nhưng loạn nên làm tạm này
+        public TblDuAn CreateOrUpdate(TblDuAn dto, List<Guid> selectedMemberIds)
+        {
+            using (var scope = new TransactionScope())//Gọi cái TransactionScope là để đảm bảo ACID gì đó, nói chung là lưu dự án + lưu ds tv thành công cùng lúc
+            {                                        //không để xảy ra tình trạng lưu thk này lỗi thk kia                   
+                TblDuAn duAn = CreateOrUpdate(dto);
+                ReplaceThanhVienDuAn(duAn.IdDuAn, selectedMemberIds);//Gọi thk này để đồng bộ danh sách nhân viên 
+                scope.Complete();
+                return duAn;
+            }
+        }
         public bool Delete(TblDuAn dto)
         {
             BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
@@ -138,7 +149,7 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repository.GenerateMaDuAn();
         }
-
+        // Sửa thằng AddNhanVienQuanLy dưới cho hợp lý hơn tý, phục vụ luôn cho trường hợp đổi PM A sang B
         public void AddNhanVienQuanLy(TblDuAn duAn)
         {
             BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.NOT_FOUND);
@@ -148,11 +159,58 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             TblVaiTroDuAn vaiTroQuanLy = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("QUAN_LY_DU_AN");
+            //Thêm dòng dưới để dọn thk PM A trước khi cho gán Pm cho thk B
+            //cái đứa được except ở đây lại chính là thk A trong trường hợp update ko đổi PM, thì lúc này PM A vẫn là A, duAN.IdNhanVienQuanLy vẫn = A
+            //thk B ko bao giờ được except, đúng hơn là ko dùng cho thk B vì trong lúc đổi PM, thk B chưa được lưu vào Db nên nó ko dính dáng j tới thk except cả
+            ThanhVienDuAnManager.Instance.DeleteByDuAnAndVaiTroExcept(duAn.IdDuAn, vaiTroQuanLy.IdVaiTroDuAn, duAn.IdNhanVienQuanLy.Value);//thêm đúng dòng này thôi
+            //Thêm thêm cục dưới đây để fix lỗi treo trong trường hợp đổi từ PM A sang PM B, nhưng B vốn đang là thành viên thuộc dự án, cái dòng này sẽ xóa mềm vai trò thành viên của B và gán mới PM cho B
+            TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
+            if (vaiTroThanhVien != null)
+            {
+                ThanhVienDuAnManager.Instance.DeleteOne(duAn.IdDuAn, vaiTroThanhVien.IdVaiTroDuAn, duAn.IdNhanVienQuanLy.Value);
+            }
             TblThanhVienDuAn tv = new TblThanhVienDuAn();
             tv.IdDuAn = duAn.IdDuAn;
             tv.IdNhanVien = duAn.IdNhanVienQuanLy;
             tv.IdVaiTroDuAn = vaiTroQuanLy.IdVaiTroDuAn;
             ThanhVienDuAnManager.Instance.AddOrUpdate(tv);
         }
+        //Thêm mới các hàm sau:
+        //1. ReplaceThanhVienDuAn: như tên, dùng để cập nhật danh sách thành viên của 1 dự án thôi, dùng trong edit
+        //Giải thích logic cho dễ hiểu thì: Giả sử dự án đang có nv BCDE, sau đó muốn bỏ E thêm F thì thay vì nó xóa mềm hết 4 thk cũ rồi thêm 4 dòng mới là BCDF
+        //Thì nó chỉ cần xóa mềm thk E và thêm thk F thôi, đỡ rác db
+        private void ReplaceThanhVienDuAn(Guid idDuAn, List<Guid> memberIds)
+        {
+            TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
+            memberIds = (memberIds ?? new List<Guid>()).Distinct().ToList();
+
+            List<Guid> danhSachCu = ThanhVienDuAnManager.Instance.GetIdNhanVienByDuAnAndVaiTro(idDuAn, vaiTroThanhVien.IdVaiTroDuAn);
+
+            List<Guid> canXoa = danhSachCu.Except(memberIds).ToList();
+            List<Guid> canThem = memberIds.Except(danhSachCu).ToList();
+
+            foreach (Guid id in canXoa)
+                ThanhVienDuAnManager.Instance.DeleteOne(idDuAn, vaiTroThanhVien.IdVaiTroDuAn, id);
+
+            foreach (Guid id in canThem)
+                ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn
+                {
+                    IdDuAn = idDuAn,
+                    IdNhanVien = id,
+                    IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
+                });
+        }
+        //2. GetMemberIds: Dùng lấy đống idNhanVien đã có trong dự án để đánh tích cái checkbox, dùng để hiển thị trong edit
+        public List<Guid> GetMemberIds(Guid idDuAn)
+        {
+            TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
+            return ThanhVienDuAnManager.Instance.GetIdNhanVienByDuAnAndVaiTro(idDuAn, vaiTroThanhVien.IdVaiTroDuAn);
+        }
+
+        public DataTable GetProjectHistory(Guid idDuAn, Guid? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            return _auditManager.GetProjectHistory(idDuAn, userId, fromDate, toDate);
+        }
+
     }
 }

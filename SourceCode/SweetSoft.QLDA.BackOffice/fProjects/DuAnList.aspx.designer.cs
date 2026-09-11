@@ -150,6 +150,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThai;
 
         /// <summary>
+        /// upPM control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upPM;
+
+        /// <summary>
         /// ddlNhanVienQuanLy control.
         /// </summary>
         /// <remarks>
@@ -157,6 +166,33 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVienQuanLy;
+
+        /// <summary>
+        /// upNhanVienThamGia control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upNhanVienThamGia;
+
+        /// <summary>
+        /// txtSoLuongNhanVien control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSoLuongNhanVien;
+
+        /// <summary>
+        /// btnChonNhanVien control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnChonNhanVien;
 
         /// <summary>
         /// txtMoTa control.
@@ -175,5 +211,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+
+        /// <summary>
+        /// CtrlChonNhanVien1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChonNhanVien CtrlChonNhanVien1;
     }
 }

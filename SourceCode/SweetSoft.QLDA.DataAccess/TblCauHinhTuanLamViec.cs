@@ -169,7 +169,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioBatDauSang = new TableSchema.TableColumn(schema);
 				colvarGioBatDauSang.ColumnName = "GioBatDauSang";
 				colvarGioBatDauSang.DataType = DbType.AnsiString;
-				colvarGioBatDauSang.MaxLength = 0;
+				colvarGioBatDauSang.MaxLength = 5;
 				colvarGioBatDauSang.AutoIncrement = false;
 				colvarGioBatDauSang.IsNullable = true;
 				colvarGioBatDauSang.IsPrimaryKey = false;
@@ -182,7 +182,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioKetThucSang = new TableSchema.TableColumn(schema);
 				colvarGioKetThucSang.ColumnName = "GioKetThucSang";
 				colvarGioKetThucSang.DataType = DbType.AnsiString;
-				colvarGioKetThucSang.MaxLength = 0;
+				colvarGioKetThucSang.MaxLength = 5;
 				colvarGioKetThucSang.AutoIncrement = false;
 				colvarGioKetThucSang.IsNullable = true;
 				colvarGioKetThucSang.IsPrimaryKey = false;
@@ -195,7 +195,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioBatDauChieu = new TableSchema.TableColumn(schema);
 				colvarGioBatDauChieu.ColumnName = "GioBatDauChieu";
 				colvarGioBatDauChieu.DataType = DbType.AnsiString;
-				colvarGioBatDauChieu.MaxLength = 0;
+				colvarGioBatDauChieu.MaxLength = 5;
 				colvarGioBatDauChieu.AutoIncrement = false;
 				colvarGioBatDauChieu.IsNullable = true;
 				colvarGioBatDauChieu.IsPrimaryKey = false;
@@ -208,7 +208,7 @@ namespace SweetSoft.QLDA.DataAccess
 				TableSchema.TableColumn colvarGioKetThucChieu = new TableSchema.TableColumn(schema);
 				colvarGioKetThucChieu.ColumnName = "GioKetThucChieu";
 				colvarGioKetThucChieu.DataType = DbType.AnsiString;
-				colvarGioKetThucChieu.MaxLength = 0;
+				colvarGioKetThucChieu.MaxLength = 5;
 				colvarGioKetThucChieu.AutoIncrement = false;
 				colvarGioKetThucChieu.IsNullable = true;
 				colvarGioKetThucChieu.IsPrimaryKey = false;

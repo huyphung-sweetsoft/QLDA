@@ -1910,3 +1910,10 @@
     <value>Project report</value>
   </data>
 </root>
+  <data name="PROJECT_STAGE_TYPE" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
+  <data name="PROJECT_STAGE_NAME" xml:space="preserve">
+    <value>Tên giai đoạn</value>
+  </data>
+</root>

@@ -195,6 +195,7 @@
     <Compile Include="FileManager\UploadManager.cs" />
     <Compile Include="Functions\ActionKeys.cs" />
     <Compile Include="Functions\ModuleKeys.cs" />
+    <Compile Include="Helpers\AuditHistoryFormatter.cs" />
     <Compile Include="Helpers\Interfaces\IEncryptionProvider.cs" />
     <Compile Include="Helpers\Language\LanguageDefinition.cs" />
     <Compile Include="Helpers\Language\LanguageHelpers.cs" />
@@ -251,6 +252,7 @@
     <Compile Include="Managers\HopDongThucHienManager.cs" />
     <Compile Include="Managers\IssueManager.cs" />
     <Compile Include="Managers\KhachHangManager.cs" />
+    <Compile Include="Managers\LichSuDuAnManager.cs" />
     <Compile Include="Managers\LoaiDuAnManager.cs" />
     <Compile Include="Managers\LoaiKhachHangManager.cs" />
     <Compile Include="Managers\MeetManager.cs" />

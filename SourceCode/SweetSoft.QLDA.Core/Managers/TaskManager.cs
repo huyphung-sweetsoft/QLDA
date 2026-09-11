@@ -6,6 +6,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -39,7 +40,6 @@ namespace SweetSoft.QLDA.Core.Managers
             }
             return dict;
         }
-
         public TblCongViec DeleteTask(TblCongViec task)
         {
             if (task == null) return null;
@@ -122,6 +122,39 @@ namespace SweetSoft.QLDA.Core.Managers
                 reader.Close();
             }
             return string.Join(", ", danhSachTen);
+        }
+        public TblCongViec GetRootTaskByStageId(Guid idGiaiDoanDuAn)
+        {
+            return _repository.GetRootTaskByStageId(idGiaiDoanDuAn);
+        }
+
+        private List<TblCongViec> GetDescendantTasks(Guid projectId, Guid parentTaskId)
+        {
+            List<TblCongViec> result = new List<TblCongViec>();
+
+            HashSet<Guid> visited = new HashSet<Guid>();
+
+            CollectDescendantTasks(projectId, parentTaskId, result, visited);
+
+            return result;
+        }
+
+        public string GetStageDisplayName(TblGiaiDoanDuAn stage)
+        {
+            if (!string.IsNullOrWhiteSpace(stage.TenGiaiDoanTuyChinh))
+            {
+                return stage.TenGiaiDoanTuyChinh.Trim();
+            }
+
+            if (stage.IdGiaiDoan.HasValue && stage.IdGiaiDoan.Value != Guid.Empty)
+            {
+                TblGiaiDoan commonStage = GiaiDoanManager.Instance.GetById(stage.IdGiaiDoan.Value);
+
+                if (commonStage != null)
+                    return commonStage.TenGiaiDoan;
+            }
+
+            return "Giai đoạn";
         }
         #endregion
 
@@ -258,6 +291,246 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             return (dt, dictCodes, overdueCount);
+        }
+
+        private void CollectDescendantTasks(Guid projectId,Guid parentTaskId,List<TblCongViec> result,HashSet<Guid> visited)
+        {
+            if (!visited.Add(parentTaskId))
+                return;
+
+            DataTable children = GetChildTasks(projectId,parentTaskId);
+
+            if (children == null || children.Rows.Count == 0)
+            {
+                return;
+            }
+
+            foreach (DataRow row in children.Rows)
+            {
+                if (row[ColIdCongViec] == DBNull.Value)
+                    continue;
+
+                Guid childId;
+
+                if (!Guid.TryParse(row[ColIdCongViec].ToString(),out childId))
+                {
+                    continue;
+                }
+
+                TblCongViec childTask = FetchById(childId);
+
+                if (childTask == null || childTask.DaXoa == true)
+                {
+                    continue;
+                }
+
+                result.Add(childTask);
+
+                CollectDescendantTasks(projectId,childTask.IdCongViec,result,visited);
+            }
+        }
+
+        private int GetTaskDuration(TblCongViec task)
+        {
+            if (task.ThoiHanNgay.HasValue && task.ThoiHanNgay.Value > 0)
+            {
+                return task.ThoiHanNgay.Value;
+            }
+
+            if (task.NgayBatDau.HasValue && task.NgayKetThuc.HasValue)
+            {
+                int duration = (task.NgayKetThuc.Value.Date -task.NgayBatDau.Value.Date).Days + 1;
+
+                return Math.Max(1, duration);
+            }
+
+            return 1;
+        }
+
+        private void MoveTasksBeforeStageStart(Guid projectId,Guid rootTaskId,DateTime minimumStartDate)
+        {
+            DateTime minStart = minimumStartDate.Date;
+
+            List<TblCongViec> tasks = GetDescendantTasks(projectId, rootTaskId);
+
+            tasks = tasks.OrderBy(task => string.IsNullOrWhiteSpace(task.MaCongViec)
+                                ? 0
+                                : task.MaCongViec.Split('.').Length)
+                .ThenBy(task => task.MaCongViec)
+                .ToList();
+
+            foreach (TblCongViec task in tasks)
+            {
+                bool hasDependency = task.IdCongViecPhuThuoc.HasValue && task.IdCongViecPhuThuoc.Value != Guid.Empty;
+
+                if (hasDependency)
+                    continue;
+
+                if (!task.NgayBatDau.HasValue)
+                    continue;
+
+                if (task.NgayBatDau.Value.Date >= minStart)
+                    continue;
+
+                int duration = GetTaskDuration(task);
+
+                task.NgayBatDau = minStart;
+
+                task.NgayKetThuc = minStart.AddDays(duration - 1);
+
+                task.ThoiHanNgay = duration;
+
+                task.NgayCapNhat = DateTime.Now;
+
+                task.Save();
+
+                AutoSetDependentTime(projectId,task.IdCongViec);
+
+                if (task.IdCongViecCha.HasValue)
+                {
+                    AutoSetParentTime(projectId,task.IdCongViecCha.Value);
+                }
+            }
+
+            AutoSetParentTime(projectId,rootTaskId);
+        }
+
+        public TblCongViec UpdateStageTask(
+    TblGiaiDoanDuAn stage,
+    string stageName,
+    DateTime? oldStartDate)
+        {
+            if (stage == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(stage));
+            }
+
+            if (stage.IdGiaiDoanDuAn == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Giai đoạn dự án không hợp lệ.");
+            }
+
+            if (string.IsNullOrWhiteSpace(stageName))
+            {
+                throw new InvalidOperationException(
+                    "Tên giai đoạn không được để trống.");
+            }
+
+            if (!stage.NgayBatDau.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Ngày bắt đầu không được để trống.");
+            }
+
+            TblCongViec rootTask =
+                GetRootTaskByStageId(
+                    stage.IdGiaiDoanDuAn);
+
+            if (rootTask == null)
+            {
+                throw new InvalidOperationException(
+                    "Không tìm thấy công việc gốc của giai đoạn.");
+            }
+
+            if (rootTask.IdDuAn != stage.IdDuAn)
+            {
+                throw new InvalidOperationException(
+                    "Công việc gốc không thuộc dự án của giai đoạn.");
+            }
+
+            bool hasChildTasks =
+                CheckHasChildTasks(
+                    stage.IdDuAn,
+                    rootTask);
+
+            DateTime newStartDate =
+                stage.NgayBatDau.Value.Date;
+
+            rootTask.IdGiaiDoanDuAn =
+                stage.IdGiaiDoanDuAn;
+
+            rootTask.TenCongViec =
+                stageName.Trim();
+
+            rootTask.MoTa =
+                string.IsNullOrWhiteSpace(stage.MoTa)
+                    ? null
+                    : stage.MoTa.Trim();
+
+            rootTask.NgayBatDau =
+                newStartDate;
+
+            rootTask.NgayHoanThanhThucTe =
+                stage.NgayHoanThanhThucTe.HasValue
+                    ? stage.NgayHoanThanhThucTe.Value.Date
+                    : (DateTime?)null;
+
+            rootTask.NgayCapNhat =
+                DateTime.Now;
+
+            if (!hasChildTasks)
+            {
+                if (!stage.NgayDuKienHoanThanh.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Ngày dự kiến hoàn thành không được để trống.");
+                }
+
+                DateTime expectedEndDate =
+                    stage.NgayDuKienHoanThanh.Value.Date;
+
+                if (expectedEndDate < newStartDate)
+                {
+                    throw new InvalidOperationException(
+                        "Ngày dự kiến hoàn thành không được nhỏ hơn ngày bắt đầu.");
+                }
+
+                rootTask.NgayKetThuc =
+                    expectedEndDate;
+
+                rootTask.ThoiHanNgay =
+                    (expectedEndDate -
+                     newStartDate).Days + 1;
+
+                rootTask.Save();
+
+                return rootTask;
+            }
+
+            /*
+             * Nếu đã có công việc con thì chưa lấy ngày kết thúc
+             * từ stage. Ngày này sẽ được tính lại từ công việc con.
+             */
+            rootTask.Save();
+
+            bool movedToLaterDate =
+                !oldStartDate.HasValue ||
+                newStartDate >
+                    oldStartDate.Value.Date;
+
+            if (movedToLaterDate)
+            {
+                MoveTasksBeforeStageStart(
+                    stage.IdDuAn,
+                    rootTask.IdCongViec,
+                    newStartDate);
+            }
+            else
+            {
+                /*
+                 * Dời giai đoạn sớm hơn:
+                 * giữ nguyên công việc con,
+                 * chỉ tính lại ngày kết thúc công việc gốc.
+                 */
+                AutoSetParentTime(
+                    stage.IdDuAn,
+                    rootTask.IdCongViec);
+            }
+
+            return FetchById(
+                rootTask.IdCongViec);
         }
         #endregion
 

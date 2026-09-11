@@ -296,6 +296,19 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarChangedAt.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarChangedAt);
 				
+				TableSchema.TableColumn colvarDescription = new TableSchema.TableColumn(schema);
+				colvarDescription.ColumnName = "Description";
+				colvarDescription.DataType = DbType.AnsiString;
+				colvarDescription.MaxLength = 150;
+				colvarDescription.AutoIncrement = false;
+				colvarDescription.IsNullable = true;
+				colvarDescription.IsPrimaryKey = false;
+				colvarDescription.IsForeignKey = false;
+				colvarDescription.IsReadOnly = false;
+				colvarDescription.DefaultSetting = @"";
+				colvarDescription.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDescription);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -409,6 +422,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<DateTime>(Columns.ChangedAt); }
 			set { SetColumnValue(Columns.ChangedAt, value); }
 		}
+		  
+		[XmlAttribute("Description")]
+		[Bindable(true)]
+		public string Description 
+		{
+			get { return GetColumnValue<string>(Columns.Description); }
+			set { SetColumnValue(Columns.Description, value); }
+		}
 		
 		#endregion
 		
@@ -429,7 +450,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varId,string varTitle,Guid? varCustomerId,Guid? varReferenceId,string varTableName,Guid? varRecordId,string varActionType,string varChanges,string varIPAddress,string varUserAgent,Guid? varUserId,string varChangedBy,DateTime varChangedAt)
+		public static void Insert(Guid varId,string varTitle,Guid? varCustomerId,Guid? varReferenceId,string varTableName,Guid? varRecordId,string varActionType,string varChanges,string varIPAddress,string varUserAgent,Guid? varUserId,string varChangedBy,DateTime varChangedAt,string varDescription)
 		{
 			TblAuditLog2026 item = new TblAuditLog2026();
 			
@@ -459,6 +480,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.ChangedAt = varChangedAt;
 			
+			item.Description = varDescription;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -469,7 +492,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varId,string varTitle,Guid? varCustomerId,Guid? varReferenceId,string varTableName,Guid? varRecordId,string varActionType,string varChanges,string varIPAddress,string varUserAgent,Guid? varUserId,string varChangedBy,DateTime varChangedAt)
+		public static void Update(Guid varId,string varTitle,Guid? varCustomerId,Guid? varReferenceId,string varTableName,Guid? varRecordId,string varActionType,string varChanges,string varIPAddress,string varUserAgent,Guid? varUserId,string varChangedBy,DateTime varChangedAt,string varDescription)
 		{
 			TblAuditLog2026 item = new TblAuditLog2026();
 			
@@ -498,6 +521,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.ChangedBy = varChangedBy;
 			
 				item.ChangedAt = varChangedAt;
+			
+				item.Description = varDescription;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -603,6 +628,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn DescriptionColumn
+        {
+            get { return Schema.Columns[13]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -620,6 +652,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string UserId = @"UserId";
 			 public static string ChangedBy = @"ChangedBy";
 			 public static string ChangedAt = @"ChangedAt";
+			 public static string Description = @"Description";
 						
 		}
 		#endregion

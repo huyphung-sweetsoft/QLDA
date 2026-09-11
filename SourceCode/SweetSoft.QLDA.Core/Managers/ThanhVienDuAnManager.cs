@@ -1,8 +1,9 @@
-﻿using SweetSoft.QLDA.Core.ExceptionHelpers;
+﻿using SubSonic;
+using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
-using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.ResourceTexts;
+using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
@@ -31,9 +32,9 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             BusinessValidator.ThrowIf(dto.IdNhanVien == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
             BusinessValidator.ThrowIf(dto.IdDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
-            BusinessValidator.ThrowIf(dto.IdVaiTroDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
+            BusinessValidator.ThrowIf(!dto.IdVaiTroDuAn.HasValue || dto.IdVaiTroDuAn.Value == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
 
-            TblThanhVienDuAn thanhVienDuAn = _repository.GetNhanVienIsActiveInDuAn(dto.IdNhanVien.Value, dto.IdDuAn);
+            TblThanhVienDuAn thanhVienDuAn = _repository.GetNhanVienIsActiveInDuAn(dto.IdNhanVien.Value, dto.IdDuAn, dto.IdVaiTroDuAn.Value);
 
             if (thanhVienDuAn != null)
             {
@@ -41,7 +42,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 thanhVienDuAn.GhiChu = dto.GhiChu;
                 thanhVienDuAn.NguoiCapNhat = SweetContext.Current.UserName;
                 thanhVienDuAn.NgayCapNhat = DateTime.UtcNow;
-                return _repository.Save(thanhVienDuAn);
+                return _repository.Update(thanhVienDuAn);
             }
             else
             {
@@ -55,10 +56,37 @@ namespace SweetSoft.QLDA.Core.Managers
                 thanhVienDuAn.NgayTao = DateTime.UtcNow;
                 thanhVienDuAn.NguoiCapNhat = null;
                 thanhVienDuAn.NgayCapNhat = null;
-                thanhVienDuAn = _repository.Save(thanhVienDuAn);
+                thanhVienDuAn = _repository.Insert(thanhVienDuAn, BackEndResourceKeys.HISTORY_ADDED_TO_CONTAINER);
                 BusinessValidator.ThrowIfNull(thanhVienDuAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
-                return _repository.Save(thanhVienDuAn);
+                return thanhVienDuAn;
             }
+        }
+        //Thêm đống hàm dưới đây
+        //1. tHằng này là xóa mềm có ngoại lệ nói chung để từ PM A sang PM B, qua DuAnManager coi
+        public void DeleteByDuAnAndVaiTroExcept(Guid idDuAn, Guid idVaiTro, Guid idNhanVienGiuLai)
+        {
+            foreach (var tv in _repository.GetByIdDuAnAndVaiTroExcept(idDuAn, idVaiTro, idNhanVienGiuLai))
+            {
+                tv.DaXoa = true;
+                tv.NguoiCapNhat = SweetContext.Current.UserName;
+                tv.NgayCapNhat = DateTime.UtcNow;
+                _repository.Update(tv);
+            }
+        }
+
+        public List<Guid> GetIdNhanVienByDuAnAndVaiTro(Guid idDuAn, Guid idVaiTro)
+        {
+            return _repository.GetIdNhanVienByDuAnAndVaiTro(idDuAn, idVaiTro);   // chỉ còn 1 dòng, gọi thẳng xuống Repository
+        }
+        public void DeleteOne(Guid idDuAn, Guid idVaiTro, Guid idNhanVien) //Cái này dùng cho logic cập nhật danh sách nhân viên được chọn, qua DuAnManager coi
+        {
+            TblThanhVienDuAn tv = _repository.GetNhanVienIsActiveInDuAn(idNhanVien, idDuAn, idVaiTro);
+            if (tv == null) return;   // không active thì thôi, khỏi làm gì
+
+            tv.DaXoa = true;
+            tv.NguoiCapNhat = SweetContext.Current.UserName;
+            tv.NgayCapNhat = DateTime.UtcNow;
+            _repository.Update(tv, BackEndResourceKeys.HISTORY_REMOVED_FROM_CONTAINER);
         }
     }
 }
