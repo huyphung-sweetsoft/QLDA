@@ -590,5 +590,20 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string AT_RISK = "AT_RISK";
         public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
         public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
+        public const string PAYMENT_LIST = "PAYMENT_LIST";
+        public const string PAYMENT_CODE = "PAYMENT_CODE";
+        public const string PAYMENT_NAME = "PAYMENT_NAME";
+        public const string PAYMENT_AMOUNT = "PAYMENT_AMOUNT";
+        public const string PAYMENT_DUE_DATE = "PAYMENT_DUE_DATE";
+        public const string PAYMENT_ACTUAL_DATE = "PAYMENT_ACTUAL_DATE";
+        public const string PAYMENT_UNPAID = "PAYMENT_UNPAID";
+        public const string PAYMENT_OVERDUE = "PAYMENT_OVERDUE";
+        public const string PAYMENT_PAID = "PAYMENT_PAID";
+        public const string PAYMENT_EDIT_STATUS = "PAYMENT_EDIT_STATUS";
+        public const string PAYMENT_SEARCH_PLACEHOLDER = "PAYMENT_SEARCH_PLACEHOLDER";
+        public const string PAYMENT_DATE_REQUIRED = "PAYMENT_DATE_REQUIRED";
+        public const string PAYMENT_QUICK_APPROVE = "PAYMENT_QUICK_APPROVE";
+        public const string PAYMENT_QUICK_APPROVE_CONFIRM = "PAYMENT_QUICK_APPROVE_CONFIRM";
+        public const string PAYMENT_DELETE_CONFIRM = "PAYMENT_DELETE_CONFIRM";
     }
 }

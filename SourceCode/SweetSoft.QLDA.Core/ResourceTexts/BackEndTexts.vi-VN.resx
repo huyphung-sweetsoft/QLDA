@@ -1840,4 +1840,49 @@
   <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
     <value>Nhân sự</value>
   </data>
+  <data name="PAYMENT_LIST" xml:space="preserve">
+    <value>Danh sách thanh toán</value>
+  </data>
+  <data name="PAYMENT_CODE" xml:space="preserve">
+    <value>Mã đợt thanh toán</value>
+  </data>
+  <data name="PAYMENT_NAME" xml:space="preserve">
+    <value>Tên đợt thanh toán</value>
+  </data>
+  <data name="PAYMENT_AMOUNT" xml:space="preserve">
+    <value>Số tiền (VNĐ)</value>
+  </data>
+  <data name="PAYMENT_DUE_DATE" xml:space="preserve">
+    <value>Hạn thanh toán</value>
+  </data>
+  <data name="PAYMENT_ACTUAL_DATE" xml:space="preserve">
+    <value>Ngày thanh toán thực tế</value>
+  </data>
+  <data name="PAYMENT_UNPAID" xml:space="preserve">
+    <value>Chưa thanh toán</value>
+  </data>
+  <data name="PAYMENT_OVERDUE" xml:space="preserve">
+    <value>Trễ hạn</value>
+  </data>
+  <data name="PAYMENT_PAID" xml:space="preserve">
+    <value>Đã thanh toán</value>
+  </data>
+  <data name="PAYMENT_EDIT_STATUS" xml:space="preserve">
+    <value>Cập nhật thanh toán</value>
+  </data>
+  <data name="PAYMENT_SEARCH_PLACEHOLDER" xml:space="preserve">
+    <value>Nhập mã đợt, tên đợt thanh toán...</value>
+  </data>
+  <data name="PAYMENT_DATE_REQUIRED" xml:space="preserve">
+    <value>Vui lòng chọn ngày thanh toán thực tế không lớn hơn hôm nay.</value>
+  </data>
+  <data name="PAYMENT_QUICK_APPROVE" xml:space="preserve">
+    <value>Đã thanh toán</value>
+  </data>
+  <data name="PAYMENT_QUICK_APPROVE_CONFIRM" xml:space="preserve">
+    <value>Bạn có chắc muốn duyệt thanh toán {0} không?</value>
+  </data>
+  <data name="PAYMENT_DELETE_CONFIRM" xml:space="preserve">
+    <value>Bạn có chắc muốn xóa thanh toán {0} không?</value>
+  </data>
 </root>
