@@ -94,6 +94,17 @@ namespace SweetSoft.QLDA.Core.Managers
                 //Nếu là update, phải lấy DB lên trước để so sánh
                 existingUser = _repository.GetById(dto.UserId);
                 BusinessValidator.ThrowIfNull(existingUser, BackEndResourceKeys.NOT_FOUND, nameof(dto.UserId), ErrorCodes.NotFound);
+                if (existingUser.LaNhanVien && !dto.LaNhanVien)
+                {
+                    dto.LaNhanVien = true; // Ép ngược lại thành Nhân viên
+                    dto.IdCCCD = existingUser.IdCCCD;
+                    dto.IdPhongBan = existingUser.IdPhongBan;
+                    dto.IdChucDanh = existingUser.IdChucDanh;
+                    dto.NgaySinh = existingUser.NgaySinh;
+                    dto.GioiTinh = existingUser.GioiTinh;
+                    dto.DiaChi = existingUser.DiaChi;
+                    dto.NgayGiaNhap = existingUser.NgayGiaNhap;
+                }
                 bool oldIsGhost = IsGhostAccount(existingUser.UserName);
                 bool newIsGhost = string.IsNullOrEmpty(dto.UserName);//Lúc này giao diện ko có dto.Username -> nghĩa là vẫn muốn giữ tài khoản ma
                 if (oldIsGhost && newIsGhost)
