@@ -256,7 +256,7 @@
     <value>Customer</value>
   </data>
   <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value>Danh sách khách hàng</value>
+    <value> </value>
   </data>
   <data name="DASHBOARD" xml:space="preserve">
     <value>Dashboard</value>
@@ -480,6 +480,9 @@
   <data name="NOT_SENT" xml:space="preserve">
     <value>Not sent</value>
   </data>
+  <data name="NOT_APPROVED" xml:space="preserve">
+    <value>Not approved</value>
+  </data>
   <data name="NOT_ENTERED" xml:space="preserve">
     <value>Not entered</value>
   </data>
@@ -509,6 +512,9 @@
   </data>
   <data name="ON" xml:space="preserve">
     <value>On</value>
+  </data>
+  <data name="ONGOING" xml:space="preserve">
+    <value>Ongoing</value>
   </data>
   <data name="OWNER" xml:space="preserve">
     <value>On</value>
@@ -606,6 +612,9 @@
   <data name="REQUIRED" xml:space="preserve">
     <value>Required</value>
   </data>
+  <data name="REJECTED" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
   <data name="RISK_LIST" xml:space="preserve">
     <value>Risk list</value>
   </data>
@@ -653,6 +662,9 @@
   </data>
   <data name="SCHEDULE" xml:space="preserve">
     <value>Schedule</value>
+  </data>
+  <data name="SCHEDULED" xml:space="preserve">
+    <value>Scheduled</value>
   </data>
   <data name="SEARCH" xml:space="preserve">
     <value>Search</value>
@@ -894,6 +906,9 @@
   <data name="REQUEST_DATE" xml:space="preserve">
     <value>Request date</value>
   </data>
+  <data name="REQUESTER" xml:space="preserve">
+    <value>Requester</value>
+  </data>
   <data name="NO_DATA_SELECTED_FOR_DELETE" xml:space="preserve">
     <value>Please select the data to delete</value>
   </data>
@@ -1104,6 +1119,9 @@
   <data name="TOTAL" xml:space="preserve">
     <value>Total</value>
   </data>
+  <data name="TOTAL_AMOUNT" xml:space="preserve">
+    <value>Total amount</value>
+  </data>
   <data name="RATE_SPEECHES_OF_ATTENDEES" xml:space="preserve">
     <value>Rate number of speeches</value>
   </data>
@@ -1121,6 +1139,9 @@
   </data>
   <data name="MITIGATION" xml:space="preserve">
     <value>Mitigation</value>
+  </data>
+  <data name="GANTT_CHART" xml:space="preserve">
+    <value>Gantt chart</value>
   </data>
   <data name="SECRETARY" xml:space="preserve">
     <value>Secretary</value>
@@ -1147,7 +1168,7 @@
     <value />
   </data>
   <data name="CUSTOMER_NAME" xml:space="preserve">
-    <value></value>
+    <value />
   </data>
   <data name="CUSTOMER_FEEDBACK" xml:space="preserve">
     <value>Customer Feedback</value>
@@ -1160,6 +1181,9 @@
   </data>
   <data name="PRIORITY" xml:space="preserve">
     <value />
+  </data>
+  <data name="PRICE" xml:space="preserve">
+    <value>Price</value>
   </data>
   <data name="CONTRACT" xml:space="preserve">
     <value>Contract</value>
@@ -1206,6 +1230,9 @@
   <data name="END_DATE" xml:space="preserve">
     <value>End date</value>
   </data>
+  <data name="ENDED" xml:space="preserve">
+    <value>Ended</value>
+  </data>
   <data name="START_DATE" xml:space="preserve">
     <value>Start date</value>
   </data>
@@ -1225,11 +1252,8 @@
   <data name="MEETING_ROOM" xml:space="preserve">
     <value>Meeting room</value>
   </data>
-	<data name="GENERAL_CONTENT" xml:space="preserve">
+  <data name="GENERAL_CONTENT" xml:space="preserve">
     <value>General content</value>
-  </data>
-  <data name="CUSTOMER_LIST" xml:space="preserve">
-    <value> </value>
   </data>
   <data name="CUSTOMER_TYPE" xml:space="preserve">
     <value> </value>
@@ -1242,9 +1266,6 @@
   </data>
   <data name="CONTACT_PHONE_NUMBER" xml:space="preserve">
     <value> </value>
-  </data>
-  <data name="ACCOMPANYING_PERSON" xml:space="preserve">
-    <value>Accompanying person</value>
   </data>
   <data name="ACCOUNT_TYPE" xml:space="preserve">
     <value>Account type</value>
@@ -1342,6 +1363,9 @@
   <data name="DEFAULT_SIGNING_METHOD" xml:space="preserve">
     <value>Default signing method</value>
   </data>
+  <data name="FAST_APPROVAL" xml:space="preserve">
+    <value>Fast approval</value>
+  </data>
   <data name="ALLOW_SEND_CUSTOMER" xml:space="preserve">
     <value>Requires sending to customer</value>
   </data>
@@ -1424,6 +1448,9 @@
     <value>Document code</value>
   </data>
   <data name="DOCUMENT_NAME" xml:space="preserve">
+    <value>Document name</value>
+  </data>
+  <data name="DOING" xml:space="preserve">
     <value>Document name</value>
   </data>
   <data name="DOCUMENT_STATUS" xml:space="preserve">
@@ -1663,6 +1690,9 @@
   <data name="DATE_RANGE" xml:space="preserve">
     <value>Date range</value>
   </data>
+  <data name="DATE_CREATED" xml:space="preserve">
+    <value>Date created</value>
+  </data>
   <data name="THIS_WEEK" xml:space="preserve">
     <value>This week</value>
   </data>
@@ -1678,8 +1708,8 @@
   <data name="APPLY" xml:space="preserve">
     <value>Apply</value>
   </data>
-  <data name="ALL_PROJECTS" xml:space="preserve">
-    <value>All projects</value>
+  <data name="APPROVED" xml:space="preserve">
+    <value>Approved</value>
   </data>
   <data name="TRACK_OVERALL_PROJECT_STATUS" xml:space="preserve">
     <value>Track overall project status</value>
@@ -1690,8 +1720,8 @@
   <data name="PROJECTS_IN_PROGRESS" xml:space="preserve">
     <value>Projects in progress</value>
   </data>
-  <data name="UPCOMING_MEETINGS" xml:space="preserve">
-    <value>Upcoming meetings</value>
+  <data name="UPCOMING" xml:space="preserve">
+    <value>Upcoming</value>
   </data>
   <data name="MEETINGS_THIS_WEEK" xml:space="preserve">
     <value>From today until the end of the selected period</value>
@@ -1704,6 +1734,9 @@
   </data>
   <data name="OVERDUE_TASKS" xml:space="preserve">
     <value>Overdue tasks</value>
+  </data>
+  <data name="OVERDUE" xml:space="preserve">
+    <value>Overdue</value>
   </data>
   <data name="INCOMPLETE_AND_OVERDUE" xml:space="preserve">
     <value>Incomplete and overdue</value>
@@ -1734,9 +1767,6 @@
   </data>
   <data name="PROJECTS_WITH_MOST_RISKS_OR_ISSUES" xml:space="preserve">
     <value>Projects with most risks or issues</value>
-  </data>
-  <data name="PROJECT" xml:space="preserve">
-    <value>Project</value>
   </data>
   <data name="RISK" xml:space="preserve">
     <value>Risk</value>
@@ -1773,6 +1803,18 @@
   </data>
   <data name="COST_OVERVIEW" xml:space="preserve">
     <value>Cost overview</value>
+  </data>
+  <data name="COST_LIST" xml:space="preserve">
+    <value>Cost list</value>
+  </data>
+  <data name="COST_CODE" xml:space="preserve">
+    <value>Cost code</value>
+  </data>
+  <data name="COST_NAME" xml:space="preserve">
+    <value>Cost name</value>
+  </data>
+  <data name="COST_MANAGEMENT" xml:space="preserve">
+    <value>Cost management</value>
   </data>
   <data name="BUDGET_AND_COST_SUMMARY" xml:space="preserve">
     <value>Contract value and project cost summary</value>
@@ -1827,5 +1869,44 @@
   </data>
   <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
     <value>Employee</value>
+  </data>
+  <data name="QUANTITY" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="ACCOMPANYING_PERSON" xml:space="preserve">
+    <value>Accompanying person</value>
+  </data>
+  <data name="SELECT_EMPLOYEE" xml:space="preserve">
+    <value>Select employee</value>
+  </data>
+  <data name="COMPLETED" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="DUE_SOON" xml:space="preserve">
+    <value>Due soon</value>
+  </data>
+  <data name="NOT_YET_STARTED" xml:space="preserve">
+    <value>Not yet started</value>
+  </data>
+  <data name="TODAY" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="DEPENDENT_LINK" xml:space="preserve">
+    <value>Dependent link</value>
+  </data>
+  <data name="NO_OVERDUE_TASKS" xml:space="preserve">
+    <value>No overdue tasks</value>
+  </data>
+  <data name="NO_ISSUES" xml:space="preserve">
+    <value>No issues</value>
+  </data>
+  <data name="IN_PROGRESS" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="PROJECT_REPORT_MANAGEMENT" xml:space="preserve">
+    <value>Project report management</value>
+  </data>
+  <data name="PROJECT_REPORT" xml:space="preserve">
+    <value>Project report</value>
   </data>
 </root>

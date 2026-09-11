@@ -58,9 +58,21 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Meets";
         }
+        public static string ProjectCosts(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Costs";
+        }
         public static string ProjectIssues(Guid projectId)
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Issues";
+        }
+        public static string ProjectGanttCharts(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Gantts";
+        }
+        public static string ProjectReports(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Reports";
         }
         public static string AddTask(Guid projectId)
         {

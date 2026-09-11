@@ -119,9 +119,21 @@ namespace SweetSoft.QLDA.Core.Respositories
         public void DeleteTask(TblCongViec task)
         {
             if (task == null) return;
-            task.DaXoa = true;
-            task.NgayCapNhat = DateTime.Now;
-            task.Save();
+            string sqlDelete = $@"
+                WITH TaskHierarchy AS (
+                    SELECT IdCongViec FROM TblCongViec WHERE IdCongViec = '{task.IdCongViec}'
+            
+                    UNION ALL
+            
+                    SELECT t.IdCongViec FROM TblCongViec t
+                    INNER JOIN TaskHierarchy th ON t.IdCongViecCha = th.IdCongViec
+                    WHERE t.DaXoa = 0 OR t.DaXoa IS NULL
+                )
+                UPDATE TblCongViec 
+                SET DaXoa = 1, 
+                    NgayCapNhat = GETDATE()
+                WHERE IdCongViec IN (SELECT IdCongViec FROM TaskHierarchy);";
+            new SubSonic.InlineQuery().Execute(sqlDelete);
         }
         #endregion
     }

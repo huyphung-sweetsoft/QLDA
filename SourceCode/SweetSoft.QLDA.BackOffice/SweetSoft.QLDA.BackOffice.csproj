@@ -181,6 +181,20 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
+    <Compile Include="fCosts\Controls\CtrlCost.ascx.cs">
+      <DependentUpon>CtrlCost.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCosts\Controls\CtrlCost.ascx.designer.cs">
+      <DependentUpon>CtrlCost.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fCosts\CostList.aspx.cs">
+      <DependentUpon>CostList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCosts\CostList.aspx.designer.cs">
+      <DependentUpon>CostList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.cs">
       <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -373,6 +387,13 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fGanttCharts\Gantts.aspx.cs">
+      <DependentUpon>Gantts.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fGanttCharts\Gantts.aspx.designer.cs">
+      <DependentUpon>Gantts.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fIssues\Controls\CtrlIssue.ascx.cs">
       <DependentUpon>CtrlIssue.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -414,6 +435,13 @@
     </Compile>
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjectReports\ProjectReport.aspx.cs">
+      <DependentUpon>ProjectReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjectReports\ProjectReport.aspx.designer.cs">
+      <DependentUpon>ProjectReport.aspx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
@@ -546,6 +574,8 @@
     <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="fCosts\Controls\CtrlCost.ascx" />
+    <Content Include="fCosts\CostList.aspx" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
     <Content Include="fCustomers\KhachHangDetail.aspx" />
     <Content Include="fCustomers\KhachHangList.aspx" />
@@ -579,10 +609,10 @@
     <Content Include="Controls\Notifications\CtrlNotifications.ascx" />
     <Content Include="Controls\TwoFA\CtrlTwoFactorAuthenticator.ascx" />
     <Content Include="Controls\TwoFA\handle-two-factor-authenticator.js" />
-    <Content Include="Default.aspx" />
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
+    <Content Include="fGanttCharts\Gantts.aspx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
@@ -592,6 +622,7 @@
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="ForgotPassword.aspx" />
+    <Content Include="fProjectReports\ProjectReport.aspx" />
     <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
     <Content Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
@@ -1824,13 +1855,6 @@
     </Compile>
     <Compile Include="Controls\Notifications\CtrlNotifications.ascx.designer.cs">
       <DependentUpon>CtrlNotifications.ascx</DependentUpon>
-    </Compile>
-    <Compile Include="Default.aspx.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Default.aspx.designer.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="fSettings\AuditTrails.aspx.cs">
       <DependentUpon>AuditTrails.aspx</DependentUpon>

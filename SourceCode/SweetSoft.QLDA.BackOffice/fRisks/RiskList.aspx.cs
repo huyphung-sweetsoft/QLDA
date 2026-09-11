@@ -147,53 +147,45 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                TblRuiRoDuAn risk = null;
+
+                TblRuiRoDuAn riskDto = new TblRuiRoDuAn();
                 bool isNew = (this.RiskId == Guid.Empty);
-                if (isNew)
+
+                if (!isNew)
                 {
-                    risk = new TblRuiRoDuAn();
-                    risk.IdRuiRoDuAn = Guid.NewGuid();
-                    risk.IdDuAn = CtrlRisk1.ProjectId;
-                    risk.DaXoa = false;
-                    risk.NgayTao = DateTime.Now;
-                    risk.NguoiTao = SweetContext.Current.UserName; 
-                    risk.NgayCapNhat = DateTime.Now;
-                    risk.NguoiCapNhat = SweetContext.Current.UserName; 
+                    riskDto.IdRuiRoDuAn = this.RiskId;
                 }
-                else
-                {
-                    risk = TblRuiRoDuAn.FetchByID(this.RiskId);
-                    if (risk == null)
-                    {
-                        ShowInvalidNotFoundData();
-                        return;
-                    }
-                    risk.NgayCapNhat = DateTime.Now;
-                    risk.NguoiCapNhat = SweetContext.Current.UserName;
-                }
-                risk.TenRuiRo = txtTenRuiRo.Text.Trim();
+
+                riskDto.IdDuAn = CtrlRisk1.ProjectId;
+                riskDto.TenRuiRo = txtTenRuiRo.Text.Trim();
 
                 Guid idNhanVien = Guid.Empty;
                 if (this.GetValue(ddlNhanVien, out idNhanVien) && idNhanVien != Guid.Empty)
-                    risk.IdNhanVienXuLy = idNhanVien;
-                else
-                    risk.IdNhanVienXuLy = null;
+                    riskDto.IdNhanVienXuLy = idNhanVien;
+
                 int xacSuat = 0;
                 if (this.GetValue(ddlXacSuat, out xacSuat))
-                {
-                    risk.XacSuatXayRa = xacSuat;
-                }
+                    riskDto.XacSuatXayRa = xacSuat;
+
                 int mucDoAnhHuong = 0;
                 if (this.GetValue(ddlMucDoAnhHuong, out mucDoAnhHuong))
-                    risk.MucDoAnhHuong = mucDoAnhHuong;
+                    riskDto.MucDoAnhHuong = mucDoAnhHuong;
 
-                decimal score = ((decimal)xacSuat / 100m) * mucDoAnhHuong;
+                riskDto.KeHoachPhongNgua = !string.IsNullOrEmpty(txtKeHoachPhongNgua.Text.Trim())
+                    ? txtKeHoachPhongNgua.Text.Trim()
+                    : GetResourceText(BackEndResourceKeys.NOT_ENTERED);
 
-                risk.DiemRuiRo = (float)score; 
-                risk.KeHoachPhongNgua = !string.IsNullOrEmpty(txtKeHoachPhongNgua.Text.Trim()) ? txtKeHoachPhongNgua.Text.Trim() : GetResourceText(BackEndResourceKeys.NOT_ENTERED);
-                risk.KeHoachUngPho = !string.IsNullOrEmpty(txtKeHoachUngPho.Text.Trim()) ? txtKeHoachUngPho.Text.Trim() : GetResourceText(BackEndResourceKeys.NOT_ENTERED);
+                riskDto.KeHoachUngPho = !string.IsNullOrEmpty(txtKeHoachUngPho.Text.Trim())
+                    ? txtKeHoachUngPho.Text.Trim()
+                    : GetResourceText(BackEndResourceKeys.NOT_ENTERED);
 
-                risk.Save();
+                TblRuiRoDuAn savedRisk = RiskManager.Instance.CreateOrUpdate(riskDto);
+
+                if (savedRisk == null)
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlRisk1.Rebind();

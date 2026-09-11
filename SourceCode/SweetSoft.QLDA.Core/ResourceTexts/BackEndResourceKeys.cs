@@ -401,6 +401,15 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DEPENDENT = "DEPENDENT";
         public const string PHASE = "PHASE";
         public const string PARENT_TASK = "PARENT_TASK";
+        public const string GANTT_CHART = "GANTT_CHART";
+        public const string DOING = "DOING";
+        public const string OVERDUE = "OVERDUE";
+        public const string DUE_SOON = "DUE_SOON";
+        public const string NOT_YET_STARTED = "NOT_YET_STARTED";
+        public const string TODAY = "TODAY";
+        public const string DEPENDENT_LINK = "DEPENDENT_LINK";
+        public const string NO_OVERDUE_TASKS = "NO_OVERDUE_TASKS";
+        public const string NO_ISSUES = "NO_ISSUES";
         //Risk
         public const string RISK_LIST = "RISK_LIST";
         public const string RISK_CODE = "RISK_CODE";
@@ -437,6 +446,33 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MEETING_NAME = "MEETING_NAME";
         public const string GENERAL_CONTENT = "GENERAL_CONTENT";
         public const string MEETING_ROOM = "MEETING_ROOM";
+        public const string START_TIME = "START_TIME";
+        public const string END_TIME = "END_TIME";
+        public const string ENDED = "ENDED";
+        public const string SCHEDULED = "SCHEDULED";
+        public const string UPCOMING = "UPCOMING";
+        public const string ONGOING = "ONGOING";
+        public const string SELECT_EMPLOYEE = "SELECT_EMPLOYEE";
+        //Cost
+        public const string COST_MANAGEMENT = "COST_MANAGEMENT";
+        public const string COST_LIST = "COST_LIST";
+        public const string COST_CODE = "COST_CODE";
+        public const string COST_NAME = "COST_NAME";
+        public const string REQUESTER = "REQUESTER";
+        public const string PRICE = "PRICE";
+        public const string QUANTITY = "QUANTITY";
+        public const string TOTAL_AMOUNT = "TOTAL_AMOUNT";
+        public const string DATE_CREATED = "DATE_CREATED";
+        public const string NOT_APPROVED = "NOT_APPROVED";
+        public const string APPROVED = "APPROVED";
+        public const string REJECTED = "REJECTED";
+        public const string FAST_APPROVAL = "FAST_APPROVAL";
+        //Project Report
+        public const string PROJECT_REPORT = "PROJECT_REPORT";
+        public const string PROJECT_REPORT_MANAGEMENT = "PROJECT_REPORT_MANAGEMENT";
+
+
+        //Document
         public const string DOCUMENT_TEMPLATE = "DOCUMENT_TEMPLATE";
         public const string DOCUMENT_TEMPLATE_LIST = "DOCUMENT_TEMPLATE_LIST";
         public const string DOCUMENT_TEMPLATE_NAME = "DOCUMENT_TEMPLATE_NAME";

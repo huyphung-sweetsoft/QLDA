@@ -42,18 +42,25 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public TblCongViec DeleteTask(TblCongViec task)
         {
+            if (task == null) return null;
             _repository.DeleteTask(task);
-            ReindexTaskCodesAfterDelete(task.IdDuAn, task.MaCongViec);
+            if (!string.IsNullOrEmpty(task.MaCongViec))
+            {
+                ReindexTaskCodesAfterDelete(task.IdDuAn, task.MaCongViec);
+            }
+
             return task;
         }
         private void ReindexTaskCodesAfterDelete(Guid projectId, string deletedCode)
         {
             if (string.IsNullOrEmpty(deletedCode)) return;
+
             int lastDot = deletedCode.LastIndexOf('.');
             string prefix = lastDot >= 0 ? deletedCode.Substring(0, lastDot + 1) : "";
             string lastPart = lastDot >= 0 ? deletedCode.Substring(lastDot + 1) : deletedCode;
 
             if (!int.TryParse(lastPart, out int deletedIndex)) return;
+
             DataTable dt = FetchByIdAndOrderASCMaCV(projectId);
             if (dt == null || dt.Rows.Count == 0) return;
 
@@ -63,7 +70,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     continue;
 
                 string code = row[ColMaCv]?.ToString() ?? "";
-                if (string.IsNullOrEmpty(code)) continue;
+                if (string.IsNullOrEmpty(code) || code == deletedCode) continue;
 
                 if (!string.IsNullOrEmpty(prefix) && !code.StartsWith(prefix))
                     continue;
@@ -76,8 +83,9 @@ namespace SweetSoft.QLDA.Core.Managers
                     int newIndex = currentIndex - 1;
                     string rest = subCode.Contains(".") ? subCode.Substring(parts[0].Length) : "";
                     string newCode = prefix + newIndex + rest;
+
                     TblCongViec t = FetchById(id);
-                    if (t != null)
+                    if (t != null && (t.DaXoa == false || t.DaXoa == null))
                     {
                         t.MaCongViec = newCode;
                         t.NgayCapNhat = DateTime.Now;
