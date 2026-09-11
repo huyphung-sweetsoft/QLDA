@@ -1,4 +1,6 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+﻿using SubSonic;
+using SubSonic.Sugar;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
@@ -8,6 +10,7 @@ using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Transactions;
 using System.Web.UI;
 
@@ -16,6 +19,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
     public partial class MeetList : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Meet;
+        private ControlHelpers _control = new ControlHelpers();
         private Guid MeetId
         {
             get => ViewState["MeetId"] != null ? (Guid)ViewState["MeetId"] : Guid.Empty;
@@ -24,9 +28,10 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
-
+            new ControlHelpers().BindNhanVienToCheckBoxList(cblNhanVien);
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -52,8 +57,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
         private void ApplyControlsText()
         {
-            ddlTrangThai.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
+            ddlTrangThai.PlaceHolder = "--";
             dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
+
+            txtThoiGianKetThuc.PlaceHolder = "--";
+
+            txtTenCuocHop.PlaceHolder = txtNoiDungCuocHop.PlaceHolder = txtThoiGianBatDau.PlaceHolder =
+            txtDiaDiemHop.PlaceHolder = txtThoiLuong.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
+
+            dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
         }
 
         private void NewMeetingAction(object sender, EventArgs e)
@@ -89,11 +101,20 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtNoiDungCuocHop.Text = meet.NoiDungCuocHop;
             txtDiaDiemHop.Text = meet.DiaDiemHop;
 
+            _control.BindNhanVienThamGiaLichHop(meet.IdLichHop, hdfNhanVienIds, txtNhanVienThamGia);
+
             if (meet.ThoiGianBatDau != DateTime.MinValue)
-                txtThoiGianBatDau.Text = meet.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm");
+                txtThoiGianBatDau.DateValue = meet.ThoiGianBatDau;
 
             if (meet.ThoiGianKetThuc != DateTime.MinValue)
+            {
                 txtThoiGianKetThuc.Text = meet.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm");
+                if (meet.ThoiGianBatDau != DateTime.MinValue)
+                {
+                    int thoiLuong = (int)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes;
+                    txtThoiLuong.Text = thoiLuong.ToString();
+                }
+            }
 
             if (meet.TrangThai != null)
                 ddlTrangThai.SelectedValue = meet.TrangThai.ToString();
@@ -107,10 +128,17 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         private void RefreshMeetingInfo()
         {
             ControlHelpers controlHelpers = new ControlHelpers();
-            controlHelpers.BindTrangThaiLichHop(ddlTrangThai); 
+            controlHelpers.BindTrangThaiLichHop(ddlTrangThai);
+
+            txtTenCuocHop.Text = txtNoiDungCuocHop.Text = txtDiaDiemHop.Text = "";
+
+            txtThoiGianBatDau.DateValue = null;
+            txtThoiLuong.Text = "";
+            txtThoiGianKetThuc.Text = "";
+            txtNhanVienThamGia.Text = "";
+            hdfNhanVienIds.Value = "";
 
             lbtSubmit.Visible = false;
-            txtTenCuocHop.Text = txtNoiDungCuocHop.Text = txtDiaDiemHop.Text = txtThoiGianBatDau.Text = txtThoiGianKetThuc.Text = "";
 
             if (ddlTrangThai.Items.Count > 0) ddlTrangThai.SelectedIndex = 0;
 
@@ -128,51 +156,56 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                    TblLichHop meet = null;
-                    bool isNew = (this.MeetId == Guid.Empty);
 
-                    // Lấy UserID hiện tại (Kiểu Guid). Nếu Context của bác không có UserId mà lưu qua Username, thì lấy ID từ Membership
-                    // Code giả định dùng SweetContext.Current.UserId, bác chỉnh lại thuộc tính cho đúng với Framework nhé!
-                    Guid currentUserId = SweetContext.Current.UserId;
+                TblLichHop meetDto = new TblLichHop();
+                bool isNew = (this.MeetId == Guid.Empty);
 
-                    if (isNew)
+                if (!isNew)
+                {
+                    meetDto.IdLichHop = this.MeetId;
+                }
+
+                meetDto.IdDuAn = CtrlMeet1.ProjectId;
+                meetDto.TenCuocHop = txtTenCuocHop.Text.Trim();
+                meetDto.NoiDungCuocHop = !string.IsNullOrEmpty(txtNoiDungCuocHop.Text.Trim()) ? txtNoiDungCuocHop.Text.Trim() : null;
+                meetDto.DiaDiemHop = txtDiaDiemHop.Text.Trim();
+
+                string strEnd = txtThoiGianKetThuc.Text.Trim();
+                if (string.IsNullOrEmpty(strEnd))
+                {
+                    strEnd = Request.Params[txtThoiGianKetThuc.UniqueID] ?? "";
+                }
+
+                DateTime dtEnd;
+                int thoiLuong = 0;
+
+                if (DateTime.TryParse(strEnd, new System.Globalization.CultureInfo("vi-VN"), System.Globalization.DateTimeStyles.None, out dtEnd) ||
+                    DateTime.TryParse(strEnd, new System.Globalization.CultureInfo("en-US"), System.Globalization.DateTimeStyles.None, out dtEnd))
+                {
+                    meetDto.ThoiGianKetThuc = dtEnd;
+                    if (int.TryParse(txtThoiLuong.Text.Trim(), out thoiLuong))
                     {
-                        meet = new TblLichHop();
-                        meet.IdLichHop = Guid.NewGuid();
-                        meet.IdDuAn = CtrlMeet1.ProjectId;
-                        meet.DaXoa = false;
-                        meet.NgayTao = DateTime.Now;
-                        meet.IdNguoiTao = currentUserId; 
-                        // meet.MaLichHop = MeetingManager.Instance.GenerateMaLichHop(CtrlMeet1.ProjectId);
+                        meetDto.ThoiGianBatDau = dtEnd.AddMinutes(-thoiLuong);
                     }
                     else
                     {
-                        meet = TblLichHop.FetchByID(this.MeetId);
-                        if (meet == null)
-                        {
-                            ShowInvalidNotFoundData();
-                            return;
-                        }
-                        meet.NgayCapNhat = DateTime.Now;
-                        meet.IdNguoiCapNhat = currentUserId;
+                        meetDto.ThoiGianBatDau = dtEnd;
                     }
+                }
+                else
+                {
+                    ShowNotify($"Lỗi đọc giờ! Chuỗi Server nhận được là: '{strEnd}'", MSGType.Error);
+                    return;
+                }
 
-                    meet.TenCuocHop = txtTenCuocHop.Text.Trim();
-                    meet.NoiDungCuocHop = !string.IsNullOrEmpty(txtNoiDungCuocHop.Text.Trim()) ? txtNoiDungCuocHop.Text.Trim() : null;
-                    meet.DiaDiemHop = txtDiaDiemHop.Text.Trim();
+                string nhanVienIds = hdfNhanVienIds.Value;
+                TblLichHop savedMeet = MeetManager.Instance.CreateOrUpdate(meetDto, nhanVienIds);
 
-                    DateTime dtStart, dtEnd;
-                    if (DateTime.TryParseExact(txtThoiGianBatDau.Text.Trim(), "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out dtStart))
-                        meet.ThoiGianBatDau = dtStart;
-                    if (DateTime.TryParseExact(txtThoiGianKetThuc.Text.Trim(), "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out dtEnd))
-                        meet.ThoiGianKetThuc = dtEnd;
-
-                    int trangThai = 0;
-                    if (this.GetValue(ddlTrangThai, out trangThai))
-                        meet.TrangThai = (byte)trangThai; 
-
-                    meet.Save();
-
+                if (savedMeet == null)
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
@@ -181,6 +214,53 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
+        }
+        protected void btnMoPopupNhanVien_Click(object sender, EventArgs e)
+        {
+            _control.BindNhanVienToCheckBoxList(cblNhanVien);
+            cblNhanVien.ClearSelection();
+
+            string[] selectedIds = hdfNhanVienIds.Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (System.Web.UI.WebControls.ListItem item in cblNhanVien.Items)
+            {
+                if (Array.Exists(selectedIds, id => id == item.Value))
+                {
+                    item.Selected = true;
+                }
+            }
+
+            dlChonNhanVien.OpenModal(true);
+        }
+
+        protected void btnXacNhanNhanVien_Click(object sender, EventArgs e)
+        {
+            List<string> ids = new List<string>();
+            List<string> names = new List<string>();
+
+            foreach (System.Web.UI.WebControls.ListItem item in cblNhanVien.Items)
+            {
+                if (item.Selected)
+                {
+                    ids.Add(item.Value);
+                    names.Add(item.Text);
+                }
+            }
+
+            string strIds = string.Join(",", ids);
+            string strNames = string.Join(", ", names);
+
+            hdfNhanVienIds.Value = strIds;
+            txtNhanVienThamGia.Text = strNames;
+
+            string script = $@"
+                setTimeout(function() {{
+                    $('#{hdfNhanVienIds.ClientID}').val('{strIds}');
+                    $('#{txtNhanVienThamGia.ClientID}').val('{strNames}');
+                }}, 100);
+            ";
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "UpdateUI_NhanVien", script, true);
+
+            dlChonNhanVien.CloseModal();
         }
 
         public override void ConfirmRequest(ConfirmResult e)

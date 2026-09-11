@@ -42,15 +42,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.UpdatePanel upnlStageManagement;
 
         /// <summary>
-        /// lbtAddStage control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtAddStage;
-
-        /// <summary>
         /// lblStageError control.
         /// </summary>
         /// <remarks>
@@ -58,24 +49,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblStageError;
-
-        /// <summary>
-        /// pnlEmptyManagement control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlEmptyManagement;
-
-        /// <summary>
-        /// rptStageManagement control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptStageManagement;
 
         /// <summary>
         /// pnlStageForm control.
@@ -94,6 +67,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblStageFormTitle;
+
+        /// <summary>
+        /// lbtCancelStage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtCancelStage;
 
         /// <summary>
         /// rblStageType control.
@@ -186,15 +168,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.WebControls.TextBox txtStageDescription;
 
         /// <summary>
-        /// lbtCancelStage control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtCancelStage;
-
-        /// <summary>
         /// lbtSaveStage control.
         /// </summary>
         /// <remarks>
@@ -202,5 +175,32 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lbtSaveStage;
+
+        /// <summary>
+        /// lbtAddStage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtAddStage;
+
+        /// <summary>
+        /// pnlEmptyManagement control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlEmptyManagement;
+
+        /// <summary>
+        /// rptStageManagement control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptStageManagement;
     }
 }

@@ -47,8 +47,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             {
                 AddDateRangeParameters(parameters, filter);
                 sql.Append(
-                    " AND c.NgayPhatSinh >= @FromDate" +
-                    " AND c.NgayPhatSinh < @ToDateExclusive");
+                    " AND c.NgayTao >= @FromDate" +
+                    " AND c.NgayTao < @ToDateExclusive");
             }
 
             sql.Append(
@@ -171,8 +171,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             {
                 AddDateRangeParameters(parameters, filter);
                 sql.Append(
-                    " AND c.NgayPhatSinh >= @FromDate" +
-                    " AND c.NgayPhatSinh < @ToDateExclusive");
+                    " AND c.NgayTao >= @FromDate" +
+                    " AND c.NgayTao < @ToDateExclusive");
             }
 
             return ExecuteList<TblChiPhi>(sql, parameters);
@@ -399,7 +399,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 "SELECT c.* FROM TblChiPhi c" +
                 " WHERE c.DaXoa = 0" +
                 " AND c.IdDuAn IN (" + idList + ")" +
-                " ORDER BY c.NgayPhatSinh, c.MaKhoanChi";
+                " ORDER BY c.NgayTao, c.MaKhoanChi";
 
             return ExecuteList<TblChiPhi>(sql, parameters);
         }

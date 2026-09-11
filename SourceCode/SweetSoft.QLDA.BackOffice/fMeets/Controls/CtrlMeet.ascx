@@ -40,31 +40,33 @@
                 IsEnableSelectColumn="false" 
                 OnNeedDataSource="grvData_NeedDataSource" OnRowCommand="grvData_RowCommand">
                 <Columns>
-                    <asp:TemplateField HeaderText="Mã họp" HeaderStyle-Width="120px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
-                        <ItemTemplate><%# Eval("MaLichHop") ?? "—" %></ItemTemplate>
+                    <asp:TemplateField HeaderText="MeetingCode" HeaderStyle-Width="120px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                        <ItemTemplate><%# Eval("MaCuocHop") ?? "—" %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Tên cuộc họp" HeaderStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="MeetingName" HeaderStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("TenCuocHop") ?? "—" %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Bắt đầu" HeaderStyle-Width="130px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="StartTime" HeaderStyle-Width="130px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("ThoiGianBatDau", "{0:dd/MM/yyyy HH:mm}") %></ItemTemplate>
                     </asp:TemplateField>
-                    
-                    <asp:TemplateField HeaderText="Kết thúc" HeaderStyle-Width="130px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+
+                    <asp:TemplateField HeaderText="EndTime" HeaderStyle-Width="130px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("ThoiGianKetThuc", "{0:dd/MM/yyyy HH:mm}") %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Địa điểm" HeaderStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="MeetingRoom" HeaderStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("DiaDiemHop") ?? "—" %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Trạng thái" HeaderStyle-Width="120px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
-                        <ItemTemplate><%# Eval("TrangThai") %></ItemTemplate>
+                    <asp:TemplateField HeaderText="Status" HeaderStyle-Width="120px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                        <ItemTemplate>
+                            <%# GetTrangThaiCuocHopText(Eval("TrangThai")) %>
+                        </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Thao tác" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="120px">
+                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="120px">
                         <ItemTemplate>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' 
                                 ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline" 

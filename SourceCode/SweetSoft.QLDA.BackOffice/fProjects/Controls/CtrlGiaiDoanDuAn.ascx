@@ -267,22 +267,20 @@
                                 <%-- Một ô giai đoạn --%>
                                 <div class="stage-item" data-index="<%# Container.ItemIndex %>">
                                     <div class="stage-dot-wrapper">
-                                        <div class="stage-dot <%# Convert.ToString(Eval("DotCssClass")) %>">
-                                        </div>
+                                        <div class="stage-dot <%# GetDotCssClass(GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>"></div>
                                     </div>
-
                                     <div class="stage-label">
-                                        <div class="stage-name small">
-                                            <%# HttpUtility.HtmlEncode(
-                                                Convert.ToString(
-                                                    Eval("TenGiaiDoan"))) %>
+                                        <div class="stage-name small" title='<%# HttpUtility.HtmlEncode(Convert.ToString(Eval("TenGiaiDoan"))) %>'>
+                                            <%# HttpUtility.HtmlEncode(Convert.ToString(Eval("TenGiaiDoan"))) %>
                                         </div>
-
+                                        <div class="stage-date text-muted" style="font-size: 11px;">
+                                            <%# GetStageDateRange(Eval("NgayBatDau"), Eval("NgayDuKienHoanThanh")) %>
+                                        </div>
                                         <div class="stage-percent fw-semibold small text-primary">
-                                            <%# Eval("PhanTramHienThi") %>
+                                            <%# GetPhanTramHienThi(Eval("NgayDuKienHoanThanh"), Eval("NgayHoanThanhThucTe"), GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>
                                         </div>
                                     </div>
-                                </div>
+                                </div><%-- /.stage-item --%>
                 </ItemTemplate>
 
                 <FooterTemplate>
@@ -477,13 +475,17 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Thứ tự</label>
+                            <label class="form-label">
+                                Thứ tự
+                                <span class="text-muted fw-normal small ms-1">(tự động)</span>
+                            </label>
 
                             <asp:TextBox
                                 runat="server"
                                 ID="txtStageOrder"
                                 TextMode="Number"
-                                CssClass="form-control">
+                                ReadOnly="true"
+                                CssClass="form-control bg-light">
                             </asp:TextBox>
                         </div>
 
@@ -549,7 +551,8 @@
                 <%-- Bảng giai đoạn --%>
                 <asp:Repeater
                     runat="server"
-                    ID="rptStageManagement">
+                    ID="rptStageManagement"
+                    OnItemCommand="rptStageManagement_ItemCommand">
 
                     <HeaderTemplate>
                         <div class="stage-mgmt-table px-4">
@@ -587,8 +590,8 @@
 
                                 <%-- Trạng thái --%>
                                 <div class="col-stage-status">
-                                    <span class="stage-status-badge <%# GetStatusBadgeClass(Convert.ToString(Eval("TrangThaiHienThi"))) %>">
-                                        <%# Eval("TrangThaiHienThi") %>
+                                    <span class="stage-status-badge <%# GetStatusBadgeClass(GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>">
+                                        <%# GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe")) %>
                                     </span>
                                 </div>
 
@@ -597,16 +600,27 @@
                                     <div class="d-flex align-items-center gap-2 justify-content-end">
                                         <div class="stage-progress-bar-wrap">
                                             <div
-                                                class="stage-progress-bar-fill <%# GetProgressFillClass(Convert.ToString(Eval("TrangThaiHienThi"))) %>"
-                                                style="width: <%# GetHardCodedPercent(Convert.ToString(Eval("TrangThaiHienThi"))) %>%;">
+                                                class="stage-progress-bar-fill <%# GetProgressFillClass(GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>"
+                                                style="width: <%# GetHardCodedPercent(GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>%;">
                                             </div>
                                         </div>
 
                                         <span class="small fw-semibold" style="min-width: 32px; text-align: right;">
-                                            <%# GetHardCodedPercent(Convert.ToString(Eval("TrangThaiHienThi"))) %>%
+                                            <%# GetHardCodedPercent(GetStageStatus(Eval("NgayBatDau"), Eval("NgayHoanThanhThucTe"))) %>%
                                         </span>
                                     </div>
                                 </div>
+
+                                <asp:LinkButton
+                                    runat="server"
+                                    ID="lbtEditStage"
+                                    CommandName="EDIT_STAGE"
+                                    CommandArgument='<%# Eval("IdGiaiDoanDuAn") %>'
+                                    CssClass="col-stage-pct btn btn-sm btn-outline-primary">
+
+                                    <i class="fas fa-pencil-alt me-1"></i>
+                                    Sửa
+                                </asp:LinkButton>
                             </div>
                     </ItemTemplate>
 

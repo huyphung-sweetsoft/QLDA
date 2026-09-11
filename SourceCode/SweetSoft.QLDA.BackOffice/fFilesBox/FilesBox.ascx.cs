@@ -19,8 +19,38 @@ using System.Web.UI;
 
 namespace SweetSoft.QLDA.BackOffice.fFilesBox
 {
+    public sealed class FileDeletionRequestedEventArgs : EventArgs
+    {
+        public FileDeletionRequestedEventArgs(
+            Guid refId,
+            FileUploadTypes refType,
+            IEnumerable<Guid> fileIds)
+        {
+            RefId = refId;
+            RefType = refType;
+            FileIds = new List<Guid>(fileIds ?? Enumerable.Empty<Guid>());
+        }
+
+        public Guid RefId { get; private set; }
+
+        public FileUploadTypes RefType { get; private set; }
+
+        public IReadOnlyList<Guid> FileIds { get; private set; }
+
+        public bool Handled { get; set; }
+
+        public bool Succeeded { get; set; }
+
+        public string WarningMessage { get; set; }
+
+        public string ErrorMessage { get; set; }
+    }
+
     public partial class FilesBox : BaseAdminUserControl
     {
+        public event EventHandler<FileDeletionRequestedEventArgs>
+            FileDeletionRequested;
+
         #region Script + Styles
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -263,12 +293,141 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 #region delete file
                 List<Guid> listFileRemoveId =
                     GetPendingRemovedFileIds();
+                bool deletionHandled = false;
+                string deletionWarningMessage = null;
+                bool hasDeletionOverride = FileDeletionRequested != null;
                 if (listFileRemoveId.Count > 0)
                 {
                     if (!string.IsNullOrEmpty(this.BeforeSaveDataCallbackKey))
-                        DataCallback(this.BeforeSaveDataCallbackKey, null, null);
+                    {
+                        if (!hasDeletionOverride)
+                        {
+                            DataCallback(
+                                this.BeforeSaveDataCallbackKey,
+                                null,
+                                null);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                DataCallback(
+                                    this.BeforeSaveDataCallbackKey,
+                                    null,
+                                    null);
+                            }
+                            catch (InvalidOperationException exc)
+                            {
+                                this.CURRENT_PAGE.ShowNotify(
+                                    exc.Message,
+                                    MSGType.Warning);
+                                RestorePendingFileChanges();
+                                return;
+                            }
+                            catch (Exception exc)
+                            {
+                                this.CURRENT_PAGE.ShowNotify(
+                                    exc.Message,
+                                    MSGType.Error);
+                                RestorePendingFileChanges();
+                                return;
+                            }
+                        }
+                    }
 
-                    UploadManager.Instance.RemoveFiles(listFileRemoveId, this._refType.Value);
+                    if (hasDeletionOverride)
+                    {
+                        try
+                        {
+                            FileDeletionRequestedEventArgs deletionArgs =
+                                new FileDeletionRequestedEventArgs(
+                                    this.RefId.Value,
+                                    this._refType.Value,
+                                    listFileRemoveId);
+                            FileDeletionRequested(
+                                this,
+                                deletionArgs);
+
+                            if (deletionArgs.Handled)
+                            {
+                                if (!deletionArgs.Succeeded)
+                                {
+                                    this.CURRENT_PAGE.ShowNotify(
+                                        string.IsNullOrWhiteSpace(
+                                                deletionArgs.ErrorMessage)
+                                            ? "Không thể xóa tệp."
+                                            : deletionArgs.ErrorMessage,
+                                        MSGType.Warning);
+                                    RestorePendingFileChanges();
+                                    return;
+                                }
+
+                                deletionHandled = true;
+                                deletionWarningMessage =
+                                    deletionArgs.WarningMessage;
+                            }
+                            else
+                            {
+                                this.CURRENT_PAGE.ShowNotify(
+                                    "Không thể xác nhận xử lý xóa tệp.",
+                                    MSGType.Error);
+                                RestorePendingFileChanges();
+                                return;
+                            }
+                        }
+                        catch (InvalidOperationException exc)
+                        {
+                            this.CURRENT_PAGE.ShowNotify(
+                                exc.Message,
+                                MSGType.Warning);
+                            RestorePendingFileChanges();
+                            return;
+                        }
+                        catch (Exception exc)
+                        {
+                            this.CURRENT_PAGE.ShowNotify(
+                                exc.Message,
+                                MSGType.Error);
+                            RestorePendingFileChanges();
+                            return;
+                        }
+                    }
+
+                    if (!deletionHandled)
+                    {
+                        UploadManager.Instance.RemoveFiles(
+                            listFileRemoveId,
+                            this._refType.Value);
+                    }
+
+                    // Refresh the owning document immediately after the custom
+                    // transaction. This keeps the detail UI consistent if a
+                    // later metadata update fails, and also clears stale
+                    // version/file references before the final callback.
+                    if (deletionHandled)
+                    {
+                        txtArFileRemove.Value = string.Empty;
+                        try
+                        {
+                            DataCallback(this.SaveDataCallbackKey, null, null);
+                        }
+                        catch (InvalidOperationException exc)
+                        {
+                            this.CURRENT_PAGE.ShowNotify(
+                                exc.Message,
+                                MSGType.Warning);
+                            RestorePendingFileChanges();
+                            return;
+                        }
+                        catch (Exception exc)
+                        {
+                            this.CURRENT_PAGE.ShowNotify(
+                                exc.Message,
+                                MSGType.Error);
+                            RestorePendingFileChanges();
+                            return;
+                        }
+                    }
                 }
                 #endregion
 
@@ -324,6 +483,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 foreach (var kvp in fileUpdates)
                 {
                     var gFileId = kvp.Key;
+                    if (listFileRemoveId.Contains(gFileId))
+                        continue;
+
                     var (title, order, path) = kvp.Value;
 
                     var uploadFile = new UploadManager(appContext, gFileId);
@@ -364,6 +526,32 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
                 #endregion
 
+                // The opt-in deletion handler owns the version transaction and
+                // must finish the after-save callback before success is shown.
+                if (deletionHandled)
+                {
+                    try
+                    {
+                        DataCallback(this.SaveDataCallbackKey, null, null);
+                    }
+                    catch (InvalidOperationException exc)
+                    {
+                        this.CURRENT_PAGE.ShowNotify(
+                            exc.Message,
+                            MSGType.Warning);
+                        RestorePendingFileChanges();
+                        return;
+                    }
+                    catch (Exception exc)
+                    {
+                        this.CURRENT_PAGE.ShowNotify(
+                            exc.Message,
+                            MSGType.Error);
+                        RestorePendingFileChanges();
+                        return;
+                    }
+                }
+
                 //if (this.IsMultiple)
                 this.CURRENT_PAGE.ShowSuccessSaveData();
                 if (!this.IsMultiple)
@@ -377,13 +565,37 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 LoadFile(this.RefId.Value, this._refType.Value);//'**Change 02
                 ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "FilesBox.DiscardFile", "FilesBox.DiscardFile();", true);
 
-                DataCallback(this.SaveDataCallbackKey, null, null);
+                if (!deletionHandled)
+                    DataCallback(this.SaveDataCallbackKey, null, null);
+
+                if (deletionHandled
+                    && !string.IsNullOrWhiteSpace(deletionWarningMessage))
+                {
+                    this.CURRENT_PAGE.ShowNotify(
+                        deletionWarningMessage,
+                        MSGType.Warning);
+                }
             }
             catch (Exception exc)
             {
                 throw new Exception("FilesBox", exc);
             }
         }
+
+        private void RestorePendingFileChanges()
+        {
+            if (!this.RefId.HasValue || !this._refType.HasValue)
+                return;
+
+            LoadFile(this.RefId.Value, this._refType.Value);
+            ScriptManager.RegisterClientScriptBlock(
+                this.Page,
+                GetType(),
+                "FilesBox.RestorePendingFileChanges",
+                "FilesBox.DiscardFile();",
+                true);
+        }
+
         public string SaveDataCallbackKey
         {
             get

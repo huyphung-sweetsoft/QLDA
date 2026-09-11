@@ -133,8 +133,8 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
             hdfIdNgoaiLe.Value = item.IdNgoaiLe.ToString();
             txtTenNgoaiLe.Text = item.TenNgoaiLe;
             // Lưu ý chữ y, M, d phải viết đúng hoa/thường như thế này:
-            txtNgayBatDau.Text = item.NgayBatDau.ToString("yyyy-MM-dd");
-            txtNgayKetThuc.Text = item.NgayKetThuc.ToString("yyyy-MM-dd");
+            txtNgayBatDau.Text = item.NgayBatDau.ToString();
+            txtNgayKetThuc.Text = item.NgayKetThuc.ToString();
             txtMoTa.Text = item.MoTa;
 
             lbtSubmit.Visible = this.IsEdit;

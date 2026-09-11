@@ -122,6 +122,8 @@
     <Compile Include="TblKhachHangController.cs" />
     <Compile Include="TblLichHop.cs" />
     <Compile Include="TblLichHopController.cs" />
+    <Compile Include="TblLichHopNhanVien.cs" />
+    <Compile Include="TblLichHopNhanVienController.cs" />
     <Compile Include="TblLichNgoaiLe.cs" />
     <Compile Include="TblLichNgoaiLeController.cs" />
     <Compile Include="TblLichSuChinhSua.cs" />

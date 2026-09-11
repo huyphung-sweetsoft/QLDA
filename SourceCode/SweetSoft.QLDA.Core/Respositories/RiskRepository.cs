@@ -1,4 +1,5 @@
 ﻿using SubSonic;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
@@ -82,6 +83,17 @@ namespace SweetSoft.QLDA.Core.Respositories
             DataTable dt = new DataTable();
             dt.Load(iDataReader);
             return dt;
+        }
+        public bool DeleteRisk(TblRuiRoDuAn item)
+        {
+            if (item == null) return false;
+
+            item.DaXoa = true;
+            item.NgayCapNhat = DateTime.Now;
+            item.NguoiCapNhat = SweetContext.Current.UserName;
+            item.Save();
+
+            return true;
         }
         #endregion
     }
