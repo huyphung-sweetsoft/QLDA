@@ -436,6 +436,20 @@
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fThanhToan\ThanhToanList.aspx.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fThanhToan\ThanhToanList.aspx.designer.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fThanhToan\Controls\CtrlThanhToan.ascx.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fThanhToan\Controls\CtrlThanhToan.ascx.designer.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\DuAnList.aspx.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -596,6 +610,8 @@
     <Content Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
     <Content Include="fProjects\DuAnList.aspx" />
+    <Content Include="fThanhToan\ThanhToanList.aspx" />
+    <Content Include="fThanhToan\Controls\CtrlThanhToan.ascx" />
     <Content Include="fRisks\Controls\CtrlRisk.ascx" />
     <Content Include="fRisks\RiskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />

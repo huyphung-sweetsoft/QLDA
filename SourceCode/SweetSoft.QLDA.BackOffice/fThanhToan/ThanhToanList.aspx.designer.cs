@@ -1,9 +1,9 @@
-namespace SweetSoft.QLDA.BackOffice.fProjects
+namespace SweetSoft.QLDA.BackOffice.fThanhToan
 {
     public partial class ThanhToanList
     {
         protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlThanhToan CtrlThanhToan1;
+        protected global::SweetSoft.QLDA.BackOffice.fThanhToan.Controls.CtrlThanhToan CtrlThanhToan1;
         protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
         protected global::System.Web.UI.WebControls.Label lblMaDotPrefix;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMaDot;

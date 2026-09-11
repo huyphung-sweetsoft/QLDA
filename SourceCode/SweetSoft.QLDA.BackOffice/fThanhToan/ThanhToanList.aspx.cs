@@ -12,7 +12,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
 
-namespace SweetSoft.QLDA.BackOffice.fProjects
+namespace SweetSoft.QLDA.BackOffice.fThanhToan
 {
     public partial class ThanhToanList : BaseAdminPage
     {

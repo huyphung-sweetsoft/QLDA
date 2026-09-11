@@ -1,4 +1,4 @@
-namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
+namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
 {
     public partial class CtrlThanhToan
     {

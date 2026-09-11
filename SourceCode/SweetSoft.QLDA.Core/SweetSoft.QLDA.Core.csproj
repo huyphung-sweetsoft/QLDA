@@ -243,6 +243,9 @@
     <Compile Include="Managers\BaseManager.cs" />
     <Compile Include="Managers\ChucDanhManager.cs" />
     <Compile Include="Managers\DuAnManager.cs" />
+    <Compile Include="Managers\ThanhToanManager.cs" />
+    <Compile Include="Respositories\ThanhToanRepository.cs" />
+    <Compile Include="EnumHelper\Defines\ThanhToanStatus.cs" />
     <Compile Include="Managers\GiaiDoanDuAnManager.cs" />
     <Compile Include="Managers\GiaiDoanManager.cs" />
     <Compile Include="Managers\HopDongThucHienManager.cs" />

@@ -1,7 +1,12 @@
-<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="ThanhToanList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.ThanhToanList" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="ThanhToanList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fThanhToan.ThanhToanList" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-<%@ Register Src="~/fProjects/Controls/CtrlThanhToan.ascx" TagPrefix="SweetSoft" TagName="CtrlThanhToan" %>
+<%@ Register Src="~/fThanhToan/Controls/CtrlThanhToan.ascx" TagPrefix="SweetSoft" TagName="CtrlThanhToan" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpMain" runat="server">
+    <style type="text/css">
+        .payment-amount-input {
+            text-align: left !important;
+        }
+    </style>
     <div class="row">
         <div class="col-xl-12">
             <div class="card p-2 min-h-sreen">
@@ -31,7 +36,8 @@
                 </div>
                 <div class="col-lg-6 mb-3">
                     <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PAYMENT_AMOUNT) %></label>
-                    <SweetSoft:ExtraTextBox runat="server" ID="txtSoTien" Required="true" IsCurrency="true" />
+                    <SweetSoft:ExtraTextBox runat="server" ID="txtSoTien" Required="true" IsCurrency="true"
+                        CssClass="payment-amount-input" />
                 </div>
                 <div class="col-lg-6 mb-3">
                     <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PAYMENT_DUE_DATE) %></label>
