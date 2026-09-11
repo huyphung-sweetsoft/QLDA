@@ -1123,8 +1123,9 @@
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Mã cuộc họp</value>
   </data>
-  <data name="MEETING_CODE" xml:space="preserve">
+	<data name="MEETING_CODE" xml:space="preserve">
     <value>Mã cuộc họp</value>
+	  </data>
   <data name="MEETING_ROOM" xml:space="preserve">
     <value>Địa điểm họp</value>
   </data>
@@ -1953,7 +1954,6 @@
 	<data name="HISTORY_ENTITY_RISK" xml:space="preserve">
   <value>rủi ro</value>
 </data>
-</root>
   <data name="OTHER_EMPLOYEES" xml:space="preserve">
     <value>Nhân sự khác</value>
   </data>
