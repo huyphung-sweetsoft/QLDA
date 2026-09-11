@@ -485,6 +485,13 @@
     <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.designer.cs">
       <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.cs">
+      <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.designer.cs">
+      <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -689,6 +696,7 @@
     <Content Include="fProjectReports\ProjectReport.aspx" />
     <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
     <Content Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx" />
+    <Content Include="fProjects\Controls\CtrlProjectTabs.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
     <Content Include="fProjects\DuAnList.aspx" />
     <Content Include="fRisks\Controls\CtrlRisk.ascx" />

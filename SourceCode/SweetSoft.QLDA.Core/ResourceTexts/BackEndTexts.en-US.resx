@@ -1867,6 +1867,35 @@
   <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
     <value>Employee</value>
   </data>
+  <data name="SET_AS_OFFICIAL_FILE" xml:space="preserve">
+    <value>Set as official</value>
+  </data>
+  <data name="CLEAR_OFFICIAL_FILE" xml:space="preserve">
+    <value>Clear official file</value>
+  </data>
+  <data name="ACTIVITY_SET_OFFICIAL_FILE" xml:space="preserve">
+    <value>Set official file</value>
+  </data>
+  <data name="ACTIVITY_CLEAR_OFFICIAL_FILE" xml:space="preserve">
+    <value>Clear official file</value>
+  </data>
+  <data name="SIGNING_PENDING" xml:space="preserve"><value>Awaiting signature</value></data>
+  <data name="SIGNING_REQUEST_CHANGES" xml:space="preserve"><value>Changes requested</value></data>
+  <data name="SIGNING_COMPLETED" xml:space="preserve"><value>Signed</value></data>
+  <data name="SUBMIT_FOR_SIGNING" xml:space="preserve"><value>Submit for signing</value></data>
+  <data name="CONFIRM_SIGNED" xml:space="preserve"><value>Confirm signed</value></data>
+  <data name="REQUEST_CHANGES" xml:space="preserve"><value>Request changes</value></data>
+  <data name="SIGNING_NOTE" xml:space="preserve"><value>Signing note</value></data>
+  <data name="SIGNING_VERSION" xml:space="preserve"><value>Signing version</value></data>
+  <data name="SIGNING_RESULT_FILE" xml:space="preserve"><value>Signed result file</value></data>
+  <data name="SIGNING_RESULT_FILE_HINT" xml:space="preserve"><value>Upload exactly one signed PDF or scanned/photo image.</value></data>
+  <data name="SIGNING_SIGNER_REQUIRED" xml:space="preserve"><value>Please select a signer.</value></data>
+  <data name="SIGNING_CHANGE_REASON_REQUIRED" xml:space="preserve"><value>Please enter a reason for changes.</value></data>
+  <data name="SIGNING_RESULT_REQUIRED" xml:space="preserve"><value>Save exactly one signed result file before confirming.</value></data>
+  <data name="ACTIVITY_SUBMIT_SIGNING" xml:space="preserve"><value>Submitted for signing</value></data>
+  <data name="ACTIVITY_REQUEST_SIGNING_CHANGES" xml:space="preserve"><value>Signing changes requested</value></data>
+  <data name="ACTIVITY_COMPLETE_SIGNING" xml:space="preserve"><value>Signing completed</value></data>
+</root>
   <data name="QUANTITY" xml:space="preserve">
     <value>Quantity</value>
   </data>

@@ -21,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlTask1.NewTaskHandlerCallback = NewTask_Callback;
             CtrlTask1.EditTaskHandlerCallback = EditTask_Callback;
 

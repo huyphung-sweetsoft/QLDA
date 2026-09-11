@@ -62,6 +62,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                     IpAddress = SweetContext.Current.CurrentUserIp,
                     UserAgent = SweetContext.Current.CurrentUserAgent
                 });
+            CtrlProjectTabs1.ProjectId = QueryId;
             if (!IsPostBack)
             {
                 if (!this.IsView)

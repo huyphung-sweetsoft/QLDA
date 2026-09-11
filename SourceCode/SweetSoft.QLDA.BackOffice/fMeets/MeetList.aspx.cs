@@ -28,6 +28,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
             new ControlHelpers().BindNhanVienToCheckBoxList(cblNhanVien);
