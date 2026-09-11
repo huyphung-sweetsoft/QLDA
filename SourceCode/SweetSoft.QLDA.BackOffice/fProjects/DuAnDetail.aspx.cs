@@ -50,6 +50,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
+            CtrlProjectTabs1.ProjectId = QueryId;
             if (!IsPostBack)
             {
                 if (!this.IsView)

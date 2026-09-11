@@ -248,6 +248,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     PageUrl = txtPageUrl.Text,
                     Icon = txtIcon.Text,
                     IsActivated = true,
+                    OfProject = false,
                 };
                 aspnetFunction.Save();
                 if (string.IsNullOrEmpty(ddlParentCode.SelectedValue))

@@ -2,6 +2,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fMeets/Controls/CtrlMeet.ascx" TagPrefix="SweetSoft" TagName="CtrlMeet" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server"></asp:Content>
@@ -11,6 +12,7 @@
         <div class="col-xl-12">
             <div class="card p-2 min-h-sreen">
                 <SweetSoft:Navigation runat="server" ID="Navigation1"/>
+                <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
                 <SweetSoft:CtrlMeet runat="server" id="CtrlMeet1" />
             </div>
         </div>

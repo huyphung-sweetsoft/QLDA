@@ -34,6 +34,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlIssue1.NewIssueHandlerCallback += NewIssueAction;
             CtrlIssue1.EditIssueHandlerCallback += EditIssueAction;
 

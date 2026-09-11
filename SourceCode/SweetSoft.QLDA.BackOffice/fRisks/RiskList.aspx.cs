@@ -33,6 +33,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlRisk1.NewRiskHandlerCallback += NewRiskAction;
             CtrlRisk1.EditRiskHandlerCallback += EditRiskAction;
             if (!IsPostBack)

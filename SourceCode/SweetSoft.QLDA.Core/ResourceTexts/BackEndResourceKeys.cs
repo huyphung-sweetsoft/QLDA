@@ -585,5 +585,25 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string AT_RISK = "AT_RISK";
         public const string PROJECT_MEMBERS = "PROJECT_MEMBERS";
         public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
+        public const string SET_AS_OFFICIAL_FILE = "SET_AS_OFFICIAL_FILE";
+        public const string CLEAR_OFFICIAL_FILE = "CLEAR_OFFICIAL_FILE";
+        public const string ACTIVITY_SET_OFFICIAL_FILE = "ACTIVITY_SET_OFFICIAL_FILE";
+        public const string ACTIVITY_CLEAR_OFFICIAL_FILE = "ACTIVITY_CLEAR_OFFICIAL_FILE";
+        public const string SIGNING_PENDING = "SIGNING_PENDING";
+        public const string SIGNING_REQUEST_CHANGES = "SIGNING_REQUEST_CHANGES";
+        public const string SIGNING_COMPLETED = "SIGNING_COMPLETED";
+        public const string SUBMIT_FOR_SIGNING = "SUBMIT_FOR_SIGNING";
+        public const string CONFIRM_SIGNED = "CONFIRM_SIGNED";
+        public const string REQUEST_CHANGES = "REQUEST_CHANGES";
+        public const string SIGNING_NOTE = "SIGNING_NOTE";
+        public const string SIGNING_VERSION = "SIGNING_VERSION";
+        public const string SIGNING_RESULT_FILE = "SIGNING_RESULT_FILE";
+        public const string SIGNING_RESULT_FILE_HINT = "SIGNING_RESULT_FILE_HINT";
+        public const string SIGNING_SIGNER_REQUIRED = "SIGNING_SIGNER_REQUIRED";
+        public const string SIGNING_CHANGE_REASON_REQUIRED = "SIGNING_CHANGE_REASON_REQUIRED";
+        public const string SIGNING_RESULT_REQUIRED = "SIGNING_RESULT_REQUIRED";
+        public const string ACTIVITY_SUBMIT_SIGNING = "ACTIVITY_SUBMIT_SIGNING";
+        public const string ACTIVITY_REQUEST_SIGNING_CHANGES = "ACTIVITY_REQUEST_SIGNING_CHANGES";
+        public const string ACTIVITY_COMPLETE_SIGNING = "ACTIVITY_COMPLETE_SIGNING";
     }
 }

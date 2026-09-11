@@ -65,16 +65,17 @@ namespace SweetSoft.QLDA.Core.Functions
             return modules;
         }
 
-        public List<AspnetFunction> GetProjectFunctionByUserId(Guid userId, Guid projectId)
+        /// <summary>
+        /// Danh sách cấu hình tab dùng chung cho ngữ cảnh dự án.
+        /// Danh sách này chỉ mô tả tab nào tồn tại; quyền hiển thị của từng
+        /// user vẫn được BaseAdminPage.IsUserRight kiểm tra ở UI.
+        /// </summary>
+        public List<AspnetFunction> GetProjectTabFunctions()
         {
-            List<AspnetFunction> modules = null;
-            string cacheKey = $"ProjectModule_{userId}_{projectId}";
-            if (!CacheManager.GetCacheData(cacheKey, out modules) || modules == null)
-            {
-                modules = _repository.GetProjectFunctionByUserId(userId, projectId);
-                CacheManager.SetCacheData(cacheKey, modules);
-            }
-            return modules;
+            // Đây là một danh mục cấu hình rất nhỏ và chỉ được đọc một lần khi
+            // render thanh tab. Không cache để thay đổi OfProject/PageUrl/Thứ tự
+            // hiển thị trong database có hiệu lực ngay, không phải chờ cache hết hạn.
+            return _repository.GetProjectTabFunctions();
         }
         public List<string> GetAllModules(Guid userId, bool isDev)
         {
