@@ -910,8 +910,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
         {
             DateTime day = date.Date;
             TblLichNgoaiLe exception = _exceptions.FirstOrDefault(x =>
-                !string.IsNullOrEmpty(x.NgayBatDau) &&
-                DateTime.Parse(x.NgayBatDau).Date <= day.Date
+                !string.IsNullOrEmpty(x.NgayBatDau.ToString()) &&
+                DateTime.Parse(x.NgayBatDau.ToString()).Date <= day.Date
             );
             if (exception != null)
             {

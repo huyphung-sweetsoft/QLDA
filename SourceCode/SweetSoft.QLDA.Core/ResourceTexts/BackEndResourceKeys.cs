@@ -486,7 +486,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SCHEDULED = "SCHEDULED";
         public const string UPCOMING = "UPCOMING";
         public const string ONGOING = "ONGOING";
-        public const string SELECT_EMPLOYEE = "SELECT_EMPLOYEE";
         //Cost
         public const string COST_MANAGEMENT = "COST_MANAGEMENT";
         public const string COST_LIST = "COST_LIST";

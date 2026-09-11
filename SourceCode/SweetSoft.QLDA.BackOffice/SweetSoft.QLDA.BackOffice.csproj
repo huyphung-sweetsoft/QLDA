@@ -436,12 +436,33 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fNhanVien\LichCaNhan.aspx.cs">
+      <DependentUpon>LichCaNhan.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\LichCaNhan.aspx.designer.cs">
+      <DependentUpon>LichCaNhan.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fProjectReports\ProjectReport.aspx.cs">
       <DependentUpon>ProjectReport.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fProjectReports\ProjectReport.aspx.designer.cs">
       <DependentUpon>ProjectReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
@@ -456,6 +477,13 @@
     </Compile>
     <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.designer.cs">
       <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.cs">
+      <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
@@ -485,6 +513,13 @@
     <Compile Include="fRisks\RiskList.aspx.designer.cs">
       <DependentUpon>RiskList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fTasks\Controls\CtrlChonNhanVienTask.ascx.cs">
+      <DependentUpon>CtrlChonNhanVienTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlChonNhanVienTask.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVienTask.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
       <DependentUpon>CtrlTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -498,6 +533,13 @@
     </Compile>
     <Compile Include="fTasks\TaskList.aspx.designer.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.cs">
+      <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.designer.cs">
+      <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -634,8 +676,14 @@
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
+    <Content Include="fNhanVien\LichCaNhan.aspx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
+    <Content Include="fNhanVien\NhanVienDetail.aspx" />
+    <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="fProjectReports\ProjectReport.aspx" />

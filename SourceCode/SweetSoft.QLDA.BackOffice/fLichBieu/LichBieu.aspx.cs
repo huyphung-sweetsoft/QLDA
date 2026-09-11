@@ -187,8 +187,8 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
 
                 // 3. Gán dữ liệu cơ bản
                 item.TenNgoaiLe = txtTenNgoaiLe.Text.Trim();
-                item.NgayBatDau = fromDate.ToString();
-                item.NgayKetThuc = toDate.ToString();
+                item.NgayBatDau = fromDate;
+                item.NgayKetThuc = toDate;
                 item.MoTa = txtMoTa.Text.Trim();
                 item.LaNgayLamViec = false;
 

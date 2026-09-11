@@ -309,6 +309,9 @@
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
     <Compile Include="Respositories\VaiTroDuAnRepository.cs" />
     <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />
+    <Compile Include="ScheduleManager\LichTrinhManager.cs" />
+    <Compile Include="ScheduleManager\ThongTinLichNgay.cs" />
+    <Compile Include="ScheduleManager\TomTatCongViec.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />
     <Compile Include="SEO\Schemas\AnswerSchema.cs" />
     <Compile Include="SEO\Schemas\ArticleSchema.cs" />

@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdNgoaiLe,string TenNgoaiLe,string NgayBatDau,string NgayKetThuc,bool LaNgayLamViec,string GioBatDauSang,string GioKetThucSang,string GioBatDauChieu,string GioKetThucChieu,string MoTa,bool DaXoa,string NguoiTao,DateTime? NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdNgoaiLe,string TenNgoaiLe,DateTime NgayBatDau,DateTime NgayKetThuc,bool LaNgayLamViec,string GioBatDauSang,string GioKetThucSang,string GioBatDauChieu,string GioKetThucChieu,string MoTa,bool DaXoa,string NguoiTao,DateTime? NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblLichNgoaiLe item = new TblLichNgoaiLe();
 		    
@@ -122,7 +122,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdNgoaiLe,string TenNgoaiLe,string NgayBatDau,string NgayKetThuc,bool LaNgayLamViec,string GioBatDauSang,string GioKetThucSang,string GioBatDauChieu,string GioKetThucChieu,string MoTa,bool DaXoa,string NguoiTao,DateTime? NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdNgoaiLe,string TenNgoaiLe,DateTime NgayBatDau,DateTime NgayKetThuc,bool LaNgayLamViec,string GioBatDauSang,string GioKetThucSang,string GioBatDauChieu,string GioKetThucChieu,string MoTa,bool DaXoa,string NguoiTao,DateTime? NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
 	    {
 		    TblLichNgoaiLe item = new TblLichNgoaiLe();
 	        item.MarkOld();

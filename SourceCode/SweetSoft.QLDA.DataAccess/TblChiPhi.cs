@@ -289,6 +289,19 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarSoTien.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarSoTien);
 				
+				TableSchema.TableColumn colvarLyDoTuChoi = new TableSchema.TableColumn(schema);
+				colvarLyDoTuChoi.ColumnName = "LyDoTuChoi";
+				colvarLyDoTuChoi.DataType = DbType.String;
+				colvarLyDoTuChoi.MaxLength = 255;
+				colvarLyDoTuChoi.AutoIncrement = false;
+				colvarLyDoTuChoi.IsNullable = true;
+				colvarLyDoTuChoi.IsPrimaryKey = false;
+				colvarLyDoTuChoi.IsForeignKey = false;
+				colvarLyDoTuChoi.IsReadOnly = false;
+				colvarLyDoTuChoi.DefaultSetting = @"";
+				colvarLyDoTuChoi.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarLyDoTuChoi);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -394,6 +407,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<decimal>(Columns.SoTien); }
 			set { SetColumnValue(Columns.SoTien, value); }
 		}
+		  
+		[XmlAttribute("LyDoTuChoi")]
+		[Bindable(true)]
+		public string LyDoTuChoi 
+		{
+			get { return GetColumnValue<string>(Columns.LyDoTuChoi); }
+			set { SetColumnValue(Columns.LyDoTuChoi, value); }
+		}
 		
 		#endregion
 		
@@ -403,17 +424,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblDuAn ActiveRecord object related to this TblChiPhi
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblDuAn TblDuAn
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblDuAn.FetchByID(this.IdDuAn); }
-			set { SetColumnValue("IdDuAn", value.IdDuAn); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a AspnetUser ActiveRecord object related to this TblChiPhi
 		/// 
 		/// </summary>
@@ -421,6 +431,17 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVienDeNghi); }
 			set { SetColumnValue("IdNhanVienDeNghi", value.UserId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblDuAn ActiveRecord object related to this TblChiPhi
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblDuAn TblDuAn
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblDuAn.FetchByID(this.IdDuAn); }
+			set { SetColumnValue("IdDuAn", value.IdDuAn); }
 		}
 		
 		
@@ -438,7 +459,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien)
+		public static void Insert(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien,string varLyDoTuChoi)
 		{
 			TblChiPhi item = new TblChiPhi();
 			
@@ -466,6 +487,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.SoTien = varSoTien;
 			
+			item.LyDoTuChoi = varLyDoTuChoi;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -476,7 +499,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien)
+		public static void Update(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien,string varLyDoTuChoi)
 		{
 			TblChiPhi item = new TblChiPhi();
 			
@@ -503,6 +526,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.SoLuong = varSoLuong;
 			
 				item.SoTien = varSoTien;
+			
+				item.LyDoTuChoi = varLyDoTuChoi;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -601,6 +626,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn LyDoTuChoiColumn
+        {
+            get { return Schema.Columns[12]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -617,6 +649,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string DonGia = @"DonGia";
 			 public static string SoLuong = @"SoLuong";
 			 public static string SoTien = @"SoTien";
+			 public static string LyDoTuChoi = @"LyDoTuChoi";
 						
 		}
 		#endregion
