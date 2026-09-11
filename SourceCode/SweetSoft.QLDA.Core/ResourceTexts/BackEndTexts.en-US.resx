@@ -1895,7 +1895,6 @@
   <data name="ACTIVITY_SUBMIT_SIGNING" xml:space="preserve"><value>Submitted for signing</value></data>
   <data name="ACTIVITY_REQUEST_SIGNING_CHANGES" xml:space="preserve"><value>Signing changes requested</value></data>
   <data name="ACTIVITY_COMPLETE_SIGNING" xml:space="preserve"><value>Signing completed</value></data>
-</root>
   <data name="QUANTITY" xml:space="preserve">
     <value>Quantity</value>
   </data>
@@ -1936,7 +1935,7 @@
     <value>Project report</value>
   </data>
   <data name="PROJECT_STAGE_TYPE" xml:space="preserve">
-    <value>&#x8;</value>
+    <value> </value>
   </data>
   <data name="PROJECT_STAGE_NAME" xml:space="preserve">
     <value>Tên giai đoạn</value>
