@@ -152,9 +152,6 @@
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
                             <div class="d-flex justify-content-center gap-2">
-                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit && Convert.ToBoolean(Eval("LaNhanVien"))%>' ID="lbtEmpDetail" CommandName="VIEW_EMP_DETAIL" CssClass="btn-grid-action text-decoration-underline text-success" ResourceKey='<%# BackEndResourceKeys.EMPLOYEE_DETAIL%>' ButtonIcon='<%# "fas fa-eye" %>'>
-
-                                </SweetSoft:SmartLinkButton>
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
                                     ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline"
                                     ResourceKey='<%# BackEndResourceKeys.EDIT%>'
@@ -213,22 +210,6 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Email</label>
                                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchEmail" SearchColumn="Email" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></label>
-                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchCCCD" SearchColumn="IdCCCD" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CHUC_DANH) %></label>
-                                    <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchChucDanh" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONG_BAN) %></label>
-                                    <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchPhongBan" SimpleInit="true" PlaceHolder="Select the value" ValueIsOfTypeGUID="True"></SweetSoft:ExtraDropdown>
-                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %></label>

@@ -24,9 +24,19 @@ using System.Transactions;
 using System.Web.Security;
 
 namespace SweetSoft.QLDA.Core.Managers
-{
-    public class UserManager : BaseManager
+{ 
+    //Khai báo enum dùng cho CreateOrUpdate
+    public enum AccountAction
     {
+        None,
+        CreateGhost,//Tạo nhân sự chay (account ma)
+        CreateReal,//Tạo nhân sự có quyền đăng nhập
+        UpdateGhost,//Chỉnh sửa nhân sự chay (thông tin cá nhân nhân sự)
+        UpgradeToReal,//Nâng cấp nhân sự chay lên có quyền đăng nhập
+        UpdateReal//Chỉnh sửa nhân sự có quyền đăng nhập (thông tin cá nhân + thông tin tài khoản)
+    }
+    public class UserManager : BaseManager
+    {   
         private static readonly Lazy<UserManager> _instance = new Lazy<UserManager>(() => new UserManager());
         public static UserManager Instance => _instance.Value;
 
@@ -59,81 +69,146 @@ namespace SweetSoft.QLDA.Core.Managers
         #endregion
 
         #region Core CRUD (Create / Update / Delete)
-
+        //Sửa toàn diện CreateOrUpdate
         public AspnetUser CreateOrUpdate(AspnetUser dto)
         {
-            // =========================================================================
             // TRẠM 1: TIỀN KIỂM TRA CHUNG (GLOBAL VALIDATION)
-            // =========================================================================
             BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
-            BusinessValidator.ThrowIfNullOrEmpty(dto.UserName, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.UserName));
             BusinessValidator.ThrowIfNullOrEmpty(dto.DisplayName, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.DisplayName));
             BusinessValidator.ThrowIfNullOrEmpty(dto.Email, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.Email));
 
             Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
             bool isInsert = (dto.UserId == Guid.Empty);
-            string unencryptedPassword = "";
+            //string unencryptedPassword = "";
             AspnetUser resultUser = null;
-
-            // =========================================================================
-            // TRẠM 2: PHÂN LUỒNG DỮ LIỆU BẰNG CỜ LaNhanVien
-            // =========================================================================
-            if (dto.LaNhanVien)
+            //Phân tích ý đồ và gán account action
+            AccountAction currentAction = AccountAction.None;
+            AspnetUser existingUser = null;
+            if (isInsert)
             {
-                // Nếu là Nhân viên: Ép buộc phải có CCCD
-                BusinessValidator.ThrowIfNullOrEmpty(dto.IdCCCD, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.IdCCCD));
+                //Nếu là tạo mới, dựa vào việc DTO UserName có hay ko để quyết định enum
+                currentAction = string.IsNullOrEmpty(dto.UserName) ? AccountAction.CreateGhost : AccountAction.CreateReal;
             }
             else
             {
-                // Nếu là Tài khoản hệ thống: Dọn rác các thuộc tính đặc thù của nhân viên
-                dto.IdPhongBan = null;
-                dto.IdChucDanh = null;
-                dto.IdCCCD = null;
-                dto.NgaySinh = null;
-                dto.NgayGiaNhap = null;
-                dto.GioiTinh = null;
-                dto.DiaChi = null;
+                //Nếu là update, phải lấy DB lên trước để so sánh
+                existingUser = _repository.GetById(dto.UserId);
+                BusinessValidator.ThrowIfNull(existingUser, BackEndResourceKeys.NOT_FOUND, nameof(dto.UserId), ErrorCodes.NotFound);
+                bool oldIsGhost = IsGhostAccount(existingUser.UserName);
+                bool newIsGhost = string.IsNullOrEmpty(dto.UserName);//Lúc này giao diện ko có dto.Username -> nghĩa là vẫn muốn giữ tài khoản ma
+                if (oldIsGhost && newIsGhost)
+                {
+                    currentAction = AccountAction.UpdateGhost;
+                }
+                else if (oldIsGhost && !newIsGhost)//nhân viên hiện tại có tài khoản ma + ô dto.username có data -> muốn up lên tài khoản real cho nhân viên này
+                {
+                    currentAction = AccountAction.UpgradeToReal;
+                }
+                else if (!oldIsGhost && !newIsGhost)//Nhân viên hiện tại là riu hết 
+                {
+                    currentAction = AccountAction.UpdateReal;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Bảo mật: Không được phép hạ cấp tài khoản thật (Real) thành tài khoản ma (Ghost)");
+                }
+            }
+            if (!dto.LaNhanVien && (currentAction == AccountAction.CreateGhost || currentAction == AccountAction.UpdateGhost))
+            {
+                throw new InvalidOperationException("Bảo mật: Tài khoản hệ thống (System User) không được phép tồn tại ở trạng thái Tài khoản ma (Ghost). Bắt buộc phải có Tên đăng nhập.");
+            }
+            // TRẠM 2: VALIDATION ĐỘC QUYỀN VÀ NGHIỆP VỤ BẮT BUỘC
+            // 1. Kiểm tra Email duy nhất toàn hệ thống (Áp dụng cho mọi luồng)
+            BusinessValidator.ThrowIf(_repository.IsEmailExist(dto.UserId, dto.Email),
+                BackEndResourceKeys.EMAIL_ALREADY_EXISTS, nameof(dto.Email), ErrorCodes.Conflict);
+
+            // 2. Kiểm tra CCCD duy nhất & Dọn rác
+            if (dto.LaNhanVien)
+            {
+                BusinessValidator.ThrowIfNullOrEmpty(dto.IdCCCD, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.IdCCCD));
+                BusinessValidator.ThrowIf(_repository.IsCCCDExist(dto.UserId, dto.IdCCCD),
+                    BackEndResourceKeys.CCCD_ALREADY_EXISTS, nameof(dto.IdCCCD), ErrorCodes.Conflict);
+            }
+            else
+            {
+                // Tài khoản hệ thống thì dọn rác các thuộc tính của nhân viên
+                dto.IdPhongBan = null; dto.IdChucDanh = null; dto.IdCCCD = null;
+                dto.NgaySinh = null; dto.NgayGiaNhap = null; dto.GioiTinh = null; dto.DiaChi = null;
             }
 
-            // =========================================================================
-            // TRẠM 3: MỞ GIAO DỊCH DATABASE (TRANSACTION SCOPE)
-            // =========================================================================
+            // 3. Validation Vành đai thép: Chỉ dành cho các luồng TÀI KHOẢN THẬT (Real Account)
+            if (currentAction == AccountAction.CreateReal ||
+                currentAction == AccountAction.UpgradeToReal ||
+                currentAction == AccountAction.UpdateReal)
+            {
+                // a. Username không được bỏ trống
+                BusinessValidator.ThrowIfNullOrEmpty(dto.UserName, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.UserName));
+
+                // b. CẤM giả mạo Ghost: Admin tự gõ Username không được bắt đầu bằng "EMP_"
+                if (dto.UserName.StartsWith("EMP_", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new Exception("Tên đăng nhập không hợp lệ! Không được phép sử dụng tiền tố bảo lưu 'EMP_'.");
+                }
+
+                // c. Kiểm tra Username duy nhất toàn hệ thống
+                BusinessValidator.ThrowIf(_repository.IsUserNameExist(dto.UserId, dto.UserName),
+                    BackEndResourceKeys.USERNAME_ALREADY_EXISTS, nameof(dto.UserName), ErrorCodes.Conflict);
+
+                // d. BẮT BUỘC có Role: Có tài khoản login là phải có quyền
+                if (dto.RoleId == Guid.Empty)
+                {
+                    throw new Exception("Bảo mật: Tài khoản được cấp quyền truy cập hệ thống bắt buộc phải gán vào một Nhóm quyền (Role).");
+                }
+            }
+            // TRẠM 3: Phần chính xử lý
+            // Khởi tạo các biến Tracking cho Email (nằm ngoài TransactionScope để đảm bảo an toàn luồng)
+            bool sendMailRequired = false;
+            string finalUserNameToSend = string.Empty;
+            string finalPasswordToSend = string.Empty;
+
             using (var scope = new TransactionScope(TransactionScopeOption.Required, new TimeSpan(0, 10, 0)))
             {
                 if (isInsert)
                 {
-                    // =====================================================================
-                    // TRẠM 4: XỬ LÝ THÊM MỚI (INSERT)
-                    // =====================================================================
-                    // 4.1. Kiểm tra trùng lặp
-                    BusinessValidator.ThrowIf(_repository.IsUserNameExist(Guid.Empty, dto.UserName),
-                        BackEndResourceKeys.USERNAME_ALREADY_EXISTS, nameof(dto.UserName), ErrorCodes.Conflict);
+                    // ---------------------------------------------------------
+                    // LUỒNG INSERT (THÊM MỚI NHÂN SỰ)
+                    // ---------------------------------------------------------
+                    Guid generatedUserId = Guid.NewGuid();
 
-                    BusinessValidator.ThrowIf(_repository.IsEmailExist(Guid.Empty, dto.Email),
-                        BackEndResourceKeys.EMAIL_ALREADY_EXISTS, nameof(dto.Email), ErrorCodes.Conflict);
-
-                    if (dto.LaNhanVien)
+                    if (currentAction == AccountAction.CreateGhost)
                     {
-                        BusinessValidator.ThrowIf(_repository.IsCCCDExist(Guid.Empty, dto.IdCCCD),
-                            BackEndResourceKeys.CCCD_ALREADY_EXISTS, nameof(dto.IdCCCD), ErrorCodes.Conflict);
-                    }
+                        // A. TẠO TÀI KHOẢN MA
+                        dto.UserName = "EMP_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+                        string trashPassword = SecurityUtilities.CreateAlphaNumericString(16);
 
-                    // 4.2. Sinh mật khẩu ngẫu nhiên
-                    unencryptedPassword = SecurityUtilities.CreateAlphaNumericString(8);
-
-                    try
-                    {
-                        // 4.3. Đăng ký tài khoản vào hệ thống ASP.NET Membership
-                        MembershipUser membershipUser = Membership.CreateUser(dto.UserName, unencryptedPassword, dto.Email);
-                        membershipUser.IsApproved = dto.IsActivated;
+                        MembershipUser membershipUser = Membership.CreateUser(dto.UserName, trashPassword, dto.Email);
+                        membershipUser.IsApproved = false; // Ép cứng: Cấm đăng nhập
                         Membership.UpdateUser(membershipUser);
 
-                        Guid newUserId = (Guid)membershipUser.ProviderUserKey;
+                        generatedUserId = (Guid)membershipUser.ProviderUserKey;
+                    }
+                    else if (currentAction == AccountAction.CreateReal)
+                    {
+                        // B. TẠO TÀI KHOẢN THẬT
+                        finalPasswordToSend = SecurityUtilities.CreateAlphaNumericString(8);
+                        finalUserNameToSend = dto.UserName;
 
-                        // 4.4. Cập nhật các trường mở rộng vào bảng aspnet_Users
-                        AspnetUser newUser = _repository.GetById(newUserId);
-                        BusinessValidator.ThrowIfNull(newUser, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                        MembershipUser membershipUser = Membership.CreateUser(dto.UserName, finalPasswordToSend, dto.Email);
+                        membershipUser.IsApproved = dto.IsActivated; // Mở/Khóa theo tình trạng công tác
+                        Membership.UpdateUser(membershipUser);
 
+                        generatedUserId = (Guid)membershipUser.ProviderUserKey;
+                        sendMailRequired = true;
+                    }
+
+                    // Ghi dữ liệu vào bảng aspnet_Users
+                    // BẢN FIX: Lấy bản ghi mà Membership API vừa tự động tạo ra trong Database
+                    AspnetUser newUser = _repository.GetById(generatedUserId);
+                    if (newUser != null)
+                    {
+                        // Cập nhật thêm các trường thông tin Nhân sự/Hệ thống vào bản ghi đã có
+                        newUser.UserName = dto.UserName;
+                        newUser.Email = dto.Email;
                         newUser.DisplayName = dto.DisplayName;
                         newUser.MobileAlias = dto.MobileAlias;
                         newUser.Avatar = dto.Avatar ?? string.Empty;
@@ -146,90 +221,125 @@ namespace SweetSoft.QLDA.Core.Managers
                         newUser.DiaChi = dto.DiaChi;
                         newUser.NgayGiaNhap = dto.NgayGiaNhap;
                         newUser.IsDeleted = false;
-                        newUser.IsActivated = dto.IsActivated;
+                        newUser.IsActivated = dto.IsActivated; // Tình trạng HR
+                        newUser.RoleId = currentAction == AccountAction.CreateReal ? dto.RoleId : Guid.Empty;
                         newUser.NgayTao = DateTime.Now;
                         newUser.NguoiTao = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
 
-                        _repository.Update(newUser);
-
-                        // 4.5. Gán Quyền (Role) nếu có chọn
-                        if (dto.RoleId != Guid.Empty)
-                        {
-                            AspnetRole role = RoleManager.Instance.GetRoleById(dto.RoleId);
-                            if (role != null)
-                            {
-                                Roles.AddUserToRole(newUser.UserName, role.LoweredRoleName);
-                            }
-                        }
-
-                        resultUser = newUser;
+                        // Dùng UPDATE thay vì INSERT để tránh lỗi trùng khóa chính (Primary Key)
+                        resultUser = _repository.Update(newUser);
                     }
-                    catch (MembershipCreateUserException ex)
+                    else
                     {
-                        throw new Exception("Lỗi khởi tạo tài khoản hệ thống: " + ex.StatusCode.ToString());
+                        throw new Exception("Lỗi hệ thống: Không tìm thấy tài khoản vừa được khởi tạo bởi Membership API.");
                     }
+
+                    // Gán Role nếu là Tài khoản thật
+                    if (currentAction == AccountAction.CreateReal && dto.RoleId != Guid.Empty)
+                    {
+                        AspnetRole role = RoleManager.Instance.GetRoleById(dto.RoleId);
+                        if (role != null) Roles.AddUserToRole(newUser.UserName, role.LoweredRoleName);
+                    }
+
+                    resultUser = newUser;
                 }
                 else
                 {
-                    // =====================================================================
-                    // TRẠM 5: XỬ LÝ CẬP NHẬT (UPDATE)
-                    // =====================================================================
-                    AspnetUser existingUser = _repository.GetById(dto.UserId);
-                    BusinessValidator.ThrowIfNull(existingUser, BackEndResourceKeys.NOT_FOUND, nameof(dto.UserId), ErrorCodes.NotFound);
+                    // ---------------------------------------------------------
+                    // LUỒNG UPDATE (CẬP NHẬT/NÂNG CẤP NHÂN SỰ)
+                    // ---------------------------------------------------------
 
-                    // 5.1. Kiểm tra trùng lặp (trừ chính mình ra)
-                    BusinessValidator.ThrowIf(_repository.IsUserNameExist(existingUser.UserId, dto.UserName),
-                        BackEndResourceKeys.USERNAME_ALREADY_EXISTS, nameof(dto.UserName), ErrorCodes.Conflict);
-
-                    BusinessValidator.ThrowIf(_repository.IsEmailExist(existingUser.UserId, dto.Email),
-                        BackEndResourceKeys.EMAIL_ALREADY_EXISTS, nameof(dto.Email), ErrorCodes.Conflict);
-
-                    if (dto.LaNhanVien && !string.IsNullOrEmpty(dto.IdCCCD))
+                    if (currentAction == AccountAction.UpdateGhost)
                     {
-                        BusinessValidator.ThrowIf(_repository.IsCCCDExist(existingUser.UserId, dto.IdCCCD),
-                            BackEndResourceKeys.CCCD_ALREADY_EXISTS, nameof(dto.IdCCCD), ErrorCodes.Conflict);
-                    }
-
-                    // 5.2. Đồng bộ sang Membership (Email, Mật khẩu, Mở khóa)
-                    MembershipUser membershipUser = Membership.GetUser(existingUser.UserName);
-                    if (membershipUser != null)
-                    {
-                        if (existingUser.IsActivated && membershipUser.IsLockedOut)
-                            membershipUser.UnlockUser();
-
-                        if (membershipUser.Email != dto.Email)
-                            membershipUser.Email = dto.Email;
-
-                        membershipUser.IsApproved = dto.IsActivated;
-
-                        // Đổi mật khẩu nếu Admin có truyền mật khẩu mới
-                        if (!string.IsNullOrEmpty(dto.Password))
+                        // C. SỬA THÔNG TIN NHÂN SỰ CHAY (VẪN LÀ GHOST)
+                        MembershipUser membershipUser = Membership.GetUser(existingUser.UserName);
+                        if (membershipUser != null)
                         {
-                            string oldPass = membershipUser.ResetPassword();
-                            BusinessValidator.ThrowIf(!membershipUser.ChangePassword(oldPass, dto.Password),
-                                BackEndResourceKeys.UNABLE_TO_UPDATE_PASSWORD_FOR_ACCOUNT, nameof(dto.Password));
+                            membershipUser.Email = dto.Email;
+                            membershipUser.IsApproved = false; // Tiếp tục ép cứng
+                            Membership.UpdateUser(membershipUser);
+                        }
+                    }
+                    else if (currentAction == AccountAction.UpgradeToReal)
+                    {
+                        // D. NÂNG CẤP TỪ GHOST LÊN REAL (TỬ HUYỆT DIRECT SQL)
+                        finalUserNameToSend = dto.UserName;
+                        finalPasswordToSend = SecurityUtilities.CreateAlphaNumericString(8);
+
+                        // D.1. Lách luật Membership API: Dùng SubSonic đổi trực tiếp Username trong DB
+                        new Update(AspnetUser.Schema)
+                            .Set(AspnetUser.Columns.UserName).EqualTo(dto.UserName)
+                            .Set("LoweredUserName").EqualTo(dto.UserName.ToLower())
+                            .Where(AspnetUser.Columns.UserId).IsEqualTo(existingUser.UserId)
+                            .Execute();
+
+                        // Đồng bộ thực thể C# hiện tại với DB vừa Update
+                        existingUser.UserName = dto.UserName;
+
+                        // D.2. Update Membership (Lúc này API đã nhận diện được tên mới)
+                        MembershipUser membershipUser = Membership.GetUser(dto.UserName);
+                        if (membershipUser != null)
+                        {
+                            membershipUser.Email = dto.Email;
+                            membershipUser.IsApproved = dto.IsActivated; // Mở khóa
+                            Membership.UpdateUser(membershipUser);
+                            // Reset password ma cũ và chèn password 8 ký tự mới sinh
+                            string oldTrashPass = membershipUser.ResetPassword();
+                            membershipUser.ChangePassword(oldTrashPass, finalPasswordToSend);
+                        }
+                        if (dto.RoleId != Guid.Empty)
+                        {
+                            AspnetRole role = RoleManager.Instance.GetRoleById(dto.RoleId);
+                            if (role != null) Roles.AddUserToRole(dto.UserName, role.LoweredRoleName);
+                        }
+                        sendMailRequired = true;
+                    }
+                    else if (currentAction == AccountAction.UpdateReal)
+                    {
+                        // E. CẬP NHẬT TÀI KHOẢN THẬT
+                        MembershipUser membershipUser = Membership.GetUser(existingUser.UserName);
+                        if (membershipUser != null)
+                        {
+                            // Giải cứu tài khoản nếu bị khóa tự động (IsLockedOut)
+                            if (dto.IsActivated && membershipUser.IsLockedOut) membershipUser.UnlockUser();
+
+                            membershipUser.Email = dto.Email;
+                            membershipUser.IsApproved = dto.IsActivated;
+
+                            // Nếu Admin nhập pass thủ công
+                            if (!string.IsNullOrEmpty(dto.Password))
+                            {
+                                string oldPass = membershipUser.ResetPassword();
+                                membershipUser.ChangePassword(oldPass, dto.Password);
+
+                                finalUserNameToSend = existingUser.UserName;
+                                finalPasswordToSend = dto.Password;
+                                sendMailRequired = true;
+                            }
+                            Membership.UpdateUser(membershipUser);
                         }
 
-                        Membership.UpdateUser(membershipUser);
-                    }
-
-                    // 5.3. Cập nhật Role
-                    if (dto.RoleId != existingUser.RoleId)
-                    {
-                        AspnetRole role = RoleManager.Instance.GetRoleById(dto.RoleId);
-                        if (role != null)
+                        // Đồng bộ Role (Thu hồi Role cũ, cấp Role mới)
+                        if (dto.RoleId != existingUser.RoleId)
                         {
                             RoleManager.Instance.RemoveAllRoleOfUser(existingUser.UserId);
-                            Roles.AddUserToRole(existingUser.UserName, role.LoweredRoleName);
+                            AspnetRole role = RoleManager.Instance.GetRoleById(dto.RoleId);
+                            if (role != null) Roles.AddUserToRole(existingUser.UserName, role.LoweredRoleName);
                         }
                     }
 
-                    // 5.4. Cập nhật thông tin thực thể
+                    // D.3 & E.3: Cập nhật thông tin thực thể aspnet_Users
                     existingUser.DisplayName = dto.DisplayName;
+                    existingUser.Email = dto.Email;
                     existingUser.MobileAlias = dto.MobileAlias;
                     existingUser.Avatar = dto.Avatar ?? string.Empty;
                     existingUser.IsActivated = dto.IsActivated;
                     existingUser.LaNhanVien = dto.LaNhanVien;
+
+                    // Xử lý RoleId trong bảng phụ
+                    existingUser.RoleId = (currentAction == AccountAction.UpgradeToReal || currentAction == AccountAction.UpdateReal)
+                                          ? dto.RoleId : Guid.Empty;
+
                     existingUser.IdPhongBan = dto.IdPhongBan;
                     existingUser.IdChucDanh = dto.IdChucDanh;
                     existingUser.NgaySinh = dto.NgaySinh;
@@ -242,60 +352,59 @@ namespace SweetSoft.QLDA.Core.Managers
 
                     resultUser = _repository.Update(existingUser);
                 }
-
-                // =========================================================================
-                // TRẠM 6: CHỐT GIAO DỊCH DATABASE (COMMIT)
-                // =========================================================================
                 scope.Complete();
             }
-
-            // =========================================================================
-            // TRẠM 7: GỬI EMAIL BẤT ĐỒNG BỘ (POST-PROCESSING)
-            // =========================================================================
-            if (isInsert && resultUser != null)
-            {
-                Guid userIdToSend = resultUser.UserId;
-                string emailToSend = dto.Email;
-                string displayNameToSend = dto.DisplayName;
-                string userNameToSend = dto.UserName;
-                string passwordToSend = unencryptedPassword;
-
-                Task.Run(async () =>
+                // TRẠM 4: Gửi Email bất đồng bộ 
+                if (sendMailRequired && resultUser != null && !string.IsNullOrEmpty(finalUserNameToSend))
                 {
-                    try
+                    // Lấy thông tin đích danh từ resultUser để đảm bảo data khớp 100% với DB
+                    Guid userIdToSend = resultUser.UserId;
+                    string emailToSend = resultUser.Email;
+                    string displayNameToSend = resultUser.DisplayName;
+
+                    // Lấy Username và Password đã được tracking ở Trạm 3
+                    string userNameToSend = finalUserNameToSend;
+                    string passwordToSend = finalPasswordToSend;
+
+                    // Đẩy vào Task.Run để chạy ngầm, không làm treo giao diện (UI) của Admin lúc bấm Lưu
+                    Task.Run(async () =>
                     {
-                        var emailManager = new EmailManager(null);
-                        var placeholdersBody = new Dictionary<string, string>
+                        try
                         {
-                            { "[[COMPANY_NAME]]", "SweetSoft" },
-                            { "[[FULL_NAME]]", displayNameToSend },
-                            { "[[USER_NAME]]", userNameToSend },
-                            { "[[PASSWORD]]", passwordToSend },
-                            { "[[EMAIL]]", emailToSend },
-                            { "[[SUPPORT_EMAIL]]", "hotro@sweetsoft.vn" },
-                            { "[[LOGIN_URL]]", "http://qlda.local/Login" }
-                        };
-
-                        await emailManager.SendEmailWithTemplateAsync(
-                            refId: userIdToSend,
-                            refType: EmailType.Notification,
-                            customerId: userIdToSend,
-                            toEmail: emailToSend,
-                            templateKey: "TemplateAccountInformation",
-                            formatType: EmailFormatTypes.Admin,
-                            placeholdersBody: placeholdersBody,
-                            attachments: null,
-                            useBackgroundThread: true
-                        );
-                    }
-                    catch (Exception ex)
+                            await Task.Delay(1500);
+                            var emailManager = new EmailManager(null);
+                            var placeholdersBody = new Dictionary<string, string>
                     {
-                        SysLogger.LogError(ex, "Lỗi gửi email cấp tài khoản tự động");
-                    }
-                });
-            }
+                        { "[[COMPANY_NAME]]", "SweetSoft" },
+                        { "[[FULL_NAME]]", displayNameToSend },
+                        { "[[USER_NAME]]", userNameToSend },
+                        { "[[PASSWORD]]", passwordToSend },
+                        { "[[EMAIL]]", emailToSend },
+                        { "[[SUPPORT_EMAIL]]", "hotro@sweetsoft.vn" },
+                        { "[[LOGIN_URL]]", "http://qlda.local/Login" }
+                    };
 
-            return resultUser;
+                            // CHỐT 2: Dùng chung template "TemplateAccountInformation" cho cả tạo mới và đổi pass
+                            await emailManager.SendEmailWithTemplateAsync(
+                                refId: userIdToSend,
+                                refType: EmailType.Notification,
+                                customerId: userIdToSend,
+                                toEmail: emailToSend,
+                                templateKey: "TemplateAccountInformation",
+                                formatType: EmailFormatTypes.Admin,
+                                placeholdersBody: placeholdersBody,
+                                attachments: null,
+                                useBackgroundThread: false
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            // Lỗi mail không làm chết dữ liệu. Chỉ ghi log để IT check lại SMTP.
+                            SysLogger.LogError(ex, $"Lỗi gửi email cấp/đổi tài khoản cho hệ thống. UserName: {userNameToSend}");
+                        }
+                    });
+                }
+        return resultUser;
         }
 
         public bool Delete(AspnetUser item)
@@ -385,6 +494,10 @@ namespace SweetSoft.QLDA.Core.Managers
         #endregion
 
         #region Helpers & Autocomplete
+        public bool IsGhostAccount(string userName)
+        {
+            return string.IsNullOrEmpty(userName) || userName.StartsWith("EMP_", StringComparison.OrdinalIgnoreCase);
+        }
 
         public AutocompleteObj AllUserAutocomplete(string keyword, int maxResult, string lang)
         {

@@ -151,6 +151,10 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repository.GenerateMaDuAn();
         }
+        public Guid? LayIdNhanVienQuanLy(Guid idDuAn)
+        {
+            return _repository.GetIdNhanVienQuanLy(idDuAn);
+        }
         // Sửa thằng AddNhanVienQuanLy dưới cho hợp lý hơn tý, phục vụ luôn cho trường hợp đổi PM A sang B
         public void AddNhanVienQuanLy(TblDuAn duAn)
         {

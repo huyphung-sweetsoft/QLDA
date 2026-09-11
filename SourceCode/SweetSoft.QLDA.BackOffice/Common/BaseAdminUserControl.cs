@@ -11,7 +11,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
     public class BaseAdminUserControl : UserControl
     {
         public void ProcessException(Exception exc, string mes = "")
-        {
+        { 
             this.CURRENT_PAGE.ProcessException(exc, mes);
         }
         public string GetRelativeClientPath(string virtualPath = "")

@@ -6,7 +6,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-
+using System.Linq;          // MỚI — cho .Except(), .Distinct(), .ToList()
+using System.Transactions;
 namespace SweetSoft.QLDA.Core.Managers
 {
     public class TaskManager : BaseManager
@@ -29,7 +30,11 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable GetDependentTasks(Guid projectId, Guid taskId) => _repository.GetDependentTasks(projectId, taskId);
         public DataTable GetPrioritiesTable() => _repository.FetchAllPrioritiesTable();
         public DataTable GetProjectMembers(Guid projectId) => _repository.FetchProjectMembers(projectId);
+        public DataTable GetActiveTasksByNhanVienInRange(Guid idNhanVien, DateTime start, DateTime end)
+        => _repository.GetActiveTasksByNhanVienInRange(idNhanVien, start, end);
 
+        public DataTable GetActiveTasksByNhanViensInRange(List<Guid> idNhanViens, DateTime start, DateTime end)
+        => _repository.GetActiveTasksByNhanViensInRange(idNhanViens, start, end);
         public Dictionary<Guid, TblDoUuTien> GetDictPriorities()
         {
             var dict = new Dictionary<Guid, TblDoUuTien>();
@@ -114,6 +119,56 @@ namespace SweetSoft.QLDA.Core.Managers
                 reader.Close();
             }
             return string.Join(", ", danhSachTen);
+        }
+        public List<Guid> GetAssignedNhanVienIds(Guid idCongViec)
+        {
+            return _repository.GetAssignedNhanVienIds(idCongViec);
+        }
+
+        public void UpdateAssignments(Guid idDuAn, Guid idCongViec, List<Guid> newAssigneeIds)
+        {
+            // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
+            newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
+
+            using (var scope = new TransactionScope())
+            {
+                // 1. So sánh Diff
+                List<Guid> danhSachCu = _repository.GetAssignedNhanVienIds(idCongViec);
+                List<Guid> canGo = danhSachCu.Except(newAssigneeIds).ToList();
+                List<Guid> canThem = newAssigneeIds.Except(danhSachCu).ToList();
+
+                // 2. Gỡ những người bị bỏ tick
+                foreach (Guid id in canGo)
+                {
+                    _repository.RemoveAssignment(idCongViec, id);
+                }
+
+                // 3. Chuẩn bị dữ liệu Auto-Join
+                List<Guid> thanhVienHienTai = ThanhVienDuAnManager.Instance.GetAllActiveMemberIds(idDuAn);
+                TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
+
+                // 4. Thêm những người mới được tick
+                foreach (Guid id in canThem)
+                {
+                    _repository.AddAssignment(idCongViec, id);
+
+                    // Hiệu ứng phụ: Auto-Join Dự án
+                    if (!thanhVienHienTai.Contains(id))
+                    {
+                        ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn
+                        {
+                            IdDuAn = idDuAn,
+                            IdNhanVien = id,
+                            IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
+                        });
+
+                        // Cập nhật lại mảng hiện tại để đề phòng gán liên tiếp người ngoài dự án
+                        thanhVienHienTai.Add(id);
+                    }
+                }
+
+                scope.Complete();
+            }
         }
         #endregion
 
@@ -311,7 +366,7 @@ namespace SweetSoft.QLDA.Core.Managers
                             {
                                 int thoiHan = depTask.ThoiHanNgay ?? 1;
                                 depTask.NgayBatDau = minStart;
-                                depTask.NgayKetThuc = minStart.AddDays(thoiHan - 1);
+                                depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(minStart, thoiHan);
                                 depTask.NgayCapNhat = DateTime.Now;
                                 depTask.Save();
 
@@ -341,7 +396,7 @@ namespace SweetSoft.QLDA.Core.Managers
             {
                 int thoiHan = firstChild.ThoiHanNgay ?? 1;
                 firstChild.NgayBatDau = newStartDate;
-                firstChild.NgayKetThuc = newStartDate.AddDays(thoiHan - 1);
+                firstChild.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(newStartDate, thoiHan);
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
 
@@ -405,7 +460,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (maxEnd.HasValue && parentTask.NgayBatDau.HasValue)
                 {
                     parentTask.NgayKetThuc = maxEnd.Value;
-                    parentTask.ThoiHanNgay = (maxEnd.Value.Date - parentTask.NgayBatDau.Value.Date).Days + 1;
+                    parentTask.ThoiHanNgay = LichBieuChungManager.Instance.CountWorkingDaysInRange(parentTask.NgayBatDau.Value, maxEnd.Value);   // ĐÃ SỬA — trước: (maxEnd - NgayBatDau).Days + 1
                     parentTask.NgayCapNhat = DateTime.Now;
                     parentTask.Save();
 

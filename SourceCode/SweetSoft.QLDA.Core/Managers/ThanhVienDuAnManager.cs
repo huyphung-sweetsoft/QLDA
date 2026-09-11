@@ -87,5 +87,22 @@ namespace SweetSoft.QLDA.Core.Managers
             tv.NgayCapNhat = DateTime.UtcNow;
             _repository.Save(tv);
         }
+        public List<Guid> GetAllActiveMemberIds(Guid idDuAn)
+        {
+            var list = _repository.GetByIdDuAn(idDuAn);
+            List<Guid> result = new List<Guid>();
+
+            foreach (var item in list)
+            {
+                if (!item.DaXoa && item.IdNhanVien.HasValue)
+                {
+                    if (!result.Contains(item.IdNhanVien.Value))
+                    {
+                        result.Add(item.IdNhanVien.Value);
+                    }
+                }
+            }
+            return result;
+        }
     }
 }

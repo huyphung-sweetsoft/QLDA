@@ -80,6 +80,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/NhanViens?idNhanVien={SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
         }
+        // Dành cho Menu: Tự xem lịch của mình (Không truyền ID)
+        public static string LichCaNhan => "/Lich-ca-nhan";
+
+        // Dành cho trang Detail: Admin xem lịch người khác (Mã hóa ID)
+        public static string ViewLichCaNhan(Guid idNhanVien)
+        {
+            return $"/Lich-ca-nhan/{SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
+        }
         public static string Profile => "/Profile";
         public static string Roles => "/Roles";
         public static string AddRole => "/Role/Add";
@@ -90,7 +98,8 @@ namespace SweetSoft.QLDA.BackOffice.Common
         }
         public static string ViewDetailEmp(Guid userId)
         {
-            return $"/User/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";//cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
+            return $"/Employee/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
+        //cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
         }
         //-----------------------------------------
         public static string Classes => "/Classes";

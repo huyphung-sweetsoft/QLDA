@@ -342,6 +342,33 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string FREE = "FREE";
         public const string WEEKEND = "WEEKEND";
         public const string HOLIDAY = "HOLIDAY";
+        public const string OTHER_EMPLOYEES = "OTHER_EMPLOYEES";
+        public const string AUTO_ADD_MEMBER_WARNING_MSG = "AUTO_ADD_MEMBER_WARNING_MSG";
+        public const string ASSIGN_TASK = "ASSIGN_TASK";
+        public const string EXECUTION_TIME = "EXECUTION_TIME";
+        public const string TASK = "TASK";
+        public const string OPEN_SCHEDULE = "OPEN_SCHEDULE";
+        public const string PERSONAL_AND_WORK_INFORMATION = "PERSONAL_AND_WORK_INFORMATION";
+        public const string EDIT_INFORMATION = "EDIT_INFORMATION";
+        public const string SENIORITY = "SENIORITY";
+        public const string WORK_STATUS = "WORK_STATUS";
+        public const string ACCEPTED_PROJECTS = "ACCEPTED_PROJECTS";
+        public const string PERSONAL_SCHEDULE = "PERSONAL_SCHEDULE";
+        public const string VIEW_WORK_SCHEDULE = "VIEW_WORK_SCHEDULE";
+        public const string NOT_UPDATED_YET = "NOT_UPDATED_YET";
+        public const string ADDRESS_NOT_UPDATED_YET = "ADDRESS_NOT_UPDATED_YET";
+        public const string UNIDENTIFIED = "UNIDENTIFIED";
+        public const string NOT_STARTED_WORKING_YET = "NOT_STARTED_WORKING_YET";
+        public const string YEAR = "YEAR";
+        public const string MONTH = "MONTH";
+        public const string DAY = "DAY";
+        public const string JOIN_DATE = "JOIN_DATE";
+        public const string VIEW_DETAIL = "VIEW_DETAIL";
+        
+        
+
+
+
 
         ///---------------------------------------------------
         // Class
