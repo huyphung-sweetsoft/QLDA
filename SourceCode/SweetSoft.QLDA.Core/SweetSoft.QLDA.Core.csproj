@@ -176,6 +176,7 @@
     <Compile Include="EnumHelper\Defines\MeetingSpeechesStatus.cs" />
     <Compile Include="EnumHelper\Defines\MucDoAnhHuong.cs" />
     <Compile Include="EnumHelper\Defines\NguonGocVanDe.cs" />
+    <Compile Include="EnumHelper\Defines\ThanhToanStatus.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiChiPhi.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiCuocHop.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiVanDe.cs" />
@@ -262,6 +263,7 @@
     <Compile Include="Managers\ProjectReportManager.cs" />
     <Compile Include="Managers\RiskManager.cs" />
     <Compile Include="Managers\TaskManager.cs" />
+    <Compile Include="Managers\ThanhToanManager.cs" />
     <Compile Include="Managers\ThanhVienDuAnManager.cs" />
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
@@ -306,6 +308,7 @@
     <Compile Include="Respositories\ProjectReportRepository.cs" />
     <Compile Include="Respositories\RiskRepository.cs" />
     <Compile Include="Respositories\TaskRepository.cs" />
+    <Compile Include="Respositories\ThanhToanRepository.cs" />
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
     <Compile Include="Respositories\VaiTroDuAnRepository.cs" />
     <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />

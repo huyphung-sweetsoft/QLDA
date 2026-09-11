@@ -492,6 +492,13 @@
     <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.designer.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -505,6 +512,13 @@
     </Compile>
     <Compile Include="fProjects\DuAnList.aspx.designer.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\ThanhToanList.aspx.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\ThanhToanList.aspx.designer.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
     </Compile>
     <Compile Include="fRisks\Controls\CtrlRisk.ascx.cs">
       <DependentUpon>CtrlRisk.ascx</DependentUpon>
@@ -688,6 +702,8 @@
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fProjects\Controls\CtrlThanhToan.ascx" />
+    <Content Include="fProjects\ThanhToanList.aspx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
