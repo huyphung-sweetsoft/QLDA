@@ -44,59 +44,133 @@ namespace SweetSoft.QLDA.Core.Managers
 
         #region Create or update
 
-        public TblHopDongThucHien CreateOrUpdate(TblHopDongThucHien dto)
+        public TblHopDongThucHien CreateOrUpdate(
+    TblHopDongThucHien dto)
         {
             ValidateContract(dto);
             NormalizeContract(dto);
 
-            bool isInsert = dto.IdHopDongThucHien == Guid.Empty;
+            bool isInsert =
+                dto.IdHopDongThucHien == Guid.Empty;
 
-            TblHopDongThucHien duplicate = _repository.GetBySoHopDong(dto.SoHopDong);
+            TblHopDongThucHien duplicate =
+                _repository.GetBySoHopDong(
+                    dto.SoHopDong);
 
-            bool duplicateNumber = duplicate != null && duplicate.IdHopDongThucHien != dto.IdHopDongThucHien;
+            bool duplicateNumber =
+                duplicate != null &&
+                duplicate.IdHopDongThucHien !=
+                    dto.IdHopDongThucHien;
 
-            BusinessValidator.ThrowIf(duplicateNumber, BackEndResourceKeys.INVALID_DATA, nameof(dto.SoHopDong), ErrorCodes.Conflict);
+            BusinessValidator.ThrowIf(
+                duplicateNumber,
+                BackEndResourceKeys.INVALID_DATA,
+                nameof(dto.SoHopDong),
+                ErrorCodes.Conflict);
+
+            TblHopDongThucHien item;
 
             if (isInsert)
-                return Insert(dto);
+            {
+                item =
+                    new TblHopDongThucHien();
 
-            return Update(dto);
-        }
+                item.IdHopDongThucHien =
+                    UUIDv7.NewGuid();
 
-        private TblHopDongThucHien Insert(TblHopDongThucHien dto)
-        {
-            TblHopDongThucHien item = dto.Clone() as TblHopDongThucHien;
+                item.SoHopDong =
+                    dto.SoHopDong;
 
-            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.INVALID_DATA);
+                item.TenHopDong =
+                    dto.TenHopDong;
 
-            item.IdHopDongThucHien = UUIDv7.NewGuid();
-            item.DaXoa = false;
-            item.NguoiTao = SweetContext.Current.UserName;
-            item.NgayTao = DateTime.UtcNow;
-            item.NguoiCapNhat = null;
-            item.NgayCapNhat = null;
+                item.IdKhachHang =
+                    dto.IdKhachHang;
 
-            item = _repository.Insert(item);
+                item.GiaTriHopDong =
+                    dto.GiaTriHopDong;
 
-            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                item.NgayKy =
+                    dto.NgayKy;
 
-            return item;
-        }
+                item.NgayHieuLuc =
+                    dto.NgayHieuLuc;
 
-        private TblHopDongThucHien Update(TblHopDongThucHien dto)
-        {
-            TblHopDongThucHien item = _repository.GetById(dto.IdHopDongThucHien);
+                item.NgayHetHan =
+                    dto.NgayHetHan;
 
-            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.NotFound);
+                item.MoTa =
+                    dto.MoTa;
 
-            ObjectHelper.CopyBusinessProperties(dto, item, x => x.IdHopDongThucHien, x => x.DaXoa, x => x.NguoiTao, x => x.NgayTao, x => x.NguoiCapNhat, x => x.NgayCapNhat);
+                item.DaXoa =
+                    false;
 
-            item.NguoiCapNhat = SweetContext.Current.UserName;
-            item.NgayCapNhat = DateTime.UtcNow;
+                item.NguoiTao =
+                    SweetContext.Current.UserName;
 
-            item = _repository.Update(item);
+                item.NgayTao =
+                    DateTime.UtcNow;
 
-            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                item.NguoiCapNhat =
+                    null;
+
+                item.NgayCapNhat =
+                    null;
+
+                item =
+                    _repository.Insert(item);
+            }
+            else
+            {
+                item =
+                    _repository.GetById(
+                        dto.IdHopDongThucHien);
+
+                BusinessValidator.ThrowIfNull(
+                    item,
+                    BackEndResourceKeys.NOT_FOUND,
+                    nameof(dto.IdHopDongThucHien),
+                    ErrorCodes.NotFound);
+
+                item.SoHopDong =
+                    dto.SoHopDong;
+
+                item.TenHopDong =
+                    dto.TenHopDong;
+
+                item.IdKhachHang =
+                    dto.IdKhachHang;
+
+                item.GiaTriHopDong =
+                    dto.GiaTriHopDong;
+
+                item.NgayKy =
+                    dto.NgayKy;
+
+                item.NgayHieuLuc =
+                    dto.NgayHieuLuc;
+
+                item.NgayHetHan =
+                    dto.NgayHetHan;
+
+                item.MoTa =
+                    dto.MoTa;
+
+                item.NguoiCapNhat =
+                    SweetContext.Current.UserName;
+
+                item.NgayCapNhat =
+                    DateTime.UtcNow;
+
+                item =
+                    _repository.Update(item);
+            }
+
+            BusinessValidator.ThrowIfNull(
+                item,
+                BackEndResourceKeys.SERVICE_UNAVAILABLE,
+                nameof(dto),
+                ErrorCodes.ServiceUnavailable);
 
             return item;
         }

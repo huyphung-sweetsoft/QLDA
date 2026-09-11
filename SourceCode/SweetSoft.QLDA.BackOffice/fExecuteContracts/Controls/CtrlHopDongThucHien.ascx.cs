@@ -91,7 +91,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
 
             master.LoadSessionLastSearch(
                 searchTagBox,
-                null,
+                pnlSearchDefault,
                 grvData,
                 txtSearchSingle);
 
@@ -364,8 +364,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
                 master.searchTagBox_TagClosed(
                     searchTagBox,
                     tag,
-                    pnlSearchDefault,
-                    null,
+                    pnlSearchDefault,   
                     grvData,
                     txtSearchSingle,
                     out searchType);

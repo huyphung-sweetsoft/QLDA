@@ -49,7 +49,7 @@
                 <div class="col-lg-6">
                     <div class="mb-3">
                         <label class="form-label label-valid">Giá trị hợp đồng</label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDong" Required="true" TextMode="Number" PlaceHolder="Nhập giá trị hợp đồng"></SweetSoft:ExtraTextBox>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDong" Required="true" PlaceHolder="Nhập giá trị hợp đồng"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
 

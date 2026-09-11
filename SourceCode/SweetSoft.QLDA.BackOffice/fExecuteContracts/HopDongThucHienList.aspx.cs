@@ -143,31 +143,12 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             txtSoHopDong.Text = hopDong.SoHopDong;
             txtTenHopDong.Text = hopDong.TenHopDong;
             ddlKhachHang.SelectedValue = hopDong.IdKhachHang.ToString();
-            
-            decimal giaTriHopDong;
 
-            if (!decimal.TryParse(
-                txtGiaTriHopDong.Text,
-                out giaTriHopDong) ||
-                giaTriHopDong <= 0)
-            {
-                //ValidationEngine.AddErrorPrompt(
-                //    txtGiaTriHopDong.ClientID,
-                //    "Giá trị hợp đồng phải lớn hơn 0.");
-            }
+            txtGiaTriHopDong.Text =
+                hopDong.GiaTriHopDong.HasValue
+                    ? hopDong.GiaTriHopDong.Value.ToString()
+                    : string.Empty;
 
-            bool validGiaTri = decimal.TryParse(
-                txtGiaTriHopDong.Text,
-                NumberStyles.Any,
-                CultureInfo.InvariantCulture,
-                out giaTriHopDong);
-
-            if (!validGiaTri)
-            {
-                validGiaTri = decimal.TryParse(
-                    txtGiaTriHopDong.Text,
-                    out giaTriHopDong);
-            }
 
             txtNgayKy.Text = hopDong.NgayKy.HasValue ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd") : string.Empty;
             txtNgayHieuLuc.Text = hopDong.NgayHieuLuc.HasValue ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd") : string.Empty;
