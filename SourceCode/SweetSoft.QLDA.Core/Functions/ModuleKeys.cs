@@ -46,6 +46,8 @@ namespace SweetSoft.QLDA.Core.Functions
         DocumentStorageLocation,
         DocumentTemplate,
         Document,
+        Cost,
+        Payment,
         Contract
     }
 }

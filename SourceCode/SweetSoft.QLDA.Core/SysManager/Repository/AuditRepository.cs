@@ -27,7 +27,7 @@ namespace SweetSoft.QLDA.Core.SysManager.Repository
         }
 
         /// <summary>
-        /// Create AuditLog table if not already there (by year)
+        /// Create the yearly AuditLog table and its lookup indexes if missing.
         /// </summary>
         /// <param name="year"></param>
         private Task CreateAuditTableIfNotExistsAsync(int year)
@@ -35,6 +35,10 @@ namespace SweetSoft.QLDA.Core.SysManager.Repository
             try
             {
                 string tableName = $"TblAuditLog_{year}";
+                string referenceIndexName =
+                    $"IX_{tableName}_Reference_ChangedAt";
+                string recordIndexName =
+                    $"IX_{tableName}_Record_ChangedAt";
 
                 string createTableSql = $@"
             IF OBJECT_ID(N'dbo.{tableName}', N'U') IS NULL
@@ -57,6 +61,31 @@ namespace SweetSoft.QLDA.Core.SysManager.Repository
                     CONSTRAINT PK_{tableName} PRIMARY KEY (ChangedAt, Id),
                     CONSTRAINT UQ_{tableName} UNIQUE (ChangedAt, Id)
                 );
+            END
+
+            -- Also repairs a yearly table created before this index policy.
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.indexes
+                WHERE object_id = OBJECT_ID(N'dbo.{tableName}', N'U')
+                  AND name = N'{referenceIndexName}'
+            )
+            BEGIN
+                CREATE NONCLUSTERED INDEX [{referenceIndexName}]
+                    ON dbo.[{tableName}] (ReferenceId, ChangedAt DESC, Id DESC);
+            END
+
+            IF NOT EXISTS
+            (
+                SELECT 1
+                FROM sys.indexes
+                WHERE object_id = OBJECT_ID(N'dbo.{tableName}', N'U')
+                  AND name = N'{recordIndexName}'
+            )
+            BEGIN
+                CREATE NONCLUSTERED INDEX [{recordIndexName}]
+                    ON dbo.[{tableName}] (TableName, RecordId, ChangedAt DESC);
             END";
 
                 new InlineQuery(_dataProvider).Execute(createTableSql);

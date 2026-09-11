@@ -424,17 +424,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblLoaiTaiLieu ActiveRecord object related to this TblMauTaiLieu
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu TblLoaiTaiLieu
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu.FetchByID(this.IdLoaiTaiLieu); }
-			set { SetColumnValue("IdLoaiTaiLieu", value.IdLoaiTaiLieu); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a TblUploadFile ActiveRecord object related to this TblMauTaiLieu
 		/// 
 		/// </summary>
@@ -442,6 +431,17 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileMau); }
 			set { SetColumnValue("IdFileMau", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblLoaiTaiLieu ActiveRecord object related to this TblMauTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu TblLoaiTaiLieu
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu.FetchByID(this.IdLoaiTaiLieu); }
+			set { SetColumnValue("IdLoaiTaiLieu", value.IdLoaiTaiLieu); }
 		}
 		
 		

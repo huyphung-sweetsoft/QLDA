@@ -222,33 +222,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchEmail;
 
         /// <summary>
-        /// txtSearchCCCD control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchCCCD;
-
-        /// <summary>
-        /// ddlSearchChucDanh control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSearchChucDanh;
-
-        /// <summary>
-        /// ddlSearchPhongBan control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSearchPhongBan;
-
-        /// <summary>
         /// txtSearchPhone control.
         /// </summary>
         /// <remarks>

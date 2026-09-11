@@ -21,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlTask1.NewTaskHandlerCallback = NewTask_Callback;
             CtrlTask1.EditTaskHandlerCallback = EditTask_Callback;
 
@@ -166,7 +166,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 task.TrangThai = Convert.ToByte(ddlEditTrangThai.SelectedValue);
                 if (!isFatherTask) task.IdDoUuTien = Guid.TryParse(ddlEditDoUuTien.SelectedValue, out Guid idUt) ? (Guid?)idUt : null;
                 task.ThoiHanNgay = thoiHan;
-                task.NgayKetThuc = ngayBd.AddDays(thoiHan - 1);
+                task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);   // trước: ngayBd.AddDays(thoiHan - 1)
             }
             task.TenCongViec = tenCv;
             task.MoTa = txtEditMoTa.Text.Trim();

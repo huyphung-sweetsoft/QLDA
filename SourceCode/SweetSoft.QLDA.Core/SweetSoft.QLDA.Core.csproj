@@ -176,6 +176,8 @@
     <Compile Include="EnumHelper\Defines\MeetingSpeechesStatus.cs" />
     <Compile Include="EnumHelper\Defines\MucDoAnhHuong.cs" />
     <Compile Include="EnumHelper\Defines\NguonGocVanDe.cs" />
+    <Compile Include="EnumHelper\Defines\ThanhToanStatus.cs" />
+    <Compile Include="EnumHelper\Defines\TrangThaiChiPhi.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiCuocHop.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiVanDe.cs" />
     <Compile Include="EnumHelper\Defines\XacSuatRuiRo.cs" />
@@ -243,7 +245,9 @@
     <Compile Include="MailManager\Repository\EmailHistoryRepository.cs" />
     <Compile Include="Managers\BaseManager.cs" />
     <Compile Include="Managers\ChucDanhManager.cs" />
+    <Compile Include="Managers\CostManager.cs" />
     <Compile Include="Managers\DuAnManager.cs" />
+    <Compile Include="Managers\GanttChartManager.cs" />
     <Compile Include="Managers\GiaiDoanDuAnManager.cs" />
     <Compile Include="Managers\GiaiDoanManager.cs" />
     <Compile Include="Managers\HopDongThucHienManager.cs" />
@@ -256,8 +260,10 @@
     <Compile Include="Managers\LichBieuChungManager.cs" />
     <Compile Include="Managers\NhanVienManager.cs" />
     <Compile Include="Managers\PhongBanManager.cs" />
+    <Compile Include="Managers\ProjectReportManager.cs" />
     <Compile Include="Managers\RiskManager.cs" />
     <Compile Include="Managers\TaskManager.cs" />
+    <Compile Include="Managers\ThanhToanManager.cs" />
     <Compile Include="Managers\ThanhVienDuAnManager.cs" />
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
@@ -284,7 +290,9 @@
     <Compile Include="PdfGeneration\Utilities\PdfResponseWriter.cs" />
     <Compile Include="Respositories\CauHinhTuanLamViecRepository.cs" />
     <Compile Include="Respositories\ChucDanhRepository.cs" />
+    <Compile Include="Respositories\CostRepository.cs" />
     <Compile Include="Respositories\DuAnRepository.cs" />
+    <Compile Include="Respositories\GanttChartRepository.cs" />
     <Compile Include="Respositories\GiaiDoanDuAnRepository.cs" />
     <Compile Include="Respositories\GiaiDoanRepository.cs" />
     <Compile Include="Respositories\HopDongThucHienRepository.cs" />
@@ -297,11 +305,16 @@
     <Compile Include="Respositories\LichNgoaiLeRepository.cs" />
     <Compile Include="Respositories\NhanVienRepository.cs" />
     <Compile Include="Respositories\PhongBanRepository.cs" />
+    <Compile Include="Respositories\ProjectReportRepository.cs" />
     <Compile Include="Respositories\RiskRepository.cs" />
     <Compile Include="Respositories\TaskRepository.cs" />
+    <Compile Include="Respositories\ThanhToanRepository.cs" />
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
     <Compile Include="Respositories\VaiTroDuAnRepository.cs" />
     <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />
+    <Compile Include="ScheduleManager\LichTrinhManager.cs" />
+    <Compile Include="ScheduleManager\ThongTinLichNgay.cs" />
+    <Compile Include="ScheduleManager\TomTatCongViec.cs" />
     <Compile Include="SEO\Schemas\AggregateRatingSchema.cs" />
     <Compile Include="SEO\Schemas\AnswerSchema.cs" />
     <Compile Include="SEO\Schemas\ArticleSchema.cs" />

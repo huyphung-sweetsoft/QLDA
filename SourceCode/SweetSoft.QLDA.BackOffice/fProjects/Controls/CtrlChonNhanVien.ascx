@@ -36,6 +36,7 @@
     .sd-body.holiday { background-color: #fef3c7; color: #b45309; border-top: 2.5px solid #f59e0b; }
     .sd-body.weekend { background-color: #f8fafc; color: #64748b; }
     .sd-body.free { background-color: #e6f4ea; color: #137333; border-top: 2.5px solid #34a853; }
+    .sd-body.busy { background-color: #fee2e2; color: #b91c1c; border-top: 2.5px solid #ef4444; }
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary" DefaultButton="btnConfirm">

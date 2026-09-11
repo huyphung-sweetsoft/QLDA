@@ -24,6 +24,11 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
         protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
 
         /// <summary>
+        /// CtrlProjectTabs1 control.
+        /// </summary>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
+
+        /// <summary>
         /// CtrlRisk1 control.
         /// </summary>
         /// <remarks>

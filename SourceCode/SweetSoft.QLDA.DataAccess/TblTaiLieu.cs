@@ -646,28 +646,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblDuAn ActiveRecord object related to this TblTaiLieu
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblDuAn TblDuAn
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblDuAn.FetchByID(this.IdDuAn); }
-			set { SetColumnValue("IdDuAn", value.IdDuAn); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a TblLoaiTaiLieu ActiveRecord object related to this TblTaiLieu
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu TblLoaiTaiLieu
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu.FetchByID(this.IdLoaiTaiLieu); }
-			set { SetColumnValue("IdLoaiTaiLieu", value.IdLoaiTaiLieu); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a AspnetUser ActiveRecord object related to this TblTaiLieu
 		/// 
 		/// </summary>
@@ -686,6 +664,28 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileBanChinhThuc); }
 			set { SetColumnValue("IdFileBanChinhThuc", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblDuAn ActiveRecord object related to this TblTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblDuAn TblDuAn
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblDuAn.FetchByID(this.IdDuAn); }
+			set { SetColumnValue("IdDuAn", value.IdDuAn); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblLoaiTaiLieu ActiveRecord object related to this TblTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu TblLoaiTaiLieu
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu.FetchByID(this.IdLoaiTaiLieu); }
+			set { SetColumnValue("IdLoaiTaiLieu", value.IdLoaiTaiLieu); }
 		}
 		
 		

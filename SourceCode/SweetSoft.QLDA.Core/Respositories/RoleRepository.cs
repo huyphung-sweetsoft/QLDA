@@ -213,6 +213,27 @@ namespace SweetSoft.QLDA.Core.Respositories
             .And(AspnetFunction.OfProjectColumn).IsEqualTo(0);
             return select.ExecuteTypedList<AspnetFunction>();
         }
+
+        /// <summary>
+        /// Lấy các chức năng lá được cấu hình để điều hướng trong một dự án.
+        /// Quyền của người dùng không được xử lý tại đây; UI dùng
+        /// BaseAdminPage.IsUserRight để giữ cùng quy tắc quyền với trang đích.
+        /// </summary>
+        public List<AspnetFunction> GetProjectTabFunctions()
+        {
+            List<AspnetFunction> functions = new Select()
+                .From(AspnetFunction.Schema)
+                .Where(AspnetFunction.IsActivatedColumn).IsEqualTo(true)
+                .And(AspnetFunction.OfProjectColumn).IsEqualTo(true)
+                .ExecuteTypedList<AspnetFunction>();
+
+            return (functions ?? new List<AspnetFunction>())
+                .Where(item => item.Id != Guid.Empty
+                    && !string.IsNullOrWhiteSpace(item.PageUrl))
+                .OrderBy(item => item.DisplayOrder)
+                .ThenBy(item => item.FunctionCode)
+                .ToList();
+        }
         public List<string> GetFunctionCodesByUserId(Guid userId)
         {
            List<AspnetFunction> functionCodes = GetAspnetFunctionByUserId(userId);
@@ -242,33 +263,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             return new InlineQuery().ExecuteTypedList<AspnetFunction>(sql);
         }
 
-        public List<AspnetFunction> GetProjectFunctionByUserId(Guid userId, Guid projectId)
-        {
-            string roleId = "9BEA8297-74E2-437E-8FC5-8803324EFCE4";
-                string sqlGetFunctions = string.Format(@"
-                            WITH SubMenus AS (
-                                SELECT DISTINCT f.* 
-                                FROM aspnet_AssignRoles d 
-                                INNER JOIN aspnet_Permission e ON d.PermissionKey = e.PermissionKey
-                                INNER JOIN aspnet_Functions f ON e.FunctionId = f.Id
-                                WHERE d.RoleId = '{0}' 
-                                  AND d.IsAllowed = 1 
-                                  AND f.IsActivated = 1
-                                  AND f.OfProject=1
-                            )
-                            -- 1. Lấy menu cha nếu có
-                            SELECT DISTINCT f.* 
-                            FROM aspnet_Functions f 
-                            WHERE f.FunctionCode IN (SELECT ParentCode FROM SubMenus WHERE ParentCode IS NOT NULL AND ParentCode <> '')
-                              AND f.IsActivated = 1
-                              AND f.OfProject=1
-                            UNION
-                            -- 2. Lấy các menu chức năng con trực tiếp
-                            SELECT * FROM SubMenus
-                            ORDER BY DisplayOrder ASC;", roleId);
-
-            return new InlineQuery().ExecuteTypedList<AspnetFunction>(sqlGetFunctions) ?? new List<AspnetFunction>();
-        }
         public List<AspnetFunction> GetAspnetFunctionActiveByUserId(Guid userId)
         {
             string sql = string.Format(@"with t as (

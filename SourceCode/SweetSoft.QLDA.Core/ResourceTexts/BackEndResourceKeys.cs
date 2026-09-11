@@ -40,7 +40,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string NO_DATA = "NO_DATA";
         public const string CHANGE_PASSWORD = "CHANGE_PASSWORD";
         public const string COPYRIGHT = "COPYRIGHT";
-        public const string DASHBOARD = "DASHBOARD";
+        // These values mirror aspnet_Functions.FunctionName so the common
+        // menu renderer can resolve dashboard labels without special mapping.
+        public const string DASHBOARD = "Dashboard";
         public const string CONFIRM_PASSWORD = "CONFIRM_PASSWORD";
         public const string DELETE = "DELETE";
         public const string DISPLAY_NAME = "DISPLAY_NAME";
@@ -343,6 +345,33 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string FREE = "FREE";
         public const string WEEKEND = "WEEKEND";
         public const string HOLIDAY = "HOLIDAY";
+        public const string OTHER_EMPLOYEES = "OTHER_EMPLOYEES";
+        public const string AUTO_ADD_MEMBER_WARNING_MSG = "AUTO_ADD_MEMBER_WARNING_MSG";
+        public const string ASSIGN_TASK = "ASSIGN_TASK";
+        public const string EXECUTION_TIME = "EXECUTION_TIME";
+        public const string TASK = "TASK";
+        public const string OPEN_SCHEDULE = "OPEN_SCHEDULE";
+        public const string PERSONAL_AND_WORK_INFORMATION = "PERSONAL_AND_WORK_INFORMATION";
+        public const string EDIT_INFORMATION = "EDIT_INFORMATION";
+        public const string SENIORITY = "SENIORITY";
+        public const string WORK_STATUS = "WORK_STATUS";
+        public const string ACCEPTED_PROJECTS = "ACCEPTED_PROJECTS";
+        public const string PERSONAL_SCHEDULE = "PERSONAL_SCHEDULE";
+        public const string VIEW_WORK_SCHEDULE = "VIEW_WORK_SCHEDULE";
+        public const string NOT_UPDATED_YET = "NOT_UPDATED_YET";
+        public const string ADDRESS_NOT_UPDATED_YET = "ADDRESS_NOT_UPDATED_YET";
+        public const string UNIDENTIFIED = "UNIDENTIFIED";
+        public const string NOT_STARTED_WORKING_YET = "NOT_STARTED_WORKING_YET";
+        public const string YEAR = "YEAR";
+        public const string MONTH = "MONTH";
+        public const string DAY = "DAY";
+        public const string JOIN_DATE = "JOIN_DATE";
+        public const string VIEW_DETAIL = "VIEW_DETAIL";
+        
+        
+
+
+
 
         ///---------------------------------------------------
         // Class
@@ -409,6 +438,15 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DEPENDENT = "DEPENDENT";
         public const string PHASE = "PHASE";
         public const string PARENT_TASK = "PARENT_TASK";
+        public const string GANTT_CHART = "GANTT_CHART";
+        public const string DOING = "DOING";
+        public const string OVERDUE = "OVERDUE";
+        public const string DUE_SOON = "DUE_SOON";
+        public const string NOT_YET_STARTED = "NOT_YET_STARTED";
+        public const string TODAY = "TODAY";
+        public const string DEPENDENT_LINK = "DEPENDENT_LINK";
+        public const string NO_OVERDUE_TASKS = "NO_OVERDUE_TASKS";
+        public const string NO_ISSUES = "NO_ISSUES";
         //Risk
         public const string RISK_LIST = "RISK_LIST";
         public const string RISK_CODE = "RISK_CODE";
@@ -445,6 +483,32 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MEETING_NAME = "MEETING_NAME";
         public const string GENERAL_CONTENT = "GENERAL_CONTENT";
         public const string MEETING_ROOM = "MEETING_ROOM";
+        public const string START_TIME = "START_TIME";
+        public const string END_TIME = "END_TIME";
+        public const string ENDED = "ENDED";
+        public const string SCHEDULED = "SCHEDULED";
+        public const string UPCOMING = "UPCOMING";
+        public const string ONGOING = "ONGOING";
+        //Cost
+        public const string COST_MANAGEMENT = "COST_MANAGEMENT";
+        public const string COST_LIST = "COST_LIST";
+        public const string COST_CODE = "COST_CODE";
+        public const string COST_NAME = "COST_NAME";
+        public const string REQUESTER = "REQUESTER";
+        public const string PRICE = "PRICE";
+        public const string QUANTITY = "QUANTITY";
+        public const string TOTAL_AMOUNT = "TOTAL_AMOUNT";
+        public const string DATE_CREATED = "DATE_CREATED";
+        public const string NOT_APPROVED = "NOT_APPROVED";
+        public const string APPROVED = "APPROVED";
+        public const string REJECTED = "REJECTED";
+        public const string FAST_APPROVAL = "FAST_APPROVAL";
+        //Project Report
+        public const string PROJECT_REPORT = "PROJECT_REPORT";
+        public const string PROJECT_REPORT_MANAGEMENT = "PROJECT_REPORT_MANAGEMENT";
+
+
+        //Document
         public const string DOCUMENT_TEMPLATE = "DOCUMENT_TEMPLATE";
         public const string DOCUMENT_TEMPLATE_LIST = "DOCUMENT_TEMPLATE_LIST";
         public const string DOCUMENT_TEMPLATE_NAME = "DOCUMENT_TEMPLATE_NAME";
@@ -537,7 +601,10 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string ACTIVITY_DELETE_VERSION = "ACTIVITY_DELETE_VERSION";
 
         // Dashboard Overview
-        public const string DASHBOARD_OVERVIEW = "DASHBOARD_OVERVIEW";
+        public const string DASHBOARD_OVERVIEW = "Dashboard_Overview";
+        public const string DASHBOARD_RESOURCE = "Dashboard_Resource";
+        public const string DASHBOARD_PROGRESS = "Dashboard_Progress";
+        public const string DASHBOARD_COST = "Dashboard_Cost";
         public const string PROJECT_SCOPE = "PROJECT_SCOPE";
         public const string DATE_RANGE = "DATE_RANGE";
         public const string THIS_WEEK = "THIS_WEEK";
@@ -609,26 +676,48 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string HISTORY_CHANGED_VALUE = "HISTORY_CHANGED_VALUE";
         public const string HISTORY_LINKED_ENTITY = "HISTORY_LINKED_ENTITY";
         public const string HISTORY_UNLINKED_ENTITY = "HISTORY_UNLINKED_ENTITY";
+        public const string HISTORY_ENTITY_PROJECT = "HISTORY_ENTITY_PROJECT";
 
-        public const string HISTORY_ENTITY_PROJECT =
-    "HISTORY_ENTITY_PROJECT";
-
-        public const string HISTORY_ENTITY_STAGE =
-            "HISTORY_ENTITY_STAGE";
-
-        public const string HISTORY_ENTITY_TASK =
-            "HISTORY_ENTITY_TASK";
-
-        public const string HISTORY_ENTITY_MEMBER =
-            "HISTORY_ENTITY_MEMBER";
-
-        public const string HISTORY_ENTITY_CONTRACT =
-            "HISTORY_ENTITY_CONTRACT";
-
-        public const string HISTORY_ENTITY_DOCUMENT =
-            "HISTORY_ENTITY_DOCUMENT";
-
-        public const string HISTORY_ENTITY_RISK =
-            "HISTORY_ENTITY_RISK";
+        public const string HISTORY_ENTITY_STAGE = "HISTORY_ENTITY_STAGE";
+        public const string HISTORY_ENTITY_TASK = "HISTORY_ENTITY_TASK";
+        public const string HISTORY_ENTITY_MEMBER = "HISTORY_ENTITY_MEMBER";
+        public const string HISTORY_ENTITY_CONTRACT = "HISTORY_ENTITY_CONTRACT";
+        public const string HISTORY_ENTITY_DOCUMENT = "HISTORY_ENTITY_DOCUMENT";
+        public const string HISTORY_ENTITY_RISK = "HISTORY_ENTITY_RISK";
+        public const string SET_AS_OFFICIAL_FILE = "SET_AS_OFFICIAL_FILE";
+        public const string CLEAR_OFFICIAL_FILE = "CLEAR_OFFICIAL_FILE";
+        public const string ACTIVITY_SET_OFFICIAL_FILE = "ACTIVITY_SET_OFFICIAL_FILE";
+        public const string ACTIVITY_CLEAR_OFFICIAL_FILE = "ACTIVITY_CLEAR_OFFICIAL_FILE";
+        public const string SIGNING_PENDING = "SIGNING_PENDING";
+        public const string SIGNING_REQUEST_CHANGES = "SIGNING_REQUEST_CHANGES";
+        public const string SIGNING_COMPLETED = "SIGNING_COMPLETED";
+        public const string SUBMIT_FOR_SIGNING = "SUBMIT_FOR_SIGNING";
+        public const string CONFIRM_SIGNED = "CONFIRM_SIGNED";
+        public const string REQUEST_CHANGES = "REQUEST_CHANGES";
+        public const string SIGNING_NOTE = "SIGNING_NOTE";
+        public const string SIGNING_VERSION = "SIGNING_VERSION";
+        public const string SIGNING_RESULT_FILE = "SIGNING_RESULT_FILE";
+        public const string SIGNING_RESULT_FILE_HINT = "SIGNING_RESULT_FILE_HINT";
+        public const string SIGNING_SIGNER_REQUIRED = "SIGNING_SIGNER_REQUIRED";
+        public const string SIGNING_CHANGE_REASON_REQUIRED = "SIGNING_CHANGE_REASON_REQUIRED";
+        public const string SIGNING_RESULT_REQUIRED = "SIGNING_RESULT_REQUIRED";
+        public const string ACTIVITY_SUBMIT_SIGNING = "ACTIVITY_SUBMIT_SIGNING";
+        public const string ACTIVITY_REQUEST_SIGNING_CHANGES = "ACTIVITY_REQUEST_SIGNING_CHANGES";
+        public const string ACTIVITY_COMPLETE_SIGNING = "ACTIVITY_COMPLETE_SIGNING";
+        public const string PAYMENT_LIST = "PAYMENT_LIST";
+        public const string PAYMENT_CODE = "PAYMENT_CODE";
+        public const string PAYMENT_NAME = "PAYMENT_NAME";
+        public const string PAYMENT_AMOUNT = "PAYMENT_AMOUNT";
+        public const string PAYMENT_DUE_DATE = "PAYMENT_DUE_DATE";
+        public const string PAYMENT_ACTUAL_DATE = "PAYMENT_ACTUAL_DATE";
+        public const string PAYMENT_UNPAID = "PAYMENT_UNPAID";
+        public const string PAYMENT_OVERDUE = "PAYMENT_OVERDUE";
+        public const string PAYMENT_PAID = "PAYMENT_PAID";
+        public const string PAYMENT_EDIT_STATUS = "PAYMENT_EDIT_STATUS";
+        public const string PAYMENT_SEARCH_PLACEHOLDER = "PAYMENT_SEARCH_PLACEHOLDER";
+        public const string PAYMENT_DATE_REQUIRED = "PAYMENT_DATE_REQUIRED";
+        public const string PAYMENT_QUICK_APPROVE = "PAYMENT_QUICK_APPROVE";
+        public const string PAYMENT_QUICK_APPROVE_CONFIRM = "PAYMENT_QUICK_APPROVE_CONFIRM";
+        public const string PAYMENT_DELETE_CONFIRM = "PAYMENT_DELETE_CONFIRM";
     }
 }

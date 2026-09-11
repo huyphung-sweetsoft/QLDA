@@ -76,5 +76,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.GridviewExtension grvData;
+
+        /// <summary>
+        /// CtrlChonNhanVienTask1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlChonNhanVienTask CtrlChonNhanVienTask1;
     }
 }

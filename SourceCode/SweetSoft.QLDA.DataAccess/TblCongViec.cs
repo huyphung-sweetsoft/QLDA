@@ -618,25 +618,6 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblCongViecNhanVienRecords[e.NewIndex].IdCongViec = IdCongViec;
             }
 		}
-		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
-		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
-		{
-			if(colTblChiPhiRecords == null)
-			{
-				colTblChiPhiRecords = new SweetSoft.QLDA.DataAccess.TblChiPhiCollection().Where(TblChiPhi.Columns.IdCongViec, IdCongViec).Load();
-				colTblChiPhiRecords.ListChanged += new ListChangedEventHandler(colTblChiPhiRecords_ListChanged);
-			}
-			return colTblChiPhiRecords;
-		}
-				
-		void colTblChiPhiRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblChiPhiRecords[e.NewIndex].IdCongViec = IdCongViec;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colChildTblCongViecRecords;
 		public SweetSoft.QLDA.DataAccess.TblCongViecCollection ChildTblCongViecRecords()
 		{
@@ -1197,17 +1178,6 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
-                if (colTblChiPhiRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
-                    {
-                        if (item.IdCongViec == null ||item.IdCongViec != IdCongViec)
-                        {
-                            item.IdCongViec = IdCongViec;
-                        }
-                    }
-               }
-		
                 if (colChildTblCongViecRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colChildTblCongViecRecords)
@@ -1274,11 +1244,6 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblCongViecNhanVienRecords != null)
                 {
                     colTblCongViecNhanVienRecords.SaveAll();
-               }
-		
-                if (colTblChiPhiRecords != null)
-                {
-                    colTblChiPhiRecords.SaveAll();
                }
 		
                 if (colChildTblCongViecRecords != null)

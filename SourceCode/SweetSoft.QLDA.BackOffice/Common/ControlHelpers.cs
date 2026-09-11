@@ -961,26 +961,25 @@ namespace SweetSoft.QLDA.BackOffice.Common
         }
         #endregion
         #region Bingding Risk Controls
-        public void BindNhanVienDuAn(ExtraDropdown ddl, Guid projectId)
+        public void BindNhanVienDuAn(ExtraDropdown dropdown, Guid projectId)
         {
-            ddl.Items.Clear();
-            ddl.DefaultSearchValue = " ";
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = " ";
             DataTable dt = RiskManager.Instance.GetAllNhanVienDuAnById(projectId);
             if (dt != null && dt.Rows.Count > 0)
             {
-                ddl.DataTextField = "TenNhanVien";     
-                ddl.DataValueField = "IdNhanVien";     
-                ddl.DataSource = dt;
-                ddl.DataBind();
+                dropdown.DataTextField = "TenNhanVien";     
+                dropdown.DataValueField = "IdNhanVien";     
+                dropdown.DataSource = dt;
+                dropdown.DataBind();
             }
+            dropdown.Items.Insert(0, new ListItem("-- --", ""));
         }
 
         public void BindMucDoAnhHuong(ExtraDropdown dropdown)
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
-            dropdown.Items.Add(new ListItem("-- Chọn giá trị --", ""));
-
             foreach (MucDoAnhHuonEnum score in Enum.GetValues(typeof(MucDoAnhHuonEnum)))
             {
                 string value = ((int)score).ToString();
@@ -1010,52 +1009,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
                 dropdown.Items.Add(new ListItem(text, value));
             }
-            dropdown.SelectedIndex = -1;
         }
-        public void BindDocumentGroups(ExtraDropdown dropdown, bool isAll = false)
+        #endregion
+
+        #region Bind Issue Data
+        public void BindCongViecDuAn(ExtraDropdown dropdown, Guid projectId)
         {
             dropdown.Items.Clear();
-
-            List<TblNhomTaiLieu> groups =
-                DocumentGroupManager.Instance.GetAll()
-                ?? new List<TblNhomTaiLieu>();
-
-            if (isAll)
-            {
-                dropdown.AlowClear = true;
-                dropdown.DefaultSearchValue = string.Empty;
-                dropdown.Items.Add(
-                    new ListItem(
-                        "Tất cả nhóm tài liệu",
-                        string.Empty));
-            }
-            else
-            {
-                dropdown.Items.Add(
-                    new ListItem(
-                        "Chọn nhóm tài liệu",
-                        string.Empty));
-            }
-
-            foreach (TblNhomTaiLieu group in groups)
-            {
-                string text = group.TenNhom;
-
-                if (!group.KichHoat)
-                    text += " (Đã khóa)";
-
-                dropdown.Items.Add(
-                    new ListItem(
-                        text,
-                        group.IdNhomTaiLieu.ToString()));
-            }
-
-            dropdown.SelectedIndex = -1;
-        }
-        public void BindCongViecDuAn(ExtraDropdown ddl, Guid projectId)
-        {
-            ddl.Items.Clear();
-            ddl.DefaultSearchValue = " ";
+            dropdown.DefaultSearchValue = " ";
             DataTable dt = TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -1065,15 +1026,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 {
                     filteredDt.Columns.Add("DisplayField", typeof(string), "MaCongViec + '. ' + TenCongViec");
 
-                    ddl.DataTextField = "DisplayField";
-                    ddl.DataValueField = "IdCongViec";
-                    ddl.DataSource = filteredDt;
-                    ddl.DataBind();
+                    dropdown.DataTextField = "DisplayField";
+                    dropdown.DataValueField = "IdCongViec";
+                    dropdown.DataSource = filteredDt;
+                    dropdown.DataBind();
                 }
             }
+            dropdown.Items.Insert(0, new ListItem("-- --", ""));
         }
-        #endregion
-        #region Bind Issue Data
         public void BindNguonGocVanDe(ExtraDropdown dropdown)
         {
             dropdown.Items.Clear();
@@ -1090,8 +1050,96 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
                 dropdown.Items.Add(new ListItem(text, value));
             }
+        }
+        
+        #endregion
+        #region Bind Meeting Data
+        public void BindTrangThaiLichHop(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.Items.Add(new ListItem("-- --", ""));
+            foreach (TrangThaiCuocHopEnum status in Enum.GetValues(typeof(TrangThaiCuocHopEnum)))
+            {
+                string value = ((int)status).ToString();
+
+                var field = status.GetType().GetField(status.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : status.ToString();
+
+                dropdown.Items.Add(new ListItem(text, value));
+            }
             dropdown.SelectedIndex = -1;
         }
+        public void BindNhanVienToCheckBoxList(CheckBoxList cblNhanVien)
+        {
+            if (cblNhanVien == null) return;
+            if (cblNhanVien.Items.Count == 0)
+            {
+                string sql = "SELECT UserId, DisplayName FROM aspnet_Users WHERE (IsDeleted = 0 OR IsDeleted IS NULL) ORDER BY DisplayName";
+                System.Data.DataTable dt = new System.Data.DataTable();
+
+                using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+                {
+                    if (reader != null)
+                    {
+                        dt.Load(reader);
+                        reader.Close();
+                    }
+                }
+
+                cblNhanVien.DataSource = dt;
+                cblNhanVien.DataTextField = "DisplayName";
+                cblNhanVien.DataValueField = "UserId";
+                cblNhanVien.DataBind();
+            }
+        }
+        public void BindNhanVienThamGiaLichHop(Guid idLichHop, System.Web.UI.WebControls.HiddenField hdfIds, System.Web.UI.WebControls.TextBox txtNames)
+        {
+            System.Data.DataTable dtNV = Core.Managers.MeetManager.Instance.GetNhanVienThamGia(idLichHop);
+
+            System.Collections.Generic.List<string> listIds = new System.Collections.Generic.List<string>();
+            System.Collections.Generic.List<string> listNames = new System.Collections.Generic.List<string>();
+
+            if (dtNV != null && dtNV.Rows.Count > 0)
+            {
+                foreach (System.Data.DataRow row in dtNV.Rows)
+                {
+                    listIds.Add(row["UserId"].ToString());
+                    listNames.Add(row["DisplayName"].ToString());
+                }
+            }
+            if (hdfIds != null)
+                hdfIds.Value = string.Join(",", listIds);
+
+            if (txtNames != null)
+                txtNames.Text = string.Join(", ", listNames);
+        }
+        #endregion
+        #region Bind Cost Data
+        public void BindTrangThaiChiPhi(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (TrangThaiChiPhi status in Enum.GetValues(typeof(TrangThaiChiPhi)))
+            {
+                string value = ((int)status).ToString();
+
+                var field = status.GetType().GetField(status.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : status.ToString();
+
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+            dropdown.SelectedIndex = -1;
+        }
+        #endregion
+
+
         public void BindDocumentGroups(BootstrapDropdown dropdown)
         {
             dropdown.Items.Clear();
@@ -1178,27 +1226,46 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
             dropdown.SelectedIndex = -1;
         }
-        #endregion
-        #region Bind Meeting Data
-        public void BindTrangThaiLichHop(ExtraDropdown dropdown)
+        public void BindDocumentGroups(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();
-            dropdown.DefaultSearchValue = "null";
-            foreach (TrangThaiCuocHopEnum status in Enum.GetValues(typeof(TrangThaiCuocHopEnum)))
+
+            List<TblNhomTaiLieu> groups =
+                DocumentGroupManager.Instance.GetAll()
+                ?? new List<TblNhomTaiLieu>();
+
+            if (isAll)
             {
-                string value = ((int)status).ToString();
-
-                var field = status.GetType().GetField(status.ToString());
-                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
-                                     .FirstOrDefault() as DescriptionAttribute;
-
-                string text = attribute != null ? attribute.Description : status.ToString();
-
-                dropdown.Items.Add(new ListItem(text, value));
+                dropdown.AlowClear = true;
+                dropdown.DefaultSearchValue = string.Empty;
+                dropdown.Items.Add(
+                    new ListItem(
+                        "Tất cả nhóm tài liệu",
+                        string.Empty));
             }
+            else
+            {
+                dropdown.Items.Add(
+                    new ListItem(
+                        "Chọn nhóm tài liệu",
+                        string.Empty));
+            }
+
+            foreach (TblNhomTaiLieu group in groups)
+            {
+                string text = group.TenNhom;
+
+                if (!group.KichHoat)
+                    text += " (Đã khóa)";
+
+                dropdown.Items.Add(
+                    new ListItem(
+                        text,
+                        group.IdNhomTaiLieu.ToString()));
+            }
+
             dropdown.SelectedIndex = -1;
         }
-
         public void BindDocumentTypes(BootstrapDropdown dropdown)
         {
             BindDocumentTypes(dropdown, null);
@@ -1409,6 +1476,5 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 DocumentPhysicalStorageStatusKeys.CheckedOut));
             dropdown.SelectedIndex = -1;
         }
-        #endregion
     }
 }

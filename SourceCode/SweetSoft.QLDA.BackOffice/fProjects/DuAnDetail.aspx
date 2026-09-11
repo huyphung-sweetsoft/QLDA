@@ -3,6 +3,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fProjects/Controls/CtrlGiaiDoanDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlGiaiDoanDuAn" %>
 <%@ Register Src="~/fProjects/Controls/CtrlLichSuDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlLichSuDuAn" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -110,6 +111,10 @@
                     </div>
                 </div>
             </div>
+
+            <SweetSoft:CtrlProjectTabs
+                runat="server"
+                ID="CtrlProjectTabs1" />
 
             <div class="row g-4 align-items-start">
 
