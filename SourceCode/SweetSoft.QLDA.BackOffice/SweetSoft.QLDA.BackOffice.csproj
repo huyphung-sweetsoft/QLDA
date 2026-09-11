@@ -356,6 +356,20 @@
     <Compile Include="fEmailTemplate\EmailTemplates.aspx.designer.cs">
       <DependentUpon>EmailTemplates.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.cs">
+      <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.designer.cs">
+      <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.cs">
+      <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.designer.cs">
+      <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fFilesBox\SecureFileUploadHandler.ashx.cs">
       <DependentUpon>SecureFileUploadHandler.ashx</DependentUpon>
     </Compile>
@@ -594,6 +608,8 @@
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
     <Content Include="fEmailTemplate\EmailTemplates.aspx" />
+    <Content Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx" />
+    <Content Include="fExecuteContracts\HopDongThucHienList.aspx" />
     <Content Include="fFiles\Controls\CtrlFiles.ascx" />
     <Content Include="fFiles\FileListing.aspx" />
     <Content Include="fFilesBox\FileBoxViewer.css" />

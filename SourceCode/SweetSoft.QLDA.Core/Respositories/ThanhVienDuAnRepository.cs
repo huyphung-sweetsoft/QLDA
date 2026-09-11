@@ -80,7 +80,13 @@ namespace SweetSoft.QLDA.Core.Respositories
         //Nói chung là backup, ko ảnh hưởng gì cả
         public TblThanhVienDuAn GetNhanVienIsActiveInDuAn(Guid idNhanVien, Guid idDuAn, Guid idVaiTro)
         {
-            return new Select().From(TblThanhVienDuAn.Schema).Where(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(idNhanVien).And(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(idDuAn).And(TblThanhVienDuAn.IdVaiTroDuAnColumn).IsEqualTo(idVaiTro)//dòng thêm vào.And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false).ExecuteSingle<TblThanhVienDuAn>();
+            return new Select()
+                .From(TblThanhVienDuAn.Schema)
+                .Where(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(idNhanVien)
+                .And(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(idDuAn)
+                .And(TblThanhVienDuAn.IdVaiTroDuAnColumn).IsEqualTo(idVaiTro)
+                .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblThanhVienDuAn>();
         }
         //THêm mới 3 hàm sau
         //1. Hàm này dùng đến lấy danh sách dựa vào id dự án và vai trò và có ngoại lệ (except 1 đứa), //mục đích là lấy danh sách với vai trò là PM để tiến hành cho chức năng đỏi PM từ nhân viên A sang nv B

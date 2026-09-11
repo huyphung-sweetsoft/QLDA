@@ -1825,4 +1825,7 @@
   <data name="PROJECT_STAGE_NAME" xml:space="preserve">
     <value>Tên giai đoạn</value>
   </data>
+  <data name="CONTRACT_LIST" xml:space="preserve">
+    <value />
+  </data>
 </root>
