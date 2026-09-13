@@ -19,14 +19,19 @@
                         ID="pnlSearchDefault">
 
                         <div class="d-flex flex-wrap gap-2">
-                            <SweetSoft:BootstrapDropdown
+                            <asp:Panel
                                 runat="server"
-                                ID="ddlSearchPhamVi"
-                                AutoPostBack="true"
-                                SearchColumn="DocumentScope"
-                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
-                                OnSelectedValueChanged="ddlSearchPhamVi_SelectedValueChanged">
-                            </SweetSoft:BootstrapDropdown>
+                                ID="pnlSearchScope"
+                                CssClass="d-flex">
+                                <SweetSoft:BootstrapDropdown
+                                    runat="server"
+                                    ID="ddlSearchPhamVi"
+                                    AutoPostBack="true"
+                                    SearchColumn="DocumentScope"
+                                    CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
+                                    OnSelectedValueChanged="ddlSearchPhamVi_SelectedValueChanged">
+                                </SweetSoft:BootstrapDropdown>
+                            </asp:Panel>
 
                             <asp:Panel
                                 runat="server"
@@ -261,7 +266,7 @@
                                     CommandName="VIEW_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# this.IsView && IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    VisibleConditionKey='<%# this.IsView && IsDocumentInCurrentScope(Eval("IdDuAn")) %>'
                                     ResourceKey='<%# BackEndResourceKeys.VIEW %>'
                                     ButtonIcon="fas fa-eye">
                                 </SweetSoft:SmartLinkButton>
@@ -272,7 +277,7 @@
                                     CommandName="EDIT_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# this.IsEdit && IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    VisibleConditionKey='<%# this.IsEdit && IsDocumentInCurrentScope(Eval("IdDuAn")) %>'
                                     ResourceKey='<%# BackEndResourceKeys.EDIT %>'
                                     ButtonIcon="fas fa-pencil-alt">
                                 </SweetSoft:SmartLinkButton>
@@ -283,7 +288,7 @@
                                     CommandName="DELETE_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# this.IsDelete && IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    VisibleConditionKey='<%# this.IsDelete && IsDocumentInCurrentScope(Eval("IdDuAn")) %>'
                                     ResourceKey='<%# BackEndResourceKeys.DELETE %>'
                                     ButtonIcon="fas fa-trash">
                                 </SweetSoft:SmartLinkButton>
@@ -436,7 +441,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-lg-4 col-md-6 mb-3">
+                                    <div class="col-xl-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_SIGNING) %>
                                         </label>
@@ -453,7 +458,7 @@
                                     <div
                                         runat="server"
                                         id="divHinhThucKy"
-                                        class="col-lg-4 col-md-6 mb-3">
+                                        class="col-xl-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.SIGNING_METHOD) %>
                                         </label>
@@ -464,7 +469,20 @@
                                         </SweetSoft:ExtraDropdown>
                                     </div>
 
-                                    <div class="col-lg-4 col-md-6 mb-3">
+                                    <div class="col-xl-3 col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER) %>
+                                        </label>
+                                        <div class="mt-2">
+                                            <SweetSoft:ExtraCheckbox
+                                                runat="server"
+                                                ID="chkCanGuiKhachHang"
+                                                OnText="Có"
+                                                OffText="Không" />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xl-3 col-md-6 mb-3">
                                         <label class="form-label">
                                             <%= GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE) %>
                                         </label>

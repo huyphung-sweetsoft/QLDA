@@ -141,6 +141,15 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtIcon;
 
         /// <summary>
+        /// chkOfProject control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox chkOfProject;
+
+        /// <summary>
         /// chkView control.
         /// </summary>
         /// <remarks>

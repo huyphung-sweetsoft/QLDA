@@ -236,8 +236,8 @@
             </div>
             <div>
                 <span class="document-detail__scope">
-                    <i class="fas fa-building me-1"></i>
-                    <%= GetResourceText(BackEndResourceKeys.COMPANY_DOCUMENT) %>
+                    <i class="<%= DocumentScopeIconCss %>"></i>
+                    <%= DocumentScopeText %>
                 </span>
                 <h2 class="document-detail__title">
                     <asp:Label runat="server" ID="lblDocumentName" />
@@ -615,7 +615,19 @@
         <asp:PlaceHolder runat="server" ID="phCustomerPane">
             <div class="tab-pane fade" id="document-customer" role="tabpanel">
                 <div class="document-detail__section">
-                    <div class="document-detail__section-title"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_HISTORY) %></div>
+                    <div class="document-detail__section-title d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <span><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_HISTORY) %></span>
+                        <asp:Panel runat="server" ID="pnlCustomerActions">
+                            <SweetSoft:ExtraButton
+                                runat="server"
+                                ID="btnOpenCustomerDelivery"
+                                OnClick="btnOpenCustomerDelivery_Click"
+                                ButtonStyle="Primary"
+                                ButtonSize="Small"
+                                ButtonIcon="Send"
+                                IsSubmit="false" />
+                        </asp:Panel>
+                    </div>
                     <asp:Panel runat="server" ID="pnlNoCustomer" CssClass="document-detail__empty">
                         <i class="fas fa-paper-plane"></i>
                         <%= GetResourceText(BackEndResourceKeys.NO_CUSTOMER_DELIVERY_HISTORY) %>
@@ -632,19 +644,32 @@
                                 <th><%= GetResourceText(BackEndResourceKeys.RESPONSE_DEADLINE) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
                             </tr></thead>
-                            <tbody><asp:Repeater runat="server" ID="rptCustomer"><ItemTemplate><tr>
+                            <tbody><asp:Repeater
+                                runat="server"
+                                ID="rptCustomer"
+                                OnItemCommand="rptCustomer_ItemCommand"><ItemTemplate><tr>
                                 <td>v<%#: Eval("SoPhienBan") %></td>
                                 <td><%#: GetValueText(Eval("TenKhachHang")) %></td>
                                 <td><%#: GetRecipientText(Eval("TenNguoiNhan"), Eval("EmailNguoiNhan")) %></td>
-                                <td><%#: GetValueText(Eval("KenhGui")) %></td>
-                                <td><%#: GetValueText(Eval("TrangThai")) %></td>
+                                <td><%#: GetCustomerDeliveryChannelText(Eval("KenhGui")) %></td>
+                                <td><span class='<%# GetCustomerStatusCss(Eval("TrangThai")) %>'><%#: GetCustomerStatusText(true, Eval("TrangThai")) %></span></td>
                                 <td><%#: GetDateRange(Eval("NgayGui"), Eval("NgayNhanLai")) %></td>
                                 <td><%#: FormatDate(Eval("HanPhanHoi")) %></td>
-                                <td><asp:HyperLink runat="server"
-                                    Visible='<%# HasValue(Eval("IdFileNhanLai")) %>'
-                                    NavigateUrl='<%# GetFileUrl(Eval("FileNhanLaiUrl")) %>'
-                                    Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
-                                    Target="_blank" CssClass="btn btn-sm btn-outline-primary" /></td>
+                                <td><div class="d-flex flex-wrap gap-1">
+                                    <asp:LinkButton
+                                        runat="server"
+                                        Visible='<%# CURRENT_PAGE.IsEdit %>'
+                                        CommandName="UPDATE_CUSTOMER_DELIVERY"
+                                        CommandArgument='<%# Eval("IdGuiNhanKhachHang") %>'
+                                        Text='<%# GetResourceText(BackEndResourceKeys.UPDATE) %>'
+                                        CausesValidation="false"
+                                        CssClass="btn btn-sm btn-outline-primary" />
+                                    <asp:HyperLink runat="server"
+                                        Visible='<%# HasValue(Eval("IdFileNhanLai")) %>'
+                                        NavigateUrl='<%# GetFileUrl(Eval("FileNhanLaiUrl")) %>'
+                                        Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
+                                        Target="_blank" CssClass="btn btn-sm btn-outline-secondary" />
+                                </div></td>
                             </tr></ItemTemplate></asp:Repeater></tbody>
                         </table>
                     </asp:Panel>
@@ -655,7 +680,19 @@
         <asp:PlaceHolder runat="server" ID="phStoragePane">
             <div class="tab-pane fade" id="document-storage" role="tabpanel">
                 <div class="document-detail__section">
-                    <div class="document-detail__section-title"><%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_HISTORY) %></div>
+                    <div class="document-detail__section-title d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <span><%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_HISTORY) %></span>
+                        <asp:Panel runat="server" ID="pnlPhysicalStorageActions">
+                            <SweetSoft:ExtraButton
+                                runat="server"
+                                ID="btnOpenPhysicalStorage"
+                                OnClick="btnOpenPhysicalStorage_Click"
+                                ButtonStyle="Primary"
+                                ButtonSize="Small"
+                                ButtonIcon="QRCode"
+                                IsSubmit="false" />
+                        </asp:Panel>
+                    </div>
                     <asp:Panel runat="server" ID="pnlNoStorage" CssClass="document-detail__empty">
                         <i class="fas fa-archive"></i>
                         <%= GetResourceText(BackEndResourceKeys.NO_PHYSICAL_STORAGE_HISTORY) %>
@@ -664,7 +701,7 @@
                         <table class="table table-bordered table-hover document-detail__table">
                             <thead><tr>
                                 <th><%= GetResourceText(BackEndResourceKeys.STORAGE_LOCATION) %></th>
-                                <th><%= GetResourceText(BackEndResourceKeys.DOCUMENT_CODE) %></th>
+                                <th><%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_CODE) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.ORIGINAL_COPY_CONDITION) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.CURRENT_LOCATION) %></th>
@@ -771,6 +808,276 @@
                 runat="server"
                 ID="btnCancelSubmitSigning"
                 OnClick="btnCancelSubmitSigning_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="mdlCustomerDelivery"
+    Type="Primary"
+    Size="Normal"
+    FooterButtonClose="false"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:Panel runat="server" ID="pnlCustomerDeliveryForm" CssClass="validationEngineContainer">
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryDocumentId" />
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryVersion" />
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryCustomer" />
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryChannel" />
+            <div class="alert alert-light border py-2 small">
+                <i class="fas fa-info-circle me-1"></i>
+                <%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_RECORD_NOTICE) %>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_VERSION) %></label>
+                    <SweetSoft:ExtraDropdown
+                        runat="server"
+                        ID="ddlCustomerDeliveryVersion"
+                        ValueIsOfTypeGUID="true"
+                        SimpleInit="true" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></label>
+                    <SweetSoft:ExtraDropdown
+                        runat="server"
+                        ID="ddlCustomerDeliveryCustomer"
+                        ValueIsOfTypeGUID="true"
+                        SimpleInit="true" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.RECIPIENT) %></label>
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtCustomerDeliveryRecipient"
+                        MaxLength="150" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.TO_EMAIL) %></label>
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtCustomerDeliveryEmail"
+                        MaxLength="256" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CHANNEL) %></label>
+                    <SweetSoft:ExtraDropdown
+                        runat="server"
+                        ID="ddlCustomerDeliveryChannel"
+                        SimpleInit="true" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.RESPONSE_DEADLINE) %></label>
+                    <SweetSoft:ExtraDateTime
+                        runat="server"
+                        ID="dtCustomerDeliveryDeadline"
+                        SingleDatePicker="true"
+                        AllowNullDate="true"
+                        DateFormat="DD/MM/YYYY"
+                        Opens="Left"
+                        Drops="Down" />
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_BEFORE_SIGNING) %></label>
+                    <div class="mt-2">
+                        <SweetSoft:ExtraCheckbox
+                            runat="server"
+                            ID="chkCustomerDeliveryBeforeSigning" />
+                    </div>
+                    <div class="form-text text-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <%= GetResourceText(BackEndResourceKeys.SEND_BEFORE_SIGNING_NOTICE) %>
+                    </div>
+                </div>
+                <div class="col-12 mb-1">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.NOTE) %></label>
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtCustomerDeliveryNote"
+                        TextMode="MultiLine"
+                        Rows="3"
+                        MaxLength="500" />
+                </div>
+            </div>
+        </asp:Panel>
+    </ContentTemplate>
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <asp:Button
+                runat="server"
+                ID="btnCustomerDeliverySend"
+                OnClick="btnCustomerDeliverySend_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-primary btn-sm waves-effect waves-light" />
+            <asp:Button
+                runat="server"
+                ID="btnCancelCustomerDelivery"
+                OnClick="btnCancelCustomerDelivery_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="mdlPhysicalStorage"
+    Type="Primary"
+    Size="Normal"
+    FooterButtonClose="false"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:Panel runat="server" ID="pnlPhysicalStorageForm" CssClass="validationEngineContainer">
+            <asp:HiddenField runat="server" ID="hdfPhysicalStorageDocumentId" />
+            <asp:HiddenField runat="server" ID="hdfPhysicalStorageLocation" />
+            <div class="alert alert-light border py-2 small">
+                <i class="fas fa-info-circle me-1"></i>
+                <%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_CODE_NOTICE) %>
+            </div>
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.STORAGE_LOCATION) %></label>
+                    <SweetSoft:ExtraDropdown
+                        runat="server"
+                        ID="ddlPhysicalStorageLocation"
+                        ValueIsOfTypeGUID="true"
+                        SimpleInit="true"
+                        MinimumResultsForSearch="0"
+                        DropdownCssClass="document-storage-dropdown" />
+                    <asp:Panel
+                        runat="server"
+                        ID="pnlPhysicalStorageLocationPath"
+                        CssClass="mt-2 px-3 py-2 rounded border bg-light small text-muted"
+                        style="display: none;">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        <asp:Label
+                            runat="server"
+                            ID="lblPhysicalStorageLocationPath" />
+                    </asp:Panel>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.USE_MANUAL_STORAGE_CODE) %></label>
+                    <div class="mt-2">
+                        <SweetSoft:ExtraCheckbox
+                            runat="server"
+                            ID="chkPhysicalStorageManualCode" />
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_CODE) %></label>
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtPhysicalStorageCode"
+                        MaxLength="100" />
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.ORIGINAL_COPY_CONDITION) %></label>
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtPhysicalStorageOriginalCondition"
+                        MaxLength="255" />
+                </div>
+                <div class="col-12 mb-1">
+                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.NOTE) %></label>
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtPhysicalStorageNote"
+                        TextMode="MultiLine"
+                        Rows="3"
+                        MaxLength="500" />
+                </div>
+            </div>
+        </asp:Panel>
+    </ContentTemplate>
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <asp:Button
+                runat="server"
+                ID="btnPhysicalStorageSave"
+                OnClick="btnPhysicalStorageSave_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-primary btn-sm waves-effect waves-light" />
+            <asp:Button
+                runat="server"
+                ID="btnCancelPhysicalStorage"
+                OnClick="btnCancelPhysicalStorage_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<style type="text/css">
+    .document-storage-dropdown .select2-results__option {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="mdlCustomerDeliveryStatus"
+    Type="Primary"
+    Size="Normal"
+    FooterButtonClose="false"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:Panel runat="server" ID="pnlCustomerDeliveryStatusForm" CssClass="validationEngineContainer">
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatusDocumentId" />
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatusId" />
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatus" />
+            <div class="alert alert-light border py-2">
+                <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_VERSION) %></div>
+                <asp:Label runat="server" ID="lblCustomerDeliveryStatusVersion" CssClass="fw-semibold" />
+                <span class="mx-1">·</span>
+                <asp:Label runat="server" ID="lblCustomerDeliveryStatusCustomer" CssClass="fw-semibold" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_SEND_STATUS) %></label>
+                <SweetSoft:ExtraDropdown
+                    runat="server"
+                    ID="ddlCustomerDeliveryStatus"
+                    SimpleInit="true" />
+            </div>
+            <div class="mb-1">
+                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.NOTE) %></label>
+                <SweetSoft:ExtraTextBox
+                    runat="server"
+                    ID="txtCustomerDeliveryStatusNote"
+                    TextMode="MultiLine"
+                    Rows="3"
+                    MaxLength="500" />
+            </div>
+        </asp:Panel>
+    </ContentTemplate>
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <asp:Button
+                runat="server"
+                ID="btnUpdateCustomerDeliveryStatus"
+                OnClick="btnUpdateCustomerDeliveryStatus_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-primary btn-sm waves-effect waves-light" />
+            <asp:Button
+                runat="server"
+                ID="btnCancelCustomerDeliveryStatus"
+                OnClick="btnCancelCustomerDeliveryStatus_Click"
                 OnClientClick="CMSMasterJs.DisableContentChanged();"
                 CausesValidation="false"
                 UseSubmitBehavior="true"

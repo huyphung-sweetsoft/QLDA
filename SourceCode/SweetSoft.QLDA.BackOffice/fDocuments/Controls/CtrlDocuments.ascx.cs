@@ -21,6 +21,56 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private const string DeleteConfirmCommand =
             "DOCUMENT_DELETE";
 
+        /// <summary>
+        /// A non-empty value switches this shared control into project mode.
+        /// The page hosting the control assigns it on every request.
+        /// </summary>
+        public Guid ProjectId
+        {
+            get
+            {
+                object value = ViewState["ProjectId"];
+                if (value is Guid)
+                    return (Guid)value;
+
+                Guid result;
+                return Guid.TryParse(Convert.ToString(value), out result)
+                    ? result
+                    : Guid.Empty;
+            }
+            set { ViewState["ProjectId"] = value; }
+        }
+
+        private bool IsProjectContext
+        {
+            get { return ProjectId != Guid.Empty; }
+        }
+
+        private string GetAddDocumentText()
+        {
+            return IsProjectContext
+                ? GetResourceText(BackEndResourceKeys.ADD_NEW)
+                    + " "
+                    + GetResourceText(BackEndResourceKeys.PROJECT_DOCUMENTS)
+                : GetResourceText(BackEndResourceKeys.ADD_COMPANY_DOCUMENT);
+        }
+
+        private TblTaiLieu GetDocumentByCurrentScope(Guid idTaiLieu)
+        {
+            return IsProjectContext
+                ? DocumentManager.Instance.GetProjectDocumentById(
+                    idTaiLieu,
+                    ProjectId)
+                : DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+        }
+
+        private string GetDocumentDetailUrl(Guid idTaiLieu)
+        {
+            return IsProjectContext
+                ? RewriteURLHelper.ProjectDocumentDetail(ProjectId, idTaiLieu)
+                : RewriteURLHelper.DocumentDetail(idTaiLieu);
+        }
+
         private string SelectedDocumentScope
         {
             get
@@ -99,6 +149,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ApplyControlsText();
             BindDropdowns();
             LoadSearchState();
+            if (IsProjectContext)
+                SelectedDocumentScope = DocumentScopeKeys.Project;
             ResetForm();
             InitGridData();
         }
@@ -170,7 +222,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             btnSearch.ToolTip = btnSearch.Text =
                 GetResourceText(BackEndResourceKeys.SEARCH);
             btnAdd.ToolTip = btnAdd.Text =
-                GetResourceText(BackEndResourceKeys.ADD_COMPANY_DOCUMENT);
+                GetAddDocumentText();
             btnSave.ToolTip = btnSave.Text =
                 GetResourceText(BackEndResourceKeys.SAVE);
             btnCancel.ToolTip = btnCancel.Text =
@@ -239,9 +291,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     BackEndResourceKeys.USE_DOCUMENT_TEMPLATE);
 
             chkCanTrinhKy.OnText =
+                chkCanGuiKhachHang.OnText =
                 chkCanLuuVatLy.OnText =
                     GetResourceText(BackEndResourceKeys.YES);
             chkCanTrinhKy.OffText =
+                chkCanGuiKhachHang.OffText =
                 chkCanLuuVatLy.OffText =
                     GetResourceText(BackEndResourceKeys.NO);
 
@@ -357,6 +411,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private void BindProjects()
         {
+            if (IsProjectContext)
+            {
+                ddlSearchDuAn.Items.Clear();
+                return;
+            }
+
             List<TblDuAn> projects =
                 DocumentManager.Instance.GetAvailableProjects()
                 ?? new List<TblDuAn>();
@@ -381,6 +441,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (parameters == null)
                 return;
 
+            if (IsProjectContext)
+            {
+                parameters[DocumentRepository.DocumentScopeParameter] =
+                    DocumentScopeKeys.Project;
+                parameters[TblTaiLieu.Columns.IdDuAn] =
+                    ProjectId.ToString();
+                parameters[DocumentRepository.DocumentGroupParameter] =
+                    SelectedDocumentGroupId.HasValue
+                        ? SelectedDocumentGroupId.Value.ToString()
+                        : string.Empty;
+                return;
+            }
+
             parameters[DocumentRepository.DocumentScopeParameter] =
                 SelectedDocumentScope;
             parameters[DocumentRepository.DocumentGroupParameter] =
@@ -396,13 +469,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private void ApplyQuickFilterState()
         {
+            pnlSearchScope.Visible = !IsProjectContext;
             ddlSearchPhamVi.SelectedValue =
-                SelectedDocumentScope == DocumentScopeKeys.All
+                IsProjectContext
+                || SelectedDocumentScope == DocumentScopeKeys.All
                     ? string.Empty
                     : SelectedDocumentScope;
 
             pnlProjectSelector.Visible =
-                SelectedDocumentScope == DocumentScopeKeys.Project;
+                !IsProjectContext
+                && SelectedDocumentScope == DocumentScopeKeys.Project;
 
             ddlSearchNhomTaiLieu.SelectedValue =
                 SelectedDocumentGroupId.HasValue
@@ -543,20 +619,37 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
                 ApplyQuickFilterParameters(searchParameters);
 
-                DataTable data = grid.GridSearchType == GridSearchType.Single
-                    ? DocumentManager.Instance.SearchDocuments(
-                        txtSearch.Text,
-                        searchParameters,
-                        orderBy,
-                        rowOffset,
-                        endRow,
-                        out totalRows)
-                    : DocumentManager.Instance.SearchDocuments(
+                DataTable data;
+                if (IsProjectContext)
+                {
+                    data = DocumentManager.Instance.SearchProjectDocuments(
+                        ProjectId,
+                        grid.GridSearchType == GridSearchType.Single
+                            ? txtSearch.Text
+                            : string.Empty,
                         searchParameters,
                         orderBy,
                         rowOffset,
                         endRow,
                         out totalRows);
+                }
+                else
+                {
+                    data = grid.GridSearchType == GridSearchType.Single
+                        ? DocumentManager.Instance.SearchDocuments(
+                            txtSearch.Text,
+                            searchParameters,
+                            orderBy,
+                            rowOffset,
+                            endRow,
+                            out totalRows)
+                        : DocumentManager.Instance.SearchDocuments(
+                            searchParameters,
+                            orderBy,
+                            rowOffset,
+                            endRow,
+                            out totalRows);
+                }
 
                 bool hasData = data != null && data.Rows.Count > 0;
                 grid.VirtualItemCount = totalRows;
@@ -602,6 +695,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ddlHinhThucKy,
                 DocumentSigningMethodKeys.Paper);
             chkCanTrinhKy.Checked = false;
+            chkCanGuiKhachHang.Checked = false;
             chkCanLuuVatLy.Checked = false;
             pnlInitialContent.Visible = true;
             rbInitialUpload.Checked = true;
@@ -613,9 +707,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ShowAddForm()
         {
             ResetForm();
-            dlDetail.Title =
-                GetResourceText(
-                    BackEndResourceKeys.ADD_COMPANY_DOCUMENT);
+            dlDetail.Title = GetAddDocumentText();
             dlDetail.OpenModal(true);
         }
 
@@ -645,6 +737,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ? item.IdNhanVienPhuTrach.Value.ToString()
                     : string.Empty);
             chkCanTrinhKy.Checked = item.CanTrinhKy;
+            chkCanGuiKhachHang.Checked = item.CanGuiKhachHang;
             chkCanLuuVatLy.Checked = item.CanLuuVatLy;
             SelectDropdownValue(
                 ddlHinhThucKy,
@@ -668,6 +761,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || idLoaiTaiLieu == Guid.Empty)
             {
                 chkCanTrinhKy.Checked = false;
+                chkCanGuiKhachHang.Checked = false;
                 chkCanLuuVatLy.Checked = false;
                 BindInitialTemplates(Guid.Empty);
                 SelectDropdownValue(
@@ -687,6 +781,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
 
             chkCanTrinhKy.Checked = documentType.CanTrinhKy;
+            chkCanGuiKhachHang.Checked = documentType.CanGuiKhachHang;
             chkCanLuuVatLy.Checked = documentType.CanLuuVatLy;
             BindInitialTemplates(idLoaiTaiLieu);
             SelectDropdownValue(
@@ -772,6 +867,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object sender,
             EventArgs e)
         {
+            if (IsProjectContext)
+            {
+                SelectedDocumentScope = DocumentScopeKeys.Project;
+                ApplyActiveSearch();
+                return;
+            }
+
             string scope = Convert.ToString(
                     ddlSearchPhamVi.SelectedValue)
                 .ToUpperInvariant();
@@ -1051,18 +1153,30 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                TblTaiLieu savedItem =
-                    DocumentManager.Instance.SaveCompanyDocument(
-                    idTaiLieu,
-                    idLoaiTaiLieu,
-                    idNhanVienPhuTrach,
-                    txtMaTaiLieu.Text,
-                    txtTenTaiLieu.Text,
-                    txtMoTa.Text,
-                    chkCanTrinhKy.Checked,
-                    ddlHinhThucKy.SelectedValue,
-                    false,
-                    chkCanLuuVatLy.Checked);
+                TblTaiLieu savedItem = IsProjectContext
+                    ? DocumentManager.Instance.SaveProjectDocument(
+                        ProjectId,
+                        idTaiLieu,
+                        idLoaiTaiLieu,
+                        idNhanVienPhuTrach,
+                        txtMaTaiLieu.Text,
+                        txtTenTaiLieu.Text,
+                        txtMoTa.Text,
+                        chkCanTrinhKy.Checked,
+                        ddlHinhThucKy.SelectedValue,
+                        chkCanGuiKhachHang.Checked,
+                        chkCanLuuVatLy.Checked)
+                    : DocumentManager.Instance.SaveCompanyDocument(
+                        idTaiLieu,
+                        idLoaiTaiLieu,
+                        idNhanVienPhuTrach,
+                        txtMaTaiLieu.Text,
+                        txtTenTaiLieu.Text,
+                        txtMoTa.Text,
+                        chkCanTrinhKy.Checked,
+                        ddlHinhThucKy.SelectedValue,
+                        chkCanGuiKhachHang.Checked,
+                        chkCanLuuVatLy.Checked);
 
                 if (isNew)
                 {
@@ -1077,17 +1191,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         }
                         catch
                         {
-                            DocumentManager.Instance
-                                .DeleteCompanyDocument(
-                                    savedItem.IdTaiLieu);
+                            if (IsProjectContext)
+                            {
+                                DocumentManager.Instance
+                                    .DeleteProjectDocument(
+                                        savedItem.IdTaiLieu,
+                                        ProjectId);
+                            }
+                            else
+                            {
+                                DocumentManager.Instance
+                                    .DeleteCompanyDocument(
+                                        savedItem.IdTaiLieu);
+                            }
                             throw;
                         }
                     }
 
                     CURRENT_PAGE.ShowSuccessAddNewData();
                     Response.Redirect(
-                        RewriteURLHelper.DocumentDetail(
-                            savedItem.IdTaiLieu)
+                        (IsProjectContext
+                            ? RewriteURLHelper.ProjectDocumentDetail(
+                                ProjectId,
+                                savedItem.IdTaiLieu)
+                            : RewriteURLHelper.DocumentDetail(
+                                savedItem.IdTaiLieu))
                         + "?tab=versions",
                         false);
                     Context.ApplicationInstance.CompleteRequest();
@@ -1096,7 +1224,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 else
                     ShowSuccessSaveData();
 
-                ShowEditForm(savedItem);
+                ResetForm();
+                dlDetail.CloseModal(true);
                 RebindGridFromFirstPage();
             }
             catch (ArgumentException exc)
@@ -1141,8 +1270,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
-                TblTaiLieu viewItem =
-                    DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+                TblTaiLieu viewItem = GetDocumentByCurrentScope(idTaiLieu);
                 if (viewItem == null)
                 {
                     ShowInvalidNotFoundData();
@@ -1150,7 +1278,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 }
 
                 Response.Redirect(
-                    RewriteURLHelper.DocumentDetail(idTaiLieu));
+                    GetDocumentDetailUrl(idTaiLieu));
                 return;
             }
 
@@ -1162,8 +1290,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
-                TblTaiLieu item =
-                    DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+                TblTaiLieu item = GetDocumentByCurrentScope(idTaiLieu);
                 if (item == null)
                 {
                     ShowInvalidNotFoundData();
@@ -1180,8 +1307,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            TblTaiLieu deleteItem =
-                DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+            TblTaiLieu deleteItem = GetDocumentByCurrentScope(idTaiLieu);
             if (deleteItem == null)
             {
                 ShowInvalidNotFoundData();
@@ -1236,8 +1362,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                bool deleted =
-                    DocumentManager.Instance.DeleteCompanyDocument(idTaiLieu);
+                bool deleted = IsProjectContext
+                    ? DocumentManager.Instance.DeleteProjectDocument(
+                        idTaiLieu,
+                        ProjectId)
+                    : DocumentManager.Instance.DeleteCompanyDocument(idTaiLieu);
                 if (!deleted)
                 {
                     ShowInvalidNotFoundData();
@@ -1275,6 +1404,20 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || projectIdValue == DBNull.Value
                 || string.IsNullOrWhiteSpace(
                     Convert.ToString(projectIdValue));
+        }
+
+        protected bool IsDocumentInCurrentScope(object projectIdValue)
+        {
+            if (!IsProjectContext)
+                return IsCompanyDocument(projectIdValue);
+
+            Guid documentProjectId;
+            return projectIdValue != null
+                && projectIdValue != DBNull.Value
+                && Guid.TryParse(
+                    Convert.ToString(projectIdValue),
+                    out documentProjectId)
+                && documentProjectId == ProjectId;
         }
 
         protected string GetDocumentScopeText(
