@@ -31,6 +31,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
         }
 
+        protected bool IsContractView
+        {
+            get
+            {
+                if (this.IsUserRight(ActionKeys.View, ModuleKeys.Contract))
+                    return true;
+                return false;
+            }
+        }
+
+        private Guid IdHopDongThucHien
+        {
+            get
+            {
+                if (ViewState["IdHopDongThucHien"] != null)
+                    return (Guid)ViewState["IdHopDongThucHien"];
+
+                return Guid.Empty;
+            }
+            set
+            {
+                ViewState["IdHopDongThucHien"] = value;
+            }
+        }
+
         private Guid QueryId
         {
             get
@@ -55,6 +80,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
             CtrlLichSuDuAn1.IdDuAn = QueryId;
+            pnlContract.Visible = this.IsContractView;
             if (_auditManager == null)
                 _auditManager = new AuditManager(new Core.SysManager.Models.ClientInfo()
                 {
@@ -130,6 +156,97 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             CtrlLichSuDuAn1.IdDuAn = QueryId;
 
             CtrlLichSuDuAn1.OpenDrawer();
+        }
+
+        protected void lbtViewContract_Click(
+    object sender,
+    EventArgs e)
+        {
+            if (!this.IsView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (this.IdHopDongThucHien ==
+                Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            TblHopDongThucHien hopDong =
+                HopDongThucHienManager
+                    .Instance
+                    .GetHopDongById(
+                        this.IdHopDongThucHien);
+
+            if (hopDong == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            BindContractInformation(hopDong);
+
+            dlContractDetail.Title =
+                "Thông tin hợp đồng thực hiện";
+
+            dlContractDetail.CloseText =
+                GetResourceText(
+                    BackEndResourceKeys.CLOSE);
+
+            dlContractDetail.OpenModal(true);
+        }
+
+        private void BindContractInformation(
+    TblHopDongThucHien hopDong)
+        {
+            txtContractNumber.Text =
+                hopDong.SoHopDong;
+
+            txtContractName.Text =
+                hopDong.TenHopDong;
+
+            TblKhachHang khachHang =
+                KhachHangManager
+                    .Instance
+                    .GetKhachHangById(
+                        hopDong.IdKhachHang);
+
+            txtContractCustomer.Text =
+                khachHang != null
+                    ? khachHang.TenKhachHang
+                    : "Chưa có";
+
+            txtContractValue.Text =
+                hopDong.GiaTriHopDong.HasValue
+                    ? FormatHelpers
+                        .ConvertDecimalToStringByLanguage(
+                            hopDong.GiaTriHopDong.Value,
+                            "vi-VN")
+                    : string.Empty;
+
+            txtContractSignDate.Text =
+                hopDong.NgayKy.HasValue
+                    ? hopDong.NgayKy.Value
+                        .ToString("yyyy-MM-dd")
+                    : string.Empty;
+
+            txtContractEffectiveDate.Text =
+                hopDong.NgayHieuLuc.HasValue
+                    ? hopDong.NgayHieuLuc.Value
+                        .ToString("yyyy-MM-dd")
+                    : string.Empty;
+
+            txtContractExpiryDate.Text =
+                hopDong.NgayHetHan.HasValue
+                    ? hopDong.NgayHetHan.Value
+                        .ToString("yyyy-MM-dd")
+                    : string.Empty;
+
+            txtContractDescription.Text =
+                hopDong.MoTa;
         }
 
         private string BuildHistoryContent( DataRow row)
@@ -263,6 +380,27 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             byte trangThai = Convert.ToByte(row["TrangThai"]);
             lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), trangThai));
+
+            Guid idHopDongThucHien = Guid.Empty;
+            if (row.Table.Columns.Contains(
+        "IdHopDongThucHien") &&
+    row["IdHopDongThucHien"] !=
+        DBNull.Value)
+            {
+                Guid.TryParse(
+                    Convert.ToString(
+                        row["IdHopDongThucHien"]),
+                    out idHopDongThucHien);
+            }
+
+            this.IdHopDongThucHien =
+                idHopDongThucHien;
+
+            lbtViewContract.Visible =
+                idHopDongThucHien != Guid.Empty;
+
+            lblNoContract.Visible =
+                idHopDongThucHien == Guid.Empty;
         }
 
         private string GetDisplayText(DataRow row, string columnName)
