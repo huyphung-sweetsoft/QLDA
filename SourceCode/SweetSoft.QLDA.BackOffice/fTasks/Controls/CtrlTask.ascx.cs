@@ -91,6 +91,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         private void ApplyControlsText()
         {
+            txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
             List<string> lstTableHeader = new List<string>
             {
@@ -253,16 +254,71 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
                 DataRowView rowView = (DataRowView)e.Row.DataItem;
-                string maCv = rowView[ColMaCv]?.ToString() ?? "";
-                int level = maCv.Split('.').Length;
-                bool isOverdue = _taskManager.CheckOverdue(rowView.Row);
+                string maCv = rowView["MaCongViec"]?.ToString() ?? "";
+                int level = maCv.TrimEnd('.').Split('.').Length;
+
+                DataTable dtAllTasks = rowView.Row.Table;
+
+                int GetSeverity(DataRow currentRow)
+                {
+                    int severity = 0;
+
+                    if (currentRow["NgayKetThuc"] != DBNull.Value && currentRow["TrangThai"] != DBNull.Value)
+                    {
+                        DateTime ngayKt = Convert.ToDateTime(currentRow["NgayKetThuc"]);
+                        byte tThai = Convert.ToByte(currentRow["TrangThai"]);
+
+                        if (tThai != 2) 
+                        {
+                            double daysLeft = (ngayKt.Date - DateTime.Now.Date).TotalDays;
+                            if (daysLeft < 0) severity = 2;
+                            else if (daysLeft >= 0 && daysLeft <= 2) severity = 1;
+                        }
+                    }
+
+                    if (severity == 2) return 2;
+
+                    if (currentRow["IdCongViec"] != DBNull.Value)
+                    {
+                        string idCv = currentRow["IdCongViec"].ToString();
+                        DataRow[] childRows = dtAllTasks.Select($"IdCongViecCha = '{idCv}'");
+
+                        foreach (DataRow child in childRows)
+                        {
+                            int childSeverity = GetSeverity(child); 
+                            if (childSeverity > severity)
+                            {
+                                severity = childSeverity;
+                            }
+                            if (severity == 2) break; 
+                        }
+                    }
+
+                    return severity;
+                }
+
+                int finalSeverity = GetSeverity(rowView.Row);
 
                 e.Row.Attributes["data-code"] = maCv;
                 e.Row.Attributes["data-level"] = level.ToString();
-                e.Row.Attributes["data-overdue"] = isOverdue ? "1" : "0";
-                if (isOverdue)
+                e.Row.Attributes["data-overdue"] = finalSeverity == 2 ? "1" : "0";
+
+                if (finalSeverity == 2)
                 {
-                    e.Row.CssClass += " row-overdue-bg";
+                    e.Row.CssClass += " row-overdue-bg"; // Cảnh báo Đỏ
+                }
+                else if (finalSeverity == 1)
+                {
+                    e.Row.CssClass += " row-warning-bg"; // Cảnh báo Vàng
+                }
+
+                LinkButton lbtAssign = (LinkButton)e.Row.FindControl("lbtAssign");
+                if (lbtAssign != null)
+                {
+                    Guid taskId = Guid.Parse(rowView["IdCongViec"].ToString());
+                    TblCongViec task = _taskManager.FetchById(taskId);
+                    bool isFatherTask = _taskManager.CheckHasChildTasks(this.ProjectId, task);
+                    lbtAssign.Visible = this.IsEdit && !isFatherTask;
                 }
             }
         }
