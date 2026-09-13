@@ -1,9 +1,9 @@
-﻿//-----------------------PROGRAMER LOGS---------------------------
-using Google.Authenticator;
+﻿using Google.Authenticator;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Caches;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Helpers;
+using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
@@ -20,9 +20,15 @@ namespace SweetSoft.QLDA.BackOffice
     {
         public override bool IsLogin
         {
+            get { return true; }
+        }
+        private Guid TempAvatarSessionId
+        {
             get
             {
-                return true;
+                if (ViewState["TempAvatarSessionId"] == null)
+                    ViewState["TempAvatarSessionId"] = Guid.NewGuid();
+                return (Guid)ViewState["TempAvatarSessionId"];
             }
         }
         protected void Page_Load(object sender, EventArgs e)
@@ -47,22 +53,26 @@ namespace SweetSoft.QLDA.BackOffice
         private void ApplyControlsText()
         {
             Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PROFILE);
+
             txtConfirmPassword.PlaceHolder = txtFullName.PlaceHolder
                 = txtEmail.PlaceHolder = txtNewPassword.PlaceHolder
                 = txtOldPassword.PlaceHolder = txtPhone.PlaceHolder
-                = txtUserName.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
+                = txtUserName.PlaceHolder = txtCCCD.PlaceHolder
+                = txtDiaChi.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
+
             lbtChangePassword.ToolTip = lbtChangePassword.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
             lbtUpdate.ToolTip = lbtUpdate.Text = GetResourceText(BackEndResourceKeys.UPDATE);
-            //chkEnableNotification.OnText = GetResourceText(BackEndResourceKeys.ON);
-            //chkEnableNotification.OffText = GetResourceText(BackEndResourceKeys.OFF);
+            lbtUpdatePersonal.ToolTip = lbtUpdatePersonal.Text = GetResourceText(BackEndResourceKeys.UPDATE);
         }
 
         private void RegisterAsyncButton()
         {
             ScriptManager script = ScriptManager.GetCurrent(this.Page);
             script.RegisterAsyncPostBackControl(lbtUpdate);
+            script.RegisterAsyncPostBackControl(lbtUpdatePersonal);
             script.RegisterAsyncPostBackControl(lbtChangePassword);
         }
+
         protected override void BindData()
         {
             try
@@ -70,19 +80,52 @@ namespace SweetSoft.QLDA.BackOffice
                 AspnetUser user = UserManager.Instance.GetUserById(SweetContext.Current.UserId);
                 if (user == null)
                     return;
+
+                // ĐIỀU KHIỂN NÚT CẦU NỐI VÀ TAB THÔNG TIN CÁ NHÂN
+                if (user.LaNhanVien)
+                {
+                    plhEmployeeLink.Visible = true;      // Hiển thị nút cầu nối (dạng tab)
+                    plhPersonalTab.Visible = true;
+                    plhPersonalContent.Visible = true;
+
+                    // Sử dụng hàm chuẩn của hệ thống để mã hóa đường dẫn tới Detail
+                    lnkGoToWorkProfile.HRef = RewriteURLHelper.ViewDetailEmpFromProfile(user.UserId);
+                }
+                else
+                {
+                    plhEmployeeLink.Visible = false;
+                    plhPersonalTab.Visible = false;
+                    plhPersonalContent.Visible = false;
+                }
+
+                // TAB 1: THÔNG TIN TÀI KHOẢN
                 txtUserName.Text = user.UserName;
                 txtFullName.Text = user.DisplayName;
-                txtPhone.Text = user.MobileAlias; 
-                //---------------------------------------
-                //fbImage.SingleFilePath = "/Styles/images/user-icon.png";
-                //fbImage.SingleFilePathType = FileTypes.Internal;
-                //fbImage.IsMultiple = false;
-                //fbImage.LoadFile(user.UserId, FileUploadTypes.UserAvatar);
-                //---------------------------------------
+                txtPhone.Text = user.MobileAlias;
+
                 MembershipUser membershipUser = Membership.GetUser(user.UserName);
                 if (membershipUser != null)
                     txtEmail.Text = membershipUser.Email;
-                //----------------------------------
+
+                fbImage.SingleFilePath = string.IsNullOrEmpty(user.Avatar) ? "/Styles/images/user-icon.png" : user.Avatar;
+                fbImage.SingleFilePathType = FileTypes.Internal;
+                fbImage.IsMultiple = false;
+                fbImage.LoadFile(TempAvatarSessionId, FileUploadTypes.UserAvatar);
+
+                // TAB 2: THÔNG TIN CÁ NHÂN
+                txtCCCD.Text = user.IdCCCD;
+                txtDiaChi.Text = user.DiaChi;
+
+                if (user.NgaySinh.HasValue)
+                {
+                    txtNgaySinh.Text = user.NgaySinh.Value.ToString("yyyy-MM-dd");
+                }
+
+                if (!string.IsNullOrEmpty(user.GioiTinh))
+                {
+                    try { ddlGioiTinh.SelectedValue = user.GioiTinh; } catch { }
+                }
+
                 BindTwoFactorAuthentication(user.UserName, user.AuthenticatorKey);
             }
             catch (Exception exc)
@@ -120,11 +163,13 @@ namespace SweetSoft.QLDA.BackOffice
             pnlTwoFactor.Update();
         }
 
+        // ==========================================
+        // CẬP NHẬT TAB 1: TÀI KHOẢN
+        // ==========================================
         protected void lbtUpdate_Click(object sender, EventArgs e)
         {
             try
             {
-                #region Valid
                 ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
                 validationEngine.CheckValidControls(pnlValid.Controls);
                 if (!string.IsNullOrEmpty(txtPhone.Text) && !RegexUtilities.IsValidPhone(txtPhone.Text))
@@ -140,10 +185,10 @@ namespace SweetSoft.QLDA.BackOffice
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                #endregion
+
                 UserManager userManager = UserManager.Instance;
-                AspnetUser user = SweetContext.Current.User;
-                if(user == null || user.IsDeleted)
+                AspnetUser user = userManager.GetUserById(SweetContext.Current.UserId);
+                if (user == null || user.IsDeleted)
                 {
                     string userName = SweetContext.Current.UserName;
                     FormsAuthentication.SignOut();
@@ -153,16 +198,138 @@ namespace SweetSoft.QLDA.BackOffice
                     Response.Redirect(RewriteURLHelper.Login, false);
                     return;
                 }
-                user.UserId = SweetContext.Current.UserId;
+
                 if (userManager.IsEmailExist(user.UserId, txtEmail.Text))
                 {
                     validationEngine.AddErrorPrompt(txtEmail.ClientID, GetResourceText(BackEndResourceKeys.EMAIL_ALREADY_EXISTS));
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
+
                 user.Email = txtEmail.Text;
                 user.DisplayName = txtFullName.Text;
                 user.MobileAlias = txtPhone.Text;
+                AspnetRole currentRole = RoleManager.Instance.GetRoleByUserId(user.UserId);
+                if (currentRole != null) user.RoleId = currentRole.RoleId;
+                string oldAvatar = user.Avatar;
+                user.Avatar = ExtractAvatarFromFilesBox(oldAvatar);
+
+                UserManager.Instance.CreateOrUpdate(user);
+
+                if (user.Avatar != oldAvatar && !string.IsNullOrEmpty(user.Avatar))
+                {
+                    new SubSonic.Update(TblUploadFile.Schema)
+                        .Set(TblUploadFile.Columns.RefId).EqualTo(user.UserId)
+                        .Where(TblUploadFile.Columns.RefId).IsEqualTo(TempAvatarSessionId)
+                        .Execute();
+
+                    new SubSonic.Delete().From(TblUploadFile.Schema)
+                        .Where(TblUploadFile.Columns.RefId).IsEqualTo(user.UserId)
+                        .And(TblUploadFile.Columns.FileUrl).IsEqualTo(oldAvatar)
+                        .Execute();
+                }
+
+                SweetContext.Current.User = null;
+                var master = this.Master as SweetSoft.QLDA.BackOffice.MasterPages.MasterTemplate;
+                if (master != null)
+                {
+                    master.SetUserInfomation(user.DisplayName, user.Avatar);
+                }
+
+                ShowSuccessSaveData();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+        private string ExtractAvatarFromFilesBox(string currentAvatar)
+        {
+            string newAvatar = currentAvatar;
+            bool isDeleted = false;
+
+            foreach (string key in Request.Params.AllKeys)
+            {
+                if (string.IsNullOrEmpty(key)) continue;
+
+                if (key.EndsWith("txtArFileRemove") && !string.IsNullOrEmpty(Request.Params[key]))
+                    isDeleted = true;
+
+                if (key.Contains("filePath$"))
+                    newAvatar = Request.Params[key];
+            }
+
+            if (isDeleted && newAvatar == currentAvatar) return "";
+            return newAvatar;
+        }
+
+        // ==========================================
+        // CẬP NHẬT TAB 2: THÔNG TIN CÁ NHÂN
+        // ==========================================
+        // ==========================================
+        // CẬP NHẬT TAB 2: THÔNG TIN CÁ NHÂN
+        // ==========================================
+        protected void lbtUpdatePersonal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
+                validationEngine.CheckValidControls(upnlPersonalInfo.Controls);
+
+                if (!validationEngine.IsValid)
+                {
+                    validationEngine.ShowErrorPrompt();
+                    return;
+                }
+
+                UserManager userManager = UserManager.Instance;
+                AspnetUser user = userManager.GetUserById(SweetContext.Current.UserId);
+                if (user == null) return;
+
+                // Kiểm tra trùng CCCD
+                if (user.LaNhanVien && !string.IsNullOrEmpty(txtCCCD.Text))
+                {
+                    if (userManager.IsCCCDExist(user.UserId, txtCCCD.Text))
+                    {
+                        validationEngine.AddErrorPrompt(txtCCCD.ClientID, GetResourceText(BackEndResourceKeys.CCCD_ALREADY_EXISTS));
+                        validationEngine.ShowErrorPrompt();
+                        return;
+                    }
+                }
+
+                // Gán dữ liệu của Form Tab 2
+                user.IdCCCD = txtCCCD.Text;
+                user.GioiTinh = ddlGioiTinh.SelectedValue;
+                user.DiaChi = txtDiaChi.Text;
+
+                if (DateTime.TryParse(txtNgaySinh.Text, out DateTime tempDOB))
+                {
+                    user.NgaySinh = tempDOB;
+                }
+                else
+                {
+                    user.NgaySinh = null;
+                }
+
+                // =========================================================
+                // [FIX LỖI]: BÙ ĐẮP DỮ LIỆU BỊ MẤT KHI GET TỪ DB
+                // =========================================================
+
+                // 1. Bù đắp Email (Mượn từ Membership vì aspnet_Users không có)
+                MembershipUser membershipUser = Membership.GetUser(user.UserName);
+                if (membershipUser != null)
+                {
+                    user.Email = membershipUser.Email;
+                }
+
+                // 2. Bù đắp RoleId (Giữ nguyên quyền hiện tại của User)
+                AspnetRole currentRole = RoleManager.Instance.GetRoleByUserId(user.UserId);
+                if (currentRole != null)
+                {
+                    user.RoleId = currentRole.RoleId;
+                }
+
+                // Đẩy xuống DB
                 userManager.CreateOrUpdate(user);
                 ShowSuccessSaveData();
             }
@@ -172,11 +339,13 @@ namespace SweetSoft.QLDA.BackOffice
             }
         }
 
+        // ==========================================
+        // CÁC HÀM XỬ LÝ 2FA VÀ PASSWORD GIỮ NGUYÊN
+        // ==========================================
         protected void lbtChangePassword_Click(object sender, EventArgs e)
         {
             try
             {
-                #region Valid
                 ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
                 if (string.IsNullOrEmpty(txtOldPassword.Text))
                     validationEngine.AddErrorPrompt(txtOldPassword.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_ENTER_THE_VALUE));
@@ -195,7 +364,6 @@ namespace SweetSoft.QLDA.BackOffice
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                #endregion
                 UserManager userManager = UserManager.Instance;
                 AspnetUser user = userManager.GetUserById(SweetContext.Current.UserId);
                 if (user == null)
@@ -323,7 +491,6 @@ namespace SweetSoft.QLDA.BackOffice
                 message = GetResourceText(BackEndResourceKeys.AUTHENTICATOR_APP_HAS_BEEN_RESET);
             }
             user.Save();
-            //----------------------------------------------
             ShowNotify(message);
             BindTwoFactorAuthentication(user.UserName, user.AuthenticatorKey);
         }

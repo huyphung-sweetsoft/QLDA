@@ -376,7 +376,16 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string COEFFICIENT = "COEFFICIENT";
         public const string ROLE = "ROLE";
         public const string CAPACITY = "CAPACITY";
-
+        public const string PERSONAL_INFORMATION_DETAILS = "PERSONAL_INFORMATION_DETAILS";
+        public const string PROJECT_ALLOCATION_DETAILS = "PROJECT_ALLOCATION_DETAILS";
+        public const string PARTICIPATED = "PARTICIPATED";
+        public const string PARTICIPATED_PROJECTS = "PARTICIPATED_PROJECTS";
+        public const string PROJECT_TIME = "PROJECT_TIME";
+        public const string CONTRIBUTION = "CONTRIBUTION";
+        public const string DEADLINE = "DEADLINE";
+        public const string TIMEFRAME = "TIMEFRAME";
+        public const string BELONG_TO_GROUP = "BELONG_TO_GROUP";
+        public const string NO_TASKS_IN_THIS_PHASE = "NO_TASKS_IN_THIS_PHASE";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

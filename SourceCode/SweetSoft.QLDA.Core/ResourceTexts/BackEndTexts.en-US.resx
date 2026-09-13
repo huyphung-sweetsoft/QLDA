@@ -1888,22 +1888,54 @@
   <data name="ACTIVITY_CLEAR_OFFICIAL_FILE" xml:space="preserve">
     <value>Clear official file</value>
   </data>
-  <data name="SIGNING_PENDING" xml:space="preserve"><value>Awaiting signature</value></data>
-  <data name="SIGNING_REQUEST_CHANGES" xml:space="preserve"><value>Changes requested</value></data>
-  <data name="SIGNING_COMPLETED" xml:space="preserve"><value>Signed</value></data>
-  <data name="SUBMIT_FOR_SIGNING" xml:space="preserve"><value>Submit for signing</value></data>
-  <data name="CONFIRM_SIGNED" xml:space="preserve"><value>Confirm signed</value></data>
-  <data name="REQUEST_CHANGES" xml:space="preserve"><value>Request changes</value></data>
-  <data name="SIGNING_NOTE" xml:space="preserve"><value>Signing note</value></data>
-  <data name="SIGNING_VERSION" xml:space="preserve"><value>Signing version</value></data>
-  <data name="SIGNING_RESULT_FILE" xml:space="preserve"><value>Signed result file</value></data>
-  <data name="SIGNING_RESULT_FILE_HINT" xml:space="preserve"><value>Upload exactly one signed PDF or scanned/photo image.</value></data>
-  <data name="SIGNING_SIGNER_REQUIRED" xml:space="preserve"><value>Please select a signer.</value></data>
-  <data name="SIGNING_CHANGE_REASON_REQUIRED" xml:space="preserve"><value>Please enter a reason for changes.</value></data>
-  <data name="SIGNING_RESULT_REQUIRED" xml:space="preserve"><value>Save exactly one signed result file before confirming.</value></data>
-  <data name="ACTIVITY_SUBMIT_SIGNING" xml:space="preserve"><value>Submitted for signing</value></data>
-  <data name="ACTIVITY_REQUEST_SIGNING_CHANGES" xml:space="preserve"><value>Signing changes requested</value></data>
-  <data name="ACTIVITY_COMPLETE_SIGNING" xml:space="preserve"><value>Signing completed</value></data>
+  <data name="SIGNING_PENDING" xml:space="preserve">
+    <value>Awaiting signature</value>
+  </data>
+  <data name="SIGNING_REQUEST_CHANGES" xml:space="preserve">
+    <value>Changes requested</value>
+  </data>
+  <data name="SIGNING_COMPLETED" xml:space="preserve">
+    <value>Signed</value>
+  </data>
+  <data name="SUBMIT_FOR_SIGNING" xml:space="preserve">
+    <value>Submit for signing</value>
+  </data>
+  <data name="CONFIRM_SIGNED" xml:space="preserve">
+    <value>Confirm signed</value>
+  </data>
+  <data name="REQUEST_CHANGES" xml:space="preserve">
+    <value>Request changes</value>
+  </data>
+  <data name="SIGNING_NOTE" xml:space="preserve">
+    <value>Signing note</value>
+  </data>
+  <data name="SIGNING_VERSION" xml:space="preserve">
+    <value>Signing version</value>
+  </data>
+  <data name="SIGNING_RESULT_FILE" xml:space="preserve">
+    <value>Signed result file</value>
+  </data>
+  <data name="SIGNING_RESULT_FILE_HINT" xml:space="preserve">
+    <value>Upload exactly one signed PDF or scanned/photo image.</value>
+  </data>
+  <data name="SIGNING_SIGNER_REQUIRED" xml:space="preserve">
+    <value>Please select a signer.</value>
+  </data>
+  <data name="SIGNING_CHANGE_REASON_REQUIRED" xml:space="preserve">
+    <value>Please enter a reason for changes.</value>
+  </data>
+  <data name="SIGNING_RESULT_REQUIRED" xml:space="preserve">
+    <value>Save exactly one signed result file before confirming.</value>
+  </data>
+  <data name="ACTIVITY_SUBMIT_SIGNING" xml:space="preserve">
+    <value>Submitted for signing</value>
+  </data>
+  <data name="ACTIVITY_REQUEST_SIGNING_CHANGES" xml:space="preserve">
+    <value>Signing changes requested</value>
+  </data>
+  <data name="ACTIVITY_COMPLETE_SIGNING" xml:space="preserve">
+    <value>Signing completed</value>
+  </data>
   <data name="QUANTITY" xml:space="preserve">
     <value>Quantity</value>
   </data>
@@ -1911,7 +1943,7 @@
     <value>Accompanying person</value>
   </data>
   <data name="SELECT_EMPLOYEE" xml:space="preserve">
-    <value>Select employee</value>
+    <value>Select Employee</value>
   </data>
   <data name="COMPLETED" xml:space="preserve">
     <value>Completed</value>
@@ -1966,9 +1998,6 @@
   </data>
   <data name="ASSIGN_TASK" xml:space="preserve">
     <value>Assign Task</value>
-  </data>
-  <data name="SELECT_EMPLOYEE" xml:space="preserve">
-    <value>Select Employee</value>
   </data>
   <data name="SCHEDULE_INFO_FORMAT" xml:space="preserve">
     <value>Schedule displayed from {0} to {1}</value>
@@ -2063,7 +2092,6 @@
   <data name="CAPACITY" xml:space="preserve">
     <value>Capacity</value>
   </data>
-</root>
   <data name="PAYMENT_LIST" xml:space="preserve">
     <value>Payment list</value>
   </data>
@@ -2108,5 +2136,35 @@
   </data>
   <data name="PAYMENT_DELETE_CONFIRM" xml:space="preserve">
     <value>Are you sure you want to delete payment {0}?</value>
+  </data>
+  <data name="PERSONAL_INFORMATION_DETAILS" xml:space="preserve">
+    <value>Personal information details</value>
+  </data>
+  <data name="PROJECT_ALLOCATION_DETAILS" xml:space="preserve">
+    <value>Project allocation details</value>
+  </data>
+  <data name="PARTICIPATED" xml:space="preserve">
+    <value>Participated</value>
+  </data>
+  <data name="PARTICIPATED_PROJECTS" xml:space="preserve">
+    <value>Participated projects</value>
+  </data>
+  <data name="PROJECT_TIME" xml:space="preserve">
+    <value>Project time</value>
+  </data>
+  <data name="CONTRIBUTION" xml:space="preserve">
+    <value />
+  </data>
+  <data name="DEADLINE" xml:space="preserve">
+    <value>Deadline</value>
+  </data>
+  <data name="TIMEFRAME" xml:space="preserve">
+    <value>Timeframe</value>
+  </data>
+  <data name="BELONG_TO_GROUP" xml:space="preserve">
+    <value>Belong to group</value>
+  </data>
+  <data name="NO_TASKS_IN_THIS_PHASE" xml:space="preserve">
+    <value>No task in this phase</value>
   </data>
 </root>

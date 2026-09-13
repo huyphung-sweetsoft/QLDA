@@ -92,6 +92,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/NhanViens?idNhanVien={SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
         }
+        public static string ViewDetailEmpFromProfile(Guid userId)
+        {
+            return $"/Profile/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
+        }
         // Dành cho Menu: Tự xem lịch của mình (Không truyền ID)
         public static string LichCaNhan => "/Lich-ca-nhan";
 

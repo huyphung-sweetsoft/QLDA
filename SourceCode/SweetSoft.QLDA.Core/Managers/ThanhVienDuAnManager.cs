@@ -4,7 +4,7 @@ using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.ResourceTexts;
-using SweetSoft.QLDA.Core.Respositories;
+using SweetSoft.QLDA.Core.Models;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
@@ -30,14 +30,97 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         public List<NhanVienProjectDTO> GetChiTietDuAnCuaNhanVien(Guid idNhanVien)
         {
-            DataTable dt = _repository.GetProjectDetailByNhanVien(idNhanVien);
+            string sql = @"
+    DECLARE @IdNhanVien UNIQUEIDENTIFIER = @EmpId;
+
+    WITH MyProjects AS (
+        SELECT 
+            da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn,
+            da.NgayBatDau AS ProjectStartDate,
+            ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate,
+            vt.TenVaiTro AS VaiTro
+        FROM TblDuAn da
+        INNER JOIN TblThanhVienDuAn tv ON da.IdDuAn = tv.IdDuAn
+        INNER JOIN TblVaiTroDuAn vt ON tv.IdVaiTroDuAn = vt.IdVaiTroDuAn
+        WHERE tv.IdNhanVien = @IdNhanVien AND tv.DaXoa = 0 AND da.DaXoa = 0
+    ),
+    TaskTree AS (
+        -- Anchor
+        SELECT 
+            IdCongViec, IdCongViecCha, TenCongViec,
+            IdCongViec AS IdPhase, 
+            MaCongViec AS MaPhase, -- Móc Mã Phase
+            TenCongViec AS TenPhase
+        FROM TblCongViec 
+        WHERE IdCongViecCha IS NULL AND DaXoa = 0
+        
+        UNION ALL
+        
+        -- Recursive
+        SELECT 
+            c.IdCongViec, c.IdCongViecCha, c.TenCongViec,
+            t.IdPhase, 
+            t.MaPhase, -- Kế thừa Mã Phase từ gốc
+            t.TenPhase
+        FROM TblCongViec c
+        INNER JOIN TaskTree t ON c.IdCongViecCha = t.IdCongViec
+        WHERE c.DaXoa = 0
+    ),
+    AllLeafTasks AS (
+        SELECT 
+            cv.IdDuAn,
+            tree.IdPhase, 
+            tree.MaPhase, 
+            tree.TenPhase, 
+            parent.MaCongViec AS MaTaskCha,
+            parent.TenCongViec AS TenTaskCha, 
+            cv.IdCongViec AS IdTask, cv.MaCongViec AS MaTask, cv.TenCongViec AS TenTask,
+            cv.NgayBatDau, cv.NgayKetThuc, cv.ThoiHanNgay, cv.TrangThai AS TrangThaiTask,
+            ISNULL(ut.DiemUuTien, 1) AS DiemUuTien,
+            ISNULL(ut.TenDoUuTien, N'Thấp') AS TenDoUuTien
+        FROM TblCongViec cv
+        INNER JOIN MyProjects mp ON cv.IdDuAn = mp.IdDuAn
+        LEFT JOIN TaskTree tree ON cv.IdCongViec = tree.IdCongViec 
+        LEFT JOIN TblCongViec parent ON cv.IdCongViecCha = parent.IdCongViec 
+        LEFT JOIN TblDoUuTien ut ON cv.IdDoUuTien = ut.IdDoUuTien
+        WHERE cv.DaXoa = 0 
+        AND cv.IdCongViecCha IS NOT NULL -- [SỬA LẠI]: Bắt buộc phải nằm dưới WHERE
+        AND NOT EXISTS (SELECT 1 FROM TblCongViec child WHERE child.IdCongViecCha = cv.IdCongViec AND child.DaXoa = 0)
+    ),
+    TaskAssignees AS (
+        SELECT 
+            IdCongViec,
+            COUNT(IdNhanVien) AS AssigneeCount,
+            MAX(CASE WHEN IdNhanVien = @IdNhanVien THEN 1 ELSE 0 END) AS IsMyTask
+        FROM TblCongViec_NhanVien
+        GROUP BY IdCongViec
+    )
+    SELECT 
+        mp.IdDuAn, mp.MaDuAn, mp.TenDuAn, mp.VaiTro, mp.TrangThaiDuAn, mp.ProjectStartDate, mp.ProjectEndDate,
+        t.IdPhase, t.MaPhase, t.TenPhase, t.MaTaskCha, t.TenTaskCha, t.IdTask, t.MaTask, t.TenTask, t.NgayBatDau, t.NgayKetThuc, t.ThoiHanNgay, t.DiemUuTien, t.TenDoUuTien, t.TrangThaiTask,
+        ISNULL(ta.AssigneeCount, 0) AS AssigneeCount,
+        ISNULL(ta.IsMyTask, 0) AS IsMyTask
+    FROM MyProjects mp
+    INNER JOIN AllLeafTasks t ON mp.IdDuAn = t.IdDuAn
+    LEFT JOIN TaskAssignees ta ON t.IdTask = ta.IdCongViec
+    WHERE EXISTS (
+        SELECT 1 FROM AllLeafTasks t2
+        INNER JOIN TaskAssignees ta2 ON t2.IdTask = ta2.IdCongViec
+        WHERE t2.IdPhase = t.IdPhase AND ta2.IsMyTask = 1
+    )
+    ORDER BY mp.ProjectStartDate DESC, t.MaTask ASC;";
+
+            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
+            cmd.AddParameter("@EmpId", idNhanVien, DbType.Guid);
+
+            DataSet ds = DataService.GetDataSet(cmd);
+            DataTable dt = (ds != null && ds.Tables.Count > 0) ? ds.Tables[0] : new DataTable();
+
             if (dt == null || dt.Rows.Count == 0) return new List<NhanVienProjectDTO>();
 
             var projects = new List<NhanVienProjectDTO>();
 
-            // BƯỚC 1: GOM NHÓM THEO DỰ ÁN (Project)
             var groupProjects = dt.AsEnumerable().GroupBy(r => r.Field<Guid>("IdDuAn"));
-
             foreach (var pGroup in groupProjects)
             {
                 var rowProj = pGroup.First();
@@ -46,11 +129,12 @@ namespace SweetSoft.QLDA.Core.Managers
                     IdDuAn = pGroup.Key,
                     MaDuAn = rowProj.Field<string>("MaDuAn"),
                     TenDuAn = rowProj.Field<string>("TenDuAn"),
-                    VaiTro = rowProj["VaiTro"] != DBNull.Value ? rowProj.Field<string>("VaiTro") : "Chưa phân quyền",
-                    TrangThai = rowProj.Field<byte>("TrangThaiDuAn") // Ép kiểu byte theo chuẩn Enum của ông
+                    VaiTro = rowProj.Field<string>("VaiTro"),
+                    TrangThai = rowProj.Field<byte>("TrangThaiDuAn"),
+                    ProjectStartDate = rowProj.Field<DateTime?>("ProjectStartDate"),
+                    ProjectEndDate = rowProj.Field<DateTime?>("ProjectEndDate")
                 };
 
-                // BƯỚC 2: GOM NHÓM THEO GIAI ĐOẠN (Phase)
                 var groupPhases = pGroup.GroupBy(r => r.Field<Guid>("IdPhase"));
                 foreach (var phGroup in groupPhases)
                 {
@@ -58,51 +142,34 @@ namespace SweetSoft.QLDA.Core.Managers
                     var phaseDTO = new NhanVienPhaseDTO
                     {
                         IdPhase = phGroup.Key,
-                        TenPhase = rowPhase.Field<string>("TenPhase"),
-                        TotalWorkload = 0 // Khởi tạo biến đếm
+                        MaPhase = rowPhase.Field<string>("MaPhase"), // Mapping Mã
+                        TenPhase = rowPhase.Field<string>("TenPhase")
                     };
 
-                    // BƯỚC 3: NHỒI DANH SÁCH TASK CON (Và cộng dồn Workload)
                     foreach (var rowTask in phGroup)
                     {
-                        var taskDTO = new NhanVienTaskDTO
+                        phaseDTO.Tasks.Add(new NhanVienTaskDTO
                         {
                             IdTask = rowTask.Field<Guid>("IdTask"),
                             MaTask = rowTask.Field<string>("MaTask"),
                             TenTask = rowTask.Field<string>("TenTask"),
-                            NgayBatDau = rowTask.Field<DateTime>("NgayBatDau"),
-                            NgayKetThuc = rowTask.Field<DateTime>("NgayKetThuc"),
+                            NgayBatDau = rowTask.Field<DateTime?>("NgayBatDau"),
+                            NgayKetThuc = rowTask.Field<DateTime?>("NgayKetThuc"),
                             ThoiHanNgay = rowTask.Field<int>("ThoiHanNgay"),
                             DiemUuTien = rowTask.Field<int>("DiemUuTien"),
-                            TrangThaiTask = Convert.ToInt32(rowTask["TrangThaiTask"])
-                        };
-
-                        // Định tuyến hiển thị trạng thái Lịch Task
-                        if (taskDTO.TrangThaiTask == 2) taskDTO.TrangThaiText = "Hoàn thành";
-                        else if (taskDTO.NgayBatDau > DateTime.Today) taskDTO.TrangThaiText = "Sắp tới (Chưa bắt đầu)";
-                        else taskDTO.TrangThaiText = "Lịch hợp lệ";
-
-                        phaseDTO.Tasks.Add(taskDTO);
-                        phaseDTO.TotalWorkload += taskDTO.Workload; // Cộng dồn W = D * P
+                            TenDoUuTien = rowTask.Field<string>("TenDoUuTien"),
+                            MaTaskCha = rowTask.Field<string>("MaTaskCha"), // Mapping Mã
+                            TenTaskCha = rowTask.Field<string>("TenTaskCha"),
+                            TenPhaseGoc = rowPhase.Field<string>("TenPhase"),
+                            TrangThaiTask = rowTask.Field<byte>("TrangThaiTask"),
+                            AssigneeCount = rowTask.Field<int>("AssigneeCount"),
+                            IsMyTask = rowTask.Field<int>("IsMyTask") == 1
+                        });
                     }
-
-                    // BƯỚC 4: CHỐT SỐ LIỆU TỔNG QUAN CHO PHASE
-                    phaseDTO.MinStartDate = phaseDTO.Tasks.Min(t => t.NgayBatDau);
-                    phaseDTO.MaxEndDate = phaseDTO.Tasks.Max(t => t.NgayKetThuc);
-
-                    // Tính Capacity (Dùng hàm có sẵn đếm ngày làm việc)
-                    phaseDTO.CapacityDays = LichBieuChungManager.Instance.CountWorkingDaysInRange(phaseDTO.MinStartDate, phaseDTO.MaxEndDate);
-
                     projDTO.Phases.Add(phaseDTO);
                 }
-
-                // BƯỚC 5: CHỐT SỐ LIỆU TỔNG QUAN CHO PROJECT
-                projDTO.MinStartDate = projDTO.Phases.Min(p => p.MinStartDate);
-                projDTO.MaxEndDate = projDTO.Phases.Max(p => p.MaxEndDate);
-
                 projects.Add(projDTO);
             }
-
             return projects;
         }
         public TblThanhVienDuAn AddOrUpdate(TblThanhVienDuAn dto)
