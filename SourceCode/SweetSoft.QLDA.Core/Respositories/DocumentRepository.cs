@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using SubSonic;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Managers;
@@ -34,6 +35,19 @@ namespace SweetSoft.QLDA.Core.Respositories
         public Guid IdPhienBanTaiLieu { get; set; }
 
         public Guid IdFile { get; set; }
+
+        // The repository fills this only after the business transaction has
+        // succeeded. DocumentManager writes it to AuditLog after the scope
+        // is disposed, so a rolled-back signing operation never has a log.
+        public string AuditActivityType { get; set; }
+
+        public string AuditReferenceType { get; set; }
+
+        public Guid? AuditReferenceId { get; set; }
+
+        public string AuditChanges { get; set; }
+
+        public string AuditDescription { get; set; }
     }
 
     public class DocumentRepository : BaseRepository<TblTaiLieu>
@@ -431,7 +445,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             Guid idTaiLieu,
             IEnumerable<Guid> fileIds,
             string currentUserName,
-            Guid currentUserId,
             DateTime currentDate)
         {
             if (idTaiLieu == Guid.Empty)
@@ -678,65 +691,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                         WHERE p.IdTaiLieu = @DocumentId
                           AND p.DaXoa = 0;",
                     currentParameters);
-
-                string actorIdSql = "NULL";
-                foreach (TblPhienBanTaiLieu version in result.DeletedVersions)
-                {
-                    Dictionary<string, object> historyParameters =
-                        new Dictionary<string, object>
-                        {
-                            { "@HistoryId", Guid.NewGuid() },
-                            { "@DocumentId", idTaiLieu },
-                            { "@ActionType", DocumentActivityTypeKeys.DeleteVersion },
-                            { "@ReferenceType", DocumentActivityReferenceKeys.DocumentVersion },
-                            { "@ReferenceId", version.IdPhienBanTaiLieu },
-                            { "@Changes", BuildVersionDeletionDetails(version, ownedFiles) },
-                            { "@Description", "Đã xóa một phiên bản tài liệu." },
-                            { "@CurrentUserName", safeUserName },
-                            { "@CurrentDate", currentDate }
-                        };
-                    if (currentUserId != Guid.Empty)
-                    {
-                        actorIdSql = "@ActorId";
-                        historyParameters["@ActorId"] = currentUserId;
-                    }
-
-                    InsertDocumentVersionDeletionHistory(
-                        historyParameters,
-                        actorIdSql);
-                }
-
-                HashSet<Guid> versionFileIds = new HashSet<Guid>(
-                    result.DeletedVersions
-                        .Where(version => version.IdFileNoiDung.HasValue)
-                        .Select(version => version.IdFileNoiDung.Value));
-                foreach (TblUploadFile file in result.DeletedFiles
-                    .Where(item => !versionFileIds.Contains(item.Id)))
-                {
-                    Dictionary<string, object> historyParameters =
-                        new Dictionary<string, object>
-                        {
-                            { "@HistoryId", Guid.NewGuid() },
-                            { "@DocumentId", idTaiLieu },
-                            { "@ActionType", DocumentActivityTypeKeys.DeleteVersion },
-                            { "@ReferenceType", DocumentActivityReferenceKeys.DocumentVersion },
-                            { "@Changes", "Tệp không gắn phiên bản: "
-                                + GetFileDisplayName(file)
-                                + "; Id tệp: " + file.Id },
-                            { "@Description", "Đã xóa một tệp phiên bản tài liệu." },
-                            { "@CurrentUserName", safeUserName },
-                            { "@CurrentDate", currentDate }
-                        };
-                    if (currentUserId != Guid.Empty)
-                    {
-                        actorIdSql = "@ActorId";
-                        historyParameters["@ActorId"] = currentUserId;
-                    }
-
-                    InsertDocumentVersionDeletionHistory(
-                        historyParameters,
-                        actorIdSql);
-                }
 
                 int deletedCount = ExecuteNonQuery(
                     @"
@@ -1406,21 +1360,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                     throw new InvalidOperationException(
                         "Không thể cập nhật trạng thái hồ sơ trình ký.");
 
-                InsertSigningHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.SubmitSigning,
-                    signingId,
-                    "Phiên bản: v"
-                        + Convert.ToString(currentVersion["SoPhienBan"])
-                        + "; Người ký: "
-                        + (string.IsNullOrWhiteSpace(safeSignerName)
-                            ? idNguoiKy.ToString()
-                            : safeSignerName)
-                        + "; Hình thức ký: " + safeMethod,
-                    "Đã trình ký hồ sơ.",
-                    currentUserId,
-                    safeUserName,
-                    currentDate);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.SubmitSigning;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = signingId;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(currentVersion["SoPhienBan"])
+                    + "; Người ký: "
+                    + (string.IsNullOrWhiteSpace(safeSignerName)
+                        ? idNguoiKy.ToString()
+                        : safeSignerName)
+                    + "; Hình thức ký: " + safeMethod;
+                result.AuditDescription = "Đã trình ký hồ sơ.";
 
                 scope.Complete();
                 result.IdPhienBanTaiLieu = versionId;
@@ -1430,7 +1382,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             return result;
         }
 
-        public void RequestDocumentSigningChanges(
+        public DocumentSigningOperationResult RequestDocumentSigningChanges(
             Guid idTaiLieu,
             Guid idTrinhKyTaiLieu,
             string reason,
@@ -1454,6 +1406,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                     "Lý do yêu cầu điều chỉnh không được vượt quá 500 ký tự.");
 
             string safeUserName = NormalizeUserName(currentUserName);
+            DocumentSigningOperationResult result =
+                new DocumentSigningOperationResult
+                {
+                    IdTrinhKyTaiLieu = idTrinhKyTaiLieu
+                };
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
                 new TimeSpan(0, 10, 0)))
@@ -1551,20 +1508,21 @@ namespace SweetSoft.QLDA.Core.Respositories
                         { "@CurrentDate", currentDate }
                     });
 
-                InsertSigningHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.RequestSigningChanges,
-                    idTrinhKyTaiLieu,
-                    "Phiên bản: v"
-                        + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
-                        + "; Lý do: " + safeReason,
-                    "Đã yêu cầu điều chỉnh hồ sơ trình ký.",
-                    currentUserId,
-                    safeUserName,
-                    currentDate);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.RequestSigningChanges;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = idTrinhKyTaiLieu;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
+                    + "; Lý do: " + safeReason;
+                result.AuditDescription =
+                    "Đã yêu cầu điều chỉnh hồ sơ trình ký.";
 
                 scope.Complete();
             }
+
+            return result;
         }
 
         public DocumentSigningOperationResult CompleteDocumentSigning(
@@ -1720,18 +1678,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                         { "@CurrentDate", currentDate }
                     });
 
-                InsertSigningHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.CompleteSigning,
-                    idTrinhKyTaiLieu,
-                    "Phiên bản: v"
-                        + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
-                        + "; Tệp sau ký: "
-                        + GetFileDisplayName(resultFile),
-                    "Đã hoàn tất ký hồ sơ.",
-                    currentUserId,
-                    safeUserName,
-                    currentDate);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.CompleteSigning;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = idTrinhKyTaiLieu;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
+                    + "; Tệp sau ký: "
+                    + GetFileDisplayName(resultFile);
+                result.AuditDescription = "Đã hoàn tất ký hồ sơ.";
 
                 scope.Complete();
                 result.IdPhienBanTaiLieu = GetGuid(
@@ -1825,27 +1781,38 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
         {
+            DataTable history = CreateDocumentActivityHistoryTable();
             if (idTaiLieu == Guid.Empty)
-                return new DataTable();
+                return history;
 
-            string sql = $@"
-                SELECT
-                    h.IdLichSuTaiLieu,
-                    h.LoaiHanhDong,
-                    h.LoaiThamChieu,
-                    h.NoiDungThayDoi,
-                    h.MoTa,
-                    h.NguoiTao,
-                    h.NgayTao,
-                    ISNULL(actor.DisplayName, N'') AS TenNguoiThucHien
-                FROM TblLichSuTaiLieu h
-                LEFT JOIN aspnet_Users actor
-                    ON actor.UserId = h.IdNhanVienThucHien
-                   AND actor.IsDeleted = 0
-                WHERE h.IdTaiLieu = '{idTaiLieu}'
-                ORDER BY h.NgayTao DESC, h.IdLichSuTaiLieu DESC;";
+            try
+            {
+                DateTime earliestAuditDate = new DateTime(
+                    1753,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    DateTimeKind.Utc);
+                List<AuditLogDto> auditLogs = GetDocumentAuditHistoryAsync(
+                        idTaiLieu,
+                        earliestAuditDate)
+                    .GetAwaiter()
+                    .GetResult();
 
-            return ExecuteDataTable(sql);
+                foreach (AuditLogDto auditLog in auditLogs)
+                    AddDocumentAuditHistoryRow(history, auditLog);
+            }
+            catch (Exception exception)
+            {
+                SysLogger.LogError(
+                    exception,
+                    "Failed to load AuditLog history for document "
+                    + idTaiLieu);
+            }
+
+            return history;
         }
 
         public void InsertDocumentVersion(TblPhienBanTaiLieu item)
@@ -1860,14 +1827,9 @@ namespace SweetSoft.QLDA.Core.Respositories
                 item.Save();
         }
 
-        public void InsertDocumentHistory(TblLichSuTaiLieu item)
-        {
-            if (item != null)
-                item.Save();
-        }
-
-        // Stage 2 (simplified): opt-in helpers using the existing audit API.
-        // Stage 3 will replace the legacy history call sites; do not call both for one event.
+        // Document-only business events such as versioning and signing use
+        // this helper. Basic TblTaiLieu CRUD is still logged by Insert,
+        // Update and Delete below.
         public Task WriteDocumentAuditAsync(
             Guid documentId,
             string activityType,
@@ -1879,17 +1841,19 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             if (documentId == Guid.Empty || string.IsNullOrWhiteSpace(activityType))
                 throw new ArgumentException("Hồ sơ và loại hoạt động không được để trống.");
-            if (actor == null || !actor.UserId.HasValue || actor.UserId.Value == Guid.Empty
-                || string.IsNullOrWhiteSpace(actor.UserName))
-                throw new ArgumentException("Cần thông tin người thực hiện từ request hiện tại.", nameof(actor));
-
             // Capture this operation's actor, not the AuditManager cached by a singleton.
             var currentActor = new ClientInfo
             {
-                UserId = actor.UserId,
-                UserName = actor.UserName,
-                IpAddress = actor.IpAddress,
-                UserAgent = actor.UserAgent
+                UserId = actor != null
+                    && actor.UserId.HasValue
+                    && actor.UserId.Value != Guid.Empty
+                        ? actor.UserId
+                        : (Guid?)null,
+                UserName = actor == null || string.IsNullOrWhiteSpace(actor.UserName)
+                    ? "[System]"
+                    : actor.UserName.Trim(),
+                IpAddress = actor == null ? string.Empty : actor.IpAddress,
+                UserAgent = actor == null ? string.Empty : actor.UserAgent
             };
             var action = activityType == DocumentActivityTypeKeys.CreateDocument
                 ? LogActions.Actions.CREATE
@@ -1902,7 +1866,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             // A structured document view must HtmlDecode once, then render as encoded text.
             var entry = new
             {
-                RefId = documentId,
                 LoaiHanhDong = System.Web.HttpUtility.HtmlEncode(activityType),
                 LoaiThamChieu = System.Web.HttpUtility.HtmlEncode(referenceType ?? string.Empty),
                 IdThamChieu = referenceId,
@@ -1979,6 +1942,340 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
             return Task.FromResult(logs.OrderByDescending(log => log.ChangedAt)
                 .ThenByDescending(log => log.Id).ToList());
+        }
+
+        private static DataTable CreateDocumentActivityHistoryTable()
+        {
+            DataTable history = new DataTable();
+            history.Columns.Add("IdLichSuTaiLieu", typeof(Guid));
+            history.Columns.Add("LoaiHanhDong", typeof(string));
+            history.Columns.Add("LoaiThamChieu", typeof(string));
+            history.Columns.Add("NoiDungThayDoi", typeof(string));
+            history.Columns.Add("MoTa", typeof(string));
+            history.Columns.Add("NguoiTao", typeof(string));
+            history.Columns.Add("NgayTao", typeof(DateTime));
+            history.Columns.Add("TenNguoiThucHien", typeof(string));
+            return history;
+        }
+
+        private static void AddDocumentAuditHistoryRow(
+            DataTable history,
+            AuditLogDto auditLog)
+        {
+            if (history == null || auditLog == null)
+                return;
+
+            JObject auditChanges = ParseAuditChanges(auditLog.Changes);
+            string activityType = GetAuditText(
+                auditChanges,
+                "LoaiHanhDong");
+            string referenceType = GetAuditText(
+                auditChanges,
+                "LoaiThamChieu");
+            string changes = GetAuditText(
+                auditChanges,
+                "NoiDungThayDoi");
+            string description = GetAuditText(auditChanges, "MoTa");
+
+            if (string.IsNullOrWhiteSpace(activityType))
+            {
+                activityType = GetDocumentActivityType(auditLog.ActionType);
+                referenceType = DocumentActivityReferenceKeys.Document;
+                description = GetGenericDocumentAuditDescription(
+                    auditLog.ActionType,
+                    auditLog.Title);
+                changes = BuildGenericDocumentAuditChanges(
+                    auditChanges,
+                    auditLog.ActionType);
+            }
+
+            DataRow row = history.NewRow();
+            row["IdLichSuTaiLieu"] = auditLog.Id;
+            row["LoaiHanhDong"] = activityType ?? string.Empty;
+            row["LoaiThamChieu"] = referenceType ?? string.Empty;
+            row["NoiDungThayDoi"] = changes ?? string.Empty;
+            row["MoTa"] = description ?? string.Empty;
+            row["NguoiTao"] = auditLog.ChangedBy ?? string.Empty;
+            row["NgayTao"] = auditLog.ChangedAt;
+            row["TenNguoiThucHien"] = string.Empty;
+            history.Rows.Add(row);
+        }
+
+        private static JObject ParseAuditChanges(string changes)
+        {
+            if (string.IsNullOrWhiteSpace(changes))
+                return null;
+
+            try
+            {
+                return JObject.Parse(changes);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string GetAuditText(JObject changes, string key)
+        {
+            if (changes == null || string.IsNullOrWhiteSpace(key))
+                return string.Empty;
+
+            JToken value = changes[key];
+            if (value == null || value.Type == JTokenType.Null)
+                return string.Empty;
+
+            return System.Web.HttpUtility.HtmlDecode(
+                Convert.ToString(value));
+        }
+
+        private static string GetDocumentActivityType(string actionType)
+        {
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.CREATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentActivityTypeKeys.CreateDocument;
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.DELETE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentActivityTypeKeys.DeleteDocument;
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.UPDATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentActivityTypeKeys.UpdateDocument;
+            }
+
+            return actionType ?? string.Empty;
+        }
+
+        private static string GetGenericDocumentAuditDescription(
+            string actionType,
+            string title)
+        {
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.CREATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "Đã tạo hồ sơ công ty.";
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.DELETE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "Đã xóa hồ sơ công ty.";
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.UPDATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "Đã cập nhật thông tin hồ sơ.";
+            }
+
+            return string.IsNullOrWhiteSpace(title)
+                ? "Đã cập nhật nhật ký hồ sơ."
+                : title;
+        }
+
+        private static string BuildGenericDocumentAuditChanges(
+            JObject auditChanges,
+            string actionType)
+        {
+            if (auditChanges == null)
+                return string.Empty;
+
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.CREATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase)
+                || string.Equals(
+                    actionType,
+                    LogActions.Actions.DELETE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                List<string> details = new List<string>();
+                AddGenericAuditDetail(
+                    details,
+                    "Mã hồ sơ",
+                    GetAuditText(auditChanges, "MaTaiLieu"));
+                AddGenericAuditDetail(
+                    details,
+                    "Tên hồ sơ",
+                    GetAuditText(auditChanges, "TenTaiLieu"));
+                return string.Join("; ", details);
+            }
+
+            List<string> changes = new List<string>();
+            foreach (JProperty property in auditChanges.Properties())
+            {
+                JObject change = property.Value as JObject;
+                if (change == null)
+                    continue;
+
+                string oldValue = GetAuditTokenText(change["OldValue"]);
+                string newValue = GetAuditTokenText(change["NewValue"]);
+                AddGenericDocumentChange(
+                    changes,
+                    property.Name,
+                    oldValue,
+                    newValue);
+            }
+
+            return string.Join("; ", changes);
+        }
+
+        private static void AddGenericAuditDetail(
+            ICollection<string> details,
+            string label,
+            string value)
+        {
+            if (details == null || string.IsNullOrWhiteSpace(value))
+                return;
+
+            details.Add(label + ": " + FormatAuditValue(value));
+        }
+
+        private static void AddGenericDocumentChange(
+            ICollection<string> changes,
+            string propertyName,
+            string oldValue,
+            string newValue)
+        {
+            if (changes == null || string.IsNullOrWhiteSpace(propertyName))
+                return;
+
+            if (string.Equals(oldValue, newValue, StringComparison.Ordinal))
+                return;
+
+            if (string.Equals(
+                    propertyName,
+                    "NguoiCapNhat",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "NgayCapNhat",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "DaXoa",
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "IdFileBanChinhThuc",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("File chính thức đã thay đổi.");
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "IdLoaiTaiLieu",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("Loại tài liệu đã thay đổi.");
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "IdNhanVienPhuTrach",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("Người phụ trách đã thay đổi.");
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "TrangThaiTaiLieu",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "TrangThaiGuiKhach",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "TrangThaiLuuTru",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("Trạng thái hồ sơ đã thay đổi.");
+                return;
+            }
+
+            string label = GetDocumentAuditFieldLabel(propertyName);
+            if (string.IsNullOrWhiteSpace(label))
+                return;
+
+            changes.Add(
+                label
+                + ": “"
+                + FormatAuditValue(oldValue)
+                + "” → “"
+                + FormatAuditValue(newValue)
+                + "”");
+        }
+
+        private static string GetDocumentAuditFieldLabel(string propertyName)
+        {
+            switch (propertyName)
+            {
+                case "MaTaiLieu":
+                    return "Mã hồ sơ";
+                case "TenTaiLieu":
+                    return "Tên hồ sơ";
+                case "MoTa":
+                    return "Mô tả";
+                case "CanTrinhKy":
+                    return "Cần trình ký";
+                case "HinhThucKy":
+                    return "Hình thức ký";
+                case "CanGuiKhachHang":
+                    return "Cần gửi khách hàng";
+                case "CanLuuVatLy":
+                    return "Cần lưu bản cứng";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static string GetAuditTokenText(JToken value)
+        {
+            if (value == null || value.Type == JTokenType.Null)
+                return string.Empty;
+
+            return System.Web.HttpUtility.HtmlDecode(Convert.ToString(value));
+        }
+
+        private static string FormatAuditValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "Không có";
+            if (string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+                return "Có";
+            if (string.Equals(value, "false", StringComparison.OrdinalIgnoreCase))
+                return "Không";
+
+            string normalized = value.Replace("\r", " ")
+                .Replace("\n", " ")
+                .Trim();
+            return normalized.Length <= 500
+                ? normalized
+                : normalized.Substring(0, 497) + "...";
         }
 
         public bool HasSigningRecords(Guid idTaiLieu)
@@ -2114,59 +2411,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             if (rows.Rows.Count == 0)
                 throw new InvalidOperationException(
                     "Tài khoản hiện tại không còn hoạt động.");
-        }
-
-        private static void InsertSigningHistory(
-            Guid documentId,
-            string actionType,
-            Guid signingId,
-            string changes,
-            string description,
-            Guid currentUserId,
-            string currentUserName,
-            DateTime currentDate)
-        {
-            ExecuteNonQuery(
-                @"
-                    INSERT INTO TblLichSuTaiLieu
-                    (
-                        IdLichSuTaiLieu,
-                        IdTaiLieu,
-                        LoaiHanhDong,
-                        LoaiThamChieu,
-                        IdThamChieu,
-                        NoiDungThayDoi,
-                        MoTa,
-                        IdNhanVienThucHien,
-                        NguoiTao,
-                        NgayTao
-                    )
-                    VALUES
-                    (
-                        @HistoryId,
-                        @DocumentId,
-                        @ActionType,
-                        @ReferenceType,
-                        @ReferenceId,
-                        @Changes,
-                        @Description,
-                        @ActorId,
-                        @CurrentUserName,
-                        @CurrentDate
-                    );",
-                new Dictionary<string, object>
-                {
-                    { "@HistoryId", Guid.NewGuid() },
-                    { "@DocumentId", documentId },
-                    { "@ActionType", actionType },
-                    { "@ReferenceType", DocumentActivityReferenceKeys.Signing },
-                    { "@ReferenceId", signingId },
-                    { "@Changes", changes ?? string.Empty },
-                    { "@Description", description ?? string.Empty },
-                    { "@ActorId", currentUserId },
-                    { "@CurrentUserName", currentUserName },
-                    { "@CurrentDate", currentDate }
-                });
         }
 
         private static string NormalizeUserName(string userName)
@@ -2356,55 +2600,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             return string.Join(",", parameterNames);
         }
 
-        private static void InsertDocumentVersionDeletionHistory(
-            IDictionary<string, object> parameters,
-            string actorIdSql)
-        {
-            string referenceIdSql = parameters.ContainsKey("@ReferenceId")
-                ? "@ReferenceId"
-                : "NULL";
-            string safeActorIdSql = string.Equals(
-                    actorIdSql,
-                    "@ActorId",
-                    StringComparison.Ordinal)
-                ? actorIdSql
-                : "NULL";
-
-            ExecuteNonQuery(
-                @"
-                    INSERT INTO TblLichSuTaiLieu
-                    (
-                        IdLichSuTaiLieu,
-                        IdTaiLieu,
-                        LoaiHanhDong,
-                        LoaiThamChieu,
-                        IdThamChieu,
-                        NoiDungThayDoi,
-                        MoTa,
-                        IdNhanVienThucHien,
-                        NguoiTao,
-                        NgayTao
-                    )
-                    VALUES
-                    (
-                        @HistoryId,
-                        @DocumentId,
-                        @ActionType,
-                        @ReferenceType,
-                        "
-                + referenceIdSql
-                + @",
-                        @Changes,
-                        @Description,
-                        "
-                + safeActorIdSql
-                + @",
-                        @CurrentUserName,
-                        @CurrentDate
-                    );",
-                parameters);
-        }
-
         private static TblUploadFile ToUploadFile(DataRow row)
         {
             return new TblUploadFile
@@ -2442,47 +2637,12 @@ namespace SweetSoft.QLDA.Core.Respositories
             };
         }
 
-        private static string BuildVersionDeletionDetails(
-            TblPhienBanTaiLieu version,
-            DataTable ownedFiles)
-        {
-            string fileName = string.Empty;
-            if (version != null && version.IdFileNoiDung.HasValue)
-            {
-                foreach (DataRow row in ownedFiles.Rows)
-                {
-                    if (GetGuid(row, "Id") == version.IdFileNoiDung.Value)
-                    {
-                        fileName = GetFileDisplayName(row);
-                        break;
-                    }
-                }
-            }
-
-            return "Phiên bản: v"
-                + (version == null ? string.Empty : version.SoPhienBan)
-                + "; Tệp: " + fileName
-                + "; Id tệp: "
-                + (version == null || !version.IdFileNoiDung.HasValue
-                    ? string.Empty
-                    : version.IdFileNoiDung.Value.ToString());
-        }
-
         private static string GetFileDisplayName(DataRow row)
         {
             string originalName = Convert.ToString(row["OriginalFileName"]);
             if (!string.IsNullOrWhiteSpace(originalName))
                 return originalName;
             return Convert.ToString(row["Name"]);
-        }
-
-        private static string GetFileDisplayName(TblUploadFile file)
-        {
-            if (file == null)
-                return string.Empty;
-            return string.IsNullOrWhiteSpace(file.OriginalFileName)
-                ? file.Name
-                : file.OriginalFileName;
         }
 
         private static Guid GetGuid(DataRow row, string columnName)
@@ -2573,69 +2733,62 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         private void LogCreate(TblTaiLieu item)
         {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _auditManager.LogActionAsync(
-                            LogActions.Actions.CREATE,
-                            item,
-                            _tableName,
-                            item.IdTaiLieu)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(
-                        ex,
-                        "Failed to log CREATE action for TblTaiLieu");
-                }
-            });
+            if (item == null)
+                return;
+
+            ExecuteAuditSafely(
+                () => _auditManager.LogActionAsync(
+                    LogActions.Actions.CREATE,
+                    item,
+                    _tableName,
+                    item.IdTaiLieu,
+                    item.NguoiTao ?? string.Empty),
+                "Failed to log CREATE action for TblTaiLieu");
         }
 
         private void LogUpdate(TblTaiLieu itemOld, TblTaiLieu itemNew)
         {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _auditManager.LogChangesAsync(
-                            itemOld,
-                            itemNew,
-                            _tableName,
-                            itemNew.IdTaiLieu,
-                            itemNew.NguoiCapNhat ?? string.Empty)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(
-                        ex,
-                        "Failed to log changes for TblTaiLieu");
-                }
-            });
+            if (itemOld == null || itemNew == null)
+                return;
+
+            ExecuteAuditSafely(
+                () => _auditManager.LogChangesAsync(
+                    itemOld,
+                    itemNew,
+                    _tableName,
+                    itemNew.IdTaiLieu,
+                    itemNew.NguoiCapNhat ?? string.Empty),
+                "Failed to log changes for TblTaiLieu");
         }
 
         private void LogDelete(TblTaiLieu item)
         {
-            Task.Run(async () =>
+            if (item == null)
+                return;
+
+            ExecuteAuditSafely(
+                () => _auditManager.LogActionAsync(
+                    LogActions.Actions.DELETE,
+                    item,
+                    _tableName,
+                    item.IdTaiLieu,
+                    item.NguoiCapNhat ?? item.NguoiTao ?? string.Empty),
+                "Failed to log DELETE action for TblTaiLieu");
+        }
+
+        private static void ExecuteAuditSafely(
+            Func<Task> auditOperation,
+            string errorMessage)
+        {
+            try
             {
-                try
-                {
-                    await _auditManager.LogActionAsync(
-                            LogActions.Actions.DELETE,
-                            item,
-                            _tableName,
-                            item.IdTaiLieu)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(
-                        ex,
-                        "Failed to log DELETE action for TblTaiLieu");
-                }
-            });
+                if (auditOperation != null)
+                    auditOperation().GetAwaiter().GetResult();
+            }
+            catch (Exception exception)
+            {
+                SysLogger.LogError(exception, errorMessage);
+            }
         }
 
         private static string GetParameterText(
