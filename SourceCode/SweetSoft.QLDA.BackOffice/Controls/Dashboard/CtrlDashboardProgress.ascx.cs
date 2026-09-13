@@ -29,7 +29,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-progress.js")
+                        "/Controls/Dashboard/dashboard-progress.js?v=2")
                 };
 
                 return new RegisterCSSAndJS(

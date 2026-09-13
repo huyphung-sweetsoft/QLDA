@@ -19,6 +19,6 @@ namespace SweetSoft.QLDA.Core.EnumHelper.Defines
         Ongoing = 2,
 
         [Description("Kết thúc")]
-        Completed = 3
+        Ended = 3
     }
 }

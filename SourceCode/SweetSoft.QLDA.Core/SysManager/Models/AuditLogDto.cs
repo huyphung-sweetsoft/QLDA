@@ -21,5 +21,6 @@ namespace SweetSoft.QLDA.Core.SysManager.Models
         public string IPAddress { get; set; }
         public string UserAgent { get; set; }
         public DateTime ChangedAt { get; set; }
+        public string Description { get; set; }
     }
 }

@@ -495,17 +495,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblNoiLuuTru ActiveRecord object related to this TblNoiLuuTru
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblNoiLuuTru ParentTblNoiLuuTru
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblNoiLuuTru.FetchByID(this.IdNoiLuuTruCha); }
-			set { SetColumnValue("IdNoiLuuTruCha", value.IdNoiLuuTru); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a AspnetUser ActiveRecord object related to this TblNoiLuuTru
 		/// 
 		/// </summary>
@@ -513,6 +502,17 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVienPhuTrach); }
 			set { SetColumnValue("IdNhanVienPhuTrach", value.UserId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblNoiLuuTru ActiveRecord object related to this TblNoiLuuTru
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblNoiLuuTru ParentTblNoiLuuTru
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblNoiLuuTru.FetchByID(this.IdNoiLuuTruCha); }
+			set { SetColumnValue("IdNoiLuuTruCha", value.IdNoiLuuTru); }
 		}
 		
 		

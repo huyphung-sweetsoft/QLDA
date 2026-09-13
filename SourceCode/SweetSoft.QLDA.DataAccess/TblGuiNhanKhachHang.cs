@@ -552,17 +552,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblKhachHang ActiveRecord object related to this TblGuiNhanKhachHang
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblKhachHang TblKhachHang
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblKhachHang.FetchByID(this.IdKhachHang); }
-			set { SetColumnValue("IdKhachHang", value.IdKhachHang); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a AspnetUser ActiveRecord object related to this TblGuiNhanKhachHang
 		/// 
 		/// </summary>
@@ -574,17 +563,6 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		/// <summary>
-		/// Returns a TblPhienBanTaiLieu ActiveRecord object related to this TblGuiNhanKhachHang
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu TblPhienBanTaiLieu
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu.FetchByID(this.IdPhienBanTaiLieu); }
-			set { SetColumnValue("IdPhienBanTaiLieu", value.IdPhienBanTaiLieu); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a TblUploadFile ActiveRecord object related to this TblGuiNhanKhachHang
 		/// 
 		/// </summary>
@@ -592,6 +570,28 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileNhanLai); }
 			set { SetColumnValue("IdFileNhanLai", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblKhachHang ActiveRecord object related to this TblGuiNhanKhachHang
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblKhachHang TblKhachHang
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblKhachHang.FetchByID(this.IdKhachHang); }
+			set { SetColumnValue("IdKhachHang", value.IdKhachHang); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblPhienBanTaiLieu ActiveRecord object related to this TblGuiNhanKhachHang
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu TblPhienBanTaiLieu
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu.FetchByID(this.IdPhienBanTaiLieu); }
+			set { SetColumnValue("IdPhienBanTaiLieu", value.IdPhienBanTaiLieu); }
 		}
 		
 		

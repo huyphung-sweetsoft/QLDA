@@ -107,7 +107,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <meta name="dc.publisher" content="System Management - Control Panel" />
     <meta name="dc.rights.copyright" content="System Management - Control Panel" />
     <meta name="dc.creator.name" content="System Management - Control Panel" />
-    <meta name="dc.creator.email" content="info@sotaichinh.com.vn" />
+    <meta name="dc.creator.email" content="" />
 
     <!-- Meta robots -->
     <meta name="robots" content="noindex, nofollow" />
@@ -115,7 +115,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <meta name="rating" content="general" />
 
     <!-- Canonial Link -->
-    <link href="https://sotaichinh.com.vn" rel="canonical" id="canonicalLink" />
+    <link href="/" rel="canonical" id="canonicalLink" />
     <meta name="copyright" content="System Management - Control Panel" />
     <meta name="author" content="System Management - Control Panel" />
     <%--CSS--%>

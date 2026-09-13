@@ -135,9 +135,12 @@ namespace SweetSoft.QLDA.Core.Respositories
             if (idDuAn == Guid.Empty || string.IsNullOrWhiteSpace(stageName))
                 return false;
 
+            string excludedIdStr = excludedId == Guid.Empty
+                ? "NULL"
+                : $"'{InlineQueryHelpers.SQLEncode(excludedId)}'";
+
             string sql = $@"
                 DECLARE @idDuAn UNIQUEIDENTIFIER = '{InlineQueryHelpers.SQLEncode(idDuAn)}';
-                DECLARE @excludedId UNIQUEIDENTIFIER = '{InlineQueryHelpers.SQLEncode(excludedId)}';
                 DECLARE @stageName NVARCHAR(250) = N'{InlineQueryHelpers.SQLEncode(stageName.Trim())}';
 
                 SELECT CASE
@@ -148,7 +151,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                         WHERE IdDuAn = @idDuAn
                           AND IdGiaiDoan IS NULL
                           AND DaXoa = 0
-                          AND (@excludedId = '{Guid.Empty}' OR IdGiaiDoanDuAn <> @excludedId)
+                          AND ({excludedIdStr} IS NULL OR IdGiaiDoanDuAn <> {excludedIdStr})
                           AND LOWER(LTRIM(RTRIM(TenGiaiDoanTuyChinh))) =
                               LOWER(LTRIM(RTRIM(@stageName)))
                     )
@@ -187,6 +190,92 @@ namespace SweetSoft.QLDA.Core.Respositories
                   AND DaXoa = 0;";
 
             return new InlineQuery().ExecuteScalar<int>(sql);
+        }
+
+        public DateTime? GetPreviousStageStartDate(
+    Guid idDuAn,
+    int currentOrder)
+        {
+            if (idDuAn == Guid.Empty ||
+                currentOrder <= 0)
+            {
+                return null;
+            }
+
+            string sql = $@"
+        DECLARE @idDuAn UNIQUEIDENTIFIER =
+            '{InlineQueryHelpers.SQLEncode(idDuAn)}';
+
+        DECLARE @currentOrder INT =
+            {currentOrder};
+
+        SELECT TOP 1
+            NgayBatDau
+        FROM dbo.TblGiaiDoanDuAn
+        WHERE IdDuAn = @idDuAn
+          AND DaXoa = 0
+          AND ThuTuGiaiDoan < @currentOrder
+          AND NgayBatDau IS NOT NULL
+        ORDER BY ThuTuGiaiDoan DESC;";
+
+            return ExecuteNullableDate(sql);
+        }
+
+        public DateTime? GetNextStageStartDate(
+    Guid idDuAn,
+    int currentOrder)
+        {
+            if (idDuAn == Guid.Empty ||
+                currentOrder <= 0)
+            {
+                return null;
+            }
+
+            string sql = $@"
+        DECLARE @idDuAn UNIQUEIDENTIFIER =
+            '{InlineQueryHelpers.SQLEncode(idDuAn)}';
+
+        DECLARE @currentOrder INT =
+            {currentOrder};
+
+        SELECT TOP 1
+            NgayBatDau
+        FROM dbo.TblGiaiDoanDuAn
+        WHERE IdDuAn = @idDuAn
+          AND DaXoa = 0
+          AND ThuTuGiaiDoan > @currentOrder
+          AND NgayBatDau IS NOT NULL
+        ORDER BY ThuTuGiaiDoan ASC;";
+
+            return ExecuteNullableDate(sql);
+        }
+
+        private DateTime? ExecuteNullableDate(
+    string sql)
+        {
+            using (IDataReader reader =
+                new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader == null ||
+                    !reader.Read())
+                {
+                    return null;
+                }
+
+                if (reader[0] == null ||
+                    reader[0] == DBNull.Value)
+                {
+                    return null;
+                }
+
+                DateTime value;
+
+                return DateTime.TryParse(
+                    Convert.ToString(reader[0]),
+                    out value)
+                        ? value
+                        : (DateTime?)null;
+            }
         }
     }
 }

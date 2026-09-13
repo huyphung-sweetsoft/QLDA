@@ -93,11 +93,8 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             txtSearchEmail.SearchTagItemText = "Email";
             txtSearchPhone.SearchTagItemText = GetResourceText(BackEndResourceKeys.PHONE_NUMBER);
             txtSearchCreatedDate.SearchTagItemText = GetResourceText(BackEndResourceKeys.CREATED_DATE);
-            txtSearchCCCD.SearchTagItemText = GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD);
             ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
             ddlSearchRole.SearchTagItemText = GetResourceText(BackEndResourceKeys.USER_GROUP);
-            ddlSearchChucDanh.SearchTagItemText = GetResourceText(BackEndResourceKeys.CHUC_DANH);
-            ddlSearchPhongBan.SearchTagItemText = GetResourceText(BackEndResourceKeys.PHONG_BAN);
             ddlSearchLaNhanVien.SearchTagItemText = GetResourceText(BackEndResourceKeys.ACCOUNT_TYPE);
             //------------------------------------------------
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);//tooltip: là cái chú thích nhỏ hiện ra khi mình hover vào cái nút, dùng kĩ thuật gán liên hoàn để gán cái chú thích này chung nội dung vs cái text hiển thị trong nút
@@ -140,8 +137,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             controlHelpers.BindStatus(ddlSearchStatus);
             controlHelpers.BindRoles(ddlSearchRole);
             controlHelpers.BindLaNhanVien(ddlSearchLaNhanVien);
-            controlHelpers.BindChucDanh(ddlSearchChucDanh);
-            controlHelpers.BindPhongBan(ddlSearchPhongBan);
             if (this.RoleId != Guid.Empty)
                 ddlSearchRole.SelectedValue = this.RoleId.ToString();
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
@@ -165,12 +160,9 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             txtSearchFullName.SearchColumn = AspnetUser.Columns.DisplayName;
             txtSearchEmail.SearchColumn = AspnetMembership.Columns.Email;
             txtSearchPhone.SearchColumn = AspnetUser.Columns.MobileAlias;
-            txtSearchCCCD.SearchColumn = AspnetUser.Columns.IdCCCD; 
             ddlSearchStatus.SearchColumn = AspnetUser.Columns.IsActivated;
             ddlSearchRole.SearchColumn = AspnetRole.Columns.RoleId;
             ddlSearchLaNhanVien.SearchColumn = AspnetUser.Columns.LaNhanVien;
-            ddlSearchChucDanh.SearchColumn = TblChucDanh.Columns.IdChucDanh;
-            ddlSearchPhongBan.SearchColumn = TblPhongBan.Columns.IdPhongBan;
             txtSearchCreatedDate.SearchColumn = AspnetUser.Columns.LastActivityDate;
             ddlSearchRole.Enabled = this.RoleId == Guid.Empty;
         }
@@ -295,24 +287,24 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     else
                         Response.Redirect(RewriteURLHelper.ViewUser(userId));//Hoặc đẩy sang hẳn 1 trang mới nếu chưa đki Callback
                     break;
-                case "VIEW_EMP_DETAIL":
-                    if (!this.CURRENT_PAGE.IsEdit)
-                    {
-                        ShowAccessDeniedNotify();
-                        return;
-                    }
-                    rowIndex = 0;
-                    if(e.CommandSource.GetType() != typeof(GridviewExtension))//Kiểm tra xem cái sự kiện click này bắt nguồn từ link button hay từ bản thân cái lưới
-                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
-                    else
-                        rowIndex = Convert.ToInt32(e.CommandArgument);
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out userId))//tryparse vừa có tác dụng lấy dữ liệu, vừa kiểm tra xem cái guid đó có chuẩn GUID ko
-                    {
-                        ShowInvalidDataError();
-                        return;
-                    }
-                    Response.Redirect(RewriteURLHelper.ViewDetailEmp(userId));
-                    break;
+                //case "VIEW_EMP_DETAIL":
+                //    if (!this.CURRENT_PAGE.IsEdit)
+                //    {
+                //        ShowAccessDeniedNotify();
+                //        return;
+                //    }
+                //    rowIndex = 0;
+                //    if(e.CommandSource.GetType() != typeof(GridviewExtension))//Kiểm tra xem cái sự kiện click này bắt nguồn từ link button hay từ bản thân cái lưới
+                //        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                //    else
+                //        rowIndex = Convert.ToInt32(e.CommandArgument);
+                //    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out userId))//tryparse vừa có tác dụng lấy dữ liệu, vừa kiểm tra xem cái guid đó có chuẩn GUID ko
+                //    {
+                //        ShowInvalidDataError();
+                //        return;
+                //    }
+                //    Response.Redirect(RewriteURLHelper.ViewDetailEmp(userId));
+                //    break;
                 case "ITEM_DELETE":
                     if (!this.CURRENT_PAGE.IsDelete)
                     {
@@ -540,9 +532,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     "Địa chỉ email",
                     GetResourceText(BackEndResourceKeys.PHONE_NUMBER),
                     GetResourceText(BackEndResourceKeys.USER_GROUP),
-                    GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD),
-                    GetResourceText(BackEndResourceKeys.PHONG_BAN),
-                    GetResourceText(BackEndResourceKeys.CHUC_DANH),
                     GetResourceText(BackEndResourceKeys.STATUS),
                     GetResourceText(BackEndResourceKeys.CREATED_DATE)
                 },
@@ -553,9 +542,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     "Email",
                     "MobileAlias",
                     "RoleName",
-                    "IdCCCD",
-                    "TenPhongBan",
-                    "TenChucDanh",
                     "IsActivated",
                     "LastActivityDate",
                 },

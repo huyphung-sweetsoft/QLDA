@@ -2,6 +2,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
@@ -19,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
         public EventHandler NewMeetingHandlerCallback;
         public EventHandler EditMeetingHandlerCallback;
+        private MeetManager _manager = new MeetManager();
 
         public Guid ProjectId
         {
@@ -69,7 +71,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);
 
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
-            grvData.CurrentSortExpression = "TenCuocHop";
+            grvData.CurrentSortExpression = "MaCuocHop";
             grvData.CurrentSortDerection = "ASC";
             grvData.Rebind();
             pnlSearch.Update();
@@ -93,10 +95,16 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             txtSearchTenCuocHop.SearchTagItemText = "Tên cuộc họp";
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
 
-            // Cập nhật lại số lượng và tên cột
             List<string> lstTableHeader = new List<string>
             {
-                "Mã họp", "Tên cuộc họp", "Bắt đầu", "Kết thúc", "Địa điểm", "Trạng thái", "Thao tác"
+                GetResourceText(BackEndResourceKeys.INDEX), 
+                GetResourceText(BackEndResourceKeys.MEETING_CODE),
+                GetResourceText(BackEndResourceKeys.MEETING_NAME), 
+                GetResourceText(BackEndResourceKeys.START_TIME), 
+                GetResourceText(BackEndResourceKeys.END_TIME), 
+                GetResourceText(BackEndResourceKeys.MEETING_ROOM), 
+                GetResourceText(BackEndResourceKeys.STATUS), 
+                GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.HeaderTexts = lstTableHeader;
         }
@@ -117,17 +125,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 int pageSize = rowIndex + grid.CurrentPageSize;
                 DataTable dt = null;
 
-                /* Bác viết lại hàm truy vấn Manager gọi vào đây để trả dữ liệu (nhớ bỏ Chủ Trì ra khỏi list nhé)
                 if (grid.GridSearchType == GridSearchType.Single)
                 {
-                    dt = MeetingManager.Instance.SearchMeeting(this.ProjectId, txtSearchSingle.Text, null, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    dt = _manager.SearchMeeting(this.ProjectId, txtSearchSingle.Text, null, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }
                 else
                 {
                     Dictionary<string, object> keyValueSearchs = new ControlHelpers().GetControlValues(pnlSearchPopup);
-                    dt = MeetingManager.Instance.SearchMeeting(this.ProjectId, "", keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    dt = _manager.SearchMeeting(this.ProjectId, "", keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }
-                */
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -190,14 +196,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (e != null && e.Submit && e.CommandName != null && e.CommandName.Contains("MEETING_DELETE"))
             {
                 TblLichHop meet = e.Value as TblLichHop;
-                if (meet == null) { ShowInvalidNotFoundData(); return; }
-
+                if (meet == null)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
                 try
                 {
-                    // Đã thay đổi cột cập nhật thành IdNguoiCapNhat kiểu Guid 
-                    string sql = $"UPDATE TblLichHop SET DaXoa = 1, IdNguoiCapNhat = '{SweetContext.Current.UserId}', NgayCapNhat = GETDATE() WHERE IdLichHop = '{meet.IdLichHop}'";
-                    using (var reader = new InlineQuery().ExecuteReader(sql)) { }
-
+                    MeetManager.Instance.DeleteMeet(meet);
                     ShowSuccessDeleteData();
                     grvData.CurrentPageIndex = 1;
                     grvData.Rebind();
@@ -260,6 +266,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             if (!this.CURRENT_PAGE.IsAdd) { ShowAccessDeniedNotify(); return; }
             NewMeetingHandlerCallback?.Invoke(Guid.Empty, EventArgs.Empty);
+        }
+        protected string GetTrangThaiCuocHopText(object value)
+        {
+            if (value == null || value == DBNull.Value) return "—";
+            TrangThaiCuocHopEnum status = (TrangThaiCuocHopEnum)Convert.ToInt32(value);
+            return GetResourceText(_manager.GetValuForTrangThaiCuoHop(status));
         }
     }
 }

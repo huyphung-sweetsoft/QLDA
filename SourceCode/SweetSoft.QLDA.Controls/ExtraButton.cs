@@ -679,7 +679,9 @@ namespace SweetSoft.QLDA.Controls
             [Render("fas fa-calendar-alt")]
             Calendar,
             [Render("fas fa-bell")]
-            Bell
+            Bell,
+            [Render("fas fa-user-plus")]
+            UserPlus,
         }
     }
 }
