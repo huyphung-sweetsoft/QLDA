@@ -265,6 +265,7 @@
     <Compile Include="Managers\TaskManager.cs" />
     <Compile Include="Managers\ThanhToanManager.cs" />
     <Compile Include="Managers\ThanhVienDuAnManager.cs" />
+    <Compile Include="Managers\ThongBaoManager.cs" />
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="Managers\DocumentGroupManager.cs" />
@@ -310,6 +311,7 @@
     <Compile Include="Respositories\TaskRepository.cs" />
     <Compile Include="Respositories\ThanhToanRepository.cs" />
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
+    <Compile Include="Respositories\ThongBaoRepository.cs" />
     <Compile Include="Respositories\VaiTroDuAnRepository.cs" />
     <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />
     <Compile Include="ScheduleManager\LichTrinhManager.cs" />

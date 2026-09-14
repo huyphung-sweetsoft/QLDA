@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
@@ -170,6 +170,9 @@ namespace SweetSoft.QLDA.Core.Managers
             // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
             newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
 
+            // Lấy thông tin công việc để dùng trong thông báo
+            TblCongViec congViec = FetchById(idCongViec);
+
             using (var scope = new TransactionScope())
             {
                 // 1. So sánh Diff
@@ -205,11 +208,38 @@ namespace SweetSoft.QLDA.Core.Managers
                         // Cập nhật lại mảng hiện tại để đề phòng gán liên tiếp người ngoài dự án
                         thanhVienHienTai.Add(id);
                     }
+
+                    // Thông báo: gửi cho nhân viên vừa được giao công việc
+                    // IdNhanVien trong TblCongViec_NhanVien chính là aspnet_Users.UserId
+                    Guid assigneeUserId = id;
+                    if (congViec != null && assigneeUserId != Guid.Empty)
+                    {
+                        System.Threading.Tasks.Task.Run(() =>
+                        {
+                            try
+                            {
+                                string tieuDe = $"Bạn được giao công việc: {congViec.TenCongViec}";
+
+                                ThongBaoManager.Instance.Create(
+                                    userId          : assigneeUserId,
+                                    tieuDe          : tieuDe,
+                                    loaiThongBao    : ThongBaoTypes.CongViec,
+                                    idCongViec      : idCongViec,
+                                    idDuAn          : idDuAn
+                                );
+                            }
+                            catch (Exception ex)
+                            {
+                                SysLogger.LogError(ex, "Failed to create ThongBao for task assignment");
+                            }
+                        });
+                    }
                 }
 
                 scope.Complete();
             }
         }
+
         #endregion
 
         #region 2. Nghiệp vụ Cây WBS & Mã Công việc

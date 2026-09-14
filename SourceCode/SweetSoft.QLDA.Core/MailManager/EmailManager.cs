@@ -1,4 +1,4 @@
-﻿//--------------------PROGRAMER LOGS------------------------
+//--------------------PROGRAMER LOGS------------------------
 //Created by:
 using Newtonsoft.Json;
 using SubSonic;
