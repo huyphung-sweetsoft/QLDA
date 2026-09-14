@@ -20,5 +20,6 @@ namespace SweetSoft.QLDA.Core.SysManager.Interfaces
         Task<AuditStatistics> GetAuditStatisticsAsync(DateTime? fromDate, DateTime? toDate, string tableName, string userId);
         Task<List<T>> ExecuteQueryAsync<T>(string query) where T : new();
         Task<int> ExecuteNonQueryAsync(string query);
+        DataTable GetProjectHistory(Guid idDuAn, Guid? userId, DateTime? fromDate, DateTime? toDate, int? numberOfRecords = null);
     }
 }

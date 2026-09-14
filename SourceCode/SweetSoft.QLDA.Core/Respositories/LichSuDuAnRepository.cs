@@ -16,8 +16,7 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         }
 
-        public override TblLichSuDuAn Insert(
-            TblLichSuDuAn item)
+        public override TblLichSuDuAn Insert(TblLichSuDuAn item)
         {
             if (item == null)
                 return null;
@@ -26,17 +25,14 @@ namespace SweetSoft.QLDA.Core.Respositories
             return item;
         }
 
-        public override TblLichSuDuAn GetById(
-            Guid id)
+        public override TblLichSuDuAn GetById(Guid id)
         {
             if (id == Guid.Empty)
                 return null;
 
             return new Select()
                 .From(TblLichSuDuAn.Schema)
-                .Where(
-                    TblLichSuDuAn
-                        .IdLichSuDuAnColumn)
+                .Where(TblLichSuDuAn.IdLichSuDuAnColumn)
                 .IsEqualTo(id)
                 .ExecuteSingle<TblLichSuDuAn>();
         }

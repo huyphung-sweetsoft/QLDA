@@ -24,6 +24,11 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
 
         /// <summary>
+        /// CtrlProjectTabs1 control.
+        /// </summary>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
+
+        /// <summary>
         /// CtrlIssue1 control.
         /// </summary>
         /// <remarks>

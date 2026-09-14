@@ -23,6 +23,13 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string Completed = "HOAN_TAT";
     }
 
+    public static class DocumentSigningStatusKeys
+    {
+        public const string Pending = "DANG_TRINH";
+        public const string ChangesRequested = "YEU_CAU_DIEU_CHINH";
+        public const string Signed = "DA_KY";
+    }
+
     public static class DocumentCustomerStatusKeys
     {
         public const string NotSent = "CHUA_GUI";
@@ -53,12 +60,18 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string CreateFromTemplate = "TAO_TU_MAU";
         public const string UploadVersion = "TAI_LEN_PHIEN_BAN";
         public const string DeleteVersion = "XOA_PHIEN_BAN";
+        public const string SetOfficialFile = "CHON_FILE_CHINH_THUC";
+        public const string ClearOfficialFile = "BO_CHON_FILE_CHINH_THUC";
+        public const string SubmitSigning = "TRINH_KY";
+        public const string RequestSigningChanges = "YEU_CAU_DIEU_CHINH_TRINH_KY";
+        public const string CompleteSigning = "HOAN_TAT_TRINH_KY";
     }
 
     public static class DocumentActivityReferenceKeys
     {
         public const string Document = "TblTaiLieu";
         public const string DocumentVersion = "TblPhienBanTaiLieu";
+        public const string Signing = "TblTrinhKyTaiLieu";
     }
 
     public class DocumentManager : BaseManager
@@ -160,6 +173,11 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetAvailableEmployees();
         }
 
+        public List<AspnetUser> GetAvailableSigningUsers()
+        {
+            return _repository.GetAvailableSigningUsers();
+        }
+
         public List<TblDuAn> GetAvailableProjects()
         {
             return _repository.GetAvailableProjects();
@@ -186,6 +204,67 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable GetSigningHistory(Guid idTaiLieu)
         {
             return _repository.GetSigningHistory(idTaiLieu);
+        }
+
+        public DataTable GetSigningDetail(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieu)
+        {
+            return _repository.GetSigningDetail(
+                idTaiLieu,
+                idTrinhKyTaiLieu);
+        }
+
+        public DocumentSigningOperationResult SubmitDocumentSigning(
+            Guid idTaiLieu,
+            Guid idNguoiKy,
+            string ghiChu)
+        {
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            if (document == null)
+                throw new InvalidOperationException(
+                    "Không tìm thấy hồ sơ công ty.");
+            if (!document.CanTrinhKy)
+                throw new InvalidOperationException(
+                    "Hồ sơ này không được cấu hình trình ký.");
+
+            return _repository.SubmitDocumentSigning(
+                idTaiLieu,
+                idNguoiKy,
+                string.Empty,
+                document.HinhThucKy,
+                ghiChu,
+                GetCurrentUserId(),
+                GetCurrentUserName(),
+                DateTime.UtcNow);
+        }
+
+        public void RequestDocumentSigningChanges(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieu,
+            string reason)
+        {
+            _repository.RequestDocumentSigningChanges(
+                idTaiLieu,
+                idTrinhKyTaiLieu,
+                reason,
+                GetCurrentUserId(),
+                GetCurrentUserName(),
+                DateTime.UtcNow);
+        }
+
+        public DocumentSigningOperationResult CompleteDocumentSigning(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieu,
+            string note)
+        {
+            return _repository.CompleteDocumentSigning(
+                idTaiLieu,
+                idTrinhKyTaiLieu,
+                note,
+                GetCurrentUserId(),
+                GetCurrentUserName(),
+                DateTime.UtcNow);
         }
 
         public DataTable GetCustomerDeliveryHistory(Guid idTaiLieu)
@@ -581,17 +660,50 @@ namespace SweetSoft.QLDA.Core.Managers
             DateTime currentDate = DateTime.UtcNow;
             string currentUserName = GetCurrentUserName();
 
-            foreach (TblPhienBanTaiLieu version in allVersions
+            List<TblPhienBanTaiLieu> missingFileVersions = allVersions
                 .Where(version =>
                     !version.DaXoa
                     && version.IdFileNoiDung.HasValue
-                    && !activeFileIds.Contains(version.IdFileNoiDung.Value)))
+                    && !activeFileIds.Contains(version.IdFileNoiDung.Value))
+                .ToList();
+
+            foreach (TblPhienBanTaiLieu version in missingFileVersions)
             {
+                Guid missingFileId = version.IdFileNoiDung.Value;
+                if (document.IdFileBanChinhThuc.HasValue
+                    && document.IdFileBanChinhThuc.Value == missingFileId)
+                {
+                    throw new InvalidOperationException(
+                        "Không thể đồng bộ vì file chính thức của hồ sơ đã bị mất. Vui lòng kiểm tra lại dữ liệu file.");
+                }
+
+                if (_repository.HasActiveWorkflowForVersion(
+                        version.IdPhienBanTaiLieu))
+                {
+                    throw new InvalidOperationException(
+                        "Không thể đồng bộ vì tệp của phiên bản đang được dùng trong quá trình trình ký hoặc gửi khách hàng đã bị mất.");
+                }
+            }
+
+            foreach (TblPhienBanTaiLieu version in missingFileVersions)
+            {
+                Guid removedFileId = version.IdFileNoiDung.Value;
+                version.IdFileNoiDung = null;
                 version.DaXoa = true;
                 version.LaPhienBanHienTai = false;
                 version.NguoiCapNhat = currentUserName;
                 version.NgayCapNhat = currentDate;
                 _repository.UpdateDocumentVersion(version);
+
+                WriteDocumentHistory(
+                    idTaiLieu,
+                    DocumentActivityTypeKeys.DeleteVersion,
+                    DocumentActivityReferenceKeys.DocumentVersion,
+                    version.IdPhienBanTaiLieu,
+                    "Phiên bản: v" + version.SoPhienBan
+                        + "; Id tệp: " + removedFileId,
+                    "Đã xóa một phiên bản tài liệu.",
+                    currentDate);
             }
 
             List<TblPhienBanTaiLieu> activeVersions = allVersions
@@ -652,6 +764,131 @@ namespace SweetSoft.QLDA.Core.Managers
                 DateTime.UtcNow);
         }
 
+        public TblTaiLieu SetOfficialFile(
+            Guid idTaiLieu,
+            Guid idPhienBanTaiLieu)
+        {
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            if (document == null)
+                throw new InvalidOperationException("Không tìm thấy hồ sơ công ty.");
+
+            if (document.CanTrinhKy)
+            {
+                throw new InvalidOperationException(
+                    "Hồ sơ cần trình ký chỉ được chọn file chính thức từ kết quả ký.");
+            }
+
+            TblPhienBanTaiLieu version = _repository
+                .GetDocumentVersionById(idTaiLieu, idPhienBanTaiLieu);
+            if (version == null || !version.IdFileNoiDung.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Phiên bản không tồn tại hoặc không có tệp nội dung.");
+            }
+
+            TblUploadFile file = _repository.GetDocumentVersionFileById(
+                idTaiLieu,
+                version.IdFileNoiDung.Value);
+            if (file == null)
+            {
+                throw new InvalidOperationException(
+                    "Tệp của phiên bản không tồn tại hoặc đã bị xóa.");
+            }
+
+            if (!IsDocumentFileAvailable(file))
+            {
+                throw new InvalidOperationException(
+                    "Không tìm thấy tệp vật lý của phiên bản nên không thể chọn làm file chính thức.");
+            }
+
+            if (document.IdFileBanChinhThuc == file.Id)
+                return document;
+
+            TblUploadFile previousOfficialFile =
+                document.IdFileBanChinhThuc.HasValue
+                    ? _repository.GetDocumentVersionFileById(
+                        idTaiLieu,
+                        document.IdFileBanChinhThuc.Value)
+                    : null;
+
+            DateTime currentDate = DateTime.UtcNow;
+            document.IdFileBanChinhThuc = file.Id;
+            document.NguoiCapNhat = GetCurrentUserName();
+            document.NgayCapNhat = currentDate;
+            TblTaiLieu savedDocument = _repository.Update(document);
+
+            WriteDocumentHistory(
+                savedDocument.IdTaiLieu,
+                DocumentActivityTypeKeys.SetOfficialFile,
+                DocumentActivityReferenceKeys.DocumentVersion,
+                version.IdPhienBanTaiLieu,
+                previousOfficialFile == null
+                    ? "Phiên bản: v" + version.SoPhienBan
+                        + "; Tệp: " + GetUploadFileName(file)
+                    : "Tệp chính thức: "
+                        + GetUploadFileName(previousOfficialFile)
+                        + " -> "
+                        + GetUploadFileName(file)
+                        + "; Phiên bản mới: v"
+                        + version.SoPhienBan,
+                "Đã chọn file chính thức của hồ sơ.",
+                currentDate);
+
+            return savedDocument;
+        }
+
+        public TblTaiLieu ClearOfficialFile(
+            Guid idTaiLieu,
+            Guid idPhienBanTaiLieu)
+        {
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            if (document == null)
+                throw new InvalidOperationException("Không tìm thấy hồ sơ công ty.");
+
+            if (document.CanTrinhKy)
+            {
+                throw new InvalidOperationException(
+                    "File chính thức của hồ sơ cần trình ký phải được quản lý trong quá trình trình ký.");
+            }
+
+            TblPhienBanTaiLieu version = _repository
+                .GetDocumentVersionById(idTaiLieu, idPhienBanTaiLieu);
+            if (version == null || !version.IdFileNoiDung.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Phiên bản không tồn tại hoặc không có tệp nội dung.");
+            }
+
+            TblUploadFile file = _repository.GetDocumentVersionFileById(
+                idTaiLieu,
+                version.IdFileNoiDung.Value);
+            if (file == null
+                || !document.IdFileBanChinhThuc.HasValue
+                || document.IdFileBanChinhThuc.Value != file.Id)
+            {
+                throw new InvalidOperationException(
+                    "Phiên bản này không còn là file chính thức của hồ sơ.");
+            }
+
+            DateTime currentDate = DateTime.UtcNow;
+            document.IdFileBanChinhThuc = null;
+            document.NguoiCapNhat = GetCurrentUserName();
+            document.NgayCapNhat = currentDate;
+            TblTaiLieu savedDocument = _repository.Update(document);
+
+            WriteDocumentHistory(
+                savedDocument.IdTaiLieu,
+                DocumentActivityTypeKeys.ClearOfficialFile,
+                DocumentActivityReferenceKeys.DocumentVersion,
+                version.IdPhienBanTaiLieu,
+                "Phiên bản: v" + version.SoPhienBan
+                    + "; Tệp: " + GetUploadFileName(file),
+                "Đã bỏ chọn file chính thức của hồ sơ.",
+                currentDate);
+
+            return savedDocument;
+        }
+
         public void PrepareDocumentVersionFilesForDeletion(
             Guid idTaiLieu,
             IEnumerable<Guid> fileIds)
@@ -666,8 +903,6 @@ namespace SweetSoft.QLDA.Core.Managers
             if (removedFileIds.Count == 0)
                 return;
 
-            DateTime currentDate = DateTime.UtcNow;
-            string currentUserName = GetCurrentUserName();
             List<TblPhienBanTaiLieu> allVersions = _repository
                 .GetDocumentVersions(idTaiLieu, true)
                 .ToList();
@@ -676,53 +911,77 @@ namespace SweetSoft.QLDA.Core.Managers
                 .Where(file => removedFileIds.Contains(file.Id))
                 .ToDictionary(file => file.Id);
 
-            foreach (TblPhienBanTaiLieu version in allVersions
+            if (removedFiles.Count != removedFileIds.Count)
+            {
+                throw new InvalidOperationException(
+                    "Danh sách tệp cần xóa không hợp lệ hoặc không thuộc hồ sơ này.");
+            }
+
+            List<TblPhienBanTaiLieu> versionsToDelete = allVersions
                 .Where(version =>
                     !version.DaXoa
                     && version.IdFileNoiDung.HasValue
                     && removedFileIds.Contains(
-                        version.IdFileNoiDung.Value)))
-            {
-                Guid removedFileId = version.IdFileNoiDung.Value;
-                version.IdFileNoiDung = null;
-                version.LaPhienBanHienTai = false;
-                version.DaXoa = true;
-                version.NguoiCapNhat = currentUserName;
-                version.NgayCapNhat = currentDate;
-                _repository.UpdateDocumentVersion(version);
-
-                TblUploadFile removedFile;
-                removedFiles.TryGetValue(removedFileId, out removedFile);
-                WriteDocumentHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.DeleteVersion,
-                    DocumentActivityReferenceKeys.DocumentVersion,
-                    version.IdPhienBanTaiLieu,
-                    "Phiên bản: v"
-                        + version.SoPhienBan
-                        + (removedFile == null
-                            ? string.Empty
-                            : "; Tệp: " + GetUploadFileName(removedFile)),
-                    "Đã xóa một phiên bản tài liệu.",
-                    currentDate);
-            }
+                        version.IdFileNoiDung.Value))
+                .ToList();
 
             if (document.IdFileBanChinhThuc.HasValue
                 && removedFileIds.Contains(
                     document.IdFileBanChinhThuc.Value))
             {
-                document.IdFileBanChinhThuc = null;
-                document.NguoiCapNhat = currentUserName;
-                document.NgayCapNhat = currentDate;
-                _repository.Update(document);
+                throw new InvalidOperationException(
+                    "Không thể xóa phiên bản đang là file chính thức. Hãy bỏ chọn file chính thức trước.");
             }
 
-            EnsureOneCurrentVersion(
-                allVersions
-                    .Where(version => !version.DaXoa)
-                    .ToList(),
-                currentUserName,
-                currentDate);
+            foreach (TblPhienBanTaiLieu version in versionsToDelete)
+            {
+                if (_repository.HasActiveWorkflowForVersion(
+                        version.IdPhienBanTaiLieu))
+                {
+                    throw new InvalidOperationException(
+                        "Không thể xóa phiên bản đã được sử dụng trong quá trình trình ký hoặc gửi khách hàng.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes selected document-version files through the repository
+        /// transaction, then removes only safe physical files after commit.
+        /// </summary>
+        public DocumentVersionFileDeletionResult DeleteDocumentVersionFiles(
+            Guid idTaiLieu,
+            IEnumerable<Guid> fileIds)
+        {
+            if (idTaiLieu == Guid.Empty)
+                throw new InvalidOperationException(
+                    "Không xác định được hồ sơ cần cập nhật.");
+
+            List<Guid> requestedFileIds = (fileIds
+                    ?? Enumerable.Empty<Guid>())
+                .Where(fileId => fileId != Guid.Empty)
+                .Distinct()
+                .ToList();
+            if (requestedFileIds.Count == 0)
+                return new DocumentVersionFileDeletionResult();
+
+            DocumentVersionFileDeletionResult result = _repository
+                .DeleteDocumentVersionFiles(
+                    idTaiLieu,
+                    requestedFileIds,
+                    GetCurrentUserName(),
+                    _applicationContext == null
+                        ? Guid.Empty
+                        : _applicationContext.UserId,
+                    DateTime.UtcNow);
+
+            if (result == null)
+                return new DocumentVersionFileDeletionResult();
+
+            result.WarningMessage = CleanupDeletedDocumentVersionFiles(
+                idTaiLieu,
+                requestedFileIds,
+                result.DeletedFiles);
+            return result;
         }
 
         public bool DeleteCompanyDocument(Guid idTaiLieu)
@@ -1099,6 +1358,188 @@ namespace SweetSoft.QLDA.Core.Managers
                 : file.OriginalFileName;
         }
 
+        private static bool IsDocumentFileAvailable(TblUploadFile file)
+        {
+            if (file == null || string.IsNullOrWhiteSpace(file.FileUrl))
+                return false;
+
+            Uri absoluteUri;
+            if (Uri.TryCreate(
+                    file.FileUrl,
+                    UriKind.Absolute,
+                    out absoluteUri))
+            {
+                return absoluteUri.Scheme == Uri.UriSchemeHttp
+                    || absoluteUri.Scheme == Uri.UriSchemeHttps;
+            }
+
+            try
+            {
+                string virtualPath = file.FileUrl.StartsWith(
+                    "~/",
+                    StringComparison.Ordinal)
+                    ? file.FileUrl
+                    : file.FileUrl.StartsWith("/", StringComparison.Ordinal)
+                        ? file.FileUrl
+                        : "/" + file.FileUrl;
+                string physicalPath = HostingEnvironment.MapPath(virtualPath);
+                return !string.IsNullOrWhiteSpace(physicalPath)
+                    && File.Exists(physicalPath);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private string CleanupDeletedDocumentVersionFiles(
+            Guid idTaiLieu,
+            IEnumerable<Guid> deletedFileIds,
+            IEnumerable<TblUploadFile> deletedFiles)
+        {
+            List<string> warnings = new List<string>();
+            HashSet<string> attemptedPaths =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            List<Guid> excludedFileIds = (deletedFileIds
+                    ?? Enumerable.Empty<Guid>())
+                .Where(fileId => fileId != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            foreach (TblUploadFile file in deletedFiles
+                ?? Enumerable.Empty<TblUploadFile>())
+            {
+                string path = null;
+                try
+                {
+                    path = ResolveDocumentVersionPhysicalPath(file.FileUrl);
+                    if (string.IsNullOrWhiteSpace(path))
+                    {
+                        string warning = "Không thể tự động xóa tệp vật lý "
+                            + file.Id
+                            + "; đường dẫn không thuộc thư mục phiên bản tài liệu.";
+                        warnings.Add(warning);
+                        SysLogger.LogError(
+                            warning
+                            + " Hồ sơ: {0}; FileUrl: {1}",
+                            idTaiLieu,
+                            file.FileUrl ?? string.Empty);
+                        continue;
+                    }
+
+                    if (!attemptedPaths.Add(path))
+                        continue;
+
+                    bool hasOtherReference = _repository
+                        .HasUploadFileReferenceByPath(
+                            NormalizeDocumentVersionVirtualPath(file.FileUrl),
+                            excludedFileIds);
+                    if (hasOtherReference)
+                    {
+                        string warning = "Không xóa tệp vật lý "
+                            + file.Id
+                            + " vì đường dẫn đang được bản ghi tệp khác sử dụng.";
+                        warnings.Add(warning);
+                        SysLogger.LogError(
+                            warning
+                            + " Hồ sơ: {0}; Path: {1}",
+                            idTaiLieu,
+                            path);
+                        continue;
+                    }
+
+                    if (File.Exists(path))
+                        File.Delete(path);
+                }
+                catch (Exception exception)
+                {
+                    string warning = "Không thể xóa tệp vật lý "
+                        + file.Id
+                        + "; có thể cần xử lý thủ công.";
+                    warnings.Add(warning);
+                    SysLogger.LogError(
+                        exception,
+                        warning
+                        + " Hồ sơ: {0}; Path: {1}",
+                        idTaiLieu,
+                        path ?? (file.FileUrl ?? string.Empty));
+                }
+            }
+
+            return warnings.Count == 0
+                ? null
+                : string.Join(" ", warnings.Distinct());
+        }
+
+        private string ResolveDocumentVersionPhysicalPath(string fileUrl)
+        {
+            string virtualPath = NormalizeDocumentVersionVirtualPath(fileUrl);
+            if (string.IsNullOrWhiteSpace(virtualPath))
+            {
+                return null;
+            }
+
+            const string versionRoot = "/Uploads/DocumentVersion/";
+
+            string rootPath = null;
+            string physicalPath = null;
+            try
+            {
+                if (_applicationContext != null)
+                {
+                    rootPath = _applicationContext.MapPath(versionRoot);
+                    physicalPath = _applicationContext.MapPath(virtualPath);
+                }
+
+                if (string.IsNullOrWhiteSpace(rootPath))
+                    rootPath = HostingEnvironment.MapPath(versionRoot);
+                if (string.IsNullOrWhiteSpace(physicalPath))
+                    physicalPath = HostingEnvironment.MapPath(virtualPath);
+                if (string.IsNullOrWhiteSpace(rootPath)
+                    || string.IsNullOrWhiteSpace(physicalPath))
+                {
+                    return null;
+                }
+
+                string normalizedRoot = Path.GetFullPath(rootPath)
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    + Path.DirectorySeparatorChar;
+                string normalizedPath = Path.GetFullPath(physicalPath);
+                return normalizedPath.StartsWith(
+                        normalizedRoot,
+                        StringComparison.OrdinalIgnoreCase)
+                    ? normalizedPath
+                    : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string NormalizeDocumentVersionVirtualPath(string fileUrl)
+        {
+            if (string.IsNullOrWhiteSpace(fileUrl))
+                return null;
+
+            Uri absoluteUri;
+            if (Uri.TryCreate(fileUrl.Trim(), UriKind.Absolute, out absoluteUri))
+                return null;
+
+            string virtualPath = fileUrl.Trim().Replace('\\', '/');
+            if (virtualPath.StartsWith("~/", StringComparison.Ordinal))
+                virtualPath = virtualPath.Substring(1);
+            if (!virtualPath.StartsWith("/", StringComparison.Ordinal))
+                virtualPath = "/" + virtualPath;
+
+            const string versionRoot = "/Uploads/DocumentVersion/";
+            return virtualPath.StartsWith(
+                    versionRoot,
+                    StringComparison.OrdinalIgnoreCase)
+                ? virtualPath
+                : null;
+        }
+
         private static bool IsSigningStatus(string status)
         {
             return string.Equals(
@@ -1134,6 +1575,13 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             return _applicationContext.UserName;
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            return _applicationContext == null
+                ? Guid.Empty
+                : _applicationContext.UserId;
         }
     }
 }

@@ -154,18 +154,18 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdDuAn.ForeignKeyTableName = "TblDuAn";
 				schema.Columns.Add(colvarIdDuAn);
 				
-				TableSchema.TableColumn colvarMaLichHop = new TableSchema.TableColumn(schema);
-				colvarMaLichHop.ColumnName = "MaLichHop";
-				colvarMaLichHop.DataType = DbType.AnsiString;
-				colvarMaLichHop.MaxLength = 50;
-				colvarMaLichHop.AutoIncrement = false;
-				colvarMaLichHop.IsNullable = true;
-				colvarMaLichHop.IsPrimaryKey = false;
-				colvarMaLichHop.IsForeignKey = false;
-				colvarMaLichHop.IsReadOnly = false;
-				colvarMaLichHop.DefaultSetting = @"";
-				colvarMaLichHop.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarMaLichHop);
+				TableSchema.TableColumn colvarMaCuocHop = new TableSchema.TableColumn(schema);
+				colvarMaCuocHop.ColumnName = "MaCuocHop";
+				colvarMaCuocHop.DataType = DbType.AnsiString;
+				colvarMaCuocHop.MaxLength = 50;
+				colvarMaCuocHop.AutoIncrement = false;
+				colvarMaCuocHop.IsNullable = true;
+				colvarMaCuocHop.IsPrimaryKey = false;
+				colvarMaCuocHop.IsForeignKey = false;
+				colvarMaCuocHop.IsReadOnly = false;
+				colvarMaCuocHop.DefaultSetting = @"";
+				colvarMaCuocHop.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarMaCuocHop);
 				
 				TableSchema.TableColumn colvarTenCuocHop = new TableSchema.TableColumn(schema);
 				colvarTenCuocHop.ColumnName = "TenCuocHop";
@@ -339,12 +339,12 @@ namespace SweetSoft.QLDA.DataAccess
 			set { SetColumnValue(Columns.IdDuAn, value); }
 		}
 		  
-		[XmlAttribute("MaLichHop")]
+		[XmlAttribute("MaCuocHop")]
 		[Bindable(true)]
-		public string MaLichHop 
+		public string MaCuocHop 
 		{
-			get { return GetColumnValue<string>(Columns.MaLichHop); }
-			set { SetColumnValue(Columns.MaLichHop, value); }
+			get { return GetColumnValue<string>(Columns.MaCuocHop); }
+			set { SetColumnValue(Columns.MaCuocHop, value); }
 		}
 		  
 		[XmlAttribute("TenCuocHop")]
@@ -467,7 +467,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLichHop,Guid varIdDuAn,string varMaLichHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblLichHop item = new TblLichHop();
 			
@@ -475,7 +475,7 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdDuAn = varIdDuAn;
 			
-			item.MaLichHop = varMaLichHop;
+			item.MaCuocHop = varMaCuocHop;
 			
 			item.TenCuocHop = varTenCuocHop;
 			
@@ -509,7 +509,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLichHop,Guid varIdDuAn,string varMaLichHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
 			TblLichHop item = new TblLichHop();
 			
@@ -517,7 +517,7 @@ namespace SweetSoft.QLDA.DataAccess
 			
 				item.IdDuAn = varIdDuAn;
 			
-				item.MaLichHop = varMaLichHop;
+				item.MaCuocHop = varMaCuocHop;
 			
 				item.TenCuocHop = varTenCuocHop;
 			
@@ -568,7 +568,7 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
-        public static TableSchema.TableColumn MaLichHopColumn
+        public static TableSchema.TableColumn MaCuocHopColumn
         {
             get { return Schema.Columns[2]; }
         }
@@ -658,7 +658,7 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			 public static string IdLichHop = @"IdLichHop";
 			 public static string IdDuAn = @"IdDuAn";
-			 public static string MaLichHop = @"MaLichHop";
+			 public static string MaCuocHop = @"MaCuocHop";
 			 public static string TenCuocHop = @"TenCuocHop";
 			 public static string NoiDungCuocHop = @"NoiDungCuocHop";
 			 public static string ThoiGianBatDau = @"ThoiGianBatDau";

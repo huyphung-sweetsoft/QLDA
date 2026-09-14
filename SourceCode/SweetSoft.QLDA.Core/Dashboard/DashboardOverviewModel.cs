@@ -40,6 +40,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public List<ProjectStatusStatistic> ProjectStatusStatistics { get; set; }
         public List<ProjectProgressStatistic> ProjectProgressStatistics { get; set; }
         public List<ProjectAttentionStatistic> ProjectAttentionStatistics { get; set; }
+        public List<UpcomingMeetingSummary> UpcomingMeetings { get; set; }
         public ResourceOverviewModel ResourceOverview { get; set; }
         public CostOverviewModel CostOverview { get; set; }
 
@@ -66,6 +67,16 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public int DueSoonTaskCount { get; set; }
 
+        /// <summary>
+        /// Số công việc đã hoàn thành trong dự án.
+        /// </summary>
+        public int CompletedTaskCount { get; set; }
+
+        /// <summary>
+        /// Tổng số công việc của dự án.
+        /// </summary>
+        public int TaskCount { get; set; }
+
         public ProjectScheduleHealth Health { get; set; }
 
         public DateTime StartDate { get; set; }
@@ -74,6 +85,17 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public DateTime? ActualCompletionDate { get; set; }
 
+    }
+
+    /// <summary>
+    /// Thông tin rút gọn dùng cho danh sách lịch họp sắp tới trên Overview.
+    /// </summary>
+    public class UpcomingMeetingSummary
+    {
+        public string ProjectCode { get; set; }
+        public string Title { get; set; }
+        public DateTime StartTime { get; set; }
+        public string Location { get; set; }
     }
     public class ProjectAttentionStatistic
     {

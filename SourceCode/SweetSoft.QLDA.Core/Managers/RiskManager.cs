@@ -1,5 +1,8 @@
 ﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.ExceptionHelpers;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
@@ -50,6 +53,60 @@ namespace SweetSoft.QLDA.Core.Managers
                 case MucDoAnhHuonEnum.VeryHigh: return "VERY_HIGH";
                 default: return "—";
             }
+        }
+        public TblRuiRoDuAn CreateOrUpdate(TblRuiRoDuAn dto)
+        {
+            BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
+            BusinessValidator.ThrowIfNullOrEmpty(dto.TenRuiRo, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenRuiRo));
+            BusinessValidator.ThrowIf(dto.IdDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA, nameof(dto.IdDuAn));
+
+            string currentUser = SweetContext.Current != null ? SweetContext.Current.UserName : "System";
+            bool isInsert = (dto.IdRuiRoDuAn == Guid.Empty);
+
+            int xacSuat = dto.XacSuatXayRa ?? 0;
+            int mucDo = dto.MucDoAnhHuong ?? 0;
+            dto.DiemRuiRo = (float)(((decimal)xacSuat / 100m) * mucDo);
+
+            TblRuiRoDuAn result = null;
+
+            if (isInsert)
+            {
+                dto.IdRuiRoDuAn = Guid.NewGuid();
+                dto.DaXoa = false;
+
+                dto.NgayTao = DateTime.Now;
+                dto.NguoiTao = currentUser;
+                dto.NgayCapNhat = DateTime.Now;
+                dto.NguoiCapNhat = currentUser;
+
+                dto.Save(); 
+                result = dto;
+            }
+            else
+            {
+                TblRuiRoDuAn existingRisk = TblRuiRoDuAn.FetchByID(dto.IdRuiRoDuAn);
+                BusinessValidator.ThrowIfNull(existingRisk, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdRuiRoDuAn), ErrorCodes.NotFound);
+
+                existingRisk.TenRuiRo = dto.TenRuiRo;
+                existingRisk.IdNhanVienXuLy = dto.IdNhanVienXuLy;
+                existingRisk.XacSuatXayRa = dto.XacSuatXayRa;
+                existingRisk.MucDoAnhHuong = dto.MucDoAnhHuong;
+                existingRisk.DiemRuiRo = dto.DiemRuiRo;
+                existingRisk.KeHoachPhongNgua = dto.KeHoachPhongNgua;
+                existingRisk.KeHoachUngPho = dto.KeHoachUngPho;
+
+                existingRisk.NgayCapNhat = DateTime.Now;
+                existingRisk.NguoiCapNhat = currentUser;
+
+                existingRisk.Save();
+                result = existingRisk;
+            }
+
+            return result;
+        }
+        public void DeleteRisk(TblRuiRoDuAn risk)
+        {
+            _repository.DeleteRisk(risk);
         }
     }
 }

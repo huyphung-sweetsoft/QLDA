@@ -439,6 +439,37 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
+		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colTblCongViecRecords;
+		public SweetSoft.QLDA.DataAccess.TblCongViecCollection TblCongViecRecords()
+		{
+			if(colTblCongViecRecords == null)
+			{
+				colTblCongViecRecords = new SweetSoft.QLDA.DataAccess.TblCongViecCollection().Where(TblCongViec.Columns.IdGiaiDoanDuAn, IdGiaiDoanDuAn).Load();
+				colTblCongViecRecords.ListChanged += new ListChangedEventHandler(colTblCongViecRecords_ListChanged);
+			}
+			return colTblCongViecRecords;
+		}
+				
+		void colTblCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblCongViecRecords[e.NewIndex].IdGiaiDoanDuAn = IdGiaiDoanDuAn;
+            }
+		}
+		#endregion
+		
 			
 		
 		#region ForeignKey Properties
@@ -688,10 +719,32 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
+        public void SetPKValues()
+        {
+                if (colTblCongViecRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colTblCongViecRecords)
+                    {
+                        if (item.IdGiaiDoanDuAn == null ||item.IdGiaiDoanDuAn != IdGiaiDoanDuAn)
+                        {
+                            item.IdGiaiDoanDuAn = IdGiaiDoanDuAn;
+                        }
+                    }
+               }
+		}
         #endregion
     
         #region Deep Save
 		
+        public void DeepSave()
+        {
+            Save();
+            
+                if (colTblCongViecRecords != null)
+                {
+                    colTblCongViecRecords.SaveAll();
+               }
+		}
         #endregion
 	}
 }

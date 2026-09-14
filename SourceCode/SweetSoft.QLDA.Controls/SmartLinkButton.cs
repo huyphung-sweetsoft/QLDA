@@ -78,6 +78,9 @@ namespace SweetSoft.QLDA.Controls
                     case "SAVE":
                         this.CssClass = "btn btn-outline-warning btn-sm text-center btn-smart-link";
                         break;
+                    case "FAST_APPROVAL":
+                        this.CssClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
+                        break;
                     case "RESET_PASSWORD":
                     default:
                         this.CssClass = "btn btn-outline-primary btn-sm text-center btn-smart-link";
@@ -107,6 +110,8 @@ namespace SweetSoft.QLDA.Controls
                     return "Thêm";
                 case "SAVE":
                     return "Lưu";
+                case "FAST_APPROVAL":
+                    return "Duyệt nhanh";
                 default:
                     return resourceKey;
 

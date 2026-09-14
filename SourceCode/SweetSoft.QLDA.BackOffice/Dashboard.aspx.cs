@@ -15,7 +15,47 @@ namespace SweetSoft.QLDA.BackOffice
 
         protected void Page_Init(object sender, EventArgs e)
         {
+            PreserveMenuOnPostBack();
             LoadDashboard(PAGE_FUNCTION_CODE);
+        }
+
+        /// <summary>
+        /// The master menu is rendered only on the first request and its
+        /// Literal disables ViewState. Dashboard filters use a full postback,
+        /// so enable ViewState for that Literal only while Dashboard.aspx is
+        /// active. This keeps the shared MasterPage unchanged.
+        /// </summary>
+        private void PreserveMenuOnPostBack()
+        {
+            Control menu = FindControlRecursive(Master, "ltrMenu");
+            if (menu != null)
+            {
+                menu.EnableViewState = true;
+            }
+        }
+
+        private static Control FindControlRecursive(Control root, string id)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            if (string.Equals(root.ID, id, StringComparison.Ordinal))
+            {
+                return root;
+            }
+
+            foreach (Control child in root.Controls)
+            {
+                Control match = FindControlRecursive(child, id);
+                if (match != null)
+                {
+                    return match;
+                }
+            }
+
+            return null;
         }
 
         private ModuleKeys ResolveRequestedModule()
