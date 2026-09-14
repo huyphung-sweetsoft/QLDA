@@ -619,11 +619,9 @@
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
-    <Content Include="Scripts\Auto-Generate-DB.txt" />
     <Content Include="Styles\css\landingpage.css" />
     <Content Include="Styles\images\addImage.jpg" />
     <Content Include="Styles\images\background-app.png" />
-    <Content Include="Styles\images\champion_award.jpg" />
     <Content Include="Styles\images\excel-thumbnail.jpg" />
     <Content Include="Styles\images\image-share.png" />
     <Content Include="Styles\images\lich_thi_background.jpg" />
@@ -632,7 +630,7 @@
     <Content Include="Styles\images\auth-bg.png" />
     <Content Include="Styles\images\schedule_background.png" />
     <Content Include="Styles\images\share-image.jpg" />
-    <Content Include="Styles\images\share-image.png" />
+    <Content Include="Styles\images\SweetSoft-logo-light.png" />
     <Content Include="Styles\js\dashboard.js" />
     <Content Include="Styles\js\trang-chu.js" />
     <Content Include="Styles\plugins\ckeditor\lang\vi.js" />
@@ -651,16 +649,6 @@
     <Content Include="Styles\video\video-trang-chu.mp4" />
     <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
     <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260821.txt" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_20082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_21082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_24082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_26082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -1657,10 +1645,6 @@
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.Core.min.map" />
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.min.map" />
     <Content Include="Web.config" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\web.config" />
     <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
     <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
     <None Include="Web.Debug.config">
@@ -1883,7 +1867,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="Data\" />
     <Folder Include="obj\Debug\TempPE\" />
-    <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>
   <ItemGroup>
