@@ -20,3 +20,8 @@ SourceCode/SweetSoft.QLDA.BackOffice/Uploads/_Logs/ErrorLog_01092026.txt
 SourceCode/SweetSoft.QLDA.BackOffice/Uploads/_Logs/ErrorLog_02092026.txt
 SourceCode/SweetSoft.QLDA.BackOffice/Uploads/_Logs/ErrorLog_03092026.txt
 SourceCode/SweetSoft.QLDA.BackOffice/Uploads/_Logs/ErrorLog_04092026.txt
+/SourceCode/SweetSoft.QLDA.BackOffice/obj/Release
+/SourceCode/SweetSoft.QLDA.BackOffice/Properties/PublishProfiles
+/SourceCode/SweetSoft.QLDA.Controls/obj/Release
+/SourceCode/SweetSoft.QLDA.Core/obj/Release
+/SourceCode/SweetSoft.QLDA.DataAccess/obj/Release
