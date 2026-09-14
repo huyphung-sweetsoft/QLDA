@@ -448,6 +448,7 @@
                                 runat="server"
                                 ID="txtStartDate"
                                 TextMode="Date"
+                                onchange="updateStageDatesMin()"
                                 CssClass="form-control">
                             </asp:TextBox>
                         </div>
@@ -746,6 +747,7 @@
     // Khởi tạo slider sau khi DOM sẵn sàng
     document.addEventListener("DOMContentLoaded", function () {
         ProjectStageJs.InitSlider();
+        updateStageDatesMin();
     });
 
     // Khởi tạo lại sau UpdatePanel refresh
@@ -754,6 +756,29 @@
             .add_endRequest(function () {
                 ProjectStageJs._offset = 0;
                 ProjectStageJs.InitSlider();
+                updateStageDatesMin();
             });
+    }
+
+    function updateStageDatesMin() {
+        var startDateInput = document.getElementById('<%= txtStartDate.ClientID %>');
+        var expectedEndDateInput = document.getElementById('<%= txtExpectedEndDate.ClientID %>');
+        var actualEndDateInput = document.getElementById('<%= txtActualEndDate.ClientID %>');
+        
+        if (startDateInput) {
+            if (!startDateInput._hasMinListener) {
+                startDateInput.addEventListener('change', updateStageDatesMin);
+                startDateInput.addEventListener('input', updateStageDatesMin);
+                startDateInput._hasMinListener = true;
+            }
+
+            if (startDateInput.value) {
+                if (expectedEndDateInput) expectedEndDateInput.min = startDateInput.value;
+                if (actualEndDateInput) actualEndDateInput.min = startDateInput.value;
+            } else {
+                if (expectedEndDateInput) expectedEndDateInput.min = '';
+                if (actualEndDateInput) actualEndDateInput.min = '';
+            }
+        }
     }
 </script>
