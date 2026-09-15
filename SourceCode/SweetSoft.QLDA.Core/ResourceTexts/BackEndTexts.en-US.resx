@@ -228,8 +228,8 @@
   <data name="CONTINUE" xml:space="preserve">
     <value>Continue</value>
   </data>
-  <data name="CONTINGENCY" xml:space="preserve">
-    <value>Contingency</value>
+  <data name="HANDLING_PLAN" xml:space="preserve">
+    <value>Handling plan</value>
   </data>
   <data name="COPY" xml:space="preserve">
     <value>Copy</value>
@@ -2220,5 +2220,60 @@
   </data>
   <data name="EMPLOYEE_SCHEDULE" xml:space="preserve">
     <value>Employee Schedule</value>
+  </data>
+</root>
+  <data name="SHOW_ONLY_OVERDUE_TASKS" xml:space="preserve">
+    <value>Show only overdue tasks</value>
+  </data>
+  <data name="COLLAPSE_ALL" xml:space="preserve">
+    <value>Collapse all</value>
+  </data>
+  <data name="EXPAND_ALL" xml:space="preserve">
+    <value>Expand all</value>
+  </data>
+  <data name="PERSONEL_ASSIGNMENT" xml:space="preserve">
+    <value>Personel assignment</value>
+  </data>
+  <data name="TOTAL_COST_MIN" xml:space="preserve">
+    <value>Total cost from</value>
+  </data>
+  <data name="LOWEST_TOTAL_AMOUNT" xml:space="preserve">
+    <value>Lowest total amount</value>
+  </data>
+  <data name="HIGHEST_TOTAL_AMOUNT" xml:space="preserve">
+    <value>Highest total amount</value>
+  </data>
+  <data name="MEET_DURATION" xml:space="preserve">
+    <value>Meet duration (minutes)</value>
+  </data>
+  <data name="TIME_PARSING_ERROR" xml:space="preserve">
+    <value>Time parsing error! Server received string: {0} </value>
+  </data>
+  <data name="APPROVE_COST_SUCCESS" xml:space="preserve">
+    <value>Cost approved successfully!</value>
+  </data>
+  <data name="ASSIGN_TASK_SUCCESS" xml:space="preserve">
+    <value>Task assigned successfully!</value>
+  </data>
+  <data name="REQUIRE_TASK_DATES_BEFORE_ASSIGN" xml:space="preserve">
+    <value>Please set 'Start date' and 'Duration' for the task before assigning personnel!</value>
+  </data>
+  <data name="CANNOT_ASSIGN_TO_PARENT_TASK" xml:space="preserve">
+    <value>Cannot assign to a Phase/Parent Task. Please select a detailed task at the lowest level!</value>
+  </data>
+  <data name="NO_PERMISSION_ADD" xml:space="preserve">
+    <value>You do not have permission to add a new!</value>
+  </data>
+  <data name="NO_PERMISSION_EDIT" xml:space="preserve">
+    <value>You do not have permission to edit!</value>
+  </data>
+  <data name="INVALID_START_DATE_LIMIT" xml:space="preserve">
+    <value>Invalid start date! Must be from {0} onwards (due to {1}).</value>
+  </data>
+  <data name="TASK_DURATION_MUST_BE_POSITIVE" xml:space="preserve">
+    <value>Task duration must be a positive integer greater than 0!</value>
+  </data>
+  <data name="TASK_HAS_NO_ASSIGNEE" xml:space="preserve">
+    <value>Task has no assignee!</value>
   </data>
 </root>
