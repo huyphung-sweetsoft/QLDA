@@ -478,7 +478,10 @@
                             <th><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
                         </tr></thead>
                         <tbody>
-                            <asp:Repeater runat="server" ID="rptVersions">
+                            <asp:Repeater
+                                runat="server"
+                                ID="rptVersions"
+                                OnItemCommand="rptVersions_ItemCommand">
                                 <ItemTemplate><tr>
                                     <td>
                                         v<%#: Eval("SoPhienBan") %>
@@ -486,6 +489,11 @@
                                             Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
                                             Text='<%# GetResourceText(BackEndResourceKeys.CURRENT_VERSION) %>'
                                             CssClass="badge bg-success ms-1" />
+                                        <asp:Label
+                                            runat="server"
+                                            Visible='<%# IsOfficialVersion(Eval("IdFile")) %>'
+                                            Text='<%# GetResourceText(BackEndResourceKeys.OFFICIAL_FILE) %>'
+                                            CssClass="badge bg-primary ms-1" />
                                     </td>
                                     <td><%#: GetFileName(Eval("TenFileGoc"), Eval("TenFile")) %></td>
                                     <td><%#: FormatFileSize(Eval("FileSize")) %></td>
@@ -494,16 +502,34 @@
                                     <td><%#: GetValueText(Eval("TenNguoiTao")) %></td>
                                     <td><%#: FormatDate(Eval("NgayTao")) %></td>
                                     <td>
-                                        <asp:HyperLink runat="server"
-                                            Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
-                                            NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
-                                            Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
-                                            Target="_blank"
-                                            CssClass="btn btn-sm btn-outline-primary" />
-                                        <asp:Label runat="server"
-                                            Visible='<%# !CanOpenFile(Eval("FileUrl")) %>'
-                                            Text='<%# GetResourceText(BackEndResourceKeys.FILE_NOT_AVAILABLE) %>'
-                                            CssClass="badge bg-warning text-dark" />
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <asp:HyperLink runat="server"
+                                                Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
+                                                NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
+                                                Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
+                                                Target="_blank"
+                                                CssClass="btn btn-sm btn-outline-primary" />
+                                            <asp:LinkButton
+                                                runat="server"
+                                                Visible='<%# CanSetOfficialFile(Eval("IdFile"), Eval("FileUrl")) %>'
+                                                CommandName="SET_OFFICIAL_FILE"
+                                                CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
+                                                Text='<%# GetResourceText(BackEndResourceKeys.SET_AS_OFFICIAL_FILE) %>'
+                                                CausesValidation="false"
+                                                CssClass="btn btn-sm btn-outline-success" />
+                                            <asp:LinkButton
+                                                runat="server"
+                                                Visible='<%# CanClearOfficialFile(Eval("IdFile")) %>'
+                                                CommandName="CLEAR_OFFICIAL_FILE"
+                                                CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
+                                                Text='<%# GetResourceText(BackEndResourceKeys.CLEAR_OFFICIAL_FILE) %>'
+                                                CausesValidation="false"
+                                                CssClass="btn btn-sm btn-outline-danger" />
+                                            <asp:Label runat="server"
+                                                Visible='<%# !CanOpenFile(Eval("FileUrl")) %>'
+                                                Text='<%# GetResourceText(BackEndResourceKeys.FILE_NOT_AVAILABLE) %>'
+                                                CssClass="badge bg-warning text-dark" />
+                                        </div>
                                     </td>
                                 </tr></ItemTemplate>
                             </asp:Repeater>
@@ -516,7 +542,19 @@
         <asp:PlaceHolder runat="server" ID="phSigningPane">
             <div class="tab-pane fade" id="document-signing" role="tabpanel">
                 <div class="document-detail__section">
-                    <div class="document-detail__section-title"><%= GetResourceText(BackEndResourceKeys.SIGNING_HISTORY) %></div>
+                    <div class="document-detail__section-title d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <span><%= GetResourceText(BackEndResourceKeys.SIGNING_HISTORY) %></span>
+                        <asp:Panel runat="server" ID="pnlSigningActions">
+                            <SweetSoft:ExtraButton
+                                runat="server"
+                                ID="btnOpenSubmitSigning"
+                                OnClick="btnOpenSubmitSigning_Click"
+                                ButtonStyle="Primary"
+                                ButtonSize="Small"
+                                ButtonIcon="Send"
+                                IsSubmit="false" />
+                        </asp:Panel>
+                    </div>
                     <asp:Panel runat="server" ID="pnlNoSigning" CssClass="document-detail__empty">
                         <i class="fas fa-file-signature"></i>
                         <%= GetResourceText(BackEndResourceKeys.NO_SIGNING_HISTORY) %>
@@ -533,19 +571,40 @@
                                 <th><%= GetResourceText(BackEndResourceKeys.NOTE) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
                             </tr></thead>
-                            <tbody><asp:Repeater runat="server" ID="rptSigning"><ItemTemplate><tr>
+                            <tbody><asp:Repeater
+                                runat="server"
+                                ID="rptSigning"
+                                OnItemCommand="rptSigning_ItemCommand"><ItemTemplate><tr>
                                 <td>v<%#: Eval("SoPhienBan") %></td>
                                 <td><%#: GetValueText(Eval("TenNguoiGui")) %></td>
                                 <td><%#: GetValueText(Eval("TenNguoiKyHienThi")) %></td>
                                 <td><%#: GetSigningMethodText(Eval("HinhThucKy")) %></td>
-                                <td><%#: GetValueText(Eval("TrangThaiTrinhKy")) %></td>
+                                <td><asp:Label runat="server"
+                                    Text='<%# GetSigningStatusText(Eval("TrangThaiTrinhKy")) %>'
+                                    CssClass='<%# GetSigningStatusCss(Eval("TrangThaiTrinhKy")) %>' /></td>
                                 <td><%#: GetDateRange(Eval("NgayGui"), Eval("NgayNhanLai")) %></td>
                                 <td><%#: GetValueText(Eval("GhiChu")) %></td>
-                                <td><asp:HyperLink runat="server"
-                                    Visible='<%# HasValue(Eval("IdFileSauKy")) %>'
-                                    NavigateUrl='<%# GetFileUrl(Eval("FileSauKyUrl")) %>'
-                                    Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
-                                    Target="_blank" CssClass="btn btn-sm btn-outline-primary" /></td>
+                                <td><div class="d-flex flex-wrap gap-1">
+                                    <asp:HyperLink runat="server"
+                                        Visible='<%# HasValue(Eval("IdFileSauKy")) && CanOpenFile(Eval("FileSauKyUrl")) %>'
+                                        NavigateUrl='<%# GetFileUrl(Eval("FileSauKyUrl")) %>'
+                                        Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
+                                        Target="_blank" CssClass="btn btn-sm btn-outline-primary" />
+                                    <asp:LinkButton runat="server"
+                                        Visible='<%# CanManagePendingSigning(Eval("TrangThaiTrinhKy")) %>'
+                                        CommandName="CONFIRM_SIGNED"
+                                        CommandArgument='<%# Eval("IdTrinhKyTaiLieu") %>'
+                                        Text='<%# GetResourceText(BackEndResourceKeys.CONFIRM_SIGNED) %>'
+                                        CausesValidation="false"
+                                        CssClass="btn btn-sm btn-outline-success" />
+                                    <asp:LinkButton runat="server"
+                                        Visible='<%# CanManagePendingSigning(Eval("TrangThaiTrinhKy")) %>'
+                                        CommandName="REQUEST_CHANGES"
+                                        CommandArgument='<%# Eval("IdTrinhKyTaiLieu") %>'
+                                        Text='<%# GetResourceText(BackEndResourceKeys.REQUEST_CHANGES) %>'
+                                        CausesValidation="false"
+                                        CssClass="btn btn-sm btn-outline-warning" />
+                                </div></td>
                             </tr></ItemTemplate></asp:Repeater></tbody>
                         </table>
                     </asp:Panel>
@@ -660,3 +719,149 @@
 </div>
     </ContentTemplate>
 </asp:UpdatePanel>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="mdlSubmitSigning"
+    Type="Primary"
+    Size="Normal"
+    FooterButtonClose="false"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:Panel runat="server" ID="pnlSubmitSigningForm" CssClass="validationEngineContainer">
+            <asp:HiddenField runat="server" ID="hdfSubmitSigningDocumentId" />
+            <asp:HiddenField runat="server" ID="hdfSubmitSigningSigner" />
+            <div class="alert alert-light border py-2">
+                <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.SIGNING_VERSION) %></div>
+                <asp:Label runat="server" ID="lblSubmitSigningVersion" CssClass="fw-semibold" />
+                <span class="mx-1">·</span>
+                <asp:Label runat="server" ID="lblSubmitSigningMethod" CssClass="fw-semibold" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.SIGNER) %></label>
+                <SweetSoft:ExtraDropdown
+                    runat="server"
+                    ID="ddlSubmitSigningSigner"
+                    ValueIsOfTypeGUID="true"
+                    SimpleInit="true"
+                    CssClass="form-select" />
+            </div>
+            <div class="mb-1">
+                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGNING_NOTE) %></label>
+                <SweetSoft:ExtraTextBox
+                    runat="server"
+                    ID="txtSubmitSigningNote"
+                    TextMode="MultiLine"
+                    Rows="3"
+                    MaxLength="500" />
+            </div>
+        </asp:Panel>
+    </ContentTemplate>
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <asp:Button
+                runat="server"
+                ID="btnSubmitSigning"
+                OnClick="btnSubmitSigning_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-primary btn-sm waves-effect waves-light" />
+            <asp:Button
+                runat="server"
+                ID="btnCancelSubmitSigning"
+                OnClick="btnCancelSubmitSigning_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="mdlSigningResult"
+    Type="Primary"
+    Size="Large"
+    FooterButtonClose="false"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:HiddenField runat="server" ID="hdfSigningResultId" />
+        <div class="small text-muted mb-2"><%= GetResourceText(BackEndResourceKeys.SIGNING_RESULT_FILE_HINT) %></div>
+        <SweetSoft:FilesBox
+            runat="server"
+            ID="fbSigningResult"
+            IsMultiple="false" />
+        <div class="mt-3">
+            <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGNING_NOTE) %></label>
+            <SweetSoft:ExtraTextBox
+                runat="server"
+                ID="txtSigningResultNote"
+                TextMode="MultiLine"
+                Rows="2"
+                MaxLength="500" />
+        </div>
+    </ContentTemplate>
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <asp:Button
+                runat="server"
+                ID="btnCompleteSigning"
+                OnClick="btnCompleteSigning_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-primary btn-sm waves-effect waves-light" />
+            <asp:Button
+                runat="server"
+                ID="btnCancelSigningResult"
+                OnClick="btnCancelSigningResult_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal
+    runat="server"
+    ID="mdlSigningChanges"
+    Type="Primary"
+    Size="Normal"
+    FooterButtonClose="false"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:HiddenField runat="server" ID="hdfSigningChangesId" />
+        <div class="mb-1">
+            <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.REQUEST_CHANGES) %></label>
+            <SweetSoft:ExtraTextBox
+                runat="server"
+                ID="txtSigningChangeReason"
+                TextMode="MultiLine"
+                Rows="4"
+                MaxLength="500" />
+        </div>
+    </ContentTemplate>
+    <FooterTemplate>
+        <div class="d-flex gap-2">
+            <asp:Button
+                runat="server"
+                ID="btnRequestSigningChanges"
+                OnClick="btnRequestSigningChanges_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-primary btn-sm waves-effect waves-light" />
+            <asp:Button
+                runat="server"
+                ID="btnCancelSigningChanges"
+                OnClick="btnCancelSigningChanges_Click"
+                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                CausesValidation="false"
+                UseSubmitBehavior="true"
+                CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
+        </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>

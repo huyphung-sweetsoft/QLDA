@@ -83,5 +83,58 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repository.GenerateMaVanDe(projectId);
         }
+        public TblVanDe CreateOrUpdate(TblVanDe dto)
+        {
+            BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
+            BusinessValidator.ThrowIfNullOrEmpty(dto.TenVanDe, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenVanDe));
+            BusinessValidator.ThrowIf(dto.IdDuAn == Guid.Empty || dto.IdDuAn == null, BackEndResourceKeys.INVALID_DATA, nameof(dto.IdDuAn));
+
+            string currentUser = SweetContext.Current != null ? SweetContext.Current.UserName : "System";
+            bool isInsert = (dto.IdVanDe == Guid.Empty);
+            TblVanDe result = null;
+
+            if (isInsert)
+            {
+                dto.IdVanDe = Guid.NewGuid();
+                dto.DaXoa = false;
+                dto.TrangThai = 0;
+
+                dto.MaVanDe = GenerateMaVanDe(dto.IdDuAn);
+
+                dto.NgayTao = DateTime.Now;
+                dto.NguoiTao = currentUser;
+                dto.NgayCapNhat = DateTime.Now;
+                dto.NguoiCapNhat = currentUser;
+
+                dto.Save();
+                result = dto;
+            }
+            else
+            {
+                TblVanDe existingIssue = TblVanDe.FetchByID(dto.IdVanDe);
+                BusinessValidator.ThrowIfNull(existingIssue, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdVanDe), ErrorCodes.NotFound);
+
+                existingIssue.TenVanDe = dto.TenVanDe;
+                existingIssue.MoTaChiTiet = dto.MoTaChiTiet;
+                existingIssue.KeHoachXuLy = dto.KeHoachXuLy;
+                existingIssue.IdCongViecBiAnhHuong = dto.IdCongViecBiAnhHuong;
+                existingIssue.IdCongViecPhatSinh = dto.IdCongViecPhatSinh;
+                existingIssue.MucDoAnhHuong = dto.MucDoAnhHuong;
+                existingIssue.NguonGocVanDe = dto.NguonGocVanDe;
+
+                existingIssue.NgayCapNhat = DateTime.Now;
+                existingIssue.NguoiCapNhat = currentUser;
+
+                existingIssue.Save();
+                result = existingIssue;
+            }
+
+            if (result != null)
+            {
+                SyncNhanVienXuLyVanDe(result.IdVanDe, result.IdCongViecPhatSinh.Value);
+            }
+
+            return result;
+        }
     }
 }

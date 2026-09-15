@@ -230,17 +230,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblCongViec ActiveRecord object related to this TblCongViecNhanVien
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViec
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViec); }
-			set { SetColumnValue("IdCongViec", value.IdCongViec); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a AspnetUser ActiveRecord object related to this TblCongViecNhanVien
 		/// 
 		/// </summary>
@@ -248,6 +237,17 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVien); }
 			set { SetColumnValue("IdNhanVien", value.UserId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblCongViec ActiveRecord object related to this TblCongViecNhanVien
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViec
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViec); }
+			set { SetColumnValue("IdCongViec", value.IdCongViec); }
 		}
 		
 		

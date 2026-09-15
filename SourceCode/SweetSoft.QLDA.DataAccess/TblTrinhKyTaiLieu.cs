@@ -510,17 +510,6 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		/// <summary>
-		/// Returns a TblPhienBanTaiLieu ActiveRecord object related to this TblTrinhKyTaiLieu
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu TblPhienBanTaiLieu
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu.FetchByID(this.IdPhienBanTaiLieu); }
-			set { SetColumnValue("IdPhienBanTaiLieu", value.IdPhienBanTaiLieu); }
-		}
-		
-		
-		/// <summary>
 		/// Returns a TblUploadFile ActiveRecord object related to this TblTrinhKyTaiLieu
 		/// 
 		/// </summary>
@@ -528,6 +517,17 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileSauKy); }
 			set { SetColumnValue("IdFileSauKy", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblPhienBanTaiLieu ActiveRecord object related to this TblTrinhKyTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu TblPhienBanTaiLieu
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblPhienBanTaiLieu.FetchByID(this.IdPhienBanTaiLieu); }
+			set { SetColumnValue("IdPhienBanTaiLieu", value.IdPhienBanTaiLieu); }
 		}
 		
 		

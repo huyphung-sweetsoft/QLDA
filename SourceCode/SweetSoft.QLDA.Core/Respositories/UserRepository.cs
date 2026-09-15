@@ -67,55 +67,71 @@ namespace SweetSoft.QLDA.Core.Respositories
         public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
+
+            // Xử lý an toàn cho kiểu BIT (Hỗ trợ cả "True"/"False" lẫn "1"/"0")
+            object isActivatedObj = parameters.ContainsKey(AspnetUser.Columns.IsActivated) ? parameters[AspnetUser.Columns.IsActivated] : null;
+            string isActivatedSql = "NULL";
+            if (isActivatedObj != null && isActivatedObj != DBNull.Value)
+            {
+                string val = isActivatedObj.ToString().Trim().ToLower();
+                if (val == "true" || val == "1") isActivatedSql = "1";
+                else if (val == "false" || val == "0") isActivatedSql = "0";
+            }
+
+            object laNhanVienObj = parameters.ContainsKey("LaNhanVien") ? parameters["LaNhanVien"] : null;
+            string laNhanVienSql = "NULL";
+            if (laNhanVienObj != null && laNhanVienObj != DBNull.Value)
+            {
+                string val = laNhanVienObj.ToString().Trim().ToLower();
+                if (val == "true" || val == "1") laNhanVienSql = "1";
+                else if (val == "false" || val == "0") laNhanVienSql = "0";
+            }
             string sql = $@"
-            DECLARE @startRow INT = {pageNumber};
-            DECLARE @endRow INT = {pageSize};
+    DECLARE @startRow INT = {pageNumber};
+    DECLARE @endRow INT = {pageSize};
 
-            -- KIỂU BIT: KHÔNG BỌC NHÁY ĐƠN ĐỂ SQL NHẬN TỪ KHÓA null
-            DECLARE @isActivated BIT = {InlineQueryHelpers.SQLEncode(parameters.ContainsKey(AspnetUser.Columns.IsActivated) ? parameters[AspnetUser.Columns.IsActivated] : "null")};
-            DECLARE @laNhanVien BIT = {InlineQueryHelpers.SQLEncode(parameters.ContainsKey("LaNhanVien") ? parameters["LaNhanVien"] : "null")};
+    DECLARE @isActivated BIT = {isActivatedSql};
+    DECLARE @laNhanVien BIT = {laNhanVienSql};
 
-            -- KIỂU GUID: BỌC NHÁY ĐƠN (Vì đã được thẻ ValueIsOfTypeGUID ép về Guid.Empty)
-            DECLARE @roleId VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey(AspnetRole.Columns.RoleId) ? parameters[AspnetRole.Columns.RoleId] : Guid.Empty)}';
-            DECLARE @idPhongBan VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("IdPhongBan") ? parameters["IdPhongBan"] : Guid.Empty)}';
-            DECLARE @idChucDanh VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("IdChucDanh") ? parameters["IdChucDanh"] : Guid.Empty)}';
+    DECLARE @roleId VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey(AspnetRole.Columns.RoleId) ? parameters[AspnetRole.Columns.RoleId] : Guid.Empty)}';
+    DECLARE @idPhongBan VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("IdPhongBan") ? parameters["IdPhongBan"] : Guid.Empty)}';
+    DECLARE @idChucDanh VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("IdChucDanh") ? parameters["IdChucDanh"] : Guid.Empty)}';
 
-            DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
+    DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
 
-            SELECT * FROM (
-                SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
-                    SELECT f.*
-                    , ms.Email
-                    , pb.TenPhongBan
-                    , cd.TenChucDanh
-                    , RoleName = (
-                        SELECT TOP 1 RoleName FROM aspnet_Roles r
-                        INNER JOIN aspnet_UsersInRoles mp ON mp.RoleId = r.RoleId 
-                        WHERE mp.UserId = f.UserId
-                    )
-                    , COUNT(1) OVER() AS total_records
-                    FROM aspnet_Users f
-                    INNER JOIN aspnet_Membership ms ON ms.UserId = f.UserId
-                    LEFT JOIN aspnet_UsersInRoles r ON r.UserId = f.UserId 
-                    LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-                    LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
-                    WHERE f.IsDeleted = 0 
-            
-                    -- SỬ DỤNG LẠI CÚ PHÁP WHERE SẠCH ĐẸP CỦA CODE GỐC
-                    AND (@isActivated IS NULL OR f.IsActivated = @isActivated)
-                    AND (@laNhanVien IS NULL OR f.LaNhanVien = @laNhanVien)
-                    AND (@roleId = '{Guid.Empty}' OR r.RoleId = @roleId)
-                    AND (@idPhongBan = '{Guid.Empty}' OR f.IdPhongBan = @idPhongBan)
-                    AND (@idChucDanh = '{Guid.Empty}' OR f.IdChucDanh = @idChucDanh)
-                    AND (@singleKeyWord = N'%%'
-                    OR f.Username LIKE @singleKeyWord
-                    OR f.DisplayName LIKE @singleKeyWord
-                    OR ms.Email LIKE @singleKeyWord
-                    OR f.MobileAlias LIKE @singleKeyWord
-                    OR f.IdCCCD LIKE @singleKeyWord
-                    OR f.DiaChi LIKE @singleKeyWord)
-                ) AS T
-            ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
+    SELECT * FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
+            SELECT f.*
+            , ms.Email
+            , pb.TenPhongBan
+            , cd.TenChucDanh
+            , RoleName = (
+                SELECT TOP 1 RoleName FROM aspnet_Roles r
+                INNER JOIN aspnet_UsersInRoles mp ON mp.RoleId = r.RoleId 
+                WHERE mp.UserId = f.UserId
+            )
+            , COUNT(1) OVER() AS total_records
+            FROM aspnet_Users f
+            INNER JOIN aspnet_Membership ms ON ms.UserId = f.UserId
+            LEFT JOIN aspnet_UsersInRoles r ON r.UserId = f.UserId 
+            LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
+            LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+            WHERE f.IsDeleted = 0 
+    
+            AND (@isActivated IS NULL OR f.IsActivated = @isActivated)
+            AND (@laNhanVien IS NULL OR f.LaNhanVien = @laNhanVien)
+            AND (@roleId = '{Guid.Empty}' OR r.RoleId = @roleId)
+            AND (@idPhongBan = '{Guid.Empty}' OR f.IdPhongBan = @idPhongBan)
+            AND (@idChucDanh = '{Guid.Empty}' OR f.IdChucDanh = @idChucDanh)
+            AND (@singleKeyWord = N'%%'
+            OR f.Username LIKE @singleKeyWord
+            OR f.DisplayName LIKE @singleKeyWord
+            OR ms.Email LIKE @singleKeyWord
+            OR f.MobileAlias LIKE @singleKeyWord
+            OR f.IdCCCD LIKE @singleKeyWord
+            OR f.DiaChi LIKE @singleKeyWord)
+        ) AS T
+    ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
 
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null) return null;
@@ -129,11 +145,29 @@ namespace SweetSoft.QLDA.Core.Respositories
         public override DataTable SearchPaging(Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
+
+            // Xử lý an toàn cho kiểu BIT (Hỗ trợ cả "True"/"False" lẫn "1"/"0")
+            object isActivatedObj = parameters.ContainsKey(AspnetUser.Columns.IsActivated) ? parameters[AspnetUser.Columns.IsActivated] : null;
+            string isActivatedSql = "NULL";
+            if (isActivatedObj != null && isActivatedObj != DBNull.Value)
+            {
+                string val = isActivatedObj.ToString().Trim().ToLower();
+                if (val == "true" || val == "1") isActivatedSql = "1";
+                else if (val == "false" || val == "0") isActivatedSql = "0";
+            }
+
+            object laNhanVienObj = parameters.ContainsKey("LaNhanVien") ? parameters["LaNhanVien"] : null;
+            string laNhanVienSql = "NULL";
+            if (laNhanVienObj != null && laNhanVienObj != DBNull.Value)
+            {
+                string val = laNhanVienObj.ToString().Trim().ToLower();
+                if (val == "true" || val == "1") laNhanVienSql = "1";
+                else if (val == "false" || val == "0") laNhanVienSql = "0";
+            }
             string sql = $@"
     DECLARE @startRow INT = {pageNumber};
     DECLARE @endRow INT = {pageSize};
 
-    -- DỮ LIỆU CƠ BẢN DẠNG CHUỖI (CÓ NHÁY ĐƠN)
     DECLARE @userName NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(parameters.ContainsKey(AspnetUser.Columns.UserName) ? parameters[AspnetUser.Columns.UserName] : string.Empty)}%';
     DECLARE @displayName NVARCHAR(250) = N'%{InlineQueryHelpers.SQLEncode(parameters.ContainsKey(AspnetUser.Columns.DisplayName) ? parameters[AspnetUser.Columns.DisplayName] : string.Empty)}%';
     DECLARE @email NVARCHAR(250) = N'%{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("Email") ? parameters["Email"] : string.Empty)}%';
@@ -147,11 +181,9 @@ namespace SweetSoft.QLDA.Core.Respositories
     DECLARE @ngayGiaNhapTu VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("NgayGiaNhapTu") ? parameters["NgayGiaNhapTu"] : string.Empty)}';
     DECLARE @ngayGiaNhapDen VARCHAR(50) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("NgayGiaNhapDen") ? parameters["NgayGiaNhapDen"] : string.Empty)}';
 
-    -- KIỂU BIT: KHÔNG BỌC NHÁY ĐƠN ĐỂ SQL NHẬN TỪ KHÓA null
-    DECLARE @isActivated BIT = {InlineQueryHelpers.SQLEncode(parameters.ContainsKey(AspnetUser.Columns.IsActivated) ? parameters[AspnetUser.Columns.IsActivated] : "null")};
-    DECLARE @laNhanVien BIT = {InlineQueryHelpers.SQLEncode(parameters.ContainsKey("LaNhanVien") ? parameters["LaNhanVien"] : "null")};
+    DECLARE @isActivated BIT = {isActivatedSql};
+    DECLARE @laNhanVien BIT = {laNhanVienSql};
 
-    -- KIỂU GUID: BỌC NHÁY ĐƠN
     DECLARE @roleId VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("RoleId") ? parameters["RoleId"] : Guid.Empty)}';
     DECLARE @idPhongBan VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("IdPhongBan") ? parameters["IdPhongBan"] : Guid.Empty)}';
     DECLARE @idChucDanh VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters.ContainsKey("IdChucDanh") ? parameters["IdChucDanh"] : Guid.Empty)}';
@@ -181,13 +213,11 @@ namespace SweetSoft.QLDA.Core.Respositories
             AND (@phoneNumber = N'%%' OR f.MobileAlias LIKE @phoneNumber)
             AND (@IdCCCD = N'%%' OR f.IdCCCD LIKE @IdCCCD)
             AND (@diaChi = N'%%' OR f.DiaChi LIKE @diaChi)
-            -- Đề phòng Dropdown Giới tính trả về chữ 'null'
             AND (@gioiTinh = N'' OR @gioiTinh = 'null' OR f.GioiTinh = @gioiTinh) 
             
             AND (@lastActivityDateFrom = '' OR @lastActivityDateTo = '' OR f.LastActivityDate BETWEEN @lastActivityDateFrom AND @lastActivityDateTo)
             AND (@ngayGiaNhapTu = '' OR @ngayGiaNhapDen = '' OR f.NgayGiaNhap BETWEEN @ngayGiaNhapTu AND @ngayGiaNhapDen)
 
-            -- CÚ PHÁP TÌM KIẾM THEO DROP-DOWN SẠCH ĐẸP
             AND (@isActivated IS NULL OR f.IsActivated = @isActivated)
             AND (@laNhanVien IS NULL OR f.LaNhanVien = @laNhanVien)
             AND (@roleId = '{Guid.Empty}' OR r.RoleId = @roleId)

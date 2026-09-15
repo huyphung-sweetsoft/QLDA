@@ -249,9 +249,8 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
 
                         try
                         {
-                            risk.DaXoa = true;
-                            risk.NgayCapNhat = DateTime.Now;
-                            risk.Save();
+                            RiskManager.Instance.DeleteRisk(risk);
+                            
                             ShowSuccessDeleteData();
                             grvData.CurrentPageIndex = 1;
                             grvData.Rebind();

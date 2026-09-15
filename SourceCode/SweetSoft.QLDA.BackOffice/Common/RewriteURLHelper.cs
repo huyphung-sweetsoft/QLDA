@@ -58,6 +58,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Meets";
         }
+        public static string ProjectCosts(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Costs";
+        }
         public static string ProjectIssues(Guid projectId)
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Issues";
@@ -65,6 +69,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string ProjectPayments(Guid projectId)
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Payments";
+        }
+        public static string ProjectGanttCharts(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Gantts";
+        }
+        public static string ProjectReports(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Reports";
         }
         public static string AddTask(Guid projectId)
         {
@@ -84,6 +96,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/NhanViens?idNhanVien={SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
         }
+        // Dành cho Menu: Tự xem lịch của mình (Không truyền ID)
+        public static string LichCaNhan => "/Lich-ca-nhan";
+
+        // Dành cho trang Detail: Admin xem lịch người khác (Mã hóa ID)
+        public static string ViewLichCaNhan(Guid idNhanVien)
+        {
+            return $"/Lich-ca-nhan/{SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
+        }
         public static string Profile => "/Profile";
         public static string Roles => "/Roles";
         public static string AddRole => "/Role/Add";
@@ -94,7 +114,8 @@ namespace SweetSoft.QLDA.BackOffice.Common
         }
         public static string ViewDetailEmp(Guid userId)
         {
-            return $"/User/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";//cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
+            return $"/Employee/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
+        //cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
         }
         //-----------------------------------------
         public static string Classes => "/Classes";

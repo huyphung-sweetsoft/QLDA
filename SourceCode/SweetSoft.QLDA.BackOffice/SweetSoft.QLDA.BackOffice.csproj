@@ -181,6 +181,20 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
+    <Compile Include="fCosts\Controls\CtrlCost.ascx.cs">
+      <DependentUpon>CtrlCost.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCosts\Controls\CtrlCost.ascx.designer.cs">
+      <DependentUpon>CtrlCost.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fCosts\CostList.aspx.cs">
+      <DependentUpon>CostList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCosts\CostList.aspx.designer.cs">
+      <DependentUpon>CostList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.cs">
       <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -373,6 +387,13 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fGanttCharts\Gantts.aspx.cs">
+      <DependentUpon>Gantts.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fGanttCharts\Gantts.aspx.designer.cs">
+      <DependentUpon>Gantts.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fIssues\Controls\CtrlIssue.ascx.cs">
       <DependentUpon>CtrlIssue.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -415,6 +436,34 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fNhanVien\LichCaNhan.aspx.cs">
+      <DependentUpon>LichCaNhan.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\LichCaNhan.aspx.designer.cs">
+      <DependentUpon>LichCaNhan.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\NhanVienDetail.aspx.designer.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjectReports\ProjectReport.aspx.cs">
+      <DependentUpon>ProjectReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjectReports\ProjectReport.aspx.designer.cs">
+      <DependentUpon>ProjectReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -428,6 +477,20 @@
     </Compile>
     <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.designer.cs">
       <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.cs">
+      <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlLichSuDuAn.ascx.designer.cs">
+      <DependentUpon>CtrlLichSuDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.cs">
+      <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.designer.cs">
+      <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
@@ -471,6 +534,13 @@
     <Compile Include="fRisks\RiskList.aspx.designer.cs">
       <DependentUpon>RiskList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fTasks\Controls\CtrlChonNhanVienTask.ascx.cs">
+      <DependentUpon>CtrlChonNhanVienTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlChonNhanVienTask.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVienTask.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
       <DependentUpon>CtrlTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -484,6 +554,13 @@
     </Compile>
     <Compile Include="fTasks\TaskList.aspx.designer.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.cs">
+      <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.designer.cs">
+      <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -505,6 +582,20 @@
     </Compile>
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.designer.cs">
+      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\NhanVienDetail.aspx.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
+      <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="WebService.asmx.cs">
@@ -560,6 +651,8 @@
     <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="fCosts\Controls\CtrlCost.ascx" />
+    <Content Include="fCosts\CostList.aspx" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
     <Content Include="fCustomers\KhachHangDetail.aspx" />
     <Content Include="fCustomers\KhachHangList.aspx" />
@@ -593,10 +686,10 @@
     <Content Include="Controls\Notifications\CtrlNotifications.ascx" />
     <Content Include="Controls\TwoFA\CtrlTwoFactorAuthenticator.ascx" />
     <Content Include="Controls\TwoFA\handle-two-factor-authenticator.js" />
-    <Content Include="Default.aspx" />
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
+    <Content Include="fGanttCharts\Gantts.aspx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
@@ -604,10 +697,20 @@
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
+    <Content Include="fNhanVien\LichCaNhan.aspx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
+    <Content Include="fNhanVien\NhanVienDetail.aspx" />
+    <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
+    <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
+    <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
+    <Content Include="fProjectReports\ProjectReport.aspx" />
     <Content Include="fProjects\Controls\CtrlDuAn.ascx" />
     <Content Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx" />
+    <Content Include="fProjects\Controls\CtrlProjectTabs.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
     <Content Include="fProjects\DuAnList.aspx" />
     <Content Include="fThanhToan\ThanhToanList.aspx" />
@@ -635,11 +738,9 @@
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
-    <Content Include="Scripts\Auto-Generate-DB.txt" />
     <Content Include="Styles\css\landingpage.css" />
     <Content Include="Styles\images\addImage.jpg" />
     <Content Include="Styles\images\background-app.png" />
-    <Content Include="Styles\images\champion_award.jpg" />
     <Content Include="Styles\images\excel-thumbnail.jpg" />
     <Content Include="Styles\images\image-share.png" />
     <Content Include="Styles\images\lich_thi_background.jpg" />
@@ -648,7 +749,7 @@
     <Content Include="Styles\images\auth-bg.png" />
     <Content Include="Styles\images\schedule_background.png" />
     <Content Include="Styles\images\share-image.jpg" />
-    <Content Include="Styles\images\share-image.png" />
+    <Content Include="Styles\images\SweetSoft-logo-light.png" />
     <Content Include="Styles\js\dashboard.js" />
     <Content Include="Styles\js\trang-chu.js" />
     <Content Include="Styles\plugins\ckeditor\lang\vi.js" />
@@ -667,16 +768,6 @@
     <Content Include="Styles\video\video-trang-chu.mp4" />
     <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
     <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260821.txt" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_20082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_21082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_24082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_26082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -1673,10 +1764,6 @@
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.Core.min.map" />
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.min.map" />
     <Content Include="Web.config" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\web.config" />
     <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
     <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
     <None Include="Web.Debug.config">
@@ -1841,13 +1928,6 @@
     <Compile Include="Controls\Notifications\CtrlNotifications.ascx.designer.cs">
       <DependentUpon>CtrlNotifications.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Default.aspx.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Default.aspx.designer.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
-    </Compile>
     <Compile Include="fSettings\AuditTrails.aspx.cs">
       <DependentUpon>AuditTrails.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1899,7 +1979,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="Data\" />
     <Folder Include="obj\Debug\TempPE\" />
-    <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>
   <ItemGroup>

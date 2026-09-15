@@ -101,7 +101,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             string sql = $@"
                 DECLARE @projectId VARCHAR(36) = '{projectId}';
         
-                -- Dùng UPDLOCK và HOLDLOCK để khóa bảng với những giao dịch khác đang cố gắng đọc max ID
                 SELECT ISNULL(MAX(TRY_CAST(REPLACE(MaVanDe, 'Iss', '') AS INT)), 0) AS MaxNumber
                 FROM TblVanDe WITH (UPDLOCK, HOLDLOCK)
                 WHERE IdDuAn = @projectId 
@@ -124,18 +123,31 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
             return "Iss" + nextNumber;
         }
-        public void DeleteIssue(TblVanDe issue)
+        public bool DeleteIssue(TblVanDe item)
         {
-            BusinessValidator.ThrowIfNull(issue, BackEndResourceKeys.INVALID_DATA);
+            if (item == null) return false;
 
-            string sql = $@"
-                    UPDATE TblVanDe 
-                    SET DaXoa = 1, 
-                        NguoiCapNhat = N'{SweetContext.Current.UserName}', 
-                        NgayCapNhat = GETDATE()
-                    WHERE IdVanDe = '{issue.IdVanDe}'
-                ";
-            new InlineQuery().Execute(sql);
+            var id = item.IdVanDe;
+
+            TblVanDe itemOld = TblVanDe.FetchByID(id); 
+
+            item.DaXoa = true;
+            item.NgayCapNhat = DateTime.Now;
+            item.NguoiCapNhat = SweetContext.Current.UserName;
+            item.Save();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogChangesAsync(itemOld, item, "TblVanDe", id, string.Empty).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log delete for TblVanDe");
+                }
+            });
+            return true;
         }
     }
 }

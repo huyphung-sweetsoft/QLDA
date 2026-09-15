@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="TaskList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.TaskList" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fTasks/Controls/CtrlTask.ascx" TagPrefix="SweetSoft" TagName="CtrlTask" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
@@ -186,6 +187,7 @@
         <div class="col-xl-12">
             <div class="card p-2 min-h-sreen">
                 <SweetSoft:Navigation runat="server" ID="Navigation1" />
+                <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
                 <SweetSoft:CtrlTask runat="server" ID="CtrlTask1" />
             </div>
         </div>

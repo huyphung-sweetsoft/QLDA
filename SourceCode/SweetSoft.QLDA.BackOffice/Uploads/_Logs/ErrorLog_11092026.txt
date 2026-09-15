@@ -1,0 +1,23 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-09-11 08:56:20.017
+                URL: http://qlda.local/fUsers/UserList.aspx
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Projects
+                Session ID: Unknown
+                Exception Type: HttpCompileException
+                Message: d:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fUsers\UserList.aspx(186): error CS1061: 'ASP.fusers_userlist_aspx' does not contain a definition for 'lbtSubmit_Click' and no extension method 'lbtSubmit_Click' accepting a first argument of type 'ASP.fusers_userlist_aspx' could be found (are you missing a using directive or an assembly reference?)
+                Stack Trace:    at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: None
+                Inner Stack Trace: None
+                ========================
+                

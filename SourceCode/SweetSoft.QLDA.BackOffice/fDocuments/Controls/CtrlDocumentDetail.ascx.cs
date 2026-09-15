@@ -1,14 +1,20 @@
 using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.fFilesBox;
 using SweetSoft.QLDA.Core.FileManager;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
+using SweetSoft.QLDA.Core.Respositories;
+using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.Utils;
+using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Web.UI;
 using System.Web.Hosting;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
@@ -18,6 +24,134 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             "DocumentDetailVersionSaved";
         private const string DocumentVersionBeforeSaveCallbackKey =
             "DocumentDetailVersionBeforeSave";
+        private const string SigningResultSavedCallbackKey =
+            "DocumentDetailSigningResultSaved";
+        private const string SetOfficialFileCommand =
+            "SET_OFFICIAL_FILE";
+        private const string ClearOfficialFileCommand =
+            "CLEAR_OFFICIAL_FILE";
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+            fbVersions.FileDeletionRequested +=
+                FbVersions_FileDeletionRequested;
+            BindSigningSignerDropdown();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            if (ddlSubmitSigningSigner != null
+                && ddlSubmitSigningSigner.Items.Count == 0)
+            {
+                BindSigningSignerDropdown();
+            }
+            ConfigureSigningControls();
+        }
+
+        protected override void OnPreRender(EventArgs e)
+        {
+            RegisterSigningPostBackControls();
+            base.OnPreRender(e);
+        }
+
+        private void RegisterSigningPostBackControls()
+        {
+            ScriptManager script = ScriptManager.GetCurrent(Page);
+            if (script == null)
+                return;
+
+            if (btnSubmitSigning != null)
+                script.RegisterAsyncPostBackControl(btnSubmitSigning);
+
+            if (btnCancelSubmitSigning != null)
+                script.RegisterAsyncPostBackControl(btnCancelSubmitSigning);
+
+            if (btnCompleteSigning != null)
+                script.RegisterAsyncPostBackControl(btnCompleteSigning);
+
+            if (btnCancelSigningResult != null)
+                script.RegisterAsyncPostBackControl(btnCancelSigningResult);
+
+            if (btnRequestSigningChanges != null)
+                script.RegisterAsyncPostBackControl(btnRequestSigningChanges);
+
+            if (btnCancelSigningChanges != null)
+                script.RegisterAsyncPostBackControl(btnCancelSigningChanges);
+        }
+
+        private void ConfigureSigningControls()
+        {
+            if (btnOpenSubmitSigning == null)
+                return;
+
+            btnOpenSubmitSigning.Text = GetResourceText(
+                BackEndResourceKeys.SUBMIT_FOR_SIGNING);
+            if (btnSubmitSigning != null)
+                btnSubmitSigning.Text = GetResourceText(
+                    BackEndResourceKeys.SUBMIT_FOR_SIGNING);
+            if (btnCancelSubmitSigning != null)
+                btnCancelSubmitSigning.Text = GetResourceText(
+                    BackEndResourceKeys.CANCEL);
+            if (btnCompleteSigning != null)
+                btnCompleteSigning.Text = GetResourceText(
+                    BackEndResourceKeys.CONFIRM_SIGNED);
+            if (btnCancelSigningResult != null)
+                btnCancelSigningResult.Text = GetResourceText(
+                    BackEndResourceKeys.CANCEL);
+            if (btnRequestSigningChanges != null)
+                btnRequestSigningChanges.Text = GetResourceText(
+                    BackEndResourceKeys.REQUEST_CHANGES);
+            if (btnCancelSigningChanges != null)
+                btnCancelSigningChanges.Text = GetResourceText(
+                    BackEndResourceKeys.CANCEL);
+
+            if (ddlSubmitSigningSigner != null)
+            {
+                ddlSubmitSigningSigner.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+                ddlSubmitSigningSigner.Attributes["onchange"] =
+                    "var signerField=document.getElementById('"
+                    + hdfSubmitSigningSigner.ClientID
+                    + "');if(signerField){signerField.value=this.value;}";
+            }
+
+            if (fbSigningResult != null)
+            {
+                fbSigningResult.IsMultiple = false;
+                fbSigningResult.AcceptType =
+                    "application/pdf,image/jpeg,image/jpg,image/png";
+            }
+        }
+
+        private Guid? OfficialFileId
+        {
+            get
+            {
+                Guid value;
+                return Guid.TryParse(
+                    Convert.ToString(ViewState["OfficialFileId"]),
+                    out value)
+                    ? value
+                    : (Guid?)null;
+            }
+            set
+            {
+                ViewState["OfficialFileId"] = value.HasValue
+                    ? value.Value.ToString()
+                    : string.Empty;
+            }
+        }
+
+        private bool RequiresSigning
+        {
+            get
+            {
+                return ViewState["RequiresSigning"] != null
+                    && Convert.ToBoolean(ViewState["RequiresSigning"]);
+            }
+            set { ViewState["RequiresSigning"] = value; }
+        }
 
         public bool InitControls(Guid idTaiLieu)
         {
@@ -47,6 +181,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 document,
                 "CanGuiKhachHang");
             bool requiresStorage = GetBoolean(document, "CanLuuVatLy");
+            RequiresSigning = requiresSigning;
+            OfficialFileId = GetGuid(document, "IdFileBanChinhThuc");
 
             BindHeader(document);
             BindOverview(document);
@@ -69,6 +205,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || signingHistory.Rows.Count > 0;
             phSigningTab.Visible = showSigning;
             phSigningPane.Visible = showSigning;
+            pnlSigningActions.Visible = requiresSigning
+                && CURRENT_PAGE.IsEdit
+                && CanSubmitCurrentVersion(versions, signingHistory);
             BindRepeater(
                 rptSigning,
                 pnlSigning,
@@ -134,8 +273,146 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 key,
                 DocumentVersionSavedCallbackKey,
                 StringComparison.Ordinal);
-            if (!isBeforeSave && !isAfterSave)
+            bool isSigningResultSaved = string.Equals(
+                key,
+                SigningResultSavedCallbackKey,
+                StringComparison.Ordinal);
+            if (!isBeforeSave && !isAfterSave && !isSigningResultSaved)
             {
+                return;
+            }
+
+            if (isSigningResultSaved)
+            {
+                Guid signingId;
+                if (!Guid.TryParse(
+                        hdfSigningResultId.Value,
+                        out signingId)
+                    || signingId == Guid.Empty)
+                {
+                    throw new InvalidOperationException(
+                        "Không xác định được lần trình ký cần cập nhật.");
+                }
+
+                fbSigningResult.LoadFile(
+                    signingId,
+                    FileUploadTypes.DocumentSigningResult);
+                mdlSigningResult.UpdateContentModal();
+                KeepSigningTabOpen();
+                return;
+            }
+
+            Guid idTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || idTaiLieu == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Không xác định được hồ sơ cần cập nhật.");
+            }
+
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                throw new InvalidOperationException(
+                    GetResourceText(
+                        BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
+            }
+
+            if (isBeforeSave)
+            {
+                List<Guid> removedFileIds =
+                    fbVersions.GetPendingRemovedFileIds();
+                CreateRequestDocumentManager()
+                    .PrepareDocumentVersionFilesForDeletion(
+                        idTaiLieu,
+                        removedFileIds);
+                return;
+            }
+
+            CreateRequestDocumentManager().SyncDocumentVersions(idTaiLieu);
+            InitControls(idTaiLieu);
+            upDetail.Update();
+            KeepVersionsTabOpen();
+        }
+
+        private void FbVersions_FileDeletionRequested(
+            object sender,
+            FileDeletionRequestedEventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                throw new InvalidOperationException(
+                    GetResourceText(
+                        BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
+            }
+
+            Guid idTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || idTaiLieu == Guid.Empty
+                || e == null
+                || e.RefId != idTaiLieu
+                || e.RefType != FileUploadTypes.DocumentVersion)
+            {
+                throw new InvalidOperationException(
+                    "Danh sách tệp cần xóa không thuộc hồ sơ hiện tại.");
+            }
+
+            if (e.FileIds == null || e.FileIds.Count == 0)
+            {
+                e.Handled = true;
+                e.Succeeded = true;
+                return;
+            }
+
+            DocumentVersionFileDeletionResult result =
+                CreateRequestDocumentManager()
+                    .DeleteDocumentVersionFiles(idTaiLieu, e.FileIds);
+            e.Handled = true;
+            e.Succeeded = true;
+            e.WarningMessage = result == null
+                ? null
+                : result.WarningMessage;
+        }
+
+        private DocumentManager CreateRequestDocumentManager()
+        {
+            return new DocumentManager(SweetContext.Current);
+        }
+
+        private void BindSigningSignerDropdown()
+        {
+            if (ddlSubmitSigningSigner == null
+                || ddlSubmitSigningSigner.Items.Count > 0)
+            {
+                return;
+            }
+
+            ddlSubmitSigningSigner.Items.Clear();
+            List<AspnetUser> users = CreateRequestDocumentManager()
+                .GetAvailableSigningUsers();
+            foreach (AspnetUser user in users ?? new List<AspnetUser>())
+            {
+                if (user == null || user.UserId == Guid.Empty)
+                    continue;
+
+                string displayName = string.IsNullOrWhiteSpace(user.DisplayName)
+                    ? user.UserName
+                    : user.DisplayName;
+                ddlSubmitSigningSigner.Items.Add(
+                    new ListItem(
+                        string.IsNullOrWhiteSpace(displayName)
+                            ? user.UserId.ToString()
+                            : displayName,
+                        user.UserId.ToString()));
+            }
+        }
+
+        protected void btnOpenSubmitSigning_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
                 return;
             }
 
@@ -147,35 +424,425 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            try
+            {
+                DataTable versions = CreateRequestDocumentManager()
+                    .GetDocumentVersions(idTaiLieu);
+                DataRow currentVersion = null;
+                foreach (DataRow row in versions.Rows)
+                {
+                    if (row.Table.Columns.Contains("LaPhienBanHienTai")
+                        && row["LaPhienBanHienTai"] != DBNull.Value
+                        && Convert.ToBoolean(row["LaPhienBanHienTai"]))
+                    {
+                        currentVersion = row;
+                        break;
+                    }
+                }
+
+                if (currentVersion == null)
+                {
+                    ShowNotify(
+                        "Hồ sơ chưa có phiên bản hiện tại để trình ký.",
+                        MSGType.Warning);
+                    return;
+                }
+
+                hdfSubmitSigningDocumentId.Value = idTaiLieu.ToString();
+                lblSubmitSigningVersion.Text = "v"
+                    + GetValueText(currentVersion["SoPhienBan"]);
+                DataTable detail = CreateRequestDocumentManager()
+                    .GetCompanyDocumentDetail(idTaiLieu);
+                lblSubmitSigningMethod.Text = detail.Rows.Count == 0
+                    ? string.Empty
+                    : GetSigningMethodText(detail.Rows[0]["HinhThucKy"]);
+                txtSubmitSigningNote.Text = string.Empty;
+                if (ddlSubmitSigningSigner.Items.Count == 0)
+                    BindSigningSignerDropdown();
+                ddlSubmitSigningSigner.SelectedValue = string.Empty;
+                hdfSubmitSigningSigner.Value = string.Empty;
+                mdlSubmitSigning.Title = GetResourceText(
+                    BackEndResourceKeys.SUBMIT_FOR_SIGNING);
+                mdlSubmitSigning.OpenModal(true);
+                KeepSigningTabOpen();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+        }
+
+        protected void btnSubmitSigning_Click(object sender, EventArgs e)
+        {
             if (!CURRENT_PAGE.IsEdit)
             {
                 ShowAccessDeniedNotify();
                 return;
             }
 
+            Guid idTaiLieu;
+            Guid idNguoiKy;
+            string signerValue = GetPostedSigningSignerValue();
+            if (!Guid.TryParse(
+                    hdfSubmitSigningDocumentId.Value,
+                    out idTaiLieu)
+                || idTaiLieu == Guid.Empty
+                || !Guid.TryParse(
+                    signerValue,
+                    out idNguoiKy)
+                || idNguoiKy == Guid.Empty)
+            {
+                ShowNotify(
+                    GetResourceText(
+                        BackEndResourceKeys.SIGNING_SIGNER_REQUIRED),
+                    MSGType.Warning);
+                return;
+            }
+
             try
             {
-                if (isBeforeSave)
+                CreateRequestDocumentManager().SubmitDocumentSigning(
+                    idTaiLieu,
+                    idNguoiKy,
+                    txtSubmitSigningNote.Text);
+                mdlSubmitSigning.CloseModal(true);
+                RefreshSigningDetail(idTaiLieu);
+                ShowSuccessSaveData();
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                LogSigningHandlerError(
+                    "submit",
+                    idTaiLieu,
+                    exc);
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+
+        private string GetPostedSigningSignerValue()
+        {
+            string value = Request.Form[hdfSubmitSigningSigner.UniqueID];
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                value = Request.Form[
+                    ddlSubmitSigningSigner.UniqueID
+                    + ddlSubmitSigningSigner.HdfValue];
+            }
+
+            if (string.IsNullOrWhiteSpace(value))
+                value = ddlSubmitSigningSigner.SelectedValue;
+
+            return value;
+        }
+
+        protected void btnCancelSubmitSigning_Click(object sender, EventArgs e)
+        {
+            mdlSubmitSigning.CloseModal(true);
+            KeepSigningTabOpen();
+        }
+
+        protected void rptSigning_ItemCommand(
+            object source,
+            RepeaterCommandEventArgs e)
+        {
+            if (!string.Equals(
+                    e.CommandName,
+                    "CONFIRM_SIGNED",
+                    StringComparison.Ordinal)
+                && !string.Equals(
+                    e.CommandName,
+                    "REQUEST_CHANGES",
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idTrinhKyTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || !Guid.TryParse(
+                    Convert.ToString(e.CommandArgument),
+                    out idTrinhKyTaiLieu)
+                || idTaiLieu == Guid.Empty
+                || idTrinhKyTaiLieu == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                DataTable detail = CreateRequestDocumentManager()
+                    .GetSigningDetail(idTaiLieu, idTrinhKyTaiLieu);
+                if (detail.Rows.Count == 0
+                    || !IsPendingSigningStatus(
+                        detail.Rows[0]["TrangThaiTrinhKy"]))
                 {
-                    List<Guid> removedFileIds =
-                        fbVersions.GetPendingRemovedFileIds();
-                    DocumentManager.Instance
-                        .PrepareDocumentVersionFilesForDeletion(
-                            idTaiLieu,
-                            removedFileIds);
+                    ShowNotify(
+                        "Lần trình ký đã thay đổi hoặc không còn chờ xử lý.",
+                        MSGType.Warning);
                     return;
                 }
 
-                DocumentManager.Instance.SyncDocumentVersions(idTaiLieu);
+                if (string.Equals(
+                        e.CommandName,
+                        "CONFIRM_SIGNED",
+                        StringComparison.Ordinal))
+                {
+                    PrepareSigningResultForm(idTaiLieu, idTrinhKyTaiLieu);
+                }
+                else
+                {
+                    PrepareSigningChangesForm(idTaiLieu, idTrinhKyTaiLieu);
+                }
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+        }
+
+        private void PrepareSigningResultForm(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieu)
+        {
+            hdfSigningResultId.Value = idTrinhKyTaiLieu.ToString();
+            txtSigningResultNote.Text = string.Empty;
+            fbSigningResult.IsEnabled = true;
+            fbSigningResult.IsMultiple = false;
+            fbSigningResult.AcceptType =
+                "application/pdf,image/jpeg,image/jpg,image/png";
+            fbSigningResult.SaveDataCallbackKey =
+                SigningResultSavedCallbackKey;
+            fbSigningResult.BeforeSaveDataCallbackKey = null;
+            fbSigningResult.LoadFile(
+                idTrinhKyTaiLieu,
+                FileUploadTypes.DocumentSigningResult);
+            mdlSigningResult.Title = GetResourceText(
+                BackEndResourceKeys.CONFIRM_SIGNED)
+                + " / "
+                + GetResourceText(BackEndResourceKeys.SIGNING_RESULT_FILE);
+            mdlSigningResult.OpenModal(true);
+            KeepSigningTabOpen();
+        }
+
+        private void PrepareSigningChangesForm(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieu)
+        {
+            hdfSigningChangesId.Value = idTrinhKyTaiLieu.ToString();
+            txtSigningChangeReason.Text = string.Empty;
+            mdlSigningChanges.Title = GetResourceText(
+                BackEndResourceKeys.REQUEST_CHANGES);
+            mdlSigningChanges.OpenModal(true);
+            KeepSigningTabOpen();
+        }
+
+        protected void btnCompleteSigning_Click(object sender, EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idTrinhKyTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || !Guid.TryParse(
+                    hdfSigningResultId.Value,
+                    out idTrinhKyTaiLieu)
+                || idTaiLieu == Guid.Empty
+                || idTrinhKyTaiLieu == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                CreateRequestDocumentManager().CompleteDocumentSigning(
+                    idTaiLieu,
+                    idTrinhKyTaiLieu,
+                    txtSigningResultNote.Text);
+                mdlSigningResult.CloseModal(true);
+                RefreshSigningDetail(idTaiLieu);
+                ShowSuccessSaveData();
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                LogSigningHandlerError(
+                    "complete",
+                    idTaiLieu,
+                    exc);
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+
+        protected void btnCancelSigningResult_Click(object sender, EventArgs e)
+        {
+            mdlSigningResult.CloseModal(true);
+            KeepSigningTabOpen();
+        }
+
+        protected void btnRequestSigningChanges_Click(object sender, EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idTrinhKyTaiLieu;
+            string reason = (txtSigningChangeReason.Text ?? string.Empty).Trim();
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || !Guid.TryParse(
+                    hdfSigningChangesId.Value,
+                    out idTrinhKyTaiLieu)
+                || idTaiLieu == Guid.Empty
+                || idTrinhKyTaiLieu == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                ShowNotify(
+                    GetResourceText(
+                        BackEndResourceKeys.SIGNING_CHANGE_REASON_REQUIRED),
+                    MSGType.Warning);
+                return;
+            }
+
+            try
+            {
+                CreateRequestDocumentManager()
+                    .RequestDocumentSigningChanges(
+                        idTaiLieu,
+                        idTrinhKyTaiLieu,
+                        reason);
+                mdlSigningChanges.CloseModal(true);
+                RefreshSigningDetail(idTaiLieu);
+                ShowSuccessSaveData();
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                LogSigningHandlerError(
+                    "request changes",
+                    idTaiLieu,
+                    exc);
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+
+        protected void btnCancelSigningChanges_Click(object sender, EventArgs e)
+        {
+            mdlSigningChanges.CloseModal(true);
+            KeepSigningTabOpen();
+        }
+
+        private void RefreshSigningDetail(Guid idTaiLieu)
+        {
+            InitControls(idTaiLieu);
+            upDetail.Update();
+            KeepSigningTabOpen();
+        }
+
+        private void KeepSigningTabOpen()
+        {
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                GetType(),
+                "KeepDocumentSigningTabOpen",
+                "var tabElement=document.querySelector('[data-bs-target=\"#document-signing\"]');"
+                + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
+                true);
+        }
+
+        private static void LogSigningHandlerError(
+            string operation,
+            Guid idTaiLieu,
+            Exception exception)
+        {
+            SysLogger.LogError(
+                exception,
+                "Document signing {0} handler failed for document {1}",
+                operation,
+                idTaiLieu);
+        }
+
+        protected void rptVersions_ItemCommand(
+            object source,
+            RepeaterCommandEventArgs e)
+        {
+            bool setOfficial = string.Equals(
+                e.CommandName,
+                SetOfficialFileCommand,
+                StringComparison.Ordinal);
+            bool clearOfficial = string.Equals(
+                e.CommandName,
+                ClearOfficialFileCommand,
+                StringComparison.Ordinal);
+            if (!setOfficial && !clearOfficial)
+                return;
+
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idPhienBanTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || !Guid.TryParse(
+                    Convert.ToString(e.CommandArgument),
+                    out idPhienBanTaiLieu)
+                || idTaiLieu == Guid.Empty
+                || idPhienBanTaiLieu == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                if (setOfficial)
+                {
+                    DocumentManager.Instance.SetOfficialFile(
+                        idTaiLieu,
+                        idPhienBanTaiLieu);
+                }
+                else
+                {
+                    DocumentManager.Instance.ClearOfficialFile(
+                        idTaiLieu,
+                        idPhienBanTaiLieu);
+                }
+
                 InitControls(idTaiLieu);
                 upDetail.Update();
-                ScriptManager.RegisterStartupScript(
-                    this.Page,
-                    GetType(),
-                    "KeepDocumentVersionsTabOpen",
-                    "var tabElement=document.querySelector('[data-bs-target=\"#document-versions\"]');"
-                    + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
-                    true);
+                KeepVersionsTabOpen();
+                ShowSuccessSaveData();
             }
             catch (InvalidOperationException exc)
             {
@@ -185,6 +852,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
+        }
+
+        private void KeepVersionsTabOpen()
+        {
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                GetType(),
+                "KeepDocumentVersionsTabOpen",
+                "var tabElement=document.querySelector('[data-bs-target=\"#document-versions\"]');"
+                + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
+                true);
         }
 
         private void BindHeader(DataRow document)
@@ -313,10 +991,145 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (string.IsNullOrWhiteSpace(method))
                 return GetResourceText(BackEndResourceKeys.NOT_APPLICABLE);
 
-            return method == DocumentSigningMethodKeys.DigitalExternal
+            return string.Equals(
+                    method,
+                    DocumentSigningMethodKeys.DigitalExternal,
+                    StringComparison.OrdinalIgnoreCase)
                 ? GetResourceText(
                     BackEndResourceKeys.EXTERNAL_DIGITAL_SIGNING)
                 : GetResourceText(BackEndResourceKeys.PAPER_SIGNING);
+        }
+
+        protected string GetSigningStatusText(object value)
+        {
+            string status = Convert.ToString(value);
+            if (IsPendingSigningStatus(status))
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.SIGNING_PENDING);
+            }
+
+            if (string.Equals(
+                    status,
+                    DocumentSigningStatusKeys.ChangesRequested,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.SIGNING_REQUEST_CHANGES);
+            }
+
+            if (string.Equals(
+                    status,
+                    DocumentSigningStatusKeys.Signed,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.SIGNING_COMPLETED);
+            }
+
+            return GetValueText(value);
+        }
+
+        protected string GetSigningStatusCss(object value)
+        {
+            string status = Convert.ToString(value);
+            if (IsPendingSigningStatus(status))
+                return "badge bg-info";
+            if (string.Equals(
+                    status,
+                    DocumentSigningStatusKeys.ChangesRequested,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "badge bg-warning text-dark";
+            }
+            if (string.Equals(
+                    status,
+                    DocumentSigningStatusKeys.Signed,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "badge bg-success";
+            }
+
+            return "badge bg-secondary";
+        }
+
+        protected bool CanManagePendingSigning(object value)
+        {
+            return CURRENT_PAGE.IsEdit && IsPendingSigningStatus(value);
+        }
+
+        private static bool IsPendingSigningStatus(object value)
+        {
+            string status = Convert.ToString(value);
+            return string.Equals(
+                       status,
+                       DocumentSigningStatusKeys.Pending,
+                       StringComparison.OrdinalIgnoreCase)
+                || string.Equals(
+                       status,
+                       DocumentStatusKeys.PendingSignature,
+                       StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool CanSubmitCurrentVersion(
+            DataTable versions,
+            DataTable signingHistory)
+        {
+            Guid? currentVersionId = GetCurrentVersionId(versions);
+            if (!currentVersionId.HasValue)
+                return false;
+
+            if (signingHistory == null)
+                return true;
+
+            foreach (DataRow row in signingHistory.Rows)
+            {
+                Guid? signingVersionId = GetGuid(
+                    row,
+                    "IdPhienBanTaiLieu");
+                if (!signingVersionId.HasValue
+                    || signingVersionId.Value != currentVersionId.Value)
+                {
+                    continue;
+                }
+
+                string status = Convert.ToString(
+                    row["TrangThaiTrinhKy"]);
+                if (IsPendingSigningStatus(status)
+                    || string.Equals(
+                        status,
+                        DocumentSigningStatusKeys.ChangesRequested,
+                        StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(
+                        status,
+                        DocumentSigningStatusKeys.Signed,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static Guid? GetCurrentVersionId(DataTable versions)
+        {
+            if (versions == null)
+                return null;
+
+            foreach (DataRow row in versions.Rows)
+            {
+                if (GetBoolean(row, "LaPhienBanHienTai"))
+                {
+                    Guid? versionId = GetGuid(
+                        row,
+                        "IdPhienBanTaiLieu");
+                    if (versionId.HasValue && versionId.Value != Guid.Empty)
+                        return versionId;
+                }
+            }
+
+            return null;
         }
 
         protected string GetCustomerStatusText(
@@ -419,6 +1232,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             {
                 return false;
             }
+        }
+
+        protected bool IsOfficialVersion(object fileIdValue)
+        {
+            Guid fileId;
+            return OfficialFileId.HasValue
+                && Guid.TryParse(Convert.ToString(fileIdValue), out fileId)
+                && OfficialFileId.Value == fileId;
+        }
+
+        protected bool CanSetOfficialFile(
+            object fileIdValue,
+            object fileUrlValue)
+        {
+            return CURRENT_PAGE.IsEdit
+                && !RequiresSigning
+                && !IsOfficialVersion(fileIdValue)
+                && CanOpenFile(fileUrlValue);
+        }
+
+        protected bool CanClearOfficialFile(object fileIdValue)
+        {
+            return CURRENT_PAGE.IsEdit
+                && !RequiresSigning
+                && IsOfficialVersion(fileIdValue);
         }
 
         protected string FormatFileSize(object value)
@@ -544,6 +1382,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return GetResourceText(
                     BackEndResourceKeys.ACTIVITY_DELETE_VERSION);
             }
+            if (activityType == DocumentActivityTypeKeys.SetOfficialFile)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_SET_OFFICIAL_FILE);
+            }
+            if (activityType == DocumentActivityTypeKeys.ClearOfficialFile)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_CLEAR_OFFICIAL_FILE);
+            }
+            if (activityType == DocumentActivityTypeKeys.SubmitSigning)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_SUBMIT_SIGNING);
+            }
+            if (activityType == DocumentActivityTypeKeys.RequestSigningChanges)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_REQUEST_SIGNING_CHANGES);
+            }
+            if (activityType == DocumentActivityTypeKeys.CompleteSigning)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_COMPLETE_SIGNING);
+            }
 
             return GetValueText(value);
         }
@@ -557,6 +1420,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 == DocumentActivityReferenceKeys.DocumentVersion)
             {
                 return GetResourceText(BackEndResourceKeys.VERSION);
+            }
+            if (referenceType == DocumentActivityReferenceKeys.Signing)
+            {
+                return GetResourceText(BackEndResourceKeys.SIGNING_HISTORY);
             }
 
             return GetValueText(value);
@@ -590,6 +1457,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             return row.Table.Columns.Contains(columnName)
                 && row[columnName] != DBNull.Value
                 && Convert.ToBoolean(row[columnName]);
+        }
+
+        private static Guid? GetGuid(DataRow row, string columnName)
+        {
+            Guid value;
+            return row.Table.Columns.Contains(columnName)
+                && row[columnName] != DBNull.Value
+                && Guid.TryParse(Convert.ToString(row[columnName]), out value)
+                ? value
+                : (Guid?)null;
         }
 
         private static string JoinNonEmpty(params string[] values)
