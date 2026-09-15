@@ -165,6 +165,7 @@
     <Compile Include="Dashboard\DashboardCostModel.cs" />
     <Compile Include="Dashboard\DashboardRepository.cs" />
     <Compile Include="Dashboard\DashboardOverviewManager.cs" />
+    <Compile Include="Dashboard\DashboardProgressCalculator.cs" />
     <Compile Include="Dashboard\DashboardProgressManager.cs" />
     <Compile Include="Dashboard\DashboardProgressModel.cs" />
     <Compile Include="Dashboard\DashboardResourceManager.cs" />

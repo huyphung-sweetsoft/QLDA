@@ -53,6 +53,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
     public class ProjectProgressStatistic
     {
+        public Guid ProjectId { get; set; }
+
         public string ProjectCode { get; set; }
 
         public string ProjectName { get; set; }
@@ -92,6 +94,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
     /// </summary>
     public class UpcomingMeetingSummary
     {
+        public Guid ProjectId { get; set; }
+
         public string ProjectCode { get; set; }
         public string Title { get; set; }
         public DateTime StartTime { get; set; }
@@ -99,6 +103,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
     }
     public class ProjectAttentionStatistic
     {
+        public Guid ProjectId { get; set; }
+
         public string ProjectCode { get; set; }
 
         public string ProjectName { get; set; }

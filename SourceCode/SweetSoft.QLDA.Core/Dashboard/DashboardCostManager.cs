@@ -184,7 +184,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .Select(cost =>
                 {
                     TblDuAn project;
-                    projectById.TryGetValue(cost.IdDuAn, out project);
+                    projectById.TryGetValue(cost.ProjectId, out project);
 
                     return new CostItemInfo
                     {

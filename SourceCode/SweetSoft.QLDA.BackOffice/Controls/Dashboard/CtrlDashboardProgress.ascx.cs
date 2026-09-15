@@ -21,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css")
+                        "/Controls/Dashboard/dashboard-style.css?v=2")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -29,7 +29,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-progress.js?v=2")
+                        "/Controls/Dashboard/dashboard-progress.js?v=4")
                 };
 
                 return new RegisterCSSAndJS(
@@ -47,6 +47,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string TaskStatusChartData { get; private set; }
 
         protected string ProjectTaskChartData { get; private set; }
+
+        protected string DashboardTextsJson { get; private set; }
+
+        protected Guid SelectedProjectId
+        {
+            get
+            {
+                if (Model == null
+                    || !Model.IsSingleProject
+                    || Model.ProjectScheduleStatistics == null
+                    || Model.ProjectScheduleStatistics.Count == 0)
+                {
+                    return Guid.Empty;
+                }
+
+                return Model.ProjectScheduleStatistics[0].ProjectId;
+            }
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -77,12 +95,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             switch (health)
             {
-                case ProjectScheduleHealth.NotStarted: return "Chưa bắt đầu";
-                case ProjectScheduleHealth.OnTrack: return "Đúng tiến độ";
-                case ProjectScheduleHealth.AtRisk: return "Có nguy cơ";
-                case ProjectScheduleHealth.BehindSchedule: return "Chậm tiến độ";
-                case ProjectScheduleHealth.Overdue: return "Quá hạn";
-                case ProjectScheduleHealth.Completed: return "Hoàn thành";
+                case ProjectScheduleHealth.NotStarted:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED);
+                case ProjectScheduleHealth.OnTrack:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_HEALTH_ON_TRACK);
+                case ProjectScheduleHealth.AtRisk:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_HEALTH_AT_RISK);
+                case ProjectScheduleHealth.BehindSchedule:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_HEALTH_BEHIND);
+                case ProjectScheduleHealth.Overdue:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE);
+                case ProjectScheduleHealth.Completed:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
                 default: return "-";
             }
         }
@@ -170,15 +200,20 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             if (task.IsOverdue)
             {
-                return "Quá " + Math.Abs(task.DaysToDeadline) + " ngày";
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_OVERDUE),
+                    Math.Abs(task.DaysToDeadline));
             }
 
             if (task.DaysToDeadline == 0)
             {
-                return "Đến hạn hôm nay";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_DUE_TODAY);
             }
 
-            return "Còn " + task.DaysToDeadline + " ngày";
+            return string.Format(
+                GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_REMAINING),
+                task.DaysToDeadline);
         }
 
         protected string GetTaskStatusBadgeCss(TaskProgressDetail task)
@@ -196,25 +231,55 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             if (!task.Deadline.HasValue || !task.DaysToDeadline.HasValue)
             {
-                return "Chưa đặt hạn";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_DEADLINE);
             }
 
             if (task.StatusCode == 2)
             {
-                return "Đã hoàn thành";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL);
             }
 
             if (task.DaysToDeadline.Value < 0)
             {
-                return "Quá " + Math.Abs(task.DaysToDeadline.Value) + " ngày";
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_OVERDUE),
+                    Math.Abs(task.DaysToDeadline.Value));
             }
 
             if (task.DaysToDeadline.Value == 0)
             {
-                return "Đến hạn hôm nay";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_DUE_TODAY);
             }
 
-            return "Còn " + task.DaysToDeadline.Value + " ngày";
+            return string.Format(
+                GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_REMAINING),
+                task.DaysToDeadline.Value);
+        }
+
+        protected string GetProjectDetailUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectDetail);
+        }
+
+        protected string GetProjectTasksUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
+        }
+
+        private string GetProjectUrl(
+            Guid projectId,
+            Func<Guid, string> routeBuilder)
+        {
+            if (projectId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return CURRENT_PAGE.GetRelativeClientPath(
+                routeBuilder(projectId));
         }
 
         private void InitDashboard(DashboardFilter filter)
@@ -226,6 +291,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 {
                     code = x.ProjectCode,
                     name = x.ProjectName,
+                    detailUrl = GetProjectDetailUrl(x.ProjectId),
                     actual = x.ActualProgress,
                     planned = x.PlannedProgress,
                     variance = x.Variance
@@ -234,7 +300,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             TaskStatusChartData = JsonConvert.SerializeObject(new
             {
                 labels = Model.TaskStatusStatistics.Select(x => x.Status),
-                values = Model.TaskStatusStatistics.Select(x => x.Count)
+                values = Model.TaskStatusStatistics.Select(x => x.Count),
+                tasksUrl = Model.IsSingleProject
+                    ? GetProjectTasksUrl(SelectedProjectId)
+                    : string.Empty
             });
 
             ProjectTaskChartData = JsonConvert.SerializeObject(
@@ -242,11 +311,36 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 {
                     code = x.ProjectCode,
                     name = x.ProjectName,
+                    tasksUrl = GetProjectTasksUrl(x.ProjectId),
                     completed = x.CompletedCount,
                     inProgress = x.InProgressCount,
                     notStarted = x.NotStartedCount,
                     overdue = x.OverdueCount
                 }));
+
+            DashboardTextsJson = JsonConvert.SerializeObject(new
+            {
+                noProjectProgressData = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_PROJECT_PROGRESS_DATA),
+                actual = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS),
+                planned = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PLANNED_PROGRESS),
+                noTasksInPeriod = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_TASKS_IN_PERIOD),
+                totalTasks = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TOTAL_TASKS),
+                noProjectTaskData = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_PROJECT_TASK_DATA),
+                completed = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED),
+                inProgress = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS),
+                notStarted = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED),
+                overdue = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE)
+            }).Replace("</", "<\\/");
 
         }
 
