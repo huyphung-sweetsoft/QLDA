@@ -60,19 +60,51 @@
         .proj-status-tag.doing { background: #e7eef5; color: #3a6ea5; }
         .proj-status-tag.done { background: #e6f4ea; color: #1e8e3e; }
         
+        /* [ĐIỂM NHẤN] Bọc viền bảng */
         .phase-container { padding: 16px; background: #f8f9fa; }
-        .phase-item { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #ffffff; }
+        .phase-item { border: 1px solid #e4e6ef; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #ffffff; box-shadow: 0 0 10px 0 rgba(82,63,105,0.02); }
         .phase-item:last-child { margin-bottom: 0; }
-        .phase-header-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #dee2e6; }
+        
+        /* [OPTION 3] Đổ màu nền Pastel cho Header Giai đoạn */
+        .phase-header-line { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 16px; 
+            background: #f4f6f9; 
+            border-left: 4px solid #6f42c1; /* Vạch tím hiện đại */
+            padding: 12px 16px; 
+            border-radius: 6px; 
+        }
         .phase-title-name { font-weight: 700; font-size: 13px; color: #232220; }
         
-        .task-sub-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #ffffff; border-radius: 6px; overflow: hidden; border: 1px solid #dee2e6; }
-        .task-sub-table th { background: #f8f9fa; padding: 10px 14px; text-align: left; color: #6c757d; font-weight: 600; border-bottom: 2px solid #dee2e6; }
-        .task-sub-table td { padding: 10px 14px; border-bottom: 1px solid #dee2e6; vertical-align: middle; }
+        .task-sub-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #ffffff; border-radius: 6px; overflow: hidden; border: 1px solid #e4e6ef; }
+        .task-sub-table th { background: #f8f9fa; padding: 10px 14px; text-align: left; color: #6c757d; font-weight: 600; border-bottom: 2px solid #e4e6ef; }
+        .task-sub-table td { padding: 10px 14px; border-bottom: 1px solid #e4e6ef; vertical-align: middle; }
         .task-sub-table tr:last-child td { border-bottom: none; }
-        .tag-ok { color: #1e8e3e; font-weight: 600; }
-        .tag-warn { color: #b98a00; font-weight: 600; }
-        .tag-done { color: #6c757d; font-weight: 600; text-decoration: line-through; }
+        
+        /* [OPTION 2] Vạch lề trái & Hover hiệu ứng nổi cho dòng Task */
+        .task-row:hover { background-color: #f8fafd; }
+        .task-row td:first-child { border-left: 3px solid transparent; transition: all 0.2s ease; }
+        .task-row[data-status="0"] td:first-child { border-left-color: #b5b5c3; } /* Chưa bắt đầu */
+        .task-row[data-status="1"] td:first-child { border-left-color: #3699ff; } /* Đang làm */
+        .task-row[data-status="2"] td:first-child { border-left-color: #1bc5bd; } /* Hoàn thành */
+        .task-row[data-status="3"] td:first-child { border-left-color: #ffa800; } /* Tạm dừng */
+
+        /* [OPTION 1] UI Badges hóa (Gắn nhãn màu Pastel) */
+        .ui-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap; }
+        /* Ưu tiên */
+        .ui-badge[data-prio="Cao"] { background: #ffe2e5; color: #f64e60; }
+        .ui-badge[data-prio="Trung bình"] { background: #fff4de; color: #ffa800; }
+        .ui-badge[data-prio="Thấp"] { background: #e1f0ff; color: #3699ff; }
+        
+        /* Trạng thái - Bọc đè Helper cũ để ép Style mới */
+        .ui-status-wrapper { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap; }
+        .ui-status-wrapper[data-status="0"] { background: #f3f6f9; color: #7e8299; }
+        .ui-status-wrapper[data-status="1"] { background: #e1f0ff; color: #3699ff; }
+        .ui-status-wrapper[data-status="2"] { background: #c9f7f5; color: #1bc5bd; }
+        .ui-status-wrapper[data-status="3"] { background: #fff4de; color: #ffa800; }
+        /* Reset các thẻ span được render bởi hàm Helper cũ */
+        .ui-status-wrapper span { background: transparent !important; padding: 0 !important; color: inherit !important; font-size: inherit !important; font-weight: inherit !important; border: none !important; }
+
     </style>
 </asp:Content>
 
@@ -238,9 +270,9 @@
                                             <div class="phase-container p-3 bg-light">
                                                 <asp:Repeater ID="rptPhasesActive" runat="server" DataSource='<%# Eval("Phases") %>'>
                                                     <ItemTemplate>
-                                                        <div class="phase-item bg-white border rounded p-3 mb-3">
-                                                            <div class="phase-header-line d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                                                <div class="phase-title-name fw-bold text-dark" style="font-size: 13px;">
+                                                        <div class="phase-item bg-white">
+                                                            <div class="phase-header-line">
+                                                                <div class="phase-title-name">
                                                                     <i class="far fa-folder-open text-warning me-1"></i> <%# GetResourceText(BackEndResourceKeys.PHASE) %>: <%# Eval("MaPhase") %> <%# Eval("TenPhase") %> 
                                                                     <span class="text-muted fw-normal ms-1">
                                                                         (<%# FormatDateRange(Eval("MinStartDate"), Eval("MaxEndDate")) %> | <%# GetResourceText(BackEndResourceKeys.DEADLINE) %>: <%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %>)
@@ -251,51 +283,51 @@
                                                                 </div>
                                                             </div>
                                                             
-                                                            <asp:PlaceHolder runat="server" Visible='<%# HasTasks(Eval("MyTasks")) %>'>
-                                                                <table class="task-sub-table w-100">
-                                                                    <thead>
-                                                                        <tr class="bg-light text-muted">
-                                                                            <th class="p-2" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
-                                                                            <th class="p-2"><%# GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
-                                                                            <th class="p-2" style="width: 140px;"><%# GetResourceText(BackEndResourceKeys.TIMEFRAME) %></th>
-                                                                            <th class="p-2 text-center" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
-                                                                            <th class="p-2 text-center" style="width: 110px;"><%# GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
-                                                                            <th class="p-2 text-center" style="width: 120px;"><%# GetResourceText(BackEndResourceKeys.STATUS) %></th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <asp:Repeater ID="rptTasksActive" runat="server" DataSource='<%# Eval("MyTasks") %>'>
-                                                                            <ItemTemplate>
-                                                                                <tr class="border-bottom">
-                                                                                    <td class="p-2"><b><%# Eval("MaTask") %></b></td>
-                                                                                    <td class="p-2">
-                                                                                        <span class="d-block fw-bold text-dark"><%# Eval("TenTask") %></span>
-                                                                                        <asp:PlaceHolder runat="server" Visible='<%# Eval("TenTaskCha") != null && !string.IsNullOrEmpty(Eval("TenTaskCha").ToString()) && Eval("TenTaskCha").ToString() != Eval("TenPhaseGoc").ToString() %>'>
-                                                                                            <div class="text-muted mt-1" style="font-size: 11.5px;">
-                                                                                                <i class="fas fa-level-up-alt fa-rotate-90 me-1 text-secondary"></i><%# GetResourceText(BackEndResourceKeys.BELONG_TO_GROUP) %>: <%# Eval("MaTaskCha") %> - <%# Eval("TenTaskCha") %>
-                                                                                            </div>
-                                                                                        </asp:PlaceHolder>
-                                                                                    </td>
-                                                                                    <td class="p-2"><%# FormatDateRange(Eval("NgayBatDau"), Eval("NgayKetThuc")) %></td>
-                                                                                    <td class="p-2 text-center"><%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %></td>
-                                                                                    <td class="p-2 text-center align-middle">
-                                                                                        <%# GetTaskPriorityBadge(Eval("TenDoUuTien"), Eval("DiemUuTien")) %>
-                                                                                    </td>
-                                                                                    <td class="p-2 text-center align-middle">
+                                                            <table class="task-sub-table w-100">
+                                                                <thead>
+                                                                    <tr class="bg-light text-muted">
+                                                                        <th class="p-2" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
+                                                                        <th class="p-2"><%# GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
+                                                                        <th class="p-2" style="width: 140px;"><%# GetResourceText(BackEndResourceKeys.TIMEFRAME) %></th>
+                                                                        <th class="p-2 text-center" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
+                                                                        <th class="p-2 text-center" style="width: 110px;"><%# GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
+                                                                        <th class="p-2 text-center" style="width: 120px;"><%# GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <asp:Repeater ID="rptTasksActive" runat="server" DataSource='<%# Eval("MyTasks") %>'>
+                                                                        <ItemTemplate>
+                                                                            <tr class="task-row" data-status='<%# Eval("TrangThaiTask") %>'>
+                                                                                <td class="p-2"><b><%# Eval("MaTask") %></b></td>
+                                                                                <td class="p-2">
+                                                                                    <span class="d-block fw-bold text-dark"><%# Eval("TenTask") %></span>
+                                                                                    <asp:PlaceHolder runat="server" Visible='<%# Eval("TenTaskCha") != null && !string.IsNullOrEmpty(Eval("TenTaskCha").ToString()) && Eval("TenTaskCha").ToString() != Eval("TenPhaseGoc").ToString() %>'>
+                                                                                        <div class="text-muted mt-1" style="font-size: 11.5px;">
+                                                                                            <i class="fas fa-level-up-alt fa-rotate-90 me-1 text-secondary"></i><%# GetResourceText(BackEndResourceKeys.BELONG_TO_GROUP) %>: <%# Eval("MaTaskCha") %> - <%# Eval("TenTaskCha") %>
+                                                                                        </div>
+                                                                                    </asp:PlaceHolder>
+                                                                                </td>
+                                                                                <td class="p-2"><%# FormatDateRange(Eval("NgayBatDau"), Eval("NgayKetThuc")) %></td>
+                                                                                <td class="p-2 text-center"><%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %></td>
+                                                                                
+                                                                                <!-- Bọc Badge cho Cột Ưu tiên -->
+                                                                                <td class="p-2 text-center align-middle">
+                                                                                    <span class="ui-badge" data-prio='<%# Eval("TenDoUuTien") %>'>
+                                                                                        <%# Eval("TenDoUuTien") %>
+                                                                                    </span>
+                                                                                </td>
+                                                                                
+                                                                                <!-- Bọc Status Wrapper cho Cột Trạng thái -->
+                                                                                <td class="p-2 text-center align-middle">
+                                                                                    <div class="ui-status-wrapper" data-status='<%# Eval("TrangThaiTask") %>'>
                                                                                         <%# GetTaskStatusBadge(Eval("TrangThaiTask")) %>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            </ItemTemplate>
-                                                                        </asp:Repeater>
-                                                                    </tbody>
-                                                                </table>
-                                                            </asp:PlaceHolder>
-
-                                                            <asp:PlaceHolder runat="server" Visible='<%# !HasTasks(Eval("MyTasks")) %>'>
-                                                                <div class="text-center p-2 mt-2 border rounded border-dashed bg-light">
-                                                                    <span class="text-muted" style="font-size: 12px;"><i><%# GetResourceText(BackEndResourceKeys.NO_TASKS_IN_THIS_PHASE) %></i></span>
-                                                                </div>
-                                                            </asp:PlaceHolder>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </ItemTemplate>
+                                                                    </asp:Repeater>
+                                                                </tbody>
+                                                            </table>
                                                         </div>
                                                     </ItemTemplate>
                                                 </asp:Repeater>
@@ -348,9 +380,9 @@
                                             <div class="phase-container p-3 bg-light">
                                                 <asp:Repeater ID="rptPhasesDone" runat="server" DataSource='<%# Eval("Phases") %>'>
                                                     <ItemTemplate>
-                                                        <div class="phase-item bg-white border rounded p-3 mb-3">
-                                                            <div class="phase-header-line d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                                                <div class="phase-title-name fw-bold text-dark" style="font-size: 13px;">
+                                                        <div class="phase-item bg-white">
+                                                            <div class="phase-header-line">
+                                                                <div class="phase-title-name">
                                                                     <i class="far fa-folder-open text-warning me-1"></i> <%# GetResourceText(BackEndResourceKeys.PHASE) %>: <%# Eval("MaPhase") %> <%# Eval("TenPhase") %> 
                                                                     <span class="text-muted fw-normal ms-1">
                                                                         (<%# FormatDateRange(Eval("MinStartDate"), Eval("MaxEndDate")) %> | <%# GetResourceText(BackEndResourceKeys.DEADLINE) %>: <%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %>)
@@ -361,51 +393,49 @@
                                                                 </div>
                                                             </div>
                                                             
-                                                            <asp:PlaceHolder runat="server" Visible='<%# HasTasks(Eval("MyTasks")) %>'>
-                                                                <table class="task-sub-table w-100">
-                                                                    <thead>
-                                                                        <tr class="bg-light text-muted">
-                                                                            <th class="p-2" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
-                                                                            <th class="p-2"><%# GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
-                                                                            <th class="p-2" style="width: 140px;"><%# GetResourceText(BackEndResourceKeys.TIMEFRAME) %></th>
-                                                                            <th class="p-2 text-center" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
-                                                                            <th class="p-2 text-center" style="width: 110px;"><%# GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
-                                                                            <th class="p-2 text-center" style="width: 120px;"><%# GetResourceText(BackEndResourceKeys.STATUS) %></th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <asp:Repeater ID="rptTasksDone" runat="server" DataSource='<%# Eval("MyTasks") %>'>
-                                                                            <ItemTemplate>
-                                                                                <tr class="border-bottom">
-                                                                                    <td class="p-2"><b><%# Eval("MaTask") %></b></td>
-                                                                                    <td class="p-2">
-                                                                                        <span class="d-block fw-bold text-dark"><%# Eval("TenTask") %></span>
-                                                                                        <asp:PlaceHolder runat="server" Visible='<%# Eval("TenTaskCha") != null && !string.IsNullOrEmpty(Eval("TenTaskCha").ToString()) && Eval("TenTaskCha").ToString() != Eval("TenPhaseGoc").ToString() %>'>
-                                                                                            <div class="text-muted mt-1" style="font-size: 11.5px;">
-                                                                                                <i class="fas fa-level-up-alt fa-rotate-90 me-1 text-secondary"></i><%# GetResourceText(BackEndResourceKeys.BELONG_TO_GROUP) %>: <%# Eval("MaTaskCha") %> - <%# Eval("TenTaskCha") %>
-                                                                                            </div>
-                                                                                        </asp:PlaceHolder>
-                                                                                    </td>
-                                                                                    <td class="p-2"><%# FormatDateRange(Eval("NgayBatDau"), Eval("NgayKetThuc")) %></td>
-                                                                                    <td class="p-2 text-center"><%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %></td>
-                                                                                    <td class="p-2 text-center align-middle">
-                                                                                        <%# GetTaskPriorityBadge(Eval("TenDoUuTien"), Eval("DiemUuTien")) %>
-                                                                                    </td>
-                                                                                    <td class="p-2 text-center align-middle">
+                                                            <table class="task-sub-table w-100">
+                                                                <thead>
+                                                                    <tr class="bg-light text-muted">
+                                                                        <th class="p-2" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
+                                                                        <th class="p-2"><%# GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
+                                                                        <th class="p-2" style="width: 140px;"><%# GetResourceText(BackEndResourceKeys.TIMEFRAME) %></th>
+                                                                        <th class="p-2 text-center" style="width: 90px;"><%# GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
+                                                                        <th class="p-2 text-center" style="width: 110px;"><%# GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
+                                                                        <th class="p-2 text-center" style="width: 120px;"><%# GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <asp:Repeater ID="rptTasksDone" runat="server" DataSource='<%# Eval("MyTasks") %>'>
+                                                                        <ItemTemplate>
+                                                                            <tr class="task-row" data-status='<%# Eval("TrangThaiTask") %>'>
+                                                                                <td class="p-2"><b><%# Eval("MaTask") %></b></td>
+                                                                                <td class="p-2">
+                                                                                    <span class="d-block fw-bold text-dark"><%# Eval("TenTask") %></span>
+                                                                                    <asp:PlaceHolder runat="server" Visible='<%# Eval("TenTaskCha") != null && !string.IsNullOrEmpty(Eval("TenTaskCha").ToString()) && Eval("TenTaskCha").ToString() != Eval("TenPhaseGoc").ToString() %>'>
+                                                                                        <div class="text-muted mt-1" style="font-size: 11.5px;">
+                                                                                            <i class="fas fa-level-up-alt fa-rotate-90 me-1 text-secondary"></i><%# GetResourceText(BackEndResourceKeys.BELONG_TO_GROUP) %>: <%# Eval("MaTaskCha") %> - <%# Eval("TenTaskCha") %>
+                                                                                        </div>
+                                                                                    </asp:PlaceHolder>
+                                                                                </td>
+                                                                                <td class="p-2"><%# FormatDateRange(Eval("NgayBatDau"), Eval("NgayKetThuc")) %></td>
+                                                                                <td class="p-2 text-center"><%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %></td>
+                                                                                
+                                                                                <td class="p-2 text-center align-middle">
+                                                                                    <span class="ui-badge" data-prio='<%# Eval("TenDoUuTien") %>'>
+                                                                                        <%# Eval("TenDoUuTien") %>
+                                                                                    </span>
+                                                                                </td>
+                                                                                
+                                                                                <td class="p-2 text-center align-middle">
+                                                                                    <div class="ui-status-wrapper" data-status='<%# Eval("TrangThaiTask") %>'>
                                                                                         <%# GetTaskStatusBadge(Eval("TrangThaiTask")) %>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            </ItemTemplate>
-                                                                        </asp:Repeater>
-                                                                    </tbody>
-                                                                </table>
-                                                            </asp:PlaceHolder>
-
-                                                            <asp:PlaceHolder runat="server" Visible='<%# !HasTasks(Eval("MyTasks")) %>'>
-                                                                <div class="text-center p-2 mt-2 border rounded border-dashed bg-light">
-                                                                    <span class="text-muted" style="font-size: 12px;"><i><%# GetResourceText(BackEndResourceKeys.NO_TASKS_IN_THIS_PHASE) %></i></span>
-                                                                </div>
-                                                            </asp:PlaceHolder>
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </ItemTemplate>
+                                                                    </asp:Repeater>
+                                                                </tbody>
+                                                            </table>
                                                         </div>
                                                     </ItemTemplate>
                                                 </asp:Repeater>

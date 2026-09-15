@@ -2167,4 +2167,58 @@
   <data name="NO_TASKS_IN_THIS_PHASE" xml:space="preserve">
     <value>No task in this phase</value>
   </data>
+  <data name="GENERAL_SCHEDULE" xml:space="preserve">
+    <value>General Schedule</value>
+  </data>
+  <data name="MONDAY" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="TUESDAY" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="WEDNESDAY" xml:space="preserve">
+    <value>Wesnesday</value>
+  </data>
+  <data name="THURSDAY" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="FRIDAY" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="SATURDAY" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="SUNDAY" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="WEEK" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="PREVIOUS" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="NEXT" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="SCHEDULE_DETAILS" xml:space="preserve">
+    <value>Shedule details</value>
+  </data>
+  <data name="AND" xml:space="preserve">
+    <value>And</value>
+  </data>
+  <data name="OTHER_TASKS" xml:space="preserve">
+    <value>other tasks</value>
+  </data>
+  <data name="OTHER_PROJECT_UNIDENTIFIED" xml:space="preserve">
+    <value>Other Projects / Unidentified</value>
+  </data>
+  <data name="SCHEDULE_OF_USER" xml:space="preserve">
+    <value>{0}'s Schedule</value>
+  </data>
+  <data name="MY_PERSONAL_SCHEDULE" xml:space="preserve">
+    <value>Employee Schedule</value>
+  </data>
+  <data name="EMPLOYEE_SCHEDULE" xml:space="preserve">
+    <value>Employee Schedule</value>
+  </data>
 </root>

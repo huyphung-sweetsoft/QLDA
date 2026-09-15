@@ -386,6 +386,24 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string TIMEFRAME = "TIMEFRAME";
         public const string BELONG_TO_GROUP = "BELONG_TO_GROUP";
         public const string NO_TASKS_IN_THIS_PHASE = "NO_TASKS_IN_THIS_PHASE";
+        public const string GENERAL_SCHEDULE = "GENERAL_SCHEDULE";
+        public const string MONDAY = "MONDAY";
+        public const string TUESDAY = "TUESDAY";
+        public const string WEDNESDAY = "WEDNESDAY";
+        public const string THURSDAY = "THURSDAY";
+        public const string FRIDAY = "FRIDAY";
+        public const string SATURDAY = "SATURDAY";
+        public const string SUNDAY = "SUNDAY";
+        public const string WEEK = "WEEK";
+        public const string PREVIOUS = "PREVIOUS";
+        public const string NEXT = "NEXT";
+        public const string SCHEDULE_DETAILS = "SCHEDULE_DETAILS";
+        public const string OTHER_TASKS = "OTHER_TASKS";
+        public const string AND = "AND";
+        public const string OTHER_PROJECT_UNIDENTIFIED = "OTHER_PROJECT_UNIDENTIFIED";
+        public const string SCHEDULE_OF_USER = "SCHEDULE_OF_USER";
+        public const string MY_PERSONAL_SCHEDULE = "MY_PERSONAL_SCHEDULE";
+        public const string EMPLOYEE_SCHEDULE = "EMPLOYEE_SCHEDULE";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

@@ -63,20 +63,22 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                     return;
                 }
+                var navLinks = new Dictionary<string, string>();
+
                 if (isFromProfile)
                 {
-                    Navigation1.keyValuePairUrls = new Dictionary<string, string>()
-                    {
-                        { RewriteURLHelper.Profile, GetResourceText(BackEndResourceKeys.PROFILE) }
-                    };
+                    navLinks.Add(GetRelativeClientPath(RewriteURLHelper.Profile), GetResourceText(BackEndResourceKeys.PROFILE));
                 }
                 else
                 {
-                    Navigation1.keyValuePairUrls = new Dictionary<string, string>()
-                    {
-                        { RewriteURLHelper.Users, GetResourceText(BackEndResourceKeys.EMPLOYEE_LIST) }
-                    };
+                    navLinks.Add(GetRelativeClientPath(RewriteURLHelper.NhanVien), GetResourceText(BackEndResourceKeys.EMPLOYEE_LIST));
                 }
+
+                // Chèn thêm chính nó vào cuối Breadcrumb (dùng javascript:void(0) để vô hiệu hóa click)
+                navLinks.Add("javascript:void(0);", GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL));
+
+                Navigation1.keyValuePairUrls = navLinks;
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL);
 
                 ApplyControlsText();
 
@@ -147,8 +149,8 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
             // [NÚT SỬA]: Chỉ hiện khi có quyền Edit VÀ không đi từ trang Profile
             btnEditProfile.Visible = this.IsEdit && !isFromProfile;
-            // [LỊCH CÁ NHÂN]: Quyền xem Lịch
-            lnkSchedule.HRef = GetRelativeClientPath(RewriteURLHelper.ViewLichCaNhan(idNhanVien));
+            string lichUrl = GetRelativeClientPath(RewriteURLHelper.ViewLichCaNhan(idNhanVien));
+            lnkSchedule.HRef = isFromProfile ? lichUrl + "?from=profile" : lichUrl;
             lnkSchedule.Visible = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien) || idNhanVien == SweetContext.Current.UserId;
 
             BindProjectData(idNhanVien);

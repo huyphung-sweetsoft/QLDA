@@ -1895,7 +1895,7 @@
     <value>Dự án đã nghiệm thu</value>
   </data>
   <data name="PERSONAL_SCHEDULE" xml:space="preserve">
-    <value>Lịch biểu cá nhân</value>
+    <value>Lịch cá nhân</value>
   </data>
   <data name="VIEW_WORK_SCHEDULE" xml:space="preserve">
     <value>Xem lịch làm việc</value>
@@ -2004,6 +2004,33 @@
   </data>
   <data name="PERSONAL_INFORMATION_DETAILS" xml:space="preserve">
     <value>Chi tiết thông tin cá nhân</value>
+  </data>
+  <data name="PROJECT_ALLOCATION_DETAILS" xml:space="preserve">
+    <value>Chi tiết phân bổ dự án</value>
+  </data>
+  <data name="PARTICIPATED" xml:space="preserve">
+    <value>Đã tham gia</value>
+  </data>
+  <data name="PARTICIPATED_PROJECTS" xml:space="preserve">
+    <value>Dự án đã tham gia</value>
+  </data>
+  <data name="PROJECT_TIME" xml:space="preserve">
+    <value>Thời gian dự án</value>
+  </data>
+  <data name="CONTRIBUTION" xml:space="preserve">
+    <value>Đóng góp</value>
+  </data>
+  <data name="DEADLINE" xml:space="preserve">
+    <value>Thời hạn</value>
+  </data>
+  <data name="TIMEFRAME" xml:space="preserve">
+    <value>Khung thời gian</value>
+  </data>
+  <data name="BELONG_TO_GROUP" xml:space="preserve">
+    <value>Thuộc nhóm</value>
+  </data>
+  <data name="NO_TASKS_IN_THIS_PHASE" xml:space="preserve">
+    <value>Không có công việc trong giai đoạn này</value>
   </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
@@ -2161,31 +2188,58 @@
   <data name="HISTORY_ENTITY_RISK" xml:space="preserve">
     <value>rủi ro</value>
   </data>
-  <data name="PROJECT_ALLOCATION_DETAILS" xml:space="preserve">
-    <value>Chi tiết phân bổ dự án</value>
+  <data name="GENERAL_SCHEDULE" xml:space="preserve">
+    <value>Lịch biểu chung</value>
   </data>
-  <data name="PARTICIPATED" xml:space="preserve">
-    <value>Đã tham gia</value>
+  <data name="MONDAY" xml:space="preserve">
+    <value>Thứ 2</value>
   </data>
-  <data name="PARTICIPATED_PROJECTS" xml:space="preserve">
-    <value>Dự án đã tham gia</value>
+  <data name="TUESDAY" xml:space="preserve">
+    <value>Thứ 3</value>
   </data>
-  <data name="PROJECT_TIME" xml:space="preserve">
-    <value>Thời gian dự án</value>
+  <data name="WEDNESDAY" xml:space="preserve">
+    <value>Thứ tư</value>
   </data>
-  <data name="CONTRIBUTION" xml:space="preserve">
-    <value>Đóng góp</value>
+  <data name="THURSDAY" xml:space="preserve">
+    <value>Thứ 5</value>
   </data>
-  <data name="DEADLINE" xml:space="preserve">
-    <value>Thời hạn</value>
+  <data name="FRIDAY" xml:space="preserve">
+    <value>Thứ 6</value>
   </data>
-  <data name="TIMEFRAME" xml:space="preserve">
-    <value>Khung thời gian</value>
+  <data name="SATURDAY" xml:space="preserve">
+    <value>Thứ 7</value>
   </data>
-  <data name="BELONG_TO_GROUP" xml:space="preserve">
-    <value>Thuộc nhóm</value>
+  <data name="SUNDAY" xml:space="preserve">
+    <value>Chủ nhật</value>
   </data>
-  <data name="NO_TASKS_IN_THIS_PHASE" xml:space="preserve">
-    <value>Không có công việc trong giai đoạn này</value>
+  <data name="WEEK" xml:space="preserve">
+    <value>Tuần</value>
+  </data>
+  <data name="PREVIOUS" xml:space="preserve">
+    <value>Trước</value>
+  </data>
+  <data name="NEXT" xml:space="preserve">
+    <value>Sau</value>
+  </data>
+  <data name="SCHEDULE_DETAILS" xml:space="preserve">
+    <value>Chi tiết lịch</value>
+  </data>
+  <data name="AND" xml:space="preserve">
+    <value>Và</value>
+  </data>
+  <data name="OTHER_TASKS" xml:space="preserve">
+    <value>việc khác</value>
+  </data>
+  <data name="OTHER_PROJECT_UNIDENTIFIED" xml:space="preserve">
+    <value>Dự án khác / Không xác định</value>
+  </data>
+  <data name="SCHEDULE_OF_USER" xml:space="preserve">
+    <value>Lịch công việc của {0}</value>
+  </data>
+  <data name="MY_PERSONAL_SCHEDULE" xml:space="preserve">
+    <value>Lịch công việc nhân sự</value>
+  </data>
+  <data name="EMPLOYEE_SCHEDULE" xml:space="preserve">
+    <value>Lịch công việc nhân sự</value>
   </data>
 </root>

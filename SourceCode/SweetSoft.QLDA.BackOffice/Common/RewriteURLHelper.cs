@@ -30,6 +30,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Users => "/Users";
         public static string NhanVien => "/Employees";
         public static string Documents => "/Documents";
+        public static string Schedule => "/Schedule";
         public static string DocumentDetail(Guid documentId)
         {
             return $"/Document/{SecurityUtilities.ProtectUrlParameter(documentId.ToString())}";
