@@ -10,6 +10,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
     public class BackEndResourceKeys
     {
         // Document management
+        public const string NO_PERMISSION_EDIT = "NO_PERMISSION_EDIT";
+        public const string NO_PERMISSION_ADD = "NO_PERMISSION_ADD";
         public const string DOCUMENT_MANAGEMENT = "DOCUMENT_MANAGEMENT";
         public const string DOCUMENT_GROUP = "DOCUMENT_GROUP";
         public const string DOCUMENT_GROUP_LIST = "DOCUMENT_GROUP_LIST";
@@ -446,6 +448,16 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DEPENDENT_LINK = "DEPENDENT_LINK";
         public const string NO_OVERDUE_TASKS = "NO_OVERDUE_TASKS";
         public const string NO_ISSUES = "NO_ISSUES";
+        public const string SHOW_ONLY_OVERDUE_TASKS = "SHOW_ONLY_OVERDUE_TASKS";
+        public const string EXPAND_ALL = "EXPAND_ALL";
+        public const string COLLAPSE_ALL = "COLLAPSE_ALL";
+        public const string PERSONEL_ASSIGNMENT = "PERSONEL_ASSIGNMENT";
+        public const string ASSIGN_TASK_SUCCESS = "ASSIGN_TASK_SUCCESS";
+        public const string REQUIRE_TASK_DATES_BEFORE_ASSIGN = "REQUIRE_TASK_DATES_BEFORE_ASSIGN";
+        public const string CANNOT_ASSIGN_TO_PARENT_TASK = "CANNOT_ASSIGN_TO_PARENT_TASK";
+        public const string INVALID_START_DATE_LIMIT = "INVALID_START_DATE_LIMIT";
+        public const string TASK_DURATION_MUST_BE_POSITIVE = "TASK_DURATION_MUST_BE_POSITIVE";
+        public const string TASK_HAS_NO_ASSIGNEE = "TASK_HAS_NO_ASSIGNEE";
         //Risk
         public const string RISK_LIST = "RISK_LIST";
         public const string RISK_CODE = "RISK_CODE";
@@ -455,7 +467,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string IMPACT = "IMPACT";
         public const string MONITOR = "MONITOR";
         public const string MITIGATION = "MITIGATION";
-        public const string CONTINGENCY = "CONTINGENCY";
+        public const string HANDLING_PLAN = "HANDLING_PLAN";
         public const string NOT_ENTERED = "NOT_ENTERED";
         public const string CAN_NOT_BE_BLANK = "CAN_NOT_BE_BLANK";
         public const string VERY_LOW = "VERY_LOW";
@@ -488,6 +500,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SCHEDULED = "SCHEDULED";
         public const string UPCOMING = "UPCOMING";
         public const string ONGOING = "ONGOING";
+        public const string TIME_PARSING_ERROR = "TIME_PARSING_ERROR";
+        public const string MEET_DURATION = "MEET_DURATION";
+
         //Cost
         public const string COST_MANAGEMENT = "COST_MANAGEMENT";
         public const string COST_LIST = "COST_LIST";
@@ -502,6 +517,10 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string APPROVED = "APPROVED";
         public const string REJECTED = "REJECTED";
         public const string FAST_APPROVAL = "FAST_APPROVAL";
+        public const string LOWEST_TOTAL_AMOUNT = "LOWEST_TOTAL_AMOUNT";
+        public const string HIGHEST_TOTAL_AMOUNT = "HIGHEST_TOTAL_AMOUNT";
+        public const string APPROVE_COST_SUCCESS = "APPROVE_COST_SUCCESS";
+
         //Project Report
         public const string PROJECT_REPORT = "PROJECT_REPORT";
         public const string PROJECT_REPORT_MANAGEMENT = "PROJECT_REPORT_MANAGEMENT";
