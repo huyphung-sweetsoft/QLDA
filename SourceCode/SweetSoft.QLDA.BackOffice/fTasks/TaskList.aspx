@@ -48,7 +48,38 @@
     }
 
     .row-overdue-bg {
-        background-color: #fef2f2 !important;
+        background-color: #fee2e2 !important;
+        transition: background-color 0.2s ease !important;
+    }
+    .row-overdue-bg:hover, .row-overdue-bg.active {
+        background-color: #fecaca !important; 
+    }
+
+    .row-warning-bg {
+        background-color: #fffbeb !important; 
+        transition: background-color 0.2s ease !important; 
+    }
+    .row-warning-bg:hover, .row-warning-bg.active {
+        background-color: #fef3c7 !important; 
+    }
+
+    .btn-toggle-tree {
+        background-color: #ffffff !important;
+        color: #334155 !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 14px !important;
+        border-radius: 6px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-toggle-tree:hover {
+        background-color: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
     }
 
     .task-phase-name {
@@ -133,6 +164,10 @@
         font-size: 15px;
         font-weight: 700;
         margin: 0;
+        color: #ffffff !important;
+    }
+    .modal-header-sweet h3 i {
+        color: #ffffff !important;
     }
     .modal-header-sweet button {
         background: none;
@@ -178,6 +213,10 @@
     .task-sub-code {
         font-weight: 700 !important;
         color: #0f172a !important;
+    }
+    .table-task-grid th:first-child,
+    .table-task-grid td:first-child {
+        display: none !important;
     }
 </style>
 </asp:Content>
@@ -245,27 +284,23 @@
                                 <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.OWNER) %></label>
-                                <asp:DropDownList ID="ddlEditNhanVien" runat="server" CssClass="form-select"></asp:DropDownList>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
+                                <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                         </div>
 
                         <div class="row g-2 mb-3">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %>) <span class="text-danger">*</span></label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control" TextMode="Number" min="1"></asp:TextBox>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.START_DATE) %><span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
                                 <asp:TextBox ID="txtEditNgayKetThuc" runat="server" CssClass="form-control" TextMode="Date" ReadOnly="true"></asp:TextBox>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
-                                <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                         </div>
 
@@ -305,5 +340,35 @@
                 closeEditModal();
             }
         });
+        let isTreeExpanded = true;
+
+        function toggleTaskTree() {
+            isTreeExpanded = !isTreeExpanded; 
+
+            const $btn = $('#btnToggleTree');
+            const $btnText = $('#lblToggleText');
+            const $btnIcon = $btn.find('i');
+
+            const txtExpand = $btn.attr('data-expand-text') || GetResourceText(BackEndResourceKeys.EXPAND_ALL);
+            const txtCollapse = $btn.attr('data-collapse-text') || GetResourceText(BackEndResourceKeys.COLLAPSE_ALL);
+
+            const $allRows = $('.table-task-grid tbody tr').not(':first');
+
+            if (isTreeExpanded) {
+                $allRows.show();
+
+                $btnText.text(txtCollapse);
+                $btnIcon.removeClass('fa-folder-open').addClass('fa-folder');
+            } else {
+                $allRows.each(function() {
+                    let level = $(this).attr('data-level');
+                    if (level !== undefined && parseInt(level) > 1) {
+                        $(this).hide();
+                    }
+                });
+                $btnText.text(txtExpand);
+                $btnIcon.removeClass('fa-folder').addClass('fa-folder-open');
+                    }
+                }
     </script>
 </asp:Content>

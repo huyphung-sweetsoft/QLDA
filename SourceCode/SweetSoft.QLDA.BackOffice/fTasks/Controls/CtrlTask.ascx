@@ -2,14 +2,13 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fTasks/Controls/CtrlChonNhanVienTask.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVienTask" %>
 <style>
-    /* CSS CHO AVATAR STACK CỦA OWNER */
     .avatar-group { 
         display: inline-flex !important; 
         align-items: center; 
         justify-content: center; 
         gap: 6px !important; 
         flex-wrap: nowrap !important; 
-        white-space: nowrap !important; /* KHÓA CHẾT: Cấm tuyệt đối việc rớt dòng */
+        white-space: nowrap !important;
     }  
     .avatar-stack-container { 
         display: flex; 
@@ -28,7 +27,7 @@
         width: 26px; height: 26px; border-radius: 6px; background-color: #2563eb; color: white; 
         display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; 
         text-decoration: none; font-size: 12px; transition: background 0.2s, transform 0.1s;
-        flex-shrink: 0; /* Giữ nguyên hình vuông cứng, không bị bóp méo hay rớt dòng */
+        flex-shrink: 0; 
     }
     .btn-assign-task:hover { 
         background-color: #1d4ed8; color: white; transform: scale(1.05); 
@@ -41,19 +40,18 @@
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div class="d-flex gap-2 align-items-center flex-wrap">
                     <button type="button" class="btn-filter-overdue" id="btnFilterOverdue" onclick="toggleOverdueFilter()">
-                        <i class="fas fa-exclamation-triangle"></i> Chỉ hiện công việc quá hạn ( <span id="lblOverdueCount" runat="server">0</span> )
+                        <i class="fas fa-exclamation-triangle"></i> <%= GetResourceText(BackEndResourceKeys.SHOW_ONLY_OVERDUE_TASKS) %> ( <span id="lblOverdueCount" runat="server">0</span> )
                     </button>
-                    <button type="button" class="btn-tool-folder" onclick="expandAllTasks()">
-                        <i class="far fa-folder-open"></i> Mở rộng tất cả
-                    </button>
-                    <button type="button" class="btn-tool-folder" onclick="collapseAllTasks()">
-                        <i class="far fa-folder"></i> Thu gọn tất cả
+                    <button type="button" class="btn-tool-folder" id="btnToggleTree" onclick="toggleTaskTree()" 
+                            data-expand-text="<%= GetResourceText(BackEndResourceKeys.EXPAND_ALL) %>" 
+                            data-collapse-text="<%= GetResourceText(BackEndResourceKeys.COLLAPSE_ALL) %>">
+                        <i class="far fa-folder-open"></i> <span id="lblToggleText"><%= GetResourceText(BackEndResourceKeys.COLLAPSE_ALL) %></span>
                     </button>
                 </div>
                 <SweetSoft:ExtraButton runat="server" ID="lbtAdd" OnClick="lbtAdd_Click" CssClass="waves-effect waves-light font-mobile-small" ButtonStyle="Info" ButtonIcon="Add" Visible="false">Add new</SweetSoft:ExtraButton>
             </div>
              <div class="input-group max-w-500">
-                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" PlaceHolder="Nhập từ khóa tìm kiếm..." CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
+                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
                  <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
              </div>
             <SweetSoft:GridviewExtension ID="grvData" runat="server"
@@ -91,12 +89,11 @@
                                 <div class="avatar-stack-container">
                                     <%# GetAssigneeDisplay(Eval("TenNhanVien"), Eval("Avatars")) %>
                                 </div>
-                                <!-- Nút Gán Việc (Dấu +) -->
                                 <asp:LinkButton runat="server" ID="lbtAssign" 
                                     CommandName="ASSIGN_TASK" 
                                     CommandArgument='<%# Eval("IdCongViec") %>' 
                                     CssClass="btn-assign-task" 
-                                    ToolTip="Phân công nhân sự" 
+                                    ToolTip= <%# GetResourceText(BackEndResourceKeys.PERSONEL_ASSIGNMENT) %>
                                     Visible='<%# this.IsEdit %>'>
                                     <i class="fas fa-plus"></i>
                                 </asp:LinkButton>

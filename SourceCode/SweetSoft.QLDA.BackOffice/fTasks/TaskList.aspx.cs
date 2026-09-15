@@ -72,7 +72,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId);
             _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, currentOrNewCode: maCV);
             _controlHelpers.BindPriorities(ddlEditDoUuTien);
-            _controlHelpers.BindProjectMembers(ddlEditNhanVien, CurrentProjectId);
             _controlHelpers.BindTaskStatus(ddlEditTrangThai, 0);
             UpdateMinStartDate();
 
@@ -103,7 +102,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
             _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, task.IdCongViec, task.IdCongViecPhuThuoc, task.MaCongViec);
             _controlHelpers.BindPriorities(ddlEditDoUuTien, task.IdDoUuTien);
-            _controlHelpers.BindProjectMembers(ddlEditNhanVien, CurrentProjectId, null);
             _controlHelpers.BindTaskStatus(ddlEditTrangThai, task.TrangThai);
             UpdateMinStartDate();
 
@@ -155,7 +153,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 ShowAlert($"Ngày bắt đầu không hợp lệ! Phải từ ngày {minStartAllowed.Value:dd/MM/yyyy} trở đi (do {limitReason}).");
                 return;
             }
-            task.NgayBatDau = ngayBd; 
+            task.NgayBatDau = ngayBd;
             if (!isPhase)
             {
                 if (!int.TryParse(txtEditThoiHan.Text.Trim(), out int thoiHan) || thoiHan <= 0)
@@ -198,7 +196,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     }
                 }
             }
-            ShowNotify(isAddNew ? "Thêm mới công việc thành công!" : "Cập nhật công việc thành công!", MSGType.Success);
+            ShowNotify(isAddNew ? GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY) : GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);
             CtrlTask1.Rebind();
             ScriptManager.RegisterStartupScript(this, this.GetType(), "CloseEditModal", "closeEditModal();", true);
         }
@@ -230,7 +228,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         {
             txtEditTenCv.Enabled = true;
             txtEditMoTa.Enabled = true;
-            ddlEditNhanVien.Enabled = !isPhase;
             ddlEditTrangThai.Enabled = !isPhase;
             txtEditThoiHan.Enabled = !isPhase && !hasChildren;
             txtEditNgayBatDau.Enabled = true;
