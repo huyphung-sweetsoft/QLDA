@@ -33,6 +33,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             "SET_OFFICIAL_FILE";
         private const string ClearOfficialFileCommand =
             "CLEAR_OFFICIAL_FILE";
+        private const string CustomerDeliverySubmissionSessionKeyPrefix =
+            "DocumentCustomerDeliverySubmission:";
 
         /// <summary>
         /// A project detail page assigns this value on every request.  An empty
@@ -1358,6 +1360,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 hdfCustomerDeliveryCustomer.Value = string.Empty;
                 hdfCustomerDeliveryChannel.Value =
                     DocumentCustomerDeliveryChannelKeys.Email;
+                hdfCustomerDeliverySubmissionToken.Value =
+                    Guid.NewGuid().ToString("N");
                 ddlCustomerDeliveryVersion.SelectedValue = string.Empty;
                 ddlCustomerDeliveryCustomer.SelectedValue = string.Empty;
                 ddlCustomerDeliveryChannel.SelectedValue =
@@ -1416,8 +1420,33 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            Guid submissionToken;
+            if (!Guid.TryParse(
+                    hdfCustomerDeliverySubmissionToken.Value,
+                    out submissionToken)
+                || submissionToken == Guid.Empty)
+            {
+                ShowNotify(
+                    "Phiên gửi khách hàng đã hết hiệu lực. Vui lòng mở lại biểu mẫu gửi.",
+                    MSGType.Warning);
+                return;
+            }
+
+            bool isSubmissionReserved = false;
+            bool hasCreatedCustomerDelivery = false;
             try
             {
+                if (!TryReserveCustomerDeliverySubmission(submissionToken))
+                {
+                    CloseCustomerDeliveryModal();
+                    RefreshCustomerDeliveryDetail(idTaiLieu);
+                    ShowNotify(
+                        "Yêu cầu gửi khách hàng này đã được xử lý. Danh sách đã được làm mới.",
+                        MSGType.Success);
+                    return;
+                }
+
+                isSubmissionReserved = true;
                 EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 CreateRequestDocumentManager().SendDocumentToCustomer(
                     idTaiLieu,
@@ -1429,16 +1458,21 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     dtCustomerDeliveryDeadline.DateValue,
                     chkCustomerDeliveryBeforeSigning.Checked,
                     txtCustomerDeliveryNote.Text);
-                mdlCustomerDelivery.CloseModal(true);
+                hasCreatedCustomerDelivery = true;
                 RefreshCustomerDeliveryDetail(idTaiLieu);
+                CloseCustomerDeliveryModal();
                 ShowSuccessSaveData();
             }
             catch (InvalidOperationException exc)
             {
+                if (isSubmissionReserved && !hasCreatedCustomerDelivery)
+                    ReleaseCustomerDeliverySubmission(submissionToken);
                 ShowNotify(exc.Message, MSGType.Warning);
             }
             catch (Exception exc)
             {
+                if (isSubmissionReserved && !hasCreatedCustomerDelivery)
+                    ReleaseCustomerDeliverySubmission(submissionToken);
                 LogCustomerDeliveryHandlerError("send", idTaiLieu, exc);
                 ShowNotify(exc.Message, MSGType.Error);
             }
@@ -1624,6 +1658,51 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             InitControls(idTaiLieu);
             upDetail.Update();
             KeepCustomerTabOpen();
+        }
+
+        private static bool TryReserveCustomerDeliverySubmission(
+            Guid submissionToken)
+        {
+            HttpContext context = HttpContext.Current;
+            if (context == null || context.Session == null)
+                return true;
+
+            string sessionKey = CustomerDeliverySubmissionSessionKeyPrefix
+                + submissionToken.ToString("N");
+            if (context.Session[sessionKey] != null)
+                return false;
+
+            // A modal receives one token when it opens.  Keep that token in the
+            // server session after a successful request so a repeated postback
+            // from the same click cannot create a second delivery record.
+            context.Session[sessionKey] = DateTime.UtcNow;
+            return true;
+        }
+
+        private static void ReleaseCustomerDeliverySubmission(
+            Guid submissionToken)
+        {
+            HttpContext context = HttpContext.Current;
+            if (context == null || context.Session == null)
+                return;
+
+            context.Session.Remove(
+                CustomerDeliverySubmissionSessionKeyPrefix
+                + submissionToken.ToString("N"));
+        }
+
+        private void CloseCustomerDeliveryModal()
+        {
+            if (mdlCustomerDelivery == null)
+                return;
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "CloseDocumentCustomerDeliveryModal",
+                "CMSMasterJs.CloseDialog('#" + mdlCustomerDelivery.ClientID
+                    + "');",
+                true);
         }
 
         private void KeepCustomerTabOpen()

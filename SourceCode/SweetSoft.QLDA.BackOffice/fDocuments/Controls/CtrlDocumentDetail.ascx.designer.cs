@@ -88,6 +88,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.HiddenField hdfCustomerDeliveryVersion;
         protected global::System.Web.UI.WebControls.HiddenField hdfCustomerDeliveryCustomer;
         protected global::System.Web.UI.WebControls.HiddenField hdfCustomerDeliveryChannel;
+        protected global::System.Web.UI.WebControls.HiddenField hdfCustomerDeliverySubmissionToken;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCustomerDeliveryVersion;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCustomerDeliveryCustomer;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtCustomerDeliveryRecipient;

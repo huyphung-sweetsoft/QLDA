@@ -829,6 +829,7 @@
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryVersion" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryCustomer" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryChannel" />
+            <asp:HiddenField runat="server" ID="hdfCustomerDeliverySubmissionToken" />
             <div class="alert alert-light border py-2 small">
                 <i class="fas fa-info-circle me-1"></i>
                 <%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_RECORD_NOTICE) %>
@@ -912,7 +913,7 @@
                 runat="server"
                 ID="btnCustomerDeliverySend"
                 OnClick="btnCustomerDeliverySend_Click"
-                OnClientClick="CMSMasterJs.DisableContentChanged();"
+                OnClientClick="if (this.getAttribute('data-submitting') === 'true') { return false; } this.setAttribute('data-submitting', 'true'); var submitButton = this; window.setTimeout(function () { submitButton.disabled = true; }, 0); CMSMasterJs.DisableContentChanged();"
                 CausesValidation="false"
                 UseSubmitBehavior="true"
                 CssClass="btn btn-primary btn-sm waves-effect waves-light" />
