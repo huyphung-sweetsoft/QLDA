@@ -2221,7 +2221,6 @@
   <data name="EMPLOYEE_SCHEDULE" xml:space="preserve">
     <value>Employee Schedule</value>
   </data>
-</root>
   <data name="SHOW_ONLY_OVERDUE_TASKS" xml:space="preserve">
     <value>Show only overdue tasks</value>
   </data>

@@ -8,10 +8,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using System.Transactions;
 namespace SweetSoft.QLDA.Core.Managers
 {
     public class LichBieuChungManager : BaseManager
@@ -30,6 +27,40 @@ namespace SweetSoft.QLDA.Core.Managers
             _ngoaiLeRepository = new LichNgoaiLeRepository(_auditManager);
         }
 
+        #region CACHE CHỐNG TRÀN BỘ NHỚ (TỐI ƯU & THREAD-SAFE)
+        private List<TblCauHinhTuanLamViec> _weekConfigCache;
+        private List<TblLichNgoaiLe> _exceptionsCache;
+        private DateTime _lastCacheTime = DateTime.MinValue;
+        private static readonly object _cacheLock = new object();
+
+        public void ForceRefreshCache()
+        {
+            lock (_cacheLock) { _lastCacheTime = DateTime.MinValue; }
+        }
+
+        private void RefreshCacheIfNeeded()
+        {
+            if ((DateTime.Now - _lastCacheTime).TotalSeconds > 60 || _weekConfigCache == null || _exceptionsCache == null)
+            {
+                lock (_cacheLock)
+                {
+                    if ((DateTime.Now - _lastCacheTime).TotalSeconds > 60 || _weekConfigCache == null || _exceptionsCache == null)
+                    {
+                        _weekConfigCache = _tuanRepository.GetAll();
+                        DateTime startDate = DateTime.Today.AddYears(-1);
+                        DateTime endDate = DateTime.Today.AddYears(2);
+                        _exceptionsCache = new SubSonic.Select().From(TblLichNgoaiLe.Schema)
+                                             .Where(TblLichNgoaiLe.Columns.DaXoa).IsEqualTo(false)
+                                             .And(TblLichNgoaiLe.Columns.NgayBatDau).IsGreaterThanOrEqualTo(startDate)
+                                             .And(TblLichNgoaiLe.Columns.NgayBatDau).IsLessThanOrEqualTo(endDate)
+                                             .ExecuteTypedList<TblLichNgoaiLe>();
+                        _lastCacheTime = DateTime.Now;
+                    }
+                }
+            }
+        }
+        #endregion
+
         #region NHÓM 1: QUẢN LÝ CẤU HÌNH TUẦN LÀM VIỆC MẶC ĐỊNH (LỚP 1)
 
         public List<TblCauHinhTuanLamViec> GetAllCauHinhTuan()
@@ -37,17 +68,34 @@ namespace SweetSoft.QLDA.Core.Managers
             return _tuanRepository.GetAll();
         }
 
+        public DateTime GetNextWorkingDay(DateTime date)
+        {
+            DateTime currentDate = date.Date;
+            int safeguard = 0;
+            const int MAX_LOOP = 3650; // Giới hạn 10 năm
+
+            while (!CheckIsWorkingDay(currentDate))
+            {
+                currentDate = currentDate.AddDays(1);
+                safeguard++;
+                if (safeguard > MAX_LOOP)
+                {
+                    throw new InvalidOperationException("Không tìm được ngày làm việc hợp lệ. Vui lòng kiểm tra lại cấu hình Lịch biểu.");
+                }
+            }
+            return currentDate;
+        }
+
         public TblCauHinhTuanLamViec UpdateCauHinhTuan(TblCauHinhTuanLamViec item)
         {
             if (item == null) return null;
-
-            // Lấy ID người dùng đăng nhập hiện tại từ SweetContext (Chuẩn Framework)
             Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
-
-            // Bơm UserId vào đối tượng trước khi đẩy xuống Repository
             item.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+            var result = _tuanRepository.Update(item);
 
-            return _tuanRepository.Update(item);
+            // [FIX KIẾN TRÚC]: Chỉ update DB và Cache, KHÔNG gọi Sync ở đây để tránh lặp 7 lần!
+            if (result != null) ForceRefreshCache();
+            return result;
         }
 
         #endregion
@@ -63,48 +111,55 @@ namespace SweetSoft.QLDA.Core.Managers
             return _ngoaiLeRepository.GetById(id);
         }
 
-        // Nhớ using SweetSoft.QLDA.Core.ExceptionHelpers; nếu chưa có để dùng BusinessValidator
-
         public TblLichNgoaiLe CreateOrUpdate(TblLichNgoaiLe dto)
         {
-            // 1. Validate dữ liệu cơ bản (Trạm Tiền kiểm tra)
             BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
             BusinessValidator.ThrowIfNullOrEmpty(dto.TenNgoaiLe, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenNgoaiLe));
 
-            // 2. Lấy ID người dùng đăng nhập hiện tại từ SweetContext (Chuẩn Framework)
             Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
-
-            // 3. Phân luồng: Thêm mới hay Cập nhật?
             bool isInsert = (dto.IdNgoaiLe == Guid.Empty);
+            TblLichNgoaiLe resultItem = null;
+            DateTime affectedDate = dto.NgayBatDau;
 
-            if (isInsert)
+            // 1. CHỈ BỌC TRANSACTION CHO RIÊNG VIỆC LƯU LỊCH
+            using (var scope = new TransactionScope())
             {
-                // XỬ LÝ THÊM MỚI
-                dto.IdNgoaiLe = Guid.NewGuid();
-                dto.NgayTao = DateTime.Now;
-                dto.NguoiTao = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+                if (isInsert)
+                {
+                    dto.IdNgoaiLe = Guid.NewGuid();
+                    dto.NgayTao = DateTime.Now;
+                    dto.NguoiTao = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+                    dto.DaXoa = false;
+                    resultItem = _ngoaiLeRepository.Insert(dto);
+                }
+                else
+                {
+                    TblLichNgoaiLe existingItem = _ngoaiLeRepository.GetById(dto.IdNgoaiLe);
+                    BusinessValidator.ThrowIfNull(existingItem, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdNgoaiLe), ErrorCodes.NotFound);
 
-                return _ngoaiLeRepository.Insert(dto);
+                    DateTime oldStart = existingItem.NgayBatDau;
+                    affectedDate = oldStart < dto.NgayBatDau ? oldStart : dto.NgayBatDau;
+
+                    existingItem.TenNgoaiLe = dto.TenNgoaiLe;
+                    existingItem.NgayBatDau = dto.NgayBatDau;
+                    existingItem.NgayKetThuc = dto.NgayKetThuc;
+                    existingItem.MoTa = dto.MoTa;
+                    existingItem.LaNgayLamViec = dto.LaNgayLamViec;
+                    existingItem.NgayCapNhat = DateTime.Now;
+                    existingItem.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+
+                    resultItem = _ngoaiLeRepository.Update(existingItem);
+                }
+                scope.Complete(); // Commit lịch thành công
             }
-            else
+
+            // 2. SAU KHI LỊCH ĐÃ COMMIT THÌ MỚI REFRESH CACHE VÀ SYNC TASK
+            if (resultItem != null)
             {
-                // XỬ LÝ CẬP NHẬT
-                TblLichNgoaiLe existingItem = _ngoaiLeRepository.GetById(dto.IdNgoaiLe);
-                BusinessValidator.ThrowIfNull(existingItem, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdNgoaiLe), ErrorCodes.NotFound);
-
-                // Map dữ liệu từ UI (dto) sang Object DB (existingItem)
-                existingItem.TenNgoaiLe = dto.TenNgoaiLe;
-                existingItem.NgayBatDau = dto.NgayBatDau;
-                existingItem.NgayKetThuc = dto.NgayKetThuc;
-                existingItem.MoTa = dto.MoTa;
-                existingItem.LaNgayLamViec = dto.LaNgayLamViec;
-
-                // Cập nhật vết audit
-                existingItem.NgayCapNhat = DateTime.Now;
-                existingItem.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
-
-                return _ngoaiLeRepository.Update(existingItem);
+                ForceRefreshCache();
+                TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
             }
+            return resultItem;
         }
 
         public bool DeleteLichNgoaiLe(Guid id)
@@ -112,88 +167,84 @@ namespace SweetSoft.QLDA.Core.Managers
             var item = _ngoaiLeRepository.GetById(id);
             if (item != null)
             {
-                return _ngoaiLeRepository.Delete(item);
+                DateTime affectedDate = item.NgayBatDau;
+                bool isDeleted = false;
+
+                using (var scope = new TransactionScope())
+                {
+                    isDeleted = _ngoaiLeRepository.Delete(item);
+                    scope.Complete(); // Commit xóa lịch thành công
+                }
+
+                if (isDeleted)
+                {
+                    ForceRefreshCache();
+                    TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
+                }
+                return isDeleted;
             }
             return false;
         }
-
         #endregion
 
         #region NHÓM 3: ĐỘNG CƠ TÍNH TOÁN THỜI GIAN (CORE ENGINE)
 
         public bool CheckIsWorkingDay(DateTime date)
         {
-            // Bước 1: Ưu tiên check Lớp 2 (Ngoại lệ / Lễ Tết / Làm bù) trước
-            // Dùng hàm GetExceptionsInRange mà bạn đã có ở Repository
-            var exceptions = _ngoaiLeRepository.GetExceptionsInRange(date, date);
-
-            if (exceptions != null && exceptions.Count > 0)
+            RefreshCacheIfNeeded();
+            if (_exceptionsCache != null)
             {
-                // Có sự kiện ngoại lệ rơi vào ngày này!
-                // Trả về true nếu là lịch làm bù, false nếu là lịch nghỉ lễ
-                return exceptions[0].LaNgayLamViec;
+                var ex = _exceptionsCache.Find(x => x.NgayBatDau.Date <= date.Date && x.NgayKetThuc.Date >= date.Date);
+                if (ex != null) return ex.LaNgayLamViec;
             }
-
-            // Bước 2: Nếu không có lễ tết gì, check Lớp 1 (Lịch chuẩn theo thứ trong tuần)
-            int dayOfWeek = (int)date.DayOfWeek; // 0: CN, 1: T2, ..., 6: T7
-            var standardConfig = _tuanRepository.GetByDayOfWeek(dayOfWeek);
-
-            if (standardConfig != null)
+            int dayOfWeek = (int)date.DayOfWeek;
+            if (_weekConfigCache != null)
             {
-                return standardConfig.LaNgayLamViec;
+                var config = _weekConfigCache.Find(x => x.NgayTrongTuan == dayOfWeek);
+                if (config != null) return config.LaNgayLamViec;
             }
-
-            // Mặc định an toàn (Phòng hờ lỗi DB)
             return false;
         }
 
         public DateTime CalculateTaskEndDate(DateTime ngayBatDau, int thoiHanNgay)
         {
-            // Nếu PM nhập thời hạn = 0 hoặc số âm (lỗi nhập liệu), trả về luôn ngày bắt đầu
-            if (thoiHanNgay <= 0)
-                return ngayBatDau;
+            if (thoiHanNgay <= 0) return ngayBatDau;
 
-            DateTime currentDate = ngayBatDau.Date; // Bỏ qua giờ phút giây, chỉ lấy ngày
-            int remainingDays = thoiHanNgay; // Biến đếm ngược số ngày cần phân bổ
+            DateTime currentDate = ngayBatDau.Date;
+            int remainingDays = thoiHanNgay;
+            int safeguard = 0;
+            const int MAX_LOOP = 3650;
 
-            // Vòng lặp rải ngày: Chừng nào chưa rải hết số ngày công thì chưa dừng
             while (remainingDays > 0)
             {
-                // Kiểm tra xem ngày đang xét có phải ngày đi làm không
                 if (CheckIsWorkingDay(currentDate))
                 {
-                    // Trừ đi 1 ngày công cần phân bổ
                     remainingDays--;
-
-                    // NẾU ĐÃ RẢI HẾT NGÀY CÔNG (remainingDays == 0), thì DỪNG LẠI NGAY!
-                    // currentDate lúc này chính là ngày hoàn thành cuối cùng.
-                    if (remainingDays == 0)
-                    {
-                        break;
-                    }
+                    if (remainingDays == 0) break;
                 }
-
-                // Nhảy sang ngày tiếp theo để kiểm tra (Vòng lặp tiếp tục)
                 currentDate = currentDate.AddDays(1);
-            }
+                safeguard++;
 
+                if (safeguard > MAX_LOOP)
+                {
+                    throw new InvalidOperationException("Thời gian kéo dài quá lâu. Vui lòng kiểm tra lại cấu hình Lịch biểu.");
+                }
+            }
             return currentDate;
         }
+
         public int CountWorkingDaysInRange(DateTime start, DateTime end)
         {
             if (end.Date < start.Date) return 0;
-
             int count = 0;
             DateTime curr = start.Date;
             while (curr <= end.Date)
             {
-                if (CheckIsWorkingDay(curr))
-                    count++;
+                if (CheckIsWorkingDay(curr)) count++;
                 curr = curr.AddDays(1);
             }
             return count;
         }
         #endregion
-
     }
 }

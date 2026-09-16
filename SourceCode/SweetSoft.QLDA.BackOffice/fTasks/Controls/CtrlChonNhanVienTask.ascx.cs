@@ -93,7 +93,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                                    $"<div style='font-size: 12px;'><i class='far fa-clock me-1'></i> {GetResourceText(BackEndResourceKeys.EXECUTION_TIME)}: {thoiGian}</div>";
 
             mdlTaskMemberPicker.OpenModal(true);
+            upnlMemberPicker.Update();
         }
+
 
         // Bổ sung tham số pmId để đánh dấu huy hiệu
         private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId)

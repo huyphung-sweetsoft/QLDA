@@ -26,6 +26,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// <summary>
         /// CtrlProjectTabs1 control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
 
         /// <summary>
@@ -36,6 +40,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask CtrlTask1;
+
         /// <summary>
         /// upModal control.
         /// </summary>
@@ -118,13 +123,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.DropDownList ddlEditDoUuTien;
 
         /// <summary>
-        /// ddlEditNhanVien control.
+        /// ddlEditTrangThai control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditNhanVien;
+        protected global::System.Web.UI.WebControls.DropDownList ddlEditTrangThai;
 
         /// <summary>
         /// txtEditThoiHan control.
@@ -152,15 +157,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtEditNgayKetThuc;
-
-        /// <summary>
-        /// ddlEditTrangThai control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditTrangThai;
 
         /// <summary>
         /// txtEditMoTa control.

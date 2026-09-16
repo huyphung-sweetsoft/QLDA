@@ -370,5 +370,16 @@
                 $btnIcon.removeClass('fa-folder').addClass('fa-folder-open');
                     }
                 }
+
+        // Bắt sự kiện thay đổi LocalStorage từ các Tab khác cùng trình duyệt
+        window.addEventListener("storage", function (e) {
+            if (e.key === "ScheduleChanged") {
+                // Tùy chọn 1: F5 lại toàn bộ trang (Mượt và an toàn nhất để làm mới mọi Data)
+                window.location.reload();
+
+        // Tùy chọn 2 (Nếu muốn xịn hơn): Bắn trigger ngầm để UpdatePanel tự reload Grid
+                // __doPostBack('<%= upModal.ClientID %>', '');
+            }
+        });
     </script>
 </asp:Content>

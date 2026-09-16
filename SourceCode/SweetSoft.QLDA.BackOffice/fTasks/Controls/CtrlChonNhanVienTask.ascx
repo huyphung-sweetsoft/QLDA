@@ -41,6 +41,9 @@
 
 <SweetSoft:ExtraModal runat="server" ID="mdlTaskMemberPicker" Type="Primary" DefaultButton="btnConfirmTaskAssign">
     <ContentTemplate>
+        <asp:UpdatePanel ID="upnlMemberPicker" runat="server" UpdateMode="Conditional">
+            <ContentTemplate>
+         
         <div class="row js-validation validationEngineContainer p-2">
             
             <!-- THÔNG BÁO THỜI GIAN VÀ CẢNH BÁO AUTO-ADD -->
@@ -125,6 +128,8 @@
 
             </div> 
         </div>
+  </ContentTemplate>
+</asp:UpdatePanel>
     </ContentTemplate>
     
     <FooterTemplate>
