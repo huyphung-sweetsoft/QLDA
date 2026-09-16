@@ -714,7 +714,7 @@ namespace SweetSoft.QLDA.Core.Managers
                                 // Lan truyền domino tiếp cho các task phụ thuộc của thằng này
                                 AutoSetDependentTime(projectId, depTask.IdCongViec);
 
-                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Cha
+                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Chaưekgfwe
                                 if (depTask.IdCongViecCha.HasValue)
                                 {
                                     AutoSetParentTime(projectId, depTask.IdCongViecCha.Value);
