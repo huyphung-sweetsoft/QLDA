@@ -44,6 +44,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
         }
 
+        // Bổ sung tham số taskName vào hàm
+        // Bổ sung tham số idNhanVienQuanLy (Mặc định là null để an toàn)
         public void OpenPicker(Guid idDuAn, Guid idCongViec, DateTime startDate, DateTime endDate, string taskName, Guid? idNhanVienQuanLy = null)
         {
             this.IdDuAn = idDuAn;
@@ -54,9 +56,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             List<Guid> nhomA = ThanhVienDuAnManager.Instance.GetAllActiveMemberIds(idDuAn);
             List<AspnetUser> allUsers = UserManager.Instance.GetAllActiveNhanVien();
 
+            // Lấy danh sách đã gán
             List<Guid> dangGan = TaskManager.Instance.GetAssignedNhanVienIds(idCongViec);
+
+            // FIX TỬ HUYỆT LIFECYCLE: Bắt buộc gán ViewState trước khi gọi DataBind()
             ViewState["DangGanIds"] = dangGan;
 
+            // ÁP DỤNG SORT ĐA TẦNG CHO NHÓM DỰ ÁN (PM -> Người đã gán -> ABC)
             List<AspnetUser> projectMembers = allUsers
                 .Where(u => nhomA.Contains(u.UserId))
                 .OrderByDescending(u => idNhanVienQuanLy.HasValue && u.UserId == idNhanVienQuanLy.Value)
@@ -64,12 +70,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 .ThenBy(u => u.DisplayName)
                 .ToList();
 
+            // ÁP DỤNG SORT CHO NHÓM CÔNG TY (Người đã gán -> ABC)
             List<AspnetUser> otherMembers = allUsers
                 .Where(u => !nhomA.Contains(u.UserId))
                 .OrderByDescending(u => dangGan.Contains(u.UserId))
                 .ThenBy(u => u.DisplayName)
                 .ToList();
 
+            // Đổ dữ liệu
             rptProjectMembers.DataSource = BuildDisplayList(projectMembers, startDate, endDate, idNhanVienQuanLy);
             rptProjectMembers.DataBind();
             ltrCountProj.Text = projectMembers.Count.ToString();
@@ -78,6 +86,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             rptCompanyMembers.DataBind();
             ltrCountCompany.Text = otherMembers.Count.ToString();
 
+            // Cấu hình Title và Thông báo bằng ResourceKey
             mdlTaskMemberPicker.Title = GetResourceText(BackEndResourceKeys.ASSIGN_TASK);
             string thoiGian = $"<strong>{startDate:dd/MM/yyyy}</strong> - <strong>{endDate:dd/MM/yyyy}</strong>";
             ltrTaskInfoNote.Text = $"<div style='margin-bottom: 5px; font-size: 13px;'><i class='fas fa-tasks me-1'></i> {GetResourceText(BackEndResourceKeys.TASK)}: <strong style='color: #b91c1c;'>{taskName}</strong></div>" +
@@ -87,6 +96,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             upnlMemberPicker.Update();
         }
 
+        // Bổ sung tham số pmId để đánh dấu huy hiệu
         private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId)
         {
             var list = new List<object>();
@@ -214,5 +224,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             return result;
         }
+        
     }
 }

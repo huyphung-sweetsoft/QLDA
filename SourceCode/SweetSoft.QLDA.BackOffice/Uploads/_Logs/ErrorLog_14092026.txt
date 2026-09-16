@@ -1,20 +1,46 @@
 
                 === UNHANDLED EXCEPTION ===
-                Time: 2026-09-14 19:19:57.280
-                URL: Unknown
-                User Agent: Unknown
-                Referrer: Unknown
+                Time: 2026-09-14 10:30:50.100
+                URL: http://qlda.local/fMeets/MeetList.aspx?ProjectId=LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Project/LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw/Costs
                 Session ID: Unknown
-                Exception Type: SqlQueryException
-                Message: A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: Named Pipes Provider, error: 40 - Could not open a connection to SQL Server)
-                Stack Trace:    at SubSonic.SqlQuery.ExecuteTypedList[T]() in D:\Working\Bitbucket\VegaCity\WebApp\Libraries\SubSonic\SubSonic\SqlQuery.cs:line 1558
-   at SweetSoft.QLDA.Core.Managers.SettingManager.GetAllSettings() in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 157
-   at SweetSoft.QLDA.Core.Managers.SettingManager.get_ApplicationSettings() in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 145
-   at SweetSoft.QLDA.Core.Managers.SettingManager.GetSettingByName(String settingName) in D:\QLDA\SourceCode\SweetSoft.QLDA.Core\Managers\SettingManager.cs:line 180
-   at SweetSoft.QLDA.BackOffice.Global.get_TimeZoneId() in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 30
-   at SweetSoft.QLDA.BackOffice.Global.Application_Start(Object sender, EventArgs e) in D:\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Global.asax.cs:line 65
-                Inner Exception: A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: Named Pipes Provider, error: 40 - Could not open a connection to SQL Server)
-                Inner Stack Trace:    at SubSonic.SqlQuery.ExecuteReader() in D:\Working\Bitbucket\VegaCity\WebApp\Libraries\SubSonic\SubSonic\SqlQuery.cs:line 1328
-   at SubSonic.SqlQuery.ExecuteTypedList[T]() in D:\Working\Bitbucket\VegaCity\WebApp\Libraries\SubSonic\SubSonic\SqlQuery.cs:line 1549
+                Exception Type: HttpCompileException
+                Message: d:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\MeetList.aspx(42): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'MEET_DURATION'
+                Stack Trace:    at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: None
+                Inner Stack Trace: None
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-09-14 11:59:37.090
+                URL: http://qlda.local/fTasks/TaskList.aspx?ProjectId=LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Project/LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw/Meets
+                Session ID: Unknown
+                Exception Type: HttpCompileException
+                Message: d:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fTasks\TaskList.aspx(294): error CS0117: 'SweetSoft.QLDA.Core.ResourceTexts.BackEndResourceKeys' does not contain a definition for 'DURATION'
+                Stack Trace:    at System.Web.Compilation.BuildManager.CompileWebFile(VirtualPath virtualPath)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultInternal(VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVPathBuildResultWithNoAssert(HttpContext context, VirtualPath virtualPath, Boolean noBuild, Boolean allowCrossApp, Boolean allowBuildInPrecompile, Boolean throwIfNotFound, Boolean ensureIsUpToDate)
+   at System.Web.Compilation.BuildManager.GetVirtualPathObjectFactory(VirtualPath virtualPath, HttpContext context, Boolean allowCrossApp, Boolean throwIfNotFound)
+   at System.Web.Compilation.BuildManager.CreateInstanceFromVirtualPath(VirtualPath virtualPath, Type requiredBaseType, HttpContext context, Boolean allowCrossApp)
+   at System.Web.UI.PageHandlerFactory.GetHandlerHelper(HttpContext context, String requestType, VirtualPath virtualPath, String physicalPath)
+   at System.Web.UI.PageHandlerFactory.GetHandler(HttpContext context, String requestType, String virtualPath, String path)
+   at System.Web.HttpApplication.MaterializeHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: None
+                Inner Stack Trace: None
                 ========================
                 

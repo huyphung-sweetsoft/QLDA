@@ -1123,8 +1123,20 @@
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Mã cuộc họp</value>
   </data>
+	<data name="MEETING_CODE" xml:space="preserve">
+    <value>Mã cuộc họp</value>
+	  </data>
   <data name="MEETING_ROOM" xml:space="preserve">
     <value>Địa điểm họp</value>
+  </data>
+  <data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>Nội dung khái quát</value>
+  </data>
+  <data name="MEETING_ROOM" xml:space="preserve">
+    <value>Địa điểm họp</value>
+  </data>
+  <data name="GENERAL_CONTENT" xml:space="preserve">
+    <value>Nội dung khái quát</value>
   </data>
   <data name="GENERAL_CONTENT" xml:space="preserve">
     <value>Nội dung khái quát</value>
@@ -2211,6 +2223,36 @@
   </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
+  </data>
+  <data name="COMPLETED" xml:space="preserve">
+    <value>Hoàn thành</value>
+  </data>
+  <data name="DUE_SOON" xml:space="preserve">
+    <value>Sắp đến hạn</value>
+  </data>
+  <data name="NOT_YET_STARTED" xml:space="preserve">
+    <value>Chưa bắt đầu</value>
+  </data>
+  <data name="TODAY" xml:space="preserve">
+    <value>Hôm nay</value>
+  </data>
+  <data name="DEPENDENT_LINK" xml:space="preserve">
+    <value>Liên kết phụ thuộc</value>
+  </data>
+  <data name="NO_OVERDUE_TASKS" xml:space="preserve">
+    <value>Không có công việc trễ hạn</value>
+  </data>
+  <data name="NO_ISSUES" xml:space="preserve">
+    <value>Không có vấn đề</value>
+  </data>
+  <data name="IN_PROGRESS" xml:space="preserve">
+    <value>Đang thực hiện</value>
+  </data>
+  <data name="PROJECT_REPORT_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý báo cáo tiến độ</value>
+  </data>
+  <data name="PROJECT_REPORT" xml:space="preserve">
+    <value>Báo cáo tiến độ dự án</value>
   </data>
   <data name="PROVINCES" xml:space="preserve">
     <value>Các tỉnh</value>

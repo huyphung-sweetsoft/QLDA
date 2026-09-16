@@ -2,6 +2,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
 <style>
+    /* BỘ CSS CHUẨN CỦA ACCORDION VÀ LỊCH BIỂU (Tái sử dụng) */
     .member-section-title { font-size: 13px; font-weight: 700; color: #1e3a8a; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
     .member-section-title:hover { background: #f1f5f9; }
     .member-section-title .arrow-icon { font-size: 10px; color: #64748b; transition: transform 0.25s ease; }
@@ -9,6 +10,7 @@
     .member-accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-in-out; }
     .member-accordion-group.open .member-accordion-content { max-height: 1200px; overflow-y: auto; overflow-x: hidden; margin-bottom: 10px; }
 
+    /* ROW NHÂN VIÊN VÀ HIỆU ỨNG SLIDE LỊCH BIỂU */
     .member-item-row { position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: min-height 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-height: 52px; display: flex; align-items: center; }
     .member-item-row.show-schedule { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08); }
     .row-default-view { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; width: 100%; height: 100%; font-size: 13px; }
@@ -23,6 +25,7 @@
     .btn-calendar-only { background: #ffffff; border: 1px solid #e2e8f0; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .btn-calendar-only:hover { background: #eff6ff; border-color: #93c5fd; transform: scale(1.1); }
 
+    /* OVERLAY LỊCH BIỂU TRƯỢT */
     .row-schedule-overlay { position: absolute; inset: 0; background: #ffffff; z-index: 5; display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); height: 100%; }
     .member-item-row.show-schedule .row-schedule-overlay { transform: translateX(0); }
     .btn-back-row-slide { background: #f1f5f9; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #2563eb; flex-shrink: 0; margin-top: 4px; }
@@ -34,6 +37,7 @@
     .sd-header small { font-size: 9.5px; font-weight: 600; color: #64748b; display: block; }
     .sd-body { padding: 4px 2px; text-align: center; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 32px; line-height: 1.25; }
 
+    /* MÀU TRẠNG THÁI LỊCH */
     .sd-body.holiday { background-color: #fef3c7; color: #b45309; border-top: 2.5px solid #f59e0b; }
     .sd-body.weekend { background-color: #f8fafc; color: #64748b; }
     .sd-body.free { background-color: #e6f4ea; color: #137333; border-top: 2.5px solid #34a853; }
@@ -47,6 +51,7 @@
          
         <div class="row js-validation validationEngineContainer p-2">
             
+            <!-- THÔNG BÁO THỜI GIAN VÀ CẢNH BÁO AUTO-ADD -->
             <div class="col-12 mb-3">
                 <div style="font-size: 12px; color: #1e40af; background: #eff6ff; padding: 10px 12px; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 8px;">
                     <asp:Literal runat="server" ID="ltrTaskInfoNote"></asp:Literal>
@@ -58,6 +63,7 @@
 
             <div class="col-12" style="max-height: 60vh; overflow-y: auto; overflow-x: hidden;">
                 
+                <!-- ACCORDION 1: NHÂN SỰ ĐÃ THUỘC DỰ ÁN (Mặc định mở) -->
                 <div class="member-accordion-group open" id="accGroupProject" runat="server">
                     <div class="member-section-title" onclick="CMSMasterJs.TogglePickerAccordion(this)">
                         <span>📁 <%= GetResourceText(BackEndResourceKeys.PROJECT_MEMBERS) %> (<asp:Literal ID="ltrCountProj" runat="server">0</asp:Literal>)</span>
@@ -94,6 +100,7 @@
                     </div>
                 </div>
 
+                <!-- ACCORDION 2: NHÂN SỰ KHÁC TRONG CÔNG TY (Mặc định đóng) -->
                 <div class="member-accordion-group" id="accGroupCompany" runat="server">
                     <div class="member-section-title" style="background: #fdf2f8; border-color: #fbcfe8; color: #9d174d;" onclick="CMSMasterJs.TogglePickerAccordion(this)">
                         <span>🏢 <%= GetResourceText(BackEndResourceKeys.OTHER_EMPLOYEES) %> (<asp:Literal ID="ltrCountCompany" runat="server">0</asp:Literal>)</span>
@@ -132,7 +139,7 @@
 
             </div> 
         </div>
-  </ContentTemplate>
+    </ContentTemplate>
 </asp:UpdatePanel>
     </ContentTemplate>
     

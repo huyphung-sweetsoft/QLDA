@@ -16,17 +16,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             if (!IsPostBack)
             {
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
 
-                SetMetaTagsOgTags("Báo cáo Tiến độ Dự án");
-                Navigation1.MainTitle = "Báo cáo Tiến độ";
+                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.PROJECT_REPORT));
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PROJECT_REPORT);
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
                 {
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
-                    { "javascript:;", "Báo cáo Tiến độ" }
+                    { "javascript:;", GetResourceText(BackEndResourceKeys.PROJECT_REPORT) }
                 };
 
                 LoadReportData();

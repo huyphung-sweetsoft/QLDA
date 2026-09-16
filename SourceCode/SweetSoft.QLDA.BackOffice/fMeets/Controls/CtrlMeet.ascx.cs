@@ -56,15 +56,17 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 script.RegisterAsyncPostBackControl(lbtSearchSingle);
                 script.RegisterAsyncPostBackControl(lbtSearchAdvanced);
                 script.RegisterAsyncPostBackControl(lbtCancel);
+                script.RegisterAsyncPostBackControl(ddlSearchTrangThai);
             }
         }
 
         public void InitControls()
         {
             ApplyControlsText();
-            AssignSearchColumns();
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
+
+            new ControlHelpers().BindTrangThaiLichHop(ddlSearchTrangThai);
 
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
@@ -72,15 +74,10 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = "MaCuocHop";
-            grvData.CurrentSortDerection = "ASC";
+            grvData.CurrentSortDerection = "DESC";
             grvData.Rebind();
             pnlSearch.Update();
             pnlButtons.Update();
-        }
-
-        private void AssignSearchColumns()
-        {
-            txtSearchTenCuocHop.SearchColumn = "TenCuocHop";
         }
 
         public void Rebind()
@@ -92,21 +89,42 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
-            txtSearchTenCuocHop.SearchTagItemText = "Tên cuộc họp";
+            txtSearchTenCuocHop.SearchTagItemText = GetResourceText(BackEndResourceKeys.MEETING_NAME);
+            txtSearchDiaDiem.SearchTagItemText = GetResourceText(BackEndResourceKeys.MEETING_ROOM);
+            txtSearchTuNgay.SearchTagItemText = GetResourceText(BackEndResourceKeys.FROM_DATE);
+            txtSearchDenNgay.SearchTagItemText = GetResourceText(BackEndResourceKeys.TO_DATE);
+            ddlSearchTrangThai.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
+            txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+            txtSearchTenCuocHop.PlaceHolder = txtSearchDiaDiem.PlaceHolder =
+            txtSearchTuNgay.PlaceHolder = txtSearchDenNgay.PlaceHolder =
+            GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
-
+            lbtSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.APPLY);
+            lbtCancel.Text = GetResourceText(BackEndResourceKeys.REFRESH);
             List<string> lstTableHeader = new List<string>
             {
-                GetResourceText(BackEndResourceKeys.INDEX), 
+                GetResourceText(BackEndResourceKeys.INDEX),
                 GetResourceText(BackEndResourceKeys.MEETING_CODE),
-                GetResourceText(BackEndResourceKeys.MEETING_NAME), 
-                GetResourceText(BackEndResourceKeys.START_TIME), 
-                GetResourceText(BackEndResourceKeys.END_TIME), 
-                GetResourceText(BackEndResourceKeys.MEETING_ROOM), 
-                GetResourceText(BackEndResourceKeys.STATUS), 
+                GetResourceText(BackEndResourceKeys.MEETING_NAME),
+                "Người tham gia",
+                GetResourceText(BackEndResourceKeys.START_TIME),
+                GetResourceText(BackEndResourceKeys.END_TIME),
+                GetResourceText(BackEndResourceKeys.MEETING_ROOM),
+                GetResourceText(BackEndResourceKeys.STATUS),
                 GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.HeaderTexts = lstTableHeader;
+        }
+
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            if (master != null)
+            {
+                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
+            }
+            upSearchTagBox.Update();
+            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
         }
 
         protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
@@ -123,17 +141,22 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 int totalRows = 0;
                 int rowIndex = (grid.CurrentPageIndex - 1) * grid.CurrentPageSize;
                 int pageSize = rowIndex + grid.CurrentPageSize;
-                DataTable dt = null;
 
-                if (grid.GridSearchType == GridSearchType.Single)
+                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
+
+                if (pnlSearchPopup != null)
                 {
-                    dt = _manager.SearchMeeting(this.ProjectId, txtSearchSingle.Text, null, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    var advParams = new ControlHelpers().GetControlValues(pnlSearchPopup);
+                    foreach (var item in advParams) keyValueSearchs[item.Key] = item.Value;
                 }
-                else
+
+                if (pnlSearchDefaultStatus != null)
                 {
-                    Dictionary<string, object> keyValueSearchs = new ControlHelpers().GetControlValues(pnlSearchPopup);
-                    dt = _manager.SearchMeeting(this.ProjectId, "", keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    var defaultParams = new ControlHelpers().GetControlValues(pnlSearchDefaultStatus);
+                    foreach (var item in defaultParams) keyValueSearchs[item.Key] = item.Value;
                 }
+
+                DataTable dt = _manager.SearchMeeting(this.ProjectId, txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -166,6 +189,37 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             switch (e.CommandName)
             {
+                case "VIEW_MEMBERS":
+                    if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    int rowIndexMeet = 0;
+                    if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        rowIndexMeet = ((GridViewRow)((WebControl)(e.CommandSource)).NamingContainer).RowIndex;
+                    else
+                        rowIndexMeet = Convert.ToInt32(e.CommandArgument);
+
+                    Guid idCuocHop = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexMeet].Value.ToString(), out idCuocHop))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    TblLichHop meet = TblLichHop.FetchByID(idCuocHop);
+                    if (meet == null) return;
+
+                    Guid? hostId = meet.IdNguoiTao;
+                    DateTime startDate = meet.ThoiGianBatDau;
+                    DateTime endDate = meet.ThoiGianKetThuc;
+
+                    ((CtrlXemNhanVienMeet)CtrlXemNhanVienMeet1).OpenModal(idCuocHop, startDate, endDate, meet.TenCuocHop, hostId);
+
+                    break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit) { ShowAccessDeniedNotify(); return; }
                     int rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
@@ -174,46 +228,50 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                     EditMeetingHandlerCallback?.Invoke(meetId, EventArgs.Empty);
                     break;
 
-                case "ITEM_DELETE":
-                    if (!this.CURRENT_PAGE.IsDelete) { ShowAccessDeniedNotify(); return; }
-                    int rowIndexDel = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-                    Guid meetIdDel = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out meetIdDel)) { ShowInvalidDataError(); return; }
+                    case "ITEM_DELETE":
+                        if (!this.CURRENT_PAGE.IsDelete) { ShowAccessDeniedNotify(); return; }
+                        int rowIndexDel = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                        Guid meetIdDel = Guid.Empty;
+                        if (!Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out meetIdDel)) { ShowInvalidDataError(); return; }
 
-                    TblLichHop meetDel = TblLichHop.FetchByID(meetIdDel);
-                    if (meetDel == null || meetDel.DaXoa == true) { ShowInvalidNotFoundData(); return; }
+                        TblLichHop meetDel = TblLichHop.FetchByID(meetIdDel);
+                        if (meetDel == null || meetDel.DaXoa == true) { ShowInvalidNotFoundData(); return; }
 
-                    ConfirmResult result = new ConfirmResult { CommandName = "MEETING_DELETE", Value = meetDel };
-                    this.CURRENT_PAGE.CurrentConfirmResult = result;
-                    MessageBox msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION), $"Bạn có chắc chắn xóa cuộc họp: {meetDel.TenCuocHop}?", MSGButton.DeleteCancel, MSGIcon.Error);
-                    OpenMessageBox(msg, result, false, false);
-                    break;
+                        ConfirmResult result = new ConfirmResult { CommandName = "MEETING_DELETE", Value = meetDel };
+                        this.CURRENT_PAGE.CurrentConfirmResult = result;
+                        MessageBox msg = new MessageBox(
+                            GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                            string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), meetDel.TenCuocHop),
+                            MSGButton.DeleteCancel,
+                            MSGIcon.Error
+                        ); OpenMessageBox(msg, result, false, false);
+                        break;
+                }
             }
-        }
 
-        public override void ConfirmRequest(ConfirmResult e)
-        {
-            if (e != null && e.Submit && e.CommandName != null && e.CommandName.Contains("MEETING_DELETE"))
+            public override void ConfirmRequest(ConfirmResult e)
             {
-                TblLichHop meet = e.Value as TblLichHop;
-                if (meet == null)
+                if (e != null && e.Submit && e.CommandName != null && e.CommandName.Contains("MEETING_DELETE"))
                 {
-                    ShowInvalidNotFoundData();
-                    return;
-                }
-                try
-                {
-                    MeetManager.Instance.DeleteMeet(meet);
-                    ShowSuccessDeleteData();
-                    grvData.CurrentPageIndex = 1;
-                    grvData.Rebind();
-                }
-                catch (Exception exc)
-                {
-                    ShowNotify(exc.Message, MSGType.Error);
+                    TblLichHop meet = e.Value as TblLichHop;
+                    if (meet == null)
+                    {
+                        ShowInvalidNotFoundData();
+                        return;
+                    }
+                    try
+                    {
+                        _manager.DeleteMeet(meet);
+                        ShowSuccessDeleteData();
+                        grvData.CurrentPageIndex = 1;
+                        grvData.Rebind();
+                    }
+                    catch (Exception exc)
+                    {
+                        ShowNotify(exc.Message, MSGType.Error);
+                    }
                 }
             }
-        }
 
         protected void ctrlGridviewPaging_PageChanged(object sender, GridviewCustomPageChangeArgs e)
         {
@@ -237,9 +295,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 if (master != null)
                 {
                     GridSearchType? searchType;
-                    master.searchTagBox_TagClosed(searchTagBox, tag, null, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefaultStatus, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
                 }
+
+                pnlSearch.Update();
+                if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
                 upSearchTagBox.Update();
+
                 string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
                 ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
             }
@@ -267,11 +329,84 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (!this.CURRENT_PAGE.IsAdd) { ShowAccessDeniedNotify(); return; }
             NewMeetingHandlerCallback?.Invoke(Guid.Empty, EventArgs.Empty);
         }
+
         protected string GetTrangThaiCuocHopText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
-            TrangThaiCuocHopEnum status = (TrangThaiCuocHopEnum)Convert.ToInt32(value);
-            return GetResourceText(_manager.GetValuForTrangThaiCuoHop(status));
+            int statusCode = Convert.ToInt32(value);
+            TrangThaiCuocHopEnum status = (TrangThaiCuocHopEnum)statusCode;
+            string text = GetResourceText(_manager.GetValuForTrangThaiCuoHop(status));
+            string cssClass = "badge-status";
+            switch (statusCode)
+            {
+                case 0:
+                    cssClass += " badge-status-scheduled";
+                    break;
+                case 1:
+                    cssClass += " badge-status-upcoming";
+                    break;
+                case 2:
+                    cssClass += " badge-status-ongoing";
+                    break;
+                case 3:
+                    cssClass += " badge-status-ended";
+                    break;
+                default:
+                    cssClass += " badge-status-ended";
+                    break;
+            }
+            return $"<span class='{cssClass}'>{text}</span>";
+        }
+        public string GetAssigneeDisplay(object tenNhanVienObj, object avatarsObj)
+        {
+            string names = tenNhanVienObj?.ToString() ?? "";
+            string avatars = avatarsObj?.ToString() ?? "";
+
+            if (string.IsNullOrWhiteSpace(names)) return "";
+
+            string[] nameArray = names.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+            string[] avatarArray = avatars.Split(new string[] { "," }, StringSplitOptions.None);
+
+            string html = "";
+            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
+
+            int maxDisplay = 2;
+            int count = nameArray.Length;
+
+            for (int i = 0; i < Math.Min(count, maxDisplay); i++)
+            {
+                string name = nameArray[i].Trim();
+                string avatar = (i < avatarArray.Length) ? avatarArray[i].Trim() : "";
+                string color = colors[i % colors.Length];
+                bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+                if (!isDefaultAvatar)
+                {
+                    string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
+                    string fallbackHtml = $"<div class=\\'avatar-circle\\' style=\\'background-color: {color};\\' title=\\'{name}\\'>{GetInitials(name)}</div>";
+                    html += $"<img src='{avatarUrl}' class='avatar-circle' style='object-fit: cover;' title='{name}' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+                }
+                else
+                {
+                    string initials = GetInitials(name);
+                    html += $"<div class='avatar-circle' style='background-color: {color};' title='{name}'>{initials}</div>";
+                }
+            }
+
+            if (count > maxDisplay)
+            {
+                html += $"<div class='avatar-circle avatar-more' title='Và {count - maxDisplay} người khác'>+{count - maxDisplay}</div>";
+            }
+
+            return html;
+        }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
     }
 }

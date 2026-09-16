@@ -311,11 +311,11 @@
                     </div>
 
                     <div class="p-3 border-top bg-light d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()"><%= GetResourceText(BackEndResourceKeys.BACK_TO_LIST) %></button>
                         <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary" 
                                         CausesValidation="false" OnClick="btnSaveTask_Click">
                             <i class="fas fa-save me-1"></i> <%= GetResourceText(BackEndResourceKeys.SAVE) %>
                         </asp:LinkButton>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()"><%= GetResourceText(BackEndResourceKeys.BACK_TO_LIST) %></button>
                     </div>
                 </div>
             </ContentTemplate>
@@ -324,7 +324,6 @@
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
-
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
         function openEditModal() {
@@ -340,22 +339,70 @@
                 closeEditModal();
             }
         });
-        let isTreeExpanded = true;
 
-        function toggleTaskTree() {
-            isTreeExpanded = !isTreeExpanded; 
+        var isOverdueFiltered = false;
+        var isTreeCollapsed = false;
 
-            const $btn = $('#btnToggleTree');
-            const $btnText = $('#lblToggleText');
-            const $btnIcon = $btn.find('i');
+        function applyTaskFilters() {
+            var gridRows = document.querySelectorAll('.table-task-grid tbody tr');
 
-            const txtExpand = $btn.attr('data-expand-text') || GetResourceText(BackEndResourceKeys.EXPAND_ALL);
-            const txtCollapse = $btn.attr('data-collapse-text') || GetResourceText(BackEndResourceKeys.COLLAPSE_ALL);
+            gridRows.forEach(function (row) {
+                if (!row.hasAttribute('data-level')) return;
 
-            const $allRows = $('.table-task-grid tbody tr').not(':first');
+                var isOverdue = row.getAttribute('data-overdue') === '1';
+                var level = parseInt(row.getAttribute('data-level'), 10);
 
-            if (isTreeExpanded) {
-                $allRows.show();
+                var showRow = true;
+                if (isOverdueFiltered && !isOverdue) {
+                    showRow = false;
+                }
+                if (isTreeCollapsed && level > 1) {
+                    showRow = false;
+                }
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+
+        window.toggleOverdueFilter = function () {
+            isOverdueFiltered = !isOverdueFiltered;
+
+            if (isOverdueFiltered && isTreeCollapsed) {
+                isTreeCollapsed = false;
+                var btnTree = document.getElementById('btnToggleTree');
+                var lbl = document.getElementById('lblToggleText');
+                var icon = btnTree ? btnTree.querySelector('i') : null;
+                if (lbl && btnTree) lbl.innerText = btnTree.getAttribute('data-collapse-text');
+                if (icon) icon.className = 'far fa-folder-open';
+                if (btnTree) btnTree.classList.remove('active-filter');
+            }
+
+            var btn = document.getElementById('btnFilterOverdue');
+            if (btn) {
+                if (isOverdueFiltered) {
+                    btn.classList.add('active-filter');
+                } else {
+                    btn.classList.remove('active-filter');
+                }
+            }
+            applyTaskFilters();
+        };
+
+        window.toggleTaskTree = function () {
+            isTreeCollapsed = !isTreeCollapsed;
+
+            if (isTreeCollapsed && isOverdueFiltered) {
+                isOverdueFiltered = false;
+                var btnOverdue = document.getElementById('btnFilterOverdue');
+                if (btnOverdue) btnOverdue.classList.remove('active-filter');
+            }
+
+            var btn = document.getElementById('btnToggleTree');
+            var lbl = document.getElementById('lblToggleText');
+            var icon = btn ? btn.querySelector('i') : null;
+
+            if (btn) {
+                var expandText = btn.getAttribute('data-expand-text');
+                var collapseText = btn.getAttribute('data-collapse-text');
 
                 $btnText.text(txtCollapse);
                 $btnIcon.removeClass('fa-folder-open').addClass('fa-folder');

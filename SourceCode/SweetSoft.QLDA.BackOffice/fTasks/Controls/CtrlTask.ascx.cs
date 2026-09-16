@@ -10,7 +10,6 @@ using System.Data;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using static SweetSoft.QLDA.Core.Managers.TaskManager;
 
 namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
@@ -40,12 +39,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         protected Dictionary<Guid, string> _dictTaskCodes = new Dictionary<Guid, string>();
         private static Dictionary<Guid, TblDoUuTien> _dictPriorities = new Dictionary<Guid, TblDoUuTien>();
-        private readonly TaskManager _taskManager = TaskManager.Instance;
         protected readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // BẮT SỰ KIỆN GÁN THÀNH CÔNG TỪ MODAL MỚI
             ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OnAssignConfirmed += CtrlChonNhanVienTask1_OnAssignConfirmed;
             if (!IsPostBack)
             {
@@ -58,7 +55,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             ApplyControlsText();
             if (_dictPriorities.Count == 0)
             {
-                _dictPriorities = _taskManager.GetDictPriorities();
+                _dictPriorities = TaskManager.Instance.GetDictPriorities();
             }
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
@@ -68,7 +65,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
             Rebind(); 
             upMain.Update();
-            ShowNotify("Phân công nhân sự thành công!", MSGType.Success);
+            ShowNotify(GetResourceText(BackEndResourceKeys.ASSIGN_TASK_SUCCESS), MSGType.Success);
         }
         public void Rebind()
         {
@@ -76,7 +73,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             _dictTaskCodes.Clear();
             int overdueCount = 0;
             string searchValue=txtSearchSingle.Text.Trim();
-            (dtTasks, _dictTaskCodes, overdueCount) = _taskManager.GetDictTasksAndCountOverdue(this.ProjectId, searchValue);
+            (dtTasks, _dictTaskCodes, overdueCount) = TaskManager.Instance.GetDictTasksAndCountOverdue(this.ProjectId, searchValue);
 
             lblOverdueCount.InnerText = overdueCount.ToString();
             grvData.DataSource = dtTasks;
@@ -120,7 +117,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             switch (e.CommandName)
             {
                 case "ASSIGN_TASK":
-                    if (!this.CURRENT_PAGE.IsEdit)
+                    if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
                     {
                         ShowAccessDeniedNotify();
                         return;
@@ -136,7 +133,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowInvalidDataError();
                         return;
                     }
-                    TblCongViec task = _taskManager.FetchById(taskIdAssign);
+                    TblCongViec task = TaskManager.Instance.FetchById(taskIdAssign);
                     if (task == null)
                     {
                         ShowInvalidDataError();
@@ -144,17 +141,25 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     }
                     if (!task.NgayBatDau.HasValue || !task.NgayKetThuc.HasValue)
                     {
-                        ShowNotify("Vui lòng thiết lập 'Ngày bắt đầu' và 'Thời hạn' cho công việc trước khi phân công nhân sự!", MSGType.Warning);
+                        ShowNotify(GetResourceText(BackEndResourceKeys.REQUIRE_TASK_DATES_BEFORE_ASSIGN), MSGType.Warning);
                         return;
                     }
-                    if (_taskManager.CheckHasChildTasks(this.ProjectId, task))
+                    if (TaskManager.Instance.CheckHasChildTasks(this.ProjectId, task))
                     {
-                        ShowNotify("Không thể phân công cho Giai đoạn/Công việc cha. Vui lòng chọn công việc chi tiết ở cấp thấp nhất!", MSGType.Warning);
+                        ShowNotify(GetResourceText(BackEndResourceKeys.CANNOT_ASSIGN_TO_PARENT_TASK), MSGType.Warning);
                         return;
                     }
                     Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.ProjectId);
-                    ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OpenPicker(this.ProjectId, taskIdAssign, task.NgayBatDau.Value, task.NgayKetThuc.Value, task.TenCongViec, pmId);
+                    if (this.CURRENT_PAGE.IsEdit)
+                    {
+                        ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OpenPicker(this.ProjectId, taskIdAssign, task.NgayBatDau.Value, task.NgayKetThuc.Value, task.TenCongViec, pmId);
+                    }
+                    else
+                    {
+                        ((CtrlXemNhanVienTask)CtrlXemNhanVienTask1).OpenModal(taskIdAssign, task.NgayBatDau.Value, task.NgayKetThuc.Value, task.TenCongViec, pmId);
+                    }
                     break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
                     {
@@ -175,6 +180,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     if (EditTaskHandlerCallback != null)
                         EditTaskHandlerCallback(taskId, EventArgs.Empty);
                     break;
+
                 case "ITEM_DELETE":
                     if (!this.CURRENT_PAGE.IsDelete)
                     {
@@ -192,7 +198,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowInvalidDataError();
                         return;
                     }
-                    TblCongViec taskToDelete = _taskManager.FetchById(taskId);
+                    TblCongViec taskToDelete = TaskManager.Instance.FetchById(taskId);
                     if (taskToDelete == null)
                     {
                         ShowInvalidNotFoundData();
@@ -210,45 +216,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     break;
             }
         }
-        public override void ConfirmRequest(ConfirmResult e)
-        {
-            if (e != null && e.Submit)
-            {
-                Guid taskId = Guid.Empty;
-                if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
-                {
-                    ShowInvalidDataError();
-                    return;
-                }
-                TblCongViec task = _taskManager.FetchById(taskId);
-                if (task == null)
-                {
-                    ShowInvalidNotFoundData();
-                    return;
-                }
-                try
-                {
-                    _taskManager.DeleteTask(task);
 
-                    if (task.IdCongViecCha.HasValue)
-                    {
-                        if (_dictPriorities == null || _dictPriorities.Count == 0)
-                            _dictPriorities = _taskManager.GetDictPriorities();
-                        _taskManager.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                        _taskManager.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
-                        _taskManager.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
-                    }
-                    hfDeletingTaskId.Value = string.Empty;
-                    ShowSuccessDeleteData();
-                    grvData.CurrentPageIndex = 1;
-                    Rebind();
-                }
-                catch (Exception exc)
-                {
-                    ShowNotify(exc.Message, MSGType.Error);
-                }
-            }
-        }
         protected void grvData_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
@@ -262,38 +230,32 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 int GetSeverity(DataRow currentRow)
                 {
                     int severity = 0;
-
                     if (currentRow["NgayKetThuc"] != DBNull.Value && currentRow["TrangThai"] != DBNull.Value)
                     {
                         DateTime ngayKt = Convert.ToDateTime(currentRow["NgayKetThuc"]);
                         byte tThai = Convert.ToByte(currentRow["TrangThai"]);
-
-                        if (tThai != 2) 
+                        if (tThai != 2)
                         {
                             double daysLeft = (ngayKt.Date - DateTime.Now.Date).TotalDays;
                             if (daysLeft < 0) severity = 2;
                             else if (daysLeft >= 0 && daysLeft <= 2) severity = 1;
                         }
                     }
-
                     if (severity == 2) return 2;
-
                     if (currentRow["IdCongViec"] != DBNull.Value)
                     {
                         string idCv = currentRow["IdCongViec"].ToString();
                         DataRow[] childRows = dtAllTasks.Select($"IdCongViecCha = '{idCv}'");
-
                         foreach (DataRow child in childRows)
                         {
-                            int childSeverity = GetSeverity(child); 
+                            int childSeverity = GetSeverity(child);
                             if (childSeverity > severity)
                             {
                                 severity = childSeverity;
                             }
-                            if (severity == 2) break; 
+                            if (severity == 2) break;
                         }
                     }
-
                     return severity;
                 }
 
@@ -305,20 +267,60 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
                 if (finalSeverity == 2)
                 {
-                    e.Row.CssClass += " row-overdue-bg"; // Cảnh báo Đỏ
+                    e.Row.CssClass += " row-overdue-bg";
                 }
                 else if (finalSeverity == 1)
                 {
-                    e.Row.CssClass += " row-warning-bg"; // Cảnh báo Vàng
+                    e.Row.CssClass += " row-warning-bg";
                 }
 
                 LinkButton lbtAssign = (LinkButton)e.Row.FindControl("lbtAssign");
                 if (lbtAssign != null)
                 {
                     Guid taskId = Guid.Parse(rowView["IdCongViec"].ToString());
-                    TblCongViec task = _taskManager.FetchById(taskId);
-                    bool isFatherTask = _taskManager.CheckHasChildTasks(this.ProjectId, task);
-                    lbtAssign.Visible = this.IsEdit && !isFatherTask;
+                    TblCongViec task = TaskManager.Instance.FetchById(taskId);
+                    bool isFatherTask = TaskManager.Instance.CheckHasChildTasks(this.ProjectId, task);
+
+                    lbtAssign.Visible = (this.IsEdit || this.IsView) && !isFatherTask;
+                }
+            }
+        }
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null && e.Submit)
+            {
+                Guid taskId = Guid.Empty;
+                if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+                TblCongViec task = TaskManager.Instance.FetchById(taskId);
+                if (task == null)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+                try
+                {
+                    TaskManager.Instance.DeleteTask(task);
+
+                    if (task.IdCongViecCha.HasValue)
+                    {
+                        if (_dictPriorities == null || _dictPriorities.Count == 0)
+                            _dictPriorities = TaskManager.Instance.GetDictPriorities();
+                        TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
+                        TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
+                        TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
+                    }
+                    hfDeletingTaskId.Value = string.Empty;
+                    ShowSuccessDeleteData();
+                    grvData.CurrentPageIndex = 1;
+                    Rebind();
+                }
+                catch (Exception exc)
+                {
+                    ShowNotify(exc.Message, MSGType.Error);
                 }
             }
         }
@@ -361,22 +363,20 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
             return _controlHelpers.FormatDateTime(date);
         }
-        // Thay thế hàm GetAssigneeDisplay cũ
         public string GetAssigneeDisplay(object tenNhanVienObj, object avatarsObj)
         {
             string names = tenNhanVienObj?.ToString() ?? "";
             string avatars = avatarsObj?.ToString() ?? "";
 
-            if (string.IsNullOrWhiteSpace(names)) return ""; // Không hiện gì nếu chưa có ai
+            if (string.IsNullOrWhiteSpace(names)) return ""; 
 
-            // Cắt chuỗi từ SQL
             string[] nameArray = names.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
             string[] avatarArray = avatars.Split(new string[] { "," }, StringSplitOptions.None);
 
             string html = "";
             string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
 
-            int maxDisplay = 2; // Số lượng Avatar hiển thị tối đa trước khi gộp thành "+N"
+            int maxDisplay = 2; 
             int count = nameArray.Length;
 
             for (int i = 0; i < Math.Min(count, maxDisplay); i++)
@@ -384,23 +384,17 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 string name = nameArray[i].Trim();
                 string avatar = (i < avatarArray.Length) ? avatarArray[i].Trim() : "";
                 string color = colors[i % colors.Length];
-                // Kiểm tra xem avatar có phải là ảnh mặc định không (bắt cả trường hợp có dấu ~ hoặc khác hoa/thường)
                 bool isDefaultAvatar = avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
-                // Nếu DB có lưu link Avatar 
                 if (!string.IsNullOrEmpty(avatar) && !isDefaultAvatar)
                 {
-                    // ResolveUrl giúp chuyển đổi đường dẫn ảo (~) thành đường dẫn thực của Website
                     string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
 
-                    // Xây dựng chuỗi Fallback (Hiện chữ) nếu ảnh bị hỏng/không load được
                     string fallbackHtml = $"<div class=\\'avatar-circle\\' style=\\'background-color: {color};\\' title=\\'{name}\\'>{GetInitials(name)}</div>";
 
-                    // Vẽ thẻ img, sử dụng object-fit: cover để ảnh ko bị méo khi bo tròn
                     html += $"<img src='{avatarUrl}' class='avatar-circle' style='object-fit: cover;' title='{name}' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
                 }
                 else
                 {
-                    // Nhân viên chưa có Avatar -> Hiện chữ cái
                     string initials = GetInitials(name);
                     html += $"<div class='avatar-circle' style='background-color: {color};' title='{name}'>{initials}</div>";
                 }
@@ -414,7 +408,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             return html;
         }
 
-        // Hàm lấy 1 hoặc 2 chữ cái đầu của tên (Giữ nguyên như bản cũ)
         private string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "";

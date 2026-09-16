@@ -1,5 +1,6 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="ProjectReport.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjectReports.ProjectReport" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
@@ -65,6 +66,7 @@
     <div class="row">
         <div class="col-xl-12">
             <SweetSoft:Navigation runat="server" ID="Navigation1"/>
+            <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
             <div class="page-header">
                 <div class="page-title">
                     <h2><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %></h2>

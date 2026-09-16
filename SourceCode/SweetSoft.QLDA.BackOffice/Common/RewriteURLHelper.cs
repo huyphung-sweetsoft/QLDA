@@ -172,5 +172,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
             return $"/Customers/{SecurityUtilities.ProtectUrlParameter(idKhachHang.ToString())}";
         }
 
+        public static string Contracts => "/Contracts";
     }
 }

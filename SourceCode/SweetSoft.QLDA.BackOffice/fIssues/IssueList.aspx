@@ -7,7 +7,6 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server"></asp:Content>
-
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
         <div class="col-xl-12">
@@ -21,36 +20,33 @@
 </asp:Content>
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
-    <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" Title="Thông tin vấn đề" DefaultButton="lbtSubmit">
+    <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" DefaultButton="lbtSubmit">
         <ContentTemplate>
             <div class="row js-validation validationEngineContainer">
         
-                <!-- HÀNG 1: Tên vấn đề -->
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label label-valid">Tên vấn đề</label>
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.ISSUE_NAME) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtTenVanDe" Required="true"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
 
-                <!-- HÀNG 2: Mức độ ảnh hưởng & Nguồn gốc vấn đề -->
                 <div class="col-lg-6">
                     <div class="mb-3">
-                        <label class="form-label label-valid">Mức độ ảnh hưởng</label>
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.IMPACT) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlMucDoAnhHuong" Required="true" SimpleInit="true"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="mb-3">
-                        <label class="form-label label-valid">Nguồn gốc vấn đề</label>
+                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.ORIGIN) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlNguonGocVanDe" Required="true" SimpleInit="true"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
 
-                <!-- HÀNG 3: Công việc phát sinh (Thêm sự kiện AutoPostBack vào đây) -->
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label">Công việc phát sinh</label>
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.TASK_ISSUE) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlCongViecPhatSinh" 
                             SimpleInit="true"
                             AutoPostBack="true" 
@@ -59,34 +55,30 @@
                     </div>
                 </div>
 
-                <!-- HÀNG 4: Công việc bị ảnh hưởng (Xóa sự kiện) -->
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label">Công việc bị ảnh hưởng</label>
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.WORK_AFFECTED) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlCongViecBiAnhHuong" SimpleInit="true"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
 
-                <!-- HÀNG 5: Nhân viên xử lý -->
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label">Nhân viên xử lý</label>
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.HANDLER) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtNhanVien" ReadOnly="true"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
 
-                <!-- HÀNG 6: Mô tả chi tiết -->
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label">Mô tả chi tiết</label>
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtMoTaChiTiet" TextMode="MultiLine" Rows="3"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
 
-                <!-- HÀNG 7: Kế hoạch xử lý -->
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label">Kế hoạch xử lý</label>
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.HANDLING_PLAN) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtKeHoachXuLy" TextMode="MultiLine" Rows="3"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
@@ -95,7 +87,7 @@
         </ContentTemplate>
         <FooterTemplate>
             <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true"
-                OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false">Lưu</SweetSoft:ExtraButton>
+                OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false"></SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
 </asp:Content>

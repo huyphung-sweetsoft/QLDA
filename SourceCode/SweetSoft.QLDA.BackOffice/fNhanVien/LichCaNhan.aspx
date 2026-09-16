@@ -40,7 +40,7 @@
         /* MODAL LIST */
         .proj-group-title { font-size: 13px; font-weight: 800; color: #1e3a8a; background: #eff6ff; padding: 6px 10px; border-radius: 4px; margin-top: 10px; margin-bottom: 5px; }
         
-        /* ================= CSS CHO MODAL CHI TIẾT ================= */
+                /* ================= CSS CHO MODAL CHI TIẾT ================= */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(2px);
@@ -80,8 +80,8 @@
                     </div>
                     
                     <div class="text-center">
-                        <h2 class="cal-title"><asp:Literal ID="litTitle" runat="server"></asp:Literal></h2>
-                        <h3 class="cal-title" style="font-size: 16px; color:#64748b;"><asp:Literal ID="litDateRange" runat="server"></asp:Literal></h3>
+                    <h2 class="cal-title"><asp:Literal ID="litTitle" runat="server"></asp:Literal></h2>
+                    <h3 class="cal-title" style="font-size: 16px; color:#64748b;"><asp:Literal ID="litDateRange" runat="server"></asp:Literal></h3>
                     </div>
 
                     <div class="cal-nav-group">
@@ -173,6 +173,7 @@
                 else if (dayData.TrangThaiLich === "weekend") { statusClass = "status-weekend"; statusText = calLang.weekend; icon = "☕"; }
                 else { statusClass = "status-free"; statusText = calLang.free; icon = "✔️"; }
 
+                // Tính năng Clickable
                 var clickAttr = dayData.ChoPhepClick ? `onclick="OpenDayModal(${index})"` : "";
                 var clickClass = dayData.ChoPhepClick ? "is-clickable" : "";
 
@@ -203,6 +204,7 @@
             });
         }
 
+        // Thêm hàm Đóng Modal và bắt sự kiện phím ESC
         function closeDayModal() {
             $('#modalDayDetail').removeClass('active');
         }
@@ -213,10 +215,12 @@
             }
         });
 
+        // Hàm Mở Modal đã fix
         function OpenDayModal(dataIndex) {
             var dayData = scheduleDataGlobal[dataIndex];
             var dateObj = new Date(dayData.Ngay);
 
+            // Format ngày chuẩn VN (DD/MM/YYYY)
             var dd = String(dateObj.getDate()).padStart(2, '0');
             var mm = String(dateObj.getMonth() + 1).padStart(2, '0');
             var yyyy = dateObj.getFullYear();
@@ -236,6 +240,7 @@
         `);
             }
             else if (dayData.TrangThaiLich === "busy") {
+                // Nhóm Task theo Dự án
                 var projGroups = {};
                 $.each(dayData.DanhSachCongViec, function (i, task) {
                     var pName = task.TenDuAn ? task.TenDuAn : calLang.otherProject;
@@ -247,10 +252,12 @@
                 for (var projName in projGroups) {
                     html += `<div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden;">`;
 
+                    // Header Dự án
                     html += `<div style="background: linear-gradient(to right, #eff6ff, #ffffff); border-bottom: 1px solid #e2e8f0; padding: 10px 15px; color: #1e3a8a; font-weight: 800; font-size: 14px;">
                         <i class="fas fa-folder-open me-2"></i> ${projName}
                      </div>`;
 
+                    // Danh sách Task
                     html += `<div style="padding: 10px 15px;">`;
                     $.each(projGroups[projName], function (i, task) {
                         html += `<div style="padding: 8px 0; border-bottom: 1px dashed #cbd5e1; font-size: 13px; color: #334155; display: flex; align-items: flex-start; gap: 8px;">
@@ -265,6 +272,7 @@
                 $body.html(html);
             }
 
+            // Gọi hàm mở Overlay chuẩn của công ty ông
             $('#modalDayDetail').addClass('active');
         }
     </script>

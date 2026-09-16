@@ -24,6 +24,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlCost1.NewCostHandlerCallback += NewCostAction;
             CtrlCost1.EditCostHandlerCallback += EditCostAction;
 

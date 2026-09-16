@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         public EventHandler NewIssueHandlerCallback;
         public EventHandler EditIssueHandlerCallback;
 
-        private readonly IssueManager _issueManager = IssueManager.Instance;
+        private readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         public Guid ProjectId
         {
@@ -56,8 +56,9 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             if (script != null)
             {
                 script.RegisterAsyncPostBackControl(lbtSearchSingle);
-                script.RegisterAsyncPostBackControl(lbtSearchAdvanced);
-                script.RegisterAsyncPostBackControl(lbtCancel);
+                script.RegisterAsyncPostBackControl(ddlSearchMucDoAnhHuong);
+                script.RegisterAsyncPostBackControl(ddlSearchTrangThai);
+                script.RegisterAsyncPostBackControl(ddlSearchNguonGoc);
             }
         }
 
@@ -68,21 +69,25 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
 
+            _controlHelpers.BindMucDoAnhHuong(ddlSearchMucDoAnhHuong);
+            _controlHelpers.BindTrangThaiVanDe(ddlSearchTrangThai);
+            _controlHelpers.BindNguonGocVanDe(ddlSearchNguonGoc);
+
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
-                master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);
+                master.LoadSessionLastSearch(searchTagBox, null, grvData, txtSearchSingle);
 
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
-            grvData.CurrentSortExpression = "TenVanDe";
+            grvData.CurrentSortExpression = "MaVanDe";
             grvData.CurrentSortDerection = "ASC";
             grvData.Rebind();
-            pnlSearch.Update();
+            pnlSearchDropdowns.Update();
             pnlButtons.Update();
         }
 
         private void AssignSearchColumns()
         {
-            txtSearchTenVanDe.SearchColumn = "TenVanDe";
+            txtSearchSingle.SearchColumn = "MaVanDe";
         }
 
         public void Rebind()
@@ -94,7 +99,18 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
-            txtSearchTenVanDe.SearchTagItemText = "Tên vấn đề"; 
+            txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+
+            ddlSearchMucDoAnhHuong.SearchTagItemText = GetResourceText(BackEndResourceKeys.IMPACT);
+            ddlSearchMucDoAnhHuong.Text = GetResourceText(BackEndResourceKeys.IMPACT);
+
+            ddlSearchTrangThai.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
+            ddlSearchTrangThai.Text = GetResourceText(BackEndResourceKeys.STATUS);
+
+            ddlSearchNguonGoc.SearchTagItemText = GetResourceText(BackEndResourceKeys.ORIGIN);
+            ddlSearchNguonGoc.Text = GetResourceText(BackEndResourceKeys.ORIGIN);
+            ddlSearchMucDoAnhHuong.Text = GetResourceText(BackEndResourceKeys.IMPACT);
+            ddlSearchTrangThai.Text = GetResourceText(BackEndResourceKeys.STATUS);
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
 
             List<string> lstTableHeader = new List<string>
@@ -111,6 +127,17 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             grvData.HeaderTexts = lstTableHeader;
         }
 
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            if (master != null)
+            {
+                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
+            }
+            upSearchTagBox.Update();
+            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
+        }
+
         protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
         {
             try
@@ -125,38 +152,25 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 int totalRows = 0;
                 int rowIndex = (grid.CurrentPageIndex - 1) * grid.CurrentPageSize;
                 int pageSize = rowIndex + grid.CurrentPageSize;
-                DataTable dt = null;
 
-                if (grid.GridSearchType == GridSearchType.Single)
+                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
+
+                if (pnlSearchDefaultStatus != null)
                 {
-                    dt = _issueManager.SearchIssue(
-                        this.ProjectId,
-                        txtSearchSingle.Text,
-                        null,
-                        $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                        rowIndex,
-                        pageSize,
-                        out totalRows
-                    );
+                    var defaultParams = _controlHelpers.GetControlValues(pnlSearchDefaultStatus);
+                    foreach (var item in defaultParams) keyValueSearchs[item.Key] = item.Value;
                 }
-                else
-                {
-                    Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
-                    ControlHelpers controlHelpers = new ControlHelpers();
-                    if (pnlSearchPopup != null)
-                    {
-                        keyValueSearchs = controlHelpers.GetControlValues(pnlSearchPopup);
-                    }
-                    dt = _issueManager.SearchIssue(
-                        this.ProjectId,
-                        "",
-                        keyValueSearchs,
-                        $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                        rowIndex,
-                        pageSize,
-                        out totalRows
-                    );
-                }
+
+                DataTable dt = IssueManager.Instance.SearchIssue(
+                    this.ProjectId,
+                    txtSearchSingle.Text,
+                    keyValueSearchs,
+                    $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
+                    rowIndex,
+                    pageSize,
+                    out totalRows
+                );
+
                 if (dt == null || dt.Rows.Count == 0)
                 {
                     grvData.DataSource = null;
@@ -272,7 +286,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
 
                         try
                         {
-                            _issueManager.DeleteIssue(issue);
+                            IssueManager.Instance.DeleteIssue(issue);
                             ShowSuccessDeleteData();
                             grvData.CurrentPageIndex = 1;
                             grvData.Rebind();
@@ -302,7 +316,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         {
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
-                master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
+                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
             upSearchTagBox.Update();
         }
 
@@ -314,9 +328,10 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 if (master != null)
                 {
                     GridSearchType? searchType;
-                    master.searchTagBox_TagClosed(searchTagBox, tag, null, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefaultStatus, null, grvData, txtSearchSingle, out searchType);
                 }
                 upSearchTagBox.Update();
+                if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
 
                 string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
                 ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
@@ -325,26 +340,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
-        }
-
-        protected void btnSearchAdvanced_ServerClick(object sender, EventArgs e)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-                master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
-            upSearchTagBox.Update();
-        }
-
-        protected void btnCancel_Click(object sender, EventArgs e)
-        {
-            if (pnlSearchPopup != null)
-                new ControlHelpers().ClearControlValues(pnlSearchPopup.Controls);
-            pnlSearch.Update();
-
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-                master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
-            upSearchTagBox.Update();
         }
 
         protected void lbtAdd_Click(object sender, EventArgs e)
@@ -362,20 +357,20 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         {
             if (value == null || value == DBNull.Value) return "—";
             MucDoAnhHuonEnum mucDo = (MucDoAnhHuonEnum)Convert.ToInt32(value);
-            return GetResourceText(_issueManager.GetValueForMucDoAnhHuong(mucDo));
+            return GetResourceText(IssueManager.Instance.GetValueForMucDoAnhHuong(mucDo));
         }
 
         protected string GetTrangThaiVanDeText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
             TrangThaiVanDeEnum status = (TrangThaiVanDeEnum)Convert.ToInt32(value);
-            return GetResourceText(_issueManager.GetValueForTrangThaiVanDe(status));
+            return GetResourceText(IssueManager.Instance.GetValueForTrangThaiVanDe(status));
         }
         protected string GetNguonGocVanDeText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
             NguonGocVanDeEnum origin = (NguonGocVanDeEnum)Convert.ToInt32(value);
-            return GetResourceText(_issueManager.GetValueForNguonGocVanDe(origin));
+            return GetResourceText(IssueManager.Instance.GetValueForNguonGocVanDe(origin));
         }
     }
 }

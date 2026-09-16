@@ -2275,4 +2275,8 @@
   <data name="TASK_HAS_NO_ASSIGNEE" xml:space="preserve">
     <value>Task has no assignee!</value>
   </data>
+	<data name="CONTRACT_LIST" xml:space="preserve">
+    <value />
+  </data>
+  grvData_RowDataBound
 </root>

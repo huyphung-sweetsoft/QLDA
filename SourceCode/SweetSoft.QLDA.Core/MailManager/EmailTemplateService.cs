@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.MailManager.Interfaces;
+using SweetSoft.QLDA.Core.MailManager.Interfaces;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace SweetSoft.QLDA.Core.MailManager
             this._type = formatType;
             var template = EmailTemplateManager.GetEmailTemplateByTemplateKey(this._key, this._type);
             if (template == null)
-                return null;
+                return Task.FromResult<EmailTemplate>(null);
             return Task.FromResult(new EmailTemplate()
             {
                 IsActivated = template.IsActivated,

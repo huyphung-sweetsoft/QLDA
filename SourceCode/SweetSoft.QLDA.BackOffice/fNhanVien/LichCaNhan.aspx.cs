@@ -29,9 +29,17 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             if (!IsPostBack)
             {
+                if (!this.IsView)
+                {
+                    Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
+                    return;
+                }
                 InitSecurityAndTargetUser();
+
+                // Mặc định load ngày hôm nay, chế độ "Tháng"
                 hfCurrentDate.Value = DateTime.Today.ToString("yyyy-MM-dd");
                 hfViewMode.Value = "month";
+
                 LoadCalendarData();
             }
         }
@@ -48,6 +56,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
             if (hasParentDetail)
             {
+                // Giải mã chuỗi bảo mật về lại GUID trần
                 string plainId = SecurityUtilities.UnprotectUrlParameter(rawQueryId);
 
                 if (Guid.TryParse(plainId, out Guid queryId))
@@ -63,10 +72,14 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                         bool hasViewRight = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien);
                         if (!hasViewRight)
                         {
+                            // Không đủ quyền -> Đuổi ra ngoài trang lỗi 403
                             Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                             return;
                         }
 
+                        TargetUserId = queryId;
+
+                        // CHUẨN KIẾN TRÚC: Gọi Manager thay vì Query DB
                         AspnetUser targetUser = UserManager.Instance.GetUserById(queryId);
                         litTitle.Text = targetUser != null ?
                             string.Format(GetResourceText(BackEndResourceKeys.SCHEDULE_OF_USER), targetUser.DisplayName) :
@@ -78,6 +91,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 }
                 else
                 {
+                    // Truyền ID nhưng giải mã/parse bị lỗi -> Trang không tồn tại (404)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), true);
                     return;
                 }
@@ -133,6 +147,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 int diffStart = (int)firstDayOfMonth.DayOfWeek - (int)DayOfWeek.Monday;
                 if (diffStart < 0) diffStart += 7; // Nếu ngày 1 là Chủ nhật (0), lùi về T2
                 startDate = firstDayOfMonth.AddDays(-diffStart);
+
                 // Luôn lấy đủ 42 ngày (6 tuần) để lưới Lịch Tháng luôn vuông vắn, không trồi sụt
                 endDate = startDate.AddDays(41);
                 litDateRange.Text = $"{GetResourceText(BackEndResourceKeys.MONTH)} {refDate.Month}/{refDate.Year}";
@@ -151,7 +166,11 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 btnViewWeek.CssClass = "btn-cal active";
                 btnViewMonth.CssClass = "btn-cal";
             }
+
+            // Gọi Core Manager
             var data = LichTrinhManager.Instance.LayLichTrinhNhanVien(TargetUserId, startDate, endDate);
+
+            // Ép thành JSON cho Javascript
             hfScheduleDataJSON.Value = JsonConvert.SerializeObject(data);
         }
         #endregion

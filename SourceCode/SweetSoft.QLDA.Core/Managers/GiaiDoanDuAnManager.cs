@@ -238,6 +238,9 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+            
+            AutoSetDependentStageTime(item);
+            
             return item;
         }
 
@@ -309,15 +312,15 @@ namespace SweetSoft.QLDA.Core.Managers
                 BackEndResourceKeys.INVALID_DATA,
                 nameof(dto.NgayHoanThanhThucTe));
 
-            DateTime? previousStartDate =
-                _repository.GetPreviousStageStartDate(
+            DateTime? previousEndDate =
+                _repository.GetPreviousStageEndDate(
                     dto.IdDuAn,
                     currentOrder);
 
             BusinessValidator.ThrowIf(
-                previousStartDate.HasValue &&
+                previousEndDate.HasValue &&
                 startDate <
-                    previousStartDate.Value.Date,
+                    previousEndDate.Value.Date,
                 BackEndResourceKeys.INVALID_DATA,
                 nameof(dto.NgayBatDau),
                 ErrorCodes.Conflict);
@@ -369,6 +372,44 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             return null;
+        }
+
+        public void AutoSetDependentStageTime(TblGiaiDoanDuAn currentStage)
+        {
+            if (currentStage == null || !currentStage.NgayDuKienHoanThanh.HasValue)
+                return;
+
+            TblGiaiDoanDuAn nextStage = _repository.GetNextStage(currentStage.IdDuAn, currentStage.ThuTuGiaiDoan);
+            if (nextStage != null && nextStage.DaXoa != true)
+            {
+                DateTime minStart = currentStage.NgayDuKienHoanThanh.Value.Date.AddDays(1);
+                if (!nextStage.NgayBatDau.HasValue || nextStage.NgayBatDau.Value.Date < minStart)
+                {
+                    DateTime oldStartDate = nextStage.NgayBatDau ?? minStart;
+                    int thoiHan = 1;
+                    if (nextStage.NgayBatDau.HasValue && nextStage.NgayDuKienHoanThanh.HasValue)
+                    {
+                        thoiHan = (nextStage.NgayDuKienHoanThanh.Value.Date - nextStage.NgayBatDau.Value.Date).Days + 1;
+                    }
+                    else if (nextStage.NgayDuKienHoanThanh.HasValue)
+                    {
+                        thoiHan = (nextStage.NgayDuKienHoanThanh.Value.Date - minStart.Date).Days + 1;
+                    }
+
+                    if (thoiHan < 1) thoiHan = 1;
+
+                    nextStage.NgayBatDau = minStart;
+                    nextStage.NgayDuKienHoanThanh = minStart.AddDays(thoiHan - 1);
+                    nextStage.NgayCapNhat = DateTime.Now;
+                    nextStage.NguoiCapNhat = SweetContext.Current.UserName;
+                    
+                    nextStage = _repository.Update(nextStage);
+                    
+                    TaskManager.Instance.UpdateStageTask(nextStage, GetStageDisplayName(nextStage), oldStartDate);
+
+                    AutoSetDependentStageTime(nextStage);
+                }
+            }
         }
 
     }
