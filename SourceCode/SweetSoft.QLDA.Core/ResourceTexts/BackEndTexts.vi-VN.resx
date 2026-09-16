@@ -1063,6 +1063,12 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
   </data>
+  <data name="CONTRACT_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ hợp đồng</value>
+  </data>
+  <data name="CONTRACT_DOCUMENT_IDENTITY_LOCKED" xml:space="preserve">
+    <value>Số và tên hợp đồng đang dùng làm mã/tên hồ sơ liên kết nên không thể sửa tại đây.</value>
+  </data>
   <data name="CONTRACT_NUMBER" xml:space="preserve">
     <value>Số hợp đồng</value>
   </data>
@@ -1119,6 +1125,9 @@
   </data>
   <data name="MEETING_LIST" xml:space="preserve">
     <value>Danh sách cuộc họp</value>
+  </data>
+  <data name="MEETING_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ cuộc họp</value>
   </data>
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Mã cuộc họp</value>
@@ -1747,6 +1756,9 @@
   <data name="COST_LIST" xml:space="preserve">
     <value>Danh sách chi phí</value>
   </data>
+  <data name="COST_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ chi phí</value>
+  </data>
   <data name="COST_CODE" xml:space="preserve">
     <value>Mã chi phí</value>
   </data>
@@ -2213,5 +2225,8 @@
   </data>
   <data name="PAYMENT_DELETE_CONFIRM" xml:space="preserve">
     <value>Bạn có chắc muốn xóa thanh toán {0} không?</value>
+  </data>
+  <data name="CONTRACT_LIST" xml:space="preserve">
+    <value>Danh sách hợp đồng thực hiện</value>
   </data>
 </root>
