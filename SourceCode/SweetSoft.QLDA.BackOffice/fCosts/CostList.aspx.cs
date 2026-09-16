@@ -26,6 +26,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         {
             CtrlCost1.NewCostHandlerCallback += NewCostAction;
             CtrlCost1.EditCostHandlerCallback += EditCostAction;
+            CtrlCost1.OpenCostDocumentHandlerCallback += OpenCostDocumentAction;
 
             if (!IsPostBack)
             {
@@ -58,6 +59,42 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             txtMoTaChiTiet.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
 
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
+        }
+
+        private void OpenCostDocumentAction(object sender, EventArgs e)
+        {
+            Guid idChiPhi = sender is Guid
+                ? (Guid)sender
+                : Guid.Empty;
+            if (idChiPhi == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                CostDocumentLinkResult result = CostManager.Instance
+                    .GetOrCreateProjectDocument(idChiPhi);
+
+                string url = RewriteURLHelper.ProjectDocumentDetail(
+                    result.ProjectId,
+                    result.DocumentId) + "?tab=versions";
+                Response.Redirect(GetRelativeClientPath(url), false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowAccessDeniedNotify();
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowNotify(exception.Message, MSGType.Warning);
+            }
+            catch (Exception exception)
+            {
+                ShowNotify(exception.Message, MSGType.Error);
+            }
         }
 
         private void NewCostAction(object sender, EventArgs e)

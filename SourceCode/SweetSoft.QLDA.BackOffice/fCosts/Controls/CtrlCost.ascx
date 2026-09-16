@@ -73,9 +73,20 @@
                         <ItemTemplate><%# Eval("TrangThai") != DBNull.Value ? GetTrangThaiChiPhiText(Eval("TrangThai")) : "—" %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="100px">
+                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
-                            <div class="d-flex justify-content-center align-items-center gap-2">
+                            <div class="d-flex justify-content-center align-items-center gap-1">
+                                <asp:LinkButton runat="server"
+                                    ID="lbtCostDocument"
+                                    Visible='<%# this.IsView %>'
+                                    CommandName="COST_DOCUMENT"
+                                    CommandArgument='<%# Eval("IdChiPhi") %>'
+                                    CausesValidation="false"
+                                    CssClass="btn btn-outline-primary btn-sm text-center btn-smart-link"
+                                    ToolTip='<%# GetResourceText(BackEndResourceKeys.COST_DOCUMENT) %>'>
+                                    <i class="fas fa-folder-open"></i>
+                                </asp:LinkButton>
+
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' 
                                     ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline" 
                                     ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>' 

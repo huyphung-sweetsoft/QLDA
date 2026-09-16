@@ -31,6 +31,28 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
         }
 
+        private bool IsContractView
+        {
+            get
+            {
+                return this.IsUserRight(ActionKeys.View, ModuleKeys.Contract);
+            }
+        }
+
+        private Guid IdHopDongThucHien
+        {
+            get
+            {
+                return ViewState["IdHopDongThucHien"] == null
+                    ? Guid.Empty
+                    : (Guid)ViewState["IdHopDongThucHien"];
+            }
+            set
+            {
+                ViewState["IdHopDongThucHien"] = value;
+            }
+        }
+
         private Guid QueryId
         {
             get
@@ -55,6 +77,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
             CtrlLichSuDuAn1.IdDuAn = QueryId;
+            pnlContract.Visible = IsContractView;
             if (_auditManager == null)
                 _auditManager = new AuditManager(new Core.SysManager.Models.ClientInfo()
                 {
@@ -153,6 +176,94 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 QueryId;
 
             CtrlLichSuDuAn1.OpenDrawer();
+        }
+
+        protected void lbtViewContract_Click(object sender, EventArgs e)
+        {
+            if (!IsContractView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (IdHopDongThucHien == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            TblHopDongThucHien hopDong = HopDongThucHienManager.Instance.GetHopDongById(IdHopDongThucHien);
+            if (hopDong == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            BindContractInformation(hopDong);
+            dlContractDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
+            dlContractDetail.OpenModal(true);
+        }
+
+        protected void lbtOpenContractDocument_Click(object sender, EventArgs e)
+        {
+            if (!IsContractView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (IdHopDongThucHien == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                ContractDocumentLinkResult result = HopDongThucHienManager
+                    .Instance
+                    .GetOrCreateProjectDocument(IdHopDongThucHien);
+
+                string url = RewriteURLHelper.ProjectDocumentDetail(
+                    result.ProjectId,
+                    result.DocumentId) + "?tab=versions";
+                Response.Redirect(GetRelativeClientPath(url), false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowAccessDeniedNotify();
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowNotify(exception.Message, MSGType.Warning);
+            }
+            catch (Exception exception)
+            {
+                ShowNotify(exception.Message, MSGType.Error);
+            }
+        }
+
+        private void BindContractInformation(TblHopDongThucHien hopDong)
+        {
+            txtContractNumber.Text = hopDong.SoHopDong;
+            txtContractName.Text = hopDong.TenHopDong;
+
+            TblKhachHang khachHang = KhachHangManager.Instance.GetKhachHangById(hopDong.IdKhachHang);
+            txtContractCustomer.Text = khachHang == null ? "Chưa có" : khachHang.TenKhachHang;
+            txtContractValue.Text = hopDong.GiaTriHopDong.HasValue
+                ? FormatHelpers.ConvertDecimalToStringByLanguage(hopDong.GiaTriHopDong.Value, "vi-VN")
+                : string.Empty;
+            txtContractSignDate.Text = hopDong.NgayKy.HasValue
+                ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractEffectiveDate.Text = hopDong.NgayHieuLuc.HasValue
+                ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractExpiryDate.Text = hopDong.NgayHetHan.HasValue
+                ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractDescription.Text = hopDong.MoTa;
         }
 
         private string BuildHistoryContent(
@@ -374,6 +485,41 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             byte trangThai = Convert.ToByte(row["TrangThai"]);
             lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), trangThai));
+
+            Guid idHopDongThucHien = Guid.Empty;
+            if (row.Table.Columns.Contains("IdHopDongThucHien") && row["IdHopDongThucHien"] != DBNull.Value)
+            {
+                Guid.TryParse(Convert.ToString(row["IdHopDongThucHien"]), out idHopDongThucHien);
+            }
+
+            IdHopDongThucHien = idHopDongThucHien;
+            lbtViewContract.Visible = idHopDongThucHien != Guid.Empty;
+            lblNoContract.Visible = idHopDongThucHien == Guid.Empty;
+            lbtOpenContractDocument.Visible = CanOpenContractDocument(
+                idHopDongThucHien);
+        }
+
+        private bool CanOpenContractDocument(Guid idHopDongThucHien)
+        {
+            if (!IsContractView ||
+                idHopDongThucHien == Guid.Empty ||
+                QueryId == Guid.Empty ||
+                !DocumentManager.Instance.CanAccessProjectDocument(
+                    QueryId,
+                    ActionKeys.View))
+            {
+                return false;
+            }
+
+            if (HopDongThucHienManager.Instance.HasLinkedDocument(
+                idHopDongThucHien))
+            {
+                return true;
+            }
+
+            return DocumentManager.Instance.CanAccessProjectDocument(
+                QueryId,
+                ActionKeys.Create);
         }
 
         private string GetDisplayText(DataRow row, string columnName)

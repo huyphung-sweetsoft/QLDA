@@ -297,6 +297,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROJECT_MANAGER = "PROJECT_MANAGER";
         public const string PROJECT_CODE = "PROJECT_CODE";
         public const string CONTRACT = "CONTRACT";
+        public const string CONTRACT_LIST = "CONTRACT_LIST";
+        public const string CONTRACT_DOCUMENT = "CONTRACT_DOCUMENT";
+        public const string CONTRACT_DOCUMENT_IDENTITY_LOCKED = "CONTRACT_DOCUMENT_IDENTITY_LOCKED";
         public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
         public const string SIGN_DATE = "SIGN_DATE";
@@ -478,6 +481,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MEETING_MANAGEMENT = "MEETING_MANAGEMENT";
         public const string MEET_SCHE = "MEET_SCHE";
         public const string MEETING_LIST = "MEETING_LIST";
+        public const string MEETING_DOCUMENT = "MEETING_DOCUMENT";
         public const string MEETING_CODE = "MEETING_CODE";
         public const string MEETING_NAME = "MEETING_NAME";
         public const string GENERAL_CONTENT = "GENERAL_CONTENT";
@@ -491,6 +495,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         //Cost
         public const string COST_MANAGEMENT = "COST_MANAGEMENT";
         public const string COST_LIST = "COST_LIST";
+        public const string COST_DOCUMENT = "COST_DOCUMENT";
         public const string COST_CODE = "COST_CODE";
         public const string COST_NAME = "COST_NAME";
         public const string REQUESTER = "REQUESTER";

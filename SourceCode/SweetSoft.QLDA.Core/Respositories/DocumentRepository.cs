@@ -398,6 +398,38 @@ namespace SweetSoft.QLDA.Core.Respositories
                 : null;
         }
 
+        /// <summary>
+        /// Checks the optional execution-contract link without relying on a
+        /// regenerated SubSonic property.  The dynamic branch keeps normal
+        /// document operations compatible until the additive migration has
+        /// been installed in an environment.
+        /// </summary>
+        public bool IsDocumentLinkedToActiveContract(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return false;
+
+            string sql = $@"
+                IF COL_LENGTH(N'dbo.TblHopDongThucHien', N'IdTaiLieu') IS NULL
+                BEGIN
+                    SELECT CAST(0 AS INT);
+                    RETURN;
+                END;
+
+                DECLARE @sql NVARCHAR(MAX) = N'
+                    SELECT CASE WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM dbo.TblHopDongThucHien
+                        WHERE IdTaiLieu = ''{idTaiLieu}''
+                          AND DaXoa = 0
+                    ) THEN 1 ELSE 0 END;';
+
+                EXEC sys.sp_executesql @sql;";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) == 1;
+        }
+
         public bool IsCodeExisted(string maTaiLieu, Guid excludeId)
         {
             string safeCode = Encode(maTaiLieu, 100);

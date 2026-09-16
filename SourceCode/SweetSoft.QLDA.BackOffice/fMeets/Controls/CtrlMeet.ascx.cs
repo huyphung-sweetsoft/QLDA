@@ -20,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
         public EventHandler NewMeetingHandlerCallback;
         public EventHandler EditMeetingHandlerCallback;
+        public EventHandler OpenMeetingDocumentHandlerCallback;
         private MeetManager _manager = new MeetManager();
 
         public Guid ProjectId
@@ -166,6 +167,32 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             switch (e.CommandName)
             {
+                case "MEETING_DOCUMENT":
+                    if (!this.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid meetingDocumentId;
+                    if (!Guid.TryParse(
+                        Convert.ToString(e.CommandArgument),
+                        out meetingDocumentId)
+                        || meetingDocumentId == Guid.Empty)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (OpenMeetingDocumentHandlerCallback != null)
+                    {
+                        OpenMeetingDocumentHandlerCallback(
+                            meetingDocumentId,
+                            EventArgs.Empty);
+                    }
+
+                    break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit) { ShowAccessDeniedNotify(); return; }
                     int rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);

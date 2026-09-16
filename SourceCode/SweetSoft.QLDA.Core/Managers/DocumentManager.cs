@@ -649,6 +649,22 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 if (string.IsNullOrEmpty(maTaiLieu))
                     throw new ArgumentException("Mã hồ sơ không được để trống.");
+
+                if (_repository.IsDocumentLinkedToActiveContract(
+                        item.IdTaiLieu)
+                    && (item.IdLoaiTaiLieu != idLoaiTaiLieu
+                        || !string.Equals(
+                            item.MaTaiLieu,
+                            maTaiLieu,
+                            StringComparison.OrdinalIgnoreCase)
+                        || !string.Equals(
+                            item.TenTaiLieu,
+                            tenTaiLieu,
+                            StringComparison.Ordinal)))
+                {
+                    throw new InvalidOperationException(
+                        "Hồ sơ đang liên kết với hợp đồng. Hãy cập nhật thông tin nhận diện từ chức năng Hợp đồng.");
+                }
             }
             else if (string.IsNullOrEmpty(maTaiLieu))
             {
@@ -1235,6 +1251,12 @@ namespace SweetSoft.QLDA.Core.Managers
             if (item == null)
                 return false;
 
+            if (_repository.IsDocumentLinkedToActiveContract(idTaiLieu))
+            {
+                throw new InvalidOperationException(
+                    "Hồ sơ đang liên kết với hợp đồng nên không thể xóa.");
+            }
+
             if (item.IdFileBanChinhThuc.HasValue
                 || _repository.HasRelatedRecords(idTaiLieu))
             {
@@ -1258,6 +1280,12 @@ namespace SweetSoft.QLDA.Core.Managers
                 projectId);
             if (item == null)
                 return false;
+
+            if (_repository.IsDocumentLinkedToActiveContract(idTaiLieu))
+            {
+                throw new InvalidOperationException(
+                    "Hồ sơ đang liên kết với hợp đồng nên không thể xóa.");
+            }
 
             if (item.IdFileBanChinhThuc.HasValue
                 || _repository.HasRelatedRecords(idTaiLieu))

@@ -21,6 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
     {
         public EventHandler NewCostHandlerCallback;
         public EventHandler EditCostHandlerCallback;
+        public EventHandler OpenCostDocumentHandlerCallback;
         private CostManager _manager = new CostManager();
         public Guid ProjectId
         {
@@ -183,6 +184,32 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         {
             switch (e.CommandName)
             {
+                case "COST_DOCUMENT":
+                    if (!this.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid costDocumentId;
+                    if (!Guid.TryParse(
+                        Convert.ToString(e.CommandArgument),
+                        out costDocumentId)
+                        || costDocumentId == Guid.Empty)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (OpenCostDocumentHandlerCallback != null)
+                    {
+                        OpenCostDocumentHandlerCallback(
+                            costDocumentId,
+                            EventArgs.Empty);
+                    }
+
+                    break;
+
                 case "ITEM_APPROVE":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {

@@ -329,22 +329,46 @@
                     </section>
 
                     <%-- Hợp đồng --%>
-                    <section class="card border shadow-none mb-3 rounded-3">
-                        <div class="card-body py-2 px-3">
-                            <h6 class="text-uppercase fw-bold mb-3">
-                                Hợp đồng thực hiện
-                            </h6>
+                    <asp:Panel runat="server" ID="pnlContract" Visible="false">
+                        <section class="card border shadow-none mb-3 rounded-3">
+                            <div class="card-body py-2 px-3">
+                                <h6 class="text-uppercase fw-bold mb-3">
+                                    Hợp đồng thực hiện
+                                </h6>
 
-                            <a
-                                href="javascript:;"
-                                class="text-primary text-decoration-none">
+                                <asp:LinkButton
+                                    runat="server"
+                                    ID="lbtViewContract"
+                                    CausesValidation="false"
+                                    CssClass="text-primary text-decoration-none"
+                                    OnClick="lbtViewContract_Click">
 
-                                <i class="fas fa-file-contract me-2"></i>
-                                <asp:Label runat="server" ID="lblSoHopDong"></asp:Label>
-                                <i class="fas fa-external-link-alt ms-1 small"></i>
-                            </a>
-                        </div>
-                    </section>
+                                    <i class="fas fa-file-contract me-2"></i>
+                                    <asp:Label runat="server" ID="lblSoHopDong"></asp:Label>
+                                    <i class="fas fa-external-link-alt ms-1 small"></i>
+                                </asp:LinkButton>
+
+                                <asp:LinkButton
+                                    runat="server"
+                                    ID="lbtOpenContractDocument"
+                                    CausesValidation="false"
+                                    CssClass="btn btn-outline-primary btn-sm mt-2"
+                                    OnClick="lbtOpenContractDocument_Click"
+                                    Visible="false">
+                                    <i class="fas fa-folder-open me-1"></i>
+                                    <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT) %>
+                                </asp:LinkButton>
+
+                                <asp:Label
+                                    runat="server"
+                                    ID="lblNoContract"
+                                    CssClass="text-muted"
+                                    Visible="false">
+                                    Chưa có hợp đồng thực hiện
+                                </asp:Label>
+                            </div>
+                        </section>
+                    </asp:Panel>
 
                     <%-- Hoạt động gần đây --%>
                     <section class="card border shadow-none rounded-3">
@@ -428,6 +452,65 @@
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <SweetSoft:CtrlLichSuDuAn runat="server" ID="CtrlLichSuDuAn1" />
+
+    <SweetSoft:ExtraModal
+        runat="server"
+        ID="dlContractDetail"
+        Type="Primary"
+        Title="Thông tin hợp đồng thực hiện">
+        <ContentTemplate>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">Số hợp đồng</label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtContractNumber" Enabled="false" />
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">Tên hợp đồng</label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtContractName" Enabled="false" />
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">Khách hàng</label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtContractCustomer" Enabled="false" />
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">Giá trị hợp đồng</label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtContractValue" Enabled="false" />
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Ngày ký</label>
+                        <asp:TextBox runat="server" ID="txtContractSignDate" TextMode="Date" Enabled="false" CssClass="form-control" />
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Ngày hiệu lực</label>
+                        <asp:TextBox runat="server" ID="txtContractEffectiveDate" TextMode="Date" Enabled="false" CssClass="form-control" />
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Ngày hết hạn</label>
+                        <asp:TextBox runat="server" ID="txtContractExpiryDate" TextMode="Date" Enabled="false" CssClass="form-control" />
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả</label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtContractDescription" TextMode="MultiLine" Rows="4" Enabled="false" />
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </SweetSoft:ExtraModal>
 
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">

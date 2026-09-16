@@ -1188,6 +1188,12 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Contract</value>
   </data>
+  <data name="CONTRACT_DOCUMENT" xml:space="preserve">
+    <value>Contract document</value>
+  </data>
+  <data name="CONTRACT_DOCUMENT_IDENTITY_LOCKED" xml:space="preserve">
+    <value>The contract number and name are used by the linked document and cannot be changed here.</value>
+  </data>
   <data name="CONTRACT_NUMBER" xml:space="preserve">
     <value />
   </data>
@@ -1245,6 +1251,9 @@
   </data>
   <data name="MEETING_LIST" xml:space="preserve">
     <value>Meeting list</value>
+  </data>
+  <data name="MEETING_DOCUMENT" xml:space="preserve">
+    <value>Meeting document</value>
   </data>
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Meeting code</value>
@@ -1852,6 +1861,9 @@
   <data name="COST_LIST" xml:space="preserve">
     <value>Cost list</value>
   </data>
+  <data name="COST_DOCUMENT" xml:space="preserve">
+    <value>Cost document</value>
+  </data>
   <data name="COST_CODE" xml:space="preserve">
     <value>Cost code</value>
   </data>
@@ -2119,5 +2131,8 @@
   </data>
   <data name="PAYMENT_DELETE_CONFIRM" xml:space="preserve">
     <value>Are you sure you want to delete payment {0}?</value>
+  </data>
+  <data name="CONTRACT_LIST" xml:space="preserve">
+    <value>Contract list</value>
   </data>
 </root>
