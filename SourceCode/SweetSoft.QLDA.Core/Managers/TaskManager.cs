@@ -220,22 +220,17 @@ namespace SweetSoft.QLDA.Core.Managers
 
             foreach (var task in pendingTasks)
             {
-                // [FIX LỖI NULL KET THUC]: Chỉ quét các task có đủ dữ liệu, tránh gãy ngang vòng lặp
+                // Chỉ quét các task có đủ dữ liệu, tránh gãy ngang vòng lặp
                 if (!task.NgayBatDau.HasValue || !task.ThoiHanNgay.HasValue || !task.NgayKetThuc.HasValue)
                     continue;
-
                 try
                 {
                     bool isChanged = false;
-
-                    DateTime newStartDate = LichBieuChungManager.Instance.GetNextWorkingDay(task.NgayBatDau.Value);
-                    if (newStartDate.Date != task.NgayBatDau.Value.Date)
-                    {
-                        task.NgayBatDau = newStartDate;
-                        isChanged = true;
-                    }
-
+                    // [FIX NGHIỆP VỤ MỚI]: LOẠI BỎ logic tự động đẩy Ngày bắt đầu (GetNextWorkingDay).
+                    // Giữ nguyên Ngày bắt đầu của Task mặc kệ ngày đó có biến thành Ngày nghỉ lễ hay không.
+                    // CHỈ tính toán lại Ngày kết thúc (giãn thời gian ra để bù cho ngày nghỉ)
                     DateTime newEndDate = LichBieuChungManager.Instance.CalculateTaskEndDate(task.NgayBatDau.Value, task.ThoiHanNgay.Value);
+
                     if (newEndDate.Date != task.NgayKetThuc.Value.Date)
                     {
                         task.NgayKetThuc = newEndDate;
@@ -258,9 +253,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
                 catch (Exception ex)
                 {
-                    // Lỗi 1 task thì log ra, bỏ qua, KHÔNG ĐỂ TREO CẢ HỆ THỐNG
-                    System.Diagnostics.Debug.WriteLine($"🔥 LỖI ĐỒNG BỘ TASK {task.IdCongViec}: {ex.Message}");
-                    continue;
+                    // Quăng thẳng lỗi ra kèm InnerException để Transaction Scope Rollback. KHÔNG NUỐT LỖI.
+                    throw new Exception($"Lỗi khi tự động đồng bộ công việc [{task.MaCongViec}].", ex);
                 }
             }
         }
@@ -694,27 +688,28 @@ namespace SweetSoft.QLDA.Core.Managers
                         // [CHỐT CHẶN]: Chỉ tự động dời (cả tiến lẫn lùi) nếu Task phụ thuộc CHƯA BẮT ĐẦU
                         if (depTask != null && depTask.DaXoa != true && depTask.TrangThai == 0)
                         {
-                            // Ngày bắt đầu lý thuyết = Sau ngày kết thúc của task trước 1 ngày
-                            DateTime minStartRaw = task.NgayKetThuc.Value.AddDays(1);
-
-                            // [QUAN TRỌNG]: Đẩy qua ngày làm việc kế tiếp lỡ ngày minStartRaw rơi trúng Chủ Nhật
-                            DateTime minStart = LichBieuChungManager.Instance.GetNextWorkingDay(minStartRaw);
+                            // [FIX NGHIỆP VỤ]: Ngày bắt đầu = Ngày kết thúc của task trước + 1 ngày.
+                            // Không dùng GetNextWorkingDay() ở đây nữa để tránh việc đẩy qua T7/CN/Lễ.
+                            DateTime minStart = task.NgayKetThuc.Value.AddDays(1);
 
                             // KIỂM TRA KHÁC NHAU LÀ DỜI (Không quan tâm tiến hay lùi)
                             if (!depTask.NgayBatDau.HasValue || depTask.NgayBatDau.Value.Date != minStart.Date)
                             {
                                 int thoiHan = depTask.ThoiHanNgay ?? 1;
+
                                 depTask.NgayBatDau = minStart;
+
+                                // Lưu ý: Ngày kết thúc vẫn đưa vào Engine để rải ngày công bỏ qua lễ/tết cho chuẩn
                                 depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(minStart, thoiHan);
+
                                 depTask.NgayCapNhat = DateTime.Now;
-                                // Giữ lại vết của người thao tác (nếu có)
                                 depTask.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
                                 depTask.Save();
 
                                 // Lan truyền domino tiếp cho các task phụ thuộc của thằng này
                                 AutoSetDependentTime(projectId, depTask.IdCongViec);
 
-                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Chaưekgfwe
+                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Cha
                                 if (depTask.IdCongViecCha.HasValue)
                                 {
                                     AutoSetParentTime(projectId, depTask.IdCongViecCha.Value);

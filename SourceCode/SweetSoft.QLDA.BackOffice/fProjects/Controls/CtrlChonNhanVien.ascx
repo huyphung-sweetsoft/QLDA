@@ -37,6 +37,10 @@
     .sd-body.weekend { background-color: #f8fafc; color: #64748b; }
     .sd-body.free { background-color: #e6f4ea; color: #137333; border-top: 2.5px solid #34a853; }
     .sd-body.busy { background-color: #fee2e2; color: #b91c1c; border-top: 2.5px solid #ef4444; }
+    .single-avatar-circle {
+        width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary" DefaultButton="btnConfirm">
@@ -64,12 +68,13 @@
                                         <div class="member-info-group">
                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
+                                            <%# Eval("AvatarHtml") %>
                                             <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
                                         </div>
                                         <button type="button" class="btn-calendar-only" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>', true)">📅</button>
                                     </div>
                                     
-                                    <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# Eval("ScheduleJson") %>' />
+                                    <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# HttpUtility.HtmlEncode(Eval("ScheduleJson").ToString()) %>' />
                                     <div class="row-schedule-overlay" id='overlay-<%# Eval("UserId") %>'>
                                         <button type="button" class="btn-back-row-slide" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>', false)">←</button>
                                         <div class="pe-2 border-end" style="min-width: 90px; flex-shrink: 0; margin-top: 4px;">
@@ -119,7 +124,10 @@
 
                 if (jsonString) {
                     try {
-                        var scheduleData = JSON.parse(jsonString);
+                        // [FIX LỖI]: Dùng một thẻ textarea ảo để dịch ngược các ký tự &quot; về dấu ngoặc kép chuẩn
+                        var decodedJson = $('<textarea/>').html(jsonString).text();
+                        var scheduleData = JSON.parse(decodedJson);
+
                         var countDays = 0;
 
                         for (var dateKey in scheduleData) {
