@@ -10,6 +10,7 @@ function renderEmployeeProjectChart() {
     if (!window.employeeProjectChartData || window.employeeProjectChartData.length === 0) return;
 
     var data = window.employeeProjectChartData;
+    var texts = window.employeeDashboardTexts || {};
     var chartHeight = Math.max(300, data.length * 55);
     element.style.height = chartHeight + "px";
 
@@ -24,7 +25,7 @@ function renderEmployeeProjectChart() {
             padding: { top: 0, right: 10, bottom: 10, left: 10 }
         },
         series: [{
-            name: "Tiến độ",
+            name: texts.progress || "",
             data: data.map(function (item) { return Number(item.progress); })
         }],
         xaxis: {

@@ -182,13 +182,6 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
-    <Compile Include="Default.aspx.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Default.aspx.designer.cs">
-      <DependentUpon>Default.aspx</DependentUpon>
-    </Compile>
     <Compile Include="fCosts\Controls\CtrlCost.ascx.cs">
       <DependentUpon>CtrlCost.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -273,6 +266,13 @@
     <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
       <DependentUpon>DocumentDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\ProjectDocumentDetail.aspx.cs">
+      <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocumentDetail.aspx.designer.cs">
+      <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fDocuments\DocumentGroups.aspx.cs">
       <DependentUpon>DocumentGroups.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -286,6 +286,13 @@
     </Compile>
     <Compile Include="fDocuments\Documents.aspx.designer.cs">
       <DependentUpon>Documents.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocuments.aspx.cs">
+      <DependentUpon>ProjectDocuments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocuments.aspx.designer.cs">
+      <DependentUpon>ProjectDocuments.aspx</DependentUpon>
     </Compile>
     <Compile Include="fDocuments\DocumentTemplates.aspx.cs">
       <DependentUpon>DocumentTemplates.aspx</DependentUpon>
@@ -378,6 +385,20 @@
     <Compile Include="fEmailTemplate\EmailTemplates.aspx.designer.cs">
       <DependentUpon>EmailTemplates.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.cs">
+      <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.designer.cs">
+      <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.cs">
+      <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.designer.cs">
+      <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fFilesBox\SecureFileUploadHandler.ashx.cs">
       <DependentUpon>SecureFileUploadHandler.ashx</DependentUpon>
     </Compile>
@@ -436,6 +457,13 @@
     </Compile>
     <Compile Include="fMeets\Controls\CtrlMeet.ascx.designer.cs">
       <DependentUpon>CtrlMeet.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.cs">
+      <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.designer.cs">
+      <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
     </Compile>
     <Compile Include="fMeets\MeetList.aspx.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
@@ -500,19 +528,26 @@
     <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
     </Compile>
-    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.cs">
-      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.designer.cs">
-      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fThanhToan\ThanhToanList.aspx.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fThanhToan\ThanhToanList.aspx.designer.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fThanhToan\Controls\CtrlThanhToan.ascx.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fThanhToan\Controls\CtrlThanhToan.ascx.designer.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\DuAnList.aspx.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
@@ -555,6 +590,13 @@
     </Compile>
     <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
       <DependentUpon>CtrlTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.cs">
+      <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.designer.cs">
+      <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\TaskList.aspx.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
@@ -659,7 +701,6 @@
     <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
-    <Content Include="Default.aspx" />
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
     <Content Include="fCosts\CostList.aspx" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
@@ -672,8 +713,10 @@
     <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
     <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
     <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\ProjectDocumentDetail.aspx" />
     <Content Include="fDocuments\DocumentGroups.aspx" />
     <Content Include="fDocuments\Documents.aspx" />
+    <Content Include="fDocuments\ProjectDocuments.aspx" />
     <Content Include="fDocuments\DocumentTemplates.aspx" />
     <Content Include="fDocuments\DocumentTypes.aspx" />
     <Content Include="fDocuments\StorageLocations.aspx" />
@@ -682,6 +725,8 @@
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
     <Content Include="fEmailTemplate\EmailTemplates.aspx" />
+    <Content Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx" />
+    <Content Include="fExecuteContracts\HopDongThucHienList.aspx" />
     <Content Include="fFiles\Controls\CtrlFiles.ascx" />
     <Content Include="fFiles\FileListing.aspx" />
     <Content Include="fFilesBox\FileBoxViewer.css" />
@@ -704,6 +749,7 @@
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
+    <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\LichCaNhan.aspx" />
@@ -711,9 +757,8 @@
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
-    <Content Include="fProjects\Controls\CtrlThanhToan.ascx" />
-    <Content Include="fProjects\ThanhToanList.aspx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
@@ -724,6 +769,8 @@
     <Content Include="fProjects\Controls\CtrlProjectTabs.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
     <Content Include="fProjects\DuAnList.aspx" />
+    <Content Include="fThanhToan\ThanhToanList.aspx" />
+    <Content Include="fThanhToan\Controls\CtrlThanhToan.ascx" />
     <Content Include="fRisks\Controls\CtrlRisk.ascx" />
     <Content Include="fRisks\RiskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
@@ -747,11 +794,9 @@
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
-    <Content Include="Scripts\Auto-Generate-DB.txt" />
     <Content Include="Styles\css\landingpage.css" />
     <Content Include="Styles\images\addImage.jpg" />
     <Content Include="Styles\images\background-app.png" />
-    <Content Include="Styles\images\champion_award.jpg" />
     <Content Include="Styles\images\excel-thumbnail.jpg" />
     <Content Include="Styles\images\image-share.png" />
     <Content Include="Styles\images\lich_thi_background.jpg" />
@@ -760,7 +805,7 @@
     <Content Include="Styles\images\auth-bg.png" />
     <Content Include="Styles\images\schedule_background.png" />
     <Content Include="Styles\images\share-image.jpg" />
-    <Content Include="Styles\images\share-image.png" />
+    <Content Include="Styles\images\SweetSoft-logo-light.png" />
     <Content Include="Styles\js\dashboard.js" />
     <Content Include="Styles\js\trang-chu.js" />
     <Content Include="Styles\plugins\ckeditor\lang\vi.js" />
@@ -779,16 +824,6 @@
     <Content Include="Styles\video\video-trang-chu.mp4" />
     <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
     <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260821.txt" />
-    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_18082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_20082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_21082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_22082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_23082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_24082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_25082026.txt" />
-    <Content Include="Uploads\_Logs\ErrorLog_26082026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -1785,10 +1820,6 @@
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.Core.min.map" />
     <Content Include="_RFMng\scripts\zeroclipboard\dist\ZeroClipboard.min.map" />
     <Content Include="Web.config" />
-    <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\_ViewStart.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\web.config" />
     <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
     <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
     <None Include="Web.Debug.config">
@@ -1897,6 +1928,7 @@
     <Compile Include="Common\MessageBox.cs" />
     <Compile Include="Common\RegisterCSSAndJS.cs" />
     <Compile Include="Common\RewriteURLHelper.cs" />
+    <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Controls\AutoComplete\CtrExtraAutoComplete.ascx.cs">
       <DependentUpon>CtrExtraAutoComplete.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -9,9 +9,9 @@
 <div class="container-fluid dashboard-resource">
     <div class="d-flex flex-column flex-xl-row align-items-xl-start justify-content-between mb-3">
         <div class="flex-grow-1">
-            <h4 class="mb-1">Dashboard phân bổ nguồn lực</h4>
+            <h4 class="mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_TITLE) %></h4>
             <p class="text-muted mb-0">
-                Tổng hợp ngày công từ thứ Hai đến thứ Sáu, phát hiện nhân sự chưa đủ tải hoặc được giao vượt quá năng lực của tuần.
+                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_DESC) %>
             </p>
 
             <div class="row g-2 mt-2 align-items-end">
@@ -29,7 +29,7 @@
                 </div>
 
                 <div class="col-7 col-md-3 col-xl-2">
-                    <label class="form-label mb-1 text-nowrap">Khoảng hiển thị</label>
+                    <label class="form-label mb-1 text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DISPLAY_RANGE) %></label>
                     <SweetSoft:ExtraDropdown
                         ID="ddlWeekCount"
                         runat="server"
@@ -53,13 +53,12 @@
         </div>
 
         <div class="resource-week-navigator bg-white border rounded shadow-sm mt-3 mt-xl-0 ms-xl-4">
-            <div class="small text-muted text-uppercase fw-medium mb-2">Tuần trọng tâm</div>
+            <div class="small text-muted text-uppercase fw-medium mb-2"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_FOCUS_WEEK) %></div>
             <div class="d-flex align-items-center justify-content-between gap-2">
                 <asp:LinkButton
                     ID="btnPreviousWeek"
                     runat="server"
                     CssClass="btn btn-outline-secondary btn-sm resource-week-button"
-                    ToolTip="Tuần trước"
                     OnClick="btnPreviousWeek_Click">
                     <i class="bx bx-chevron-left"></i>
                 </asp:LinkButton>
@@ -71,13 +70,13 @@
                         ID="btnCurrentWeek"
                         runat="server"
                         CssClass="resource-today-link"
-                        OnClick="btnCurrentWeek_Click">Về tuần hiện tại</asp:LinkButton>
+                        OnClick="btnCurrentWeek_Click">
+                    </asp:LinkButton>
                 </div>
                 <asp:LinkButton
                     ID="btnNextWeek"
                     runat="server"
                     CssClass="btn btn-outline-secondary btn-sm resource-week-button"
-                    ToolTip="Tuần sau"
                     OnClick="btnNextWeek_Click">
                     <i class="bx bx-chevron-right"></i>
                 </asp:LinkButton>
@@ -88,9 +87,7 @@
     <div class="alert alert-info resource-method-note d-flex align-items-start mb-3" role="alert">
         <i class="bx bx-info-circle fs-4 me-2"></i>
         <div>
-            <strong>Cách tính theo tuần:</strong> mỗi ngày một công việc còn hiệu lực tương đương một ngày công;
-            mức tải tuần bằng tổng ngày công được giao chia cho số ngày làm việc thực tế theo cấu hình tuần và lịch ngoại lệ trong database.
-            Ví dụ tuần có 5 ngày làm việc, nhân sự được giao 5 ngày ở dự án A và 2 ngày ở dự án B thì mức tải là 7/5 ngày, tương đương 140%.
+            <%= GetResourceText(BackEndResourceKeys.DASHBOARD_WEEKLY_CALCULATION_DESC) %>
         </div>
     </div>
 
@@ -98,7 +95,7 @@
         <div class="col">
             <div class="card h-100 border-0 shadow-sm resource-kpi-card">
                 <div class="card-body">
-                    <div class="resource-kpi-label">Nhân sự trong phạm vi</div>
+                    <div class="resource-kpi-label"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEES_IN_SCOPE) %></div>
                     <div class="d-flex align-items-end justify-content-between">
                         <h3 class="mb-0"><%= Model.TotalEmployeeCount %></h3>
                         <span class="resource-kpi-icon bg-primary-subtle text-primary"><i class="bx bx-group"></i></span>
@@ -109,9 +106,9 @@
         <div class="col">
             <div class="card h-100 border-0 shadow-sm resource-kpi-card">
                 <div class="card-body">
-                    <div class="resource-kpi-label">Đã được phân bổ</div>
+                    <div class="resource-kpi-label"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ALLOCATED_EMPLOYEES) %></div>
                     <div class="d-flex align-items-end justify-content-between">
-                        <div><h3 class="mb-0 text-primary"><%= Model.AssignedEmployeeCount %></h3><small class="text-muted">Sử dụng chung <%= Model.AverageUtilization.ToString("0.#") %>%</small></div>
+                        <div><h3 class="mb-0 text-primary"><%= Model.AssignedEmployeeCount %></h3><small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_SHARED_UTILIZATION), Model.AverageUtilization.ToString("0.#")) %></small></div>
                         <span class="resource-kpi-icon bg-primary-subtle text-primary"><i class="bx bx-user-check"></i></span>
                     </div>
                 </div>
@@ -120,7 +117,7 @@
         <div class="col">
             <div class="card h-100 border-0 shadow-sm resource-kpi-card">
                 <div class="card-body">
-                    <div class="resource-kpi-label">Thiếu tải (&lt;80%)</div>
+                    <div class="resource-kpi-label"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_UNDERLOADED) %> (&lt;80%)</div>
                     <div class="d-flex align-items-end justify-content-between">
                         <h3 class="mb-0 text-success"><%= Model.UnderloadedEmployeeCount %></h3>
                         <span class="resource-kpi-icon bg-success-subtle text-success"><i class="bx bx-down-arrow-alt"></i></span>
@@ -131,7 +128,7 @@
         <div class="col">
             <div class="card h-100 border-0 shadow-sm resource-kpi-card">
                 <div class="card-body">
-                    <div class="resource-kpi-label">Tải cân bằng (80–100%)</div>
+                    <div class="resource-kpi-label"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_BALANCED_LOAD) %> (80–100%)</div>
                     <div class="d-flex align-items-end justify-content-between">
                         <h3 class="mb-0 text-warning"><%= Model.BalancedEmployeeCount %></h3>
                         <span class="resource-kpi-icon bg-warning-subtle text-warning"><i class="bx bx-check-shield"></i></span>
@@ -142,7 +139,7 @@
         <div class="col">
             <div class="card h-100 border-0 shadow-sm resource-kpi-card">
                 <div class="card-body">
-                    <div class="resource-kpi-label">Quá tải (&gt;100%)</div>
+                    <div class="resource-kpi-label"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OVERLOADED) %> (&gt;100%)</div>
                     <div class="d-flex align-items-end justify-content-between">
                         <h3 class="mb-0 text-danger"><%= Model.OverloadedEmployeeCount %></h3>
                         <span class="resource-kpi-icon bg-danger-subtle text-danger"><i class="bx bx-error-circle"></i></span>
@@ -156,15 +153,15 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start mb-3">
                 <div>
-                    <h5 class="card-title mb-1">Heatmap phân bổ nguồn lực theo tuần</h5>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_WEEKLY_RESOURCE_HEATMAP) %></h5>
                     <p class="text-muted mb-0">
-                        Nhấn vào từng ô để xem dự án, công việc và các ngày tạo nên mức tải; bảng bên dưới tổng hợp riêng từng tháng xuất hiện trong phạm vi.
+                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_HEATMAP_DESC) %>
                     </p>
                 </div>
                 <div class="resource-legend d-flex flex-wrap gap-3 mt-3 mt-lg-0 small">
-                    <span><i class="resource-legend-swatch resource-load-low"></i>&lt;80% Thiếu tải</span>
-                    <span><i class="resource-legend-swatch resource-load-balanced"></i>80–100% Tải cân bằng</span>
-                    <span><i class="resource-legend-swatch resource-load-over"></i>&gt;100% Quá tải</span>
+                    <span><i class="resource-legend-swatch resource-load-low"></i>&lt;80% <%= GetResourceText(BackEndResourceKeys.DASHBOARD_UNDERLOADED) %></span>
+                    <span><i class="resource-legend-swatch resource-load-balanced"></i>80–100% <%= GetResourceText(BackEndResourceKeys.DASHBOARD_BALANCED_LOAD) %></span>
+                    <span><i class="resource-legend-swatch resource-load-over"></i>&gt;100% <%= GetResourceText(BackEndResourceKeys.DASHBOARD_OVERLOADED) %></span>
                 </div>
             </div>
 
@@ -172,7 +169,7 @@
                 <table class="table resource-heatmap-table align-middle mb-0">
                     <thead>
                         <tr class="resource-week-row">
-                            <th class="resource-person-column">Nhân sự</th>
+                            <th class="resource-person-column"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></th>
                             <% foreach (var week in Model.Weeks) { %>
                             <th class="text-center resource-week-column <%= week.IsAnchorWeek ? "resource-anchor-week" : string.Empty %>">
                                 <span><%= week.Label %></span>
@@ -185,7 +182,9 @@
                         <% foreach (var employee in Model.EmployeeLoads) { %>
                         <tr>
                             <td class="resource-person-column">
-                                <div class="fw-semibold text-dark"><%: employee.DisplayName %></div>
+                                <div class="fw-semibold text-dark">
+                                    <a class="text-decoration-none text-reset" href="<%: GetEmployeeDetailUrl(employee.EmployeeId) %>"><%: employee.DisplayName %></a>
+                                </div>
                                 <div class="small text-muted text-truncate resource-person-meta"><%: GetEmployeeMeta(employee) %></div>
                             </td>
                             <% foreach (var week in Model.Weeks) {
@@ -196,7 +195,7 @@
                                     class="resource-load-button <%= GetHeatmapCss(load.AllocationPercent) %>"
                                     data-resource-person="<%= employee.EmployeeId %>"
                                     data-resource-week="<%= week.StartDate.ToString("yyyy-MM-dd") %>"
-                                    aria-label="Xem phân bổ của <%: employee.DisplayName %> trong <%= week.Label %>">
+                                    aria-label="<%: string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_VIEW_EMPLOYEE_ALLOCATION), employee.DisplayName, week.Label) %>">
                                     <span class="resource-load-percent"><%= GetCellText(load.AllocationPercent) %></span>
                                     <small><%= GetAllocatedDaysText(load) %></small>
                                 </button>
@@ -207,7 +206,7 @@
                         <% if (Model.EmployeeLoads.Count == 0) { %>
                         <tr>
                             <td colspan="<%= Model.Weeks.Count + 1 %>" class="text-center text-muted py-5">
-                                Dự án chưa có thành viên, quản lý hoặc nhân sự được giao công việc.
+                                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_RESOURCE_MEMBERS) %>
                             </td>
                         </tr>
                         <% } %>
@@ -221,15 +220,15 @@
         <div class="col-12 col-xl-8 d-flex">
             <div class="card border-0 shadow-sm w-100 resource-monthly-card">
                 <div class="card-body">
-            <h5 class="card-title mb-1">Tổng hợp mức tải theo tháng</h5>
+            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_SUMMARY) %></h5>
             <p class="text-muted mb-3">
-                Mỗi tháng được tính theo toàn bộ ngày làm việc của tháng. Tuần giao tháng được cảnh báo tại tháng chứa phần lớn ngày làm việc của tuần đó.
+                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_DESC) %>
             </p>
             <div class="resource-monthly-scroll">
                 <table class="table resource-monthly-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th class="resource-person-column">Nhân sự</th>
+                            <th class="resource-person-column"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></th>
                             <% foreach (var month in Model.Months) { %>
                             <th class="text-center resource-month-column"><%= month.Label %></th>
                             <% } %>
@@ -239,7 +238,9 @@
                         <% foreach (var employee in Model.EmployeeLoads) { %>
                         <tr>
                             <td class="resource-person-column">
-                                <div class="fw-semibold text-dark"><%: employee.DisplayName %></div>
+                                <div class="fw-semibold text-dark">
+                                    <a class="text-decoration-none text-reset" href="<%: GetEmployeeDetailUrl(employee.EmployeeId) %>"><%: employee.DisplayName %></a>
+                                </div>
                                 <div class="small text-muted text-truncate resource-person-meta"><%: GetEmployeeMeta(employee) %></div>
                             </td>
                             <% foreach (var month in Model.Months) {
@@ -247,7 +248,7 @@
                             <td class="text-center resource-month-cell <%= GetMonthlySummaryCss(load) %>"
                                 title="<%: GetMonthlyStatusTitle(load) %>">
                                 <div class="fw-semibold resource-month-percent"><%= load.AverageUtilization.ToString("0.#") %>%</div>
-                                <small class="text-muted"><%= load.AllocatedDays.ToString("0.#") %>/<%= load.CapacityDays.ToString("0") %> ngày</small>
+                                <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_ALLOCATED_CAPACITY), load.AllocatedDays.ToString("0.#"), load.CapacityDays.ToString("0")) %></small>
                                 <div class="mt-1"><span class="badge <%= GetMonthlyStatusBadgeCss(load) %>"><%= GetMonthlyStatusText(load) %></span></div>
                             </td>
                             <% } %>
@@ -256,7 +257,7 @@
                         <% if (Model.EmployeeLoads.Count == 0) { %>
                         <tr>
                             <td colspan="<%= Model.Months.Count + 1 %>" class="text-center text-muted py-4">
-                                Không có nhân sự để tổng hợp trong phạm vi đã chọn.
+                                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_MONTHLY_EMPLOYEES) %>
                             </td>
                         </tr>
                         <% } %>
@@ -272,8 +273,8 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h5 class="card-title mb-1">Nhân sự cần chú ý</h5>
-                            <p class="text-muted mb-0">Ưu tiên nhân sự quá tải, sau đó đến nhóm thiếu tải.</p>
+                            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEES_NEED_ATTENTION) %></h5>
+                            <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC) %></p>
                         </div>
                         <span class="badge bg-warning-subtle text-warning"><%= Model.AttentionEmployees.Count %></span>
                     </div>
@@ -283,7 +284,7 @@
                             <span class="resource-attention-dot <%= GetStatusLoadCss(employee.Status) %>"></span>
                             <div class="flex-grow-1 min-width-0">
                                 <div class="d-flex justify-content-between gap-2">
-                                    <span class="fw-semibold text-truncate"><%: employee.DisplayName %></span>
+                                    <a class="fw-semibold text-truncate text-decoration-none text-reset" href="<%: GetEmployeeDetailUrl(employee.EmployeeId) %>"><%: employee.DisplayName %></a>
                                     <span class="badge <%= GetStatusBadgeCss(employee.Status) %>"><%= GetStatusText(employee.Status) %></span>
                                 </div>
                                 <div class="small text-muted mt-1"><%: GetAttentionText(employee) %></div>
@@ -291,7 +292,7 @@
                         </div>
                         <% } %>
                         <% if (Model.AttentionEmployees.Count == 0) { %>
-                        <div class="text-center text-muted py-5">Không có nhân sự cần cảnh báo trong tuần.</div>
+                        <div class="text-center text-muted py-5"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_RESOURCE_WARNINGS) %></div>
                         <% } %>
                     </div>
                 </div>
@@ -303,10 +304,10 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-sm-row justify-content-between mb-2">
                 <div>
-                    <h5 class="card-title text-uppercase mb-1">Xu hướng mức tải nguồn lực</h5>
-                    <p class="text-muted mb-0">Mức dùng chung của phạm vi lọc trong 8 tuần, lấy tuần trọng tâm làm mốc.</p>
+                    <h5 class="card-title text-uppercase mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_LOAD_TREND) %></h5>
+                    <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_LOAD_TREND_DESC) %></p>
                 </div>
-                <div class="small text-muted mt-2 mt-sm-0">Đường nét đứt: tuần tương lai</div>
+                <div class="small text-muted mt-2 mt-sm-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_FUTURE_WEEK_DASHED) %></div>
             </div>
             <div id="resource-load-trend-chart"></div>
         </div>
@@ -314,32 +315,34 @@
 
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
-            <h5 class="card-title mb-1">Phân bổ theo dự án trong tuần trọng tâm</h5>
+            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_ALLOCATION) %></h5>
             <p class="text-muted mb-3">
-                Ngày công phân bổ là tổng số ngày task chạy của từng người; năng lực khả dụng bằng số người có lịch × 5 ngày.
+                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_ALLOCATION_DESC) %>
             </p>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Dự án</th>
-                            <th class="text-center">Nhân sự có lịch</th>
-                            <th class="text-center">Ngày công phân bổ</th>
-                            <th class="text-center">Năng lực khả dụng</th>
-                            <th style="min-width: 210px;">Mức sử dụng</th>
-                            <th class="text-center">Đánh giá</th>
+                            <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_SCHEDULED_EMPLOYEES) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ALLOCATED_DAYS) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AVAILABLE_CAPACITY) %></th>
+                            <th style="min-width: 210px;"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_UTILIZATION) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ASSESSMENT) %></th>
                         </tr>
                     </thead>
                     <tbody>
                         <% foreach (var project in Model.ProjectAllocations) { %>
                         <tr>
                             <td>
-                                <div class="fw-semibold"><%: project.ProjectCode %></div>
-                                <div class="small text-muted"><%: project.ProjectName %></div>
+                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectDetailUrl(project.ProjectId) %>">
+                                    <div class="fw-semibold"><%: project.ProjectCode %></div>
+                                    <div class="small text-muted"><%: project.ProjectName %></div>
+                                </a>
                             </td>
                             <td class="text-center"><%= project.ResourceCount %></td>
-                            <td class="text-center"><%= project.AllocatedDays.ToString("0.#") %> ngày</td>
-                            <td class="text-center"><%= project.CapacityDays.ToString("0.#") %> ngày</td>
+                            <td class="text-center"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DAY_COUNT), project.AllocatedDays.ToString("0.#")) %></td>
+                            <td class="text-center"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DAY_COUNT), project.CapacityDays.ToString("0.#")) %></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="progress flex-grow-1 resource-utilization-progress">
@@ -357,7 +360,7 @@
                         </tr>
                         <% } %>
                         <% if (Model.ProjectAllocations.Count == 0) { %>
-                        <tr><td colspan="6" class="text-center text-muted py-4">Không có dự án phát sinh phân bổ trong tuần trọng tâm.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_PROJECT_ALLOCATION) %></td></tr>
                         <% } %>
                     </tbody>
                 </table>
@@ -369,23 +372,23 @@
     <aside id="resource-detail-drawer" class="resource-detail-drawer" aria-hidden="true" aria-labelledby="resource-detail-title">
         <div class="resource-drawer-header d-flex align-items-start justify-content-between">
             <div>
-                <div class="small text-muted text-uppercase">Chi tiết phân bổ trong tuần</div>
-                <h5 id="resource-detail-title" class="mb-1 mt-1">Nhân sự</h5>
+                <div class="small text-muted text-uppercase"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_ALLOCATION_DETAIL) %></div>
+                <h5 id="resource-detail-title" class="mb-1 mt-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></h5>
                 <div id="resource-detail-subtitle" class="small text-muted"></div>
             </div>
-            <button id="resource-detail-close" type="button" class="btn btn-sm btn-light" aria-label="Đóng"><i class="bx bx-x fs-4"></i></button>
+            <button id="resource-detail-close" type="button" class="btn btn-sm btn-light" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"><i class="bx bx-x fs-4"></i></button>
         </div>
         <div class="resource-drawer-summary">
             <div>
-                <span>Mức tải tuần</span>
+                <span><%= GetResourceText(BackEndResourceKeys.DASHBOARD_WEEKLY_LOAD) %></span>
                 <small id="resource-detail-capacity" class="d-block text-muted mt-1"></small>
             </div>
             <strong id="resource-detail-load">0%</strong>
         </div>
         <div class="resource-drawer-body">
-            <h6 class="resource-drawer-section-title">Phân bổ theo dự án</h6>
+            <h6 class="resource-drawer-section-title"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_ALLOCATION) %></h6>
             <div id="resource-detail-projects"></div>
-            <h6 class="resource-drawer-section-title mt-4">Chi tiết công việc</h6>
+            <h6 class="resource-drawer-section-title mt-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_DETAIL) %></h6>
             <div id="resource-detail-tasks"></div>
         </div>
     </aside>
@@ -393,5 +396,6 @@
     <script type="text/javascript">
         window.dashboardResourceTrendData = <%= TrendChartData %>;
         window.dashboardResourceDetailData = <%= ResourceDetailData %>;
+        window.dashboardResourceTexts = <%= DashboardTextsJson %>;
     </script>
 </div>

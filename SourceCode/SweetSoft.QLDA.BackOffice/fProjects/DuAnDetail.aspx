@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnDetail" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnDetail" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fProjects/Controls/CtrlGiaiDoanDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlGiaiDoanDuAn" %>
@@ -7,6 +7,29 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
+    <style>
+        /* CSS CHO AVATAR STACK CỦA OWNER VÀ THÀNH VIÊN */
+        .avatar-group { 
+            display: inline-flex !important; 
+            align-items: center; 
+            justify-content: center; 
+            flex-wrap: nowrap !important; 
+            white-space: nowrap !important; /* KHOA CHẶT: Cấm tuyệt đối việc rớt dòng */
+        }  
+        .avatar-stack-container { 
+            display: flex; 
+            align-items: center; 
+        }    
+        .avatar-circle { 
+            width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 11px; font-weight: 700; color: #ffffff; border: 2px solid #ffffff; 
+            margin-left: -8px; position: relative; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }    
+        .avatar-circle:first-child { margin-left: 0; }    
+        .avatar-more { 
+            background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; z-index: 0; font-weight: 800; font-size: 10px; 
+        }    
+    </style>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
@@ -30,67 +53,35 @@
 
                     <%-- Dropdown trạng thái --%>
                     <div class="dropdown">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-
-                            <i class="fas fa-circle text-info me-2 small"></i>
-                            Đang thực hiện
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i runat="server" id="iCurrentStatusIcon" class="fas fa-circle text-info me-2 small"></i>
+                            <asp:Literal runat="server" ID="ltrCurrentStatusName"></asp:Literal>
                         </button>
-
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-warning me-2 small"></i>
-                                    Chờ thực hiện
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item active" href="javascript:;">
-                                    <i class="fas fa-circle text-info me-2 small"></i>
-                                    Đang thực hiện
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-secondary me-2 small"></i>
-                                    Tạm dừng
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-success me-2 small"></i>
-                                    Hoàn thành
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-dark me-2 small"></i>
-                                    Kết thúc
-                                </a>
-                            </li>
+                            <asp:Repeater runat="server" ID="rptStatusDropdown" OnItemCommand="rptStatusDropdown_ItemCommand">
+                                <ItemTemplate>
+                                    <li>
+                                        <asp:LinkButton 
+                                            runat="server" 
+                                            CommandName="ChangeStatus" 
+                                            CommandArgument='<%# Eval("Value") %>'  
+                                            CssClass='<%# "dropdown-item " + (Convert.ToByte(Eval("Value")) == CurrentStatusValue ? "active" : "") %>'>
+                                            <i class='<%# "fas fa-circle me-2 small " + GetStatusCssClass((SweetSoft.QLDA.Core.EnumHelper.Defines.DuAnStatus)Convert.ToByte(Eval("Value"))) %>'></i>
+                                            <%# Eval("Name") %>
+                                        </asp:LinkButton>
+                                    </li>
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </ul>
                     </div>
 
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary">
+                    <button type="button" class="btn btn-outline-secondary">
                         <i class="fas fa-pencil-alt me-1"></i>
                         Sửa
                     </button>
 
                     <div class="dropdown">
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
 
@@ -211,21 +202,12 @@
                                             Theo tỷ trọng ngày thực hiện
                                         </span>
 
-                                        <strong class="small text-primary">
-                                            62%
+                                        <strong runat="server" id="lblTienDoThoiGian" class="small text-primary">
                                         </strong>
                                     </div>
 
-                                    <div
-                                        class="progress"
-                                        role="progressbar"
-                                        aria-valuenow="62"
-                                        aria-valuemin="0"
-                                        aria-valuemax="100">
-
-                                        <div
-                                            class="progress-bar bg-primary"
-                                            style="width: 62%">
+                                    <div runat="server" id="divTienDoThoiGian" class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                                        <div runat="server" id="divTienDoThoiGianBar" class="progress-bar bg-primary">
                                         </div>
                                     </div>
                                 </div>
@@ -236,21 +218,12 @@
                                             Theo bình quân % hoàn thành công việc
                                         </span>
 
-                                        <strong class="small text-primary">
-                                            58%
+                                        <strong runat="server" id="lblTienDoCongViec" class="small text-primary">
                                         </strong>
                                     </div>
 
-                                    <div
-                                        class="progress"
-                                        role="progressbar"
-                                        aria-valuenow="58"
-                                        aria-valuemin="0"
-                                        aria-valuemax="100">
-
-                                        <div
-                                            class="progress-bar bg-primary"
-                                            style="width: 58%">
+                                    <div runat="server" id="divTienDoCongViec" class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                                        <div runat="server" id="divTienDoCongViecBar" class="progress-bar bg-primary">
                                         </div>
                                     </div>
                                 </div>
@@ -302,49 +275,72 @@
                                 </div>
                             </div>
 
-                            <div class="mt-4">
-                                <div class="font-size-8 fw-bold mb-1">
-                                    Thành viên (5)
-                                </div>
-
-                                <div class="d-flex align-items-center flex-wrap gap-2">
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        NV
-                                    </span>
-
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        LH
-                                    </span>
-
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        HM
-                                    </span>
-
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        +2
-                                    </span>
-                                </div>
+                            <div class="mt-2">
+                                <asp:Literal ID="ltrThanhVienGroup" runat="server"></asp:Literal>
                             </div>
                         </div>
                     </section>
 
                     <%-- Hợp đồng --%>
-                    <section class="card border shadow-none mb-3 rounded-3">
-                        <div class="card-body py-2 px-3">
-                            <h6 class="text-uppercase fw-bold mb-3">
-                                Hợp đồng thực hiện
-                            </h6>
+                    <asp:Panel
+                        runat="server"
+                        ID="pnlContract"
+                        VisibleConditionKey='<%# this.IsContractView %>'>
 
-                            <a
-                                href="javascript:;"
-                                class="text-primary text-decoration-none">
+                        <section class="card border shadow-none mb-3 rounded-3">
+                            <div class="card-body py-2 px-3">
+                                <h6 class="text-uppercase fw-bold mb-3">
+                                    Hợp đồng thực hiện
+                                </h6>
 
-                                <i class="fas fa-file-contract me-2"></i>
-                                <asp:Label runat="server" ID="lblSoHopDong"></asp:Label>
-                                <i class="fas fa-external-link-alt ms-1 small"></i>
-                            </a>
-                        </div>
-                    </section>
+                                <asp:UpdatePanel
+                                    runat="server"
+                                    ID="upnlOpenContract"
+                                    UpdateMode="Conditional"
+                                    RenderMode="Inline">
+
+                                    <ContentTemplate>
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtViewContract"
+                                            CausesValidation="false"
+                                            CssClass="text-primary text-decoration-none"
+                                            OnClick="lbtViewContract_Click">
+
+                                            <i class="fas fa-file-contract me-2"></i>
+
+                                            <asp:Label
+                                                runat="server"
+                                                ID="lblSoHopDong">
+                                            </asp:Label>
+
+                                            <i class="fas fa-external-link-alt ms-1 small"></i>
+                                        </asp:LinkButton>
+
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtOpenContractDocument"
+                                            CausesValidation="false"
+                                            CssClass="btn btn-outline-primary btn-sm mt-2"
+                                            OnClick="lbtOpenContractDocument_Click"
+                                            Visible="false">
+                                            <i class="fas fa-folder-open me-1"></i>
+                                            <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT) %>
+                                        </asp:LinkButton>
+
+                                        <asp:Label
+                                            runat="server"
+                                            ID="lblNoContract"
+                                            CssClass="text-muted"
+                                            Visible="false">
+                                            Chưa có hợp đồng thực hiện
+                                        </asp:Label>
+                                    </ContentTemplate>
+                                </asp:UpdatePanel>
+                            </div>
+                        </section>
+
+                    </asp:Panel>
 
                     <%-- Hoạt động gần đây --%>
                     <section class="card border shadow-none rounded-3">
@@ -355,67 +351,46 @@
                                     Hoạt động gần đây
                                 </h5>
 
-<asp:UpdatePanel
-    runat="server"
-    ID="upnlOpenProjectHistory"
-    UpdateMode="Conditional"
-    RenderMode="Inline">
+                                <asp:UpdatePanel runat="server" ID="upnlOpenProjectHistory" UpdateMode="Conditional" RenderMode="Inline">
 
-    <ContentTemplate>
-        <asp:LinkButton
-            runat="server"
-            ID="lbtViewAllHistory"
-            CausesValidation="false"
-            CssClass="small text-primary text-decoration-none"
-            OnClick="lbtViewAllHistory_Click">
+                                    <ContentTemplate>
+                                        <asp:LinkButton runat="server" ID="lbtViewAllHistory" CausesValidation="false" CssClass="small text-primary text-decoration-none" OnClick="lbtViewAllHistory_Click">
 
-            Xem tất cả
-        </asp:LinkButton>
-    </ContentTemplate>
-</asp:UpdatePanel>
+                                            Xem tất cả
+                                        </asp:LinkButton>
+                                    </ContentTemplate>
+                                </asp:UpdatePanel>
                             </div>
 
                             <div class="list-group list-group-flush">
 
-                                <asp:Repeater
-        runat="server"
-        ID="rptRecentProjectHistory"
-        OnItemDataBound="rptRecentProjectHistory_ItemDataBound">
+                                <asp:Repeater runat="server" ID="rptRecentProjectHistory" OnItemDataBound="rptRecentProjectHistory_ItemDataBound">
 
-        <ItemTemplate>
-            <div class="list-group-item px-0 py-3">
-                <div class="d-flex gap-3">
-                    <span class="text-primary pt-1">
-                        <i class="far fa-circle"></i>
-                    </span>
+                                    <ItemTemplate>
+                                        <div class="list-group-item px-0 py-3">
+                                            <div class="d-flex gap-3">
+                                                <span class="text-primary pt-1">
+                                                    <i class="far fa-circle"></i>
+                                                </span>
 
-                    <div class="flex-grow-1">
-                        <asp:Label
-                            runat="server"
-                            ID="lblHistoryContent"
-                            CssClass="small">
-                        </asp:Label>
+                                                <div class="flex-grow-1">
+                                                    <asp:Label runat="server" ID="lblHistoryContent" CssClass="small">
+                                                    </asp:Label>
 
-                        <div class="small text-muted mt-1">
-                            <asp:Label
-                                runat="server"
-                                ID="lblHistoryTime">
-                            </asp:Label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </ItemTemplate>
-    </asp:Repeater>
+                                                    <div class="small text-muted mt-1">
+                                                        <asp:Label runat="server" ID="lblHistoryTime">
+                                                        </asp:Label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
 
-    <asp:Panel
-        runat="server"
-        ID="pnlEmptyRecentHistory"
-        Visible="false"
-        CssClass="text-muted small py-3">
+                                <asp:Panel runat="server" ID="pnlEmptyRecentHistory" Visible="false" CssClass="text-muted small py-3">
 
-        Chưa có hoạt động nào.
-    </asp:Panel>
+                                    Chưa có hoạt động nào.
+                                </asp:Panel>
 
                             </div>
                         </div>
@@ -428,7 +403,137 @@
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <SweetSoft:CtrlLichSuDuAn runat="server" ID="CtrlLichSuDuAn1" />
+    <SweetSoft:ExtraModal
+    runat="server"
+    ID="dlContractDetail"
+    Type="Primary"
+    Title="Thông tin hợp đồng thực hiện">
 
+    <ContentTemplate>
+        <div class="row">
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Số hợp đồng
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtContractNumber"
+                        Enabled="false">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Tên hợp đồng
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtContractName"
+                        Enabled="false">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Khách hàng
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtContractCustomer"
+                        Enabled="false">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Giá trị hợp đồng
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtContractValue"
+                        Enabled="false">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Ngày ký
+                    </label>
+
+                    <asp:TextBox
+                        runat="server"
+                        ID="txtContractSignDate"
+                        type="date"
+                        Enabled="false"
+                        CssClass="form-control">
+                    </asp:TextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Ngày hiệu lực
+                    </label>
+
+                    <asp:TextBox
+                        runat="server"
+                        ID="txtContractEffectiveDate"
+                        type="date"
+                        Enabled="false"
+                        CssClass="form-control">
+                    </asp:TextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Ngày hết hạn
+                    </label>
+
+                    <asp:TextBox
+                        runat="server"
+                        ID="txtContractExpiryDate"
+                        type="date"
+                        Enabled="false"
+                        CssClass="form-control">
+                    </asp:TextBox>
+                </div>
+            </div>
+
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Mô tả
+                    </label>
+
+                    <SweetSoft:ExtraTextBox
+                        runat="server"
+                        ID="txtContractDescription"
+                        TextMode="MultiLine"
+                        Rows="4"
+                        Enabled="false">
+                    </SweetSoft:ExtraTextBox>
+                </div>
+            </div>
+        </div>
+    </ContentTemplate>
+</SweetSoft:ExtraModal>
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>

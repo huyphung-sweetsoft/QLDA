@@ -189,6 +189,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     return new CostItemInfo
                     {
                         CostId = cost.IdChiPhi,
+                        ProjectId = cost.IdDuAn,
                         CostCode = cost.MaChiPhi,
                         CostName = cost.TenKhoanChi,
                         ProjectCode = project == null

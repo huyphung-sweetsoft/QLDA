@@ -70,7 +70,7 @@
             </div>
             <div>
                 <div class="text-muted small fw-medium text-uppercase tracking-wide mb-1">
-                    <%= DateTime.Now.ToString("dddd", new System.Globalization.CultureInfo("vi-VN")) %>
+                    <%= DateTime.Now.ToString("dddd", System.Globalization.CultureInfo.CurrentUICulture) %>
                 </div>
                 <div class="fw-bold fs-4 text-dark lh-1">
                     <%= DateTime.Now.ToString("dd/MM/yyyy") %>
@@ -86,6 +86,9 @@
 
         <!-- Dự án đang triển khai -->
         <div class="col">
+            <% if (IsProjectView) { %>
+            <a href="<%: GetProjectDetailUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
+            <% } %>
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -93,7 +96,7 @@
                         <div class="flex-grow-1">
                             <p class="text-muted mb-1">
                                 <% if (IsProjectView) { %>
-                                    Tiến độ thực tế
+                                    <%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS) %>
                                 <% } else { %>
                                     <%= GetResourceText(BackEndResourceKeys.ACTIVE_PROJECTS) %>
                                 <% } %>
@@ -109,7 +112,7 @@
 
                             <small class="text-muted">
                                 <% if (IsProjectView) { %>
-                                    So với toàn bộ công việc của dự án
+                                    <%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_ACTUAL_PROGRESS_DESC) %>
                                 <% } else { %>
                                     <%= GetResourceText(BackEndResourceKeys.PROJECTS_IN_PROGRESS) %>
                                 <% } %>
@@ -125,10 +128,16 @@
                     </div>
                 </div>
             </div>
+            <% if (IsProjectView) { %>
+            </a>
+            <% } %>
         </div>
 
         <!-- Lịch họp sắp tới -->
     <div class="col">
+        <% if (IsProjectView) { %>
+        <a href="<%: GetProjectTasksUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
+        <% } %>
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-body">
                 <div class="d-flex align-items-center">
@@ -136,9 +145,9 @@
                     <div class="flex-grow-1">
 
                         <% if (IsProjectView) { %>
-                        <p class="text-muted mb-1">Công việc hoàn thành</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COMPLETED_TASKS) %></p>
                         <h3 class="mb-0 text-success"><%= SelectedProjectCompletedTaskCount %>/<%= SelectedProjectTaskCount %></h3>
-                        <small class="text-muted">Đã hoàn thành trên tổng số</small>
+                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_OF_TOTAL) %></small>
                         <% } else { %>
                         <p class="text-muted mb-1">
                             <%= GetResourceText(BackEndResourceKeys.UPCOMING_MEETINGS) %>
@@ -160,19 +169,25 @@
                 </div>
             </div>
         </div>
+        <% if (IsProjectView) { %>
+        </a>
+        <% } %>
     </div>
 
         <!-- Dự án có nguy cơ trễ hạn -->
         <div class="col">
+            <% if (IsProjectView) { %>
+            <a href="<%: GetProjectTasksUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
+            <% } %>
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
 
                         <div class="flex-grow-1">
                             <% if (IsProjectView) { %>
-                            <p class="text-muted mb-1">Công việc quá hạn</p>
+                            <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %></p>
                             <h3 class="mb-0 <%= OverdueTaskCount > 0 ? "text-danger" : "text-success" %>"><%= OverdueTaskCount %></h3>
-                            <small class="text-muted"><%= SelectedProjectDueSoonTaskCount %> công việc sắp đến hạn</small>
+                            <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DUE_SOON_TASK_COUNT), SelectedProjectDueSoonTaskCount) %></small>
                             <% } else { %>
                             <p class="text-muted mb-1">
                                 <%= GetResourceText(BackEndResourceKeys.AT_RISK_PROJECTS) %>
@@ -193,6 +208,9 @@
                     </div>
                 </div>
             </div>
+            <% if (IsProjectView) { %>
+            </a>
+            <% } %>
         </div>
 
         <!-- Công việc quá hạn -->
@@ -203,9 +221,9 @@
 
                         <div class="flex-grow-1">
                             <% if (IsProjectView) { %>
-                            <p class="text-muted mb-1">Nhân sự tham gia</p>
+                            <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PARTICIPATING_EMPLOYEES) %></p>
                             <h3 class="mb-0"><%= ResourceOverview == null ? 0 : ResourceOverview.ParticipatingEmployeeCount %></h3>
-                            <small class="text-muted">Thành viên thuộc dự án</small>
+                            <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_MEMBER_DESC) %></small>
                             <% } else { %>
                             <p class="text-muted mb-1">
                                 <%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %>
@@ -370,7 +388,7 @@
                                 <th class="text-center">
                                     <%= GetResourceText(BackEndResourceKeys.ISSUE) %>
                                 </th>
-                                <th>Nguyên nhân</th>
+                                <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_REASON) %></th>
                             </tr>
                         </thead>
 
@@ -386,13 +404,15 @@
                                     <tr>
 
                                         <td>
-                                            <strong>
-                                                <%: item.ProjectCode %>
-                                            </strong>
+                                            <a href="<%: GetProjectDetailUrl(item.ProjectId) %>" class="d-block text-decoration-none text-reset">
+                                                <strong>
+                                                    <%: item.ProjectCode %>
+                                                </strong>
 
-                                            <div class="text-muted small">
-                                                <%: item.ProjectName %>
-                                            </div>
+                                                <div class="text-muted small">
+                                                    <%: item.ProjectName %>
+                                                </div>
+                                            </a>
                                         </td>
 
                                         <td class="text-center">
@@ -400,9 +420,9 @@
                                             <% if (item.RiskCount > 0)
                                             { %>
 
-                                                <span class="badge bg-warning-subtle text-warning">
+                                                <a href="<%: GetProjectRisksUrl(item.ProjectId) %>" class="badge bg-warning-subtle text-warning text-decoration-none">
                                                     <%= item.RiskCount %>
-                                                </span>
+                                                </a>
 
                                             <% }
                                             else
@@ -421,9 +441,9 @@
                                             <% if (item.IssueCount > 0)
                                             { %>
 
-                                                <span class="badge bg-danger-subtle text-danger">
+                                                <a href="<%: GetProjectIssuesUrl(item.ProjectId) %>" class="badge bg-danger-subtle text-danger text-decoration-none">
                                                     <%= item.IssueCount %>
-                                                </span>
+                                                </a>
 
                                             <% }
                                             else
@@ -439,11 +459,11 @@
 
                                         <td class="small text-muted">
                                             <% if (item.RiskCount > 0 && item.IssueCount > 0) { %>
-                                                Rủi ro và vấn đề
+                                                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_RISK_AND_ISSUE) %>
                                             <% } else if (item.RiskCount > 0) { %>
-                                                Rủi ro
+                                                <%= GetResourceText(BackEndResourceKeys.RISK) %>
                                             <% } else { %>
-                                                Vấn đề
+                                                <%= GetResourceText(BackEndResourceKeys.ISSUE) %>
                                             <% } %>
                                         </td>
 
@@ -481,8 +501,8 @@
             <div class="card-body">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
                     <div>
-                        <h5 class="card-title mb-1">Tình hình dự án</h5>
-                        <p class="text-muted mb-0">Thông tin và mức độ hoàn thành so với kế hoạch.</p>
+                        <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_SITUATION) %></h5>
+                        <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_SITUATION_DESC) %></p>
                     </div>
                     <% if (!string.IsNullOrEmpty(SelectedProjectCode)) { %>
                     <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
@@ -497,38 +517,40 @@
                 </div>
 
                 <% if (!string.IsNullOrEmpty(SelectedProjectCode)) { %>
-                <div class="overview-project-identity p-3 rounded mb-3">
-                    <div class="small text-muted mb-1"><%: SelectedProjectCode %></div>
-                    <div class="fw-bold fs-5"><%: SelectedProjectName %></div>
-                    <div class="small text-muted mt-2">
-                        Công việc: <span class="fw-semibold text-dark"><%= SelectedProjectCompletedTaskCount %>/<%= SelectedProjectTaskCount %> đã hoàn thành</span>
+                <a href="<%: GetProjectDetailUrl(SelectedProjectId) %>" class="d-block text-decoration-none text-reset">
+                    <div class="overview-project-identity p-3 rounded mb-3">
+                        <div class="small text-muted mb-1"><%: SelectedProjectCode %></div>
+                        <div class="fw-bold fs-5"><%: SelectedProjectName %></div>
+                        <div class="small text-muted mt-2">
+                            <span class="fw-semibold text-dark"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_TASK_COMPLETION), SelectedProjectCompletedTaskCount, SelectedProjectTaskCount) %></span>
+                        </div>
                     </div>
-                </div>
+                </a>
 
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-md-4">
-                        <div class="small text-muted mb-1">Ngày bắt đầu</div>
+                        <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></div>
                         <div class="fw-semibold">
                             <%= SelectedProjectStartDate.HasValue ? SelectedProjectStartDate.Value.ToString("dd/MM/yyyy") : "-" %>
                         </div>
                     </div>
                     <div class="col-12 col-md-4">
-                        <div class="small text-muted mb-1">Dự kiến hoàn thành</div>
+                        <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EXPECTED_COMPLETION) %></div>
                         <div class="fw-semibold">
                             <%= SelectedProjectExpectedEndDate.HasValue ? SelectedProjectExpectedEndDate.Value.ToString("dd/MM/yyyy") : "-" %>
                         </div>
                     </div>
                     <div class="col-12 col-md-4">
-                        <div class="small text-muted mb-1">Hoàn thành thực tế</div>
+                        <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_COMPLETION) %></div>
                         <div class="fw-semibold">
-                            <%= SelectedProjectActualCompletionDate.HasValue ? SelectedProjectActualCompletionDate.Value.ToString("dd/MM/yyyy") : "Chưa hoàn thành" %>
+                            <%= SelectedProjectActualCompletionDate.HasValue ? SelectedProjectActualCompletionDate.Value.ToString("dd/MM/yyyy") : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED) %>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-medium">Tiến độ thực tế</span>
+                        <span class="fw-medium"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS) %></span>
                         <span class="fw-bold text-primary"><%= OverallProgress.ToString("0.##") %>%</span>
                     </div>
                     <div class="progress overview-progress-bar">
@@ -543,7 +565,7 @@
 
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-medium">Tiến độ kế hoạch</span>
+                        <span class="fw-medium"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PLANNED_PROGRESS) %></span>
                         <span class="fw-bold text-warning"><%= SelectedProjectPlannedProgress.ToString("0.##") %>%</span>
                     </div>
                     <div class="progress overview-progress-bar">
@@ -558,15 +580,15 @@
 
                 <div class="overview-variance-box d-flex flex-column flex-sm-row align-items-sm-center justify-content-between p-3 rounded">
                     <div>
-                        <div class="fw-semibold">Độ lệch tiến độ</div>
-                        <div class="small text-muted">Tiến độ thực tế trừ tiến độ kế hoạch</div>
+                        <div class="fw-semibold"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_VARIANCE) %></div>
+                        <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_VARIANCE_DESC) %></div>
                     </div>
                     <div class="fs-4 fw-bold mt-2 mt-sm-0 <%= GetVarianceCss(SelectedProjectVariance) %>">
                         <%= GetVarianceText(SelectedProjectVariance) %>
                     </div>
                 </div>
                 <% } else { %>
-                <div class="text-center text-muted py-5">Dự án không có dữ liệu trong khoảng thời gian đã chọn.</div>
+                <div class="text-center text-muted py-5"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_PROJECT_DATA_IN_PERIOD) %></div>
                 <% } %>
             </div>
         </div>
@@ -576,32 +598,37 @@
         <div class="card border-0 shadow-sm w-100 mt-0">
             <div class="card-body">
                 <h5 class="card-title mb-1">
-                    Cảnh báo tổng hợp
+                    <%= GetResourceText(BackEndResourceKeys.DASHBOARD_AGGREGATE_WARNINGS) %>
                 </h5>
-                <p class="text-muted mb-3">Các chỉ số cần theo dõi của dự án.</p>
+                <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AGGREGATE_WARNINGS_DESC) %></p>
                 
                 <div class="row g-3">
                     <div class="col-6">
+                        <a href="<%: GetProjectTasksUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
                         <div class="overview-alert-card p-3 border rounded d-flex align-items-center justify-content-between <%= OverdueTaskCount > 0 ? "bg-danger-subtle border-danger" : "bg-light" %>">
                             <div>
-                                <div class="small text-muted mb-1">Quá hạn</div>
+                                <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE) %></div>
                                 <h3 class="mb-0 <%= OverdueTaskCount > 0 ? "text-danger" : "text-muted" %>"><%= OverdueTaskCount %></h3>
                             </div>
                             <i class="bx bx-error-circle fs-2 <%= OverdueTaskCount > 0 ? "text-danger" : "text-muted opacity-50" %>"></i>
                         </div>
+                        </a>
                     </div>
 
                     <div class="col-6">
+                        <a href="<%: GetProjectTasksUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
                         <div class="overview-alert-card p-3 border rounded d-flex align-items-center justify-content-between <%= SelectedProjectDueSoonTaskCount > 0 ? "bg-warning-subtle border-warning" : "bg-light" %>">
                             <div>
-                                <div class="small text-muted mb-1">Sắp đến hạn</div>
+                                <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DUE_SOON) %></div>
                                 <h3 class="mb-0 <%= SelectedProjectDueSoonTaskCount > 0 ? "text-warning" : "text-muted" %>"><%= SelectedProjectDueSoonTaskCount %></h3>
                             </div>
                             <i class="bx bx-time-five fs-2 <%= SelectedProjectDueSoonTaskCount > 0 ? "text-warning" : "text-muted opacity-50" %>"></i>
                         </div>
+                        </a>
                     </div>
 
                     <div class="col-6">
+                        <a href="<%: GetProjectRisksUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
                         <div class="overview-alert-card p-3 border rounded d-flex align-items-center justify-content-between <%= OpenRiskCount > 0 ? "bg-warning-subtle border-warning" : "bg-light" %>">
                             <div>
                                 <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.RISK) %></div>
@@ -609,9 +636,11 @@
                             </div>
                             <i class="bx bx-error fs-2 <%= OpenRiskCount > 0 ? "text-warning" : "text-muted opacity-50" %>"></i>
                         </div>
+                        </a>
                     </div>
 
                     <div class="col-6">
+                        <a href="<%: GetProjectIssuesUrl(SelectedProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
                         <div class="overview-alert-card p-3 border rounded d-flex align-items-center justify-content-between <%= OpenIssueCount > 0 ? "bg-danger-subtle border-danger" : "bg-light" %>">
                             <div>
                                 <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.ISSUE) %></div>
@@ -619,26 +648,27 @@
                             </div>
                             <i class="bx bx-bug fs-2 <%= OpenIssueCount > 0 ? "text-danger" : "text-muted opacity-50" %>"></i>
                         </div>
+                        </a>
                     </div>
                 </div>
 
                 <div class="border-top mt-3 pt-3">
-                    <div class="small text-muted mb-2">Điểm cần theo dõi</div>
+                    <div class="small text-muted mb-2"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ITEMS_TO_MONITOR) %></div>
                     <ul class="list-unstyled small mb-0">
                         <% if (OverdueTaskCount > 0) { %>
-                        <li class="mb-1 text-danger"><i class="bx bx-error-circle me-1"></i><%= OverdueTaskCount %> công việc chưa hoàn thành và đã quá hạn.</li>
+                        <li class="mb-1 text-danger"><i class="bx bx-error-circle me-1"></i><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_TASK_WARNING), OverdueTaskCount) %></li>
                         <% } %>
                         <% if (SelectedProjectDueSoonTaskCount > 0) { %>
-                        <li class="mb-1 text-warning"><i class="bx bx-time-five me-1"></i><%= SelectedProjectDueSoonTaskCount %> công việc sẽ đến hạn trong 7 ngày tới.</li>
+                        <li class="mb-1 text-warning"><i class="bx bx-time-five me-1"></i><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DUE_SOON_TASK_WARNING), SelectedProjectDueSoonTaskCount) %></li>
                         <% } %>
                         <% if (OpenRiskCount > 0) { %>
-                        <li class="mb-1 text-warning"><i class="bx bx-error me-1"></i><%= OpenRiskCount %> rủi ro đang được ghi nhận.</li>
+                        <li class="mb-1 text-warning"><i class="bx bx-error me-1"></i><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_RISK_WARNING), OpenRiskCount) %></li>
                         <% } %>
                         <% if (OpenIssueCount > 0) { %>
-                        <li class="mb-1 text-danger"><i class="bx bx-bug me-1"></i><%= OpenIssueCount %> vấn đề cần theo dõi.</li>
+                        <li class="mb-1 text-danger"><i class="bx bx-bug me-1"></i><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_ISSUE_WARNING), OpenIssueCount) %></li>
                         <% } %>
                         <% if (OverdueTaskCount == 0 && SelectedProjectDueSoonTaskCount == 0 && OpenRiskCount == 0 && OpenIssueCount == 0) { %>
-                        <li class="text-success"><i class="bx bx-check-circle me-1"></i>Chưa ghi nhận cảnh báo trong phạm vi lọc.</li>
+                        <li class="text-success"><i class="bx bx-check-circle me-1"></i><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_WARNINGS) %></li>
                         <% } %>
                     </ul>
                 </div>
@@ -658,11 +688,11 @@
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>
-                        <h5 class="card-title mb-1">Sắp tới</h5>
-                        <p class="text-muted mb-0">Các lịch họp gần nhất trong khoảng thời gian đã chọn.</p>
+                        <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_UPCOMING) %></h5>
+                        <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_UPCOMING_MEETINGS_DESC) %></p>
                     </div>
                     <span class="badge bg-primary-subtle text-primary">
-                        <%= UpcomingMeetings == null ? 0 : UpcomingMeetings.Count %> lịch
+                        <%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_SCHEDULE_COUNT), UpcomingMeetings == null ? 0 : UpcomingMeetings.Count) %>
                     </span>
                 </div>
 
@@ -670,28 +700,37 @@
                 <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-2">
                     <% foreach (var meeting in UpcomingMeetings) { %>
                     <div class="col">
-                        <div class="border rounded p-3 h-100 bg-light-subtle">
-                            <div class="small text-primary fw-semibold mb-1">
-                                <%= meeting.StartTime.ToString("dd/MM/yyyy HH:mm") %>
+                        <a href="<%: GetProjectMeetingsUrl(meeting.ProjectId) %>" class="d-block h-100 text-decoration-none text-reset">
+                            <div class="border rounded p-3 h-100 bg-light-subtle">
+                                <div class="small text-primary fw-semibold mb-1">
+                                    <%= meeting.StartTime.ToString("dd/MM/yyyy HH:mm") %>
+                                </div>
+                                <div class="fw-semibold text-truncate" title="<%: meeting.Title %>"><%: meeting.Title %></div>
+                                <% if (!IsProjectView && !string.IsNullOrEmpty(meeting.ProjectCode)) { %>
+                                <div class="small text-muted mt-1"><%: meeting.ProjectCode %></div>
+                                <% } %>
+                                <% if (!string.IsNullOrWhiteSpace(meeting.Location)) { %>
+                                <div class="small text-muted mt-1"><i class="bx bx-map me-1"></i><%: meeting.Location %></div>
+                                <% } %>
                             </div>
-                            <div class="fw-semibold text-truncate" title="<%: meeting.Title %>"><%: meeting.Title %></div>
-                            <% if (!IsProjectView && !string.IsNullOrEmpty(meeting.ProjectCode)) { %>
-                            <div class="small text-muted mt-1"><%: meeting.ProjectCode %></div>
-                            <% } %>
-                            <% if (!string.IsNullOrWhiteSpace(meeting.Location)) { %>
-                            <div class="small text-muted mt-1"><i class="bx bx-map me-1"></i><%: meeting.Location %></div>
-                            <% } %>
-                        </div>
+                        </a>
                     </div>
                     <% } %>
                 </div>
                 <% } else { %>
-                <div class="text-muted small py-2">Không có lịch họp sắp tới trong khoảng thời gian đã chọn.</div>
+                <div class="text-muted small py-2"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_UPCOMING_MEETINGS) %></div>
                 <% } %>
             </div>
         </div>
+        <% if (IsProjectView) { %>
+        </a>
+        <% } %>
     </div>
 </div>
+
+<script type="text/javascript">
+    window.dashboardOverviewTexts = <%= DashboardTextsJson %>;
+</script>
 
 <!-- ========================= -->
 <!-- NGUỒN LỰC + CHI PHÍ -->

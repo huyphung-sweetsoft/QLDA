@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
@@ -290,10 +290,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 duAn.IdHopDongThucHien = this.IdHopDongThucHien == Guid.Empty ? (Guid?)null : this.IdHopDongThucHien;
                 duAn.TrangThai = trangThai;
                 //duAn.TrangThai = (byte)ddlTrangThai.SelectedValue;
-                if (dtNgayBatDau.DateValue.HasValue)
-                    duAn.NgayBatDau = dtNgayBatDau.DateValue.Value;
-                if (dtNgayKetThuc.DateValue.HasValue)
-                    duAn.NgayDuKienHoanThanh = dtNgayKetThuc.DateValue.Value;
+                if (dtNgayBatDau.DateValueForDisplay.HasValue)
+                    duAn.NgayBatDau = dtNgayBatDau.DateValueForDisplay.Value.Date;
+                if (dtNgayKetThuc.DateValueForDisplay.HasValue)
+                    duAn.NgayDuKienHoanThanh = dtNgayKetThuc.DateValueForDisplay.Value.Date;
                 if (this.GetValue(ddlLoaiDuAn, out idLoaiDuAn) && idLoaiDuAn != Guid.Empty)
                     duAn.IdLoaiDuAn = idLoaiDuAn;
                 if (this.GetValue(ddlKhachHang, out idKhachHang) && idKhachHang != Guid.Empty)

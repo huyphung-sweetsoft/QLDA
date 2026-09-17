@@ -72,6 +72,18 @@
                 <label class="form-label label-valid">Icon</label>
                 <SweetSoft:ExtraTextBox runat="server" ID="txtIcon"></SweetSoft:ExtraTextBox>
             </div>
+            <div class="col-sm-6 mb-3 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        runat="server"
+                        id="chkOfProject">
+                    <label class="form-check-label" for="<%= chkOfProject.ClientID %>">
+                        Hiển thị trong tab chức năng của dự án
+                    </label>
+                </div>
+            </div>
             <div class="col-sm-12 mb-3">
                 <div class="d-flex flex-between">
                     <div class="form-check">

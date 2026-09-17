@@ -14,6 +14,7 @@ using System;
 using System.Web.Security;
 using System.Web.UI;
 using SweetSoft.QLDA.Core.Infrastructure;
+using SweetSoft.QLDA.Core.Utils;
 namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 {
     public enum UserPopupMode { SystemUser, Employee }
@@ -80,6 +81,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         {
             if (CurrentMode == UserPopupMode.SystemUser)
             {
+                // Mode Tài khoản: Ẩn Nhân sự, Ẩn Công tắc, Buộc hiện Tài khoản
                 boxEmployeeInfo.Visible = false;
                 divToggleAccount.Visible = false;
                 boxAccountInfo.Style["display"] = "block";
@@ -88,9 +90,11 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             }
             else
             {
+                // Mode Nhân sự: Hiện Khối Nhân sự, Hiện Công tắc
                 boxEmployeeInfo.Visible = true;
                 divToggleAccount.Visible = true;
 
+                // Mặc định ẩn Khối Account nếu chưa check công tắc
                 if (!chkEnableAccount.Checked)
                 {
                     boxAccountInfo.Style["display"] = "none";
@@ -108,6 +112,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         {
             this.DetailUserId = Guid.Empty;
 
+            // Dọn rác các textbox
             txtUserName.Text = txtPhone.Text = txtFullName.Text = txtEmail.Text = string.Empty;
             txtPassword.Text = txtConfirmPassword.Text = txtCCCD.Text = txtDiaChi.Text = string.Empty;
             txtNgaySinh.Text = txtNgayGiaNhap.Text = string.Empty;
@@ -115,11 +120,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             ddlGioiTinh.SelectedIndex = ddlRole.SelectedIndex = ddlPhongBan.SelectedIndex = ddlChucDanh.SelectedIndex = 0;
             chkStatus.Checked = true;
 
+            // XỬ LÝ NÚT GẠT: Nếu là SystemUser thì ép BẬT, Employee thì mặc định TẮT
             chkEnableAccount.Checked = CurrentMode == UserPopupMode.SystemUser;
             chkEnableAccount.Disabled = false;
 
             txtUserName.Enabled = true;
 
+            // QUAN TRỌNG: ẨN HOÀN TOÀN KHỐI MẬT KHẨU Ở CHẾ ĐỘ THÊM MỚI
             divChangePassword.Visible = false;
             divPassword.Visible = false;
             divPassword.Attributes["data-edit"] = "false";
@@ -139,11 +146,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         {
             if (userId == Guid.Empty) return;
 
+            // ĐÃ SỬA: Gọi đúng chuẩn Manager của ông
             AspnetUser user = UserManager.Instance.GetUserById(userId);
             if (user == null || user.IsDeleted) return;
 
             this.DetailUserId = user.UserId;
 
+            // 1. Load Khối A (Thông tin chung)
             txtFullName.Text = user.DisplayName;
             txtPhone.Text = user.MobileAlias;
             chkStatus.Checked = user.IsActivated;
@@ -157,6 +166,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             if (memUser != null && !memUser.Email.Contains("no-email.com"))
                 txtEmail.Text = memUser.Email;
 
+            // 2. Load Khối C (Nhân sự) - Load trước để UI đồng bộ
             if (CurrentMode == UserPopupMode.Employee)
             {
                 txtCCCD.Text = user.IdCCCD;
@@ -168,6 +178,9 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 if (!string.IsNullOrEmpty(user.GioiTinh)) ddlGioiTinh.SelectedValue = user.GioiTinh;
             }
 
+            // ==========================================================
+            // MỤC 3: XỬ LÝ TRẠNG THÁI TÀI KHOẢN (REAL vs GHOST)
+            // ==========================================================
             bool hasAccount = !IsGhostAccount(user.UserName);
 
             if (!hasAccount)
@@ -183,6 +196,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             }
             else
             {
+                // B. TRƯỜNG HỢP: TÀI KHOẢN THẬT (REAL ACCOUNT)
                 txtUserName.Text = user.UserName;
                 chkEnableAccount.Checked = true;
                 chkEnableAccount.Disabled = true;
@@ -194,12 +208,14 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 divPassword.Attributes["data-edit"] = "true";
             }
 
+            // Gán Role
             AspnetRole role = RoleManager.Instance.GetRoleByUserId(user.UserId);
             if (role != null) ddlRole.SelectedValue = role.RoleId.ToString();
             else ddlRole.SelectedIndex = 0;
 
             SetUIByMode();
 
+            // JS đảm bảo ẩn pass khi mới mở form
             ScriptManager.RegisterStartupScript(this.Page, GetType(), "HidePwd", "$('[data-selector=\"password\"]').removeClass('show');", true);
 
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ACCOUNT_INFORMATION);
@@ -253,21 +269,26 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 
                 if (!chkEnableAccount.Checked)
                 {
+                    // LUỒNG A: KHÔNG CẤP QUYỀN (Tạo mới Ghost hoặc Update Ghost)
                     dto.UserName = null;
                     dto.Password = null;
                     dto.RoleId = Guid.Empty;
                 }
                 else
                 {
+                    // LUỒNG B: BẬT CẤP QUYỀN
                     if (!hasAccount)
                     {
+                        // Luồng B.1: Tạo mới Real HOẶC Nâng cấp từ Ghost lên Real
                         dto.UserName = txtUserName.Text.Trim();
                         dto.Password = null;
                     }
                     else
                     {
+                        // Luồng B.2: Cập nhật Real Account (Đã có tài khoản thật)
                         dto.UserName = txtUserName.Text.Trim();
 
+                        // Xử lý Checkbox Đổi mật khẩu
                         if (chkChangePassword.Checked)
                         {
                             if (string.IsNullOrEmpty(txtPassword.Text.Trim()))
@@ -285,6 +306,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                             dto.Password = null;
                         }
                     }
+                    // Đã cấp quyền thì lấy Role
                     if (Guid.TryParse(ddlRole.SelectedValue, out Guid rId) && rId != Guid.Empty)
                         dto.RoleId = rId;
                     else
@@ -334,12 +356,15 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             }
             catch (Exception exc)
             {
+                // Escape các ký tự đặc biệt (nháy đơn, nháy kép, xuống dòng) 
+                // để tránh làm vỡ cấu trúc mã JavaScript (Syntax Error) trên trình duyệt
                 string safeErrorMsg = exc.Message
                                          .Replace("'", "\\'")
                                          .Replace("\"", "\\\"")
                                          .Replace("\r", "")
                                          .Replace("\n", " ");
 
+                // Bắt gọn lỗi từ Manager ném ra và hiển thị an toàn
                 ShowNotify(safeErrorMsg, MSGType.Error);
             }
         }
@@ -348,5 +373,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         {
             return string.IsNullOrEmpty(userName) || userName.StartsWith("EMP_");
         }
+
+        // BƯỚC 1B: Cập nhật hàm sinh Username theo chuẩn mới (Chốt 1)
     }
 }

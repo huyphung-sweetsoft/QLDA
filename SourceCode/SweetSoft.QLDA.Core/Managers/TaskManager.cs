@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
@@ -7,7 +7,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;         
+using System.Linq;
 using System.Transactions;
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -29,6 +29,21 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblCongViec FetchById(Guid taskId) => _repository.FetchById(taskId);
         public DataTable GetChildTasks(Guid projectId, Guid taskId) => _repository.GetChildTasks(projectId, taskId);
         public DataTable GetDependentTasks(Guid projectId, Guid taskId) => _repository.GetDependentTasks(projectId, taskId);
+        public void ValidateCanCompleteProject(Guid idDuAn)
+        {
+            DataTable dt = FetchByIdAndOrderASCMaCV(idDuAn, null);
+            foreach (DataRow row in dt.Rows)
+            {
+                bool daXoa = row[ColDaXoa] != DBNull.Value && Convert.ToBoolean(row[ColDaXoa]);
+                if (daXoa) continue;
+
+                int trangThai = row[ColTrangThai] != DBNull.Value ? Convert.ToInt32(row[ColTrangThai]) : 0;
+                if (trangThai != 2 && trangThai != 3) // 2: Hoàn thành, 3: Đã hủy
+                {
+                    throw new SweetSoft.QLDA.Core.ExceptionHelpers.BusinessException("Không thể hoàn thành dự án do vẫn còn Công việc chưa hoàn thành hoặc chưa bị hủy.", null, SweetSoft.QLDA.Core.ExceptionHelpers.ErrorCodes.Conflict);
+                }
+            }
+        }
         public DataTable GetPrioritiesTable() => _repository.FetchAllPrioritiesTable();
         public DataTable GetProjectMembers(Guid projectId) => _repository.FetchProjectMembers(projectId);
         public DataTable GetActiveTasksByNhanVienInRange(Guid idNhanVien, DateTime start, DateTime end)
@@ -48,6 +63,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblCongViec DeleteTask(TblCongViec task)
         {
             if (task == null) return null;
+            DuAnManager.Instance.EnsureCanModifyStructure(task.IdDuAn);
             _repository.DeleteTask(task);
             if (!string.IsNullOrEmpty(task.MaCongViec))
             {
@@ -169,15 +185,19 @@ namespace SweetSoft.QLDA.Core.Managers
         public void UpdateAssignments(Guid idDuAn, Guid idCongViec, List<Guid> newAssigneeIds)
         {
             TblCongViec task = FetchById(idCongViec);
-
+            DuAnManager.Instance.EnsureCanModifyStructure(idDuAn);
             if (task == null)
                 throw new InvalidOperationException("Không tìm thấy công việc.");
 
             if (task.TrangThai == 2)
                 throw new InvalidOperationException(
                     "Không thể thay đổi nhân sự của công việc đã hoàn thành.");
+            
             // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
             newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
+
+            // Lấy thông tin công việc để dùng trong thông báo
+            TblCongViec congViec = FetchById(idCongViec);
 
             using (var scope = new TransactionScope())
             {
@@ -187,9 +207,19 @@ namespace SweetSoft.QLDA.Core.Managers
                 List<Guid> canThem = newAssigneeIds.Except(danhSachCu).ToList();
 
                 // 2. Gỡ những người bị bỏ tick
+                string tenCongViec = congViec != null ? congViec.TenCongViec : "Công việc";
                 foreach (Guid id in canGo)
                 {
                     _repository.RemoveAssignment(idCongViec, id);
+
+                    ThongBaoManager.Instance.Create(
+                        userId: id,
+                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
+                        noiDung: $"Công việc: {tenCongViec}",
+                        loaiThongBao: ThongBaoTypes.HeThong,
+                        idCongViec: idCongViec,
+                        idDuAn: idDuAn
+                    );
                 }
 
                 // 3. Chuẩn bị dữ liệu Auto-Join
@@ -213,12 +243,50 @@ namespace SweetSoft.QLDA.Core.Managers
 
                         // Cập nhật lại mảng hiện tại để đề phòng gán liên tiếp người ngoài dự án
                         thanhVienHienTai.Add(id);
+
+                        TblDuAn d = DuAnManager.Instance.GetDuAnById(idDuAn);
+                        string tenDuAn = d != null ? d.TenDuAn : "Dự án";
+
+                        ThongBaoManager.Instance.Create(
+                            userId: id,
+                            tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                            noiDung: $"Dự án: {tenDuAn}",
+                            loaiThongBao: ThongBaoTypes.DuAn,
+                            idDuAn: idDuAn
+                        );
+                    }
+
+                    // Thông báo: gửi cho nhân viên vừa được giao công việc
+                    // IdNhanVien trong TblCongViec_NhanVien chính là aspnet_Users.UserId
+                    Guid assigneeUserId = id;
+                    if (congViec != null && assigneeUserId != Guid.Empty)
+                    {
+                        System.Threading.Tasks.Task.Run(() =>
+                        {
+                            try
+                            {
+                                string tieuDe = $"Bạn được giao công việc: {congViec.TenCongViec}";
+
+                                ThongBaoManager.Instance.Create(
+                                    userId          : assigneeUserId,
+                                    tieuDe          : tieuDe,
+                                    loaiThongBao    : ThongBaoTypes.CongViec,
+                                    idCongViec      : idCongViec,
+                                    idDuAn          : idDuAn
+                                );
+                            }
+                            catch (Exception ex)
+                            {
+                                SysLogger.LogError(ex, "Failed to create ThongBao for task assignment");
+                            }
+                        });
                     }
                 }
 
                 scope.Complete();
             }
         }
+
         #endregion
 
         #region 2. Nghiệp vụ Cây WBS & Mã Công việc
@@ -399,7 +467,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return (minStartLimit, alert);
         }
-        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue=null)
+        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue = null)
         {
             DataTable dt = FetchByIdAndOrderASCMaCV(projectId, searchValue);
             var dictCodes = new Dictionary<Guid, string>();
@@ -424,12 +492,12 @@ namespace SweetSoft.QLDA.Core.Managers
             return (dt, dictCodes, overdueCount);
         }
 
-        private void CollectDescendantTasks(Guid projectId,Guid parentTaskId,List<TblCongViec> result,HashSet<Guid> visited)
+        private void CollectDescendantTasks(Guid projectId, Guid parentTaskId, List<TblCongViec> result, HashSet<Guid> visited)
         {
             if (!visited.Add(parentTaskId))
                 return;
 
-            DataTable children = GetChildTasks(projectId,parentTaskId);
+            DataTable children = GetChildTasks(projectId, parentTaskId);
 
             if (children == null || children.Rows.Count == 0)
             {
@@ -443,7 +511,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 Guid childId;
 
-                if (!Guid.TryParse(row[ColIdCongViec].ToString(),out childId))
+                if (!Guid.TryParse(row[ColIdCongViec].ToString(), out childId))
                 {
                     continue;
                 }
@@ -457,7 +525,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 result.Add(childTask);
 
-                CollectDescendantTasks(projectId,childTask.IdCongViec,result,visited);
+                CollectDescendantTasks(projectId, childTask.IdCongViec, result, visited);
             }
         }
 
@@ -470,7 +538,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             if (task.NgayBatDau.HasValue && task.NgayKetThuc.HasValue)
             {
-                int duration = (task.NgayKetThuc.Value.Date -task.NgayBatDau.Value.Date).Days + 1;
+                int duration = (task.NgayKetThuc.Value.Date - task.NgayBatDau.Value.Date).Days + 1;
 
                 return Math.Max(1, duration);
             }
@@ -478,7 +546,7 @@ namespace SweetSoft.QLDA.Core.Managers
             return 1;
         }
 
-        private void MoveTasksBeforeStageStart(Guid projectId,Guid rootTaskId,DateTime minimumStartDate)
+        private void MoveTasksBeforeStageStart(Guid projectId, Guid rootTaskId, DateTime minimumStartDate)
         {
             DateTime minStart = minimumStartDate.Date;
 
@@ -515,22 +583,23 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 task.Save();
 
-                AutoSetDependentTime(projectId,task.IdCongViec);
+                AutoSetDependentTime(projectId, task.IdCongViec);
 
                 if (task.IdCongViecCha.HasValue)
                 {
-                    AutoSetParentTime(projectId,task.IdCongViecCha.Value);
+                    AutoSetParentTime(projectId, task.IdCongViecCha.Value);
                 }
             }
 
-            AutoSetParentTime(projectId,rootTaskId);
+            AutoSetParentTime(projectId, rootTaskId);
         }
 
         public TblCongViec UpdateStageTask(
-    TblGiaiDoanDuAn stage,
-    string stageName,
-    DateTime? oldStartDate)
+            TblGiaiDoanDuAn stage,
+            string stageName,
+            DateTime? oldStartDate)
         {
+            DuAnManager.Instance.EnsureCanModifyStructure(stage.IdDuAn);
             if (stage == null)
             {
                 throw new ArgumentNullException(
@@ -780,7 +849,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         public void AutoSetParentStatus(Guid projectId, Guid parentTaskId)
         {
-            DataTable dtChildren = _repository.GetChildTasks(projectId,parentTaskId);
+            DataTable dtChildren = _repository.GetChildTasks(projectId, parentTaskId);
             if (dtChildren != null && dtChildren.Rows.Count > 0)
             {
                 bool allCompleted = true;
@@ -790,7 +859,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     if (trangThai != 2)
                     {
                         allCompleted = false;
-                        break; 
+                        break;
                     }
                 }
                 TblCongViec parentTask = FetchById(parentTaskId);
@@ -801,7 +870,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     {
                         parentTask.TrangThai = newStatus;
                         parentTask.NgayCapNhat = DateTime.Now;
-                        parentTask.Save(); 
+                        parentTask.Save();
                         if (parentTask.IdCongViecCha.HasValue)
                         {
                             AutoSetParentStatus(projectId, parentTask.IdCongViecCha.Value);

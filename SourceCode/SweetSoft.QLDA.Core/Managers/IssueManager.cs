@@ -128,12 +128,13 @@ namespace SweetSoft.QLDA.Core.Managers
                 existingIssue.Save();
                 result = existingIssue;
             }
-
             if (result != null)
             {
-                SyncNhanVienXuLyVanDe(result.IdVanDe, result.IdCongViecPhatSinh.Value);
+                if (result.IdCongViecPhatSinh.HasValue)
+                {
+                    SyncNhanVienXuLyVanDe(result.IdVanDe, result.IdCongViecPhatSinh.Value);
+                }
             }
-
             return result;
         }
     }

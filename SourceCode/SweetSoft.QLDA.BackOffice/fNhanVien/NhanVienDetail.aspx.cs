@@ -86,8 +86,8 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 CtrlUserDetail1.InitControls();
 
                 if (tempId != Guid.Empty)
-                {
-                    CurrentIdNhanVien = tempId;
+                    {
+                        CurrentIdNhanVien = tempId;
                     LoadDataDetail(tempId, isFromProfile);
                 }
                 else

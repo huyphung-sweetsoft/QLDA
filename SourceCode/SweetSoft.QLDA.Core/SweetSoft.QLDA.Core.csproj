@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -175,6 +175,7 @@
     <Compile Include="Dashboard\DashboardCostModel.cs" />
     <Compile Include="Dashboard\DashboardRepository.cs" />
     <Compile Include="Dashboard\DashboardOverviewManager.cs" />
+    <Compile Include="Dashboard\DashboardProgressCalculator.cs" />
     <Compile Include="Dashboard\DashboardProgressManager.cs" />
     <Compile Include="Dashboard\DashboardProgressModel.cs" />
     <Compile Include="Dashboard\DashboardResourceManager.cs" />
@@ -275,6 +276,7 @@
     <Compile Include="Managers\TaskManager.cs" />
     <Compile Include="Managers\ThanhToanManager.cs" />
     <Compile Include="Managers\ThanhVienDuAnManager.cs" />
+    <Compile Include="Managers\ThongBaoManager.cs" />
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="Managers\DocumentGroupManager.cs" />
     <Compile Include="Managers\DocumentManager.cs" />
@@ -321,6 +323,7 @@
     <Compile Include="Respositories\TaskRepository.cs" />
     <Compile Include="Respositories\ThanhToanRepository.cs" />
     <Compile Include="Respositories\ThanhVienDuAnRepository.cs" />
+    <Compile Include="Respositories\ThongBaoRepository.cs" />
     <Compile Include="Respositories\VaiTroDuAnRepository.cs" />
     <Compile Include="Respositories\DocumentStorageLocationRepository.cs" />
     <Compile Include="ScheduleManager\LichTrinhManager.cs" />
@@ -444,6 +447,7 @@
     <Compile Include="Utils\VnUnicodeHelpers.cs" />
     <Compile Include="Utils\XMLHelpers.cs" />
     <Compile Include="Utils\XORCipher.cs" />
+    <Compile Include="ValueObjects\DuAnTienDoViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ResourceTexts\BackEndTexts.en-US.resx">

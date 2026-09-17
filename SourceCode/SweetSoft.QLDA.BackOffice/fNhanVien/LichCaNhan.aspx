@@ -11,23 +11,24 @@
             .btn-cal:hover { background: #f1f5f9; border-color: #94a3b8; color: #1e293b; }
             .btn-cal.active { background: #2563eb; color: #ffffff; border-color: #2563eb; }
 
-            /* LƯỚI LỊCH (GRID) */
-            .cal-header-row { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; }
-           .cal-header-cell { 
-                padding: 10px; text-align: center; font-weight: 700; color: #475569; 
-                font-size: 13px; border-right: 1px solid #e2e8f0; 
-                min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
-            }
-            .cal-header-cell:last-child { border-right: none; }      
-            .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; overflow: hidden; }      
-            .cal-cell { 
-                min-height: 100px; padding: 6px; border-right: 1px solid #e2e8f0; 
-                border-bottom: 1px solid #e2e8f0; background: #ffffff; transition: background 0.2s; 
-                min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
-            }
-            .cal-cell:nth-child(7n) { border-right: none; }
-            .cal-cell.is-clickable { cursor: pointer; }
-            .cal-cell.is-clickable:hover { background: #f8fafc; box-shadow: inset 0 0 0 2px #bfdbfe; }
+        /* LƯỚI LỊCH (GRID) */
+        .cal-header-row { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; }
+       .cal-header-cell { 
+            padding: 10px; text-align: center; font-weight: 700; color: #475569; 
+            font-size: 13px; border-right: 1px solid #e2e8f0; 
+            min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
+        }
+        .cal-header-cell:last-child { border-right: none; }      
+        
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; overflow: hidden; }      
+        .cal-cell { 
+            min-height: 100px; padding: 6px; border-right: 1px solid #e2e8f0; 
+            border-bottom: 1px solid #e2e8f0; background: #ffffff; transition: background 0.2s; 
+            min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
+        }
+        .cal-cell:nth-child(7n) { border-right: none; }
+        .cal-cell.is-clickable { cursor: pointer; }
+        .cal-cell.is-clickable:hover { background: #f8fafc; box-shadow: inset 0 0 0 2px #bfdbfe; }
         
             .date-number { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 4px; display: inline-block; padding: 2px 6px; border-radius: 4px; }
             .date-number.is-today { background: #2563eb; color: #ffffff; }
@@ -47,25 +48,25 @@
             /* MODAL LIST */
             .proj-group-title { font-size: 13px; font-weight: 800; color: #1e3a8a; background: #eff6ff; padding: 6px 10px; border-radius: 4px; margin-top: 10px; margin-bottom: 5px; }
         
-            /* ================= CSS CHO MODAL CHI TIẾT ================= */
-            .modal-overlay {
-                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(2px);
-                z-index: 9999; justify-content: center; align-items: center; padding: 20px;
-            }
-            .modal-overlay.active { display: flex; }
-            .modal-card {
-                background: #ffffff; border-radius: 10px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-                display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;
-            }
-            .modal-header-sweet {
-                background: linear-gradient(135deg, #4c1d95, #6f42c1); color: #ffffff;
-                padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;
-            }
-            .modal-header-sweet h3 { font-size: 15px; font-weight: 700; margin: 0; }
-            .modal-header-sweet button { background: none; border: none; color: #ffffff; font-size: 18px; cursor: pointer; }
-        </style>
-    </asp:Content>
+                /* ================= CSS CHO MODAL CHI TIẾT ================= */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(2px);
+            z-index: 9999; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: #ffffff; border-radius: 10px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e2e8f0;
+        }
+        .modal-header-sweet {
+            background: linear-gradient(135deg, #4c1d95, #6f42c1); color: #ffffff;
+            padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header-sweet h3 { font-size: 15px; font-weight: 700; margin: 0; }
+        .modal-header-sweet button { background: none; border: none; color: #ffffff; font-size: 18px; cursor: pointer; }
+    </style>
+</asp:Content>
 
     <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
         <asp:UpdatePanel ID="upCalendar" runat="server">
@@ -86,10 +87,10 @@
                             <asp:LinkButton ID="btnNext" runat="server" CssClass="btn-cal" OnClick="btnNext_Click"><%= GetResourceText(BackEndResourceKeys.NEXT) %> <i class="fas fa-chevron-right ms-1"></i></asp:LinkButton>
                         </div>
                     
-                        <div class="text-center">
-                            <h2 class="cal-title"><asp:Literal ID="litTitle" runat="server"></asp:Literal></h2>
-                            <h3 class="cal-title" style="font-size: 16px; color:#64748b;"><asp:Literal ID="litDateRange" runat="server"></asp:Literal></h3>
-                        </div>
+                    <div class="text-center">
+                    <h2 class="cal-title"><asp:Literal ID="litTitle" runat="server"></asp:Literal></h2>
+                    <h3 class="cal-title" style="font-size: 16px; color:#64748b;"><asp:Literal ID="litDateRange" runat="server"></asp:Literal></h3>
+                    </div>
 
                         <div class="cal-nav-group">
                             <asp:LinkButton ID="btnViewMonth" runat="server" CssClass="btn-cal" OnClick="btnViewMonth_Click"><%= GetResourceText(BackEndResourceKeys.MONTH) %></asp:LinkButton>
@@ -180,8 +181,9 @@
                     else if (dayData.TrangThaiLich === "weekend") { statusClass = "status-weekend"; statusText = calLang.weekend; icon = "☕"; }
                     else { statusClass = "status-free"; statusText = calLang.free; icon = "✔️"; }
 
-                    var clickAttr = dayData.ChoPhepClick ? `onclick="OpenDayModal(${index})"` : "";
-                    var clickClass = dayData.ChoPhepClick ? "is-clickable" : "";
+                // Tính năng Clickable
+                var clickAttr = dayData.ChoPhepClick ? `onclick="OpenDayModal(${index})"` : "";
+                var clickClass = dayData.ChoPhepClick ? "is-clickable" : "";
 
                     // Html cho View Tuần (Hiện list task nhỏ)
                     var taskHtml = "";
@@ -210,9 +212,10 @@
                 });
             }
 
-            function closeDayModal() {
-                $('#modalDayDetail').removeClass('active');
-            }
+        // Thêm hàm Đóng Modal và bắt sự kiện phím ESC
+        function closeDayModal() {
+            $('#modalDayDetail').removeClass('active');
+        }
 
             $(document).on('keydown', function (e) {
                 if (e.key === "Escape" && $('#modalDayDetail').hasClass('active')) {
@@ -220,59 +223,65 @@
                 }
             });
 
-            function OpenDayModal(dataIndex) {
-                var dayData = scheduleDataGlobal[dataIndex];
-                var dateObj = new Date(dayData.Ngay);
+        // Hàm Mở Modal đã fix
+        function OpenDayModal(dataIndex) {
+            var dayData = scheduleDataGlobal[dataIndex];
+            var dateObj = new Date(dayData.Ngay);
 
-                var dd = String(dateObj.getDate()).padStart(2, '0');
-                var mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                var yyyy = dateObj.getFullYear();
-                var dateStr = dd + '/' + mm + '/' + yyyy;
+            // Format ngày chuẩn VN (DD/MM/YYYY)
+            var dd = String(dateObj.getDate()).padStart(2, '0');
+            var mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var yyyy = dateObj.getFullYear();
+            var dateStr = dd + '/' + mm + '/' + yyyy;
 
                 // Nạp Đa ngôn ngữ vào Title Modal
                 $('#modalTitle').text(calLang.detailTitle + " - " + dateStr);
                 var $body = $('#modalBodyContent');
                 $body.empty();
 
-                if (dayData.TrangThaiLich === "holiday") {
-                    $body.html(`
-                <div style="background-color: #fef3c7; color: #b45309; padding: 20px; border-radius: 8px; border-left: 5px solid #f59e0b; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <h4 style="margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase;">🎈 ${calLang.holidayTitle}</h4>
-                    <p style="margin: 0; font-size: 16px; font-weight: 600;">${dayData.TenNgoaiLe}</p>
-                </div>
-            `);
-                }
-                else if (dayData.TrangThaiLich === "busy") {
-                    var projGroups = {};
-                    $.each(dayData.DanhSachCongViec, function (i, task) {
-                        var pName = task.TenDuAn ? task.TenDuAn : calLang.otherProject;
-                        if (!projGroups[pName]) projGroups[pName] = [];
-                        projGroups[pName].push(task);
-                    });
+            if (dayData.TrangThaiLich === "holiday") {
+                $body.html(`
+            <div style="background-color: #fef3c7; color: #b45309; padding: 20px; border-radius: 8px; border-left: 5px solid #f59e0b; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <h4 style="margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase;">🎈 ${calLang.holidayTitle}</h4>
+                <p style="margin: 0; font-size: 16px; font-weight: 600;">${dayData.TenNgoaiLe}</p>
+            </div>
+        `);
+            }
+            else if (dayData.TrangThaiLich === "busy") {
+                // Nhóm Task theo Dự án
+                var projGroups = {};
+                $.each(dayData.DanhSachCongViec, function (i, task) {
+                    var pName = task.TenDuAn ? task.TenDuAn : calLang.otherProject;
+                    if (!projGroups[pName]) projGroups[pName] = [];
+                    projGroups[pName].push(task);
+                });
 
                     var html = "";
                     for (var projName in projGroups) {
                         html += `<div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden;">`;
 
-                        html += `<div style="background: linear-gradient(to right, #eff6ff, #ffffff); border-bottom: 1px solid #e2e8f0; padding: 10px 15px; color: #1e3a8a; font-weight: 800; font-size: 14px;">
-                            <i class="fas fa-folder-open me-2"></i> ${projName}
+                    // Header Dự án
+                    html += `<div style="background: linear-gradient(to right, #eff6ff, #ffffff); border-bottom: 1px solid #e2e8f0; padding: 10px 15px; color: #1e3a8a; font-weight: 800; font-size: 14px;">
+                        <i class="fas fa-folder-open me-2"></i> ${projName}
+                     </div>`;
+
+                    // Danh sách Task
+                    html += `<div style="padding: 10px 15px;">`;
+                    $.each(projGroups[projName], function (i, task) {
+                        html += `<div style="padding: 8px 0; border-bottom: 1px dashed #cbd5e1; font-size: 13px; color: #334155; display: flex; align-items: flex-start; gap: 8px;">
+                            <span style="background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; white-space: nowrap;">
+                                ${task.MaCongViec}
+                            </span>
+                            <span style="font-weight: 600; line-height: 1.4;">${task.TenCongViec}</span>
                          </div>`;
-
-                        html += `<div style="padding: 10px 15px;">`;
-                        $.each(projGroups[projName], function (i, task) {
-                            html += `<div style="padding: 8px 0; border-bottom: 1px dashed #cbd5e1; font-size: 13px; color: #334155; display: flex; align-items: flex-start; gap: 8px;">
-                                <span style="background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; white-space: nowrap;">
-                                    ${task.MaCongViec}
-                                </span>
-                                <span style="font-weight: 600; line-height: 1.4;">${task.TenCongViec}</span>
-                             </div>`;
-                        });
-                        html += `</div></div>`;
-                    }
-                    $body.html(html);
+                    });
+                    html += `</div></div>`;
                 }
-
-                $('#modalDayDetail').addClass('active');
+                $body.html(html);
             }
-        </script>
-    </asp:Content>
+
+            // Gọi hàm mở Overlay chuẩn của công ty ông
+            $('#modalDayDetail').addClass('active');
+        }
+    </script>
+</asp:Content>

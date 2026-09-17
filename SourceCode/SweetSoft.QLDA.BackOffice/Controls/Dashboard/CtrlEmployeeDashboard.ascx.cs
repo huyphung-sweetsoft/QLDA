@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Dashboard;
 using SweetSoft.QLDA.Core.Infrastructure;
+using SweetSoft.QLDA.Core.ResourceTexts;
 
 namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
@@ -12,6 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
     {
         protected EmployeeDashboardModel Model { get; private set; }
         protected string ProjectChartDataJson { get; private set; }
+        protected string DashboardTextsJson { get; private set; }
         protected string CurrentUserName { get; private set; }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -26,14 +28,21 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         private void BindDropdowns()
         {
             ddlTimeFilter.Items.Clear();
-            ddlTimeFilter.Items.Add(new ListItem("Tháng này", "month"));
-            ddlTimeFilter.Items.Add(new ListItem("Quý này", "quarter"));
-            ddlTimeFilter.Items.Add(new ListItem("Năm nay", "year"));
-            ddlTimeFilter.Items.Add(new ListItem("Tất cả thời gian", "all"));
+            ddlTimeFilter.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_MONTH), "month"));
+            ddlTimeFilter.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_QUARTER), "quarter"));
+            ddlTimeFilter.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_YEAR), "year"));
+            ddlTimeFilter.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.DASHBOARD_ALL_TIME), "all"));
             ddlTimeFilter.SelectedValue = "year"; // Default to this year
 
             ddlProject.Items.Clear();
-            ddlProject.Items.Add(new ListItem("Tất cả dự án của tôi", ""));
+            ddlProject.Items.Add(new ListItem(
+                GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EMPLOYEE_ALL_PROJECTS),
+                ""));
 
             DashboardUserContext context = GetDashboardUserContext();
             if (!context.EmployeeId.HasValue)
@@ -58,7 +67,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         private void LoadData()
         {
             var user = SweetContext.Current.User;
-            CurrentUserName = user != null ? user.DisplayName : "Nhân viên";
+            CurrentUserName = user != null
+                ? user.DisplayName
+                : GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EMPLOYEE_DEFAULT_NAME);
 
             DashboardUserContext context = GetDashboardUserContext();
             if (context.EmployeeId.HasValue)
@@ -112,7 +124,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             {
                 code = x.ProjectCode,
                 progress = x.Progress
-            }));
+            })).Replace("</", "<\\/");
+
+            DashboardTextsJson = JsonConvert.SerializeObject(new
+            {
+                progress = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN)
+            }).Replace("</", "<\\/");
         }
 
         private DashboardUserContext GetDashboardUserContext()

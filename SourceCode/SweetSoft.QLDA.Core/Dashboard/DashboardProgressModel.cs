@@ -85,6 +85,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
     public class ProjectTaskProgressStatistic
     {
+        public Guid ProjectId { get; set; }
+
         public string ProjectCode { get; set; }
 
         public string ProjectName { get; set; }
@@ -101,6 +103,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
     public class ProgressTaskInfo
     {
         public Guid TaskId { get; set; }
+
+        public Guid ProjectId { get; set; }
 
         public string TaskCode { get; set; }
 
@@ -126,6 +130,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
     public class TaskProgressDetail
     {
         public Guid TaskId { get; set; }
+
+        public Guid ProjectId { get; set; }
 
         public string TaskCode { get; set; }
 
