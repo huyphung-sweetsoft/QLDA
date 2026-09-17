@@ -199,81 +199,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             dlContractDetail.OpenModal(true);
         }
 
-        private void BindContractInformation(
-    TblHopDongThucHien hopDong)
+
+        private void BindContractInformation(TblHopDongThucHien hopDong)
         {
-            txtContractNumber.Text =
-                hopDong.SoHopDong;
+            txtContractNumber.Text = hopDong.SoHopDong;
+            txtContractName.Text = hopDong.TenHopDong;
 
-            txtContractName.Text =
-                hopDong.TenHopDong;
-
-            TblKhachHang khachHang =
-                KhachHangManager
-                    .Instance
-                    .GetKhachHangById(
-                        hopDong.IdKhachHang);
-
-            txtContractCustomer.Text =
-                khachHang != null
-                    ? khachHang.TenKhachHang
-                    : "Chưa có";
-
-            txtContractValue.Text =
-                hopDong.GiaTriHopDong.HasValue
-                    ? FormatHelpers
-                        .ConvertDecimalToStringByLanguage(
-                            hopDong.GiaTriHopDong.Value,
-                            "vi-VN")
-                    : string.Empty;
-
-            txtContractSignDate.Text =
-                hopDong.NgayKy.HasValue
-                    ? hopDong.NgayKy.Value
-                        .ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtContractEffectiveDate.Text =
-                hopDong.NgayHieuLuc.HasValue
-                    ? hopDong.NgayHieuLuc.Value
-                        .ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtContractExpiryDate.Text =
-                hopDong.NgayHetHan.HasValue
-                    ? hopDong.NgayHetHan.Value
-                        .ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtContractDescription.Text =
-                hopDong.MoTa;
+            TblKhachHang khachHang = KhachHangManager.Instance.GetKhachHangById(hopDong.IdKhachHang);
+            txtContractCustomer.Text = khachHang == null ? "Chưa có" : khachHang.TenKhachHang;
+            txtContractValue.Text = hopDong.GiaTriHopDong.HasValue
+                ? FormatHelpers.ConvertDecimalToStringByLanguage(hopDong.GiaTriHopDong.Value, "vi-VN")
+                : string.Empty;
+            txtContractSignDate.Text = hopDong.NgayKy.HasValue
+                ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractEffectiveDate.Text = hopDong.NgayHieuLuc.HasValue
+                ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractExpiryDate.Text = hopDong.NgayHetHan.HasValue
+                ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractDescription.Text = hopDong.MoTa;
         }
 
-        protected void lbtViewContract_Click(object sender, EventArgs e)
-        {
-            if (!IsContractView)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
 
-            if (IdHopDongThucHien == Guid.Empty)
-            {
-                ShowInvalidDataError();
-                return;
-            }
-
-            TblHopDongThucHien hopDong = HopDongThucHienManager.Instance.GetHopDongById(IdHopDongThucHien);
-            if (hopDong == null)
-            {
-                ShowInvalidNotFoundData();
-                return;
-            }
-
-            BindContractInformation(hopDong);
-            dlContractDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
-            dlContractDetail.OpenModal(true);
-        }
+        
 
         protected void lbtOpenContractDocument_Click(object sender, EventArgs e)
         {
@@ -314,30 +264,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 ShowNotify(exception.Message, MSGType.Error);
             }
         }
-
-        private string BuildHistoryContent( DataRow row)
-        private void BindContractInformation(TblHopDongThucHien hopDong)
-        {
-            txtContractNumber.Text = hopDong.SoHopDong;
-            txtContractName.Text = hopDong.TenHopDong;
-
-            TblKhachHang khachHang = KhachHangManager.Instance.GetKhachHangById(hopDong.IdKhachHang);
-            txtContractCustomer.Text = khachHang == null ? "Chưa có" : khachHang.TenKhachHang;
-            txtContractValue.Text = hopDong.GiaTriHopDong.HasValue
-                ? FormatHelpers.ConvertDecimalToStringByLanguage(hopDong.GiaTriHopDong.Value, "vi-VN")
-                : string.Empty;
-            txtContractSignDate.Text = hopDong.NgayKy.HasValue
-                ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd")
-                : string.Empty;
-            txtContractEffectiveDate.Text = hopDong.NgayHieuLuc.HasValue
-                ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd")
-                : string.Empty;
-            txtContractExpiryDate.Text = hopDong.NgayHetHan.HasValue
-                ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd")
-                : string.Empty;
-            txtContractDescription.Text = hopDong.MoTa;
-        }
-
         private string BuildHistoryContent(
     DataRow row)
         {

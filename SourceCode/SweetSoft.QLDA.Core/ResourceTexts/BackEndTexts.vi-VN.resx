@@ -2616,6 +2616,7 @@
   <data name="HISTORY_ENTITY_RISK" xml:space="preserve">
     <value>rủi ro</value>
   </data>
-  <data name="thi" xml:space="preserve">
+	<data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
+	  </data>
 </root>

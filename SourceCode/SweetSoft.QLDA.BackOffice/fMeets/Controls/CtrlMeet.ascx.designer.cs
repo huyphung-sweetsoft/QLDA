@@ -15,33 +15,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
 
         /// <summary>
-        /// pnlSearchDropdowns control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel pnlSearchDropdowns;
-
-        /// <summary>
-        /// pnlSearchDefaultStatus control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSearchDefaultStatus;
-
-        /// <summary>
-        /// ddlSearchTrangThai control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchTrangThai;
-
-        /// <summary>
         /// txtSearchSingle control.
         /// </summary>
         /// <remarks>
@@ -132,15 +105,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
 
         /// <summary>
-        /// CtrlXemNhanVienMeet1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlXemNhanVienMeet CtrlXemNhanVienMeet1;
-
-        /// <summary>
         /// pnlSearch control.
         /// </summary>
         /// <remarks>
@@ -166,33 +130,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTenCuocHop;
-
-        /// <summary>
-        /// txtSearchDiaDiem control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchDiaDiem;
-
-        /// <summary>
-        /// txtSearchTuNgay control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTuNgay;
-
-        /// <summary>
-        /// txtSearchDenNgay control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchDenNgay;
 
         /// <summary>
         /// lbtSearchAdvanced control.

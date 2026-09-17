@@ -159,13 +159,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         protected global::SweetSoft.QLDA.Controls.ExtraModal dlChonNhanVien;
 
         /// <summary>
-        /// rptNhanVien control.
+        /// cblNhanVien control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptNhanVien;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblNhanVien;
 
         /// <summary>
         /// btnXacNhanNhanVien control.

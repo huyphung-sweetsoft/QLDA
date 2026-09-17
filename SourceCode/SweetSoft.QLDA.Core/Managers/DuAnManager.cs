@@ -87,6 +87,8 @@ namespace SweetSoft.QLDA.Core.Managers
                             duAn.IdDuAn);
                 }
 
+                Guid? oldPM = duAn.IdNhanVienQuanLy;
+
                 ObjectHelper.CopyBusinessProperties(
                      dto,
                      duAn,

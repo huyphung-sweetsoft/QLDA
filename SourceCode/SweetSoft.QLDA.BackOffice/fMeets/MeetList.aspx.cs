@@ -11,10 +11,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Transactions;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fMeets
 {
@@ -22,7 +20,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Meet;
         private ControlHelpers _control = new ControlHelpers();
-
         private Guid MeetId
         {
             get => ViewState["MeetId"] != null ? (Guid)ViewState["MeetId"] : Guid.Empty;
@@ -70,7 +67,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtDiaDiemHop.PlaceHolder = txtThoiLuong.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
 
             dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
-            btnXacNhanNhanVien.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
         }
 
         private void OpenMeetingDocumentAction(object sender, EventArgs e)
@@ -161,7 +157,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ddlTrangThai.SelectedValue = meet.TrangThai.ToString();
 
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
-            dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT);
+            dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT) ?? "Thông tin cuộc họp";
+
             dlDetail.OpenModal(true, IsPostBack ? 0 : 1000);
         }
 
@@ -234,7 +231,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 }
                 else
                 {
-                    ShowNotify(string.Format(GetResourceText(BackEndResourceKeys.TIME_PARSING_ERROR), strEnd), MSGType.Error);
+                    ShowNotify($"Lỗi đọc giờ! Chuỗi Server nhận được là: '{strEnd}'", MSGType.Error);
                     return;
                 }
 
@@ -255,60 +252,21 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
-
-        // =========================================================================
-        // HÀM MỞ POPUP CHỌN NHÂN VIÊN VÀ BIND VÀO REPEATER (CẬP NHẬT THEO TBLTHANHVIENDUAN)
-        // =========================================================================
         protected void btnMoPopupNhanVien_Click(object sender, EventArgs e)
         {
-            // 1. Truy vấn TblThanhVienDuAn lấy danh sách IdNhanVien của dự án này
-            List<Guid> projectMemberIds = new Select(TblThanhVienDuAn.Columns.IdNhanVien)
-                .From(TblThanhVienDuAn.Schema)
-                .Where(TblThanhVienDuAn.Columns.IdDuAn).IsEqualTo(CtrlMeet1.ProjectId)
-                .And(TblThanhVienDuAn.Columns.DaXoa).IsEqualTo(false) // Bỏ qua những người đã bị xóa khỏi dự án
-                .ExecuteTypedList<Guid>();
+            _control.BindNhanVienToCheckBoxList(cblNhanVien);
+            cblNhanVien.ClearSelection();
 
-            // 2. Lấy All NhanVien đang hoạt động, lọc theo projectMemberIds
-            var allUsers = UserManager.Instance.GetAllActiveNhanVien();
-            var usersInProject = allUsers
-                .Where(u => projectMemberIds.Contains(u.UserId))
-                .OrderBy(u => u.DisplayName)
-                .ToList();
-
-            // 3. Map in4 Avatar và Name đổ vào Repeater
-            var list = new List<object>();
-            for (int i = 0; i < usersInProject.Count; i++)
+            string[] selectedIds = hdfNhanVienIds.Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (System.Web.UI.WebControls.ListItem item in cblNhanVien.Items)
             {
-                list.Add(new
+                if (Array.Exists(selectedIds, id => id == item.Value))
                 {
-                    UserId = usersInProject[i].UserId,
-                    DisplayName = usersInProject[i].DisplayName,
-                    AvatarHtml = GetSingleAvatarHtml(usersInProject[i].DisplayName, usersInProject[i].Avatar, i)
-                });
-            }
-
-            rptNhanVien.DataSource = list;
-            rptNhanVien.DataBind();
-
-            dlChonNhanVien.OpenModal(true);
-        }
-
-        protected void rptNhanVien_ItemDataBound(object sender, RepeaterItemEventArgs e)
-        {
-            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
-            {
-                HiddenField hdfUserId = (HiddenField)e.Item.FindControl("hdfUserId");
-                CheckBox chkSelect = (CheckBox)e.Item.FindControl("chkSelect");
-
-                if (hdfUserId != null && chkSelect != null)
-                {
-                    string[] selectedIds = hdfNhanVienIds.Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (Array.Exists(selectedIds, id => id == hdfUserId.Value))
-                    {
-                        chkSelect.Checked = true;
-                    }
+                    item.Selected = true;
                 }
             }
+
+            dlChonNhanVien.OpenModal(true);
         }
 
         protected void btnXacNhanNhanVien_Click(object sender, EventArgs e)
@@ -316,18 +274,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             List<string> ids = new List<string>();
             List<string> names = new List<string>();
 
-            foreach (RepeaterItem item in rptNhanVien.Items)
+            foreach (System.Web.UI.WebControls.ListItem item in cblNhanVien.Items)
             {
-                if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                if (item.Selected)
                 {
-                    CheckBox chkSelect = (CheckBox)item.FindControl("chkSelect");
-                    if (chkSelect != null && chkSelect.Checked)
-                    {
-                        HiddenField hdfUserId = (HiddenField)item.FindControl("hdfUserId");
-                        HiddenField hdfDisplayName = (HiddenField)item.FindControl("hdfDisplayName");
-                        ids.Add(hdfUserId.Value);
-                        names.Add(hdfDisplayName.Value);
-                    }
+                    ids.Add(item.Value);
+                    names.Add(item.Text);
                 }
             }
 
@@ -348,33 +300,9 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             dlChonNhanVien.CloseModal();
         }
 
-        // =========================================================================
-        // HÀM HELPER RENDER AVATAR (Lấy chữ cái đầu & Sinh thẻ HTML)
-        // =========================================================================
-        private string GetInitials(string fullName)
+        public override void ConfirmRequest(ConfirmResult e)
         {
-            if (string.IsNullOrWhiteSpace(fullName)) return "";
-            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
-            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
-        }
-
-        private string GetSingleAvatarHtml(string name, string avatar, int index)
-        {
-            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
-            string color = colors[index % colors.Length];
-            bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
-
-            if (!isDefaultAvatar)
-            {
-                string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
-                string fallbackHtml = $"<div class=\\'single-avatar-circle\\' style=\\'background-color: {color};\\'>{GetInitials(name)}</div>";
-                return $"<img src='{avatarUrl}' class='single-avatar-circle' style='object-fit: cover;' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
-            }
-            else
-            {
-                return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
-            }
+            CtrlMeet1.ConfirmRequest(e);
         }
     }
 }
