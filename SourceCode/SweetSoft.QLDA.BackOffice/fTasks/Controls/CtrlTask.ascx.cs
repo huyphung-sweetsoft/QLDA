@@ -179,7 +179,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         return;
                     }
 
-                    TblCongViec taskSched = _taskManager.FetchById(taskIdSched);
+                    TblCongViec taskSched = TaskManager.Instance.FetchById(taskIdSched);
                     if (taskSched == null)
                     {
                         ShowInvalidDataError();
@@ -194,7 +194,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     // ==========================================
                     // 1. TẠO JSON LỊCH BIỂU TRỰC TIẾP TẠI UI ĐỂ DÙNG GETRESOURCETEXT
                     // ==========================================
-                    List<TblCongViec> leafTasks = _taskManager.GetLeafTasksForSchedule(taskIdSched);
+                    List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskIdSched);
                     var dict = new Dictionary<string, object>();
                     DateTime current = taskSched.NgayBatDau.Value.Date;
                     DateTime end = taskSched.NgayKetThuc.Value.Date;

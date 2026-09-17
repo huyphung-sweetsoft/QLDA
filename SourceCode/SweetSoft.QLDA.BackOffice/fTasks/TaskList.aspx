@@ -253,11 +253,10 @@
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
-
-
         var isOverdueFiltered = false;
         var isTreeCollapsed = false;
 
+        // Hàm chính để xử lý ẩn/hiện các dòng dựa trên state
         function applyTaskFilters() {
             var gridRows = document.querySelectorAll('.table-task-grid tbody tr');
 
@@ -268,47 +267,63 @@
                 var level = parseInt(row.getAttribute('data-level'), 10);
 
                 var showRow = true;
+
+                // Lọc trễ hạn
                 if (isOverdueFiltered && !isOverdue) {
                     showRow = false;
                 }
+
+                // Thu gọn tree (chỉ hiện level 1)
                 if (isTreeCollapsed && level > 1) {
                     showRow = false;
                 }
+
                 row.style.display = showRow ? '' : 'none';
             });
         }
 
+        // Bật/tắt lọc trễ hạn
         window.toggleOverdueFilter = function () {
             isOverdueFiltered = !isOverdueFiltered;
 
+            // Nếu đang bật lọc trễ hạn mà tree đang thu gọn -> Mở rộng tree ra
             if (isOverdueFiltered && isTreeCollapsed) {
                 isTreeCollapsed = false;
                 var btnTree = document.getElementById('btnToggleTree');
                 var lbl = document.getElementById('lblToggleText');
                 var icon = btnTree ? btnTree.querySelector('i') : null;
-                if (lbl && btnTree) lbl.innerText = btnTree.getAttribute('data-collapse-text');
-                if (icon) icon.className = 'far fa-folder-open';
-                if (btnTree) btnTree.classList.remove('active-filter');
-            }
 
-            var btn = document.getElementById('btnFilterOverdue');
-            if (btn) {
-                if (isOverdueFiltered) {
-                    btn.classList.add('active-filter');
-                } else {
-                    btn.classList.remove('active-filter');
+                if (btnTree) {
+                    if (lbl) lbl.innerText = btnTree.getAttribute('data-collapse-text') || 'Thu gọn';
+                    if (icon) {
+                        icon.classList.remove('fa-folder');
+                        icon.classList.add('fa-folder-open');
+                    }
                 }
             }
+
+            // Đổi style button lọc trễ hạn
+            var btnOverdue = document.getElementById('btnFilterOverdue');
+            if (btnOverdue) {
+                if (isOverdueFiltered) {
+                    btnOverdue.classList.add('active'); // Sửa lại thành 'active' cho khớp với CSS
+                } else {
+                    btnOverdue.classList.remove('active');
+                }
+            }
+
             applyTaskFilters();
         };
 
+        // Bật/tắt thu gọn công việc
         window.toggleTaskTree = function () {
             isTreeCollapsed = !isTreeCollapsed;
 
+            // Nếu đang thu gọn mà đang lọc trễ hạn -> Tắt lọc trễ hạn đi
             if (isTreeCollapsed && isOverdueFiltered) {
                 isOverdueFiltered = false;
                 var btnOverdue = document.getElementById('btnFilterOverdue');
-                if (btnOverdue) btnOverdue.classList.remove('active-filter');
+                if (btnOverdue) btnOverdue.classList.remove('active');
             }
 
             var btn = document.getElementById('btnToggleTree');
@@ -316,31 +331,34 @@
             var icon = btn ? btn.querySelector('i') : null;
 
             if (btn) {
-                var expandText = btn.getAttribute('data-expand-text');
-                var collapseText = btn.getAttribute('data-collapse-text');
+                var expandText = btn.getAttribute('data-expand-text') || 'Mở rộng';
+                var collapseText = btn.getAttribute('data-collapse-text') || 'Thu gọn';
 
-                $btnText.text(txtCollapse);
-                $btnIcon.removeClass('fa-folder-open').addClass('fa-folder');
-            } else {
-                $allRows.each(function() {
-                    let level = $(this).attr('data-level');
-                    if (level !== undefined && parseInt(level) > 1) {
-                        $(this).hide();
+                if (isTreeCollapsed) {
+                    // Trạng thái bị thu gọn -> Hiện text "Mở rộng" để người dùng click
+                    if (lbl) lbl.innerText = expandText;
+                    if (icon) {
+                        icon.classList.remove('fa-folder-open');
+                        icon.classList.add('fa-folder');
                     }
-                });
-                $btnText.text(txtExpand);
-                $btnIcon.removeClass('fa-folder').addClass('fa-folder-open');
+                } else {
+                    // Trạng thái đang mở rộng -> Hiện text "Thu gọn"
+                    if (lbl) lbl.innerText = collapseText;
+                    if (icon) {
+                        icon.classList.remove('fa-folder');
+                        icon.classList.add('fa-folder-open');
                     }
                 }
+            }
+
+            // Gọi hàm apply để thực sự ẩn/hiện các dòng
+            applyTaskFilters();
+        };
 
         // Bắt sự kiện thay đổi LocalStorage từ các Tab khác cùng trình duyệt
         window.addEventListener("storage", function (e) {
             if (e.key === "ScheduleChanged") {
-                // Tùy chọn 1: F5 lại toàn bộ trang (Mượt và an toàn nhất để làm mới mọi Data)
                 window.location.reload();
-
-        // Tùy chọn 2 (Nếu muốn xịn hơn): Bắn trigger ngầm để UpdatePanel tự reload Grid
-                // __doPostBack('<%= upModal.ClientID %>', '');
             }
         });
     </script>
