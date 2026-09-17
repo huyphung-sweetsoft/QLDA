@@ -18,7 +18,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string DashboardResource => "/Home/Resources";
         public static string DashboardProgress => "/Home/Progress";
         public static string DashboardCost => "/Home/Costs";
-        public static string DashboardEmployee => "/Home/Employee";
         public static string AuditLogs => "/Audit-logs";
         public static string Settings => "/Settings";
         public static string Countries => "/Countries";

@@ -170,9 +170,7 @@
     <Compile Include="Dashboard\DashboardProgressModel.cs" />
     <Compile Include="Dashboard\DashboardResourceManager.cs" />
     <Compile Include="Dashboard\DashboardResourceModel.cs" />
-    <Compile Include="Dashboard\EmployeeDashboardManager.cs" />
     <Compile Include="Dashboard\DashboardOverviewModel.cs" />
-    <Compile Include="Dashboard\EmployeeDashboardModel.cs" />
     <Compile Include="Dashboard\DashboardUserContext.cs" />
     <Compile Include="EnumHelper\Defines\MeetingSpeechesStatus.cs" />
     <Compile Include="EnumHelper\Defines\MucDoAnhHuong.cs" />

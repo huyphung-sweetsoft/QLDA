@@ -657,8 +657,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string OPEN_ISSUES = "OPEN_ISSUES";
         public const string SAFE = "SAFE";
         public const string AT_RISK = "AT_RISK";
-        public const string DASHBOARD_EMPLOYEE = "DASHBOARD_EMPLOYEE";
-
         // Dashboard shared texts
         public const string DASHBOARD_STATUS_NOT_STARTED = "DASHBOARD_STATUS_NOT_STARTED";
         public const string DASHBOARD_STATUS_IN_PROGRESS = "DASHBOARD_STATUS_IN_PROGRESS";
@@ -698,6 +696,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DASHBOARD_PROGRESS_FILTER_DESC = "DASHBOARD_PROGRESS_FILTER_DESC";
         public const string DASHBOARD_ACTUAL_VS_PLAN = "DASHBOARD_ACTUAL_VS_PLAN";
         public const string DASHBOARD_ACTUAL_VS_PLAN_DESC = "DASHBOARD_ACTUAL_VS_PLAN_DESC";
+        public const string DASHBOARD_CURRENT_PROJECT_STAGE = "DASHBOARD_CURRENT_PROJECT_STAGE";
         public const string DASHBOARD_PLAN_TIME_DESC = "DASHBOARD_PLAN_TIME_DESC";
         public const string DASHBOARD_EXPECTED_COMPLETION = "DASHBOARD_EXPECTED_COMPLETION";
         public const string DASHBOARD_ACTUAL_COMPLETION = "DASHBOARD_ACTUAL_COMPLETION";
@@ -846,6 +845,14 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DASHBOARD_WEEK_ALLOCATION_DETAIL = "DASHBOARD_WEEK_ALLOCATION_DETAIL";
         public const string DASHBOARD_WEEKLY_LOAD = "DASHBOARD_WEEKLY_LOAD";
         public const string DASHBOARD_TASK_DETAIL = "DASHBOARD_TASK_DETAIL";
+        public const string DASHBOARD_DAILY_ALLOCATION_DETAIL = "DASHBOARD_DAILY_ALLOCATION_DETAIL";
+        public const string DASHBOARD_WEEKLY_LOAD_FORMULA = "DASHBOARD_WEEKLY_LOAD_FORMULA";
+        public const string DASHBOARD_WORKING_DAY = "DASHBOARD_WORKING_DAY";
+        public const string DASHBOARD_NON_WORKING_DAY = "DASHBOARD_NON_WORKING_DAY";
+        public const string DASHBOARD_HOLIDAY_DAY = "DASHBOARD_HOLIDAY_DAY";
+        public const string DASHBOARD_HOLIDAY_DAYS = "DASHBOARD_HOLIDAY_DAYS";
+        public const string DASHBOARD_NO_ASSIGNMENT_WEEK = "DASHBOARD_NO_ASSIGNMENT_WEEK";
+        public const string DASHBOARD_NO_TASKS_ON_DAY = "DASHBOARD_NO_TASKS_ON_DAY";
         public const string DASHBOARD_MONTH_OVERLOADED = "DASHBOARD_MONTH_OVERLOADED";
         public const string DASHBOARD_OVERLOADED_WEEK_COUNT = "DASHBOARD_OVERLOADED_WEEK_COUNT";
         public const string DASHBOARD_NO_OVERLOADED_WEEKS = "DASHBOARD_NO_OVERLOADED_WEEKS";
@@ -868,28 +875,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DASHBOARD_NO_WEEK_PROJECT_ALLOCATION = "DASHBOARD_NO_WEEK_PROJECT_ALLOCATION";
         public const string DASHBOARD_NO_WEEK_TASKS = "DASHBOARD_NO_WEEK_TASKS";
 
-        // Employee dashboard texts
-        public const string DASHBOARD_EMPLOYEE_ALL_PROJECTS = "DASHBOARD_EMPLOYEE_ALL_PROJECTS";
-        public const string DASHBOARD_EMPLOYEE_DEFAULT_NAME = "DASHBOARD_EMPLOYEE_DEFAULT_NAME";
-        public const string DASHBOARD_GREETING = "DASHBOARD_GREETING";
-        public const string DASHBOARD_PERSONAL_OVERVIEW = "DASHBOARD_PERSONAL_OVERVIEW";
-        public const string DASHBOARD_TASKS_IN_PROGRESS = "DASHBOARD_TASKS_IN_PROGRESS";
-        public const string DASHBOARD_TASKS_DUE_SOON = "DASHBOARD_TASKS_DUE_SOON";
-        public const string DASHBOARD_PROJECTS_PARTICIPATING = "DASHBOARD_PROJECTS_PARTICIPATING";
-        public const string DASHBOARD_CURRENT_LOAD = "DASHBOARD_CURRENT_LOAD";
-        public const string DASHBOARD_MY_TASKS = "DASHBOARD_MY_TASKS";
-        public const string DASHBOARD_VIEW_ALL_TASKS = "DASHBOARD_VIEW_ALL_TASKS";
-        public const string DASHBOARD_DUE = "DASHBOARD_DUE";
-        public const string DASHBOARD_NO_TASKS = "DASHBOARD_NO_TASKS";
-        public const string DASHBOARD_MY_WARNINGS = "DASHBOARD_MY_WARNINGS";
-        public const string DASHBOARD_NO_PERSONAL_WARNINGS = "DASHBOARD_NO_PERSONAL_WARNINGS";
-        public const string DASHBOARD_MY_PROJECT_PROGRESS = "DASHBOARD_MY_PROJECT_PROGRESS";
-        public const string DASHBOARD_MY_PROJECT_PROGRESS_DESC = "DASHBOARD_MY_PROJECT_PROGRESS_DESC";
-        public const string DASHBOARD_UPCOMING_SCHEDULE = "DASHBOARD_UPCOMING_SCHEDULE";
-        public const string DASHBOARD_NO_UPCOMING_SCHEDULE = "DASHBOARD_NO_UPCOMING_SCHEDULE";
-        public const string DASHBOARD_MEETING_ALERT = "DASHBOARD_MEETING_ALERT";
-        public const string DASHBOARD_OVERDUE_TASK_ALERT = "DASHBOARD_OVERDUE_TASK_ALERT";
-        public const string DASHBOARD_DUE_SOON_TASK_ALERT = "DASHBOARD_DUE_SOON_TASK_ALERT";
         //Project history
         public const string PROJECT_STAGE_TYPE = "PROJECT_STAGE_TYPE";
         public const string PROJECT_STAGE_NAME = "PROJECT_STAGE_NAME";

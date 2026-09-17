@@ -70,7 +70,6 @@ namespace SweetSoft.QLDA.BackOffice
                 case "resource": return ModuleKeys.DashboardResource;
                 case "progress": return ModuleKeys.DashboardProgress;
                 case "cost": return ModuleKeys.DashboardCost;
-                case "employee": return ModuleKeys.DashboardEmployee;
                 case "": return ResolveDefaultModule();
                 default: return ModuleKeys.None;
             }
@@ -83,8 +82,7 @@ namespace SweetSoft.QLDA.BackOffice
                 ModuleKeys.DashboardOverview,
                 ModuleKeys.DashboardResource,
                 ModuleKeys.DashboardProgress,
-                ModuleKeys.DashboardCost,
-                ModuleKeys.DashboardEmployee
+                ModuleKeys.DashboardCost
             };
 
             Guid userId = SweetContext.Current.UserId;
@@ -116,9 +114,6 @@ namespace SweetSoft.QLDA.BackOffice
                     break;
                 case ModuleKeys.DashboardCost:
                     controlPath = "~/Controls/Dashboard/CtrlDashboardCost.ascx";
-                    break;
-                case ModuleKeys.DashboardEmployee:
-                    controlPath = "~/Controls/Dashboard/CtrlEmployeeDashboard.ascx";
                     break;
                 default:
                     return;

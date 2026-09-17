@@ -1873,9 +1873,6 @@
   <data name="PROJECT_MEMBERS" xml:space="preserve">
     <value>Project members</value>
   </data>
-  <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
-    <value>Employee</value>
-  </data>
   <data name="DASHBOARD_STATUS_NOT_STARTED" xml:space="preserve"><value>Not started</value></data>
   <data name="DASHBOARD_STATUS_IN_PROGRESS" xml:space="preserve"><value>In progress</value></data>
   <data name="DASHBOARD_STATUS_COMPLETED" xml:space="preserve"><value>Completed</value></data>
@@ -1909,10 +1906,11 @@
   <data name="DASHBOARD_NEEDS_ATTENTION" xml:space="preserve"><value>Projects needing attention</value></data>
   <data name="DASHBOARD_NEEDS_ATTENTION_DESC" xml:space="preserve"><value>Behind, at risk, or overdue</value></data>
   <data name="DASHBOARD_PROGRESS_TITLE" xml:space="preserve"><value>Project and task progress dashboard</value></data>
-  <data name="DASHBOARD_PROGRESS_FILTER_DESC" xml:space="preserve"><value>Project progress is compared with elapsed planned time; the date range determines which projects are included, while task figures cover all tasks belonging to those projects.</value></data>
+  <data name="DASHBOARD_PROGRESS_FILTER_DESC" xml:space="preserve"><value>Project progress is compared with elapsed planned working days; the date range determines which projects are included, while task figures cover all tasks belonging to those projects.</value></data>
   <data name="DASHBOARD_ACTUAL_VS_PLAN" xml:space="preserve"><value>Actual versus plan</value></data>
-  <data name="DASHBOARD_ACTUAL_VS_PLAN_DESC" xml:space="preserve"><value>Project completion progress compared with elapsed planned time.</value></data>
-  <data name="DASHBOARD_PLAN_TIME_DESC" xml:space="preserve"><value>Plan is calculated from the elapsed time between the start date and expected completion date.</value></data>
+  <data name="DASHBOARD_ACTUAL_VS_PLAN_DESC" xml:space="preserve"><value>Project completion progress compared with elapsed planned working days.</value></data>
+  <data name="DASHBOARD_CURRENT_PROJECT_STAGE" xml:space="preserve"><value>Current project stage</value></data>
+  <data name="DASHBOARD_PLAN_TIME_DESC" xml:space="preserve"><value>Plan is calculated from configured working days, holidays, and make-up days.</value></data>
   <data name="DASHBOARD_EXPECTED_COMPLETION" xml:space="preserve"><value>Expected completion</value></data>
   <data name="DASHBOARD_ACTUAL_COMPLETION" xml:space="preserve"><value>Actual completion</value></data>
   <data name="DASHBOARD_NOT_COMPLETED" xml:space="preserve"><value>Not completed</value></data>
@@ -1973,9 +1971,9 @@
   <data name="DASHBOARD_EXPECTED" xml:space="preserve"><value>Expected</value></data>
   <data name="DASHBOARD_COST_TITLE" xml:space="preserve"><value>Completed project cost dashboard</value></data>
   <data name="DASHBOARD_COMPLETION_PERIOD" xml:space="preserve"><value>Completion period</value></data>
-  <data name="DASHBOARD_COST_FILTER_DESC" xml:space="preserve"><value>Only projects with an actual completion date are included. The period filters project completion dates, while costs and payments cover the full lifecycle of matching projects.</value></data>
+  <data name="DASHBOARD_COST_FILTER_DESC" xml:space="preserve"><value>Projects marked Completed are included; legacy projects with an actual completion date are retained. The period filters by actual completion date, or the expected completion date when it is unavailable.</value></data>
   <data name="DASHBOARD_NO_COMPLETED_PROJECTS" xml:space="preserve"><value>No completed projects match the filter</value></data>
-  <data name="DASHBOARD_NO_COMPLETED_PROJECTS_DESC" xml:space="preserve"><value>A project appears only after its actual completion date is updated; active projects are excluded from financial indicators.</value></data>
+  <data name="DASHBOARD_NO_COMPLETED_PROJECTS_DESC" xml:space="preserve"><value>A project appears when it is marked Completed; legacy projects with an actual completion date are also retained.</value></data>
   <data name="DASHBOARD_COMPLETED_PROJECTS" xml:space="preserve"><value>Completed projects</value></data>
   <data name="DASHBOARD_CONTRACT_REVENUE" xml:space="preserve"><value>Contract revenue</value></data>
   <data name="DASHBOARD_AVERAGE_PER_PROJECT" xml:space="preserve"><value>Average {0}/project</value></data>
@@ -1985,12 +1983,12 @@
   <data name="DASHBOARD_ON_CONTRACT_VALUE" xml:space="preserve"><value>Of contract value</value></data>
   <data name="DASHBOARD_OUTSTANDING_AMOUNT" xml:space="preserve"><value>Outstanding {0}</value></data>
   <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST" xml:space="preserve"><value>Contract versus actual cost</value></data>
-  <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC" xml:space="preserve"><value>Compare contract value with total cost for each completed project.</value></data>
+  <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC" xml:space="preserve"><value>Compare contract value with total approved cost for each completed project.</value></data>
   <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve"><value>Payment situation</value></data>
   <data name="DASHBOARD_PAYMENT_SITUATION_DESC" xml:space="preserve"><value>Received and outstanding amounts compared with total contract value.</value></data>
   <data name="DASHBOARD_COLLECTION_RATE" xml:space="preserve"><value>Collection rate: {0}%</value></data>
   <data name="DASHBOARD_COST_TREND" xml:space="preserve"><value>Cost occurrence trend</value></data>
-  <data name="DASHBOARD_COST_TREND_DESC" xml:space="preserve"><value>Monthly costs across the full lifecycle of completed projects in the selected scope.</value></data>
+  <data name="DASHBOARD_COST_TREND_DESC" xml:space="preserve"><value>Monthly approved costs across the full lifecycle of completed projects in the selected scope.</value></data>
   <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve"><value>Financial performance by project</value></data>
   <data name="DASHBOARD_GROSS_PROFIT_FORMULA" xml:space="preserve"><value>Gross profit = contract value − actual cost.</value></data>
   <data name="DASHBOARD_SORT_MARGIN_ASC" xml:space="preserve"><value>Sorted from lowest to highest profit margin</value></data>
@@ -2002,7 +2000,7 @@
   <data name="DASHBOARD_COST_ITEM_COUNT" xml:space="preserve"><value>{0} cost items</value></data>
   <data name="DASHBOARD_NO_FINANCIAL_DATA" xml:space="preserve"><value>No financial data for completed projects.</value></data>
   <data name="DASHBOARD_LARGEST_COST_ITEMS" xml:space="preserve"><value>Largest cost items</value></data>
-  <data name="DASHBOARD_LARGEST_COST_ITEMS_DESC" xml:space="preserve"><value>Up to 15 highest-value cost items in the selected project scope.</value></data>
+  <data name="DASHBOARD_LARGEST_COST_ITEMS_DESC" xml:space="preserve"><value>Up to 15 highest-value approved cost items in the selected project scope.</value></data>
   <data name="DASHBOARD_COST_ITEM_CODE" xml:space="preserve"><value>Cost item code</value></data>
   <data name="DASHBOARD_COST_ITEM_NAME" xml:space="preserve"><value>Cost item name</value></data>
   <data name="DASHBOARD_INCURRED_DATE" xml:space="preserve"><value>Incurred date</value></data>
@@ -2055,6 +2053,14 @@
   <data name="DASHBOARD_WEEK_ALLOCATION_DETAIL" xml:space="preserve"><value>Weekly allocation details</value></data>
   <data name="DASHBOARD_WEEKLY_LOAD" xml:space="preserve"><value>Weekly load</value></data>
   <data name="DASHBOARD_TASK_DETAIL" xml:space="preserve"><value>Task details</value></data>
+  <data name="DASHBOARD_DAILY_ALLOCATION_DETAIL" xml:space="preserve"><value>Daily allocation</value></data>
+  <data name="DASHBOARD_WEEKLY_LOAD_FORMULA" xml:space="preserve"><value>Calculation: {0} allocated workdays / {1} working days in the week. Each active task on a day counts as one workday.</value></data>
+  <data name="DASHBOARD_WORKING_DAY" xml:space="preserve"><value>Working day</value></data>
+  <data name="DASHBOARD_NON_WORKING_DAY" xml:space="preserve"><value>Non-working day</value></data>
+  <data name="DASHBOARD_HOLIDAY_DAY" xml:space="preserve"><value>Holiday: {0}</value></data>
+  <data name="DASHBOARD_HOLIDAY_DAYS" xml:space="preserve"><value> · {0} holiday days</value></data>
+  <data name="DASHBOARD_NO_ASSIGNMENT_WEEK" xml:space="preserve"><value>No task assignment this week</value></data>
+  <data name="DASHBOARD_NO_TASKS_ON_DAY" xml:space="preserve"><value>No assigned tasks</value></data>
   <data name="DASHBOARD_MONTH_OVERLOADED" xml:space="preserve"><value>Overloaded for the month</value></data>
   <data name="DASHBOARD_OVERLOADED_WEEK_COUNT" xml:space="preserve"><value>{0} overloaded weeks</value></data>
   <data name="DASHBOARD_NO_OVERLOADED_WEEKS" xml:space="preserve"><value>No overloaded weeks this month</value></data>
@@ -2071,32 +2077,11 @@
   <data name="DASHBOARD_PAST_ASSIGNMENT" xml:space="preserve"><value>Past assignments</value></data>
   <data name="DASHBOARD_FUTURE_PLAN" xml:space="preserve"><value>Upcoming plan</value></data>
   <data name="DASHBOARD_THRESHOLD_100" xml:space="preserve"><value>100% threshold</value></data>
-  <data name="DASHBOARD_CAPACITY" xml:space="preserve"><value>{0} capacity</value></data>
+  <data name="DASHBOARD_CAPACITY" xml:space="preserve"><value>{0} working days</value></data>
   <data name="DASHBOARD_EXCESS" xml:space="preserve"><value> · exceeds by {0}</value></data>
   <data name="DASHBOARD_SCHEDULE_OVERLAP_DAYS" xml:space="preserve"><value> · {0} overlapping days</value></data>
   <data name="DASHBOARD_NO_WEEK_PROJECT_ALLOCATION" xml:space="preserve"><value>The employee has no project allocation this week.</value></data>
   <data name="DASHBOARD_NO_WEEK_TASKS" xml:space="preserve"><value>No tasks this week.</value></data>
-  <data name="DASHBOARD_EMPLOYEE_ALL_PROJECTS" xml:space="preserve"><value>All my projects</value></data>
-  <data name="DASHBOARD_EMPLOYEE_DEFAULT_NAME" xml:space="preserve"><value>Employee</value></data>
-  <data name="DASHBOARD_GREETING" xml:space="preserve"><value>Hello, {0}</value></data>
-  <data name="DASHBOARD_PERSONAL_OVERVIEW" xml:space="preserve"><value>Personal task overview</value></data>
-  <data name="DASHBOARD_TASKS_IN_PROGRESS" xml:space="preserve"><value>Tasks in progress</value></data>
-  <data name="DASHBOARD_TASKS_DUE_SOON" xml:space="preserve"><value>Tasks due soon</value></data>
-  <data name="DASHBOARD_PROJECTS_PARTICIPATING" xml:space="preserve"><value>Participating projects</value></data>
-  <data name="DASHBOARD_CURRENT_LOAD" xml:space="preserve"><value>Current load</value></data>
-  <data name="DASHBOARD_MY_TASKS" xml:space="preserve"><value>My tasks</value></data>
-  <data name="DASHBOARD_VIEW_ALL_TASKS" xml:space="preserve"><value>View all tasks</value></data>
-  <data name="DASHBOARD_DUE" xml:space="preserve"><value>Due</value></data>
-  <data name="DASHBOARD_NO_TASKS" xml:space="preserve"><value>No tasks</value></data>
-  <data name="DASHBOARD_MY_WARNINGS" xml:space="preserve"><value>My warnings</value></data>
-  <data name="DASHBOARD_NO_PERSONAL_WARNINGS" xml:space="preserve"><value>No warnings</value></data>
-  <data name="DASHBOARD_MY_PROJECT_PROGRESS" xml:space="preserve"><value>My project progress</value></data>
-  <data name="DASHBOARD_MY_PROJECT_PROGRESS_DESC" xml:space="preserve"><value>Projects you are participating in</value></data>
-  <data name="DASHBOARD_UPCOMING_SCHEDULE" xml:space="preserve"><value>Upcoming schedule</value></data>
-  <data name="DASHBOARD_NO_UPCOMING_SCHEDULE" xml:space="preserve"><value>No upcoming schedule</value></data>
-  <data name="DASHBOARD_MEETING_ALERT" xml:space="preserve"><value>Project {0} meeting at {1:HH:mm} on {1:dd/MM}</value></data>
-  <data name="DASHBOARD_OVERDUE_TASK_ALERT" xml:space="preserve"><value>{0} tasks are overdue</value></data>
-  <data name="DASHBOARD_DUE_SOON_TASK_ALERT" xml:space="preserve"><value>{0} tasks are due within 3 days</value></data>
   <data name="SET_AS_OFFICIAL_FILE" xml:space="preserve">
     <value>Set as official</value>
   </data>

@@ -314,13 +314,6 @@
     <Compile Include="Controls\Dashboard\CtrlDashboardOverview.ascx.designer.cs">
       <DependentUpon>CtrlDashboardOverview.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.cs">
-      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx.designer.cs">
-      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
-    </Compile>
     <Compile Include="Controls\Dashboard\CtrlDashboardProgress.ascx.cs">
       <DependentUpon>CtrlDashboardProgress.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -641,14 +634,12 @@
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardCost.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardOverview.ascx" />
-    <Content Include="Controls\Dashboard\CtrlEmployeeDashboard.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardProgress.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
     <Content Include="Controls\Dashboard\dashboard-overview.js" />
     <Content Include="Controls\Dashboard\dashboard-cost.js" />
     <Content Include="Controls\Dashboard\dashboard-progress.js" />
     <Content Include="Controls\Dashboard\dashboard-resource.js" />
-    <Content Include="Controls\Dashboard\dashboard-employee.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
