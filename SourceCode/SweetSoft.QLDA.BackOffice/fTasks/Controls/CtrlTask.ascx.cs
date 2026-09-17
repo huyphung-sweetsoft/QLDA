@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Managers;

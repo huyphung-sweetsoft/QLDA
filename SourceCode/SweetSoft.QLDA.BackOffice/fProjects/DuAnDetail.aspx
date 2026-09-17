@@ -7,6 +7,29 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
+    <style>
+        /* CSS CHO AVATAR STACK CỦA OWNER VÀ THÀNH VIÊN */
+        .avatar-group { 
+            display: inline-flex !important; 
+            align-items: center; 
+            justify-content: center; 
+            flex-wrap: nowrap !important; 
+            white-space: nowrap !important; /* KHOA CHẶT: Cấm tuyệt đối việc rớt dòng */
+        }  
+        .avatar-stack-container { 
+            display: flex; 
+            align-items: center; 
+        }    
+        .avatar-circle { 
+            width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 11px; font-weight: 700; color: #ffffff; border: 2px solid #ffffff; 
+            margin-left: -8px; position: relative; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }    
+        .avatar-circle:first-child { margin-left: 0; }    
+        .avatar-more { 
+            background-color: #f1f5f9; color: #475569; border-color: #cbd5e1; z-index: 0; font-weight: 800; font-size: 10px; 
+        }    
+    </style>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
@@ -31,46 +54,24 @@
                     <%-- Dropdown trạng thái --%>
                     <div class="dropdown">
                         <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-
-                            <i class="fas fa-circle text-info me-2 small"></i>
-                            Đang thực hiện
+                            <i runat="server" id="iCurrentStatusIcon" class="fas fa-circle text-info me-2 small"></i>
+                            <asp:Literal runat="server" ID="ltrCurrentStatusName"></asp:Literal>
                         </button>
-
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-warning me-2 small"></i>
-                                    Chờ thực hiện
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item active" href="javascript:;">
-                                    <i class="fas fa-circle text-info me-2 small"></i>
-                                    Đang thực hiện
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-secondary me-2 small"></i>
-                                    Tạm dừng
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-success me-2 small"></i>
-                                    Hoàn thành
-                                </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <i class="fas fa-circle text-dark me-2 small"></i>
-                                    Kết thúc
-                                </a>
-                            </li>
+                            <asp:Repeater runat="server" ID="rptStatusDropdown" OnItemCommand="rptStatusDropdown_ItemCommand">
+                                <ItemTemplate>
+                                    <li>
+                                        <asp:LinkButton 
+                                            runat="server" 
+                                            CommandName="ChangeStatus" 
+                                            CommandArgument='<%# Eval("Value") %>'  
+                                            CssClass='<%# "dropdown-item " + (Convert.ToByte(Eval("Value")) == CurrentStatusValue ? "active" : "") %>'>
+                                            <i class='<%# "fas fa-circle me-2 small " + GetStatusCssClass((SweetSoft.QLDA.Core.EnumHelper.Defines.DuAnStatus)Convert.ToByte(Eval("Value"))) %>'></i>
+                                            <%# Eval("Name") %>
+                                        </asp:LinkButton>
+                                    </li>
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </ul>
                     </div>
 
@@ -201,14 +202,12 @@
                                             Theo tỷ trọng ngày thực hiện
                                         </span>
 
-                                        <strong class="small text-primary">
-                                            62%
+                                        <strong runat="server" id="lblTienDoThoiGian" class="small text-primary">
                                         </strong>
                                     </div>
 
-                                    <div class="progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100">
-
-                                        <div class="progress-bar bg-primary" style="width: 62%">
+                                    <div runat="server" id="divTienDoThoiGian" class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                                        <div runat="server" id="divTienDoThoiGianBar" class="progress-bar bg-primary">
                                         </div>
                                     </div>
                                 </div>
@@ -219,14 +218,12 @@
                                             Theo bình quân % hoàn thành công việc
                                         </span>
 
-                                        <strong class="small text-primary">
-                                            58%
+                                        <strong runat="server" id="lblTienDoCongViec" class="small text-primary">
                                         </strong>
                                     </div>
 
-                                    <div class="progress" role="progressbar" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100">
-
-                                        <div class="progress-bar bg-primary" style="width: 58%">
+                                    <div runat="server" id="divTienDoCongViec" class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                                        <div runat="server" id="divTienDoCongViecBar" class="progress-bar bg-primary">
                                         </div>
                                     </div>
                                 </div>
@@ -278,28 +275,8 @@
                                 </div>
                             </div>
 
-                            <div class="mt-4">
-                                <div class="font-size-8 fw-bold mb-1">
-                                    Thành viên (5)
-                                </div>
-
-                                <div class="d-flex align-items-center flex-wrap gap-2">
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        NV
-                                    </span>
-
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        LH
-                                    </span>
-
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        HM
-                                    </span>
-
-                                    <span class="badge rounded-circle bg-light text-primary border p-3">
-                                        +2
-                                    </span>
-                                </div>
+                            <div class="mt-2">
+                                <asp:Literal ID="ltrThanhVienGroup" runat="server"></asp:Literal>
                             </div>
                         </div>
                     </section>
@@ -363,46 +340,46 @@
                                     Hoạt động gần đây
                                 </h5>
 
-<asp:UpdatePanel runat="server" ID="upnlOpenProjectHistory" UpdateMode="Conditional" RenderMode="Inline">
+                                <asp:UpdatePanel runat="server" ID="upnlOpenProjectHistory" UpdateMode="Conditional" RenderMode="Inline">
 
-    <ContentTemplate>
-        <asp:LinkButton runat="server" ID="lbtViewAllHistory" CausesValidation="false" CssClass="small text-primary text-decoration-none" OnClick="lbtViewAllHistory_Click">
+                                    <ContentTemplate>
+                                        <asp:LinkButton runat="server" ID="lbtViewAllHistory" CausesValidation="false" CssClass="small text-primary text-decoration-none" OnClick="lbtViewAllHistory_Click">
 
-            Xem tất cả
-        </asp:LinkButton>
-    </ContentTemplate>
-</asp:UpdatePanel>
+                                            Xem tất cả
+                                        </asp:LinkButton>
+                                    </ContentTemplate>
+                                </asp:UpdatePanel>
                             </div>
 
                             <div class="list-group list-group-flush">
 
                                 <asp:Repeater runat="server" ID="rptRecentProjectHistory" OnItemDataBound="rptRecentProjectHistory_ItemDataBound">
 
-        <ItemTemplate>
-            <div class="list-group-item px-0 py-3">
-                <div class="d-flex gap-3">
-                    <span class="text-primary pt-1">
-                        <i class="far fa-circle"></i>
-                    </span>
+                                    <ItemTemplate>
+                                        <div class="list-group-item px-0 py-3">
+                                            <div class="d-flex gap-3">
+                                                <span class="text-primary pt-1">
+                                                    <i class="far fa-circle"></i>
+                                                </span>
 
-                    <div class="flex-grow-1">
-                        <asp:Label runat="server" ID="lblHistoryContent" CssClass="small">
-                        </asp:Label>
+                                                <div class="flex-grow-1">
+                                                    <asp:Label runat="server" ID="lblHistoryContent" CssClass="small">
+                                                    </asp:Label>
 
-                        <div class="small text-muted mt-1">
-                            <asp:Label runat="server" ID="lblHistoryTime">
-                            </asp:Label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </ItemTemplate>
-    </asp:Repeater>
+                                                    <div class="small text-muted mt-1">
+                                                        <asp:Label runat="server" ID="lblHistoryTime">
+                                                        </asp:Label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
 
-    <asp:Panel runat="server" ID="pnlEmptyRecentHistory" Visible="false" CssClass="text-muted small py-3">
+                                <asp:Panel runat="server" ID="pnlEmptyRecentHistory" Visible="false" CssClass="text-muted small py-3">
 
-        Chưa có hoạt động nào.
-    </asp:Panel>
+                                    Chưa có hoạt động nào.
+                                </asp:Panel>
 
                             </div>
                         </div>

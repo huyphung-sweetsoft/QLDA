@@ -101,20 +101,6 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             item.Save();
 
-            Guid id = item.IdThongBao;
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, id, item.NguoiTao).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(ex, "Failed to log CREATE action for TblThongBao");
-                }
-            });
-
             return item;
         }
 
@@ -124,19 +110,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             TblThongBao oldItem = GetById(id);
 
             item.Save();
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _auditManager.LogChangesAsync(oldItem, item, _tableName, id, item.NguoiCapNhat).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(ex, "Failed to log UPDATE action for TblThongBao");
-                }
-            });
-
             return item;
         }
 
