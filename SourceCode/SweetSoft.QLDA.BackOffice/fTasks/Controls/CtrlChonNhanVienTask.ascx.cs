@@ -39,7 +39,17 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             get => ViewState["EndDate"] != null ? (DateTime)ViewState["EndDate"] : DateTime.Today;
             set => ViewState["EndDate"] = value;
         }
-
+        public bool ViewOnly
+        {
+            get
+            {
+                return ViewState["ViewOnly"] != null && (bool)ViewState["ViewOnly"];
+            }
+            set
+            {
+                ViewState["ViewOnly"] = value;
+            }
+        }
         protected void Page_Load(object sender, EventArgs e)
         {
         }
@@ -82,7 +92,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             string thoiGian = $"<strong>{startDate:dd/MM/yyyy}</strong> - <strong>{endDate:dd/MM/yyyy}</strong>";
             ltrTaskInfoNote.Text = $"<div style='margin-bottom: 5px; font-size: 13px;'><i class='fas fa-tasks me-1'></i> {GetResourceText(BackEndResourceKeys.TASK)}: <strong style='color: #b91c1c;'>{taskName}</strong></div>" +
                                    $"<div style='font-size: 12px;'><i class='far fa-clock me-1'></i> {GetResourceText(BackEndResourceKeys.EXECUTION_TIME)}: {thoiGian}</div>";
-
+            btnConfirmTaskAssign.Visible = !ViewOnly;
             mdlTaskMemberPicker.OpenModal(true);
             upnlMemberPicker.Update();
         }
@@ -180,10 +190,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 chkSelect.Checked = true;
             }
+            chkSelect.Enabled = !ViewOnly;
         }
 
         protected void btnConfirmTaskAssign_Click(object sender, EventArgs e)
         {
+            if (ViewOnly)
+                return;
             List<Guid> selectedIds = new List<Guid>();
             selectedIds.AddRange(GetSelectedIdsFromRepeater(rptProjectMembers));
             selectedIds.AddRange(GetSelectedIdsFromRepeater(rptCompanyMembers));

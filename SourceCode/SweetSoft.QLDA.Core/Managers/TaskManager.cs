@@ -168,6 +168,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public void UpdateAssignments(Guid idDuAn, Guid idCongViec, List<Guid> newAssigneeIds)
         {
+            TblCongViec task = FetchById(idCongViec);
+
+            if (task == null)
+                throw new InvalidOperationException("Không tìm thấy công việc.");
+
+            if (task.TrangThai == 2)
+                throw new InvalidOperationException(
+                    "Không thể thay đổi nhân sự của công việc đã hoàn thành.");
             // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
             newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
 

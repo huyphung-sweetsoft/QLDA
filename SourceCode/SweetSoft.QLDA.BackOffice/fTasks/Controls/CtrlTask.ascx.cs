@@ -153,6 +153,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         return;
                     }
                     Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.ProjectId);
+                    CtrlChonNhanVienTask1.ViewOnly = task.TrangThai == 2;
                     ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OpenPicker(this.ProjectId, taskIdAssign, task.NgayBatDau.Value, task.NgayKetThuc.Value, task.TenCongViec, pmId);
                     break;
                 case "VIEW_SCHEDULE":

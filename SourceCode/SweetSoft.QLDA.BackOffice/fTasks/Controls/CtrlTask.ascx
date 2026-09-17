@@ -280,18 +280,13 @@
             ID="mdlTaskSchedule"
             Type="Primary"
             DefaultButton="btnCloseTaskSchedule">
-
             <ContentTemplate>
-
                 <asp:UpdatePanel
                     ID="upnlTaskSchedule"
                     runat="server"
                     UpdateMode="Conditional">
-
                     <ContentTemplate>
-
                         <div class="p-3">
-
                             <div style="font-size: 13px;
                                         color: #1e40af;
                                         background: #eff6ff;
@@ -299,46 +294,32 @@
                                         border-radius: 6px;
                                         border: 1px solid #bfdbfe;
                                         margin-bottom: 12px;">
-
                                 <i class="fas fa-calendar-alt me-1"></i>
                                 <%= GetResourceText(BackEndResourceKeys.EXECUTION_TIME) %>:
-
                                 <strong>
                                     <asp:Literal
                                         ID="ltrScheduleTaskName"
                                         runat="server">
                                     </asp:Literal>
                                 </strong>
-
                             </div>
-
                             <asp:HiddenField
                                 ID="hdfSingleTaskScheduleJson"
                                 runat="server" />
-
                             <div style="max-height:60vh;
                                         overflow-y:auto;
                                         padding:15px 5px 40px 5px;">
-
                                 <div id="task-timeline-container"
                                      class="row-sched-timeline-grid-7col">
                                 </div>
-
                             </div>
-
                         </div>
-
                     </ContentTemplate>
-
                 </asp:UpdatePanel>
-
             </ContentTemplate>
-
         </SweetSoft:ExtraModal>
-
             <script type="text/javascript">
                 window.CMSMasterJs = window.CMSMasterJs || {};
-
                 CMSMasterJs.RenderSingleTaskSchedule = function () {
                     var container = $('#task-timeline-container');
                     container.empty();
@@ -381,7 +362,6 @@
                         console.error("Lỗi vẽ JSON Lịch biểu Task: ", e);
                     }
                 };
-
                 // Hàm ghim Tooltip khi click (Chống chạm ra ngoài)
                 CMSMasterJs.PinTooltip = function (element, event) {
                     event.stopPropagation(); 
@@ -389,7 +369,6 @@
                     $('.sched-day-card').removeClass('show-tooltip'); // Gỡ ghim ô cũ
                     if (!isPinned) $(element).addClass('show-tooltip'); // Ghim ô mới
                 };
-
                 // Chạm ra ngoài màn hình -> Mất Tooltip
                 $(document).on('click', function () {
                     $('.sched-day-card').removeClass('show-tooltip');

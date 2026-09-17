@@ -55,7 +55,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         {
             _controlHelpers.ClearControlValues(upModal.Controls);
             hfEditTaskId.Value = string.Empty;
-            litModalTitle.Text = "Thêm mới công việc";
+            mdlEditTask.Title = "Thêm mới công việc";
 
             string maCV = _taskManager.GenerateNewTaskCode(CurrentProjectId, null);
             txtEditMaCv.Text = maCV;
@@ -76,7 +76,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             UpdateMinStartDate();
 
             upModal.Update();
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "OpenAddModal", "openEditModal();", true);
+            mdlEditTask.OpenModal(true);
         }
 
         private void EditTask_Callback(object sender, EventArgs e)
@@ -86,7 +86,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             if (task == null || task.DaXoa == true) return;
 
             hfEditTaskId.Value = task.IdCongViec.ToString();
-            litModalTitle.Text = this.IsEdit ? "Cập nhật thông tin công việc" : "Chi tiết công việc";
+            mdlEditTask.Title = this.IsEdit ? "Cập nhật thông tin công việc" : "Chi tiết công việc";
             txtEditMaCv.Text = task.MaCongViec;
             txtEditTenCv.Text = task.TenCongViec;
             txtEditGiaiDoan.Text = _taskManager.GetRootPhaseName(CurrentProjectId, task.IdCongViecCha);
@@ -106,7 +106,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             UpdateMinStartDate();
 
             upModal.Update();
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "OpenEditModal", "openEditModal();", true);
+            mdlEditTask.OpenModal(true);
         }
         #endregion
 
@@ -198,7 +198,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             }
             ShowNotify(isAddNew ? GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY) : GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);
             CtrlTask1.Rebind();
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "CloseEditModal", "closeEditModal();", true);
+            mdlEditTask.CloseModal();
         }
 
         protected void ddlEditCongViecChaSelected(object sender, EventArgs e)
@@ -212,14 +212,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, currentExcludeId, currentOrNewCode: targetCode);
             UpdateMinStartDate();
             upModal.Update();
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "KeepModalOpen", "openEditModal();", true);
+            mdlEditTask.OpenModal(true);
         }
 
         protected void ddlEditPhuThuocSelected(object sender, EventArgs e)
         {
             UpdateMinStartDate();
             upModal.Update();
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "KeepModalOpen", "openEditModal();", true);
+            mdlEditTask.OpenModal(true);
         }
         #endregion
 
@@ -249,8 +249,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         private void ShowAlert(string message)
         {
             string safeMsg = message.Replace("'", "\\'").Replace("\r\n", "\\n").Replace("\n", "\\n");
-            ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(),
-                $"openEditModal(); alert('{safeMsg}');", true);
+            mdlEditTask.OpenModal(true); // Cứu vớt Modal bằng C#
+            ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(), $"alert('{safeMsg}');", true);
         }
         public override void ConfirmRequest(ConfirmResult e)
         {
