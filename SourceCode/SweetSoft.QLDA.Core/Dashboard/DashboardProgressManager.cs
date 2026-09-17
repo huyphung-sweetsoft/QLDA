@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Managers;
@@ -36,17 +37,31 @@ namespace SweetSoft.QLDA.Core.Dashboard
             HashSet<Guid> projectIds = new HashSet<Guid>(
                 projects.Select(x => x.IdDuAn));
 
-            List<TblCongViec> allProjectTasks = _repository
+            List<TblCongViec> rawProjectTasks = _repository
                 .GetTasks(filter, false)
                 .Where(x => projectIds.Contains(x.IdDuAn))
                 .ToList();
+            List<TblCongViec> allProjectTasks = DashboardProgressCalculator
+                .ExcludeStageRootTasksWithChildren(rawProjectTasks);
 
+            // Lich lam viec la du lieu bo tro. Neu cau hinh lich cu chua
+            // tuong thich, Dashboard van render va Calculator fallback ve ngay lich.
+            DashboardWorkingCalendar workingCalendar =
+                TryCreateWorkingCalendar(projects, today);
+
+            // Du lieu lich su co the co ban ghi trung Id; khong de ToDictionary
+            // lam hong toan bo Dashboard.
             Dictionary<Guid, TblDoUuTien> priorities = _repository
                 .GetPriorities()
-                .ToDictionary(x => x.IdDoUuTien);
+                .GroupBy(x => x.IdDoUuTien)
+                .ToDictionary(x => x.Key, x => x.First());
 
             List<ProjectScheduleStatistic> projectStatistics =
-                BuildProjectScheduleStatistics(projects, allProjectTasks, today);
+                BuildProjectScheduleStatistics(
+                    projects,
+                    allProjectTasks,
+                    today,
+                    workingCalendar);
 
             int completedTaskCount = allProjectTasks.Count(
                 DashboardProgressCalculator.IsTaskCompleted);
@@ -87,6 +102,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     notStartedTaskCount,
                     overdueTaskCount),
                 ProjectScheduleStatistics = projectStatistics,
+                CurrentStage = isSingleProject
+                    ? GetCurrentProjectStage(
+                        projects.FirstOrDefault(),
+                        rawProjectTasks,
+                        today)
+                    : null,
                 ProjectTaskStatistics = BuildProjectTaskStatistics(
                     projects,
                     allProjectTasks,
@@ -148,8 +169,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         PriorityScore = priority == null
                             ? 0
                             : priority.DiemUuTien,
-                        Progress = DashboardProgressCalculator.NormalizeProgress(
-                            task.PhanTramHoanThanh),
+                        Progress = DashboardProgressCalculator.GetTaskActualProgress(
+                            task),
                         Status = GetTaskStateText(state),
                         StatusCode = (int)state,
                         Deadline = task.NgayKetThuc,
@@ -175,11 +196,34 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return _repository.GetProjectsForFilter();
         }
 
+        private DashboardWorkingCalendar TryCreateWorkingCalendar(
+            List<TblDuAn> projects,
+            DateTime calculationDate)
+        {
+            try
+            {
+                return DashboardWorkingCalendarFactory.CreateForActiveProjects(
+                    _repository,
+                    projects,
+                    calculationDate);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError(
+                    "DashboardProgress: cannot create working calendar. {0}",
+                    ex);
+                // Work-calendar is optional; Calculator accepts null and
+                // falls back to calendar-day progress.
+                return null;
+            }
+        }
+
         private static List<ProjectScheduleStatistic>
             BuildProjectScheduleStatistics(
                 List<TblDuAn> projects,
                 List<TblCongViec> tasks,
-                DateTime today)
+                DateTime today,
+                DashboardWorkingCalendar workingCalendar)
         {
             List<ProjectScheduleStatistic> result =
                 new List<ProjectScheduleStatistic>();
@@ -198,7 +242,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 decimal plannedProgress =
                     DashboardProgressCalculator.GetPlannedProgress(
                         project,
-                        today);
+                        today,
+                        workingCalendar);
                 decimal variance = Math.Round(
                     actualProgress - plannedProgress,
                     2);
@@ -312,8 +357,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         : priority.TenDoUuTien,
                     PriorityScore = priority == null ? 0 : priority.DiemUuTien,
                     Deadline = deadline,
-                    Progress = DashboardProgressCalculator.NormalizeProgress(
-                        task.PhanTramHoanThanh),
+                    Progress = DashboardProgressCalculator.GetTaskActualProgress(
+                        task),
                     DaysToDeadline = (deadline - today).Days,
                     IsOverdue = deadline < today
                 });
@@ -326,6 +371,185 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .ThenBy(x => x.TaskCode)
                 .Take(15)
                 .ToList();
+        }
+
+        /// <summary>
+        /// Lấy giai đoạn chưa hoàn thành đang bao phủ ngày hiện tại; trạng thái
+        /// của công việc gốc được dùng khi dữ liệu giai đoạn chưa có ngày thực tế.
+        /// Nếu không có giai đoạn đang chạy thì chọn giai đoạn chưa hoàn thành
+        /// đầu tiên theo thứ tự.
+        /// </summary>
+        private static ProjectStageInfo GetCurrentProjectStage(
+            TblDuAn project,
+            IEnumerable<TblCongViec> projectTasks,
+            DateTime calculationDate)
+        {
+            try
+            {
+                return GetCurrentProjectStageCore(
+                    project,
+                    projectTasks,
+                    calculationDate);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError(
+                    "DashboardProgress: cannot read current stage. {0}",
+                    ex);
+                // Current stage is supplementary information. Invalid legacy
+                // stage data must not make the Progress dashboard fail.
+                return null;
+            }
+        }
+
+        private static ProjectStageInfo GetCurrentProjectStageCore(
+            TblDuAn project,
+            IEnumerable<TblCongViec> projectTasks,
+            DateTime calculationDate)
+        {
+            if (project == null
+                || DashboardProgressCalculator.IsProjectCompleted(project))
+            {
+                return null;
+            }
+
+            DataTable stageTable = GiaiDoanDuAnManager.Instance.GetByIdDuAn(
+                project.IdDuAn);
+            if (stageTable == null || stageTable.Rows.Count == 0)
+            {
+                return null;
+            }
+
+            Dictionary<Guid, TblCongViec> rootTaskByStageId = (
+                    projectTasks ?? Enumerable.Empty<TblCongViec>())
+                .Where(task =>
+                    task.IdDuAn == project.IdDuAn
+                    && task.IdGiaiDoanDuAn.HasValue
+                    && !task.IdCongViecCha.HasValue)
+                .GroupBy(task => task.IdGiaiDoanDuAn.Value)
+                .ToDictionary(group => group.Key, group => group.First());
+
+            List<ProjectStageInfo> pendingStages = new List<ProjectStageInfo>();
+            foreach (DataRow row in stageTable.Rows)
+            {
+                DateTime? actualCompletionDate = ReadStageDate(
+                    row,
+                    "NgayHoanThanhThucTe");
+                Guid? stageId = ReadStageId(row);
+                TblCongViec rootTask;
+                bool isRootTaskCompleted = stageId.HasValue
+                    && rootTaskByStageId.TryGetValue(
+                        stageId.Value,
+                        out rootTask)
+                    && DashboardProgressCalculator.IsTaskCompleted(rootTask);
+
+                if (actualCompletionDate.HasValue || isRootTaskCompleted)
+                {
+                    continue;
+                }
+
+                pendingStages.Add(new ProjectStageInfo
+                {
+                    Name = ReadStageName(row),
+                    Order = ReadStageOrder(row),
+                    StartDate = ReadStageDate(row, "NgayBatDau"),
+                    ExpectedEndDate = ReadStageDate(
+                        row,
+                        "NgayDuKienHoanThanh")
+                });
+            }
+
+            ProjectStageInfo activeStage = pendingStages
+                .Where(stage =>
+                    stage.StartDate.HasValue
+                    && stage.ExpectedEndDate.HasValue
+                    && stage.StartDate.Value.Date <= calculationDate.Date
+                    && stage.ExpectedEndDate.Value.Date >= calculationDate.Date)
+                .OrderBy(stage => stage.Order)
+                .FirstOrDefault();
+
+            if (activeStage != null)
+            {
+                return activeStage;
+            }
+
+            // Nếu không có giai đoạn bao phủ ngày hiện tại, chỉ xem một
+            // giai đoạn chưa hoàn thành đã bắt đầu là giai đoạn hiện tại.
+            // Không gắn nhãn "hiện tại" cho một giai đoạn còn ở tương lai.
+            return pendingStages
+                .Where(stage =>
+                    stage.StartDate.HasValue
+                    && stage.StartDate.Value.Date <= calculationDate.Date)
+                .OrderBy(stage => stage.Order)
+                .FirstOrDefault();
+        }
+
+        private static DateTime? ReadStageDate(
+            DataRow row,
+            string columnName)
+        {
+            if (!row.Table.Columns.Contains(columnName)
+                || row[columnName] == DBNull.Value)
+            {
+                return null;
+            }
+
+            DateTime value;
+            return DateTime.TryParse(
+                Convert.ToString(row[columnName]),
+                out value)
+                ? value.Date
+                : (DateTime?)null;
+        }
+
+        private static Guid? ReadStageId(DataRow row)
+        {
+            if (!row.Table.Columns.Contains("IdGiaiDoanDuAn")
+                || row["IdGiaiDoanDuAn"] == DBNull.Value)
+            {
+                return null;
+            }
+
+            Guid value;
+            return Guid.TryParse(
+                Convert.ToString(row["IdGiaiDoanDuAn"]),
+                out value)
+                ? value
+                : (Guid?)null;
+        }
+
+        private static int ReadStageOrder(DataRow row)
+        {
+            if (!row.Table.Columns.Contains("ThuTuGiaiDoan")
+                || row["ThuTuGiaiDoan"] == DBNull.Value)
+            {
+                return int.MaxValue;
+            }
+
+            int value;
+            return int.TryParse(
+                Convert.ToString(row["ThuTuGiaiDoan"]),
+                out value)
+                ? value
+                : int.MaxValue;
+        }
+
+        private static string ReadStageName(DataRow row)
+        {
+            string stageName = row.Table.Columns.Contains("TenGiaiDoan")
+                ? Convert.ToString(row["TenGiaiDoan"])
+                : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(stageName)
+                && row.Table.Columns.Contains("TenGiaiDoanTuyChinh"))
+            {
+                stageName = Convert.ToString(
+                    row["TenGiaiDoanTuyChinh"]);
+            }
+
+            return string.IsNullOrWhiteSpace(stageName)
+                ? "-"
+                : stageName.Trim();
         }
 
         private static List<TaskProgressStatusStatistic>

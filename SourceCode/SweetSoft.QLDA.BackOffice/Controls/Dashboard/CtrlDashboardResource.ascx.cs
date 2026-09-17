@@ -21,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=2")
+                        "/Controls/Dashboard/dashboard-style.css?v=4")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -29,7 +29,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-resource.js?v=2")
+                        "/Controls/Dashboard/dashboard-resource.js?v=3")
                 };
 
                 return new RegisterCSSAndJS(
@@ -359,12 +359,16 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         end = week.WeekEnd.ToString("yyyy-MM-dd"),
                         label = week.Label,
                         displayRange = week.WeekStart.ToString("dd/MM")
-                            + "–" + week.WeekEnd.ToString("dd/MM/yyyy"),
+                            + "–" + week.WeekStart.AddDays(6)
+                                .ToString("dd/MM/yyyy"),
                         allocation = week.AllocationPercent,
                         allocatedDays = week.AllocatedDays,
                         capacityDays = week.CapacityDays,
                         overAllocatedDays = week.OverAllocatedDays,
                         overlapDayCount = week.OverlapDayCount,
+                        hasHoliday = week.DailyLoads.Any(day => day.IsHoliday),
+                        workingDayCount = week.DailyLoads.Count(
+                            day => day.IsWorkingDay),
                         projects = week.Projects.Select(project => new
                         {
                             detailUrl = GetProjectDetailUrl(project.ProjectId),
@@ -398,8 +402,20 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                             date = day.Date.ToString("yyyy-MM-dd"),
                             displayDate = GetDayLabel(day.Date)
                                 + " " + day.Date.ToString("dd/MM"),
+                            isWorkingDay = day.IsWorkingDay,
+                            isHoliday = day.IsHoliday,
+                            holidayName = day.HolidayName,
                             allocation = day.AllocationPercent,
-                            taskCount = day.Tasks.Count
+                            taskCount = day.Tasks.Count,
+                            tasks = day.Tasks.Select(task => new
+                            {
+                                tasksUrl = GetProjectTasksUrl(task.ProjectId),
+                                code = task.TaskCode,
+                                name = task.TaskName,
+                                projectCode = task.ProjectCode,
+                                projectName = task.ProjectName,
+                                allocation = task.AllocationPercent
+                            })
                         })
                     })
                 }));
@@ -426,6 +442,22 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_EXCESS),
                 overlapDaysFormat = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_SCHEDULE_OVERLAP_DAYS),
+                formula = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEKLY_LOAD_FORMULA),
+                date = GetResourceText(BackEndResourceKeys.DATE),
+                status = GetResourceText(BackEndResourceKeys.STATUS),
+                workingDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WORKING_DAY),
+                nonWorkingDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NON_WORKING_DAY),
+                holidayDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_HOLIDAY_DAY),
+                holidayDaysFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_HOLIDAY_DAYS),
+                noAssignmentWeek = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_ASSIGNMENT_WEEK),
+                noTasksOnDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_TASKS_ON_DAY),
                 noProjectAllocation = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_WEEK_PROJECT_ALLOCATION),
                 noTasks = GetResourceText(

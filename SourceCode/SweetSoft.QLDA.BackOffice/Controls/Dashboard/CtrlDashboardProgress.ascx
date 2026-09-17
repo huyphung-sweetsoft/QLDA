@@ -148,7 +148,7 @@
                     <div class="flex-grow-1">
                         <% if (Model.IsSingleProject) { %>
                         <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_VARIANCE) %></p>
-                        <h3 class="mb-0 <%= GetVarianceCss(GetSelectedProjectVariance()) %>">
+                        <h3 class="mb-0 <%= GetSelectedProjectVarianceCss() %>">
                             <%= GetSelectedProjectVarianceText() %>
                         </h3>
                         <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_MINUS_PLAN) %></small>
@@ -172,9 +172,9 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-3">
+    <div class="row g-3 mb-3 progress-summary-row">
         <div class="col-12 col-xl-8 d-flex">
-            <div class="card w-100 border-0 shadow-sm overview-project-summary-card">
+            <div class="card w-100 border-0 shadow-sm overview-project-summary-card progress-schedule-card">
                 <div class="card-body">
                     <% if (Model.IsSingleProject && Model.ProjectScheduleStatistics.Count > 0) {
                            var selectedProject = Model.ProjectScheduleStatistics[0]; %>
@@ -197,6 +197,22 @@
                         </div>
                     </a>
 
+                    <% if (Model.CurrentStage != null) { %>
+                    <div class="overview-project-identity px-3 py-2 rounded mb-3">
+                        <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CURRENT_PROJECT_STAGE) %></div>
+                        <div class="fw-semibold"><%: Model.CurrentStage.Name %></div>
+                    </div>
+                    <% } %>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <a href="<%: GetProjectGanttUrl(selectedProject.ProjectId) %>" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-git-branch me-1"></i><%= GetResourceText(BackEndResourceKeys.GANTT_CHART) %>
+                        </a>
+                        <a href="<%: GetProjectReportUrl(selectedProject.ProjectId) %>" class="btn btn-sm btn-outline-primary">
+                            <i class="bx bx-bar-chart-alt-2 me-1"></i><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %>
+                        </a>
+                    </div>
+
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-md-4">
                             <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></div>
@@ -208,11 +224,7 @@
                         </div>
                         <div class="col-12 col-md-4">
                             <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_COMPLETION) %></div>
-                            <div class="fw-semibold">
-                                <%= selectedProject.ActualCompletionDate.HasValue
-                                    ? selectedProject.ActualCompletionDate.Value.ToString("dd/MM/yyyy")
-                                    : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED) %>
-                            </div>
+                            <div class="fw-semibold"><%= GetActualCompletionText(selectedProject) %></div>
                         </div>
                     </div>
 
@@ -251,7 +263,7 @@
                             <div class="fw-semibold"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_VARIANCE) %></div>
                             <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_VARIANCE_DESC) %></div>
                         </div>
-                        <div class="fs-4 mt-2 mt-sm-0 <%= GetVarianceCss(selectedProject.Variance) %>">
+                        <div class="fs-4 mt-2 mt-sm-0 <%= GetVarianceCss(selectedProject.Health, selectedProject.Variance) %>">
                             <%= GetVarianceText(selectedProject.Variance) %>%
                         </div>
                     </div>
@@ -269,7 +281,7 @@
         </div>
 
         <div class="col-12 col-xl-4 d-flex">
-            <div class="card w-100 border-0 shadow-sm">
+            <div class="card w-100 border-0 shadow-sm progress-task-status-card">
                 <div class="card-body">
                     <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_STATUS) %></h5>
                     <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_STATUS_DESC) %></p>
@@ -417,7 +429,7 @@
                             </td>
                             <td class="text-center"><%= project.PlannedProgress.ToString("0.##") %>%</td>
                             <td class="text-center">
-                                <span class="<%= GetVarianceCss(project.Variance) %>">
+                                <span class="<%= GetVarianceCss(project.Health, project.Variance) %>">
                                     <%= project.Variance > 0 ? "+" : string.Empty %><%= project.Variance.ToString("0.##") %>%
                                 </span>
                             </td>

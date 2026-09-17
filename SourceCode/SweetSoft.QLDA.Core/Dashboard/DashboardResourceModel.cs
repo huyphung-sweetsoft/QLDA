@@ -84,6 +84,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public string DayLabel { get; set; }
 
         public bool IsToday { get; set; }
+
+        public bool IsWorkingDay { get; set; }
+
+        public bool IsHoliday { get; set; }
+
+        public string HolidayName { get; set; }
     }
 
     public class ResourceMonthInfo
@@ -250,6 +256,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
         }
 
         public DateTime Date { get; set; }
+
+        public bool IsWorkingDay { get; set; }
+
+        public bool IsHoliday { get; set; }
+
+        public string HolidayName { get; set; }
 
         public decimal AllocationPercent { get; set; }
 

@@ -37,6 +37,13 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .GetTasks(filter, false)
                 .Where(x => projectIds.Contains(x.IdDuAn))
                 .ToList();
+            List<TblCongViec> progressTasks = DashboardProgressCalculator
+                .ExcludeStageRootTasksWithChildren(allTasks);
+            DashboardWorkingCalendar workingCalendar =
+                DashboardWorkingCalendarFactory.CreateForActiveProjects(
+                    _repository,
+                    projects,
+                    today);
             List<TblRuiRoDuAn> risks = _repository.GetRisks(filter);
             List<TblVanDe> issues = _repository.GetIssues(filter);
             List<TblLichHop> meetings = _repository
@@ -46,8 +53,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             decimal atRiskProjectRate = GetAtRiskProjectRate(
                 projects,
-                allTasks,
-                today);
+                progressTasks,
+                today,
+                workingCalendar);
             DashboardFinancialSummary financialSummary =
                 _repository.GetFinancialSummary(filter);
 
@@ -59,17 +67,15 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             int totalProjectCount = projects.Count;
             int activeProjectCount = projects.Count(p =>
-                p.NgayBatDau.Date <= today &&
-                p.NgayDuKienHoanThanh.Date >= today &&
-                !p.NgayHoanThanhThucTe.HasValue
-            );
+                DashboardProgressCalculator.GetProjectState(p, today)
+                    == DashboardProjectState.InProgress);
 
             int upcomingMeetingCount = GetUpcomingMeetingCount(
                 meetings,
                 generatedAt);
             List<UpcomingMeetingSummary> upcomingMeetings =
                 GetUpcomingMeetingSummaries(meetings, projects, generatedAt);
-            int overdueTaskCount = allTasks.Count(x =>
+            int overdueTaskCount = progressTasks.Count(x =>
                 DashboardProgressCalculator.IsTaskOverdue(x, today));
 
             decimal totalContractValue =
@@ -78,8 +84,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             var projectProgressStats = GetProjectProgressStatistics(
                 projects,
-                allTasks,
-                today);
+                progressTasks,
+                today,
+                workingCalendar);
             
             decimal overallProgress = 0;
             if (projectProgressStats.Count > 0)
@@ -93,7 +100,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             {
                 TotalProjectCount = totalProjectCount,
                 OverallProgress = Math.Round(overallProgress, 2),
-                TotalTaskCount = allTasks.Count,
+                TotalTaskCount = progressTasks.Count,
                 OverdueTaskCount = overdueTaskCount,
                 TotalContractValue = totalContractValue,
                 GeneratedAt = generatedAt,
@@ -176,7 +183,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
         private static List<ProjectProgressStatistic> GetProjectProgressStatistics(
     List<TblDuAn> projects,
     List<TblCongViec> tasks,
-    DateTime today)
+    DateTime today,
+    DashboardWorkingCalendar workingCalendar)
         {
             var result = new List<ProjectProgressStatistic>();
 
@@ -193,7 +201,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 decimal plannedProgress =
                     DashboardProgressCalculator.GetPlannedProgress(
                         project,
-                        today);
+                        today,
+                        workingCalendar);
                 decimal variance = Math.Round(
                     progress - plannedProgress,
                     2);
@@ -440,16 +449,16 @@ namespace SweetSoft.QLDA.Core.Dashboard
         private static decimal GetAtRiskProjectRate(
     List<TblDuAn> projects,
     List<TblCongViec> tasks,
-    DateTime today)
+    DateTime today,
+    DashboardWorkingCalendar workingCalendar)
         {
             // Các dự án đang hoạt động:
             // - đã bắt đầu
             // - chưa hoàn thành
             var activeProjects = projects
                 .Where(p =>
-                    p.NgayBatDau.Date <= today &&
-                    p.NgayDuKienHoanThanh.Date >= today &&
-                    !p.NgayHoanThanhThucTe.HasValue)
+                    DashboardProgressCalculator.GetProjectState(p, today)
+                        == DashboardProjectState.InProgress)
                 .ToList();
 
             if (activeProjects.Count == 0)
@@ -476,12 +485,20 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 decimal plannedProgress =
                     DashboardProgressCalculator.GetPlannedProgress(
                         project,
-                        today);
+                        today,
+                        workingCalendar);
                 decimal variance = actualProgress - plannedProgress;
-                bool hasOverdueTask = projectTasks.Any(x =>
+                int overdueTaskCount = projectTasks.Count(x =>
                     DashboardProgressCalculator.IsTaskOverdue(x, today));
+                ProjectScheduleHealth health =
+                    DashboardProgressCalculator.GetProjectHealth(
+                        project,
+                        variance,
+                        overdueTaskCount,
+                        today);
 
-                if (variance < -5 || hasOverdueTask)
+                if (health == ProjectScheduleHealth.AtRisk
+                    || health == ProjectScheduleHealth.BehindSchedule)
                 {
                     atRiskCount++;
                 }

@@ -146,6 +146,11 @@
             number.toFixed(1).replace(".0", ""));
     }
 
+    function formatNumber(value) {
+        var number = Number(value) || 0;
+        return number.toFixed(1).replace(".0", "");
+    }
+
     function renderProject(container, project) {
         var card = document.createElement(project.detailUrl ? "a" : "div");
         card.className = "resource-drawer-project" +
@@ -220,6 +225,134 @@
         container.appendChild(card);
     }
 
+    function renderDailyTask(container, task) {
+        var item = document.createElement(task.tasksUrl ? "a" : "div");
+        item.className = "resource-day-task" +
+            (task.tasksUrl ? " d-block text-decoration-none text-reset" : "");
+        if (task.tasksUrl) {
+            item.href = task.tasksUrl;
+        }
+
+        appendText(
+            item,
+            "div",
+            "fw-semibold",
+            (task.code || texts.task || "") +
+                (task.name ? " - " + task.name : ""));
+        appendText(
+            item,
+            "div",
+            "small text-muted",
+            (task.projectCode || texts.project || "") +
+                (task.projectName ? " · " + task.projectName : ""));
+        container.appendChild(item);
+    }
+
+    function getDayStatus(day) {
+        if (day.isHoliday) {
+            return {
+                text: formatText(
+                    texts.holidayDay,
+                    day.holidayName || texts.nonWorkingDay || ""),
+                css: "resource-day-holiday"
+            };
+        }
+
+        if (!day.isWorkingDay) {
+            return {
+                text: texts.nonWorkingDay || "",
+                css: "resource-day-non-working"
+            };
+        }
+
+        return {
+            text: texts.workingDay || "",
+            css: "resource-day-working"
+        };
+    }
+
+    function renderDailyAllocation(container, days) {
+        container.textContent = "";
+        days = days || [];
+        if (days.length === 0) {
+            appendText(
+                container,
+                "div",
+                "resource-drawer-empty",
+                texts.noTasks || "");
+            return;
+        }
+
+        var wrapper = document.createElement("div");
+        wrapper.className = "table-responsive";
+        var table = document.createElement("table");
+        table.className = "table table-sm resource-drawer-day-table mb-0";
+        var head = document.createElement("thead");
+        var headRow = document.createElement("tr");
+        [texts.date || "Date", texts.status || "Status",
+            texts.task || "Task", texts.utilization || "Utilization"]
+            .forEach(function (label) {
+                appendText(headRow, "th", "", label);
+            });
+        head.appendChild(headRow);
+        table.appendChild(head);
+
+        var body = document.createElement("tbody");
+        days.forEach(function (day) {
+            var status = getDayStatus(day);
+            var row = document.createElement("tr");
+            if (day.isHoliday) {
+                row.className = "resource-day-holiday-row";
+            } else if (!day.isWorkingDay) {
+                row.className = "resource-day-non-working-row";
+            }
+
+            appendText(row, "td", "resource-day-date", day.displayDate || day.date);
+            appendText(row, "td", "resource-day-status " + status.css, status.text);
+
+            var taskCell = document.createElement("td");
+            if (!day.tasks || day.tasks.length === 0) {
+                appendText(
+                    taskCell,
+                    "span",
+                    "small text-muted",
+                    texts.noTasksOnDay || texts.noTasks || "");
+            } else {
+                day.tasks.forEach(function (task) {
+                    renderDailyTask(taskCell, task);
+                });
+            }
+            row.appendChild(taskCell);
+
+            appendText(
+                row,
+                "td",
+                "text-end text-nowrap resource-day-load",
+                formatPercent(day.allocation));
+            body.appendChild(row);
+        });
+
+        table.appendChild(body);
+        wrapper.appendChild(table);
+        container.appendChild(wrapper);
+    }
+
+    function renderWeekStatus(container, week, days) {
+        container.textContent = "";
+        days = days || [];
+        var workingDays = days.filter(function (day) {
+            return day.isWorkingDay;
+        });
+
+        if (workingDays.length > 0 && Number(week.allocatedDays) <= 0) {
+            appendText(
+                container,
+                "span",
+                "badge resource-week-status resource-week-no-assignment",
+                texts.noAssignmentWeek || "");
+        }
+    }
+
     function openDrawer(employeeId, weekStart) {
         var drawer = document.getElementById("resource-detail-drawer");
         var backdrop = document.getElementById("resource-detail-backdrop");
@@ -227,13 +360,17 @@
         var subtitle = document.getElementById("resource-detail-subtitle");
         var load = document.getElementById("resource-detail-load");
         var capacity = document.getElementById("resource-detail-capacity");
+        var formula = document.getElementById("resource-detail-formula");
+        var weekStatus = document.getElementById("resource-detail-week-status");
+        var dayContainer = document.getElementById("resource-detail-days");
         var projectContainer = document.getElementById("resource-detail-projects");
         var taskContainer = document.getElementById("resource-detail-tasks");
         var employee = findEmployee(employeeId);
         var week = employee ? findWeek(employee, weekStart) : null;
 
-        if (!drawer || !backdrop || !employee || !week ||
-            !capacity || !projectContainer || !taskContainer) {
+        if (!drawer || !backdrop || !employee || !week || !capacity ||
+            !formula || !weekStatus || !dayContainer ||
+            !projectContainer || !taskContainer) {
             return;
         }
 
@@ -249,8 +386,12 @@
                 : Number(week.allocation) > 0
                     ? "text-success"
                     : "text-secondary";
-        capacity.textContent = formatDays(week.allocatedDays) + "/" +
-            formatText(texts.capacityFormat, formatDays(week.capacityDays)) +
+        var days = week.days || [];
+        var holidayDayCount = days.filter(function (day) {
+            return day.isHoliday;
+        }).length;
+        var capacityText = formatDays(week.allocatedDays) + "/" +
+            formatText(texts.capacityFormat, formatNumber(week.capacityDays)) +
             (Number(week.overAllocatedDays) > 0
                 ? formatText(
                     texts.excessFormat,
@@ -258,9 +399,21 @@
                 : "") +
             (Number(week.overlapDayCount) > 0
                 ? formatText(
-                    texts.overlapDaysFormat,
+                texts.overlapDaysFormat,
                     week.overlapDayCount)
                 : "");
+        if (holidayDayCount > 0) {
+            capacityText += formatText(
+                texts.holidayDaysFormat || "",
+                holidayDayCount);
+        }
+        capacity.textContent = capacityText;
+        formula.textContent = formatText(
+            texts.formula || "",
+            formatNumber(week.allocatedDays),
+            formatNumber(week.capacityDays));
+        renderWeekStatus(weekStatus, week, days);
+        renderDailyAllocation(dayContainer, days);
         projectContainer.textContent = "";
         taskContainer.textContent = "";
 

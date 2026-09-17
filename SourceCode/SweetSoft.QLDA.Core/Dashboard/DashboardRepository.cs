@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using SubSonic;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.DataAccess;
 
 namespace SweetSoft.QLDA.Core.Dashboard
@@ -42,6 +43,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 " FROM TblChiPhi c" +
                 " INNER JOIN FilteredProjects p ON p.IdDuAn = c.IdDuAn" +
                 " WHERE c.DaXoa = 0");
+
+            AppendApprovedCostStatusFilter(sql, parameters, "c");
 
             if (HasDateRange(filter))
             {
@@ -167,6 +170,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
             AppendProjectFilter(sql, parameters, "c.IdDuAn", filter);
+            AppendApprovedCostStatusFilter(sql, parameters, "c");
             if (HasDateRange(filter))
             {
                 AddDateRangeParameters(parameters, filter);
@@ -348,12 +352,24 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public List<TblDuAn> GetCompletedProjects(DashboardCostFilter filter)
         {
+            const string effectiveCompletionDate =
+                "COALESCE(p.NgayHoanThanhThucTe, " +
+                "p.NgayCapNhat, p.NgayDuKienHoanThanh)";
+            // Dashboard chi phí chỉ thống kê dự án có trạng thái Hoàn thành.
+            // Ngày hoàn thành thực tế dùng để lọc theo thời gian, không thay
+            // thế trạng thái vì một dự án có thể được chuyển sang Tạm dừng.
             StringBuilder sql = new StringBuilder(
                 "SELECT p.* FROM TblDuAn p" +
                 " WHERE p.DaXoa = 0" +
-                " AND p.NgayHoanThanhThucTe IS NOT NULL");
+                " AND p.TrangThai = @CompletedProjectStatus");
             Dictionary<string, object> parameters =
-                new Dictionary<string, object>();
+                new Dictionary<string, object>
+                {
+                    {
+                        "@CompletedProjectStatus",
+                        (byte)DuAnStatus.HoanThanh
+                    }
+                };
 
             if (filter != null && filter.ProjectId.HasValue)
             {
@@ -363,7 +379,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             if (filter != null && filter.CompletedFrom.HasValue)
             {
-                sql.Append(" AND p.NgayHoanThanhThucTe >= @CompletedFrom");
+                sql.Append(
+                    " AND " + effectiveCompletionDate +
+                    " >= @CompletedFrom");
                 parameters.Add(
                     "@CompletedFrom",
                     filter.CompletedFrom.Value.Date);
@@ -371,18 +389,42 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             if (filter != null && filter.CompletedTo.HasValue)
             {
-                sql.Append(" AND p.NgayHoanThanhThucTe < @CompletedToExclusive");
+                sql.Append(
+                    " AND " + effectiveCompletionDate +
+                    " < @CompletedToExclusive");
                 parameters.Add(
                     "@CompletedToExclusive",
                     filter.CompletedTo.Value.Date.AddDays(1));
             }
 
-            sql.Append(" ORDER BY p.NgayHoanThanhThucTe DESC, p.MaDuAn");
+            sql.Append(
+                " ORDER BY " + effectiveCompletionDate +
+                " DESC, p.MaDuAn");
             return ExecuteList<TblDuAn>(sql, parameters);
         }
 
-        public List<TblChiPhi> GetCostsForProjects(
+        public List<TblChiPhi> GetApprovedCostsForProjects(
             IEnumerable<Guid> projectIds)
+        {
+            return GetCostsForProjects(
+                projectIds,
+                TrangThaiChiPhi.Approved,
+                true);
+        }
+
+        public List<TblChiPhi> GetPendingApprovalCostsForProjects(
+            IEnumerable<Guid> projectIds)
+        {
+            return GetCostsForProjects(
+                projectIds,
+                TrangThaiChiPhi.NotApproved,
+                false);
+        }
+
+        private static List<TblChiPhi> GetCostsForProjects(
+            IEnumerable<Guid> projectIds,
+            TrangThaiChiPhi costStatus,
+            bool includeLegacyWithoutStatus)
         {
             Dictionary<string, object> parameters;
             string idList = BuildGuidParameterList(
@@ -398,10 +440,17 @@ namespace SweetSoft.QLDA.Core.Dashboard
             string sql =
                 "SELECT c.* FROM TblChiPhi c" +
                 " WHERE c.DaXoa = 0" +
-                " AND c.IdDuAn IN (" + idList + ")" +
-                " ORDER BY c.NgayTao, c.MaChiPhi";
+                " AND c.IdDuAn IN (" + idList + ")";
+            StringBuilder commandText = new StringBuilder(sql);
+            AppendCostStatusFilter(
+                commandText,
+                parameters,
+                "c",
+                costStatus,
+                includeLegacyWithoutStatus);
+            commandText.Append(" ORDER BY c.NgayTao, c.MaChiPhi");
 
-            return ExecuteList<TblChiPhi>(sql, parameters);
+            return ExecuteList<TblChiPhi>(commandText, parameters);
         }
 
         public List<TblThanhToan> GetPaymentsForProjects(
@@ -573,14 +622,42 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DateTime fromDate,
             int take)
         {
+            // Cuộc họp có người tham gia chỉ hiển thị cho người được mời;
+            // dữ liệu họp cũ chưa có người tham gia vẫn dùng thành viên dự án.
             StringBuilder sql = new StringBuilder(
-                "SELECT DISTINCT TOP (@Take) m.*" +
+                "SELECT TOP (@Take) m.*" +
                 " FROM TblLichHop m" +
                 " INNER JOIN TblDuAn p ON p.IdDuAn = m.IdDuAn" +
-                " INNER JOIN TblThanhVienDuAn tv ON tv.IdDuAn = p.IdDuAn" +
-                " WHERE m.DaXoa = 0 AND p.DaXoa = 0 AND tv.DaXoa = 0" +
-                " AND tv.IdNhanVien = @EmployeeId" +
-                " AND m.ThoiGianBatDau >= @FromDate");
+                " WHERE m.DaXoa = 0 AND p.DaXoa = 0" +
+                " AND m.ThoiGianBatDau >= @FromDate" +
+                " AND (" +
+                    " EXISTS (" +
+                        " SELECT 1" +
+                        " FROM TblLichHop_NhanVien attendee" +
+                        " INNER JOIN aspnet_Users attendeeUser" +
+                            " ON attendeeUser.UserId = attendee.IdNhanVien" +
+                        " WHERE attendee.IdLichHop = m.IdLichHop" +
+                        " AND attendee.IdNhanVien = @EmployeeId" +
+                        " AND (attendeeUser.IsDeleted = 0 OR attendeeUser.IsDeleted IS NULL)" +
+                    " )" +
+                    " OR (" +
+                        " NOT EXISTS (" +
+                            " SELECT 1" +
+                            " FROM TblLichHop_NhanVien attendee" +
+                            " INNER JOIN aspnet_Users attendeeUser" +
+                                " ON attendeeUser.UserId = attendee.IdNhanVien" +
+                            " WHERE attendee.IdLichHop = m.IdLichHop" +
+                            " AND (attendeeUser.IsDeleted = 0 OR attendeeUser.IsDeleted IS NULL)" +
+                        " )" +
+                        " AND EXISTS (" +
+                            " SELECT 1" +
+                            " FROM TblThanhVienDuAn tv" +
+                            " WHERE tv.IdDuAn = p.IdDuAn" +
+                            " AND tv.IdNhanVien = @EmployeeId" +
+                            " AND tv.DaXoa = 0" +
+                        " )" +
+                    " )" +
+                " )");
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "@Take", take },
@@ -721,6 +798,48 @@ namespace SweetSoft.QLDA.Core.Dashboard
             }
         }
 
+        /// <summary>
+        /// Chi phí cũ chưa có trạng thái được xem là đã duyệt để không làm
+        /// thay đổi số liệu lịch sử. Chi phí tạo mới luôn có trạng thái 0.
+        /// </summary>
+        private static void AppendApprovedCostStatusFilter(
+            StringBuilder sql,
+            IDictionary<string, object> parameters,
+            string costAlias)
+        {
+            AppendCostStatusFilter(
+                sql,
+                parameters,
+                costAlias,
+                TrangThaiChiPhi.Approved,
+                true);
+        }
+
+        private static void AppendCostStatusFilter(
+            StringBuilder sql,
+            IDictionary<string, object> parameters,
+            string costAlias,
+            TrangThaiChiPhi costStatus,
+            bool includeLegacyWithoutStatus)
+        {
+            sql.Append(
+                " AND (" + costAlias + ".TrangThai = @CostStatus");
+
+            if (includeLegacyWithoutStatus)
+            {
+                sql.Append(" OR " + costAlias + ".TrangThai IS NULL");
+            }
+
+            sql.Append(")");
+
+            if (!parameters.ContainsKey("@CostStatus"))
+            {
+                parameters.Add(
+                    "@CostStatus",
+                    (byte)costStatus);
+            }
+        }
+
         private static string BuildGuidParameterList(
             IEnumerable<Guid> values,
             string parameterPrefix,
@@ -775,10 +894,29 @@ namespace SweetSoft.QLDA.Core.Dashboard
             }
 
             AddDateRangeParameters(parameters, filter);
+            const string completedProjectStatusParameter =
+                "@ProjectCompletedStatus";
+            if (!parameters.ContainsKey(completedProjectStatusParameter))
+            {
+                parameters.Add(
+                    completedProjectStatusParameter,
+                    (byte)DuAnStatus.HoanThanh);
+            }
+
+            // Luồng đổi trạng thái dự án không bắt buộc nhập ngày thực tế.
+            // Với dự án Hoàn thành, dùng lần cập nhật cuối làm mốc kết thúc
+            // tạm thời để bộ lọc thời gian không xem nó là đang chạy mãi.
+            string effectiveProjectEndDate =
+                "CASE WHEN " + projectAlias + ".TrangThai = " +
+                completedProjectStatusParameter +
+                " THEN COALESCE(" + projectAlias +
+                ".NgayHoanThanhThucTe, " + projectAlias +
+                ".NgayCapNhat) ELSE " + projectAlias +
+                ".NgayHoanThanhThucTe END";
             sql.Append(
                 " AND " + projectAlias + ".NgayBatDau < @ToDateExclusive" +
-                " AND (" + projectAlias + ".NgayHoanThanhThucTe IS NULL" +
-                " OR " + projectAlias + ".NgayHoanThanhThucTe >= @FromDate)");
+                " AND (" + effectiveProjectEndDate + " IS NULL" +
+                " OR " + effectiveProjectEndDate + " >= @FromDate)");
         }
 
         private static void AddDateRangeParameters(

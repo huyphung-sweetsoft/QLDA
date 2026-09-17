@@ -40,6 +40,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public List<ProjectScheduleStatistic> ProjectScheduleStatistics { get; set; }
 
+        public ProjectStageInfo CurrentStage { get; set; }
+
         public List<ProjectTaskProgressStatistic> ProjectTaskStatistics { get; set; }
 
         public List<TaskProgressDetail> TaskProgressDetails { get; set; }
@@ -81,6 +83,17 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public int OverdueTaskCount { get; set; }
 
         public ProjectScheduleHealth Health { get; set; }
+    }
+
+    public class ProjectStageInfo
+    {
+        public string Name { get; set; }
+
+        public int Order { get; set; }
+
+        public DateTime? StartDate { get; set; }
+
+        public DateTime? ExpectedEndDate { get; set; }
     }
 
     public class ProjectTaskProgressStatistic

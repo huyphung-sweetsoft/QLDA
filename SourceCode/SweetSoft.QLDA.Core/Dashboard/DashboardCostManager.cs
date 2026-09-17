@@ -29,7 +29,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<TblDuAn> projects = _repository.GetCompletedProjects(filter);
             List<Guid> projectIds = projects.Select(x => x.IdDuAn).ToList();
 
-            List<TblChiPhi> costs = _repository.GetCostsForProjects(projectIds);
+            // Chi phí thực tế chỉ gồm khoản đã duyệt. Các khoản chờ duyệt
+            // được lấy riêng để hiển thị, không làm thay đổi lãi/lỗ hiện tại.
+            List<TblChiPhi> approvedCosts =
+                _repository.GetApprovedCostsForProjects(projectIds);
+            List<TblChiPhi> pendingApprovalCosts =
+                _repository.GetPendingApprovalCostsForProjects(projectIds);
             List<TblThanhToan> payments =
                 _repository.GetPaymentsForProjects(projectIds);
             List<TblHopDongThucHien> contracts =
@@ -41,13 +46,15 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<ProjectCostStatistic> projectStatistics =
                 BuildProjectStatistics(
                     projects,
-                    costs,
+                    approvedCosts,
                     payments,
                     contractById);
 
             decimal totalContractValue = contracts.Sum(x =>
                 x.GiaTriHopDong ?? 0);
-            decimal actualCost = costs.Sum(x => x.SoTien);
+            decimal actualCost = approvedCosts.Sum(x => x.SoTien);
+            decimal pendingApprovalCost = pendingApprovalCosts.Sum(
+                x => x.SoTien);
             decimal receivedPayment = payments
                 .Where(x => x.NgayThanhToanThucTe.HasValue)
                 .Sum(x => x.SoTien);
@@ -59,6 +66,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 CompletedProjectCount = projects.Count,
                 TotalContractValue = totalContractValue,
                 ActualCost = actualCost,
+                PendingApprovalCost = pendingApprovalCost,
+                PendingApprovalCostItemCount = pendingApprovalCosts.Count,
                 GrossProfit = grossProfit,
                 ProfitMargin = GetPercent(grossProfit, totalContractValue),
                 ReceivedPayment = receivedPayment,
@@ -72,8 +81,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     ? 0
                     : Math.Round(actualCost / projects.Count, 2),
                 ProjectStatistics = projectStatistics,
-                CostTrendStatistics = BuildCostTrend(costs),
-                LargestCostItems = BuildLargestCostItems(costs, projects)
+                CostTrendStatistics = BuildCostTrend(approvedCosts),
+                LargestCostItems = BuildLargestCostItems(
+                    approvedCosts,
+                    projects)
             };
         }
 
@@ -126,7 +137,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     ProjectId = project.IdDuAn,
                     ProjectCode = project.MaDuAn,
                     ProjectName = project.TenDuAn,
-                    CompletionDate = project.NgayHoanThanhThucTe.Value,
+                    CompletionDate = GetEffectiveCompletionDate(project),
                     ContractNumber = contract == null
                         ? string.Empty
                         : contract.SoHopDong,
@@ -203,6 +214,31 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     };
                 })
                 .ToList();
+        }
+
+        /// <summary>
+        /// Dự án Hoàn thành có thể chưa được nhập ngày hoàn thành thực tế.
+        /// Khi đó dùng lần cập nhật cuối, rồi đến ngày dự kiến để việc lọc và
+        /// hiển thị Dashboard không loại bỏ dữ liệu hợp lệ.
+        /// </summary>
+        private static DateTime GetEffectiveCompletionDate(TblDuAn project)
+        {
+            if (project.NgayHoanThanhThucTe.HasValue)
+            {
+                return project.NgayHoanThanhThucTe.Value;
+            }
+
+            if (project.NgayCapNhat.HasValue)
+            {
+                return project.NgayCapNhat.Value;
+            }
+
+            if (project.NgayDuKienHoanThanh != DateTime.MinValue)
+            {
+                return project.NgayDuKienHoanThanh;
+            }
+
+            return project.NgayTao;
         }
 
         private static decimal GetPercent(decimal value, decimal total)

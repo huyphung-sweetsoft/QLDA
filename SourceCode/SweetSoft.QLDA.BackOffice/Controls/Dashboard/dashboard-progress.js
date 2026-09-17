@@ -14,6 +14,33 @@
             '</div>';
     }
 
+    function syncSummaryChartCardHeight() {
+        var scheduleCard = document.querySelector(".dashboard-progress .progress-schedule-card");
+        var taskStatusCard = document.querySelector(".dashboard-progress .progress-task-status-card");
+
+        if (!scheduleCard || !taskStatusCard) {
+            return;
+        }
+
+        taskStatusCard.style.minHeight = "";
+
+        if (window.matchMedia && !window.matchMedia("(min-width: 1200px)").matches) {
+            return;
+        }
+
+        var scheduleCardHeight = scheduleCard.getBoundingClientRect().height;
+
+        if (scheduleCardHeight > 0) {
+            taskStatusCard.style.minHeight = Math.ceil(scheduleCardHeight) + "px";
+        }
+    }
+
+    function scheduleSummaryChartCardHeight() {
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(syncSummaryChartCardHeight);
+        });
+    }
+
     function renderScheduleChart() {
         var element = document.getElementById("progress-schedule-chart");
         var data = window.dashboardProgressScheduleData || [];
@@ -276,5 +303,7 @@
         renderScheduleChart();
         renderTaskStatusChart();
         renderProjectTaskChart();
+        scheduleSummaryChartCardHeight();
+        window.addEventListener("resize", scheduleSummaryChartCardHeight);
     });
 })();

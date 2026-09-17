@@ -6,6 +6,128 @@
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
+<style>
+    /* =========================================================
+       DASHBOARD CHI PHÍ - KPI
+       Desktop: 4 card hàng trên + 3 card hàng dưới
+       Tablet: 2 cột
+       Mobile: 1 cột
+       ========================================================= */
+
+    .dashboard-cost .cost-kpi-layout {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .dashboard-cost .cost-kpi-item {
+        min-width: 0;
+        display: flex;
+    }
+
+    /* 4 KPI đầu: mỗi card chiếm 3/12 cột */
+    .dashboard-cost .cost-kpi-item:nth-child(-n+4) {
+        grid-column: span 3;
+    }
+
+    /* 3 KPI cuối: mỗi card chiếm 4/12 cột */
+    .dashboard-cost .cost-kpi-item:nth-child(n+5) {
+        grid-column: span 4;
+    }
+
+    .dashboard-cost .cost-kpi-card {
+        width: 100%;
+        min-width: 0;
+        min-height: 182px;
+        margin-bottom: 0;
+    }
+
+    .dashboard-cost .cost-kpi-card .card-body {
+        width: 100%;
+        min-width: 0;
+        padding: 1.25rem;
+    }
+
+    .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 {
+        min-width: 0;
+        padding-right: .75rem;
+    }
+
+    /* Tiêu đề luôn dành cùng chiều cao để các giá trị thẳng hàng */
+    .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > p:first-child {
+        min-height: 44px;
+        margin-bottom: .25rem !important;
+        line-height: 1.35;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    /* Giá trị KPI giữ trên một dòng */
+    .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > h3,
+    .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > h4 {
+        min-height: 38px;
+        margin-bottom: .25rem !important;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        font-size: clamp(1.22rem, 1.35vw, 1.6rem);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+    }
+
+    /* Phần mô tả có cùng vùng hiển thị */
+    .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > small {
+        min-height: 40px;
+        display: block;
+        line-height: 1.35;
+    }
+
+    .dashboard-cost .cost-kpi-icon {
+        flex: 0 0 54px;
+        width: 54px;
+        height: 54px;
+        align-self: center;
+    }
+
+    /* Tablet / laptop nhỏ: 2 card mỗi hàng */
+    @media (max-width: 1199.98px) {
+        .dashboard-cost .cost-kpi-layout {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .dashboard-cost .cost-kpi-item:nth-child(-n+4),
+        .dashboard-cost .cost-kpi-item:nth-child(n+5) {
+            grid-column: span 1;
+        }
+
+        .dashboard-cost .cost-kpi-card {
+            min-height: 176px;
+        }
+    }
+
+    /* Mobile: 1 card mỗi hàng */
+    @media (max-width: 575.98px) {
+        .dashboard-cost .cost-kpi-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-cost .cost-kpi-card {
+            min-height: 168px;
+        }
+
+        .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > p:first-child,
+        .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > small {
+            min-height: auto;
+        }
+
+        .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > h3,
+        .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > h4 {
+            white-space: normal;
+        }
+    }
+</style>
+
 <div class="container-fluid dashboard-cost">
     <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3">
         <div class="flex-grow-1">
@@ -76,8 +198,8 @@
     </div>
     <% } %>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-6 g-3 mb-4">
-        <div class="col">
+    <div class="cost-kpi-layout mb-4">
+        <div class="cost-kpi-item">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -92,7 +214,7 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="cost-kpi-item">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
@@ -107,7 +229,7 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="cost-kpi-item">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
@@ -122,7 +244,7 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="cost-kpi-item">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
@@ -137,7 +259,7 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="cost-kpi-item">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
@@ -152,7 +274,7 @@
             </div>
         </div>
 
-        <div class="col">
+        <div class="cost-kpi-item">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
@@ -166,45 +288,70 @@
                 </div>
             </div>
         </div>
+
+        <div class="cost-kpi-item">
+            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1 cost-kpi-value">
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.NOT_APPROVED) %></p>
+                        <h4 class="mb-0 text-warning"><%= FormatMoney(Model.PendingApprovalCost) %></h4>
+                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), Model.PendingApprovalCostItemCount) %></small>
+                    </div>
+                    <span class="avatar-title rounded-circle bg-warning-subtle text-warning cost-kpi-icon">
+                        <i class="bx bx-time-five fs-4"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-12 col-xl-8 d-flex">
-            <div class="card w-100 border-0 shadow-sm">
-                <div class="card-body">
+    <div class="row g-3 mb-3 align-items-stretch">
+        <div class="col-12 col-xl-8 d-flex flex-column">
+            <div class="card w-100 h-100 flex-grow-1 border-0 shadow-sm cost-comparison-card">
+                <div class="card-body d-flex flex-column flex-grow-1">
                     <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_VS_ACTUAL_COST) %></h5>
                     <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC) %></p>
-                    <div class="cost-chart-scroll">
+                    <div class="cost-chart-scroll flex-grow-1">
                         <div id="cost-project-comparison-chart"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-xl-4 d-flex">
-            <div class="card w-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION) %></h5>
-                    <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION_DESC) %></p>
-                    <div id="cost-payment-chart"></div>
-                    <div class="text-center small text-muted mt-2">
-                        <strong><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COLLECTION_RATE), Model.PaymentCollectionRate.ToString("0.##")) %></strong>
+        <div class="col-12 col-xl-4 d-flex flex-column">
+            <div class="card w-100 h-100 flex-grow-1 border-0 shadow-sm cost-payment-card">
+                <div class="card-body d-flex flex-column flex-grow-1">
+                    <div class="flex-shrink-0">
+                        <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION) %></h5>
+                        <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION_DESC) %></p>
+                    </div>
+                    <div class="d-flex flex-column justify-content-center align-items-center flex-grow-1 py-2">
+                        <div id="cost-payment-chart" class="w-100"></div>
+                        <div class="text-center small text-muted mt-2">
+                            <strong><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COLLECTION_RATE), Model.PaymentCollectionRate.ToString("0.##")) %></strong>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND) %></h5>
-            <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND_DESC) %></p>
-            <div id="cost-trend-chart"></div>
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND) %></h5>
+                    <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND_DESC) %></p>
+                    <div id="cost-trend-chart"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
             <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
                 <div>
                     <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE) %></h5>
@@ -246,8 +393,10 @@
                             </td>
                             <td class="text-end text-nowrap"><%= FormatMoney(project.ContractValue) %></td>
                             <td class="text-end text-nowrap">
-                                <div class="fw-semibold text-danger"><%= FormatMoney(project.ActualCost) %></div>
-                                <div class="small text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), project.CostItemCount) %></div>
+                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectCostsUrl(project.ProjectId) %>">
+                                    <div class="fw-semibold text-danger"><%= FormatMoney(project.ActualCost) %></div>
+                                    <div class="small text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), project.CostItemCount) %></div>
+                                </a>
                             </td>
                             <td class="text-end text-nowrap">
                                 <span class="fw-semibold <%= GetAmountCss(project.GrossProfit) %>"><%= FormatMoney(project.GrossProfit) %></span>
@@ -273,9 +422,13 @@
             </div>
         </div>
     </div>
+        </div>
+    </div>
 
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
             <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
                 <div>
                     <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_LARGEST_COST_ITEMS) %></h5>
@@ -300,8 +453,14 @@
                     <tbody>
                         <% foreach (var cost in Model.LargestCostItems) { %>
                         <tr>
-                            <td><%: string.IsNullOrEmpty(cost.CostCode) ? "-" : cost.CostCode %></td>
-                            <td class="fw-semibold"><%: cost.CostName %></td>
+                            <td>
+                                <a class="text-decoration-none text-reset" href="<%: GetProjectCostsUrl(cost.ProjectId) %>">
+                                    <%: string.IsNullOrEmpty(cost.CostCode) ? "-" : cost.CostCode %>
+                                </a>
+                            </td>
+                            <td class="fw-semibold">
+                                <a class="text-decoration-none text-reset" href="<%: GetProjectCostsUrl(cost.ProjectId) %>"><%: cost.CostName %></a>
+                            </td>
                             <td>
                                 <a class="d-block text-decoration-none text-reset" href="<%: GetProjectDetailUrl(cost.ProjectId) %>">
                                     <div><%: cost.ProjectCode %></div>
@@ -320,6 +479,8 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 

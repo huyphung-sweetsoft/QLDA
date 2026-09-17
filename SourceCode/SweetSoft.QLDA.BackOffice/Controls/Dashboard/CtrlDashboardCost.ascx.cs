@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=2")
+                        "/Controls/Dashboard/dashboard-style.css?v=3")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -129,6 +129,11 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetProjectPaymentsUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectPayments);
+        }
+
+        protected string GetProjectCostsUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectCosts);
         }
 
         private string GetProjectUrl(

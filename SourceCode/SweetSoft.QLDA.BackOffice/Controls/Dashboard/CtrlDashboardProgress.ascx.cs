@@ -13,6 +13,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
     public partial class CtrlDashboardProgress : BaseAdminUserControl
     {
         private const string AllProjectsValue = "__all_projects__";
+        private const int TaskNotStartedStatusCode = 0;
+        private const int TaskInProgressStatusCode = 1;
+        private const int TaskCompletedStatusCode = 2;
+        private const int TaskOverdueStatusCode = 3;
 
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -21,7 +25,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=2")
+                        "/Controls/Dashboard/dashboard-style.css?v=3")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -29,7 +33,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-progress.js?v=4")
+                        "/Controls/Dashboard/dashboard-progress.js?v=5")
                 };
 
                 return new RegisterCSSAndJS(
@@ -153,19 +157,22 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return "bg-secondary";
         }
 
-        protected string GetVarianceCss(decimal variance)
+        protected string GetVarianceCss(
+            ProjectScheduleHealth health,
+            decimal variance)
         {
-            if (variance < -5)
+            switch (health)
             {
-                return "text-danger fw-semibold";
+                case ProjectScheduleHealth.AtRisk:
+                    return "text-warning fw-semibold";
+                case ProjectScheduleHealth.BehindSchedule:
+                case ProjectScheduleHealth.Overdue:
+                    return "text-danger fw-semibold";
             }
 
-            if (variance > 5)
-            {
-                return "text-success fw-semibold";
-            }
-
-            return "text-muted";
+            return variance > 0
+                ? "text-success fw-semibold"
+                : "text-muted";
         }
 
         protected decimal GetSelectedProjectVariance()
@@ -182,6 +189,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             decimal variance = GetSelectedProjectVariance();
             return GetVarianceText(variance) + "%";
+        }
+
+        protected string GetSelectedProjectVarianceCss()
+        {
+            if (Model == null || Model.ProjectScheduleStatistics.Count == 0)
+            {
+                return "text-muted";
+            }
+
+            ProjectScheduleStatistic project =
+                Model.ProjectScheduleStatistics[0];
+            return GetVarianceCss(project.Health, project.Variance);
         }
 
         protected string GetVarianceText(decimal variance)
@@ -220,9 +239,14 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             switch (task.StatusCode)
             {
-                case 1: return "bg-info-subtle text-info";
-                case 2: return "bg-success-subtle text-success";
-                case 3: return "bg-danger-subtle text-danger";
+                case TaskInProgressStatusCode:
+                    return "bg-info-subtle text-info";
+                case TaskCompletedStatusCode:
+                    return "bg-success-subtle text-success";
+                case TaskOverdueStatusCode:
+                    return "bg-danger-subtle text-danger";
+                case TaskNotStartedStatusCode:
+                    return "bg-secondary-subtle text-secondary";
                 default: return "bg-secondary-subtle text-secondary";
             }
         }
@@ -235,7 +259,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_NO_DEADLINE);
             }
 
-            if (task.StatusCode == 2)
+            if (task.StatusCode == TaskCompletedStatusCode)
             {
                 return GetResourceText(
                     BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL);
@@ -267,6 +291,29 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetProjectTasksUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
+        }
+
+        protected string GetProjectGanttUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectGanttCharts);
+        }
+
+        protected string GetProjectReportUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectReports);
+        }
+
+        protected string GetActualCompletionText(
+            ProjectScheduleStatistic project)
+        {
+            if (project.ActualCompletionDate.HasValue)
+            {
+                return project.ActualCompletionDate.Value.ToString("dd/MM/yyyy");
+            }
+
+            return project.Health == ProjectScheduleHealth.Completed
+                ? GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL)
+                : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED);
         }
 
         private string GetProjectUrl(

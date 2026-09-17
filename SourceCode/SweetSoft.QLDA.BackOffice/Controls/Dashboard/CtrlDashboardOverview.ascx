@@ -82,7 +82,7 @@
     <!-- ========================= -->
     <!-- KPI trọng tâm: 4 mục khi chọn một dự án, 5 mục ở phạm vi tất cả dự án -->
     <!-- ========================= -->
-    <div class="row row-cols-1 row-cols-md-2 <%= IsProjectView ? "row-cols-xl-4" : "row-cols-xl-5" %> g-3">
+    <div class="row row-cols-1 row-cols-md-2 <%= IsProjectView ? "row-cols-xl-4" : "row-cols-xl-5" %> gy-3">
 
         <!-- Dự án đang triển khai -->
         <div class="col">
@@ -527,6 +527,15 @@
                     </div>
                 </a>
 
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <a href="<%: GetProjectGanttUrl(SelectedProjectId) %>" class="btn btn-sm btn-outline-primary">
+                        <i class="bx bx-git-branch me-1"></i><%= GetResourceText(BackEndResourceKeys.GANTT_CHART) %>
+                    </a>
+                    <a href="<%: GetProjectReportUrl(SelectedProjectId) %>" class="btn btn-sm btn-outline-primary">
+                        <i class="bx bx-bar-chart-alt-2 me-1"></i><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %>
+                    </a>
+                </div>
+
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-md-4">
                         <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></div>
@@ -543,7 +552,7 @@
                     <div class="col-12 col-md-4">
                         <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_COMPLETION) %></div>
                         <div class="fw-semibold">
-                            <%= SelectedProjectActualCompletionDate.HasValue ? SelectedProjectActualCompletionDate.Value.ToString("dd/MM/yyyy") : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED) %>
+                            <%= GetSelectedProjectActualCompletionText() %>
                         </div>
                     </div>
                 </div>
@@ -722,9 +731,6 @@
                 <% } %>
             </div>
         </div>
-        <% if (IsProjectView) { %>
-        </a>
-        <% } %>
     </div>
 </div>
 

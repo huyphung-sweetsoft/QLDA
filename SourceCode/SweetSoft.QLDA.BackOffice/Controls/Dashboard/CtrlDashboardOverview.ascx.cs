@@ -19,7 +19,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             {
                 List<string> cssLinks = new List<string>();
                 cssLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
-                    "/Controls/Dashboard/dashboard-style.css?v=2"));
+                    "/Controls/Dashboard/dashboard-style.css?v=3"));
 
                 List<string> jsLinks = new List<string>();
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
@@ -337,12 +337,15 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetProjectTimelineText()
         {
-            if (SelectedProjectActualCompletionDate.HasValue)
+            if (IsSelectedProjectCompleted())
             {
-                return string.Format(
-                    GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_ON),
-                    SelectedProjectActualCompletionDate.Value
-                        .ToString("dd/MM/yyyy"));
+                return SelectedProjectActualCompletionDate.HasValue
+                    ? string.Format(
+                        GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_ON),
+                        SelectedProjectActualCompletionDate.Value
+                            .ToString("dd/MM/yyyy"))
+                    : GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL);
             }
 
             if (!SelectedProjectStartDate.HasValue
@@ -383,7 +386,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetProjectTimelineBadgeCss()
         {
-            if (SelectedProjectActualCompletionDate.HasValue)
+            if (IsSelectedProjectCompleted())
             {
                 return "bg-success-subtle text-success";
             }
@@ -411,6 +414,35 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetProjectTasksUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
+        }
+
+        protected string GetProjectGanttUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectGanttCharts);
+        }
+
+        protected string GetProjectReportUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectReports);
+        }
+
+        protected string GetSelectedProjectActualCompletionText()
+        {
+            if (SelectedProjectActualCompletionDate.HasValue)
+            {
+                return SelectedProjectActualCompletionDate.Value
+                    .ToString("dd/MM/yyyy");
+            }
+
+            return IsSelectedProjectCompleted()
+                ? GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL)
+                : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED);
+        }
+
+        private bool IsSelectedProjectCompleted()
+        {
+            return SelectedProjectActualCompletionDate.HasValue
+                || SelectedProjectHealth == ProjectScheduleHealth.Completed;
         }
 
         protected string GetProjectRisksUrl(Guid projectId)

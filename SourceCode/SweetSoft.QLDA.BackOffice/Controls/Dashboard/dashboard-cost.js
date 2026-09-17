@@ -183,6 +183,35 @@
         }).render();
     }
 
+    function syncSummaryChartCardHeight() {
+        var comparisonCard = document.querySelector(
+            ".dashboard-cost .cost-comparison-card");
+        var paymentCard = document.querySelector(
+            ".dashboard-cost .cost-payment-card");
+
+        if (!comparisonCard || !paymentCard) {
+            return;
+        }
+
+        paymentCard.style.minHeight = "";
+
+        if (window.matchMedia &&
+            !window.matchMedia("(min-width: 1200px)").matches) {
+            return;
+        }
+
+        var comparisonHeight = comparisonCard.getBoundingClientRect().height;
+        if (comparisonHeight > 0) {
+            paymentCard.style.minHeight = Math.ceil(comparisonHeight) + "px";
+        }
+    }
+
+    function scheduleSummaryChartCardHeight() {
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(syncSummaryChartCardHeight);
+        });
+    }
+
     function renderCostTrendChart() {
         var element = document.getElementById("cost-trend-chart");
         var data = window.dashboardCostTrendData || [];
@@ -250,5 +279,7 @@
         renderProjectComparisonChart();
         renderPaymentChart();
         renderCostTrendChart();
+        scheduleSummaryChartCardHeight();
+        window.addEventListener("resize", scheduleSummaryChartCardHeight);
     });
 })();

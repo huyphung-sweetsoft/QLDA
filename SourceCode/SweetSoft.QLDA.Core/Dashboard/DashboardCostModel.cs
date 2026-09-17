@@ -37,6 +37,14 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public decimal ActualCost { get; set; }
 
+        /// <summary>
+        /// Tổng giá trị các khoản chi đang chờ duyệt. Khoản này không được
+        /// cộng vào chi phí thực tế cho đến khi được phê duyệt.
+        /// </summary>
+        public decimal PendingApprovalCost { get; set; }
+
+        public int PendingApprovalCostItemCount { get; set; }
+
         public decimal GrossProfit { get; set; }
 
         public decimal ProfitMargin { get; set; }

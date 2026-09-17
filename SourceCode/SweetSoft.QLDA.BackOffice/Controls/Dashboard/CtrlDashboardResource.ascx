@@ -216,69 +216,69 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-12 col-xl-8 d-flex">
-            <div class="card border-0 shadow-sm w-100 resource-monthly-card">
-                <div class="card-body">
-            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_SUMMARY) %></h5>
-            <p class="text-muted mb-3">
-                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_DESC) %>
-            </p>
-            <div class="resource-monthly-scroll">
-                <table class="table resource-monthly-table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th class="resource-person-column"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></th>
-                            <% foreach (var month in Model.Months) { %>
-                            <th class="text-center resource-month-column"><%= month.Label %></th>
-                            <% } %>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% foreach (var employee in Model.EmployeeLoads) { %>
-                        <tr>
-                            <td class="resource-person-column">
-                                <div class="fw-semibold text-dark">
-                                    <a class="text-decoration-none text-reset" href="<%: GetEmployeeDetailUrl(employee.EmployeeId) %>"><%: employee.DisplayName %></a>
-                                </div>
-                                <div class="small text-muted text-truncate resource-person-meta"><%: GetEmployeeMeta(employee) %></div>
-                            </td>
-                            <% foreach (var month in Model.Months) {
-                                   var load = employee.MonthlyLoads.First(x => x.MonthStart == month.StartDate); %>
-                            <td class="text-center resource-month-cell <%= GetMonthlySummaryCss(load) %>"
-                                title="<%: GetMonthlyStatusTitle(load) %>">
-                                <div class="fw-semibold resource-month-percent"><%= load.AverageUtilization.ToString("0.#") %>%</div>
-                                <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_ALLOCATED_CAPACITY), load.AllocatedDays.ToString("0.#"), load.CapacityDays.ToString("0")) %></small>
-                                <div class="mt-1"><span class="badge <%= GetMonthlyStatusBadgeCss(load) %>"><%= GetMonthlyStatusText(load) %></span></div>
-                            </td>
-                            <% } %>
-                        </tr>
-                        <% } %>
-                        <% if (Model.EmployeeLoads.Count == 0) { %>
-                        <tr>
-                            <td colspan="<%= Model.Months.Count + 1 %>" class="text-center text-muted py-4">
-                                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_MONTHLY_EMPLOYEES) %>
-                            </td>
-                        </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+    <div class="row g-3 mb-3 align-items-stretch">
+        <div class="col-12 col-xl-8 d-flex flex-column">
+            <div class="card border-0 shadow-sm w-100 h-100 flex-grow-1 resource-monthly-card">
+                <div class="card-body d-flex flex-column flex-grow-1">
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_SUMMARY) %></h5>
+                    <p class="text-muted mb-3">
+                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_DESC) %>
+                    </p>
+                    <div class="resource-monthly-scroll flex-grow-1">
+                        <table class="table resource-monthly-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="resource-person-column"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></th>
+                                    <% foreach (var month in Model.Months) { %>
+                                    <th class="text-center resource-month-column"><%= month.Label %></th>
+                                    <% } %>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% foreach (var employee in Model.EmployeeLoads) { %>
+                                <tr>
+                                    <td class="resource-person-column">
+                                        <div class="fw-semibold text-dark">
+                                            <a class="text-decoration-none text-reset" href="<%: GetEmployeeDetailUrl(employee.EmployeeId) %>"><%: employee.DisplayName %></a>
+                                        </div>
+                                        <div class="small text-muted text-truncate resource-person-meta"><%: GetEmployeeMeta(employee) %></div>
+                                    </td>
+                                    <% foreach (var month in Model.Months) {
+                                           var load = employee.MonthlyLoads.First(x => x.MonthStart == month.StartDate); %>
+                                    <td class="text-center resource-month-cell <%= GetMonthlySummaryCss(load) %>"
+                                        title="<%: GetMonthlyStatusTitle(load) %>">
+                                        <div class="fw-semibold resource-month-percent"><%= load.AverageUtilization.ToString("0.#") %>%</div>
+                                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_ALLOCATED_CAPACITY), load.AllocatedDays.ToString("0.#"), load.CapacityDays.ToString("0")) %></small>
+                                        <div class="mt-1"><span class="badge <%= GetMonthlyStatusBadgeCss(load) %>"><%= GetMonthlyStatusText(load) %></span></div>
+                                    </td>
+                                    <% } %>
+                                </tr>
+                                <% } %>
+                                <% if (Model.EmployeeLoads.Count == 0) { %>
+                                <tr>
+                                    <td colspan="<%= Model.Months.Count + 1 %>" class="text-center text-muted py-4">
+                                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_MONTHLY_EMPLOYEES) %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-xl-4 d-flex">
-            <div class="card border-0 shadow-sm w-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="col-12 col-xl-4 d-flex flex-column">
+            <div class="card border-0 shadow-sm w-100 h-100 flex-grow-1 resource-attention-card">
+                <div class="card-body d-flex flex-column flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-3 flex-shrink-0">
                         <div>
                             <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEES_NEED_ATTENTION) %></h5>
                             <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC) %></p>
                         </div>
                         <span class="badge bg-warning-subtle text-warning"><%= Model.AttentionEmployees.Count %></span>
                     </div>
-                    <div class="resource-attention-list">
+                    <div class="resource-attention-list flex-grow-1">
                         <% foreach (var employee in Model.AttentionEmployees) { %>
                         <div class="resource-attention-item d-flex align-items-start">
                             <span class="resource-attention-dot <%= GetStatusLoadCss(employee.Status) %>"></span>
@@ -386,6 +386,10 @@
             <strong id="resource-detail-load">0%</strong>
         </div>
         <div class="resource-drawer-body">
+            <div id="resource-detail-formula" class="resource-drawer-formula small text-muted"></div>
+            <div id="resource-detail-week-status" class="resource-drawer-week-status"></div>
+            <h6 class="resource-drawer-section-title mt-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DAILY_ALLOCATION_DETAIL) %></h6>
+            <div id="resource-detail-days"></div>
             <h6 class="resource-drawer-section-title"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_ALLOCATION) %></h6>
             <div id="resource-detail-projects"></div>
             <h6 class="resource-drawer-section-title mt-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_DETAIL) %></h6>
