@@ -9,9 +9,9 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <h4 class="mb-1">
-                            Xin chào, <%= CurrentUserName %>
+                            <%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_GREETING), CurrentUserName) %>
                         </h4>
-                        <p class="text-muted mb-0">Tổng quan công việc cá nhân</p>
+                        <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PERSONAL_OVERVIEW) %></p>
                     </div>
                     <div class="d-flex gap-2">
                         <SweetSoft:ExtraDropdown ID="ddlProject" runat="server" CssClass="form-select" SimpleInit="true" AutoPostBack="true" OnSelectedIndexChanged="ddlFilter_SelectedIndexChanged"></SweetSoft:ExtraDropdown>
@@ -27,31 +27,31 @@
         <div class="row row-cols-1 row-cols-md-5 g-3">
             <div class="col">
                 <div class="border rounded p-3 h-100 bg-white">
-                    <div class="text-muted mb-1">Công việc đang thực hiện</div>
+                    <div class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASKS_IN_PROGRESS) %></div>
                     <h4 class="mb-0 text-primary"><%= Model.KPIs.OngoingTaskCount %></h4>
                 </div>
             </div>
             <div class="col">
                 <div class="border rounded p-3 h-100 bg-white">
-                    <div class="text-muted mb-1">Công việc sắp đến hạn</div>
+                    <div class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASKS_DUE_SOON) %></div>
                     <h4 class="mb-0 text-warning"><%= Model.KPIs.UpcomingDeadlineTaskCount %></h4>
                 </div>
             </div>
             <div class="col">
                 <div class="border rounded p-3 h-100 bg-white">
-                    <div class="text-muted mb-1">Công việc quá hạn</div>
+                    <div class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %></div>
                     <h4 class="mb-0 text-danger"><%= Model.KPIs.OverdueTaskCount %></h4>
                 </div>
             </div>
             <div class="col">
                 <div class="border rounded p-3 h-100 bg-white">
-                    <div class="text-muted mb-1">Dự án đang tham gia</div>
+                    <div class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECTS_PARTICIPATING) %></div>
                     <h4 class="mb-0 text-info"><%= Model.KPIs.ActiveProjectCount %></h4>
                 </div>
             </div>
             <div class="col">
                 <div class="border rounded p-3 h-100 bg-white">
-                    <div class="text-muted mb-1">Mức tải hiện tại</div>
+                    <div class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CURRENT_LOAD) %></div>
                     <h4 class="mb-0 text-success"><%= Model.KPIs.WorkloadPercent %>%</h4>
                 </div>
             </div>
@@ -63,17 +63,17 @@
         <div class="card w-100 h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-3">
-                    <h5 class="card-title mb-0 text-uppercase">Công việc của tôi</h5>
-                    <a href="/Tasks.aspx" class="btn btn-sm btn-outline-primary">Xem tất cả công việc</a>
+                    <h5 class="card-title mb-0 text-uppercase"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MY_TASKS) %></h5>
+                    <a href="/Tasks.aspx" class="btn btn-sm btn-outline-primary"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_VIEW_ALL_TASKS) %></a>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th>Công việc</th>
-                                <th>Dự án</th>
-                                <th>Hạn</th>
-                                <th>Tiến độ</th>
+                                <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK) %></th>
+                                <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                                <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DUE) %></th>
+                                <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN) %></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -94,7 +94,7 @@
                             <% } %>
                             <% if(Model.MyTasks.Count == 0) { %>
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Không có công việc nào</td>
+                                <td colspan="4" class="text-center text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_TASKS) %></td>
                             </tr>
                             <% } %>
                         </tbody>
@@ -107,7 +107,7 @@
     <div class="col-12 col-xl-4 mb-4 d-flex">
         <div class="card w-100 h-100">
             <div class="card-body">
-                <h5 class="card-title mb-3 text-uppercase">Cảnh báo của tôi</h5>
+                <h5 class="card-title mb-3 text-uppercase"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MY_WARNINGS) %></h5>
                 <ul class="list-group list-group-flush">
                     <% foreach (var warning in Model.MyWarnings) { %>
                     <li class="list-group-item px-0 border-0 d-flex align-items-start">
@@ -116,7 +116,7 @@
                     </li>
                     <% } %>
                     <% if(Model.MyWarnings.Count == 0) { %>
-                    <li class="list-group-item px-0 border-0 text-muted">Không có cảnh báo nào</li>
+                    <li class="list-group-item px-0 border-0 text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_PERSONAL_WARNINGS) %></li>
                     <% } %>
                 </ul>
             </div>
@@ -127,13 +127,14 @@
     <div class="col-12 col-xl-8 mb-4 d-flex">
         <div class="card w-100 h-100">
             <div class="card-body">
-                <h5 class="card-title mb-1 text-uppercase">Tiến độ các dự án của tôi</h5>
-                <p class="text-muted mb-3">Hiển thị các dự án bạn đang tham gia</p>
+                <h5 class="card-title mb-1 text-uppercase"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MY_PROJECT_PROGRESS) %></h5>
+                <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MY_PROJECT_PROGRESS_DESC) %></p>
                 <div id="employee-project-chart-wrapper" style="height: 300px; overflow-y: auto; overflow-x: hidden;">
                     <div id="employee-project-chart"></div>
                 </div>
                 <script>
                     window.employeeProjectChartData = <%= ProjectChartDataJson %>;
+                    window.employeeDashboardTexts = <%= DashboardTextsJson %>;
                 </script>
                 <script src="/Controls/Dashboard/dashboard-employee.js" type="text/javascript"></script>
             </div>
@@ -143,7 +144,7 @@
     <div class="col-12 col-xl-4 mb-4 d-flex">
         <div class="card w-100 h-100">
             <div class="card-body">
-                <h5 class="card-title mb-3 text-uppercase">Lịch sắp tới</h5>
+                <h5 class="card-title mb-3 text-uppercase"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_UPCOMING_SCHEDULE) %></h5>
                 <ul class="list-group list-group-flush">
                     <% foreach (var meeting in Model.UpcomingMeetings) { %>
                     <li class="list-group-item px-0 d-flex flex-column">
@@ -152,7 +153,7 @@
                     </li>
                     <% } %>
                     <% if(Model.UpcomingMeetings.Count == 0) { %>
-                    <li class="list-group-item px-0 text-muted border-0">Không có lịch sắp tới</li>
+                    <li class="list-group-item px-0 text-muted border-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_UPCOMING_SCHEDULE) %></li>
                     <% } %>
                 </ul>
             </div>

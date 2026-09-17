@@ -21,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css")
+                        "/Controls/Dashboard/dashboard-style.css?v=2")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -29,7 +29,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-resource.js")
+                        "/Controls/Dashboard/dashboard-resource.js?v=2")
                 };
 
                 return new RegisterCSSAndJS(
@@ -45,6 +45,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string TrendChartData { get; private set; }
 
         protected string ResourceDetailData { get; private set; }
+
+        protected string DashboardTextsJson { get; private set; }
 
         private DateTime AnchorWeekStart
         {
@@ -66,6 +68,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            btnPreviousWeek.ToolTip = GetResourceText(
+                BackEndResourceKeys.DASHBOARD_PREVIOUS_WEEK);
+            btnCurrentWeek.Text = GetResourceText(
+                BackEndResourceKeys.DASHBOARD_CURRENT_WEEK);
+            btnNextWeek.ToolTip = GetResourceText(
+                BackEndResourceKeys.DASHBOARD_NEXT_WEEK);
+
             if (!IsPostBack)
             {
                 AnchorWeekStart = GetMonday(DateTime.Today);
@@ -106,9 +115,15 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             switch (status)
             {
-                case ResourceLoadStatus.Underloaded: return "Thiếu tải";
-                case ResourceLoadStatus.Balanced: return "Tải cân bằng";
-                case ResourceLoadStatus.Overloaded: return "Quá tải";
+                case ResourceLoadStatus.Underloaded:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_UNDERLOADED);
+                case ResourceLoadStatus.Balanced:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_BALANCED_LOAD);
+                case ResourceLoadStatus.Overloaded:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_OVERLOADED);
                 default: return "-";
             }
         }
@@ -132,13 +147,16 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             if (load.AverageUtilization > 100m)
             {
-                return "Quá tải cả tháng";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MONTH_OVERLOADED);
             }
 
             if (load.OverloadWeekCount > 0)
             {
-                return load.OverloadWeekCount
-                    + " tuần quá tải";
+                return string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_OVERLOADED_WEEK_COUNT),
+                    load.OverloadWeekCount);
             }
 
             return GetStatusText(load.Status);
@@ -169,8 +187,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 .ToList();
 
             return overloadWeeks.Count == 0
-                ? "Không có tuần quá tải trong tháng"
-                : "Các tuần quá tải: " + string.Join(", ", overloadWeeks);
+                ? GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_OVERLOADED_WEEKS)
+                : string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_OVERLOADED_WEEKS),
+                    string.Join(", ", overloadWeeks));
         }
 
         protected string GetHeatmapCss(decimal allocationPercent)
@@ -215,9 +237,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetAllocatedDaysText(ResourceWeeklyLoad load)
         {
             return load.AllocationPercent <= 0
-                ? "Chưa có lịch"
-                : load.AllocatedDays.ToString("0.#") + "/"
-                    + load.CapacityDays.ToString("0") + " ngày";
+                ? GetResourceText(BackEndResourceKeys.DASHBOARD_NO_SCHEDULE)
+                : string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_ALLOCATED_CAPACITY),
+                    load.AllocatedDays.ToString("0.#"),
+                    load.CapacityDays.ToString("0"));
         }
 
         protected string GetEmployeeMeta(ResourceEmployeeLoad employee)
@@ -242,15 +267,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             if (employee.Status == ResourceLoadStatus.Overloaded)
             {
-                string text = "Được giao "
-                    + employee.AllocatedDays.ToString("0.#") + "/"
-                    + employee.CapacityDays.ToString("0")
-                    + " ngày công; vượt "
-                    + employee.OverAllocatedDays.ToString("0.#") + " ngày";
+                string text = string.Format(
+                    GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_OVERLOAD_DETAIL),
+                    employee.AllocatedDays.ToString("0.#") + "/"
+                        + employee.CapacityDays.ToString("0"),
+                    employee.OverAllocatedDays.ToString("0.#"));
                 if (employee.OverloadDayCount > 0)
                 {
-                    text += "; " + employee.OverloadDayCount
-                        + " ngày chồng lịch";
+                    text += string.Format(
+                        GetResourceText(
+                            BackEndResourceKeys.DASHBOARD_OVERLAP_DAYS),
+                        employee.OverloadDayCount);
                 }
 
                 return text;
@@ -258,11 +286,48 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
             if (employee.AllocatedDays <= 0)
             {
-                return "Chưa có công việc trong tuần trọng tâm";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_FOCUS_WEEK_TASKS);
             }
 
-            return "Mức dùng tuần chỉ "
-                + employee.AverageUtilization.ToString("0.#") + "%";
+            return string.Format(
+                GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_LOW_WEEKLY_UTILIZATION),
+                employee.AverageUtilization.ToString("0.#"));
+        }
+
+        protected string GetProjectDetailUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectDetail);
+        }
+
+        protected string GetProjectTasksUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
+        }
+
+        protected string GetEmployeeDetailUrl(Guid employeeId)
+        {
+            if (employeeId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ViewDetailEmp(employeeId));
+        }
+
+        private string GetProjectUrl(
+            Guid projectId,
+            Func<Guid, string> routeBuilder)
+        {
+            if (projectId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return CURRENT_PAGE.GetRelativeClientPath(
+                routeBuilder(projectId));
         }
 
         private void InitDashboard(DashboardResourceFilter filter)
@@ -302,6 +367,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         overlapDayCount = week.OverlapDayCount,
                         projects = week.Projects.Select(project => new
                         {
+                            detailUrl = GetProjectDetailUrl(project.ProjectId),
                             code = project.ProjectCode,
                             name = project.ProjectName,
                             taskCount = project.TaskCount,
@@ -310,6 +376,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         }),
                         tasks = week.Tasks.Select(task => new
                         {
+                            tasksUrl = GetProjectTasksUrl(task.ProjectId),
                             code = task.TaskCode,
                             name = task.TaskName,
                             projectCode = task.ProjectCode,
@@ -317,7 +384,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                             allocation = task.AllocationPercent,
                             allocatedDays = task.AllocatedDays,
                             activeDates = task.ActiveDates.Select(date =>
-                                GetVietnameseDayLabel(date) + " "
+                                GetDayLabel(date) + " "
                                     + date.ToString("dd/MM")),
                             start = task.StartDate.HasValue
                                 ? task.StartDate.Value.ToString("dd/MM/yyyy")
@@ -329,13 +396,41 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         days = week.DailyLoads.Select(day => new
                         {
                             date = day.Date.ToString("yyyy-MM-dd"),
-                            displayDate = GetVietnameseDayLabel(day.Date)
+                            displayDate = GetDayLabel(day.Date)
                                 + " " + day.Date.ToString("dd/MM"),
                             allocation = day.AllocationPercent,
                             taskCount = day.Tasks.Count
                         })
                     })
                 }));
+
+            DashboardTextsJson = ToSafeJson(new
+            {
+                pastAssignment = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAST_ASSIGNMENT),
+                futurePlan = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_FUTURE_PLAN),
+                utilization = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_UTILIZATION),
+                threshold100 = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_THRESHOLD_100),
+                dayFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_DAY_COUNT),
+                project = GetResourceText(BackEndResourceKeys.PROJECT),
+                task = GetResourceText(BackEndResourceKeys.DASHBOARD_TASK),
+                taskCountFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TASK_COUNT),
+                capacityFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_CAPACITY),
+                excessFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EXCESS),
+                overlapDaysFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_SCHEDULE_OVERLAP_DAYS),
+                noProjectAllocation = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_WEEK_PROJECT_ALLOCATION),
+                noTasks = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_WEEK_TASKS)
+            });
         }
 
         private void LoadProjectFilter()
@@ -359,11 +454,23 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         private void LoadWeekCountFilter()
         {
             ddlWeekCount.Items.Clear();
-            ddlWeekCount.Items.Add(new ListItem("2 tuần", "2"));
-            ListItem fourWeeks = new ListItem("4 tuần", "4");
+            ddlWeekCount.Items.Add(new ListItem(
+                string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_COUNT),
+                    2),
+                "2"));
+            ListItem fourWeeks = new ListItem(
+                string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_COUNT),
+                    4),
+                "4");
             fourWeeks.Selected = true;
             ddlWeekCount.Items.Add(fourWeeks);
-            ddlWeekCount.Items.Add(new ListItem("6 tuần", "6"));
+            ddlWeekCount.Items.Add(new ListItem(
+                string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_COUNT),
+                    6),
+                "6"));
         }
 
         private DashboardResourceFilter BuildResourceFilter()
@@ -405,18 +512,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return date.Date.AddDays(-difference);
         }
 
-        private static string GetVietnameseDayLabel(DateTime date)
+        private static string GetDayLabel(DateTime date)
         {
-            switch (date.DayOfWeek)
-            {
-                case DayOfWeek.Monday: return "T2";
-                case DayOfWeek.Tuesday: return "T3";
-                case DayOfWeek.Wednesday: return "T4";
-                case DayOfWeek.Thursday: return "T5";
-                case DayOfWeek.Friday: return "T6";
-                case DayOfWeek.Saturday: return "T7";
-                default: return "CN";
-            }
+            return CultureInfo.CurrentUICulture.DateTimeFormat
+                .GetAbbreviatedDayName(date.DayOfWeek);
         }
     }
 }

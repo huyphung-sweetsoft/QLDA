@@ -1,4 +1,5 @@
 using SubSonic;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
@@ -6,7 +7,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;         
+using System.Linq;
 using System.Transactions;
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -183,7 +184,15 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public void UpdateAssignments(Guid idDuAn, Guid idCongViec, List<Guid> newAssigneeIds)
         {
+            TblCongViec task = FetchById(idCongViec);
             DuAnManager.Instance.EnsureCanModifyStructure(idDuAn);
+            if (task == null)
+                throw new InvalidOperationException("Không tìm thấy công việc.");
+
+            if (task.TrangThai == 2)
+                throw new InvalidOperationException(
+                    "Không thể thay đổi nhân sự của công việc đã hoàn thành.");
+            
             // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
             newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
 
@@ -281,6 +290,50 @@ namespace SweetSoft.QLDA.Core.Managers
         #endregion
 
         #region 2. Nghiệp vụ Cây WBS & Mã Công việc
+        public void SyncPendingTasksAfterScheduleChange(DateTime affectedFromDate)
+        {
+            List<TblCongViec> pendingTasks = _repository.GetPendingLeafTasksFromDate(affectedFromDate);
+
+            foreach (var task in pendingTasks)
+            {
+                // Chỉ quét các task có đủ dữ liệu, tránh gãy ngang vòng lặp
+                if (!task.NgayBatDau.HasValue || !task.ThoiHanNgay.HasValue || !task.NgayKetThuc.HasValue)
+                    continue;
+                try
+                {
+                    bool isChanged = false;
+                    // [FIX NGHIỆP VỤ MỚI]: LOẠI BỎ logic tự động đẩy Ngày bắt đầu (GetNextWorkingDay).
+                    // Giữ nguyên Ngày bắt đầu của Task mặc kệ ngày đó có biến thành Ngày nghỉ lễ hay không.
+                    // CHỈ tính toán lại Ngày kết thúc (giãn thời gian ra để bù cho ngày nghỉ)
+                    DateTime newEndDate = LichBieuChungManager.Instance.CalculateTaskEndDate(task.NgayBatDau.Value, task.ThoiHanNgay.Value);
+
+                    if (newEndDate.Date != task.NgayKetThuc.Value.Date)
+                    {
+                        task.NgayKetThuc = newEndDate;
+                        isChanged = true;
+                    }
+
+                    if (isChanged)
+                    {
+                        task.NgayCapNhat = DateTime.Now;
+                        task.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
+                        task.Save();
+
+                        AutoSetDependentTime(task.IdDuAn, task.IdCongViec);
+
+                        if (task.IdCongViecCha.HasValue)
+                        {
+                            AutoSetParentTime(task.IdDuAn, task.IdCongViecCha.Value);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Quăng thẳng lỗi ra kèm InnerException để Transaction Scope Rollback. KHÔNG NUỐT LỖI.
+                    throw new Exception($"Lỗi khi tự động đồng bộ công việc [{task.MaCongViec}].", ex);
+                }
+            }
+        }
         public bool CheckOverdue(DataRow row)
         {
             int trangThai = Convert.ToInt32(row[ColTrangThai]);
@@ -323,7 +376,31 @@ namespace SweetSoft.QLDA.Core.Managers
                 return (countLevel1 + 1).ToString();
             }
         }
+        public List<TblCongViec> GetLeafTasksForSchedule(Guid taskId)
+        {
+            TblCongViec currentTask = FetchById(taskId);
+            List<TblCongViec> leafTasks = new List<TblCongViec>();
+            if (currentTask == null) return leafTasks;
 
+            bool isParent = CheckHasChildTasks(currentTask.IdDuAn, currentTask);
+            if (isParent)
+            {
+                var allDescendants = GetDescendantTasks(currentTask.IdDuAn, currentTask.IdCongViec);
+                foreach (var t in allDescendants)
+                {
+                    // Lấy tất cả Task lá (không có con), không lọc theo Trạng thái (Todo, Doing, Done lấy hết)
+                    if (!CheckHasChildTasks(currentTask.IdDuAn, t) && t.NgayBatDau.HasValue && t.NgayKetThuc.HasValue)
+                    {
+                        leafTasks.Add(t);
+                    }
+                }
+            }
+            else
+            {
+                leafTasks.Add(currentTask);
+            }
+            return leafTasks;
+        }
         public string GetRootPhaseName(Guid projectId, Guid? parentId)
         {
             if (!parentId.HasValue) return "--  --";
@@ -390,7 +467,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return (minStartLimit, alert);
         }
-        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue=null)
+        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue = null)
         {
             DataTable dt = FetchByIdAndOrderASCMaCV(projectId, searchValue);
             var dictCodes = new Dictionary<Guid, string>();
@@ -415,12 +492,12 @@ namespace SweetSoft.QLDA.Core.Managers
             return (dt, dictCodes, overdueCount);
         }
 
-        private void CollectDescendantTasks(Guid projectId,Guid parentTaskId,List<TblCongViec> result,HashSet<Guid> visited)
+        private void CollectDescendantTasks(Guid projectId, Guid parentTaskId, List<TblCongViec> result, HashSet<Guid> visited)
         {
             if (!visited.Add(parentTaskId))
                 return;
 
-            DataTable children = GetChildTasks(projectId,parentTaskId);
+            DataTable children = GetChildTasks(projectId, parentTaskId);
 
             if (children == null || children.Rows.Count == 0)
             {
@@ -434,7 +511,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 Guid childId;
 
-                if (!Guid.TryParse(row[ColIdCongViec].ToString(),out childId))
+                if (!Guid.TryParse(row[ColIdCongViec].ToString(), out childId))
                 {
                     continue;
                 }
@@ -448,7 +525,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 result.Add(childTask);
 
-                CollectDescendantTasks(projectId,childTask.IdCongViec,result,visited);
+                CollectDescendantTasks(projectId, childTask.IdCongViec, result, visited);
             }
         }
 
@@ -461,7 +538,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             if (task.NgayBatDau.HasValue && task.NgayKetThuc.HasValue)
             {
-                int duration = (task.NgayKetThuc.Value.Date -task.NgayBatDau.Value.Date).Days + 1;
+                int duration = (task.NgayKetThuc.Value.Date - task.NgayBatDau.Value.Date).Days + 1;
 
                 return Math.Max(1, duration);
             }
@@ -469,7 +546,7 @@ namespace SweetSoft.QLDA.Core.Managers
             return 1;
         }
 
-        private void MoveTasksBeforeStageStart(Guid projectId,Guid rootTaskId,DateTime minimumStartDate)
+        private void MoveTasksBeforeStageStart(Guid projectId, Guid rootTaskId, DateTime minimumStartDate)
         {
             DateTime minStart = minimumStartDate.Date;
 
@@ -498,7 +575,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 task.NgayBatDau = minStart;
 
-                task.NgayKetThuc = minStart.AddDays(duration - 1);
+                task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(minStart, duration);
 
                 task.ThoiHanNgay = duration;
 
@@ -506,15 +583,15 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 task.Save();
 
-                AutoSetDependentTime(projectId,task.IdCongViec);
+                AutoSetDependentTime(projectId, task.IdCongViec);
 
                 if (task.IdCongViecCha.HasValue)
                 {
-                    AutoSetParentTime(projectId,task.IdCongViecCha.Value);
+                    AutoSetParentTime(projectId, task.IdCongViecCha.Value);
                 }
             }
 
-            AutoSetParentTime(projectId,rootTaskId);
+            AutoSetParentTime(projectId, rootTaskId);
         }
 
         public TblCongViec UpdateStageTask(
@@ -708,18 +785,32 @@ namespace SweetSoft.QLDA.Core.Managers
                     if (row[ColIdCongViec] != DBNull.Value && Guid.TryParse(row[ColIdCongViec].ToString(), out Guid depTaskId))
                     {
                         TblCongViec depTask = FetchById(depTaskId);
-                        if (depTask != null && depTask.DaXoa != true)
+
+                        // [CHỐT CHẶN]: Chỉ tự động dời (cả tiến lẫn lùi) nếu Task phụ thuộc CHƯA BẮT ĐẦU
+                        if (depTask != null && depTask.DaXoa != true && depTask.TrangThai == 0)
                         {
+                            // [FIX NGHIỆP VỤ]: Ngày bắt đầu = Ngày kết thúc của task trước + 1 ngày.
+                            // Không dùng GetNextWorkingDay() ở đây nữa để tránh việc đẩy qua T7/CN/Lễ.
                             DateTime minStart = task.NgayKetThuc.Value.AddDays(1);
-                            if (!depTask.NgayBatDau.HasValue || depTask.NgayBatDau.Value.Date < minStart.Date)
+
+                            // KIỂM TRA KHÁC NHAU LÀ DỜI (Không quan tâm tiến hay lùi)
+                            if (!depTask.NgayBatDau.HasValue || depTask.NgayBatDau.Value.Date != minStart.Date)
                             {
                                 int thoiHan = depTask.ThoiHanNgay ?? 1;
+
                                 depTask.NgayBatDau = minStart;
+
+                                // Lưu ý: Ngày kết thúc vẫn đưa vào Engine để rải ngày công bỏ qua lễ/tết cho chuẩn
                                 depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(minStart, thoiHan);
+
                                 depTask.NgayCapNhat = DateTime.Now;
+                                depTask.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
                                 depTask.Save();
 
+                                // Lan truyền domino tiếp cho các task phụ thuộc của thằng này
                                 AutoSetDependentTime(projectId, depTask.IdCongViec);
+
+                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Cha
                                 if (depTask.IdCongViecCha.HasValue)
                                 {
                                     AutoSetParentTime(projectId, depTask.IdCongViecCha.Value);
@@ -758,7 +849,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         public void AutoSetParentStatus(Guid projectId, Guid parentTaskId)
         {
-            DataTable dtChildren = _repository.GetChildTasks(projectId,parentTaskId);
+            DataTable dtChildren = _repository.GetChildTasks(projectId, parentTaskId);
             if (dtChildren != null && dtChildren.Rows.Count > 0)
             {
                 bool allCompleted = true;
@@ -768,7 +859,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     if (trangThai != 2)
                     {
                         allCompleted = false;
-                        break; 
+                        break;
                     }
                 }
                 TblCongViec parentTask = FetchById(parentTaskId);
@@ -779,7 +870,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     {
                         parentTask.TrangThai = newStatus;
                         parentTask.NgayCapNhat = DateTime.Now;
-                        parentTask.Save(); 
+                        parentTask.Save();
                         if (parentTask.IdCongViecCha.HasValue)
                         {
                             AutoSetParentStatus(projectId, parentTask.IdCongViecCha.Value);
@@ -808,15 +899,40 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 if (maxEnd.HasValue && parentTask.NgayBatDau.HasValue)
                 {
-                    parentTask.NgayKetThuc = maxEnd.Value;
-                    parentTask.ThoiHanNgay = LichBieuChungManager.Instance.CountWorkingDaysInRange(parentTask.NgayBatDau.Value, maxEnd.Value);   // ĐÃ SỬA — trước: (maxEnd - NgayBatDau).Days + 1
-                    parentTask.NgayCapNhat = DateTime.Now;
-                    parentTask.Save();
+                    int newThoiHan = LichBieuChungManager.Instance.CountWorkingDaysInRange(parentTask.NgayBatDau.Value, maxEnd.Value);
 
-                    AutoSetDependentTime(projectId, parentTask.IdCongViec);
-                    if (parentTask.IdCongViecCha.HasValue)
+                    // [CHỐT CHẶN CHỐNG TREO]: Chỉ Lưu và chạy dây chuyền nếu THỰC SỰ có thay đổi dữ liệu
+                    if (!parentTask.NgayKetThuc.HasValue || parentTask.NgayKetThuc.Value.Date != maxEnd.Value.Date || parentTask.ThoiHanNgay != newThoiHan)
                     {
-                        AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value);
+                        parentTask.NgayKetThuc = maxEnd.Value;
+                        parentTask.ThoiHanNgay = newThoiHan;
+                        parentTask.NgayCapNhat = DateTime.Now;
+                        parentTask.Save();
+
+                        AutoSetDependentTime(projectId, parentTask.IdCongViec);
+
+                        if (parentTask.IdCongViecCha.HasValue)
+                        {
+                            AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value);
+                        }
+                        else
+                        {
+                            // Nếu IdCongViecCha là null -> Đây là Root Task. 
+                            if (parentTask.IdGiaiDoanDuAn.HasValue && parentTask.IdGiaiDoanDuAn.Value != Guid.Empty)
+                            {
+                                var phase = new SubSonic.Select().From(TblGiaiDoanDuAn.Schema)
+                                                .Where(TblGiaiDoanDuAn.Columns.IdGiaiDoanDuAn).IsEqualTo(parentTask.IdGiaiDoanDuAn.Value)
+                                                .ExecuteSingle<TblGiaiDoanDuAn>();
+
+                                if (phase != null && phase.NgayBatDau != parentTask.NgayBatDau)
+                                {
+                                    phase.NgayBatDau = parentTask.NgayBatDau;
+                                    phase.NgayCapNhat = DateTime.Now;
+                                    phase.NguoiCapNhat = "System_AutoSync";
+                                    phase.Save();
+                                }
+                            }
+                        }
                     }
                 }
             }

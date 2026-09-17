@@ -40,6 +40,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         {
             CtrlHopDongThucHien1.NewHopDongHandlerCallback += NewHopDongAction;
             CtrlHopDongThucHien1.EditHopDongHandlerCallback += EditHopDongAction;
+            CtrlHopDongThucHien1.OpenContractDocumentHandlerCallback += OpenContractDocumentAction;
 
             if (!IsPostBack)
             {
@@ -102,10 +103,12 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 txtNgayKy.Text = 
                 txtNgayHieuLuc.Text = 
                 txtNgayHetHan.Text = 
-                txtMoTa.Text = string.Empty;
+            txtMoTa.Text = string.Empty;
 
             ddlKhachHang.SelectedIndex = 0;
             txtSoHopDong.Enabled = true;
+            txtTenHopDong.Enabled = true;
+            pnlContractDocumentIdentityLocked.Visible = false;
 
             this.IdHopDongThucHien = Guid.Empty;
         }
@@ -146,8 +149,8 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             txtGiaTriHopDong.Text =
                 hopDong.GiaTriHopDong.HasValue
-                    ? hopDong.GiaTriHopDong.Value.ToString()
-                    : string.Empty;
+                ? hopDong.GiaTriHopDong.Value.ToString()
+                : string.Empty;
 
 
             txtNgayKy.Text = hopDong.NgayKy.HasValue ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd") : string.Empty;
@@ -155,6 +158,12 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             txtNgayHetHan.Text = hopDong.NgayHetHan.HasValue ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd") : string.Empty;
 
             txtMoTa.Text = hopDong.MoTa;
+
+            bool hasLinkedDocument = HopDongThucHienManager.Instance
+                .HasLinkedDocument(hopDong.IdHopDongThucHien);
+            txtSoHopDong.Enabled = !hasLinkedDocument;
+            txtTenHopDong.Enabled = !hasLinkedDocument;
+            pnlContractDocumentIdentityLocked.Visible = hasLinkedDocument;
 
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
             dlDetail.Title = "Thông tin hợp đồng";
@@ -327,6 +336,43 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
 
             dlDetail.OpenModal(true);
+        }
+
+        private void OpenContractDocumentAction(object sender, EventArgs e)
+        {
+            Guid idHopDongThucHien = sender is Guid
+                ? (Guid)sender
+                : Guid.Empty;
+            if (idHopDongThucHien == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                ContractDocumentLinkResult result = HopDongThucHienManager
+                    .Instance
+                    .GetOrCreateProjectDocument(idHopDongThucHien);
+
+                string url = RewriteURLHelper.ProjectDocumentDetail(
+                    result.ProjectId,
+                    result.DocumentId) + "?tab=versions";
+                Response.Redirect(GetRelativeClientPath(url), false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowAccessDeniedNotify();
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowNotify(exception.Message, MSGType.Warning);
+            }
+            catch (Exception exception)
+            {
+                ShowNotify(exception.Message, MSGType.Error);
+            }
         }
 
         public override void ConfirmRequest(ConfirmResult e)

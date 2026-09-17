@@ -20,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
     {
         public EventHandler NewHopDongHandlerCallback;
         public EventHandler EditHopDongHandlerCallback;
+        public EventHandler OpenContractDocumentHandlerCallback;
 
         protected bool IsView
         {
@@ -237,6 +238,32 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
         {
             switch (e.CommandName)
             {
+                case "CONTRACT_DOCUMENT":
+                    if (!this.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid contractDocumentId;
+                    if (!Guid.TryParse(
+                        Convert.ToString(e.CommandArgument),
+                        out contractDocumentId)
+                        || contractDocumentId == Guid.Empty)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (OpenContractDocumentHandlerCallback != null)
+                    {
+                        OpenContractDocumentHandlerCallback(
+                            contractDocumentId,
+                            EventArgs.Empty);
+                    }
+
+                    break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
@@ -365,7 +392,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
                 master.searchTagBox_TagClosed(
                     searchTagBox,
                     tag,
-                    pnlSearchDefault,   
+                    pnlSearchDefault,
                     grvData,
                     txtSearchSingle,
                     out searchType);

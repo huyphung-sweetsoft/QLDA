@@ -383,7 +383,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         try
                         {
                             await Task.Delay(1500);
-                            var emailManager = new EmailManager(SweetContext.CreateBackgroundContext());
+                            var emailManager = new EmailManager(null);
                             var placeholdersBody = new Dictionary<string, string>
                     {
                         { "[[COMPANY_NAME]]", "SweetSoft" },

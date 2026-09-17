@@ -126,35 +126,35 @@
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
-$(document).ready(function() {
-    function calcMeetingTime() {
-            var startText = $('#<%= txtThoiGianBatDau.ClientID %>').val();
-            var durationText = $('#<%= txtThoiLuong.ClientID %>').val();
+        $(document).ready(function () {
+            function calcMeetingTime() {
+                var startText = $('#<%= txtThoiGianBatDau.ClientID %>').val();
+        var durationText = $('#<%= txtThoiLuong.ClientID %>').val();
 
-            if (startText && durationText) {
-                // Tách chuỗi dd/MM/yyyy HH:mm
-                var parts = startText.split(' ');
-                var dmy = parts[0].split('/');
-                var hm = parts[1].split(':');
+        if (startText && durationText) {
+            // Tách chuỗi dd/MM/yyyy HH:mm
+            var parts = startText.split(' ');
+            var dmy = parts[0].split('/');
+            var hm = parts[1].split(':');
 
-                if (dmy.length === 3 && hm.length === 2) {
-                    // Tạo đối tượng Date (Năm, Tháng (0-11), Ngày, Giờ, Phút)
-                    var startDate = new Date(dmy[2], parseInt(dmy[1]) - 1, dmy[0], hm[0], hm[1]);
-                    var minutes = parseInt(durationText, 10);
+            if (dmy.length === 3 && hm.length === 2) {
+                // Tạo đối tượng Date (Năm, Tháng (0-11), Ngày, Giờ, Phút)
+                var startDate = new Date(dmy[2], parseInt(dmy[1]) - 1, dmy[0], hm[0], hm[1]);
+                var minutes = parseInt(durationText, 10);
 
-                    if (!isNaN(minutes) && minutes > 0) {
-                        // 1. Cộng phút để tính Thời gian kết thúc
-                        var endDate = new Date(startDate.getTime());
-                        endDate.setMinutes(endDate.getMinutes() + minutes);
+                if (!isNaN(minutes) && minutes > 0) {
+                    // 1. Cộng phút để tính Thời gian kết thúc
+                    var endDate = new Date(startDate.getTime());
+                    endDate.setMinutes(endDate.getMinutes() + minutes);
 
-                        // Format lại thành chuỗi xuất ra UI
-                        var endStr = String(endDate.getDate()).padStart(2, '0') + '/' + 
-                                     String(endDate.getMonth() + 1).padStart(2, '0') + '/' + 
-                                     endDate.getFullYear() + ' ' + 
-                                     String(endDate.getHours()).padStart(2, '0') + ':' + 
-                                     String(endDate.getMinutes()).padStart(2, '0');
-                        
-                        $('#<%= txtThoiGianKetThuc.ClientID %>').val(endStr);
+                    // Format lại thành chuỗi xuất ra UI
+                    var endStr = String(endDate.getDate()).padStart(2, '0') + '/' +
+                        String(endDate.getMonth() + 1).padStart(2, '0') + '/' +
+                        endDate.getFullYear() + ' ' +
+                        String(endDate.getHours()).padStart(2, '0') + ':' +
+                        String(endDate.getMinutes()).padStart(2, '0');
+
+                    $('#<%= txtThoiGianKetThuc.ClientID %>').val(endStr);
 
                         // 2. Tính luôn trạng thái cuộc họp ngay trên màn hình
                         var now = new Date();
@@ -171,14 +171,14 @@ $(document).ready(function() {
                             }
                         }
                         $('#<%= ddlTrangThai.ClientID %>').val(status).trigger('change');
-                    }
                 }
             }
         }
+    }
 
-        $(document).on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
-            calcMeetingTime();
-        });
+    $(document).on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
+        calcMeetingTime();
     });
+});
     </script>
 </asp:Content>

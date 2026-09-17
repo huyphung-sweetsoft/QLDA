@@ -17,6 +17,11 @@
     .member-info-group { display: flex; align-items: center; gap: 10px; }
     .member-info-group input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; }
     
+    .single-avatar-circle {
+        width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
     .btn-calendar-only { background: #ffffff; border: 1px solid #e2e8f0; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .btn-calendar-only:hover { background: #eff6ff; border-color: #93c5fd; transform: scale(1.1); }
 
@@ -36,11 +41,14 @@
     .sd-body.holiday { background-color: #fef3c7; color: #b45309; border-top: 2.5px solid #f59e0b; }
     .sd-body.weekend { background-color: #f8fafc; color: #64748b; }
     .sd-body.free { background-color: #e6f4ea; color: #137333; border-top: 2.5px solid #34a853; }
-    .sd-body.busy { background-color: #fee2e2; color: #b91c1c; border-top: 2.5px solid #ef4444; } /* CSS MỚI TỪ BLUEPRINT */
+    .sd-body.busy { background-color: #fee2e2; color: #b91c1c; border-top: 2.5px solid #ef4444; }
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlTaskMemberPicker" Type="Primary" DefaultButton="btnConfirmTaskAssign">
     <ContentTemplate>
+        <asp:UpdatePanel ID="upnlMemberPicker" runat="server" UpdateMode="Conditional">
+            <ContentTemplate>
+         
         <div class="row js-validation validationEngineContainer p-2">
             
             <!-- THÔNG BÁO THỜI GIAN VÀ CẢNH BÁO AUTO-ADD -->
@@ -69,6 +77,9 @@
                                         <div class="member-info-group">
                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
+                                            
+                                            <%# Eval("AvatarHtml") %>
+                                            
                                             <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
                                             <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>PM</span>" : "" %>
                                         </div>
@@ -103,6 +114,9 @@
                                         <div class="member-info-group">
                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
+                                            
+                                            <%# Eval("AvatarHtml") %>
+                                            
                                             <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
                                             <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>PM</span>" : "" %>
                                         </div>
@@ -125,6 +139,8 @@
 
             </div> 
         </div>
+    </ContentTemplate>
+</asp:UpdatePanel>
     </ContentTemplate>
     
     <FooterTemplate>

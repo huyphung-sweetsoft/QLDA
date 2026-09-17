@@ -21,7 +21,9 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
     {
         public EventHandler NewCostHandlerCallback;
         public EventHandler EditCostHandlerCallback;
+        public EventHandler OpenCostDocumentHandlerCallback;
         private CostManager _manager = new CostManager();
+        private ControlHelpers _controlHelpers = new ControlHelpers();
         public Guid ProjectId
         {
             get
@@ -56,6 +58,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                 script.RegisterAsyncPostBackControl(lbtSearchSingle);
                 script.RegisterAsyncPostBackControl(lbtSearchAdvanced);
                 script.RegisterAsyncPostBackControl(lbtCancel);
+                script.RegisterAsyncPostBackControl(ddlSearchTrangThaiChiPhi);
             }
         }
 
@@ -65,7 +68,8 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
             AssignSearchColumns();
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
-
+            _controlHelpers.BindProjectMembers(ddlSearchNhanVienYeuCau, this.ProjectId, null);
+            _controlHelpers.BindTrangThaiChiPhi(ddlSearchTrangThaiChiPhi);
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
                 master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);
@@ -81,6 +85,8 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         private void AssignSearchColumns()
         {
             txtSearchTenKhoanChi.SearchColumn = "TenKhoanChi";
+            txtSearchSoTienMin.SearchColumn = "SoTienMin";
+            txtSearchSoTienMax.SearchColumn = "SoTienMax";
         }
 
         public void Rebind()
@@ -92,10 +98,16 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
-            txtSearchTenKhoanChi.SearchTagItemText = "Tên khoản chi";
+            txtSearchTenKhoanChi.SearchTagItemText = GetResourceText(BackEndResourceKeys.COST_NAME);
+            ddlSearchNhanVienYeuCau.Attributes["SearchTagItemText"] = GetResourceText(BackEndResourceKeys.REQUESTER);
+            ddlSearchTrangThaiChiPhi.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
+            txtSearchSoTienMin.SearchTagItemText = GetResourceText(BackEndResourceKeys.LOWEST_TOTAL_AMOUNT);
+            txtSearchSoTienMax.SearchTagItemText = GetResourceText(BackEndResourceKeys.HIGHEST_TOTAL_AMOUNT);
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
             lbtCancel.ToolTip = GetResourceText(BackEndResourceKeys.CANCEL);
-            
+            txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+            lbtSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.APPLY);
+            lbtCancel.Text = GetResourceText(BackEndResourceKeys.REFRESH);
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
@@ -127,26 +139,23 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                 int startRow = (grid.CurrentPageIndex - 1) * grid.CurrentPageSize;
                 int endRow = startRow + grid.CurrentPageSize;
 
-                DataTable dt = null;
+                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
 
-                if (grid.GridSearchType == GridSearchType.Single)
+                if (pnlSearchPopup != null)
                 {
-                    dt = CostManager.Instance.SearchCost(
-                        this.ProjectId,
-                        txtSearchSingle.Text,
-                        null,
-                        $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                        startRow, endRow, out totalRows);
+                    var advParams = new ControlHelpers().GetControlValues(pnlSearchPopup);
+                    foreach (var item in advParams) keyValueSearchs[item.Key] = item.Value;
                 }
-                else
-                {
-                    Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
-                    if (pnlSearchPopup != null)
-                        keyValueSearchs = new ControlHelpers().GetControlValues(pnlSearchPopup);
 
-                    dt = CostManager.Instance.SearchCost(
+                if (pnlSearchDefaultStatus != null)
+                {
+                    var defaultParams = new ControlHelpers().GetControlValues(pnlSearchDefaultStatus);
+                    foreach (var item in defaultParams) keyValueSearchs[item.Key] = item.Value;
+                }
+
+                DataTable dt = CostManager.Instance.SearchCost(
                         this.ProjectId,
-                        "",
+                    txtSearchSingle.Text,
                         keyValueSearchs,
                         $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
                         startRow, endRow, out totalRows);
@@ -183,6 +192,32 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         {
             switch (e.CommandName)
             {
+                case "COST_DOCUMENT":
+                    if (!this.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid costDocumentId;
+                    if (!Guid.TryParse(
+                        Convert.ToString(e.CommandArgument),
+                        out costDocumentId)
+                        || costDocumentId == Guid.Empty)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (OpenCostDocumentHandlerCallback != null)
+                    {
+                        OpenCostDocumentHandlerCallback(
+                            costDocumentId,
+                            EventArgs.Empty);
+                    }
+
+                    break;
+
                 case "ITEM_APPROVE":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
@@ -198,8 +233,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                         {
                             string sqlApprove = $"UPDATE TblChiPhi SET TrangThai = 1 WHERE IdChiPhi = '{costIdApprove}'";
                             new InlineQuery().Execute(sqlApprove);
-                            ShowNotify("Duyệt khoản chi thành công!", MSGType.Success);
-                            Rebind();
+                            ShowNotify(GetResourceText(BackEndResourceKeys.APPROVE_COST_SUCCESS), MSGType.Success); Rebind();
                         }
                         catch (Exception exc)
                         {
@@ -288,6 +322,16 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                 master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
             upSearchTagBox.Update();
         }
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            if (master != null)
+            {
+                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
+            }
+            upSearchTagBox.Update();
+            pnlSearchDropdowns.Update();
+        }
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
@@ -295,8 +339,10 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
             if (master != null)
             {
                 GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, null, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefaultStatus, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
             }
+            pnlSearch.Update(); 
+            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
             upSearchTagBox.Update();
             ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", $"$('#{txtSearchSingle.ClientID}').val('');", true);
         }
@@ -334,8 +380,19 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         public string GetTrangThaiChiPhiText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
-            TrangThaiChiPhi status = (TrangThaiChiPhi)Convert.ToInt32(value);
-            return GetResourceText(_manager.GetValueForTrangThaiChiPhi(status));
+            int statusCode = Convert.ToInt32(value);
+            TrangThaiChiPhi status = (TrangThaiChiPhi)statusCode;
+            string text = GetResourceText(_manager.GetValueForTrangThaiChiPhi(status));
+            string cssClass = "badge-status badge-status-pending"; 
+            if (statusCode == 1)
+            {
+                cssClass = "badge-status badge-status-approved";
+            }
+            else if (statusCode == 2)
+            {
+                cssClass = "badge-status badge-status-rejected";
+            }
+            return $"<span class='{cssClass}'>{text}</span>";
         }
     }
 }

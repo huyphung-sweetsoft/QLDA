@@ -7,9 +7,10 @@ using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Transactions;
+using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 namespace SweetSoft.QLDA.BackOffice.fLichBieu
 {
     public partial class LichBieu : BaseAdminPage
@@ -227,62 +228,60 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                     return;
                 }
 
-                // 1. Lấy danh sách cấu hình hiện tại từ DB lên 
-                // Để SubSonic biết đây là dữ liệu cũ (cần chạy lệnh UPDATE)
                 List<TblCauHinhTuanLamViec> currentList = LichBieuChungManager.Instance.GetAllCauHinhTuan();
 
-                foreach (RepeaterItem item in rptTuanLamViec.Items)
+                // 1. Transaction lưu 7 ngày cấu hình tuần
+                using (var scope = new System.Transactions.TransactionScope())
                 {
-                    if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                    foreach (RepeaterItem item in rptTuanLamViec.Items)
                     {
-                        HiddenField hdfIdCauHinh = (HiddenField)item.FindControl("hdfIdCauHinh");
-                        HiddenField hdfNgayTrongTuan = (HiddenField)item.FindControl("hdfNgayTrongTuan");
-                        ExtraCheckbox chkIsWorking = (ExtraCheckbox)item.FindControl("chkIsWorking");
-
-                        HtmlInputGenericControl txtGioBatDauSang = (HtmlInputGenericControl)item.FindControl("txtGioBatDauSang");
-                        HtmlInputGenericControl txtGioKetThucSang = (HtmlInputGenericControl)item.FindControl("txtGioKetThucSang");
-                        HtmlInputGenericControl txtGioBatDauChieu = (HtmlInputGenericControl)item.FindControl("txtGioBatDauChieu");
-                        HtmlInputGenericControl txtGioKetThucChieu = (HtmlInputGenericControl)item.FindControl("txtGioKetThucChieu");
-
-                        Guid idCauHinh = Guid.Parse(hdfIdCauHinh.Value);
-
-                        // 2. Lấy chính xác Object cũ ra khỏi danh sách để cập nhật
-                        TblCauHinhTuanLamViec obj = currentList.Find(x => x.IdCauHinh == idCauHinh);
-
-                        if (obj != null)
+                        if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
                         {
-                            obj.LaNgayLamViec = chkIsWorking.Checked;
+                            HiddenField hdfIdCauHinh = (HiddenField)item.FindControl("hdfIdCauHinh");
+                            ExtraCheckbox chkIsWorking = (ExtraCheckbox)item.FindControl("chkIsWorking");
+                            HtmlInputGenericControl txtGioBatDauSang = (HtmlInputGenericControl)item.FindControl("txtGioBatDauSang");
+                            HtmlInputGenericControl txtGioKetThucSang = (HtmlInputGenericControl)item.FindControl("txtGioKetThucSang");
+                            HtmlInputGenericControl txtGioBatDauChieu = (HtmlInputGenericControl)item.FindControl("txtGioBatDauChieu");
+                            HtmlInputGenericControl txtGioKetThucChieu = (HtmlInputGenericControl)item.FindControl("txtGioKetThucChieu");
 
-                            if (chkIsWorking.Checked)
-                            {
-                                // Đẩy thẳng chuỗi từ giao diện xuống DB, nếu rỗng thì cho NULL
-                                obj.GioBatDauSang = string.IsNullOrEmpty(txtGioBatDauSang.Value) ? null : txtGioBatDauSang.Value;
-                                obj.GioKetThucSang = string.IsNullOrEmpty(txtGioKetThucSang.Value) ? null : txtGioKetThucSang.Value;
-                                obj.GioBatDauChieu = string.IsNullOrEmpty(txtGioBatDauChieu.Value) ? null : txtGioBatDauChieu.Value;
-                                obj.GioKetThucChieu = string.IsNullOrEmpty(txtGioKetThucChieu.Value) ? null : txtGioKetThucChieu.Value;
-                            }
-                            else
-                            {
-                                obj.GioBatDauSang = null;
-                                obj.GioKetThucSang = null;
-                                obj.GioBatDauChieu = null;
-                                obj.GioKetThucChieu = null;
-                            }
+                            Guid idCauHinh = Guid.Parse(hdfIdCauHinh.Value);
+                            TblCauHinhTuanLamViec obj = currentList.Find(x => x.IdCauHinh == idCauHinh);
 
-                            // 3. Đẩy xuống Manager (NguoiCapNhat đã được Manager lo)
-                            LichBieuChungManager.Instance.UpdateCauHinhTuan(obj);
+                            if (obj != null)
+                            {
+                                obj.LaNgayLamViec = chkIsWorking.Checked;
+                                if (chkIsWorking.Checked)
+                                {
+                                    obj.GioBatDauSang = string.IsNullOrEmpty(txtGioBatDauSang.Value) ? null : txtGioBatDauSang.Value;
+                                    obj.GioKetThucSang = string.IsNullOrEmpty(txtGioKetThucSang.Value) ? null : txtGioKetThucSang.Value;
+                                    obj.GioBatDauChieu = string.IsNullOrEmpty(txtGioBatDauChieu.Value) ? null : txtGioBatDauChieu.Value;
+                                    obj.GioKetThucChieu = string.IsNullOrEmpty(txtGioKetThucChieu.Value) ? null : txtGioKetThucChieu.Value;
+                                }
+                                else
+                                {
+                                    obj.GioBatDauSang = null;
+                                    obj.GioKetThucSang = null;
+                                    obj.GioBatDauChieu = null;
+                                    obj.GioKetThucChieu = null;
+                                }
+
+                                LichBieuChungManager.Instance.UpdateCauHinhTuan(obj);
+                            }
                         }
                     }
+                    scope.Complete();
                 }
 
-                // 4. Hiển thị thông báo thành công xanh lá
+                // 2. SAU KHI LỊCH TUẦN ĐÃ LƯU XONG: Làm mới Cache và Sync Task đúng 1 lần duy nhất
+                LichBieuChungManager.Instance.ForceRefreshCache();
+                TaskManager.Instance.SyncPendingTasksAfterScheduleChange(DateTime.Today);
+
                 ShowSuccessSaveData();
                 BindData();
                 upnlTuanLamViec.Update();
             }
             catch (Exception exc)
             {
-                // 5. Bắt lỗi: Nếu có trục trặc, hệ thống sẽ báo thông báo đỏ thay vì im lặng
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }

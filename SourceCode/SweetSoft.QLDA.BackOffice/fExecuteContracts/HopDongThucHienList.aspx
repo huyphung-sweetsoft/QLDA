@@ -37,6 +37,13 @@
                     </div>
                 </div>
 
+                <asp:Panel runat="server" ID="pnlContractDocumentIdentityLocked" CssClass="col-lg-12" Visible="false">
+                    <div class="alert alert-info py-2 mb-3" role="alert">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT_IDENTITY_LOCKED) %>
+                    </div>
+                </asp:Panel>
+
                 <%-- Khách hàng --%>
                 <div class="col-lg-6">
                     <div class="mb-3">

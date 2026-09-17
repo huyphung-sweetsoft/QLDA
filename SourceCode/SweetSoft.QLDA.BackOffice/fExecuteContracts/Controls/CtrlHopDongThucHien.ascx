@@ -125,7 +125,18 @@
                     <%-- Hành động --%>
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
-                            <div class="d-flex justify-content-center gap-2">
+                            <div class="d-flex justify-content-center align-items-center gap-1">
+                                <asp:LinkButton
+                                    runat="server"
+                                    ID="lbtContractDocument"
+                                    Visible='<%# this.IsView %>'
+                                    CommandName="CONTRACT_DOCUMENT"
+                                    CommandArgument='<%# Eval("IdHopDongThucHien") %>'
+                                    CausesValidation="false"
+                                    CssClass="btn btn-outline-primary btn-sm text-center btn-smart-link"
+                                    ToolTip='<%# GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT) %>'>
+                                    <i class="fas fa-folder-open"></i>
+                                </asp:LinkButton>
                                 <SweetSoft:SmartLinkButton runat="server" ID="lbtDetail" VisibleConditionKey='<%# this.IsEdit %>' CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline" ResourceKey='<%# BackEndResourceKeys.EDIT %>' ButtonIcon="fas fa-pencil-alt"></SweetSoft:SmartLinkButton>
                                 <SweetSoft:SmartLinkButton runat="server" ID="lbtDelete" VisibleConditionKey='<%# this.IsDelete %>' CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger" ResourceKey='<%# BackEndResourceKeys.DELETE %>' ButtonIcon="fas fa-trash"></SweetSoft:SmartLinkButton>
                             </div>

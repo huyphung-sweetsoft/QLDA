@@ -9,7 +9,7 @@
 <div class="container-fluid dashboard-cost">
     <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3">
         <div class="flex-grow-1">
-            <h4 class="mb-1">Dashboard chi phí dự án đã hoàn thành</h4>
+            <h4 class="mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TITLE) %></h4>
 
             <div class="row g-2 mt-3 align-items-end">
                 <div class="col-12 col-sm-6 col-md-5 col-xl-4">
@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                    <label class="form-label mb-1 text-nowrap">Thời gian hoàn thành</label>
+                    <label class="form-label mb-1 text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETION_PERIOD) %></label>
                     <SweetSoft:ExtraDropdown
                         ID="ddlCompletionPeriod"
                         runat="server"
@@ -49,8 +49,7 @@
             </div>
 
             <p class="text-muted mt-2 mb-0">
-                Chỉ thống kê dự án đã có ngày hoàn thành thực tế. Khoảng thời gian lọc theo ngày hoàn thành dự án,
-                còn chi phí và thanh toán được lấy toàn bộ vòng đời của các dự án phù hợp.
+                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_FILTER_DESC) %>
             </p>
         </div>
 
@@ -59,7 +58,7 @@
                 <i class="bx bx-wallet fs-3"></i>
             </div>
             <div>
-                <div class="text-muted small fw-medium text-uppercase mb-1">Cập nhật dữ liệu</div>
+                <div class="text-muted small fw-medium text-uppercase mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_UPDATED_AT) %></div>
                 <div class="fw-bold text-dark lh-1"><%= Model.GeneratedAt.ToString("HH:mm dd/MM/yyyy") %></div>
             </div>
         </div>
@@ -69,10 +68,9 @@
     <div class="alert alert-info border-0 shadow-sm d-flex align-items-start mb-4" role="alert">
         <i class="bx bx-info-circle fs-3 me-3"></i>
         <div>
-            <div class="fw-semibold mb-1">Chưa có dự án đã hoàn thành phù hợp với bộ lọc</div>
+            <div class="fw-semibold mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COMPLETED_PROJECTS) %></div>
             <div>
-                Dự án chỉ xuất hiện ở dashboard này khi trường <strong>Ngày hoàn thành thực tế</strong> đã được cập nhật.
-                Dự án đang thực hiện không được cộng vào các chỉ số tài chính bên dưới.
+                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COMPLETED_PROJECTS_DESC) %>
             </div>
         </div>
     </div>
@@ -83,7 +81,7 @@
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="text-muted mb-1">Dự án hoàn thành</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_PROJECTS) %></p>
                         <h3 class="mb-0 text-primary"><%= Model.CompletedProjectCount %></h3>
                         <small class="text-muted"><%= GetSelectedPeriodText() %></small>
                     </div>
@@ -98,9 +96,9 @@
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1">Giá trị hợp đồng</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.TOTAL_CONTRACT_VALUE) %></p>
                         <h4 class="mb-0 text-info"><%= FormatMoney(Model.TotalContractValue) %></h4>
-                        <small class="text-muted">Doanh thu theo hợp đồng</small>
+                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_REVENUE) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-info-subtle text-info cost-kpi-icon">
                         <i class="bx bx-file fs-4"></i>
@@ -113,9 +111,9 @@
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1">Chi phí thực tế</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.ACTUAL_COST) %></p>
                         <h4 class="mb-0 text-danger"><%= FormatMoney(Model.ActualCost) %></h4>
-                        <small class="text-muted">Bình quân <%= FormatMoney(Model.AverageCostPerProject) %>/dự án</small>
+                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_AVERAGE_PER_PROJECT), FormatMoney(Model.AverageCostPerProject)) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-danger-subtle text-danger cost-kpi-icon">
                         <i class="bx bx-receipt fs-4"></i>
@@ -128,9 +126,9 @@
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1">Lợi nhuận gộp</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_GROSS_PROFIT) %></p>
                         <h4 class="mb-0 <%= GetAmountCss(Model.GrossProfit) %>"><%= FormatMoney(Model.GrossProfit) %></h4>
-                        <small class="text-muted">Hợp đồng − chi phí</small>
+                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_MINUS_COST) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-success-subtle text-success cost-kpi-icon">
                         <i class="bx bx-line-chart fs-4"></i>
@@ -143,9 +141,9 @@
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="text-muted mb-1">Biên lợi nhuận</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROFIT_MARGIN) %></p>
                         <h3 class="mb-0 <%= GetAmountCss(Model.GrossProfit) %>"><%= Model.ProfitMargin.ToString("0.##") %>%</h3>
-                        <small class="text-muted">Trên giá trị hợp đồng</small>
+                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ON_CONTRACT_VALUE) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-warning-subtle text-warning cost-kpi-icon">
                         <i class="bx bx-pie-chart-alt-2 fs-4"></i>
@@ -158,9 +156,9 @@
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1">Đã thu</p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.RECEIVED_PAYMENT) %></p>
                         <h4 class="mb-0 text-success"><%= FormatMoney(Model.ReceivedPayment) %></h4>
-                        <small class="text-muted">Còn <%= FormatMoney(Model.OutstandingPayment) %></small>
+                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_OUTSTANDING_AMOUNT), FormatMoney(Model.OutstandingPayment)) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-success-subtle text-success cost-kpi-icon">
                         <i class="bx bx-money fs-4"></i>
@@ -174,8 +172,8 @@
         <div class="col-12 col-xl-8 d-flex">
             <div class="card w-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title mb-1">Hợp đồng so với chi phí thực tế</h5>
-                    <p class="text-muted mb-3">So sánh giá trị hợp đồng và tổng chi phí của từng dự án đã hoàn thành.</p>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_VS_ACTUAL_COST) %></h5>
+                    <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC) %></p>
                     <div class="cost-chart-scroll">
                         <div id="cost-project-comparison-chart"></div>
                     </div>
@@ -186,11 +184,11 @@
         <div class="col-12 col-xl-4 d-flex">
             <div class="card w-100 border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title mb-1">Tình hình thu tiền</h5>
-                    <p class="text-muted mb-3">Số đã thu và còn phải thu so với tổng giá trị hợp đồng.</p>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION) %></h5>
+                    <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION_DESC) %></p>
                     <div id="cost-payment-chart"></div>
                     <div class="text-center small text-muted mt-2">
-                        Tỷ lệ thu tiền: <strong><%= Model.PaymentCollectionRate.ToString("0.##") %>%</strong>
+                        <strong><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COLLECTION_RATE), Model.PaymentCollectionRate.ToString("0.##")) %></strong>
                     </div>
                 </div>
             </div>
@@ -199,8 +197,8 @@
 
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
-            <h5 class="card-title mb-1">Xu hướng phát sinh chi phí</h5>
-            <p class="text-muted mb-3">Tổng chi phí theo tháng trong toàn bộ vòng đời của các dự án đã hoàn thành thuộc phạm vi lọc.</p>
+            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND) %></h5>
+            <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND_DESC) %></p>
             <div id="cost-trend-chart"></div>
         </div>
     </div>
@@ -209,37 +207,39 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
                 <div>
-                    <h5 class="card-title mb-1">Hiệu quả tài chính theo dự án</h5>
-                    <p class="text-muted mb-0">Lợi nhuận gộp = giá trị hợp đồng − chi phí thực tế.</p>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE) %></h5>
+                    <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_GROSS_PROFIT_FORMULA) %></p>
                 </div>
-                <div class="small text-muted mt-2 mt-md-0">Sắp xếp từ biên lợi nhuận thấp đến cao</div>
+                <div class="small text-muted mt-2 mt-md-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_SORT_MARGIN_ASC) %></div>
             </div>
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 cost-project-table">
                     <thead>
                         <tr>
-                            <th>Dự án</th>
-                            <th>Hoàn thành</th>
-                            <th>Hợp đồng</th>
-                            <th class="text-end">Giá trị hợp đồng</th>
-                            <th class="text-end">Chi phí thực tế</th>
-                            <th class="text-end">Lợi nhuận gộp</th>
-                            <th class="text-center">Biên LN</th>
-                            <th class="text-end">Đã thu / Còn thu</th>
+                            <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETION) %></th>
+                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT) %></th>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.TOTAL_CONTRACT_VALUE) %></th>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.ACTUAL_COST) %></th>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_GROSS_PROFIT) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MARGIN_SHORT) %></th>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RECEIVED_OUTSTANDING) %></th>
                         </tr>
                     </thead>
                     <tbody>
                         <% foreach (var project in Model.ProjectStatistics) { %>
                         <tr>
                             <td>
-                                <div class="fw-semibold"><%: project.ProjectCode %></div>
-                                <div class="small text-muted"><%: project.ProjectName %></div>
+                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectDetailUrl(project.ProjectId) %>">
+                                    <div class="fw-semibold"><%: project.ProjectCode %></div>
+                                    <div class="small text-muted"><%: project.ProjectName %></div>
+                                </a>
                             </td>
                             <td class="text-nowrap"><%= project.CompletionDate.ToString("dd/MM/yyyy") %></td>
                             <td>
                                 <% if (string.IsNullOrEmpty(project.ContractNumber)) { %>
-                                <span class="text-muted">Chưa gắn hợp đồng</span>
+                                <span class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_CONTRACT) %></span>
                                 <% } else { %>
                                 <%: project.ContractNumber %>
                                 <% } %>
@@ -247,7 +247,7 @@
                             <td class="text-end text-nowrap"><%= FormatMoney(project.ContractValue) %></td>
                             <td class="text-end text-nowrap">
                                 <div class="fw-semibold text-danger"><%= FormatMoney(project.ActualCost) %></div>
-                                <div class="small text-muted"><%= project.CostItemCount %> khoản chi</div>
+                                <div class="small text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), project.CostItemCount) %></div>
                             </td>
                             <td class="text-end text-nowrap">
                                 <span class="fw-semibold <%= GetAmountCss(project.GrossProfit) %>"><%= FormatMoney(project.GrossProfit) %></span>
@@ -256,14 +256,16 @@
                                 <span class="badge <%= GetProfitBadgeCss(project.GrossProfit) %>"><%= project.ProfitMargin.ToString("0.##") %>%</span>
                             </td>
                             <td class="text-end text-nowrap">
-                                <div class="text-success"><%= FormatMoney(project.ReceivedPayment) %></div>
-                                <div class="small text-muted"><%= FormatMoney(project.OutstandingPayment) %></div>
+                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectPaymentsUrl(project.ProjectId) %>">
+                                    <div class="text-success"><%= FormatMoney(project.ReceivedPayment) %></div>
+                                    <div class="small text-muted"><%= FormatMoney(project.OutstandingPayment) %></div>
+                                </a>
                             </td>
                         </tr>
                         <% } %>
                         <% if (Model.ProjectStatistics.Count == 0) { %>
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">Không có dữ liệu tài chính của dự án đã hoàn thành.</td>
+                            <td colspan="8" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_FINANCIAL_DATA) %></td>
                         </tr>
                         <% } %>
                     </tbody>
@@ -276,11 +278,11 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
                 <div>
-                    <h5 class="card-title mb-1">Các khoản chi lớn nhất</h5>
-                    <p class="text-muted mb-0">Tối đa 15 khoản chi có giá trị cao nhất trong phạm vi dự án đã chọn.</p>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_LARGEST_COST_ITEMS) %></h5>
+                    <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_LARGEST_COST_ITEMS_DESC) %></p>
                 </div>
                 <span class="badge bg-danger-subtle text-danger align-self-start mt-2 mt-md-0">
-                    <%= Model.LargestCostItems.Count %> khoản chi
+                    <%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), Model.LargestCostItems.Count) %>
                 </span>
             </div>
 
@@ -288,11 +290,11 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Mã khoản chi</th>
-                            <th>Tên khoản chi</th>
-                            <th>Dự án</th>
-                            <th>Ngày phát sinh</th>
-                            <th class="text-end">Số tiền</th>
+                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_CODE) %></th>
+                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_NAME) %></th>
+                            <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_INCURRED_DATE) %></th>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AMOUNT) %></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -301,8 +303,10 @@
                             <td><%: string.IsNullOrEmpty(cost.CostCode) ? "-" : cost.CostCode %></td>
                             <td class="fw-semibold"><%: cost.CostName %></td>
                             <td>
-                                <div><%: cost.ProjectCode %></div>
-                                <div class="small text-muted"><%: cost.ProjectName %></div>
+                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectDetailUrl(cost.ProjectId) %>">
+                                    <div><%: cost.ProjectCode %></div>
+                                    <div class="small text-muted"><%: cost.ProjectName %></div>
+                                </a>
                             </td>
                             <td class="text-nowrap"><%= cost.OccurredDate.ToString("dd/MM/yyyy") %></td>
                             <td class="text-end text-nowrap fw-semibold text-danger"><%= FormatMoney(cost.Amount) %></td>
@@ -310,7 +314,7 @@
                         <% } %>
                         <% if (Model.LargestCostItems.Count == 0) { %>
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Chưa có khoản chi phù hợp với bộ lọc.</td>
+                            <td colspan="5" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COST_ITEMS) %></td>
                         </tr>
                         <% } %>
                     </tbody>
@@ -323,5 +327,6 @@
         window.dashboardCostProjectData = <%= ProjectComparisonChartData %>;
         window.dashboardCostTrendData = <%= CostTrendChartData %>;
         window.dashboardCostPaymentData = <%= PaymentChartData %>;
+        window.dashboardCostTexts = <%= DashboardTextsJson %>;
     </script>
 </div>

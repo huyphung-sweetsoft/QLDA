@@ -207,6 +207,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                = txtPageUrl.Text
                = txtIcon.Text
                = string.Empty;
+            chkOfProject.Checked = false;
             ddlParentCode.SelectedIndex = -1;
             dlAddPermission.OpenModal(true);
         }
@@ -248,7 +249,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     PageUrl = txtPageUrl.Text,
                     Icon = txtIcon.Text,
                     IsActivated = true,
-                    OfProject = false,
+                    OfProject = chkOfProject.Checked,
                 };
                 aspnetFunction.Save();
                 if (string.IsNullOrEmpty(ddlParentCode.SelectedValue))
@@ -356,6 +357,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
            = txtPageUrl.Text
            = txtIcon.Text
            = string.Empty;
+                chkOfProject.Checked = false;
                 ddlParentCode.SelectedIndex = -1;
                 dlAddPermission.UpdateContentModal();
             }

@@ -1,14 +1,46 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="CostList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fCosts.CostList" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Register Src="~/fCosts/Controls/CtrlCost.ascx" TagPrefix="SweetSoft" TagName="CtrlCost" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server"></asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
+<style>
+    .badge-status {
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        line-height: 1.2 !important;
+    }
+
+    .badge-status-pending {
+        background-color: #fffbeb !important;
+        color: #b45309 !important;
+        border: 1px solid #fde68a !important;
+    }
+
+    .badge-status-approved {
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+        border: 1px solid #bbf7d0 !important;
+    }
+    .badge-status-rejected {
+        background-color: #fee2e2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+</style>
+</asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
         <div class="col-xl-12">
             <div class="card p-2 min-h-sreen">
                 <SweetSoft:Navigation runat="server" ID="Navigation1"/>
+                <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
                 <SweetSoft:CtrlCost runat="server" id="CtrlCost1" />
             </div>
         </div>
@@ -103,5 +135,14 @@ function calculateTotalCost(donGiaInput) {
             let tongTien = donGia * soLuong;
             document.getElementById('<%= txtTongTien.ClientID %>').value = tongTien.toLocaleString('en-US');
         }
+
+    $(document).on('input', '.format-currency', function (e) {
+        let val = $(this).val();
+        val = val.replace(/[^0-9]/g, '');
+        if (val !== '') {
+            val = parseInt(val, 10).toLocaleString('en-US');
+        }
+        $(this).val(val);
+    });
     </script>
 </asp:Content>

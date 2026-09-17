@@ -39,7 +39,17 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             get => ViewState["EndDate"] != null ? (DateTime)ViewState["EndDate"] : DateTime.Today;
             set => ViewState["EndDate"] = value;
         }
-
+        public bool ViewOnly
+        {
+            get
+            {
+                return ViewState["ViewOnly"] != null && (bool)ViewState["ViewOnly"];
+            }
+            set
+            {
+                ViewState["ViewOnly"] = value;
+            }
+        }
         protected void Page_Load(object sender, EventArgs e)
         {
         }
@@ -91,26 +101,32 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             string thoiGian = $"<strong>{startDate:dd/MM/yyyy}</strong> - <strong>{endDate:dd/MM/yyyy}</strong>";
             ltrTaskInfoNote.Text = $"<div style='margin-bottom: 5px; font-size: 13px;'><i class='fas fa-tasks me-1'></i> {GetResourceText(BackEndResourceKeys.TASK)}: <strong style='color: #b91c1c;'>{taskName}</strong></div>" +
                                    $"<div style='font-size: 12px;'><i class='far fa-clock me-1'></i> {GetResourceText(BackEndResourceKeys.EXECUTION_TIME)}: {thoiGian}</div>";
-
+            btnConfirmTaskAssign.Visible = !ViewOnly;
             mdlTaskMemberPicker.OpenModal(true);
+            upnlMemberPicker.Update();
         }
 
         // Bổ sung tham số pmId để đánh dấu huy hiệu
         private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId)
         {
             var list = new List<object>();
-            foreach (var user in users)
+            for (int i = 0; i < users.Count; i++)
             {
+                var user = users[i];
+                string avatarPath = user.Avatar;
+
                 list.Add(new
                 {
                     UserId = user.UserId,
                     DisplayName = user.DisplayName,
-                    IsPM = pmId.HasValue && user.UserId == pmId.Value, // Đánh dấu true nếu khớp ID của PM
+                    IsPM = pmId.HasValue && user.UserId == pmId.Value,
+                    AvatarHtml = GetSingleAvatarHtml(user.DisplayName, avatarPath, i), // <-- Sinh HTML Avatar
                     ScheduleJson = GenerateScheduleJson(user.UserId, start, end)
                 });
             }
             return list;
         }
+
         private string GenerateScheduleJson(Guid userId, DateTime start, DateTime end)
         {
             var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, start, end);
@@ -143,7 +159,31 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
             return JsonConvert.SerializeObject(dict);
         }
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+        }
 
+        private string GetSingleAvatarHtml(string name, string avatar, int index)
+        {
+            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
+            string color = colors[index % colors.Length];
+            bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultAvatar)
+            {
+                string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
+                string fallbackHtml = $"<div class=\\'single-avatar-circle\\' style=\\'background-color: {color};\\'>{GetInitials(name)}</div>";
+                return $"<img src='{avatarUrl}' class='single-avatar-circle' style='object-fit: cover;' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+            }
+            else
+            {
+                return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
+            }
+        }
         protected void rptMembers_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem)
@@ -160,10 +200,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 chkSelect.Checked = true;
             }
+            chkSelect.Enabled = !ViewOnly;
         }
 
         protected void btnConfirmTaskAssign_Click(object sender, EventArgs e)
         {
+            if (ViewOnly)
+                return;
             List<Guid> selectedIds = new List<Guid>();
             selectedIds.AddRange(GetSelectedIdsFromRepeater(rptProjectMembers));
             selectedIds.AddRange(GetSelectedIdsFromRepeater(rptCompanyMembers));

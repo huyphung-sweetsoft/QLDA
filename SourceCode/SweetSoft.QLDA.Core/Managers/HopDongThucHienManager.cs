@@ -1,4 +1,5 @@
 using SweetSoft.QLDA.Core.ExceptionHelpers;
+using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.ResourceTexts;
@@ -10,9 +11,21 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Transactions;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
+    /// <summary>
+    /// The canonical project document attached to an execution contract.
+    /// The result carries both ids needed to open the existing document route.
+    /// </summary>
+    public sealed class ContractDocumentLinkResult
+    {
+        public Guid ProjectId { get; set; }
+        public Guid DocumentId { get; set; }
+        public bool IsCreated { get; set; }
+    }
+
     public class HopDongThucHienManager : BaseManager
     {
         private static readonly Lazy<HopDongThucHienManager> _instance = new Lazy<HopDongThucHienManager>(() => new HopDongThucHienManager());
@@ -44,135 +57,375 @@ namespace SweetSoft.QLDA.Core.Managers
 
         #region Create or update
 
-        public TblHopDongThucHien CreateOrUpdate(
-    TblHopDongThucHien dto)
+        public TblHopDongThucHien CreateOrUpdate(TblHopDongThucHien dto)
         {
             ValidateContract(dto);
             NormalizeContract(dto);
 
-            bool isInsert =
-                dto.IdHopDongThucHien == Guid.Empty;
+            bool isInsert = dto.IdHopDongThucHien == Guid.Empty;
 
-            TblHopDongThucHien duplicate =
-                _repository.GetBySoHopDong(
-                    dto.SoHopDong);
+            TblHopDongThucHien duplicate = _repository.GetBySoHopDong(dto.SoHopDong);
 
-            bool duplicateNumber =
-                duplicate != null &&
-                duplicate.IdHopDongThucHien !=
-                    dto.IdHopDongThucHien;
+            bool duplicateNumber = duplicate != null && duplicate.IdHopDongThucHien != dto.IdHopDongThucHien;
 
-            BusinessValidator.ThrowIf(
-                duplicateNumber,
-                BackEndResourceKeys.INVALID_DATA,
-                nameof(dto.SoHopDong),
-                ErrorCodes.Conflict);
-
-            TblHopDongThucHien item;
+            BusinessValidator.ThrowIf(duplicateNumber, BackEndResourceKeys.INVALID_DATA, nameof(dto.SoHopDong), ErrorCodes.Conflict);
 
             if (isInsert)
-            {
-                item =
-                    new TblHopDongThucHien();
+                return Insert(dto);
 
-                item.IdHopDongThucHien =
-                    UUIDv7.NewGuid();
+            return Update(dto);
+        }
 
-                item.SoHopDong =
-                    dto.SoHopDong;
+        private TblHopDongThucHien Insert(TblHopDongThucHien dto)
+        {
+            TblHopDongThucHien item = dto.Clone() as TblHopDongThucHien;
 
-                item.TenHopDong =
-                    dto.TenHopDong;
+            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.INVALID_DATA);
 
-                item.IdKhachHang =
-                    dto.IdKhachHang;
+            item.IdHopDongThucHien = UUIDv7.NewGuid();
+            item.DaXoa = false;
+            item.NguoiTao = SweetContext.Current.UserName;
+            item.NgayTao = DateTime.UtcNow;
+            item.NguoiCapNhat = null;
+            item.NgayCapNhat = null;
 
-                item.GiaTriHopDong =
-                    dto.GiaTriHopDong;
+            item = _repository.Insert(item);
 
-                item.NgayKy =
-                    dto.NgayKy;
-
-                item.NgayHieuLuc =
-                    dto.NgayHieuLuc;
-
-                item.NgayHetHan =
-                    dto.NgayHetHan;
-
-                item.MoTa =
-                    dto.MoTa;
-
-                item.DaXoa =
-                    false;
-
-                item.NguoiTao =
-                    SweetContext.Current.UserName;
-
-                item.NgayTao =
-                    DateTime.UtcNow;
-
-                item.NguoiCapNhat =
-                    null;
-
-                item.NgayCapNhat =
-                    null;
-
-                item =
-                    _repository.Insert(item);
-            }
-            else
-            {
-                item =
-                    _repository.GetById(
-                        dto.IdHopDongThucHien);
-
-                BusinessValidator.ThrowIfNull(
-                    item,
-                    BackEndResourceKeys.NOT_FOUND,
-                    nameof(dto.IdHopDongThucHien),
-                    ErrorCodes.NotFound);
-
-                item.SoHopDong =
-                    dto.SoHopDong;
-
-                item.TenHopDong =
-                    dto.TenHopDong;
-
-                item.IdKhachHang =
-                    dto.IdKhachHang;
-
-                item.GiaTriHopDong =
-                    dto.GiaTriHopDong;
-
-                item.NgayKy =
-                    dto.NgayKy;
-
-                item.NgayHieuLuc =
-                    dto.NgayHieuLuc;
-
-                item.NgayHetHan =
-                    dto.NgayHetHan;
-
-                item.MoTa =
-                    dto.MoTa;
-
-                item.NguoiCapNhat =
-                    SweetContext.Current.UserName;
-
-                item.NgayCapNhat =
-                    DateTime.UtcNow;
-
-                item =
-                    _repository.Update(item);
-            }
-
-            BusinessValidator.ThrowIfNull(
-                item,
-                BackEndResourceKeys.SERVICE_UNAVAILABLE,
-                nameof(dto),
-                ErrorCodes.ServiceUnavailable);
+            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
 
             return item;
+        }
+
+        private TblHopDongThucHien Update(TblHopDongThucHien dto)
+        {
+            TblHopDongThucHien item = _repository.GetById(dto.IdHopDongThucHien);
+
+            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdHopDongThucHien), ErrorCodes.NotFound);
+
+            Guid? linkedDocumentId = _repository.GetLinkedDocumentId(
+                item.IdHopDongThucHien);
+            if (linkedDocumentId.HasValue
+                && (!string.Equals(
+                        item.SoHopDong,
+                        dto.SoHopDong,
+                        StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(
+                        item.TenHopDong,
+                        dto.TenHopDong,
+                        StringComparison.Ordinal)))
+            {
+                throw new InvalidOperationException(
+                    "Không thể đổi số hoặc tên hợp đồng sau khi đã tạo hồ sơ hợp đồng liên kết.");
+            }
+
+            ObjectHelper.CopyBusinessProperties(dto, item, x => x.IdHopDongThucHien, x => x.DaXoa, x => x.NguoiTao, x => x.NgayTao, x => x.NguoiCapNhat, x => x.NgayCapNhat);
+
+            item.NguoiCapNhat = SweetContext.Current.UserName;
+            item.NgayCapNhat = DateTime.UtcNow;
+
+            item = _repository.Update(item);
+
+            BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+
+            return item;
+        }
+
+        #endregion
+
+        #region Contract document
+
+        /// <summary>
+        /// Creates exactly one project document for the contract, then returns
+        /// its project/document ids so the caller can open the existing version
+        /// upload screen. A file is never uploaded directly to the contract popup.
+        /// </summary>
+        public ContractDocumentLinkResult GetOrCreateProjectDocument(
+            Guid idHopDongThucHien)
+        {
+            if (idHopDongThucHien == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    "Hợp đồng không hợp lệ.",
+                    nameof(idHopDongThucHien));
+            }
+
+            if (!_repository.HasDocumentLinkColumn())
+            {
+                throw new InvalidOperationException(
+                    "Chưa cài cấu trúc liên kết hồ sơ cho hợp đồng. Hãy chạy Database/AddContractDocumentLink.sql trước.");
+            }
+
+            TransactionOptions options = new TransactionOptions
+            {
+                IsolationLevel = System.Transactions.IsolationLevel.Serializable
+            };
+
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                options))
+            {
+                TblHopDongThucHien hopDong = _repository.GetById(
+                    idHopDongThucHien);
+                if (hopDong == null)
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hợp đồng hoặc hợp đồng đã bị xóa.");
+                }
+
+                TblDuAn project = GetSingleActiveProject(
+                    hopDong.IdHopDongThucHien);
+                if (!DocumentManager.Instance.CanAccessProjectDocument(
+                    project.IdDuAn,
+                    ActionKeys.View))
+                {
+                    throw new UnauthorizedAccessException(
+                        "Bạn không có quyền xem hồ sơ của dự án này.");
+                }
+
+                Guid? linkedDocumentId = _repository.GetLinkedDocumentIdForUpdate(
+                    hopDong.IdHopDongThucHien);
+                if (linkedDocumentId.HasValue)
+                {
+                    TblTaiLieu existingDocument = DocumentManager.Instance
+                        .GetProjectDocumentById(
+                            linkedDocumentId.Value,
+                            project.IdDuAn);
+                    if (existingDocument == null)
+                    {
+                        throw new InvalidOperationException(
+                            "Hồ sơ liên kết với hợp đồng không còn thuộc dự án hiện tại. Vui lòng kiểm tra lại dữ liệu liên kết.");
+                    }
+
+                    scope.Complete();
+                    return new ContractDocumentLinkResult
+                    {
+                        ProjectId = project.IdDuAn,
+                        DocumentId = existingDocument.IdTaiLieu,
+                        IsCreated = false
+                    };
+                }
+
+                TblLoaiTaiLieu documentType = GetConfiguredContractDocumentType();
+                TblTaiLieu document = DocumentManager.Instance.SaveProjectDocument(
+                    project.IdDuAn,
+                    Guid.Empty,
+                    documentType.IdLoaiTaiLieu,
+                    project.IdNhanVienQuanLy,
+                    BuildContractDocumentCode(hopDong),
+                    BuildContractDocumentTitle(hopDong),
+                    BuildContractDocumentDescription(hopDong),
+                    documentType.CanTrinhKy,
+                    documentType.CanTrinhKy
+                        ? documentType.HinhThucKyMacDinh
+                        : null,
+                    documentType.CanGuiKhachHang,
+                    documentType.CanLuuVatLy);
+
+                bool linked = _repository.TryLinkDocument(
+                    hopDong.IdHopDongThucHien,
+                    document.IdTaiLieu,
+                    SweetContext.Current.UserName,
+                    DateTime.UtcNow);
+                if (!linked)
+                {
+                    throw new InvalidOperationException(
+                        "Không thể liên kết hồ sơ vừa tạo với hợp đồng. Dữ liệu đã được hoàn tác.");
+                }
+
+                WriteContractDocumentLinkAudit(hopDong, project, document);
+                scope.Complete();
+
+                return new ContractDocumentLinkResult
+                {
+                    ProjectId = project.IdDuAn,
+                    DocumentId = document.IdTaiLieu,
+                    IsCreated = true
+                };
+            }
+        }
+
+        public bool HasLinkedDocument(Guid idHopDongThucHien)
+        {
+            return idHopDongThucHien != Guid.Empty
+                && _repository.GetLinkedDocumentId(idHopDongThucHien)
+                    .HasValue;
+        }
+
+        /// <summary>
+        /// A contract document belongs to one project and must not be moved by
+        /// changing the contract selected on a project form.
+        /// </summary>
+        public void EnsureLinkedDocumentBelongsToProject(
+            Guid idHopDongThucHien,
+            Guid idDuAn)
+        {
+            if (idHopDongThucHien == Guid.Empty)
+            {
+                return;
+            }
+
+            Guid? linkedDocumentId = _repository.GetLinkedDocumentId(
+                idHopDongThucHien);
+            if (!linkedDocumentId.HasValue)
+            {
+                return;
+            }
+
+            Guid? linkedProjectId = _repository.GetLinkedDocumentProjectId(
+                idHopDongThucHien);
+            if (!linkedProjectId.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Hợp đồng đang liên kết với một hồ sơ không còn hợp lệ. Không thể thay đổi dự án cho đến khi dữ liệu được xử lý.");
+            }
+
+            if (linkedProjectId.Value != idDuAn)
+            {
+                throw new InvalidOperationException(
+                    "Hợp đồng đã có hồ sơ thuộc một dự án khác nên không thể gán lại cho dự án này.");
+            }
+        }
+
+        private TblDuAn GetSingleActiveProject(Guid idHopDongThucHien)
+        {
+            List<TblDuAn> projects = _repository.GetActiveProjectsByContractId(
+                idHopDongThucHien);
+            if (projects == null || projects.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    "Hãy gắn hợp đồng vào một dự án trước khi tạo hồ sơ hợp đồng.");
+            }
+
+            if (projects.Count > 1)
+            {
+                throw new InvalidOperationException(
+                    "Hợp đồng đang được gắn với nhiều dự án. Vui lòng xử lý dữ liệu trước khi tạo hồ sơ hợp đồng.");
+            }
+
+            return projects[0];
+        }
+
+        private TblLoaiTaiLieu GetConfiguredContractDocumentType()
+        {
+            Guid idLoaiTaiLieu = SettingManager.Instance.GetSettingValueGuid(
+                SettingKeys.ContractDocumentTypeId);
+            if (idLoaiTaiLieu == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Chưa cấu hình loại tài liệu Hợp đồng. Vui lòng cấu hình Settings.ContractDocumentTypeId trước.");
+            }
+
+            TblLoaiTaiLieu documentType = DocumentManager.Instance
+                .GetDocumentTypeDefaults(idLoaiTaiLieu);
+            if (documentType == null || documentType.DaXoa || !documentType.KichHoat)
+            {
+                throw new InvalidOperationException(
+                    "Loại tài liệu Hợp đồng được cấu hình không tồn tại hoặc đang bị khóa.");
+            }
+
+            return documentType;
+        }
+
+        private static string BuildContractDocumentCode(
+            TblHopDongThucHien hopDong)
+        {
+            const int maxLength = 100;
+            string contractNumber = (hopDong.SoHopDong ?? string.Empty)
+                .Trim()
+                .ToUpperInvariant();
+            // A document code only has to be unique within its project, but a
+            // human-created document may already use HD-{contract number}.
+            // Keep that readable prefix and append a stable short id so the
+            // automatic creation never collides with a normal project record.
+            string suffix = "-" + hopDong.IdHopDongThucHien
+                .ToString("N")
+                .Substring(0, 8)
+                .ToUpperInvariant();
+            int contractNumberLength = maxLength - "HD-".Length - suffix.Length;
+            if (contractNumber.Length > contractNumberLength)
+            {
+                contractNumber = contractNumber
+                    .Substring(0, contractNumberLength)
+                    .TrimEnd();
+            }
+
+            return "HD-" + contractNumber + suffix;
+        }
+
+        private static string BuildContractDocumentTitle(
+            TblHopDongThucHien hopDong)
+        {
+            const int maxLength = 255;
+            string prefix = "Hợp đồng ";
+            string separator = " – ";
+            string contractNumber = (hopDong.SoHopDong ?? string.Empty).Trim();
+            string contractName = (hopDong.TenHopDong ?? string.Empty).Trim();
+            int contractNameLength = maxLength
+                - prefix.Length
+                - contractNumber.Length
+                - separator.Length;
+
+            if (contractNameLength <= 0)
+            {
+                return (prefix + contractNumber).Substring(0, maxLength);
+            }
+
+            if (contractName.Length > contractNameLength)
+            {
+                contractName = contractName
+                    .Substring(0, contractNameLength)
+                    .TrimEnd();
+            }
+
+            return prefix + contractNumber + separator + contractName;
+        }
+
+        private static string BuildContractDocumentDescription(
+            TblHopDongThucHien hopDong)
+        {
+            return "Hồ sơ hợp đồng được tạo tự động từ hợp đồng số "
+                + (hopDong.SoHopDong ?? string.Empty).Trim()
+                + ".";
+        }
+
+        private void WriteContractDocumentLinkAudit(
+            TblHopDongThucHien hopDong,
+            TblDuAn project,
+            TblTaiLieu document)
+        {
+            try
+            {
+                var auditEntry = new
+                {
+                    IdTaiLieu = document.IdTaiLieu,
+                    IdDuAn = project.IdDuAn,
+                    MaTaiLieu = document.MaTaiLieu,
+                    TenTaiLieu = document.TenTaiLieu
+                };
+
+                _auditManager.LogActionAsync(
+                        LogActions.Actions.UPDATE,
+                        auditEntry,
+                        nameof(TblHopDongThucHien),
+                        hopDong.IdHopDongThucHien,
+                        SweetContext.Current.UserName,
+                        document.IdTaiLieu,
+                        hopDong.SoHopDong,
+                        "Đã tạo và liên kết hồ sơ hợp đồng "
+                            + document.MaTaiLieu
+                            + " với dự án "
+                            + project.MaDuAn
+                            + ".")
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch (Exception exception)
+            {
+                SysLogger.LogError(
+                    exception,
+                    "Failed to log contract-document link for "
+                        + hopDong.IdHopDongThucHien);
+            }
         }
 
         #endregion

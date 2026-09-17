@@ -112,6 +112,171 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .ExecuteSingle<TblHopDongThucHien>();
         }
 
+        /// <summary>
+        /// Returns active projects using the contract. The manager validates
+        /// that exactly one project exists before it creates a contract document.
+        /// </summary>
+        public List<TblDuAn> GetActiveProjectsByContractId(Guid idHopDongThucHien)
+        {
+            if (idHopDongThucHien == Guid.Empty)
+            {
+                return new List<TblDuAn>();
+            }
+
+            return new Select()
+                .From(TblDuAn.Schema)
+                .Where(TblDuAn.IdHopDongThucHienColumn)
+                .IsEqualTo(idHopDongThucHien)
+                .And(TblDuAn.DaXoaColumn)
+                .IsEqualTo(false)
+                .ExecuteTypedList<TblDuAn>();
+        }
+
+        /// <summary>
+        /// Reads the optional document link through SQL so this source can be
+        /// compiled before SubSonic is regenerated for the additive column.
+        /// The migration must still be installed before the feature is used.
+        /// </summary>
+        public Guid? GetLinkedDocumentId(Guid idHopDongThucHien)
+        {
+            return GetLinkedDocumentId(idHopDongThucHien, false);
+        }
+
+        /// <summary>
+        /// The contract-document column is introduced by an additive migration
+        /// and deliberately is not a generated SubSonic property.
+        /// </summary>
+        public bool HasDocumentLinkColumn()
+        {
+            const string sql = @"
+                SELECT CASE
+                    WHEN COL_LENGTH(N'dbo.TblHopDongThucHien', N'IdTaiLieu') IS NULL
+                        THEN 0
+                    ELSE 1
+                END;";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) == 1;
+        }
+
+        /// <summary>
+        /// Used inside a serializable transaction to prevent concurrent clicks
+        /// from creating multiple canonical contract documents.
+        /// </summary>
+        public Guid? GetLinkedDocumentIdForUpdate(Guid idHopDongThucHien)
+        {
+            return GetLinkedDocumentId(idHopDongThucHien, true);
+        }
+
+        private Guid? GetLinkedDocumentId(
+            Guid idHopDongThucHien,
+            bool lockForUpdate)
+        {
+            if (idHopDongThucHien == Guid.Empty)
+            {
+                return null;
+            }
+
+            string tableHint = lockForUpdate
+                ? " WITH (UPDLOCK, HOLDLOCK)"
+                : string.Empty;
+            string sql = $@"
+                IF COL_LENGTH(N'dbo.TblHopDongThucHien', N'IdTaiLieu') IS NULL
+                BEGIN
+                    SELECT CAST(NULL AS UNIQUEIDENTIFIER) AS IdTaiLieu;
+                    RETURN;
+                END;
+
+                DECLARE @sql NVARCHAR(MAX) = N'
+                    SELECT IdTaiLieu
+                    FROM dbo.TblHopDongThucHien{tableHint}
+                    WHERE IdHopDongThucHien = ''{idHopDongThucHien}''
+                      AND DaXoa = 0;';
+
+                EXEC sys.sp_executesql @sql;";
+
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader == null || !reader.Read()
+                    || reader["IdTaiLieu"] == DBNull.Value)
+                {
+                    return null;
+                }
+
+                Guid idTaiLieu;
+                return Guid.TryParse(
+                    Convert.ToString(reader["IdTaiLieu"]),
+                    out idTaiLieu)
+                    ? (Guid?)idTaiLieu
+                    : null;
+            }
+        }
+
+        /// <summary>
+        /// Links a newly-created document only when the contract is still
+        /// unlinked. The conditional update remains a final defensive check.
+        /// </summary>
+        public bool TryLinkDocument(
+            Guid idHopDongThucHien,
+            Guid idTaiLieu,
+            string nguoiCapNhat,
+            DateTime ngayCapNhat)
+        {
+            if (idHopDongThucHien == Guid.Empty || idTaiLieu == Guid.Empty)
+            {
+                return false;
+            }
+
+            string safeUser = InlineQueryHelpers.SQLEncode(
+                (nguoiCapNhat ?? string.Empty).Trim());
+            // The user name is embedded in a dynamic SQL string below, so it
+            // needs one extra escaping pass for that string literal.
+            string safeUserForDynamicSql = safeUser.Replace("'", "''");
+            string safeDate = ngayCapNhat.ToString(
+                "yyyy-MM-dd HH:mm:ss.fff",
+                CultureInfo.InvariantCulture);
+            string sql = $@"
+                IF COL_LENGTH(N'dbo.TblHopDongThucHien', N'IdTaiLieu') IS NULL
+                BEGIN
+                    RAISERROR(N'Chưa cài cấu trúc liên kết hồ sơ cho hợp đồng.', 16, 1);
+                    RETURN;
+                END;
+
+                DECLARE @sql NVARCHAR(MAX) = N'
+                    UPDATE dbo.TblHopDongThucHien
+                    SET IdTaiLieu = ''{idTaiLieu}'',
+                        NguoiCapNhat = N''{safeUserForDynamicSql}'',
+                        NgayCapNhat = ''{safeDate}''
+                    WHERE IdHopDongThucHien = ''{idHopDongThucHien}''
+                      AND DaXoa = 0
+                      AND IdTaiLieu IS NULL;
+                    SELECT @@ROWCOUNT;';
+
+                EXEC sys.sp_executesql @sql;";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) == 1;
+        }
+
+        /// <summary>
+        /// Returns the project owning the linked document, if the document is
+        /// still active. This is an integrity helper for manager validation.
+        /// </summary>
+        public Guid? GetLinkedDocumentProjectId(Guid idHopDongThucHien)
+        {
+            Guid? idTaiLieu = GetLinkedDocumentId(idHopDongThucHien);
+            if (!idTaiLieu.HasValue || idTaiLieu.Value == Guid.Empty)
+            {
+                return null;
+            }
+
+            return new Select(TblTaiLieu.IdDuAnColumn)
+                .From(TblTaiLieu.Schema)
+                .Where(TblTaiLieu.IdTaiLieuColumn)
+                .IsEqualTo(idTaiLieu.Value)
+                .And(TblTaiLieu.DaXoaColumn)
+                .IsEqualTo(false)
+                .ExecuteScalar<Guid?>();
+        }
+
         public bool IsSoHopDongExists(Guid excludedId, string soHopDong)
         {
             if (string.IsNullOrWhiteSpace(soHopDong))

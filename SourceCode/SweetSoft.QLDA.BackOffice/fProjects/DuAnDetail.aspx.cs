@@ -203,65 +203,84 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             dlContractDetail.OpenModal(true);
         }
 
-        private void BindContractInformation(
-    TblHopDongThucHien hopDong)
+
+        private void BindContractInformation(TblHopDongThucHien hopDong)
         {
-            txtContractNumber.Text =
-                hopDong.SoHopDong;
+            txtContractNumber.Text = hopDong.SoHopDong;
+            txtContractName.Text = hopDong.TenHopDong;
 
-            txtContractName.Text =
-                hopDong.TenHopDong;
-
-            TblKhachHang khachHang =
-                KhachHangManager
-                    .Instance
-                    .GetKhachHangById(
-                        hopDong.IdKhachHang);
-
-            txtContractCustomer.Text =
-                khachHang != null
-                    ? khachHang.TenKhachHang
-                    : "Chưa có";
-
-            txtContractValue.Text =
-                hopDong.GiaTriHopDong.HasValue
-                    ? FormatHelpers
-                        .ConvertDecimalToStringByLanguage(
-                            hopDong.GiaTriHopDong.Value,
-                            "vi-VN")
-                    : string.Empty;
-
-            txtContractSignDate.Text =
-                hopDong.NgayKy.HasValue
-                    ? hopDong.NgayKy.Value
-                        .ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtContractEffectiveDate.Text =
-                hopDong.NgayHieuLuc.HasValue
-                    ? hopDong.NgayHieuLuc.Value
-                        .ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtContractExpiryDate.Text =
-                hopDong.NgayHetHan.HasValue
-                    ? hopDong.NgayHetHan.Value
-                        .ToString("yyyy-MM-dd")
-                    : string.Empty;
-
-            txtContractDescription.Text =
-                hopDong.MoTa;
+            TblKhachHang khachHang = KhachHangManager.Instance.GetKhachHangById(hopDong.IdKhachHang);
+            txtContractCustomer.Text = khachHang == null ? "Chưa có" : khachHang.TenKhachHang;
+            txtContractValue.Text = hopDong.GiaTriHopDong.HasValue
+                ? FormatHelpers.ConvertDecimalToStringByLanguage(hopDong.GiaTriHopDong.Value, "vi-VN")
+                : string.Empty;
+            txtContractSignDate.Text = hopDong.NgayKy.HasValue
+                ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractEffectiveDate.Text = hopDong.NgayHieuLuc.HasValue
+                ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractExpiryDate.Text = hopDong.NgayHetHan.HasValue
+                ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd")
+                : string.Empty;
+            txtContractDescription.Text = hopDong.MoTa;
         }
 
-        private string BuildHistoryContent( DataRow row)
+
+        
+
+        protected void lbtOpenContractDocument_Click(object sender, EventArgs e)
+        {
+            if (!IsContractView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (IdHopDongThucHien == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                ContractDocumentLinkResult result = HopDongThucHienManager
+                    .Instance
+                    .GetOrCreateProjectDocument(IdHopDongThucHien);
+
+                string url = RewriteURLHelper.ProjectDocumentDetail(
+                    result.ProjectId,
+                    result.DocumentId) + "?tab=versions";
+                Response.Redirect(GetRelativeClientPath(url), false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowAccessDeniedNotify();
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowNotify(exception.Message, MSGType.Warning);
+            }
+            catch (Exception exception)
+            {
+                ShowNotify(exception.Message, MSGType.Error);
+            }
+        }
+        private string BuildHistoryContent(
+    DataRow row)
         {
             string resourceKey = GetColumnText( row, "Description");
 
             string actor = GetColumnText( row, "ChangedBy");
-
+                GetColumnText(
             string tableName = GetColumnText( row, "TableName");
-
+                GetColumnText(
             string title = GetColumnText( row, "Title");
+                GetColumnText(
+                    row,
+                    "Title");
 
             if (string.IsNullOrWhiteSpace(actor) || string.Equals( actor, "[System]", StringComparison.OrdinalIgnoreCase))
             {
@@ -584,6 +603,29 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             lblNoContract.Visible =
                 idHopDongThucHien == Guid.Empty;
+        }
+
+        private bool CanOpenContractDocument(Guid idHopDongThucHien)
+        {
+            if (!IsContractView ||
+                idHopDongThucHien == Guid.Empty ||
+                QueryId == Guid.Empty ||
+                !DocumentManager.Instance.CanAccessProjectDocument(
+                    QueryId,
+                    ActionKeys.View))
+            {
+                return false;
+            }
+
+            if (HopDongThucHienManager.Instance.HasLinkedDocument(
+                idHopDongThucHien))
+            {
+                return true;
+            }
+
+            return DocumentManager.Instance.CanAccessProjectDocument(
+                QueryId,
+                ActionKeys.Create);
         }
 
         private string GetDisplayText(DataRow row, string columnName)
