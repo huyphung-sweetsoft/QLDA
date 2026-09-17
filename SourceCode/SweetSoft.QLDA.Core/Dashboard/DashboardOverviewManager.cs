@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Managers;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 
 namespace SweetSoft.QLDA.Core.Dashboard
 {
     public class DashboardOverviewManager : BaseManager
     {
-        private const int DueSoonDays = 7;
-
         private static readonly Lazy<DashboardOverviewManager> LazyInstance =
             new Lazy<DashboardOverviewManager>(() => new DashboardOverviewManager());
 
@@ -71,7 +70,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<UpcomingMeetingSummary> upcomingMeetings =
                 GetUpcomingMeetingSummaries(meetings, projects, generatedAt);
             int overdueTaskCount = allTasks.Count(x =>
-                IsTaskOverdue(x, today));
+                DashboardProgressCalculator.IsTaskOverdue(x, today));
 
             decimal totalContractValue =
                 financialSummary.TotalContractValue;
@@ -100,7 +99,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 GeneratedAt = generatedAt,
 
                 ProjectStatusStatistics =
-        GetProjectStatusStatistics(projects),
+                    GetProjectStatusStatistics(projects, today),
                 ProjectProgressStatistics = projectProgressStats,
                 ProjectAttentionStatistics =
     GetProjectAttentionStatistics(
@@ -126,18 +125,18 @@ namespace SweetSoft.QLDA.Core.Dashboard
         }
 
         private static List<ProjectStatusStatistic> GetProjectStatusStatistics(
-    List<TblDuAn> projects)
+            List<TblDuAn> projects,
+            DateTime today)
         {
-            DateTime today = DateTime.Now.Date;
-
-            int completed = projects.Count(p => p.NgayHoanThanhThucTe.HasValue);
+            int completed = projects.Count(p =>
+                DashboardProgressCalculator.GetProjectState(p, today)
+                    == DashboardProjectState.Completed);
             int notStarted = projects.Count(p =>
-                !p.NgayHoanThanhThucTe.HasValue &&
-                p.NgayBatDau.Date > today);
+                DashboardProgressCalculator.GetProjectState(p, today)
+                    == DashboardProjectState.NotStarted);
             int overdue = projects.Count(p =>
-                !p.NgayHoanThanhThucTe.HasValue &&
-                p.NgayBatDau.Date <= today &&
-                p.NgayDuKienHoanThanh.Date < today);
+                DashboardProgressCalculator.GetProjectState(p, today)
+                    == DashboardProjectState.Overdue);
 
             int ongoing = projects.Count
                 - completed
@@ -145,31 +144,32 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 - overdue;
 
             return new List<ProjectStatusStatistic>
-    {
-        new ProjectStatusStatistic
-        {
-            Status = "Đang thực hiện",
-            Count = ongoing
-        },
-
-        new ProjectStatusStatistic
-        {
-            Status = "Hoàn thành",
-            Count = completed
-        },
-
-        new ProjectStatusStatistic
-        {
-            Status = "Chưa bắt đầu",
-            Count = notStarted
-        },
-
-        new ProjectStatusStatistic
-        {
-            Status = "Quá hạn",
-            Count = overdue
-        }
-    };
+            {
+                new ProjectStatusStatistic
+                {
+                    Status = GetProjectStateText(
+                        DashboardProjectState.InProgress),
+                    Count = ongoing
+                },
+                new ProjectStatusStatistic
+                {
+                    Status = GetProjectStateText(
+                        DashboardProjectState.Completed),
+                    Count = completed
+                },
+                new ProjectStatusStatistic
+                {
+                    Status = GetProjectStateText(
+                        DashboardProjectState.NotStarted),
+                    Count = notStarted
+                },
+                new ProjectStatusStatistic
+                {
+                    Status = GetProjectStateText(
+                        DashboardProjectState.Overdue),
+                    Count = overdue
+                }
+            };
         }
 
 
@@ -182,50 +182,31 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             foreach (var project in projects)
             {
-                decimal progress = 0;
                 var projectTasks = tasks
                     .Where(t => t.IdDuAn == project.IdDuAn)
                     .ToList();
-
-                // Nếu dự án đã được đánh dấu là hoàn thành thực tế thì tiến độ luôn là 100%
-                if (project.NgayHoanThanhThucTe.HasValue)
-                {
-                    progress = 100;
-                }
-                else if (project.NgayBatDau.Date > today)
-                {
-                    progress = 0; // Chưa bắt đầu
-                }
-                else
-                {
-                    if (projectTasks.Count > 0)
-                    {
-                        progress = Convert.ToDecimal(
-                            projectTasks.Average(
-                                t => Convert.ToDecimal(
-                                    NormalizeProgress(t.PhanTramHoanThanh))
-                            )
-                        );
-                    }
-                }
-
-                decimal plannedProgress = project.NgayHoanThanhThucTe.HasValue
-                    ? 100
-                    : GetPlannedProgress(
-                        project.NgayBatDau.Date,
-                        project.NgayDuKienHoanThanh.Date,
+                decimal progress =
+                    DashboardProgressCalculator.GetProjectActualProgress(
+                        project,
+                        projectTasks,
+                        today);
+                decimal plannedProgress =
+                    DashboardProgressCalculator.GetPlannedProgress(
+                        project,
                         today);
                 decimal variance = Math.Round(
                     progress - plannedProgress,
                     2);
                 int overdueTaskCount = projectTasks.Count(x =>
-                    IsTaskOverdue(x, today));
+                    DashboardProgressCalculator.IsTaskOverdue(x, today));
                 int dueSoonTaskCount = projectTasks.Count(x =>
-                    IsTaskDueSoon(x, today));
-                int completedTaskCount = projectTasks.Count(IsTaskCompleted);
+                    DashboardProgressCalculator.IsTaskDueSoon(x, today));
+                int completedTaskCount = projectTasks.Count(
+                    DashboardProgressCalculator.IsTaskCompleted);
 
                 result.Add(new ProjectProgressStatistic
                 {
+                    ProjectId = project.IdDuAn,
                     ProjectCode = project.MaDuAn,
                     ProjectName = project.TenDuAn,
                     Progress = Math.Round(progress, 2),
@@ -235,7 +216,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     DueSoonTaskCount = dueSoonTaskCount,
                     CompletedTaskCount = completedTaskCount,
                     TaskCount = projectTasks.Count,
-                    Health = GetProjectHealth(
+                    Health = DashboardProgressCalculator.GetProjectHealth(
                         project,
                         variance,
                         overdueTaskCount,
@@ -275,6 +256,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
                 result.Add(new ProjectAttentionStatistic
                 {
+                    ProjectId = project.IdDuAn,
                     ProjectCode = project.MaDuAn,
                     ProjectName = project.TenDuAn,
                     RiskCount = riskCount,
@@ -443,6 +425,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .Take(5)
                 .Select(m => new UpcomingMeetingSummary
                 {
+                    ProjectId = m.IdDuAn,
                     ProjectCode = projectCodes.ContainsKey(m.IdDuAn)
                         ? projectCodes[m.IdDuAn]
                         : string.Empty,
@@ -478,32 +461,25 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             foreach (var project in activeProjects)
             {
-                DateTime startDate = project.NgayBatDau.Date;
-                DateTime endDate = project.NgayDuKienHoanThanh.Date;
-
                 var projectTasks = tasks
                     .Where(t =>
                         t.IdDuAn == project.IdDuAn &&
                         t.DaXoa == false)
                     .ToList();
 
-                decimal actualProgress = 0;
+                decimal actualProgress =
+                    DashboardProgressCalculator.GetProjectActualProgress(
+                        project,
+                        projectTasks,
+                        today);
 
-                if (projectTasks.Count > 0)
-                {
-                    actualProgress = projectTasks.Average(
-                        t => Convert.ToDecimal(
-                            NormalizeProgress(t.PhanTramHoanThanh))
-                    );
-                }
-
-                decimal plannedProgress = GetPlannedProgress(
-                    startDate,
-                    endDate,
-                    today);
+                decimal plannedProgress =
+                    DashboardProgressCalculator.GetPlannedProgress(
+                        project,
+                        today);
                 decimal variance = actualProgress - plannedProgress;
                 bool hasOverdueTask = projectTasks.Any(x =>
-                    IsTaskOverdue(x, today));
+                    DashboardProgressCalculator.IsTaskOverdue(x, today));
 
                 if (variance < -5 || hasOverdueTask)
                 {
@@ -519,91 +495,24 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return Math.Round(rate, 2);
         }
 
-        private static decimal GetPlannedProgress(
-            DateTime startDate,
-            DateTime endDate,
-            DateTime today)
+        private static string GetProjectStateText(
+            DashboardProjectState state)
         {
-            if (today <= startDate)
+            switch (state)
             {
-                return 0;
+                case DashboardProjectState.Completed:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
+                case DashboardProjectState.InProgress:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS);
+                case DashboardProjectState.Overdue:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE);
+                default:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED);
             }
-
-            if (today >= endDate || endDate <= startDate)
-            {
-                return 100;
-            }
-
-            decimal elapsedDays = Convert.ToDecimal(
-                (today - startDate).TotalDays);
-            decimal totalDays = Convert.ToDecimal(
-                (endDate - startDate).TotalDays);
-
-            return Math.Round((elapsedDays / totalDays) * 100, 2);
-        }
-
-        private static bool IsTaskCompleted(TblCongViec task)
-        {
-            return task.NgayHoanThanhThucTe.HasValue
-                || NormalizeProgress(task.PhanTramHoanThanh) >= 100;
-        }
-
-        private static bool IsTaskOverdue(
-            TblCongViec task,
-            DateTime today)
-        {
-            return !IsTaskCompleted(task)
-                && task.NgayKetThuc.HasValue
-                && task.NgayKetThuc.Value.Date < today;
-        }
-
-        private static bool IsTaskDueSoon(
-            TblCongViec task,
-            DateTime today)
-        {
-            return !IsTaskCompleted(task)
-                && task.NgayKetThuc.HasValue
-                && task.NgayKetThuc.Value.Date >= today
-                && task.NgayKetThuc.Value.Date <= today.AddDays(DueSoonDays);
-        }
-
-        private static ProjectScheduleHealth GetProjectHealth(
-            TblDuAn project,
-            decimal variance,
-            int overdueTaskCount,
-            DateTime today)
-        {
-            if (project.NgayHoanThanhThucTe.HasValue)
-            {
-                return ProjectScheduleHealth.Completed;
-            }
-
-            if (project.NgayBatDau.Date > today)
-            {
-                return ProjectScheduleHealth.NotStarted;
-            }
-
-            if (project.NgayDuKienHoanThanh.Date < today)
-            {
-                return ProjectScheduleHealth.Overdue;
-            }
-
-            if (variance <= -15)
-            {
-                return ProjectScheduleHealth.BehindSchedule;
-            }
-
-            if (variance < -5 || overdueTaskCount > 0)
-            {
-                return ProjectScheduleHealth.AtRisk;
-            }
-
-            return ProjectScheduleHealth.OnTrack;
-        }
-
-        private static int NormalizeProgress(int progress)
-        {
-            return Math.Max(0, Math.Min(100, progress));
         }
 
         public DashboardOverviewModel GetOverview()

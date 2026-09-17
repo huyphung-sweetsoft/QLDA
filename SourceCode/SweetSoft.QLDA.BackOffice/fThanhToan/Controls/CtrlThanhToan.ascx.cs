@@ -11,7 +11,7 @@ using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
+namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
 {
     public partial class CtrlThanhToan : BaseAdminUserControl
     {

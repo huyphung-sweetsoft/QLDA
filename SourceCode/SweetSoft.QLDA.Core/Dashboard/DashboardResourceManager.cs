@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Managers;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 
 namespace SweetSoft.QLDA.Core.Dashboard
@@ -571,7 +573,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 {
                     StartDate = start,
                     EndDate = calendar.GetWeekEnd(start),
-                    Label = "Tuần " + GetIsoWeekNumber(start),
+                    Label = string.Format(
+                        UITextsReader.GetBackEndResourceText(
+                            BackEndResourceKeys.DASHBOARD_WEEK_LABEL),
+                        GetIsoWeekNumber(start)),
                     IsAnchorWeek = start == anchorStart
                 };
 
@@ -582,7 +587,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     week.Days.Add(new ResourceDayInfo
                     {
                         Date = date,
-                        DayLabel = GetVietnameseDayLabel(date),
+                        DayLabel = GetDayLabel(date),
                         IsToday = date == today
                     });
                 }
@@ -613,7 +618,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     {
                         StartDate = weekStart,
                         EndDate = calendar.GetWeekEnd(weekStart),
-                        Label = "Tuần " + GetIsoWeekNumber(weekStart),
+                        Label = string.Format(
+                            UITextsReader.GetBackEndResourceText(
+                                BackEndResourceKeys.DASHBOARD_WEEK_LABEL),
+                            GetIsoWeekNumber(weekStart)),
                         IsAnchorWeek = weekStart == anchorStart
                     });
                 }
@@ -648,8 +656,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 {
                     StartDate = monthStart,
                     EndDate = monthEnd,
-                    Label = "Tháng " + monthStart.Month
-                        + "/" + monthStart.Year
+                    Label = string.Format(
+                        UITextsReader.GetBackEndResourceText(
+                            BackEndResourceKeys.DASHBOARD_MONTH_LABEL),
+                        monthStart.Month + "/" + monthStart.Year)
                 });
                 monthStart = monthStart.AddMonths(1);
             }
@@ -843,18 +853,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 : (DateTime?)null;
         }
 
-        private static string GetVietnameseDayLabel(DateTime date)
+        private static string GetDayLabel(DateTime date)
         {
-            switch (date.DayOfWeek)
-            {
-                case DayOfWeek.Monday: return "T2";
-                case DayOfWeek.Tuesday: return "T3";
-                case DayOfWeek.Wednesday: return "T4";
-                case DayOfWeek.Thursday: return "T5";
-                case DayOfWeek.Friday: return "T6";
-                case DayOfWeek.Saturday: return "T7";
-                default: return "CN";
-            }
+            return CultureInfo.CurrentUICulture.DateTimeFormat
+                .GetAbbreviatedDayName(date.DayOfWeek);
         }
 
         private static DateTime GetMonday(DateTime date)

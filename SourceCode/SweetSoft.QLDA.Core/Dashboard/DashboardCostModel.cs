@@ -96,6 +96,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
     {
         public Guid CostId { get; set; }
 
+        public Guid ProjectId { get; set; }
+
         public string CostCode { get; set; }
 
         public string CostName { get; set; }

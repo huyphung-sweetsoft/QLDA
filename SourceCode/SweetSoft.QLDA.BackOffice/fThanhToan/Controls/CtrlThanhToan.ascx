@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlThanhToan.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlThanhToan" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlThanhToan.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fThanhToan.Controls.CtrlThanhToan" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <style type="text/css">
     .payment-check-container {

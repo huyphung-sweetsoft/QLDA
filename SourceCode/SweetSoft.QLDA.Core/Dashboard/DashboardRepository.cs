@@ -399,7 +399,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 "SELECT c.* FROM TblChiPhi c" +
                 " WHERE c.DaXoa = 0" +
                 " AND c.IdDuAn IN (" + idList + ")" +
-                " ORDER BY c.NgayTao, c.MaKhoanChi";
+                " ORDER BY c.NgayTao, c.MaChiPhi";
 
             return ExecuteList<TblChiPhi>(sql, parameters);
         }
