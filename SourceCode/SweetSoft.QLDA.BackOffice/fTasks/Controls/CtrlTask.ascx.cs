@@ -94,7 +94,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
                 GetResourceText(BackEndResourceKeys.TASK_NAME),
-                GetResourceText(BackEndResourceKeys.OWNER),
+                GetResourceText(BackEndResourceKeys.ASSIGNEE),
                 GetResourceText(BackEndResourceKeys.DURATION),
                 GetResourceText(BackEndResourceKeys.START_DATE),
                 GetResourceText(BackEndResourceKeys.END_DATE),

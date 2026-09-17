@@ -466,7 +466,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string TASK_LIST = "TASK_LIST";
         public const string TASK_CODE = "TASK_CODE";
         public const string TASK_NAME = "TASK_NAME";
-        public const string OWNER = "OWNER";
+        public const string ASSIGNEE = "ASSIGNEE";
         public const string PRIORITY = "PRIORITY";
         public const string DURATION = "DURATION";
         public const string DEPENDENT = "DEPENDENT";
@@ -510,7 +510,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string VERY_HIGH = "VERY_HIGH";
 
         //Issue
-        public const string ISSUE_LIST = "ISSUE_LIST";
+        public const string ISSUES_LIST = "ISSUES_LIST";
         public const string ISSUE_CODE = "ISSUE_CODE";
         public const string ISSUE_NAME = "ISSUE_NAME";
         public const string WORK_AFFECTED = "WORK_AFFECTED";
@@ -557,7 +557,22 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         //Project Report
         public const string PROJECT_REPORT = "PROJECT_REPORT";
         public const string PROJECT_REPORT_MANAGEMENT = "PROJECT_REPORT_MANAGEMENT";
-
+        public const string TIME_PERIOD = "TIME_PERIOD";
+        public const string GENERATE_REPORT = "GENERATE_REPORT";
+        public const string PROJECT_NOT_STARTED = "PROJECT_NOT_STARTED";
+        public const string PROJECT_HAS_NO_DATA = "PROJECT_HAS_NO_DATA";
+        public const string TOTAL_TASKS = "TOTAL_TASKS";
+        public const string ISSUES_ARISING = "ISSUES_ARISING";
+        public const string COMPLETED_TASKS_SUMMARY = "COMPLETED_TASKS_SUMMARY";
+        public const string COMPLETION_DATE = "COMPLETION_DATE";
+        public const string NO_COMPLETED_TASKS_IN_PERIOD = "NO_COMPLETED_TASKS_IN_PERIOD";
+        public const string OVERDUE_TASKS_LIST = "OVERDUE_TASKS_LIST";
+        public const string EXPORT_PDF = "EXPORT_PDF";
+        public const string LAST_WEEK = "LAST_WEEK";
+        public const string LAST_MONTH = "LAST_MONTH";
+        public const string ALL_TIME = "ALL_TIME";
+        public const string CUSTOM = "CUSTOM";
+        public const string FROM_TO_FORMAT = "FROM_TO_FORMAT";
 
         //Document
         public const string DOCUMENT_TEMPLATE = "DOCUMENT_TEMPLATE";

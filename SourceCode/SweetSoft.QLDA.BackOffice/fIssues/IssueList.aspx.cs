@@ -49,12 +49,12 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                     return;
                 }
 
-                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.ISSUE_LIST));
-                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.ISSUE_LIST);
+                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.ISSUES_LIST));
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.ISSUES_LIST);
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
                 {
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
-                    { "javascript:;", GetResourceText(BackEndResourceKeys.ISSUE_LIST)}
+                    { "javascript:;", GetResourceText(BackEndResourceKeys.ISSUES_LIST)}
                 };
                 ApplyControlsText();
                 CtrlIssue1.InitControls();

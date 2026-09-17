@@ -131,10 +131,6 @@
     <div class="offcanvas-header">
         <div class="flex flex-column flex-md-row align-items-center gap-3">
             <h5 class="offcanvas-title"><%= GetResourceText(BackEndResourceKeys.ADVANCED_SEARCH) %></h5>
-            <div class="d-flex align-items-center gap-1">
-                <SweetSoft:ExtraButton runat="server" ID="lbtSearchAdvanced" CssClass="flex-btn" ButtonStyle="Primary" ButtonIcon="Search" OnClick="btnSearchAdvanced_ServerClick">Áp dụng</SweetSoft:ExtraButton>
-                <SweetSoft:ExtraButton runat="server" ID="lbtCancel" CssClass="flex-btn" ButtonStyle="OutLineSecondary" ButtonIcon="Refresh" OnClick="btnCancel_Click">Làm mới</SweetSoft:ExtraButton>
-            </div>
         </div>
         <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>

@@ -87,16 +87,32 @@
                         <ItemTemplate><%# Eval("NguoiTao") != DBNull.Value && Eval("NguoiTao") != null ? Eval("NguoiTao") : "—" %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
+                   <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="100px">
                         <ItemTemplate>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' 
-                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline" 
-                                ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>' 
-                                ButtonIcon='<%# this.IsView ? "fas fa-pencil-alt" : "fas fa-eye" %>'></SweetSoft:SmartLinkButton>
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' 
+                                    ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline" 
+                                    ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>' 
+                                    ButtonIcon='<%# this.IsView ? "fas fa-pencil-alt" : "fas fa-eye" %>'></SweetSoft:SmartLinkButton>
 
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>' 
-                                ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger" 
-                                ResourceKey='<%# BackEndResourceKeys.DELETE %>' ButtonIcon="fas fa-trash"></SweetSoft:SmartLinkButton>
+                                <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>' 
+                                    ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger" 
+                                    ResourceKey='<%# BackEndResourceKeys.DELETE %>' ButtonIcon="fas fa-trash"></SweetSoft:SmartLinkButton>
+                            </div>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+
+                    <asp:TemplateField HeaderText="FastProcessing" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                        <ItemTemplate>
+                            <SweetSoft:SmartLinkButton runat="server" 
+                                ID="lbtProcess" 
+                                CommandName="ITEM_PROCESS" 
+                                CommandArgument='<%# Eval("IdVanDe") %>'
+                                VisibleConditionKey='<%# this.IsEdit && Eval("TrangThai") != DBNull.Value && Eval("TrangThai").ToString() == "0" %>'
+                                OnClientClick="return confirm('Bạn có chắc chắn muốn chuyển vấn đề này sang trạng thái Đã xử lý?');"
+                                ButtonIcon="fas fa-check-circle"
+                                ResourceKey='<%# BackEndResourceKeys.FAST_APPROVAL %>'>
+                            </SweetSoft:SmartLinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>

@@ -420,7 +420,7 @@
   <data name="ITEM" xml:space="preserve">
     <value>item</value>
   </data>
-  <data name="ISSUE_LIST" xml:space="preserve">
+  <data name="ISSUES_LIST" xml:space="preserve">
     <value>Issue list</value>
   </data>
   <data name="ISSUE_NAME" xml:space="preserve">
@@ -2275,8 +2275,58 @@
   <data name="TASK_HAS_NO_ASSIGNEE" xml:space="preserve">
     <value>Task has no assignee!</value>
   </data>
-	<data name="CONTRACT_LIST" xml:space="preserve">
+  <data name="CONTRACT_LIST" xml:space="preserve">
     <value />
   </data>
-  grvData_RowDataBound
+  <data name="TIME_PERIOD" xml:space="preserve">
+    <value>Time period</value>
+  </data>
+  <data name="GENERATE_REPORT" xml:space="preserve">
+    <value>Generate report</value>
+  </data>
+  <data name="PROJECT_NOT_STARTED" xml:space="preserve">
+    <value>Project not started!</value>
+  </data>
+  <data name="PROJECT_HAS_NO_DATA" xml:space="preserve">
+    <value>Project has no data!</value>
+  </data>
+  <data name="TOTAL_TASKS" xml:space="preserve">
+    <value>Total tasks</value>
+  </data>
+  <data name="ISSUES_ARISING" xml:space="preserve">
+    <value>Issues arising</value>
+  </data>
+  <data name="COMPLETED_TASKS_SUMMARY" xml:space="preserve">
+    <value>Completed tasks summary</value>
+  </data>
+  <data name="COMPLETION_DATE" xml:space="preserve">
+    <value>Completion date</value>
+  </data>
+  <data name="NO_COMPLETED_TASKS_IN_PERIOD" xml:space="preserve">
+    <value>No work was completed during this period!</value>
+  </data>
+  <data name="OVERDUE_TASKS_LIST" xml:space="preserve">
+    <value>Overdue tasks list</value>
+  </data>
+  <data name="EXPORT_PDF" xml:space="preserve">
+    <value>Export PDF</value>
+  </data>
+  <data name="LAST_WEEK" xml:space="preserve">
+    <value>Last week</value>
+  </data>
+  <data name="LAST_MONTH" xml:space="preserve">
+    <value>Last month</value>
+  </data>
+  <data name="ALL_TIME" xml:space="preserve">
+    <value>All time</value>
+  </data>
+  <data name="CUSTOM" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="ASSIGNEE" xml:space="preserve">
+    <value>Assignee</value>
+  </data>
+  <data name="FROM_TO_FORMAT" xml:space="preserve">
+    <value>From {0} to {1}</value>
+  </data>
 </root>

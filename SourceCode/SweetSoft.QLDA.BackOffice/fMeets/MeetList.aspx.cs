@@ -34,7 +34,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
-            new ControlHelpers().BindNhanVienToCheckBoxList(cblNhanVien);
+
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -218,20 +218,27 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
+        // =========================================================================
+        // HÀM MỞ POPUP CHỌN NHÂN VIÊN VÀ BIND VÀO REPEATER (CẬP NHẬT THEO TBLTHANHVIENDUAN)
+        // =========================================================================
         protected void btnMoPopupNhanVien_Click(object sender, EventArgs e)
         {
+            // 1. Truy vấn TblThanhVienDuAn lấy danh sách IdNhanVien của dự án này
             List<Guid> projectMemberIds = new Select(TblThanhVienDuAn.Columns.IdNhanVien)
                 .From(TblThanhVienDuAn.Schema)
                 .Where(TblThanhVienDuAn.Columns.IdDuAn).IsEqualTo(CtrlMeet1.ProjectId)
-                .And(TblThanhVienDuAn.Columns.DaXoa).IsEqualTo(false) 
+                .And(TblThanhVienDuAn.Columns.DaXoa).IsEqualTo(false) // Bỏ qua những người đã bị xóa khỏi dự án
                 .ExecuteTypedList<Guid>();
 
+            // 2. Lấy All NhanVien đang hoạt động, lọc theo projectMemberIds
             var allUsers = UserManager.Instance.GetAllActiveNhanVien();
             var usersInProject = allUsers
                 .Where(u => projectMemberIds.Contains(u.UserId))
                 .OrderBy(u => u.DisplayName)
                 .ToList();
 
+            // 3. Map in4 Avatar và Name đổ vào Repeater
             var list = new List<object>();
             for (int i = 0; i < usersInProject.Count; i++)
             {
@@ -304,6 +311,9 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             dlChonNhanVien.CloseModal();
         }
 
+        // =========================================================================
+        // HÀM HELPER RENDER AVATAR (Lấy chữ cái đầu & Sinh thẻ HTML)
+        // =========================================================================
         private string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "";
@@ -328,10 +338,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             {
                 return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
             }
-        }
-        public override void ConfirmRequest(ConfirmResult e)
-        {
-            CtrlMeet1.ConfirmRequest(e);
         }
     }
 }

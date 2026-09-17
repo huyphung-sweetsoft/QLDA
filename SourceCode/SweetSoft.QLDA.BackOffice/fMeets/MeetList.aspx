@@ -41,6 +41,7 @@
         border: 1px solid #e5e7eb !important;
     }
 
+    /* CSS CHO AVATAR RIÊNG LẺ TRONG POPUP */
     .single-avatar-circle {
         width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
         font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -66,6 +67,7 @@
 </asp:Content>
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
+    <!-- POPUP THÊM/SỬA CUỘC HỌP -->
     <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" DefaultButton="lbtSubmit">
         <ContentTemplate>
             <div class="row js-validation validationEngineContainer">
@@ -139,6 +141,7 @@
         </FooterTemplate>
     </SweetSoft:ExtraModal>
 
+    <!-- POPUP CHỌN NHÂN VIÊN MỚI (DÙNG REPEATER + AVATAR) -->
     <SweetSoft:ExtraModal runat="server" ID="dlChonNhanVien" Type="Info" DefaultButton="btnXacNhanNhanVien">
         <ContentTemplate>
             <div class="row">
@@ -154,6 +157,7 @@
                                     <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                     <asp:HiddenField runat="server" ID="hdfDisplayName" Value='<%# Eval("DisplayName") %>' />
                                     
+                                    <!-- HIỂN THỊ AVATAR TRONG POPUP -->
                                     <%# Eval("AvatarHtml") %>
                                     
                                     <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
@@ -170,35 +174,6 @@
                 ButtonStyle="Primary" 
                 ButtonIcon="Check" 
                 OnClick="btnXacNhanNhanVien_Click">
-            </SweetSoft:ExtraButton>
-        </FooterTemplate>
-    </SweetSoft:ExtraModal>
-    <SweetSoft:ExtraModal runat="server" ID="dlChonNhanVien" Type="Info" DefaultButton="btnXacNhanNhanVien">
-        <ContentTemplate>
-            <div class="row">
-                <div class="col-12">
-                    <table class="table table-bordered mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME) %></th>
-                            </tr>
-                        </thead>
-                    </table>
-                
-                    <div style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-top: none;">
-                        <asp:CheckBoxList runat="server" ID="cblNhanVien" Width="100%" 
-                            CssClass="table table-hover table-borderless mb-0" 
-                            RepeatLayout="Table" 
-                            RepeatColumns="1" 
-                            RepeatDirection="Vertical">
-                        </asp:CheckBoxList>
-                    </div>
-                </div>
-            </div>
-        </ContentTemplate>
-        <FooterTemplate>
-            <SweetSoft:ExtraButton runat="server" ID="btnXacNhanNhanVien" CssClass="waves-effect waves-light" ButtonStyle="Primary" OnClick="btnXacNhanNhanVien_Click">
-                <%= GetResourceText(BackEndResourceKeys.CONFIRM) %>
             </SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
@@ -253,8 +228,8 @@
         }
 
         $(document).on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
-            calcMeetingTime();
-        });
+            MeetingTime();
+        
     });
     </script>
 </asp:Content>

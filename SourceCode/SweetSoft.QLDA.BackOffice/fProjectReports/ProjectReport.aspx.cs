@@ -7,6 +7,7 @@ using SweetSoft.QLDA.Core.Managers;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fProjectReports
 {
@@ -19,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             if (!IsPostBack)
             {
+                BindPeriodDropdown();
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
 
@@ -53,7 +55,21 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         {
             ShowNotify("Chức năng xuất Excel đang được phát triển!", MSGType.Info);
         }
+        private void BindPeriodDropdown()
+        {
+            ddlPeriod.Items.Clear();
 
+            ddlPeriod.Items.Add(new ListItem(GetResourceText(BackEndResourceKeys.THIS_WEEK), "THIS_WEEK"));
+            ddlPeriod.Items.Add(new ListItem(GetResourceText(BackEndResourceKeys.LAST_WEEK), "LAST_WEEK"));
+            ddlPeriod.Items.Add(new ListItem(GetResourceText(BackEndResourceKeys.THIS_MONTH), "THIS_MONTH"));
+            ddlPeriod.Items.Add(new ListItem(GetResourceText(BackEndResourceKeys.LAST_MONTH), "LAST_MONTH"));
+
+            ListItem itemAll = new ListItem(GetResourceText(BackEndResourceKeys.ALL_TIME), "ALL");
+            itemAll.Selected = true;
+            ddlPeriod.Items.Add(itemAll);
+
+            ddlPeriod.Items.Add(new ListItem(GetResourceText(BackEndResourceKeys.CUSTOM), "CUSTOM"));
+        }
         private void LoadReportData()
         {
             Guid projectId = CurrentProjectId;
@@ -150,7 +166,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
                         if (fromDate < minLimitDate) fromDate = minLimitDate;
                         if (toDate > maxLimitDate) toDate = maxLimitDate;
 
-                        periodName = $"Từ {fromDate.Value:dd/MM/yyyy} đến {toDate.Value:dd/MM/yyyy}";
+                        periodName = string.Format(
+                            GetResourceText(BackEndResourceKeys.FROM_TO_FORMAT),
+                            fromDate.Value.ToString("dd/MM/yyyy"),
+                            toDate.Value.ToString("dd/MM/yyyy")
+                        );
                     }
                     else
                     {
@@ -162,7 +182,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
                         }
                         else
                         {
-                            ShowNotify("Vui lòng chọn đầy đủ thời gian!", MSGType.Warning);
+                            ShowNotify(GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE), MSGType.Warning);
                             return;
                         }
                     }
@@ -180,7 +200,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
                 }
             }
 
-            ltrReportPeriod.Text = $"Kỳ báo cáo: {periodName}";
+            ltrReportPeriod.Text = periodName.ToString();
 
             int totalTasks = ProjectReportManager.Instance.GetTotalTasks(projectId, fromDate, toDate);
             DataTable dtCompleted = ProjectReportManager.Instance.GetCompletedTasks(projectId, fromDate, toDate);
@@ -192,25 +212,20 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
 
             ltrTotalTasks.Text = totalTasks.ToString();
 
-            if (totalTasks > 0)
-            {
-                ltrCompletedTasks.Text = $"{countCompleted}/{totalTasks} task ({(double)countCompleted / totalTasks * 100:0.0}%)";
-                ltrOverdueTasks.Text = $"{countOverdue}/{totalTasks} task ({(double)countOverdue / totalTasks * 100:0.0}%)";
-            }
-            else
-            {
-                ltrCompletedTasks.Text = "0 task (0%)";
-                ltrOverdueTasks.Text = "0 task (0%)";
-            }
+            ltrCompletedTasks.Text = countCompleted.ToString();
+            ltrOverdueTasks.Text = countOverdue.ToString();
 
             ltrTotalIssues.Text = dtIssues.Rows.Count.ToString();
 
+            dtCompleted.DefaultView.Sort = "MaCongViec ASC";
             rptCompletedTasks.DataSource = dtCompleted;
             rptCompletedTasks.DataBind();
 
+            dtOverdue.DefaultView.Sort = "MaCongViec ASC";
             rptOverdueTasks.DataSource = dtOverdue;
             rptOverdueTasks.DataBind();
 
+            dtIssues.DefaultView.Sort = "MaVanDe ASC";
             rptIssues.DataSource = dtIssues;
             rptIssues.DataBind();
         }
@@ -219,9 +234,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
 
         protected string GetPriorityText(int priority)
         {
-            if (priority == 3) return "Cao (High)";
-            if (priority == 2) return "Trung bình";
-            return "Thấp (Low)";
+            if (priority == 3) return GetResourceText(BackEndResourceKeys.HIGH);
+            if (priority == 2) return GetResourceText(BackEndResourceKeys.MEDIUM);
+            return GetResourceText(BackEndResourceKeys.LOW);
         }
 
         protected string GetPriorityBadge(int priority)
@@ -231,17 +246,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
             return "badge-low";
         }
 
-        protected string GetIssueStatusText(int status)
+        protected string GetIssueStatusText(object value)
         {
-            if (status == 1) return "Đang xử lý";
-            if (status == 2) return "Đã xử lý";
-            return "Mới tạo";
+            if (value == null || value == DBNull.Value) return "—";
+            TrangThaiVanDeEnum status = (TrangThaiVanDeEnum)Convert.ToInt32(value);
+            return GetResourceText(IssueManager.Instance.GetValueForTrangThaiVanDe(status));
         }
 
         protected string GetIssueStatusBadge(int status)
         {
-            if (status == 1) return "badge-warning";
-            if (status == 2) return "badge-success";
+            if (status == (int)TrangThaiVanDeEnum.Processing) return "badge-warning"; 
+            if (status == (int)TrangThaiVanDeEnum.Processed) return "badge-success";  
+
             return "badge-info";
         }
         #endregion

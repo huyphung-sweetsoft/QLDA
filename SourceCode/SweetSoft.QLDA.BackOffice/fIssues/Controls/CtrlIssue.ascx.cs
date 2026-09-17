@@ -1,4 +1,5 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+﻿using SubSonic;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -123,6 +124,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 GetResourceText(BackEndResourceKeys.ORIGIN),
                 GetResourceText(BackEndResourceKeys.CREATED_BY),
                 GetResourceText(BackEndResourceKeys.ACTION),
+                GetResourceText(BackEndResourceKeys.FAST_APPROVAL) 
             };
             grvData.HeaderTexts = lstTableHeader;
         }
@@ -202,6 +204,33 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         {
             switch (e.CommandName)
             {
+                case "ITEM_PROCESS":
+                    if (!this.CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    int rowIndexProcess = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
+                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+
+                    Guid issueIdProcess = Guid.Empty;
+                    if (Guid.TryParse(grvData.DataKeys[rowIndexProcess].Value.ToString(), out issueIdProcess))
+                    {
+                        try
+                        {
+                            string sqlProcess = $"UPDATE TblVanDe SET TrangThai = 1 WHERE IdVanDe = '{issueIdProcess}'";    
+                            new InlineQuery().Execute(sqlProcess);
+                            ShowNotify("Đã cập nhật trạng thái xử lý thành công!", MSGType.Success);
+                            Rebind();
+                        }
+                        catch (Exception exc)
+                        {
+                            ShowNotify(exc.Message, MSGType.Error);
+                        }
+                    }
+                    break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
