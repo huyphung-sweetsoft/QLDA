@@ -1,6 +1,8 @@
 (function () {
     "use strict";
 
+    var texts = window.dashboardProgressTexts || {};
+
     function showEmptyState(element, message) {
         if (!element) {
             return;
@@ -21,29 +23,41 @@
         }
 
         if (data.length === 0) {
-            showEmptyState(element, "Không có dữ liệu tiến độ dự án.");
+            showEmptyState(element, texts.noProjectProgressData || "");
             return;
         }
 
         var chartHeight = Math.max(330, data.length * 75);
         element.style.height = chartHeight + "px";
+        element.style.cursor = data.some(function (item) {
+            return item && item.detailUrl;
+        }) ? "pointer" : "default";
 
         new ApexCharts(element, {
             chart: {
                 type: "bar",
                 height: chartHeight,
                 toolbar: { show: false },
-                parentHeightOffset: 0
+                parentHeightOffset: 0,
+                events: {
+                    dataPointSelection: function (event, chartContext, config) {
+                        var item = data[config.dataPointIndex];
+
+                        if (item && item.detailUrl) {
+                            window.location.assign(item.detailUrl);
+                        }
+                    }
+                }
             },
             series: [
                 {
-                    name: "Thực tế",
+                    name: texts.actual || "",
                     data: data.map(function (item) {
                         return Number(item.actual) || 0;
                     })
                 },
                 {
-                    name: "Kế hoạch theo thời gian",
+                    name: texts.planned || "",
                     data: data.map(function (item) {
                         return Number(item.planned) || 0;
                     })
@@ -105,15 +119,24 @@
         }
 
         if (total === 0) {
-            showEmptyState(element, "Không có công việc trong kỳ.");
+            showEmptyState(element, texts.noTasksInPeriod || "");
             return;
         }
+
+        element.style.cursor = data.tasksUrl ? "pointer" : "default";
 
         new ApexCharts(element, {
             chart: {
                 type: "donut",
                 height: 330,
-                toolbar: { show: false }
+                toolbar: { show: false },
+                events: {
+                    dataPointSelection: function () {
+                        if (data.tasksUrl) {
+                            window.location.assign(data.tasksUrl);
+                        }
+                    }
+                }
             },
             labels: data.labels,
             series: data.values.map(function (value) {
@@ -130,7 +153,7 @@
                             show: true,
                             total: {
                                 show: true,
-                                label: "Tổng công việc",
+                                label: texts.totalTasks || "",
                                 formatter: function () {
                                     return total;
                                 }
@@ -151,17 +174,18 @@
         }
 
         if (data.length === 0) {
-            showEmptyState(element, "Không có dữ liệu công việc theo dự án.");
+            showEmptyState(element, texts.noProjectTaskData || "");
             return;
         }
 
         var chartHeight = Math.max(320, data.length * 70);
         element.style.height = chartHeight + "px";
+        element.style.cursor = data.some(function (item) {
+            return item && item.tasksUrl;
+        }) ? "pointer" : "default";
 
-        // ApexCharts may generate fractional ticks for a numeric stacked axis.
-        // Rounding those ticks (for example 4.5 and 5.4) made both labels
-        // appear as "5". Keep an integer scale for small task totals and use
-        // one decimal place for larger ranges so every tick remains distinct.
+        // Work counts are integers, so expand the axis to a multiple of an
+        // integer step instead of letting ApexCharts create decimal ticks.
         var maxTaskTotal = data.reduce(function (max, item) {
             var total = (Number(item.completed) || 0)
                 + (Number(item.inProgress) || 0)
@@ -170,7 +194,9 @@
             return Math.max(max, total);
         }, 0);
         var axisMax = Math.max(1, Math.ceil(maxTaskTotal));
-        var tickAmount = axisMax <= 10 ? axisMax : 10;
+        var tickStep = Math.max(1, Math.ceil(axisMax / 10));
+        axisMax = Math.ceil(axisMax / tickStep) * tickStep;
+        var tickAmount = axisMax / tickStep;
 
         new ApexCharts(element, {
             chart: {
@@ -178,23 +204,32 @@
                 height: chartHeight,
                 stacked: true,
                 toolbar: { show: false },
-                parentHeightOffset: 0
+                parentHeightOffset: 0,
+                events: {
+                    dataPointSelection: function (event, chartContext, config) {
+                        var item = data[config.dataPointIndex];
+
+                        if (item && item.tasksUrl) {
+                            window.location.assign(item.tasksUrl);
+                        }
+                    }
+                }
             },
             series: [
                 {
-                    name: "Hoàn thành",
+                    name: texts.completed || "",
                     data: data.map(function (item) { return item.completed; })
                 },
                 {
-                    name: "Đang thực hiện",
+                    name: texts.inProgress || "",
                     data: data.map(function (item) { return item.inProgress; })
                 },
                 {
-                    name: "Chưa bắt đầu",
+                    name: texts.notStarted || "",
                     data: data.map(function (item) { return item.notStarted; })
                 },
                 {
-                    name: "Quá hạn",
+                    name: texts.overdue || "",
                     data: data.map(function (item) { return item.overdue; })
                 }
             ],
@@ -211,13 +246,10 @@
                 min: 0,
                 max: axisMax,
                 tickAmount: tickAmount,
+                decimalsInFloat: 0,
                 labels: {
                     formatter: function (value) {
-                        var numericValue = Number(value) || 0;
-                        var roundedValue = Math.round(numericValue);
-                        return Math.abs(numericValue - roundedValue) < 0.001
-                            ? roundedValue
-                            : numericValue.toFixed(1).replace(/\.0$/, "");
+                        return Math.round(Number(value) || 0).toString();
                     }
                 }
             },

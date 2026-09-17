@@ -1,0 +1,162 @@
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-09-15 11:20:38.834
+                URL: http://qlda.local/fMeets/MeetList.aspx?ProjectId=LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Project/LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw/Tasks
+                Session ID: m0ug3e3f0j1pvlfoda5t1fji
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fmeets_meetlist_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\5b263f74\ed897546\App_Web_5qzcjjrq.0.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: DataBinding: 'System.Data.DataRowView' does not contain a property with the name 'TenNhanVien'.
+                Inner Stack Trace:    at System.Web.UI.DataBinder.GetPropertyValue(Object container, String propName)
+   at System.Web.UI.DataBinder.Eval(Object container, String[] expressionParts)
+   at System.Web.UI.DataBinder.Eval(Object container, String expression)
+   at System.Web.UI.TemplateControl.Eval(String expression)
+   at ASP.fmeets_controls_ctrlmeet_ascx.__DataBind__control16(Object sender, EventArgs e) in d:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\Controls\CtrlMeet.ascx:line 111
+   at System.Web.UI.Control.OnDataBinding(EventArgs e)
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.WebControls.GridView.CreateRow(Int32 rowIndex, Int32 dataSourceIndex, DataControlRowType rowType, DataControlRowState rowState, Boolean dataBind, Object dataItem, DataControlField[] fields, TableRowCollection rows, PagedDataSource pagedDataSource)
+   at System.Web.UI.WebControls.GridView.CreateChildControls(IEnumerable dataSource, Boolean dataBinding)
+   at System.Web.UI.WebControls.CompositeDataBoundControl.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.GridView.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.DataBoundControl.OnDataSourceViewSelectCallback(IEnumerable data)
+   at System.Web.UI.DataSourceView.Select(DataSourceSelectArguments arguments, DataSourceViewSelectCallback callback)
+   at System.Web.UI.WebControls.DataBoundControl.PerformSelect()
+   at System.Web.UI.WebControls.BaseDataBoundControl.DataBind()
+   at System.Web.UI.WebControls.GridView.DataBind()
+   at SweetSoft.QLDA.Controls.GridviewExtension.LoadDataSource() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 91
+   at SweetSoft.QLDA.Controls.GridviewExtension.Rebind() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 68
+   at SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlMeet.InitControls() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\Controls\CtrlMeet.ascx.cs:line 78
+   at SweetSoft.QLDA.BackOffice.fMeets.MeetList.Page_Load(Object sender, EventArgs e) in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\MeetList.aspx.cs:line 54
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 1019
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-09-15 11:21:43.047
+                URL: http://qlda.local/fMeets/MeetList.aspx?ProjectId=LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Project/LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw/Tasks
+                Session ID: m0ug3e3f0j1pvlfoda5t1fji
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fmeets_meetlist_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\5b263f74\ed897546\App_Web_y3xlykml.0.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: DataBinding: 'System.Data.DataRowView' does not contain a property with the name 'DisplayName'.
+                Inner Stack Trace:    at System.Web.UI.DataBinder.GetPropertyValue(Object container, String propName)
+   at System.Web.UI.DataBinder.Eval(Object container, String[] expressionParts)
+   at System.Web.UI.DataBinder.Eval(Object container, String expression)
+   at System.Web.UI.TemplateControl.Eval(String expression)
+   at ASP.fmeets_controls_ctrlmeet_ascx.__DataBind__control16(Object sender, EventArgs e) in d:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\Controls\CtrlMeet.ascx:line 110
+   at System.Web.UI.Control.OnDataBinding(EventArgs e)
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.WebControls.GridView.CreateRow(Int32 rowIndex, Int32 dataSourceIndex, DataControlRowType rowType, DataControlRowState rowState, Boolean dataBind, Object dataItem, DataControlField[] fields, TableRowCollection rows, PagedDataSource pagedDataSource)
+   at System.Web.UI.WebControls.GridView.CreateChildControls(IEnumerable dataSource, Boolean dataBinding)
+   at System.Web.UI.WebControls.CompositeDataBoundControl.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.GridView.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.DataBoundControl.OnDataSourceViewSelectCallback(IEnumerable data)
+   at System.Web.UI.DataSourceView.Select(DataSourceSelectArguments arguments, DataSourceViewSelectCallback callback)
+   at System.Web.UI.WebControls.DataBoundControl.PerformSelect()
+   at System.Web.UI.WebControls.BaseDataBoundControl.DataBind()
+   at System.Web.UI.WebControls.GridView.DataBind()
+   at SweetSoft.QLDA.Controls.GridviewExtension.LoadDataSource() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 91
+   at SweetSoft.QLDA.Controls.GridviewExtension.Rebind() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 68
+   at SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlMeet.InitControls() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\Controls\CtrlMeet.ascx.cs:line 78
+   at SweetSoft.QLDA.BackOffice.fMeets.MeetList.Page_Load(Object sender, EventArgs e) in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\MeetList.aspx.cs:line 54
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 1019
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                
+
+                === UNHANDLED EXCEPTION ===
+                Time: 2026-09-15 11:23:37.762
+                URL: http://qlda.local/fMeets/MeetList.aspx?ProjectId=LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw
+                User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36
+                Referrer: http://qlda.local/Project/LddkQlT0NEx19VEB4GpWHniqPskL89RnhrchM5mqPUx_E_kh3UMGYw/Tasks
+                Session ID: m0ug3e3f0j1pvlfoda5t1fji
+                Exception Type: HttpUnhandledException
+                Message: Exception of type 'System.Web.HttpUnhandledException' was thrown.
+                Stack Trace:    at System.Web.UI.Page.HandleError(Exception e)
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+   at System.Web.UI.Page.ProcessRequest()
+   at System.Web.UI.Page.ProcessRequestWithNoAssert(HttpContext context)
+   at System.Web.UI.Page.ProcessRequest(HttpContext context)
+   at ASP.fmeets_meetlist_aspx.ProcessRequest(HttpContext context) in c:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root\5b263f74\ed897546\App_Web_saaampla.0.cs:line 0
+   at System.Web.HttpApplication.CallHandlerExecutionStep.System.Web.HttpApplication.IExecutionStep.Execute()
+   at System.Web.HttpApplication.ExecuteStepImpl(IExecutionStep step)
+   at System.Web.HttpApplication.ExecuteStep(IExecutionStep step, Boolean& completedSynchronously)
+                Inner Exception: DataBinding: 'System.Data.DataRowView' does not contain a property with the name 'TenNhanVien'.
+                Inner Stack Trace:    at System.Web.UI.DataBinder.GetPropertyValue(Object container, String propName)
+   at System.Web.UI.DataBinder.Eval(Object container, String[] expressionParts)
+   at System.Web.UI.DataBinder.Eval(Object container, String expression)
+   at System.Web.UI.TemplateControl.Eval(String expression)
+   at ASP.fmeets_controls_ctrlmeet_ascx.__DataBind__control16(Object sender, EventArgs e) in d:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\Controls\CtrlMeet.ascx:line 110
+   at System.Web.UI.Control.OnDataBinding(EventArgs e)
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.Control.DataBindChildren()
+   at System.Web.UI.Control.DataBind(Boolean raiseOnDataBinding)
+   at System.Web.UI.Control.DataBind()
+   at System.Web.UI.WebControls.GridView.CreateRow(Int32 rowIndex, Int32 dataSourceIndex, DataControlRowType rowType, DataControlRowState rowState, Boolean dataBind, Object dataItem, DataControlField[] fields, TableRowCollection rows, PagedDataSource pagedDataSource)
+   at System.Web.UI.WebControls.GridView.CreateChildControls(IEnumerable dataSource, Boolean dataBinding)
+   at System.Web.UI.WebControls.CompositeDataBoundControl.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.GridView.PerformDataBinding(IEnumerable data)
+   at System.Web.UI.WebControls.DataBoundControl.OnDataSourceViewSelectCallback(IEnumerable data)
+   at System.Web.UI.DataSourceView.Select(DataSourceSelectArguments arguments, DataSourceViewSelectCallback callback)
+   at System.Web.UI.WebControls.DataBoundControl.PerformSelect()
+   at System.Web.UI.WebControls.BaseDataBoundControl.DataBind()
+   at System.Web.UI.WebControls.GridView.DataBind()
+   at SweetSoft.QLDA.Controls.GridviewExtension.LoadDataSource() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 91
+   at SweetSoft.QLDA.Controls.GridviewExtension.Rebind() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.Controls\GridviewExtension.cs:line 68
+   at SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlMeet.InitControls() in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\Controls\CtrlMeet.ascx.cs:line 78
+   at SweetSoft.QLDA.BackOffice.fMeets.MeetList.Page_Load(Object sender, EventArgs e) in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\fMeets\MeetList.aspx.cs:line 54
+   at System.Web.Util.CalliEventHandlerDelegateProxy.Callback(Object sender, EventArgs e)
+   at System.Web.UI.Control.OnLoad(EventArgs e)
+   at SweetSoft.QLDA.BackOffice.Common.BaseAdminPage.OnLoad(EventArgs e) in D:\Sweetsoft\QLDA\SourceCode\SweetSoft.QLDA.BackOffice\Common\BaseAdminPage.cs:line 1019
+   at System.Web.UI.Control.LoadRecursive()
+   at System.Web.UI.Page.ProcessRequestMain(Boolean includeStagesBeforeAsyncPoint, Boolean includeStagesAfterAsyncPoint)
+                ========================
+                

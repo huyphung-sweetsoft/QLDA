@@ -62,6 +62,7 @@ namespace SweetSoft.QLDA.BackOffice
 
             ServiceProvider = provider;
 
+            ThongBaoManager.ResolveNotificationUrlFunc = NotificationHelper.BuildNotificationLink;
             ExtraDateTime.DateTimeConverter = new SettingDateTimeConverter(TimeZoneId);
             //-------------------------------------------------------------
         }

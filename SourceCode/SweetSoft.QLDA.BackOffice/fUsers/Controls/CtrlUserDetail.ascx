@@ -13,7 +13,7 @@
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="mb-3">
-                                <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.DISPLAY_NAME) %></label>
+                                <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.FULL_NAME) %></label>
                                 <SweetSoft:ExtraTextBox runat="server" ID="txtFullName" Required="true" PlaceHolder="Nhập họ và tên"></SweetSoft:ExtraTextBox>
                             </div>
                             <div class="mb-3">

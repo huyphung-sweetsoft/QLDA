@@ -1,6 +1,8 @@
 (function () {
     "use strict";
 
+    var texts = window.dashboardCostTexts || {};
+
     function showEmptyState(element, message, minimumHeight) {
         if (!element) {
             return;
@@ -16,21 +18,22 @@
     function formatMoney(value) {
         var amount = Number(value) || 0;
         var absoluteAmount = Math.abs(amount);
-        var suffix = " đ";
+        var suffix = texts.currencySuffix || "";
+        var locale = texts.locale || undefined;
 
         if (absoluteAmount >= 1000000000) {
-            return (amount / 1000000000).toLocaleString("vi-VN", {
+            return (amount / 1000000000).toLocaleString(locale, {
                 maximumFractionDigits: 2
-            }) + " tỷ";
+            }) + (texts.billionSuffix || "");
         }
 
         if (absoluteAmount >= 1000000) {
-            return (amount / 1000000).toLocaleString("vi-VN", {
+            return (amount / 1000000).toLocaleString(locale, {
                 maximumFractionDigits: 1
-            }) + " triệu";
+            }) + (texts.millionSuffix || "");
         }
 
-        return amount.toLocaleString("vi-VN", {
+        return amount.toLocaleString(locale, {
             maximumFractionDigits: 0
         }) + suffix;
     }
@@ -44,29 +47,41 @@
         }
 
         if (data.length === 0) {
-            showEmptyState(element, "Không có dự án đã hoàn thành để so sánh.", 320);
+            showEmptyState(element, texts.noCompletedProjectComparison || "", 320);
             return;
         }
 
         var chartHeight = Math.max(340, data.length * 72);
         element.style.height = chartHeight + "px";
+        element.style.cursor = data.some(function (item) {
+            return !!item.detailUrl;
+        }) ? "pointer" : "";
 
         new ApexCharts(element, {
             chart: {
                 type: "bar",
                 height: chartHeight,
                 toolbar: { show: false },
-                parentHeightOffset: 0
+                parentHeightOffset: 0,
+                events: {
+                    dataPointSelection: function (event, chartContext, config) {
+                        var item = data[config.dataPointIndex];
+
+                        if (item && item.detailUrl) {
+                            window.location.assign(item.detailUrl);
+                        }
+                    }
+                }
             },
             series: [
                 {
-                    name: "Giá trị hợp đồng",
+                    name: texts.contractValue || "",
                     data: data.map(function (item) {
                         return Number(item.contractValue) || 0;
                     })
                 },
                 {
-                    name: "Chi phí thực tế",
+                    name: texts.actualCost || "",
                     data: data.map(function (item) {
                         return Number(item.actualCost) || 0;
                     })
@@ -126,7 +141,7 @@
         }
 
         if (total === 0) {
-            showEmptyState(element, "Chưa có giá trị hợp đồng hoặc thanh toán.", 300);
+            showEmptyState(element, texts.noContractOrPayment || "", 300);
             return;
         }
 
@@ -136,7 +151,7 @@
                 height: 310,
                 toolbar: { show: false }
             },
-            labels: ["Đã thu", "Còn phải thu"],
+            labels: [texts.received || "", texts.outstanding || ""],
             series: [received, outstanding],
             colors: ["#34c38f", "#f1b44c"],
             legend: { position: "bottom" },
@@ -156,7 +171,7 @@
                             show: true,
                             total: {
                                 show: true,
-                                label: "Giá trị hợp đồng",
+                                label: texts.contractValue || "",
                                 formatter: function () {
                                     return formatMoney(total);
                                 }
@@ -177,7 +192,7 @@
         }
 
         if (data.length === 0) {
-            showEmptyState(element, "Chưa có chi phí phát sinh để hiển thị xu hướng.", 300);
+            showEmptyState(element, texts.noCostTrend || "", 300);
             return;
         }
 
@@ -189,7 +204,7 @@
                 zoom: { enabled: false }
             },
             series: [{
-                name: "Chi phí phát sinh",
+                name: texts.incurredCost || "",
                 data: data.map(function (item) {
                     return Number(item.amount) || 0;
                 })

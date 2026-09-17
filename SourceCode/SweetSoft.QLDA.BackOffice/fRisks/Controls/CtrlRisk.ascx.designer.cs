@@ -15,6 +15,42 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
     {
 
         /// <summary>
+        /// pnlSearchDropdowns control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel pnlSearchDropdowns;
+
+        /// <summary>
+        /// pnlSearchDefaultStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSearchDefaultStatus;
+
+        /// <summary>
+        /// ddlSearchMucDoAnhHuong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchMucDoAnhHuong;
+
+        /// <summary>
+        /// ddlSearchMucDoRuiRo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchMucDoRuiRo;
+
+        /// <summary>
         /// txtSearchSingle control.
         /// </summary>
         /// <remarks>
@@ -105,24 +141,6 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
 
         /// <summary>
-        /// lbtSearchAdvanced control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchAdvanced;
-
-        /// <summary>
-        /// lbtCancel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtCancel;
-
-        /// <summary>
         /// pnlSearch control.
         /// </summary>
         /// <remarks>
@@ -148,5 +166,50 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTenRuiRo;
+
+        /// <summary>
+        /// ddlSearchNhanVien control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlSearchNhanVien;
+
+        /// <summary>
+        /// txtSearchXacSuatMin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchXacSuatMin;
+
+        /// <summary>
+        /// txtSearchXacSuatMax control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchXacSuatMax;
+
+        /// <summary>
+        /// lbtSearchAdvanced control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchAdvanced;
+
+        /// <summary>
+        /// lbtCancel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtCancel;
     }
 }

@@ -17,6 +17,7 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             if (!IsPostBack)
             {
                 if (!this.IsView)

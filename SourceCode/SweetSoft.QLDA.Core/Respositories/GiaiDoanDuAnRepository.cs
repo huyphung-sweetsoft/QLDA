@@ -250,6 +250,48 @@ namespace SweetSoft.QLDA.Core.Respositories
             return ExecuteNullableDate(sql);
         }
 
+        public DateTime? GetPreviousStageEndDate(
+    Guid idDuAn,
+    int currentOrder)
+        {
+            if (idDuAn == Guid.Empty ||
+                currentOrder <= 0)
+            {
+                return null;
+            }
+
+            string sql = $@"
+        DECLARE @idDuAn UNIQUEIDENTIFIER =
+            '{InlineQueryHelpers.SQLEncode(idDuAn)}';
+
+        DECLARE @currentOrder INT =
+            {currentOrder};
+
+        SELECT TOP 1
+            NgayDuKienHoanThanh
+        FROM dbo.TblGiaiDoanDuAn
+        WHERE IdDuAn = @idDuAn
+          AND DaXoa = 0
+          AND ThuTuGiaiDoan < @currentOrder
+          AND NgayDuKienHoanThanh IS NOT NULL
+        ORDER BY ThuTuGiaiDoan DESC;";
+
+            return ExecuteNullableDate(sql);
+        }
+
+        public TblGiaiDoanDuAn GetNextStage(Guid idDuAn, int currentOrder)
+        {
+            Select select = new Select();
+            select.Top("1");
+            select.From(TblGiaiDoanDuAn.Schema)
+                .Where(TblGiaiDoanDuAn.IdDuAnColumn).IsEqualTo(idDuAn)
+                .And(TblGiaiDoanDuAn.ThuTuGiaiDoanColumn).IsGreaterThan(currentOrder)
+                .And(TblGiaiDoanDuAn.DaXoaColumn).IsEqualTo(false)
+                .OrderAsc(TblGiaiDoanDuAn.Columns.ThuTuGiaiDoan);
+
+            return select.ExecuteSingle<TblGiaiDoanDuAn>();
+        }
+
         private DateTime? ExecuteNullableDate(
     string sql)
         {

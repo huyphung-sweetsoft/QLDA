@@ -80,7 +80,39 @@ namespace SweetSoft.QLDA.Core.Respositories
                                .And(TblCongViec.Columns.IdCongViecCha).IsEqualTo(taskId)
                                .ExecuteDataSet().Tables[0];
         }
+        public List<TblCongViec> GetPendingLeafTasksFromDate(DateTime affectedDate)
+        {
+            string dateStr = affectedDate.ToString("yyyy-MM-dd");
+            string sql = $@"
+                SELECT IdCongViec FROM TblCongViec 
+                WHERE TrangThai = 0 
+                  AND (DaXoa = 0 OR DaXoa IS NULL)
+                  AND (NgayBatDau >= '{dateStr}' OR NgayKetThuc >= '{dateStr}')
+                  AND IdCongViec NOT IN (
+                      SELECT IdCongViecCha FROM TblCongViec 
+                      WHERE IdCongViecCha IS NOT NULL AND (DaXoa = 0 OR DaXoa IS NULL)
+                  )";
 
+            List<TblCongViec> result = new List<TblCongViec>();
+            IDataReader reader = new SubSonic.InlineQuery().ExecuteReader(sql);
+            if (reader != null)
+            {
+                while (reader.Read())
+                {
+                    if (reader["IdCongViec"] != DBNull.Value)
+                    {
+                        if (Guid.TryParse(reader["IdCongViec"].ToString(), out Guid id))
+                        {
+                            // Bắt buộc dùng FetchById để SubSonic theo dõi (Track) thay đổi và thực hiện lệnh UPDATE xuống DB khi gọi .Save()
+                            TblCongViec task = FetchById(id);
+                            if (task != null) result.Add(task);
+                        }
+                    }
+                }
+                reader.Close();
+            }
+            return result;
+        }
         public DataTable GetDependentTasks(Guid projectId, Guid taskId)
         {
             return new Select().From(TblCongViec.Schema)

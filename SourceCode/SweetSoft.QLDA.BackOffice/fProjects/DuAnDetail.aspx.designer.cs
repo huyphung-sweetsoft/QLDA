@@ -24,11 +24,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
 
         /// <summary>
-        /// CtrlProjectTabs1 control.
-        /// </summary>
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
-
-        /// <summary>
         /// lblTenDuAn control.
         /// </summary>
         /// <remarks>
@@ -36,6 +31,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTenDuAn;
+
+        /// <summary>
+        /// CtrlProjectTabs1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
 
         /// <summary>
         /// lblKhachHang control.
@@ -146,6 +150,33 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblNhanVienQuanLy;
 
         /// <summary>
+        /// pnlContract control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlContract;
+
+        /// <summary>
+        /// upnlOpenContract control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlOpenContract;
+
+        /// <summary>
+        /// lbtViewContract control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtViewContract;
+
+        /// <summary>
         /// lblSoHopDong control.
         /// </summary>
         /// <remarks>
@@ -153,6 +184,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblSoHopDong;
+
+        /// <summary>
+        /// lbtOpenContractDocument control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtOpenContractDocument;
+
+        /// <summary>
+        /// lblNoContract control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNoContract;
 
         /// <summary>
         /// upnlOpenProjectHistory control.
@@ -198,5 +247,86 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlLichSuDuAn CtrlLichSuDuAn1;
+
+        /// <summary>
+        /// dlContractDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlContractDetail;
+
+        /// <summary>
+        /// txtContractNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtContractNumber;
+
+        /// <summary>
+        /// txtContractName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtContractName;
+
+        /// <summary>
+        /// txtContractCustomer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtContractCustomer;
+
+        /// <summary>
+        /// txtContractValue control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtContractValue;
+
+        /// <summary>
+        /// txtContractSignDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtContractSignDate;
+
+        /// <summary>
+        /// txtContractEffectiveDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtContractEffectiveDate;
+
+        /// <summary>
+        /// txtContractExpiryDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtContractExpiryDate;
+
+        /// <summary>
+        /// txtContractDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtContractDescription;
     }
 }

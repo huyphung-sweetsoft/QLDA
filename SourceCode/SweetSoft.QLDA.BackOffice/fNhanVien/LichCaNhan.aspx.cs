@@ -4,16 +4,19 @@ using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;        // Chứa UserManager
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.Core.ScheduleManager; // Đã chép đúng namespace theo folder
 using SweetSoft.QLDA.Core.SysManager;      // Chứa SweetContext, ActionKeys
 using SweetSoft.QLDA.DataAccess;           // Chứa AspnetUser
 using System;
+using System.Collections.Generic;
 
 namespace SweetSoft.QLDA.BackOffice.fNhanVien
 {
     public partial class LichCaNhan : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.LichBieu;
+        public override bool IsLogin => true;
 
         // Biến lưu ID người đang bị soi lịch
         private Guid TargetUserId
@@ -46,26 +49,28 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             Guid loggedInUser = SweetContext.Current.UserId;
             string rawQueryId = Request.QueryString["Id"];
+            bool isFromProfile = Request.QueryString["from"] == "profile";
+            bool hasParentDetail = !string.IsNullOrEmpty(rawQueryId); // Cờ kiểm tra xem có đi qua trang Chi tiết không
 
-            if (!string.IsNullOrEmpty(rawQueryId))
+            string rollbackUrl = "";
+
+            if (hasParentDetail)
             {
                 // Giải mã chuỗi bảo mật về lại GUID trần
                 string plainId = SecurityUtilities.UnprotectUrlParameter(rawQueryId);
 
                 if (Guid.TryParse(plainId, out Guid queryId))
                 {
+                    TargetUserId = queryId;
+
                     if (queryId == loggedInUser)
                     {
-                        // Tự xem lịch của chính mình -> Hợp lệ
-                        TargetUserId = loggedInUser;
-                        litTitle.Text = "Lịch cá nhân của tôi";
+                        litTitle.Text = GetResourceText(BackEndResourceKeys.MY_PERSONAL_SCHEDULE);
                     }
                     else
                     {
-                        // Đang cố xem lịch người khác -> Kiểm tra quyền Admin
-                        bool isAdmin = this.IsUserRight(ActionKeys.View, ModuleKeys.User);
-
-                        if (!isAdmin)
+                        bool hasViewRight = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien);
+                        if (!hasViewRight)
                         {
                             // Không đủ quyền -> Đuổi ra ngoài trang lỗi 403
                             Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
@@ -76,8 +81,13 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
                         // CHUẨN KIẾN TRÚC: Gọi Manager thay vì Query DB
                         AspnetUser targetUser = UserManager.Instance.GetUserById(queryId);
-                        litTitle.Text = targetUser != null ? $"Lịch công việc của {targetUser.DisplayName}" : "Lịch công việc nhân sự";
+                        litTitle.Text = targetUser != null ?
+                            string.Format(GetResourceText(BackEndResourceKeys.SCHEDULE_OF_USER), targetUser.DisplayName) :
+                            GetResourceText(BackEndResourceKeys.EMPLOYEE_SCHEDULE);
                     }
+
+                    // [QUAN TRỌNG]: Đã đi qua trang Chi tiết thì Lùi 1 bước PHẢI LÀ trang Chi tiết
+                    rollbackUrl = RewriteURLHelper.ViewDetailEmp(queryId);
                 }
                 else
                 {
@@ -88,10 +98,36 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             }
             else
             {
-                // KHÔNG truyền Params -> Mặc định xem lịch chính mình
+                // Vào thẳng từ Menu -> Tự xem lịch mình, không có trang cha
                 TargetUserId = loggedInUser;
-                litTitle.Text = "Lịch cá nhân của tôi";
+                litTitle.Text = GetResourceText(BackEndResourceKeys.MY_PERSONAL_SCHEDULE);
             }
+
+            // --- BUILD BREADCRUMB ---
+            Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PERSONAL_SCHEDULE);
+            var navLinks = new Dictionary<string, string>();
+
+            if (hasParentDetail)
+            {
+                // Cấp 1: Nguồn gốc (Hồ sơ hoặc Danh sách)
+                if (isFromProfile)
+                {
+                    navLinks.Add(GetRelativeClientPath(RewriteURLHelper.Profile), GetResourceText(BackEndResourceKeys.PROFILE));
+                }
+                else
+                {
+                    navLinks.Add(GetRelativeClientPath(RewriteURLHelper.NhanVien), GetResourceText(BackEndResourceKeys.EMPLOYEE_LIST));
+                }
+
+                // Cấp 2: Lùi 1 bước về trang Chi tiết (kèm theo cờ để trang chi tiết biết đường ẩn nút Sửa)
+                if (isFromProfile && !rollbackUrl.Contains("from=profile"))
+                {
+                    rollbackUrl += (rollbackUrl.Contains("?") ? "&" : "?") + "from=profile";
+                }
+                navLinks.Add(GetRelativeClientPath(rollbackUrl), GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL));
+            }
+
+            Navigation1.keyValuePairUrls = navLinks;
         }
         #endregion
 
@@ -114,8 +150,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
                 // Luôn lấy đủ 42 ngày (6 tuần) để lưới Lịch Tháng luôn vuông vắn, không trồi sụt
                 endDate = startDate.AddDays(41);
-
-                litDateRange.Text = $"Tháng {refDate.Month}/{refDate.Year}";
+                litDateRange.Text = $"{GetResourceText(BackEndResourceKeys.MONTH)} {refDate.Month}/{refDate.Year}";
                 btnViewMonth.CssClass = "btn-cal active";
                 btnViewWeek.CssClass = "btn-cal";
             }
@@ -125,8 +160,9 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 if (diffStart < 0) diffStart += 7;
                 startDate = refDate.AddDays(-diffStart);
                 endDate = startDate.AddDays(6);
-
-                litDateRange.Text = $"Tuần từ {startDate:dd/MM} - {endDate:dd/MM/yyyy}";
+                string tuKhoaWeek = GetResourceText(BackEndResourceKeys.WEEK);
+                string tuKhoaFrom = GetResourceText(BackEndResourceKeys.FROM);
+                litDateRange.Text = $"{tuKhoaWeek} {tuKhoaFrom} {startDate:dd/MM} - {endDate:dd/MM/yyyy}";
                 btnViewWeek.CssClass = "btn-cal active";
                 btnViewMonth.CssClass = "btn-cal";
             }

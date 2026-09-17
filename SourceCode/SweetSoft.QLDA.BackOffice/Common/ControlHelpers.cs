@@ -975,6 +975,19 @@ namespace SweetSoft.QLDA.BackOffice.Common
             }
             dropdown.Items.Insert(0, new ListItem("-- --", ""));
         }
+        public void BindNhanVienDuAn(DropDownList dropdown, Guid projectId)
+        {
+            dropdown.Items.Clear();
+            DataTable dt = RiskManager.Instance.GetAllNhanVienDuAnById(projectId);
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                dropdown.DataTextField = "TenNhanVien";
+                dropdown.DataValueField = "IdNhanVien";
+                dropdown.DataSource = dt;
+                dropdown.DataBind();
+            }
+            dropdown.Items.Insert(0, new ListItem("-- --", ""));
+        }
 
         public void BindMucDoAnhHuong(ExtraDropdown dropdown)
         {
@@ -991,6 +1004,26 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 string text = attribute != null ? attribute.Description : score.ToString();
 
                 dropdown.Items.Add(new ListItem(text, value));
+            }
+        }
+        public void BindMucDoAnhHuong(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            dropdown.Items.Add(new DropdownItem("-- --", ""));
+
+            foreach (MucDoAnhHuonEnum score in Enum.GetValues(typeof(MucDoAnhHuonEnum)))
+            {
+                string value = ((int)score).ToString();
+
+                var field = score.GetType().GetField(score.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : score.ToString();
+
+                dropdown.Items.Add(new DropdownItem(text, value));
             }
         }
         public void BindXacSuatRuiRo(ExtraDropdown dropdown)
@@ -1051,7 +1084,35 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 dropdown.Items.Add(new ListItem(text, value));
             }
         }
-        
+        public void BindNguonGocVanDe(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (NguonGocVanDeEnum source in Enum.GetValues(typeof(NguonGocVanDeEnum)))
+            {
+                string value = ((int)source).ToString();
+                var field = source.GetType().GetField(source.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+                string text = attribute != null ? attribute.Description : source.ToString();
+                dropdown.Items.Add(new DropdownItem(text, value));
+            }
+        }
+        public void BindTrangThaiVanDe(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (TrangThaiVanDeEnum source in Enum.GetValues(typeof(TrangThaiVanDeEnum)))
+            {
+                string value = ((int)source).ToString();
+                var field = source.GetType().GetField(source.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+                string text = attribute != null ? attribute.Description : source.ToString();
+                dropdown.Items.Add(new DropdownItem(text, value));
+            }
+        }
+
         #endregion
         #region Bind Meeting Data
         public void BindTrangThaiLichHop(ExtraDropdown dropdown)
@@ -1062,14 +1123,29 @@ namespace SweetSoft.QLDA.BackOffice.Common
             foreach (TrangThaiCuocHopEnum status in Enum.GetValues(typeof(TrangThaiCuocHopEnum)))
             {
                 string value = ((int)status).ToString();
-
                 var field = status.GetType().GetField(status.ToString());
                 var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
                                      .FirstOrDefault() as DescriptionAttribute;
+                string text = attribute != null ? attribute.Description : status.ToString();
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+            dropdown.SelectedIndex = -1;
+        }
+        public void BindTrangThaiLichHop(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.Items.Add(new DropdownItem("-- --", ""));
+            foreach (TrangThaiCuocHopEnum status in Enum.GetValues(typeof(TrangThaiCuocHopEnum)))
+            {
+                string value = ((int)status).ToString();
+
+                var field = status.GetType().GetField(status.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                    .FirstOrDefault() as DescriptionAttribute;
 
                 string text = attribute != null ? attribute.Description : status.ToString();
-
-                dropdown.Items.Add(new ListItem(text, value));
+                dropdown.Items.Add(new DropdownItem(text, value));
             }
             dropdown.SelectedIndex = -1;
         }
@@ -1134,6 +1210,23 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 string text = attribute != null ? attribute.Description : status.ToString();
 
                 dropdown.Items.Add(new ListItem(text, value));
+            }
+            dropdown.SelectedIndex = -1;
+        }
+        public void BindTrangThaiChiPhi(BootstrapDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            foreach (TrangThaiChiPhi status in Enum.GetValues(typeof(TrangThaiChiPhi)))
+            {
+                string value = ((int)status).ToString();
+
+                var field = status.GetType().GetField(status.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                    .FirstOrDefault() as DescriptionAttribute;
+
+                string text = attribute != null ? attribute.Description : status.ToString();
+                dropdown.Items.Add(new DropdownItem(text, value));
             }
             dropdown.SelectedIndex = -1;
         }

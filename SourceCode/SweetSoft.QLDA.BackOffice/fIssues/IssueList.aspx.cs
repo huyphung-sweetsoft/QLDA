@@ -49,12 +49,12 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                     return;
                 }
 
-                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.ISSUE_LIST) ?? "Danh sách vấn đề");
-                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.ISSUE_LIST) ?? "Danh sách vấn đề";
+                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.ISSUES_LIST));
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.ISSUES_LIST);
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
                 {
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
-                    { "javascript:;", GetResourceText(BackEndResourceKeys.ISSUE_LIST) ?? "Danh sách vấn đề" }
+                    { "javascript:;", GetResourceText(BackEndResourceKeys.ISSUES_LIST)}
                 };
                 ApplyControlsText();
                 CtrlIssue1.InitControls();
@@ -235,7 +235,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             }
             else
             {
-                txtNhanVien.Text = "Công việc này chưa có nhân viên phụ trách!";
+                txtNhanVien.Text = GetResourceText(BackEndResourceKeys.TASK_HAS_NO_ASSIGNEE);
             }
         }
     }

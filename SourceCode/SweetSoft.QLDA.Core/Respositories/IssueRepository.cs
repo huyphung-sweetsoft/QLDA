@@ -20,11 +20,19 @@ namespace SweetSoft.QLDA.Core.Respositories
         public DataTable SearchIssue(Guid projectId, string searchTerm, Dictionary<string, object> parameters, string orderBy, int startRow, int endRow, out int totalRecord)
         {
             totalRecord = 0;
+
             string tenVanDe = parameters != null && parameters.ContainsKey(TblVanDe.Columns.TenVanDe) ? parameters[TblVanDe.Columns.TenVanDe]?.ToString() : null;
+            string mucDoAnhHuong = parameters != null && parameters.ContainsKey(TblVanDe.Columns.MucDoAnhHuong) ? parameters[TblVanDe.Columns.MucDoAnhHuong]?.ToString() : null;
+            string trangThai = parameters != null && parameters.ContainsKey(TblVanDe.Columns.TrangThai) ? parameters[TblVanDe.Columns.TrangThai]?.ToString() : null;
+            string nguonGoc = parameters != null && parameters.ContainsKey(TblVanDe.Columns.NguonGocVanDe) ? parameters[TblVanDe.Columns.NguonGocVanDe]?.ToString() : null;
             if (string.IsNullOrEmpty(orderBy))
             {
                 orderBy = "MaVanDe ASC";
             }
+            string sqlMucDoAnhHuong = string.IsNullOrEmpty(mucDoAnhHuong) ? "NULL" : mucDoAnhHuong;
+            string sqlTrangThai = string.IsNullOrEmpty(trangThai) ? "NULL" : trangThai;
+            string sqlNguonGoc = string.IsNullOrEmpty(nguonGoc) ? "NULL" : nguonGoc;
+
             string sql = $@"
                 DECLARE @startRow INT = {startRow};
                 DECLARE @endRow INT = {endRow};
@@ -33,6 +41,10 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
                 DECLARE @tenVanDe NVARCHAR(255) = N'%{InlineQueryHelpers.SQLEncode(tenVanDe)}%';
         
+                DECLARE @mucDoAnhHuong INT = {sqlMucDoAnhHuong};
+                DECLARE @trangThai INT = {sqlTrangThai};
+                DECLARE @nguonGoc INT = {sqlNguonGoc};
+
                 SELECT * FROM (
                     SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, Filtered.* FROM (
                         SELECT 
@@ -50,11 +62,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                             FROM TblVanDe v
                             WHERE v.DaXoa = 0 AND v.IdDuAn = @projectId
                         ) AS Base
-                        WHERE (@tenVanDe IS NULL OR Base.TenVanDe LIKE N'%' + @tenVanDe + '%')
+                        WHERE (@tenVanDe = N'%%' OR Base.TenVanDe LIKE @tenVanDe)
                           AND (@singleKeyWord = N'%%'
                                 OR Base.MaVanDe LIKE @singleKeyWord 
                                 OR Base.TenVanDe LIKE @singleKeyWord
                                 OR Base.NguoiTao LIKE @singleKeyWord)
+                          AND (@mucDoAnhHuong IS NULL OR Base.MucDoAnhHuong = @mucDoAnhHuong)
+                          AND (@trangThai IS NULL OR Base.TrangThai = @trangThai)
+                          AND (@nguonGoc IS NULL OR Base.NguonGocVanDe = @nguonGoc)
                     ) AS Filtered
                 ) AS T1 
                 WHERE RowNum > @startRow AND RowNum <= @endRow;";

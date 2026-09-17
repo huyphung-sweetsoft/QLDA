@@ -138,6 +138,7 @@
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -265,6 +266,13 @@
     <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
       <DependentUpon>DocumentDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\ProjectDocumentDetail.aspx.cs">
+      <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocumentDetail.aspx.designer.cs">
+      <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fDocuments\DocumentGroups.aspx.cs">
       <DependentUpon>DocumentGroups.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -278,6 +286,13 @@
     </Compile>
     <Compile Include="fDocuments\Documents.aspx.designer.cs">
       <DependentUpon>Documents.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocuments.aspx.cs">
+      <DependentUpon>ProjectDocuments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocuments.aspx.designer.cs">
+      <DependentUpon>ProjectDocuments.aspx</DependentUpon>
     </Compile>
     <Compile Include="fDocuments\DocumentTemplates.aspx.cs">
       <DependentUpon>DocumentTemplates.aspx</DependentUpon>
@@ -370,6 +385,20 @@
     <Compile Include="fEmailTemplate\EmailTemplates.aspx.designer.cs">
       <DependentUpon>EmailTemplates.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.cs">
+      <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.designer.cs">
+      <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.cs">
+      <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.designer.cs">
+      <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fFilesBox\SecureFileUploadHandler.ashx.cs">
       <DependentUpon>SecureFileUploadHandler.ashx</DependentUpon>
     </Compile>
@@ -428,6 +457,13 @@
     </Compile>
     <Compile Include="fMeets\Controls\CtrlMeet.ascx.designer.cs">
       <DependentUpon>CtrlMeet.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.cs">
+      <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.designer.cs">
+      <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
     </Compile>
     <Compile Include="fMeets\MeetList.aspx.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
@@ -492,13 +528,6 @@
     <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
     </Compile>
-    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.cs">
-      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.designer.cs">
-      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -506,19 +535,26 @@
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fThanhToan\ThanhToanList.aspx.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fThanhToan\ThanhToanList.aspx.designer.cs">
+      <DependentUpon>ThanhToanList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fThanhToan\Controls\CtrlThanhToan.ascx.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fThanhToan\Controls\CtrlThanhToan.ascx.designer.cs">
+      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\DuAnList.aspx.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fProjects\DuAnList.aspx.designer.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="fProjects\ThanhToanList.aspx.cs">
-      <DependentUpon>ThanhToanList.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fProjects\ThanhToanList.aspx.designer.cs">
-      <DependentUpon>ThanhToanList.aspx</DependentUpon>
     </Compile>
     <Compile Include="fRisks\Controls\CtrlRisk.ascx.cs">
       <DependentUpon>CtrlRisk.ascx</DependentUpon>
@@ -547,6 +583,13 @@
     </Compile>
     <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
       <DependentUpon>CtrlTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.cs">
+      <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.designer.cs">
+      <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\TaskList.aspx.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
@@ -663,8 +706,10 @@
     <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
     <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
     <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\ProjectDocumentDetail.aspx" />
     <Content Include="fDocuments\DocumentGroups.aspx" />
     <Content Include="fDocuments\Documents.aspx" />
+    <Content Include="fDocuments\ProjectDocuments.aspx" />
     <Content Include="fDocuments\DocumentTemplates.aspx" />
     <Content Include="fDocuments\DocumentTypes.aspx" />
     <Content Include="fDocuments\StorageLocations.aspx" />
@@ -673,6 +718,8 @@
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
     <Content Include="fEmailTemplate\EmailTemplates.aspx" />
+    <Content Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx" />
+    <Content Include="fExecuteContracts\HopDongThucHienList.aspx" />
     <Content Include="fFiles\Controls\CtrlFiles.ascx" />
     <Content Include="fFiles\FileListing.aspx" />
     <Content Include="fFilesBox\FileBoxViewer.css" />
@@ -695,6 +742,7 @@
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
+    <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\LichCaNhan.aspx" />
@@ -702,9 +750,8 @@
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
-    <Content Include="fProjects\Controls\CtrlThanhToan.ascx" />
-    <Content Include="fProjects\ThanhToanList.aspx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
@@ -715,6 +762,8 @@
     <Content Include="fProjects\Controls\CtrlProjectTabs.ascx" />
     <Content Include="fProjects\DuAnDetail.aspx" />
     <Content Include="fProjects\DuAnList.aspx" />
+    <Content Include="fThanhToan\ThanhToanList.aspx" />
+    <Content Include="fThanhToan\Controls\CtrlThanhToan.ascx" />
     <Content Include="fRisks\Controls\CtrlRisk.ascx" />
     <Content Include="fRisks\RiskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
@@ -1872,6 +1921,7 @@
     <Compile Include="Common\MessageBox.cs" />
     <Compile Include="Common\RegisterCSSAndJS.cs" />
     <Compile Include="Common\RewriteURLHelper.cs" />
+    <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Controls\AutoComplete\CtrExtraAutoComplete.ascx.cs">
       <DependentUpon>CtrExtraAutoComplete.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1979,6 +2029,7 @@
     <Folder Include="Controllers\" />
     <Folder Include="Data\" />
     <Folder Include="obj\Debug\TempPE\" />
+    <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>
   <ItemGroup>

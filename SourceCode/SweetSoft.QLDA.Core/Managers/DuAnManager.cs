@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -66,6 +66,29 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn = _repository.GetById(dto.IdDuAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdDuAn), ErrorCodes.NotFound);
 
+                Guid? previousContractId = duAn.IdHopDongThucHien;
+                Guid? selectedContractId = dto.IdHopDongThucHien;
+                if (previousContractId.HasValue
+                    && previousContractId.Value != Guid.Empty
+                    && previousContractId != selectedContractId
+                    && HopDongThucHienManager.Instance.HasLinkedDocument(
+                        previousContractId.Value))
+                {
+                    throw new InvalidOperationException(
+                        "Không thể gỡ hoặc đổi hợp đồng vì hồ sơ hợp đồng của dự án đã được tạo.");
+                }
+
+                if (selectedContractId.HasValue
+                    && selectedContractId.Value != Guid.Empty)
+                {
+                    HopDongThucHienManager.Instance
+                        .EnsureLinkedDocumentBelongsToProject(
+                            selectedContractId.Value,
+                            duAn.IdDuAn);
+                }
+
+                Guid? oldPM = duAn.IdNhanVienQuanLy;
+
                 ObjectHelper.CopyBusinessProperties(
                      dto,
                      duAn,
@@ -87,6 +110,18 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn = _repository.Update(duAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
+
+                if (duAn.IdNhanVienQuanLy.HasValue && duAn.IdNhanVienQuanLy != oldPM)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: duAn.IdNhanVienQuanLy.Value,
+                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                        noiDung: $"Dự án: {duAn.TenDuAn}",
+                        loaiThongBao: ThongBaoTypes.DuAn,
+                        idDuAn: duAn.IdDuAn
+                    );
+                }
+
                 return duAn;
             }
             else
@@ -97,6 +132,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn.IdDuAn = UUIDv7.NewGuid();
                 duAn.MaDuAn = GenerateProjectCode();
                 BusinessValidator.ThrowIf(_repository.GetByMaDuAn(duAn.MaDuAn) != null, BackEndResourceKeys.INVALID_DATA, nameof(duAn.MaDuAn), ErrorCodes.Conflict);
+
+                if (duAn.IdHopDongThucHien.HasValue
+                    && duAn.IdHopDongThucHien.Value != Guid.Empty)
+                {
+                    HopDongThucHienManager.Instance
+                        .EnsureLinkedDocumentBelongsToProject(
+                            duAn.IdHopDongThucHien.Value,
+                            duAn.IdDuAn);
+                }
+
                 duAn.DaXoa = false;
                 duAn.NguoiTao = SweetContext.Current.UserName;
                 duAn.NgayTao = DateTime.UtcNow;
@@ -106,6 +151,18 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn = _repository.Insert(duAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
+
+                if (duAn.IdNhanVienQuanLy.HasValue)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: duAn.IdNhanVienQuanLy.Value,
+                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                        noiDung: $"Dự án: {duAn.TenDuAn}",
+                        loaiThongBao: ThongBaoTypes.DuAn,
+                        idDuAn: duAn.IdDuAn
+                    );
+                }
+
                 return duAn;
             }
         }
@@ -115,7 +172,7 @@ namespace SweetSoft.QLDA.Core.Managers
             using (var scope = new TransactionScope())//Gọi cái TransactionScope là để đảm bảo ACID gì đó, nói chung là lưu dự án + lưu ds tv thành công cùng lúc
             {                                        //không để xảy ra tình trạng lưu thk này lỗi thk kia                   
                 TblDuAn duAn = CreateOrUpdate(dto);
-                ReplaceThanhVienDuAn(duAn.IdDuAn, selectedMemberIds);//Gọi thk này để đồng bộ danh sách nhân viên 
+                ReplaceThanhVienDuAn(duAn.IdDuAn, selectedMemberIds, duAn.IdNhanVienQuanLy);//Gọi thk này để đồng bộ danh sách nhân viên 
                 scope.Complete();
                 return duAn;
             }
@@ -183,10 +240,13 @@ namespace SweetSoft.QLDA.Core.Managers
         //1. ReplaceThanhVienDuAn: như tên, dùng để cập nhật danh sách thành viên của 1 dự án thôi, dùng trong edit
         //Giải thích logic cho dễ hiểu thì: Giả sử dự án đang có nv BCDE, sau đó muốn bỏ E thêm F thì thay vì nó xóa mềm hết 4 thk cũ rồi thêm 4 dòng mới là BCDF
         //Thì nó chỉ cần xóa mềm thk E và thêm thk F thôi, đỡ rác db
-        private void ReplaceThanhVienDuAn(Guid idDuAn, List<Guid> memberIds)
+        private void ReplaceThanhVienDuAn(Guid idDuAn, List<Guid> memberIds, Guid? idNhanVienQuanLy = null)
         {
             TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
             memberIds = (memberIds ?? new List<Guid>()).Distinct().ToList();
+
+            if (idNhanVienQuanLy.HasValue && idNhanVienQuanLy.Value != Guid.Empty)
+                memberIds = memberIds.Where(id => id != idNhanVienQuanLy.Value).ToList();
 
             List<Guid> danhSachCu = ThanhVienDuAnManager.Instance.GetIdNhanVienByDuAnAndVaiTro(idDuAn, vaiTroThanhVien.IdVaiTroDuAn);
 
@@ -196,13 +256,30 @@ namespace SweetSoft.QLDA.Core.Managers
             foreach (Guid id in canXoa)
                 ThanhVienDuAnManager.Instance.DeleteOne(idDuAn, vaiTroThanhVien.IdVaiTroDuAn, id);
 
+            string tenDuAn = "Dự án";
+            if (canThem.Any())
+            {
+                TblDuAn d = _repository.GetById(idDuAn);
+                if (d != null) tenDuAn = d.TenDuAn;
+            }
+
             foreach (Guid id in canThem)
+            {
                 ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn
                 {
                     IdDuAn = idDuAn,
                     IdNhanVien = id,
                     IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
                 });
+
+                ThongBaoManager.Instance.Create(
+                    userId: id,
+                    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                    noiDung: $"Dự án: {tenDuAn}",
+                    loaiThongBao: ThongBaoTypes.DuAn,
+                    idDuAn: idDuAn
+                );
+            }
         }
         //2. GetMemberIds: Dùng lấy đống idNhanVien đã có trong dự án để đánh tích cái checkbox, dùng để hiển thị trong edit
         public List<Guid> GetMemberIds(Guid idDuAn)
