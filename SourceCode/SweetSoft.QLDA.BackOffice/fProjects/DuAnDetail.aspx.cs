@@ -268,19 +268,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 ShowNotify(exception.Message, MSGType.Error);
             }
         }
-        private string BuildHistoryContent(
-    DataRow row)
+        private string BuildHistoryContent(DataRow row)
         {
-            string resourceKey = GetColumnText( row, "Description");
+            string resourceKey = GetColumnText(row, "Description");
 
-            string actor = GetColumnText( row, "ChangedBy");
-                GetColumnText(
-            string tableName = GetColumnText( row, "TableName");
-                GetColumnText(
-            string title = GetColumnText( row, "Title");
-                GetColumnText(
-                    row,
-                    "Title");
+            string actor = GetColumnText(row, "ChangedBy");
+
+            string tableName = GetColumnText(row, "TableName");
+
+            string title = GetColumnText(row, "Title");
 
             if (string.IsNullOrWhiteSpace(actor) || string.Equals( actor, "[System]", StringComparison.OrdinalIgnoreCase))
             {

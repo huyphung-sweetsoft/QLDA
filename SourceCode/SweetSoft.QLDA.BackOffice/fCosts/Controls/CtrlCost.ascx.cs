@@ -2,397 +2,224 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
-using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
-using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
-namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
+namespace SweetSoft.QLDA.BackOffice.fCosts
 {
-    public partial class CtrlCost : BaseAdminUserControl
+    public partial class CostList : BaseAdminPage
     {
-        public EventHandler NewCostHandlerCallback;
-        public EventHandler EditCostHandlerCallback;
-        public EventHandler OpenCostDocumentHandlerCallback;
-        private CostManager _manager = new CostManager();
-        private ControlHelpers _controlHelpers = new ControlHelpers();
-        public Guid ProjectId
+        public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Cost;
+        private ControlHelpers _controls = new ControlHelpers();
+        private Guid CostId
         {
-            get
-            {
-                if (ViewState["ProjectId"] == null)
-                {
-                    if (this.Page is BaseAdminPage basePage && basePage.CurrentProjectId != Guid.Empty)
-                        return basePage.CurrentProjectId;
-                    if (Request.QueryString["ProjectId"] != null && Guid.TryParse(Request.QueryString["ProjectId"], out Guid qId))
-                        return qId;
-                    return Guid.Empty;
-                }
-                return (Guid)ViewState["ProjectId"];
-            }
-            set => ViewState["ProjectId"] = value;
+            get => ViewState["CostId"] != null ? (Guid)ViewState["CostId"] : Guid.Empty;
+            set => ViewState["CostId"] = value;
         }
-
-        protected bool IsView => this.CURRENT_PAGE.IsView;
-        protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
-        protected bool IsDelete => this.CURRENT_PAGE.IsDelete;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            RegisterAsyncButton();
-        }
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
+            CtrlCost1.NewCostHandlerCallback += NewCostAction;
+            CtrlCost1.EditCostHandlerCallback += EditCostAction;
+            CtrlCost1.OpenCostDocumentHandlerCallback += OpenCostDocumentAction;
 
-        private void RegisterAsyncButton()
-        {
-            ScriptManager script = ScriptManager.GetCurrent(this.Page);
-            if (script != null)
+            if (!IsPostBack)
             {
-                script.RegisterAsyncPostBackControl(lbtSearchSingle);
-                script.RegisterAsyncPostBackControl(lbtSearchAdvanced);
-                script.RegisterAsyncPostBackControl(lbtCancel);
-                script.RegisterAsyncPostBackControl(ddlSearchTrangThaiChiPhi);
+                if (!this.IsView)
+                    Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
+
+                if (CurrentProjectId == Guid.Empty)
+                {
+                    Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Projects), true);
+                    return;
+                }
+
+                SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.COST_LIST));
+                Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.COST_LIST);
+                Navigation1.keyValuePairUrls = new Dictionary<string, string>
+                {
+                    { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
+                    { "javascript:;", GetResourceText(BackEndResourceKeys.COST_LIST) }
+                };
+
+                ApplyControlsText();
+                CtrlCost1.InitControls();
             }
-        }
-
-        public void InitControls()
-        {
-            ApplyControlsText();
-            AssignSearchColumns();
-            txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
-            lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
-            _controlHelpers.BindProjectMembers(ddlSearchNhanVienYeuCau, this.ProjectId, null);
-            _controlHelpers.BindTrangThaiChiPhi(ddlSearchTrangThaiChiPhi);
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-                master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);
-
-            grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
-            grvData.CurrentSortExpression = "NgayTao";
-            grvData.CurrentSortDerection = "DESC";
-            grvData.Rebind();
-            pnlSearch.Update();
-            pnlButtons.Update();
-        }
-
-        private void AssignSearchColumns()
-        {
-            txtSearchTenKhoanChi.SearchColumn = "TenKhoanChi";
-            txtSearchSoTienMin.SearchColumn = "SoTienMin";
-            txtSearchSoTienMax.SearchColumn = "SoTienMax";
-        }
-
-        public void Rebind()
-        {
-            grvData.CurrentPageIndex = 1;
-            grvData.Rebind();
         }
 
         private void ApplyControlsText()
         {
-            txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
-            txtSearchTenKhoanChi.SearchTagItemText = GetResourceText(BackEndResourceKeys.COST_NAME);
-            ddlSearchNhanVienYeuCau.Attributes["SearchTagItemText"] = GetResourceText(BackEndResourceKeys.REQUESTER);
-            ddlSearchTrangThaiChiPhi.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
-            txtSearchSoTienMin.SearchTagItemText = GetResourceText(BackEndResourceKeys.LOWEST_TOTAL_AMOUNT);
-            txtSearchSoTienMax.SearchTagItemText = GetResourceText(BackEndResourceKeys.HIGHEST_TOTAL_AMOUNT);
-            lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
-            lbtCancel.ToolTip = GetResourceText(BackEndResourceKeys.CANCEL);
-            txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
-            lbtSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.APPLY);
-            lbtCancel.Text = GetResourceText(BackEndResourceKeys.REFRESH);
-            List<string> lstTableHeader = new List<string>
-            {
-                GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.COST_CODE),
-                GetResourceText(BackEndResourceKeys.COST_NAME),
-                GetResourceText(BackEndResourceKeys.PRICE),
-                GetResourceText(BackEndResourceKeys.QUANTITY),
-                GetResourceText(BackEndResourceKeys.TOTAL_AMOUNT),
-                GetResourceText(BackEndResourceKeys.REQUESTER),
-                GetResourceText(BackEndResourceKeys.DATE_CREATED),
-                GetResourceText(BackEndResourceKeys.STATUS),
-                GetResourceText(BackEndResourceKeys.ACTION),
-                GetResourceText(BackEndResourceKeys.FAST_APPROVAL)
-            };
-            grvData.HeaderTexts = lstTableHeader;
+            dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
+            txtTenKhoanChi.PlaceHolder = txtDonGia.PlaceHolder =
+            txtMoTaChiTiet.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
+
+            dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
         }
 
-        protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
+        private void OpenCostDocumentAction(object sender, EventArgs e)
+        {
+            Guid idChiPhi = sender is Guid
+                ? (Guid)sender
+                : Guid.Empty;
+            if (idChiPhi == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                CostDocumentLinkResult result = CostManager.Instance
+                    .GetOrCreateProjectDocument(idChiPhi);
+
+                string url = RewriteURLHelper.ProjectDocumentDetail(
+                    result.ProjectId,
+                    result.DocumentId) + "?tab=versions";
+                Response.Redirect(GetRelativeClientPath(url), false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowAccessDeniedNotify();
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowNotify(exception.Message, MSGType.Warning);
+            }
+            catch (Exception exception)
+            {
+                ShowNotify(exception.Message, MSGType.Error);
+            }
+        }
+
+        private void NewCostAction(object sender, EventArgs e)
+        {
+            RefreshCostInfo();
+            lbtSubmit.Visible = this.IsAdd;
+            lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.SAVE);
+            dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
+            dlDetail.OpenModal(true);
+        }
+
+        private void EditCostAction(object sender, EventArgs e)
+        {
+            if (sender == null || (Guid)sender == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            Guid costId = (Guid)sender;
+            RefreshCostInfo();
+            lbtSubmit.Visible = this.IsEdit;
+
+            TblChiPhi cost = TblChiPhi.FetchByID(costId);
+            if (cost == null || cost.DaXoa == true)
+            {
+                Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), false);
+                return;
+            }
+
+            this.CostId = cost.IdChiPhi;
+            txtTenKhoanChi.Text = cost.TenKhoanChi;
+            txtMoTaChiTiet.Text = cost.MoTaChiTiet;
+
+            txtDonGia.Text = cost.DonGia?.ToString("N0");
+            txtSoLuong.Text = cost.SoLuong?.ToString();
+            txtTongTien.Text = cost.SoTien.ToString("N0");
+
+            if (cost.NgayTao != null)
+                txtNgayTao.Text = cost.NgayTao.Date.ToString("dd/MM/yyyy");
+
+            if (cost.IdNhanVienDeNghi != null)
+            {
+                txtNhanVienYeuCau.Text = SweetContext.Current.UserName;
+            }
+            if (cost.TrangThai != null)
+                ddlTrangThai.SelectedValue = cost.TrangThai.ToString();
+            ddlTrangThai.Enabled = this.IsEdit;
+
+            lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
+            dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT);
+
+            dlDetail.OpenModal(true, IsPostBack ? 0 : 1000);
+        }
+
+        private void RefreshCostInfo()
+        {
+            lbtSubmit.Visible = false;
+            txtTenKhoanChi.Text = txtMoTaChiTiet.Text = "";
+            _controls.BindTrangThaiChiPhi(ddlTrangThai);
+            txtNhanVienYeuCau.Text = SweetContext.Current.UserName;
+            txtNgayTao.Text = DateTime.Now.ToString("dd/MM/yyyy");
+
+            txtDonGia.Text = "0";
+            txtSoLuong.Text = "1";
+            txtTongTien.Text = "0";
+            if (ddlTrangThai.Items.Count > 0)
+                ddlTrangThai.SelectedValue = "0";
+            ddlTrangThai.Enabled = this.IsEdit;
+
+            this.CostId = Guid.Empty;
+        }
+
+        protected void lbtSubmit_Click(object sender, EventArgs e)
         {
             try
             {
-                GridviewExtension grid = sender as GridviewExtension;
-                if (grid == null)
+                ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
+                validationEngine.CheckValidControls(dlDetail.Controls);
+                if (!validationEngine.IsValid)
                 {
-                    this.ShowInvalidDataError();
+                    validationEngine.ShowErrorPrompt();
                     return;
                 }
-                int totalRows = 0;
-                int startRow = (grid.CurrentPageIndex - 1) * grid.CurrentPageSize;
-                int endRow = startRow + grid.CurrentPageSize;
 
-                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
+                TblChiPhi costDto = new TblChiPhi();
+                bool isNew = (this.CostId == Guid.Empty);
 
-                if (pnlSearchPopup != null)
+                if (!isNew)
                 {
-                    var advParams = new ControlHelpers().GetControlValues(pnlSearchPopup);
-                    foreach (var item in advParams) keyValueSearchs[item.Key] = item.Value;
+                    costDto.IdChiPhi = this.CostId;
                 }
 
-                if (pnlSearchDefaultStatus != null)
+                costDto.IdDuAn = CtrlCost1.ProjectId;
+                costDto.TenKhoanChi = txtTenKhoanChi.Text.Trim();
+                costDto.MoTaChiTiet = !string.IsNullOrEmpty(txtMoTaChiTiet.Text.Trim()) ? txtMoTaChiTiet.Text.Trim() : null;
+
+                string donGiaText = txtDonGia.Text.Trim().Replace(",", "");
+                if (decimal.TryParse(donGiaText, out decimal donGia))
+                    costDto.DonGia = donGia;
+
+                if (int.TryParse(txtSoLuong.Text.Trim(), out int soLuong))
+                    costDto.SoLuong = soLuong;
+
+                if (int.TryParse(ddlTrangThai.SelectedValue, out int trangThai))
                 {
-                    var defaultParams = new ControlHelpers().GetControlValues(pnlSearchDefaultStatus);
-                    foreach (var item in defaultParams) keyValueSearchs[item.Key] = item.Value;
+                    costDto.TrangThai = (byte)trangThai;
                 }
 
-                DataTable dt = CostManager.Instance.SearchCost(
-                        this.ProjectId,
-                    txtSearchSingle.Text,
-                        keyValueSearchs,
-                        $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                        startRow, endRow, out totalRows);
-                }
+                TblChiPhi savedCost = CostManager.Instance.CreateOrUpdate(costDto);
 
-                if (dt == null || dt.Rows.Count == 0)
+                if (savedCost == null)
                 {
-                    grvData.DataSource = null;
-                    grvData.DataBind();
-                    ctrlGridviewPaging.Visible = false;
+                    ShowInvalidDataError();
+                    return;
                 }
-                else
-                {
-                    ctrlGridviewPaging.Visible = true;
-                    grvData.VirtualItemCount = totalRows;
-                    grvData.DataSource = dt;
-                    grvData.DataBind();
-
-                    ctrlGridviewPaging.PageIndex = grvData.CurrentPageIndex;
-                    ctrlGridviewPaging.PageSize = grvData.CurrentPageSize;
-                    ctrlGridviewPaging.TotalItems = totalRows;
-                    ctrlGridviewPaging.InitLoad();
-                }
-
-                upMain.Update();
-                pnlButtons.Update();
+                ShowSuccessSaveData();
+                dlDetail.CloseModal();
+                CtrlCost1.Rebind();
             }
             catch (Exception exc)
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
-        }
-        protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)
-        {
-            switch (e.CommandName)
-            {
-                case "COST_DOCUMENT":
-                    if (!this.IsView)
-                    {
-                        ShowAccessDeniedNotify();
-                        return;
-                    }
-
-                    Guid costDocumentId;
-                    if (!Guid.TryParse(
-                        Convert.ToString(e.CommandArgument),
-                        out costDocumentId)
-                        || costDocumentId == Guid.Empty)
-                    {
-                        ShowInvalidDataError();
-                        return;
-                    }
-
-                    if (OpenCostDocumentHandlerCallback != null)
-                    {
-                        OpenCostDocumentHandlerCallback(
-                            costDocumentId,
-                            EventArgs.Empty);
-                    }
-
-                    break;
-
-                case "ITEM_APPROVE":
-                    if (!this.CURRENT_PAGE.IsEdit)
-                    {
-                        ShowAccessDeniedNotify();
-                        return;
-                    }
-                    int rowIndexApprove = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
-                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-                    Guid costIdApprove = Guid.Empty;
-                    if (Guid.TryParse(grvData.DataKeys[rowIndexApprove].Value.ToString(), out costIdApprove))
-                    {
-                        try
-                        {
-                            string sqlApprove = $"UPDATE TblChiPhi SET TrangThai = 1 WHERE IdChiPhi = '{costIdApprove}'";
-                            new InlineQuery().Execute(sqlApprove);
-                            ShowNotify(GetResourceText(BackEndResourceKeys.APPROVE_COST_SUCCESS), MSGType.Success); Rebind();
-                        }
-                        catch (Exception exc)
-                        {
-                            ShowNotify(exc.Message, MSGType.Error);
-                        }
-                    }
-                    break;
-                case "ITEM_DETAIL":
-                    if (!this.CURRENT_PAGE.IsEdit)
-                    {
-                        ShowAccessDeniedNotify();
-                        return;
-                    }
-
-                    int rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
-                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-
-                    Guid costId = Guid.Empty;
-                    if (Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out costId) && EditCostHandlerCallback != null)
-                        EditCostHandlerCallback(costId, EventArgs.Empty);
-                    break;
-
-                case "ITEM_DELETE":
-                    if (!this.CURRENT_PAGE.IsDelete)
-                    {
-                        ShowAccessDeniedNotify();
-                        return;
-                    }
-
-                    int rowIndexDel = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
-                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-
-                    Guid costIdDel = Guid.Empty;
-                    if (Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out costIdDel))
-                    {
-                        TblChiPhi costDel = TblChiPhi.FetchByID(costIdDel);
-                        if (costDel != null && (costDel.DaXoa == false || costDel.DaXoa == null))
-                        {
-                            ConfirmResult result = new ConfirmResult { CommandName = "COST_DELETE", Value = costDel };
-                            this.CURRENT_PAGE.CurrentConfirmResult = result;
-
-                            MessageBox msg = new MessageBox(
-                                GetResourceText(BackEndResourceKeys.NOTIFICATION),
-                                string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), costDel.TenKhoanChi),
-                                MSGButton.DeleteCancel, MSGIcon.Error);
-                            OpenMessageBox(msg, result, false, false);
-                        }
-                    }
-                    break;
-            }
-        }
-
-        public override void ConfirmRequest(ConfirmResult e)
-        {
-            if (e != null && e.Submit && e.CommandName != null && e.CommandName.Contains("COST_DELETE"))
-            {
-                TblChiPhi cost = e.Value as TblChiPhi;
-                if (cost != null)
-                {
-                    try
-                    {
-                        _manager.DeleteCost(cost);
-                        ShowSuccessDeleteData();
-                        grvData.CurrentPageIndex = 1;
-                        grvData.Rebind();
-                    }
-                    catch (Exception exc)
-                    {
-                        ShowNotify(exc.Message, MSGType.Error);
-                    }
-                }
-            }
-        }
-
-        protected void ctrlGridviewPaging_PageChanged(object sender, GridviewCustomPageChangeArgs e)
-        {
-            grvData.CurrentPageSize = e.CurrentPageSize;
-            grvData.CurrentPageIndex = e.CurrentPageNumber;
-            grvData.Rebind();
-        }
-
-        protected void btnSearch_ServerClick(object sender, EventArgs e)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-                master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
-            upSearchTagBox.Update();
-        }
-        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-            {
-                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
-            }
-            upSearchTagBox.Update();
-            pnlSearchDropdowns.Update();
-        }
-
-        protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-            {
-                GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefaultStatus, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
-            }
-            pnlSearch.Update(); 
-            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
-            upSearchTagBox.Update();
-            ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", $"$('#{txtSearchSingle.ClientID}').val('');", true);
-        }
-
-        protected void btnSearchAdvanced_ServerClick(object sender, EventArgs e)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-                master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
-            upSearchTagBox.Update();
-        }
-
-        protected void btnCancel_Click(object sender, EventArgs e)
-        {
-            if (pnlSearchPopup != null)
-                new ControlHelpers().ClearControlValues(pnlSearchPopup.Controls);
-            pnlSearch.Update();
-
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master != null)
-                master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
-            upSearchTagBox.Update();
-        }
-
-        protected void lbtAdd_Click(object sender, EventArgs e)
-        {
-            if (!this.CURRENT_PAGE.IsAdd)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-            if (NewCostHandlerCallback != null)
-                NewCostHandlerCallback(Guid.Empty, EventArgs.Empty);
-        }
-        public string GetTrangThaiChiPhiText(object value)
-        {
-            if (value == null || value == DBNull.Value) return "—";
-            int statusCode = Convert.ToInt32(value);
-            TrangThaiChiPhi status = (TrangThaiChiPhi)statusCode;
-            string text = GetResourceText(_manager.GetValueForTrangThaiChiPhi(status));
-            string cssClass = "badge-status badge-status-pending"; 
-            if (statusCode == 1)
-            {
-                cssClass = "badge-status badge-status-approved";
-            }
-            else if (statusCode == 2)
-            {
-                cssClass = "badge-status badge-status-rejected";
-            }
-            return $"<span class='{cssClass}'>{text}</span>";
         }
     }
 }
