@@ -33,6 +33,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
 
         /// <summary>
+        /// btnExportExcel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnExportExcel;
+
+        /// <summary>
         /// upReport control.
         /// </summary>
         /// <remarks>
@@ -176,13 +185,5 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnExportPDF;
 
-        /// <summary>
-        /// btnExportExcel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnExportExcel;
     }
 }
