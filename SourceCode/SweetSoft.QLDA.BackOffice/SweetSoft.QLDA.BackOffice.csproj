@@ -266,6 +266,13 @@
     <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
       <DependentUpon>DocumentDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\ProjectDocumentDetail.aspx.cs">
+      <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocumentDetail.aspx.designer.cs">
+      <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fDocuments\DocumentGroups.aspx.cs">
       <DependentUpon>DocumentGroups.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -279,6 +286,13 @@
     </Compile>
     <Compile Include="fDocuments\Documents.aspx.designer.cs">
       <DependentUpon>Documents.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocuments.aspx.cs">
+      <DependentUpon>ProjectDocuments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\ProjectDocuments.aspx.designer.cs">
+      <DependentUpon>ProjectDocuments.aspx</DependentUpon>
     </Compile>
     <Compile Include="fDocuments\DocumentTemplates.aspx.cs">
       <DependentUpon>DocumentTemplates.aspx</DependentUpon>
@@ -692,8 +706,10 @@
     <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
     <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
     <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\ProjectDocumentDetail.aspx" />
     <Content Include="fDocuments\DocumentGroups.aspx" />
     <Content Include="fDocuments\Documents.aspx" />
+    <Content Include="fDocuments\ProjectDocuments.aspx" />
     <Content Include="fDocuments\DocumentTemplates.aspx" />
     <Content Include="fDocuments\DocumentTypes.aspx" />
     <Content Include="fDocuments\StorageLocations.aspx" />

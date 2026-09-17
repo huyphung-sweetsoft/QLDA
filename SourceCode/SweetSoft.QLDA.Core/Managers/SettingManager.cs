@@ -53,6 +53,22 @@ namespace SweetSoft.QLDA.Core.Managers
         public static string EmbedCodeGoogleMap = string.Format(SettingKeyPrefix, "EmbedCodeGoogleMap");
         public static string ContentFooter = string.Format(SettingKeyPrefix, "ContentFooter");
 
+        // The document type used when the system creates the canonical
+        // project document for an execution contract.  Its value is a GUID
+        // from TblLoaiTaiLieu, configured in TblSetting rather than inferred
+        // from a display name that an administrator can rename.
+        public static string ContractDocumentTypeId = string.Format(SettingKeyPrefix, "ContractDocumentTypeId");
+
+        // The document type used when the system creates the canonical
+        // project document for a meeting. Its value is a GUID from
+        // TblLoaiTaiLieu and is configured by an administrator.
+        public static string MeetingDocumentTypeId = string.Format(SettingKeyPrefix, "MeetingDocumentTypeId");
+
+        // The document type used when the system creates the canonical
+        // project document for a cost item. Its value is a GUID from
+        // TblLoaiTaiLieu and is configured by an administrator.
+        public static string CostDocumentTypeId = string.Format(SettingKeyPrefix, "CostDocumentTypeId");
+
         public static string ZaloUrl = string.Format(SettingKeyPrefix, "ZaloUrl");
         public static string MessengerUrl = string.Format(SettingKeyPrefix, "MessengerUrl");
         #endregion

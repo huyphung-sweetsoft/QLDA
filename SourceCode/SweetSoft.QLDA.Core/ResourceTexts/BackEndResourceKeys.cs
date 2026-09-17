@@ -300,6 +300,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROJECT_CODE = "PROJECT_CODE";
         public const string CONTRACT = "CONTRACT";
         public const string CONTRACT_LIST = "CONTRACT_LIST";
+        public const string CONTRACT_DOCUMENT = "CONTRACT_DOCUMENT";
+        public const string CONTRACT_DOCUMENT_IDENTITY_LOCKED = "CONTRACT_DOCUMENT_IDENTITY_LOCKED";
         public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
         public const string SIGN_DATE = "SIGN_DATE";
@@ -523,6 +525,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MEETING_MANAGEMENT = "MEETING_MANAGEMENT";
         public const string MEET_SCHE = "MEET_SCHE";
         public const string MEETING_LIST = "MEETING_LIST";
+        public const string MEETING_DOCUMENT = "MEETING_DOCUMENT";
         public const string MEETING_CODE = "MEETING_CODE";
         public const string MEETING_NAME = "MEETING_NAME";
         public const string GENERAL_CONTENT = "GENERAL_CONTENT";
@@ -539,6 +542,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         //Cost
         public const string COST_MANAGEMENT = "COST_MANAGEMENT";
         public const string COST_LIST = "COST_LIST";
+        public const string COST_DOCUMENT = "COST_DOCUMENT";
         public const string COST_CODE = "COST_CODE";
         public const string COST_NAME = "COST_NAME";
         public const string REQUESTER = "REQUESTER";
@@ -627,6 +631,11 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SIGNING_HISTORY = "SIGNING_HISTORY";
         public const string CUSTOMER_DELIVERY_HISTORY = "CUSTOMER_DELIVERY_HISTORY";
         public const string PHYSICAL_STORAGE_HISTORY = "PHYSICAL_STORAGE_HISTORY";
+        public const string STORE_PHYSICAL_COPY = "STORE_PHYSICAL_COPY";
+        public const string PHYSICAL_STORAGE_CODE = "PHYSICAL_STORAGE_CODE";
+        public const string USE_MANUAL_STORAGE_CODE = "USE_MANUAL_STORAGE_CODE";
+        public const string PHYSICAL_STORAGE_CODE_NOTICE = "PHYSICAL_STORAGE_CODE_NOTICE";
+        public const string PHYSICAL_STORAGE_SAVED_MESSAGE = "PHYSICAL_STORAGE_SAVED_MESSAGE";
         public const string DOCUMENT_ACTIVITY_HISTORY = "DOCUMENT_ACTIVITY_HISTORY";
         public const string NOT_APPLICABLE = "NOT_APPLICABLE";
         public const string NO_DOCUMENT_VERSIONS = "NO_DOCUMENT_VERSIONS";
@@ -643,6 +652,17 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string RECIPIENT = "RECIPIENT";
         public const string CHANNEL = "CHANNEL";
         public const string RESPONSE_DEADLINE = "RESPONSE_DEADLINE";
+        public const string SEND_CUSTOMER = "SEND_CUSTOMER";
+        public const string UPDATE_CUSTOMER_DELIVERY = "UPDATE_CUSTOMER_DELIVERY";
+        public const string CUSTOMER_DELIVERY_VERSION = "CUSTOMER_DELIVERY_VERSION";
+        public const string CUSTOMER_DELIVERY_CHANNEL_EMAIL = "CUSTOMER_DELIVERY_CHANNEL_EMAIL";
+        public const string CUSTOMER_DELIVERY_CHANNEL_DIRECT = "CUSTOMER_DELIVERY_CHANNEL_DIRECT";
+        public const string CUSTOMER_DELIVERY_RECORD_NOTICE = "CUSTOMER_DELIVERY_RECORD_NOTICE";
+        public const string ALLOW_SEND_BEFORE_SIGNING = "ALLOW_SEND_BEFORE_SIGNING";
+        public const string SEND_BEFORE_SIGNING_NOTICE = "SEND_BEFORE_SIGNING_NOTICE";
+        public const string ACTIVITY_SEND_CUSTOMER_DELIVERY = "ACTIVITY_SEND_CUSTOMER_DELIVERY";
+        public const string ACTIVITY_UPDATE_CUSTOMER_DELIVERY = "ACTIVITY_UPDATE_CUSTOMER_DELIVERY";
+        public const string ACTIVITY_STORE_PHYSICAL_COPY = "ACTIVITY_STORE_PHYSICAL_COPY";
         public const string STORAGE_LOCATION = "STORAGE_LOCATION";
         public const string CURRENT_LOCATION = "CURRENT_LOCATION";
         public const string ORIGINAL_COPY_CONDITION = "ORIGINAL_COPY_CONDITION";

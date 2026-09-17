@@ -34,7 +34,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
-
+            CtrlMeet1.OpenMeetingDocumentHandlerCallback += OpenMeetingDocumentAction;
+            new ControlHelpers().BindNhanVienToCheckBoxList(cblNhanVien);
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -70,6 +71,42 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
             dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
             btnXacNhanNhanVien.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
+        }
+
+        private void OpenMeetingDocumentAction(object sender, EventArgs e)
+        {
+            Guid idLichHop = sender is Guid
+                ? (Guid)sender
+                : Guid.Empty;
+            if (idLichHop == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                MeetingDocumentLinkResult result = MeetManager.Instance
+                    .GetOrCreateProjectDocument(idLichHop);
+
+                string url = RewriteURLHelper.ProjectDocumentDetail(
+                    result.ProjectId,
+                    result.DocumentId) + "?tab=versions";
+                Response.Redirect(GetRelativeClientPath(url), false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ShowAccessDeniedNotify();
+            }
+            catch (InvalidOperationException exception)
+            {
+                ShowNotify(exception.Message, MSGType.Warning);
+            }
+            catch (Exception exception)
+            {
+                ShowNotify(exception.Message, MSGType.Error);
+            }
         }
 
         private void NewMeetingAction(object sender, EventArgs e)

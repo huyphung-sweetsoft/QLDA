@@ -13,6 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
     {
         protected global::System.Web.UI.UpdatePanel upMain;
         protected global::System.Web.UI.WebControls.Panel pnlSearchDefault;
+        protected global::System.Web.UI.WebControls.Panel pnlSearchScope;
         protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchPhamVi;
         protected global::System.Web.UI.WebControls.Panel pnlProjectSelector;
         protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchDuAn;
@@ -36,6 +37,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkCanTrinhKy;
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl divHinhThucKy;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlHinhThucKy;
+        protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkCanGuiKhachHang;
         protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkCanLuuVatLy;
         protected global::System.Web.UI.WebControls.Panel pnlInitialContent;
         protected global::System.Web.UI.WebControls.RadioButton rbInitialUpload;

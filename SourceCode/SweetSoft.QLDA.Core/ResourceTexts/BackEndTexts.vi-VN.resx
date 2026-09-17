@@ -1063,6 +1063,12 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
   </data>
+  <data name="CONTRACT_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ hợp đồng</value>
+  </data>
+  <data name="CONTRACT_DOCUMENT_IDENTITY_LOCKED" xml:space="preserve">
+    <value>Số và tên hợp đồng đang dùng làm mã/tên hồ sơ liên kết nên không thể sửa tại đây.</value>
+  </data>
   <data name="CONTRACT_NUMBER" xml:space="preserve">
     <value>Số hợp đồng</value>
   </data>
@@ -1119,6 +1125,9 @@
   </data>
   <data name="MEETING_LIST" xml:space="preserve">
     <value>Danh sách cuộc họp</value>
+  </data>
+  <data name="MEETING_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ cuộc họp</value>
   </data>
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Mã cuộc họp</value>
@@ -1435,8 +1444,47 @@
   <data name="CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
     <value>Gửi khách hàng</value>
   </data>
+  <data name="SEND_CUSTOMER" xml:space="preserve">
+    <value>Gửi khách hàng</value>
+  </data>
+  <data name="UPDATE_CUSTOMER_DELIVERY" xml:space="preserve">
+    <value>Cập nhật gửi khách hàng</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_VERSION" xml:space="preserve">
+    <value>Phiên bản gửi</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_CHANNEL_EMAIL" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_CHANNEL_DIRECT" xml:space="preserve">
+    <value>Trực tiếp</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_RECORD_NOTICE" xml:space="preserve">
+    <value>Thao tác này ghi nhận việc gửi hồ sơ qua kênh đã chọn. Hệ thống chưa tự gửi email.</value>
+  </data>
+  <data name="ALLOW_SEND_BEFORE_SIGNING" xml:space="preserve">
+    <value>Cho phép gửi trước khi ký</value>
+  </data>
+  <data name="SEND_BEFORE_SIGNING_NOTICE" xml:space="preserve">
+    <value>Chỉ dùng khi cần gửi bản chưa ký. Lần gửi này sẽ được ghi nhận là chưa chính thức.</value>
+  </data>
   <data name="PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
     <value>Lưu bản cứng</value>
+  </data>
+  <data name="STORE_PHYSICAL_COPY" xml:space="preserve">
+    <value>Ghi nhận lưu bản cứng</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_CODE" xml:space="preserve">
+    <value>Mã lưu trữ</value>
+  </data>
+  <data name="USE_MANUAL_STORAGE_CODE" xml:space="preserve">
+    <value>Nhập mã thủ công</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_CODE_NOTICE" xml:space="preserve">
+    <value>Mặc định hệ thống tự sinh mã dạng LT-NĂM-SỐ. Bật nhập mã thủ công khi cần dùng mã riêng; mã được cấp sẽ được giữ nguyên khi cập nhật vị trí lưu.</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_SAVED_MESSAGE" xml:space="preserve">
+    <value>Đã ghi nhận lưu bản cứng. Mã lưu trữ: {0}.</value>
   </data>
   <data name="DOCUMENT_ACTIVITY_HISTORY" xml:space="preserve">
     <value>Nhật ký hồ sơ</value>
@@ -1686,6 +1734,9 @@
   </data>
   <data name="COST_LIST" xml:space="preserve">
     <value>Danh sách chi phí</value>
+  </data>
+  <data name="COST_DOCUMENT" xml:space="preserve">
+    <value>Hồ sơ chi phí</value>
   </data>
   <data name="COST_CODE" xml:space="preserve">
     <value>Mã chi phí</value>
@@ -2567,5 +2618,4 @@
   </data>
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
-  </data>
 </root>

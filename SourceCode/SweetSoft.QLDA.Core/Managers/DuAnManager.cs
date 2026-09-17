@@ -66,7 +66,26 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn = _repository.GetById(dto.IdDuAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdDuAn), ErrorCodes.NotFound);
 
-                Guid? oldPM = duAn.IdNhanVienQuanLy;
+                Guid? previousContractId = duAn.IdHopDongThucHien;
+                Guid? selectedContractId = dto.IdHopDongThucHien;
+                if (previousContractId.HasValue
+                    && previousContractId.Value != Guid.Empty
+                    && previousContractId != selectedContractId
+                    && HopDongThucHienManager.Instance.HasLinkedDocument(
+                        previousContractId.Value))
+                {
+                    throw new InvalidOperationException(
+                        "Không thể gỡ hoặc đổi hợp đồng vì hồ sơ hợp đồng của dự án đã được tạo.");
+                }
+
+                if (selectedContractId.HasValue
+                    && selectedContractId.Value != Guid.Empty)
+                {
+                    HopDongThucHienManager.Instance
+                        .EnsureLinkedDocumentBelongsToProject(
+                            selectedContractId.Value,
+                            duAn.IdDuAn);
+                }
 
                 ObjectHelper.CopyBusinessProperties(
                      dto,
@@ -111,6 +130,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn.IdDuAn = UUIDv7.NewGuid();
                 duAn.MaDuAn = GenerateProjectCode();
                 BusinessValidator.ThrowIf(_repository.GetByMaDuAn(duAn.MaDuAn) != null, BackEndResourceKeys.INVALID_DATA, nameof(duAn.MaDuAn), ErrorCodes.Conflict);
+
+                if (duAn.IdHopDongThucHien.HasValue
+                    && duAn.IdHopDongThucHien.Value != Guid.Empty)
+                {
+                    HopDongThucHienManager.Instance
+                        .EnsureLinkedDocumentBelongsToProject(
+                            duAn.IdHopDongThucHien.Value,
+                            duAn.IdDuAn);
+                }
+
                 duAn.DaXoa = false;
                 duAn.NguoiTao = SweetContext.Current.UserName;
                 duAn.NgayTao = DateTime.UtcNow;

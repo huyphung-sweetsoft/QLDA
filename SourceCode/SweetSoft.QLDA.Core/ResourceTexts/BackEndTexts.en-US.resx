@@ -1188,6 +1188,12 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Contract</value>
   </data>
+  <data name="CONTRACT_DOCUMENT" xml:space="preserve">
+    <value>Contract document</value>
+  </data>
+  <data name="CONTRACT_DOCUMENT_IDENTITY_LOCKED" xml:space="preserve">
+    <value>The contract number and name are used by the linked document and cannot be changed here.</value>
+  </data>
   <data name="CONTRACT_NUMBER" xml:space="preserve">
     <value />
   </data>
@@ -1245,6 +1251,9 @@
   </data>
   <data name="MEETING_LIST" xml:space="preserve">
     <value>Meeting list</value>
+  </data>
+  <data name="MEETING_DOCUMENT" xml:space="preserve">
+    <value>Meeting document</value>
   </data>
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Meeting code</value>
@@ -1561,8 +1570,47 @@
   <data name="CUSTOMER_DELIVERY_HISTORY" xml:space="preserve">
     <value>Customer delivery</value>
   </data>
+  <data name="SEND_CUSTOMER" xml:space="preserve">
+    <value>Send to customer</value>
+  </data>
+  <data name="UPDATE_CUSTOMER_DELIVERY" xml:space="preserve">
+    <value>Update customer delivery</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_VERSION" xml:space="preserve">
+    <value>Delivery version</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_CHANNEL_EMAIL" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_CHANNEL_DIRECT" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="CUSTOMER_DELIVERY_RECORD_NOTICE" xml:space="preserve">
+    <value>This action records delivery through the selected channel. The system does not send email automatically yet.</value>
+  </data>
+  <data name="ALLOW_SEND_BEFORE_SIGNING" xml:space="preserve">
+    <value>Allow delivery before signing</value>
+  </data>
+  <data name="SEND_BEFORE_SIGNING_NOTICE" xml:space="preserve">
+    <value>Use only when an unsigned version must be delivered. This delivery will be recorded as non-official.</value>
+  </data>
   <data name="PHYSICAL_STORAGE_HISTORY" xml:space="preserve">
     <value>Physical storage</value>
+  </data>
+  <data name="STORE_PHYSICAL_COPY" xml:space="preserve">
+    <value>Record physical storage</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_CODE" xml:space="preserve">
+    <value>Storage code</value>
+  </data>
+  <data name="USE_MANUAL_STORAGE_CODE" xml:space="preserve">
+    <value>Enter code manually</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_CODE_NOTICE" xml:space="preserve">
+    <value>By default, the system generates an LT-YEAR-NUMBER code. Enable manual entry when a specific code is needed; an assigned code stays unchanged when the storage location is updated.</value>
+  </data>
+  <data name="PHYSICAL_STORAGE_SAVED_MESSAGE" xml:space="preserve">
+    <value>Physical storage was recorded. Storage code: {0}.</value>
   </data>
   <data name="DOCUMENT_ACTIVITY_HISTORY" xml:space="preserve">
     <value>Document activity</value>
@@ -1812,6 +1860,9 @@
   </data>
   <data name="COST_LIST" xml:space="preserve">
     <value>Cost list</value>
+  </data>
+  <data name="COST_DOCUMENT" xml:space="preserve">
+    <value>Cost document</value>
   </data>
   <data name="COST_CODE" xml:space="preserve">
     <value>Cost code</value>

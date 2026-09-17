@@ -6,6 +6,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,138 @@ namespace SweetSoft.QLDA.Core.Respositories
     internal class MeetRepository : BaseRepository<TblLichHop>
     {
         public MeetRepository(AuditManager auditManager) : base(auditManager) { }
+
+        public override TblLichHop GetById(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return null;
+            }
+
+            return new Select()
+                .From(TblLichHop.Schema)
+                .Where(TblLichHop.IdLichHopColumn).IsEqualTo(id)
+                .And(TblLichHop.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblLichHop>();
+        }
+
+        /// <summary>
+        /// Reads the optional meeting-document link through SQL so this source
+        /// remains compilable before SubSonic is regenerated for the additive
+        /// IdTaiLieu column. The migration must still be installed before use.
+        /// </summary>
+        public bool HasDocumentLinkColumn()
+        {
+            const string sql = @"
+                SELECT CASE
+                    WHEN COL_LENGTH(N'dbo.TblLichHop', N'IdTaiLieu') IS NULL
+                        THEN 0
+                    ELSE 1
+                END;";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) == 1;
+        }
+
+        public Guid? GetLinkedDocumentId(Guid idLichHop)
+        {
+            return GetLinkedDocumentId(idLichHop, false);
+        }
+
+        /// <summary>
+        /// Takes an update lock while a canonical meeting document is being
+        /// created so concurrent clicks cannot create duplicate documents.
+        /// </summary>
+        public Guid? GetLinkedDocumentIdForUpdate(Guid idLichHop)
+        {
+            return GetLinkedDocumentId(idLichHop, true);
+        }
+
+        private Guid? GetLinkedDocumentId(Guid idLichHop, bool lockForUpdate)
+        {
+            if (idLichHop == Guid.Empty)
+            {
+                return null;
+            }
+
+            string tableHint = lockForUpdate
+                ? " WITH (UPDLOCK, HOLDLOCK)"
+                : string.Empty;
+            string sql = $@"
+                IF COL_LENGTH(N'dbo.TblLichHop', N'IdTaiLieu') IS NULL
+                BEGIN
+                    SELECT CAST(NULL AS UNIQUEIDENTIFIER) AS IdTaiLieu;
+                    RETURN;
+                END;
+
+                DECLARE @sql NVARCHAR(MAX) = N'
+                    SELECT IdTaiLieu
+                    FROM dbo.TblLichHop{tableHint}
+                    WHERE IdLichHop = ''{idLichHop}''
+                      AND DaXoa = 0;';
+
+                EXEC sys.sp_executesql @sql;";
+
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader == null || !reader.Read()
+                    || reader["IdTaiLieu"] == DBNull.Value)
+                {
+                    return null;
+                }
+
+                Guid idTaiLieu;
+                return Guid.TryParse(
+                    Convert.ToString(reader["IdTaiLieu"]),
+                    out idTaiLieu)
+                    ? (Guid?)idTaiLieu
+                    : null;
+            }
+        }
+
+        /// <summary>
+        /// Links a newly-created document only if the meeting is still
+        /// unlinked. The conditional update is the last defence against a
+        /// duplicate link after the serializable read above.
+        /// </summary>
+        public bool TryLinkDocument(
+            Guid idLichHop,
+            Guid idTaiLieu,
+            Guid idNguoiCapNhat,
+            DateTime ngayCapNhat)
+        {
+            if (idLichHop == Guid.Empty || idTaiLieu == Guid.Empty)
+            {
+                return false;
+            }
+
+            string updaterIdSql = idNguoiCapNhat == Guid.Empty
+                ? "NULL"
+                : "''" + idNguoiCapNhat + "''";
+            string safeDate = ngayCapNhat.ToString(
+                "yyyy-MM-dd HH:mm:ss.fff",
+                CultureInfo.InvariantCulture);
+            string sql = $@"
+                IF COL_LENGTH(N'dbo.TblLichHop', N'IdTaiLieu') IS NULL
+                BEGIN
+                    RAISERROR(N'Chưa cài cấu trúc liên kết hồ sơ cho lịch họp.', 16, 1);
+                    RETURN;
+                END;
+
+                DECLARE @sql NVARCHAR(MAX) = N'
+                    UPDATE dbo.TblLichHop
+                    SET IdTaiLieu = ''{idTaiLieu}'',
+                        IdNguoiCapNhat = {updaterIdSql},
+                        NgayCapNhat = ''{safeDate}''
+                    WHERE IdLichHop = ''{idLichHop}''
+                      AND DaXoa = 0
+                      AND IdTaiLieu IS NULL;
+                    SELECT @@ROWCOUNT;';
+
+                EXEC sys.sp_executesql @sql;";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) == 1;
+        }
+
         public DataTable SearchMeeting(Guid projectId, string searchTerm, Dictionary<string, object> parameters, string orderBy, int startRow, int endRow, out int totalRecord)
         {
             totalRecord = 0;

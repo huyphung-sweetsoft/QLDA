@@ -340,6 +340,17 @@
                                             <i class="fas fa-external-link-alt ms-1 small"></i>
                                         </asp:LinkButton>
 
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtOpenContractDocument"
+                                            CausesValidation="false"
+                                            CssClass="btn btn-outline-primary btn-sm mt-2"
+                                            OnClick="lbtOpenContractDocument_Click"
+                                            Visible="false">
+                                            <i class="fas fa-folder-open me-1"></i>
+                                            <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT) %>
+                                        </asp:LinkButton>
+
                                         <asp:Label
                                             runat="server"
                                             ID="lblNoContract"

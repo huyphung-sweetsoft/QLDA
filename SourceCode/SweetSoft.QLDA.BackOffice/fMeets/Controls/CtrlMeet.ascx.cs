@@ -20,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
         public EventHandler NewMeetingHandlerCallback;
         public EventHandler EditMeetingHandlerCallback;
+        public EventHandler OpenMeetingDocumentHandlerCallback;
         private MeetManager _manager = new MeetManager();
 
         public Guid ProjectId
@@ -217,6 +218,32 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                     DateTime endDate = meet.ThoiGianKetThuc;
 
                     ((CtrlXemNhanVienMeet)CtrlXemNhanVienMeet1).OpenModal(idCuocHop, startDate, endDate, meet.TenCuocHop, hostId);
+
+                    break;
+
+                case "MEETING_DOCUMENT":
+                    if (!this.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid meetingDocumentId;
+                    if (!Guid.TryParse(
+                        Convert.ToString(e.CommandArgument),
+                        out meetingDocumentId)
+                        || meetingDocumentId == Guid.Empty)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (OpenMeetingDocumentHandlerCallback != null)
+                    {
+                        OpenMeetingDocumentHandlerCallback(
+                            meetingDocumentId,
+                            EventArgs.Empty);
+                    }
 
                     break;
 
