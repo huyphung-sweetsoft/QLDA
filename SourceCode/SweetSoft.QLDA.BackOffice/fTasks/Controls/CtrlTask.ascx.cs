@@ -155,6 +155,107 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.ProjectId);
                     ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OpenPicker(this.ProjectId, taskIdAssign, task.NgayBatDau.Value, task.NgayKetThuc.Value, task.TenCongViec, pmId);
                     break;
+                case "VIEW_SCHEDULE":
+                    if (!this.CURRENT_PAGE.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    int rowIndexSched = (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        ? ((GridViewRow)((WebControl)(e.CommandSource)).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
+
+                    Guid taskIdSched = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexSched].Value.ToString(), out taskIdSched))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    TblCongViec taskSched = _taskManager.FetchById(taskIdSched);
+                    if (taskSched == null)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    if (!taskSched.NgayBatDau.HasValue || !taskSched.NgayKetThuc.HasValue)
+                    {
+                        ShowNotify("Công việc này chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch biểu!", MSGType.Warning);
+                        return;
+                    }
+
+                    // ==========================================
+                    // 1. TẠO JSON LỊCH BIỂU TRỰC TIẾP TẠI UI ĐỂ DÙNG GETRESOURCETEXT
+                    // ==========================================
+                    List<TblCongViec> leafTasks = _taskManager.GetLeafTasksForSchedule(taskIdSched);
+                    var dict = new Dictionary<string, object>();
+                    DateTime current = taskSched.NgayBatDau.Value.Date;
+                    DateTime end = taskSched.NgayKetThuc.Value.Date;
+
+                    // Lôi chuẩn ngôn ngữ ra
+                    string txtTask = GetResourceText(BackEndResourceKeys.TASK).ToLower();
+                    string txtFree = GetResourceText(BackEndResourceKeys.FREE);
+                    string txtHoliday = GetResourceText(BackEndResourceKeys.HOLIDAY);
+                    string txtWeekend = GetResourceText(BackEndResourceKeys.WEEKEND);
+
+                    while (current <= end)
+                    {
+                        string status = "";
+                        string dayName = current.DayOfWeek == DayOfWeek.Sunday ? "CN" : current.DayOfWeek == DayOfWeek.Saturday ? "T7" : $"T{(int)current.DayOfWeek + 1}";
+                        bool isWorkingDay = LichBieuChungManager.Instance.CheckIsWorkingDay(current);
+                        var activeTasks = new List<object>();
+                        string displayText = "";
+
+                        if (isWorkingDay)
+                        {
+                            var tasksToday = leafTasks.Where(t => t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
+                            if (tasksToday.Count > 0)
+                            {
+                                status = "busy";
+                                foreach (var t in tasksToday)
+                                {
+                                    activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
+                                }
+                                displayText = tasksToday.Count == 1 ? $"🔴 [{tasksToday[0].MaCongViec}]" : $"🔥 {tasksToday.Count} {txtTask}";
+                            }
+                            else
+                            {
+                                status = "free";
+                                displayText = $"🟢 {txtFree}";
+                            }
+                        }
+                        else
+                        {
+                            status = (current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday) ? "weekend" : "holiday";
+                            displayText = status == "holiday" ? $"🎉 {txtHoliday}" : $"⬜ {txtWeekend}";
+                        }
+
+                        dict.Add(current.ToString("yyyy-MM-dd"), new
+                        {
+                            status = status,
+                            dayName = dayName,
+                            displayText = displayText,
+                            tasks = activeTasks
+                        });
+                        current = current.AddDays(1);
+                    }
+
+                    string jsonSchedule = Newtonsoft.Json.JsonConvert.SerializeObject(dict);
+
+                    // ==========================================
+                    // 2. GÁN THÔNG TIN VÀ MỞ MODAL
+                    // ==========================================
+                    mdlTaskSchedule.Title = GetResourceText(BackEndResourceKeys.SCHEDULE_DETAILS) ?? "Chi tiết lịch biểu";
+                    string startStr = taskSched.NgayBatDau.Value.ToString("dd/MM/yyyy");
+                    string endStr = taskSched.NgayKetThuc.Value.ToString("dd/MM/yyyy");
+                    ltrScheduleTaskName.Text = $"[{taskSched.MaCongViec}] {taskSched.TenCongViec} : {startStr} - {endStr}";
+                    hdfSingleTaskScheduleJson.Value = jsonSchedule;
+
+                    mdlTaskSchedule.OpenModal(true);
+                    ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "RenderTaskScheduleJS",
+                        "setTimeout(function() { CMSMasterJs.RenderSingleTaskSchedule(); }, 200);", true);
+                    break;
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
                     {

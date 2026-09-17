@@ -32,6 +32,114 @@
     .btn-assign-task:hover { 
         background-color: #1d4ed8; color: white; transform: scale(1.05); 
     }
+    /* CSS CHO TOOLTIP TASK THÔNG MINH */
+    .sched-day-card { 
+        position: relative; 
+        cursor: pointer; 
+        overflow: visible !important; /* [QUAN TRỌNG]: Cho phép Tooltip tràn ra ngoài ô */
+        -webkit-user-select: none; /* [QUAN TRỌNG]: Chống bôi đen text / Dấu nháy */
+        user-select: none; 
+    }
+    /* Khôi phục bo góc */
+    .sd-header { border-radius: 5px 5px 0 0; }
+    .sd-body { border-radius: 0 0 5px 5px; }
+    .custom-task-tooltip {
+        position: absolute; 
+        background-color: #0f172a; color: #ffffff; padding: 10px 14px; border-radius: 8px;
+        font-size: 12px; white-space: nowrap; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        opacity: 0; visibility: hidden; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1055; pointer-events: none; /* Cấm tương tác để không chắn click chuột */
+    }
+    .custom-task-tooltip::after { /* Mũi tên trỏ xuống */
+        content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+        border-width: 6px; border-style: solid; border-color: #0f172a transparent transparent transparent;
+    }
+    .sched-day-card {
+    position: relative;
+    cursor: pointer;
+    overflow: visible !important;
+    -webkit-user-select: none;
+    user-select: none;
+    }
+
+    .sd-header {
+        border-radius: 6px 6px 0 0;
+    }
+
+    .sd-body {
+        border-radius: 0 0 6px 6px;
+    }
+
+    .custom-task-tooltip {
+        position: fixed !important;
+        z-index: 999999 !important;
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 11px 14px;
+        min-width: 180px;
+        max-width: 420px;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+        font-size: 12px;
+        line-height: 1.5;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .custom-task-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -6px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #ffffff transparent transparent transparent;
+    }
+
+    .sched-day-card:hover .custom-task-tooltip,
+    .sched-day-card.show-tooltip .custom-task-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .tooltip-task-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        text-align: left;
+    }
+
+    .tooltip-task-list li {
+        margin: 0;
+        padding: 7px 0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+    }
+
+    .tooltip-task-list li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .tooltip-task-list li:first-child {
+        padding-top: 0;
+    }
+
+    .t-code {
+        display: inline-block;
+        color: #2563eb;
+        font-weight: 700;
+        margin-right: 6px;
+    }
 </style>
 <div class="card-body p-0 mt-2">
     <asp:UpdatePanel ID="upMain" runat="server" UpdateMode="Conditional">
@@ -150,6 +258,10 @@
                                 ResourceKey='<%# BackEndResourceKeys.DELETE %>'
                                 ButtonIcon="fas fa-trash">
                             </SweetSoft:SmartLinkButton>
+                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
+                                ID="lbtViewSchedule" CommandName="VIEW_SCHEDULE" CssClass="btn-grid-action text-decoration-none text-info me-2"
+                                ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-calendar-alt">
+                            </SweetSoft:SmartLinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
@@ -162,4 +274,125 @@
             <SweetSoft:CtrlChonNhanVienTask runat="server" ID="CtrlChonNhanVienTask1" />
         </ContentTemplate>
     </asp:UpdatePanel>
+    <!-- MODAL XEM LỊCH BIỂU TASK -->
+           <SweetSoft:ExtraModal
+            runat="server"
+            ID="mdlTaskSchedule"
+            Type="Primary"
+            DefaultButton="btnCloseTaskSchedule">
+
+            <ContentTemplate>
+
+                <asp:UpdatePanel
+                    ID="upnlTaskSchedule"
+                    runat="server"
+                    UpdateMode="Conditional">
+
+                    <ContentTemplate>
+
+                        <div class="p-3">
+
+                            <div style="font-size: 13px;
+                                        color: #1e40af;
+                                        background: #eff6ff;
+                                        padding: 10px 12px;
+                                        border-radius: 6px;
+                                        border: 1px solid #bfdbfe;
+                                        margin-bottom: 12px;">
+
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                <%= GetResourceText(BackEndResourceKeys.EXECUTION_TIME) %>:
+
+                                <strong>
+                                    <asp:Literal
+                                        ID="ltrScheduleTaskName"
+                                        runat="server">
+                                    </asp:Literal>
+                                </strong>
+
+                            </div>
+
+                            <asp:HiddenField
+                                ID="hdfSingleTaskScheduleJson"
+                                runat="server" />
+
+                            <div style="max-height:60vh;
+                                        overflow-y:auto;
+                                        padding:15px 5px 40px 5px;">
+
+                                <div id="task-timeline-container"
+                                     class="row-sched-timeline-grid-7col">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </ContentTemplate>
+
+                </asp:UpdatePanel>
+
+            </ContentTemplate>
+
+        </SweetSoft:ExtraModal>
+
+            <script type="text/javascript">
+                window.CMSMasterJs = window.CMSMasterJs || {};
+
+                CMSMasterJs.RenderSingleTaskSchedule = function () {
+                    var container = $('#task-timeline-container');
+                    container.empty();
+                    
+                    var jsonString = $('#<%= hdfSingleTaskScheduleJson.ClientID %>').val();
+                    if (!jsonString) return;
+
+                    try {
+                        var decodedJson = $('<textarea/>').html(jsonString).text();
+                        var scheduleData = JSON.parse(decodedJson);
+                        
+                        for (var dateKey in scheduleData) {
+                            var dayData = scheduleData[dateKey];
+                            var dateParts = dateKey.split('-');
+                            var formattedDate = dateParts[2] + '/' + dateParts[1];
+
+                            // Tạo nội dung Tooltip xịn sò
+                            var tooltipHtml = "";
+                            var hasTasks = (dayData.status === "busy" && dayData.tasks && dayData.tasks.length > 0);
+                            
+                            if (hasTasks) {
+                                tooltipHtml = '<div class="custom-task-tooltip"><ul class="tooltip-task-list">';
+                                for (var i = 0; i < dayData.tasks.length; i++) {
+                                    tooltipHtml += '<li><span class="t-code">[' + dayData.tasks[i].code + ']</span>' + dayData.tasks[i].name + '</li>';
+                                }
+                                tooltipHtml += '</ul></div>';
+                            }
+
+                            // Gắn Click event nếu có task để kích hoạt cơ chế Ghim (Pin)
+                            var clickAttr = hasTasks ? 'onclick="CMSMasterJs.PinTooltip(this, event)"' : '';
+
+                            var html = '<div class="sched-day-card" ' + clickAttr + '>' +
+                                            '<div class="sd-header">' + formattedDate + '<small>' + dayData.dayName + '</small></div>' +
+                                            '<div class="sd-body ' + dayData.status + '">' + dayData.displayText + '</div>' +
+                                            tooltipHtml + 
+                                       '</div>';
+                            container.append(html);
+                        }
+                    } catch (e) {
+                        console.error("Lỗi vẽ JSON Lịch biểu Task: ", e);
+                    }
+                };
+
+                // Hàm ghim Tooltip khi click (Chống chạm ra ngoài)
+                CMSMasterJs.PinTooltip = function (element, event) {
+                    event.stopPropagation(); 
+                    var isPinned = $(element).hasClass('show-tooltip');
+                    $('.sched-day-card').removeClass('show-tooltip'); // Gỡ ghim ô cũ
+                    if (!isPinned) $(element).addClass('show-tooltip'); // Ghim ô mới
+                };
+
+                // Chạm ra ngoài màn hình -> Mất Tooltip
+                $(document).on('click', function () {
+                    $('.sched-day-card').removeClass('show-tooltip');
+                });
+            </script>
 </div>

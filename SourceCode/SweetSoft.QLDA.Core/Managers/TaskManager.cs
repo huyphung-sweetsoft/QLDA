@@ -300,7 +300,31 @@ namespace SweetSoft.QLDA.Core.Managers
                 return (countLevel1 + 1).ToString();
             }
         }
+        public List<TblCongViec> GetLeafTasksForSchedule(Guid taskId)
+        {
+            TblCongViec currentTask = FetchById(taskId);
+            List<TblCongViec> leafTasks = new List<TblCongViec>();
+            if (currentTask == null) return leafTasks;
 
+            bool isParent = CheckHasChildTasks(currentTask.IdDuAn, currentTask);
+            if (isParent)
+            {
+                var allDescendants = GetDescendantTasks(currentTask.IdDuAn, currentTask.IdCongViec);
+                foreach (var t in allDescendants)
+                {
+                    // Lấy tất cả Task lá (không có con), không lọc theo Trạng thái (Todo, Doing, Done lấy hết)
+                    if (!CheckHasChildTasks(currentTask.IdDuAn, t) && t.NgayBatDau.HasValue && t.NgayKetThuc.HasValue)
+                    {
+                        leafTasks.Add(t);
+                    }
+                }
+            }
+            else
+            {
+                leafTasks.Add(currentTask);
+            }
+            return leafTasks;
+        }
         public string GetRootPhaseName(Guid projectId, Guid? parentId)
         {
             if (!parentId.HasValue) return "--  --";
