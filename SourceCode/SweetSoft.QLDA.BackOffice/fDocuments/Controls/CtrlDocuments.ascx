@@ -321,6 +321,7 @@
     Type="Primary"
     Size="Large"
     Position="modal-dialog-centered modal-dialog-scrollable"
+    BodyClass="document-modal-body"
     DefaultButton="btnSave"
     FooterButtonClose="false">
 
