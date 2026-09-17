@@ -28,6 +28,21 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblCongViec FetchById(Guid taskId) => _repository.FetchById(taskId);
         public DataTable GetChildTasks(Guid projectId, Guid taskId) => _repository.GetChildTasks(projectId, taskId);
         public DataTable GetDependentTasks(Guid projectId, Guid taskId) => _repository.GetDependentTasks(projectId, taskId);
+        public void ValidateCanCompleteProject(Guid idDuAn)
+        {
+            DataTable dt = FetchByIdAndOrderASCMaCV(idDuAn, null);
+            foreach (DataRow row in dt.Rows)
+            {
+                bool daXoa = row[ColDaXoa] != DBNull.Value && Convert.ToBoolean(row[ColDaXoa]);
+                if (daXoa) continue;
+
+                int trangThai = row[ColTrangThai] != DBNull.Value ? Convert.ToInt32(row[ColTrangThai]) : 0;
+                if (trangThai != 2 && trangThai != 3) // 2: Hoàn thành, 3: Đã hủy
+                {
+                    throw new SweetSoft.QLDA.Core.ExceptionHelpers.BusinessException("Không thể hoàn thành dự án do vẫn còn Công việc chưa hoàn thành hoặc chưa bị hủy.", null, SweetSoft.QLDA.Core.ExceptionHelpers.ErrorCodes.Conflict);
+                }
+            }
+        }
         public DataTable GetPrioritiesTable() => _repository.FetchAllPrioritiesTable();
         public DataTable GetProjectMembers(Guid projectId) => _repository.FetchProjectMembers(projectId);
         public DataTable GetActiveTasksByNhanVienInRange(Guid idNhanVien, DateTime start, DateTime end)
@@ -47,6 +62,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblCongViec DeleteTask(TblCongViec task)
         {
             if (task == null) return null;
+            DuAnManager.Instance.EnsureCanModifyStructure(task.IdDuAn);
             _repository.DeleteTask(task);
             if (!string.IsNullOrEmpty(task.MaCongViec))
             {
@@ -167,6 +183,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public void UpdateAssignments(Guid idDuAn, Guid idCongViec, List<Guid> newAssigneeIds)
         {
+            DuAnManager.Instance.EnsureCanModifyStructure(idDuAn);
             // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
             newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
 
@@ -501,10 +518,11 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         public TblCongViec UpdateStageTask(
-    TblGiaiDoanDuAn stage,
-    string stageName,
-    DateTime? oldStartDate)
+            TblGiaiDoanDuAn stage,
+            string stageName,
+            DateTime? oldStartDate)
         {
+            DuAnManager.Instance.EnsureCanModifyStructure(stage.IdDuAn);
             if (stage == null)
             {
                 throw new ArgumentNullException(

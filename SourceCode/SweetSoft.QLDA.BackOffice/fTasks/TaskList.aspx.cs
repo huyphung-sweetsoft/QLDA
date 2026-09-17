@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
@@ -115,12 +115,23 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         #region Postbacks & Save
         protected void btnSaveTask_Click(object sender, EventArgs e)
         {
+            try
+            {
+                SweetSoft.QLDA.Core.Managers.DuAnManager.Instance.EnsureCanModifyStructure(CurrentProjectId);
+            }
+            catch (Exception ex)
+            {
+                ShowAlert(ex.Message);
+                return;
+            }
+
             bool isAddNew = string.IsNullOrEmpty(hfEditTaskId.Value);
             if (isAddNew && !this.IsAdd) { ShowAlert("Bạn không có quyền thêm mới công việc!"); return; }
             if (!isAddNew && !this.IsEdit) { ShowAlert("Bạn không có quyền chỉnh sửa công việc!"); return; }
 
             TblCongViec task;
             bool isPhase = false, isFatherTask = false;
+            byte? oldStatus = null;
 
             if (isAddNew)
             {
@@ -133,6 +144,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 if (task == null) return;
                 isPhase = _taskManager.CheckPhase(task);
                 isFatherTask = _taskManager.CheckHasChildTasks(CurrentProjectId, task);
+                oldStatus = task.TrangThai;
             }
 
             string tenCv = txtEditTenCv.Text.Trim();
@@ -164,6 +176,19 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     return;
                 }
                 task.TrangThai = Convert.ToByte(ddlEditTrangThai.SelectedValue);
+                byte newStatus = Convert.ToByte(ddlEditTrangThai.SelectedValue);
+                if (isAddNew && newStatus != 0 || !isAddNew && oldStatus != newStatus)
+                {
+                    try
+                    {
+                        SweetSoft.QLDA.Core.Managers.DuAnManager.Instance.EnsureCanUpdateProgress(CurrentProjectId);
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowAlert(ex.Message);
+                        return;
+                    }
+                }
                 if (!isFatherTask) task.IdDoUuTien = Guid.TryParse(ddlEditDoUuTien.SelectedValue, out Guid idUt) ? (Guid?)idUt : null;
                 task.ThoiHanNgay = thoiHan;
                 task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);   // trước: ngayBd.AddDays(thoiHan - 1)
