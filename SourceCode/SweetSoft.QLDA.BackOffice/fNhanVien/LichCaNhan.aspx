@@ -19,6 +19,7 @@
             min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
         }
         .cal-header-cell:last-child { border-right: none; }      
+        
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; overflow: hidden; }      
         .cal-cell { 
             min-height: 100px; padding: 6px; border-right: 1px solid #e2e8f0; 

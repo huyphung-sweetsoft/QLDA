@@ -13,6 +13,7 @@ using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Data;
 using System.Linq;
 using System.Web;
@@ -75,6 +76,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         }
 
         private AuditManager _auditManager;
+        protected byte CurrentStatusValue { get; set; }
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -116,6 +118,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 }
                 DataRow row = dt.Rows[0];
                 BindProjectInformation(row);
+                BindProjectProgress();
+                BindProjectTeam();
                 BindRecentProjectHistory();
             }
             catch (Exception exc)
@@ -264,16 +268,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 ShowNotify(exception.Message, MSGType.Error);
             }
         }
-        private string BuildHistoryContent(
-    DataRow row)
+        private string BuildHistoryContent(DataRow row)
         {
-            string resourceKey = GetColumnText( row, "Description");
+            string resourceKey = GetColumnText(row, "Description");
 
-            string actor = GetColumnText( row, "ChangedBy");
+            string actor = GetColumnText(row, "ChangedBy");
 
-            string tableName = GetColumnText( row, "TableName");
+            string tableName = GetColumnText(row, "TableName");
 
-            string title = GetColumnText( row, "Title");
+            string title = GetColumnText(row, "Title");
 
             if (string.IsNullOrWhiteSpace(actor) || string.Equals( actor, "[System]", StringComparison.OrdinalIgnoreCase))
             {
@@ -325,7 +328,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
                 case nameof(TblThanhVienDuAn): return "thành viên dự án";
 
-                case nameof(TblHopDongThucHien): return "hợp đồng";
+                case nameof(TblHopDongThucHien): return "hợp đồng thực hiện";
 
                 default: return "thông tin";
             }
@@ -369,6 +372,180 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             return Convert.ToString( row[columnName]);
         }
 
+        private void BindProjectProgress()
+        {
+            var tienDo = SweetSoft.QLDA.Core.Managers.DuAnManager.Instance.GetDuAnTienDo(QueryId);
+
+            if (tienDo.TienDoThoiGian.HasValue)
+            {
+                int phanTramThoiGian = (int)Math.Round(tienDo.TienDoThoiGian.Value);
+                lblTienDoThoiGian.InnerText = phanTramThoiGian + "%";
+                divTienDoThoiGian.Attributes["aria-valuenow"] = phanTramThoiGian.ToString();
+                divTienDoThoiGianBar.Style["width"] = phanTramThoiGian + "%";
+            }
+            else
+            {
+                lblTienDoThoiGian.InnerText = "—";
+                divTienDoThoiGian.Attributes["aria-valuenow"] = "0";
+                divTienDoThoiGianBar.Style["width"] = "0%";
+            }
+
+            if (tienDo.TienDoCongViec.HasValue)
+            {
+                int phanTramCongViec = (int)Math.Round(tienDo.TienDoCongViec.Value);
+                lblTienDoCongViec.InnerText = phanTramCongViec + "%";
+                divTienDoCongViec.Attributes["aria-valuenow"] = phanTramCongViec.ToString();
+                divTienDoCongViecBar.Style["width"] = phanTramCongViec + "%";
+            }
+            else
+            {
+                lblTienDoCongViec.InnerText = "—";
+                divTienDoCongViec.Attributes["aria-valuenow"] = "0";
+                divTienDoCongViecBar.Style["width"] = "0%";
+            }
+        }
+
+        private void BindProjectTeam()
+        {
+            // 1. Get PM ID
+            Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(QueryId);
+
+            if (pmId.HasValue && pmId.Value != Guid.Empty)
+            {
+                var pm = UserManager.Instance.GetUserById(pmId.Value);
+                if (pm != null)
+                {
+                    lblNhanVienQuanLy.Text = pm.DisplayName;
+                    imgAvatarPM.Src = !string.IsNullOrEmpty(pm.Avatar) && !pm.Avatar.Contains("no-file.png") ? pm.Avatar : "/Styles/images/user-icon.png";
+                }
+                else
+                {
+                    lblNhanVienQuanLy.Text = "Không xác định";
+                    imgAvatarPM.Src = "/Styles/images/user-icon.png";
+                }
+            }
+            else
+            {
+                lblNhanVienQuanLy.Text = "Chưa có Quản lý";
+                imgAvatarPM.Src = "/Styles/images/user-icon.png";
+            }
+
+            // 2. Get Members
+            List<Guid> memberIds = SweetSoft.QLDA.Core.Managers.ThanhVienDuAnManager.Instance.GetAllActiveMemberIds(QueryId);
+            
+            // Remove PM from members list if present
+            if (pmId.HasValue)
+            {
+                memberIds.RemoveAll(id => id == pmId.Value);
+            }
+
+            // Distinct IDs to avoid duplicates
+            memberIds = memberIds.Distinct().ToList();
+
+            if (memberIds.Count == 0)
+            {
+                ltrThanhVienGroup.Text = "";
+                return;
+            }
+
+            // Get User objects
+            List<SweetSoft.QLDA.DataAccess.AspnetUser> members = new List<SweetSoft.QLDA.DataAccess.AspnetUser>();
+            foreach(var id in memberIds)
+            {
+                var user = SweetSoft.QLDA.Core.Managers.UserManager.Instance.GetUserById(id);
+                if (user != null)
+                {
+                    members.Add(user);
+                }
+            }
+
+            // Render Avatar Group
+            int maxVisible = 6;
+            int hiddenCount = members.Count > maxVisible ? members.Count - maxVisible : 0;
+            var visibleMembers = members.Take(maxVisible).ToList();
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<div class=\"d-flex align-items-center flex-wrap gap-2\">");
+            sb.Append("<div class=\"avatar-group\">");
+            sb.Append("<div class=\"avatar-stack-container\">");
+
+            foreach (var member in visibleMembers)
+            {
+                bool hasAvatar = !string.IsNullOrEmpty(member.Avatar) && !member.Avatar.Contains("no-file.png") && !member.Avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+                string title = member.DisplayName;
+
+                if (hasAvatar)
+                {
+                    string avatarUrl = member.Avatar.StartsWith("~")
+                        ? Page.ResolveUrl(member.Avatar)
+                        : member.Avatar;
+
+                    string safeAvatarUrl = HttpUtility.HtmlAttributeEncode(avatarUrl);
+                    string safeTitle = HttpUtility.HtmlAttributeEncode(title);
+
+                    sb.Append(
+                        $"<img src=\"{safeAvatarUrl}\" " +
+                        $"class=\"avatar-circle\" " +
+                        $"style=\"object-fit: cover;\" " +
+                        $"title=\"{safeTitle}\" />"
+                    );
+                }
+                else
+                {
+                    sb.Append(GetFallbackAvatarHtml(title));
+                }
+            }
+
+            sb.Append("</div>"); // close avatar-stack-container
+
+            if (hiddenCount > 0)
+            {
+                sb.Append($"<div class=\"avatar-circle avatar-more\">+{hiddenCount}</div>");
+            }
+
+            sb.Append("</div>"); // close avatar-group
+            sb.Append("</div>"); // close d-flex gap-2
+
+            ltrThanhVienGroup.Text = sb.ToString();
+        }
+
+        private string GetFallbackAvatarHtml(string fullName)
+        {
+            string initials = GetInitials(fullName);
+            string bgColor = GetAvatarBackground(fullName);
+            string safeName = HttpUtility.HtmlAttributeEncode(fullName);
+
+            return $"<div class=\"avatar-circle\" " +
+                   $"style=\"background-color: {bgColor};\" " +
+                   $"title=\"{safeName}\">{initials}</div>";
+        }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+                return "?";
+
+            string[] words = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length == 1)
+            {
+                return words[0].Substring(0, 1).ToUpper();
+            }
+            else if (words.Length > 1)
+            {
+                return (words[0].Substring(0, 1) + words[words.Length - 1].Substring(0, 1)).ToUpper();
+            }
+            return "?";
+        }
+
+        private string GetAvatarBackground(string fullName)
+        {
+            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#ef4444", "#06b6d4" };
+            if (string.IsNullOrWhiteSpace(fullName)) return colors[0];
+            
+            int hash = Math.Abs(fullName.GetHashCode());
+            return colors[hash % colors.Length];
+        }
+
         private void BindProjectInformation(DataRow row)
         {
             Navigation1.MainTitle = GetDisplayText(row, "MaDuAn");
@@ -395,19 +572,33 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
 
             byte trangThai = Convert.ToByte(row["TrangThai"]);
-            lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), trangThai));
+            lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), (DuAnStatus)trangThai));
+            CurrentStatusValue = trangThai;
+            DuAnStatus statusEnum = (DuAnStatus)trangThai;
+            ltrCurrentStatusName.Text = EnumHelpers.GetERenderText(typeof(DuAnStatus), statusEnum);
+            iCurrentStatusIcon.Attributes["class"] = "fas fa-circle me-2 small " + GetStatusCssClass(statusEnum);
+            BindStatusDropdown();
 
             Guid idHopDongThucHien = Guid.Empty;
-            if (row.Table.Columns.Contains("IdHopDongThucHien") && row["IdHopDongThucHien"] != DBNull.Value)
+            if (row.Table.Columns.Contains(
+        "IdHopDongThucHien") &&
+    row["IdHopDongThucHien"] !=
+        DBNull.Value)
             {
-                Guid.TryParse(Convert.ToString(row["IdHopDongThucHien"]), out idHopDongThucHien);
+                Guid.TryParse(
+                    Convert.ToString(
+                        row["IdHopDongThucHien"]),
+                    out idHopDongThucHien);
             }
 
-            IdHopDongThucHien = idHopDongThucHien;
-            lbtViewContract.Visible = idHopDongThucHien != Guid.Empty;
-            lblNoContract.Visible = idHopDongThucHien == Guid.Empty;
-            lbtOpenContractDocument.Visible = CanOpenContractDocument(
-                idHopDongThucHien);
+            this.IdHopDongThucHien =
+                idHopDongThucHien;
+
+            lbtViewContract.Visible =
+                idHopDongThucHien != Guid.Empty;
+
+            lblNoContract.Visible =
+                idHopDongThucHien == Guid.Empty;
         }
 
         private bool CanOpenContractDocument(Guid idHopDongThucHien)
@@ -521,5 +712,74 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             rptRecentProjectHistory.DataBind();
         }
+
+        protected void rptStatusDropdown_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName != "ChangeStatus")
+                return;
+
+            if (!this.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            byte trangThai;
+
+            if (!byte.TryParse(e.CommandArgument.ToString(), out trangThai) ||
+                !Enum.IsDefined(typeof(DuAnStatus), trangThai))
+            {
+                ShowNotify(
+                    GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE),
+                    MSGType.Error
+                );
+                return;
+            }
+
+            TblDuAn duAn = DuAnManager.Instance.GetDuAnById(QueryId);
+
+            if (duAn == null || duAn.DaXoa)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            if (duAn.TrangThai == trangThai)
+                return;
+
+            duAn.TrangThai = trangThai;
+
+            DuAnManager.Instance.CreateOrUpdate(duAn);
+
+            // POST -> GET
+            Response.Redirect(Request.RawUrl, false);
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        private void BindStatusDropdown()
+        {
+            var statuses = Enum.GetValues(typeof(DuAnStatus)).Cast<DuAnStatus>().Select(s => new {
+                Value = (byte)s,
+                Name = EnumHelpers.GetERenderText(typeof(DuAnStatus), s),
+                CssClass = GetStatusCssClass(s)
+            }).ToList();
+            
+            rptStatusDropdown.DataSource = statuses;
+            rptStatusDropdown.DataBind();
+        }
+
+        protected string GetStatusCssClass(DuAnStatus status)
+        {
+            switch (status)
+            {
+                case DuAnStatus.ChoThucHien: return "text-warning";
+                case DuAnStatus.DangThucHien: return "text-info";
+                case DuAnStatus.TamDung: return "text-secondary";
+                case DuAnStatus.HoanThanh: return "text-success";
+                case DuAnStatus.KetThuc: return "text-dark";
+                default: return "text-primary";
+            }
+        }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;

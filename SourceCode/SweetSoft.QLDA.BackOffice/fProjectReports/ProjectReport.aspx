@@ -298,6 +298,7 @@
                 dateGroups.forEach(el => el.style.display = 'none');
             }
         }
+
         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function () {
             var ddl = document.getElementById('<%= ddlPeriod.ClientID %>');
             if (ddl) toggleCustomDates(ddl.value);

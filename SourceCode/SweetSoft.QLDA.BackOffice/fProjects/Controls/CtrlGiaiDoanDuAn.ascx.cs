@@ -297,6 +297,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             ResetForm();
             lblStageFormTitle.Text = "Thêm giai đoạn";
+
+            int nextOrder = GiaiDoanDuAnManager.Instance.GetNextOrder(IdDuAn);
+            DateTime? previousEndDate = GiaiDoanDuAnManager.Instance.GetPreviousStageEndDate(IdDuAn, nextOrder);
+            if (previousEndDate.HasValue)
+            {
+                txtStartDate.Attributes["min"] = previousEndDate.Value.AddDays(1).ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                txtStartDate.Attributes.Remove("min");
+            }
+
             pnlStageForm.Visible = true;
             upnlStageManagement.Update();
             OpenDrawer();
@@ -423,6 +435,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             txtExpectedEndDate.Text = stage.NgayDuKienHoanThanh.HasValue ? stage.NgayDuKienHoanThanh.Value.ToString("yyyy-MM-dd") : string.Empty;
             txtActualEndDate.Text = stage.NgayHoanThanhThucTe.HasValue ? stage.NgayHoanThanhThucTe.Value.ToString("yyyy-MM-dd") : string.Empty;
             txtStageDescription.Text = stage.MoTa ?? string.Empty;
+            
+            DateTime? previousEndDate = GiaiDoanDuAnManager.Instance.GetPreviousStageEndDate(stage.IdDuAn, stage.ThuTuGiaiDoan);
+            if (previousEndDate.HasValue)
+            {
+                txtStartDate.Attributes["min"] = previousEndDate.Value.AddDays(1).ToString("yyyy-MM-dd");
+            }
+            else
+            {
+                txtStartDate.Attributes.Remove("min");
+            }
 
             bool hasChildTasks = TaskManager.Instance.CheckHasChildTasks(stage.IdDuAn, rootTask);
 
