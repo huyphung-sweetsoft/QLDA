@@ -1938,7 +1938,6 @@
     <Compile Include="Common\MessageBox.cs" />
     <Compile Include="Common\RegisterCSSAndJS.cs" />
     <Compile Include="Common\RewriteURLHelper.cs" />
-    <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Controls\AutoComplete\CtrExtraAutoComplete.ascx.cs">
       <DependentUpon>CtrExtraAutoComplete.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

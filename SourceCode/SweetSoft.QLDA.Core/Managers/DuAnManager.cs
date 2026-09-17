@@ -111,16 +111,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
 
-                if (duAn.IdNhanVienQuanLy.HasValue && duAn.IdNhanVienQuanLy != oldPM)
-                {
-                    ThongBaoManager.Instance.Create(
-                        userId: duAn.IdNhanVienQuanLy.Value,
-                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
-                        noiDung: $"Dự án: {duAn.TenDuAn}",
-                        loaiThongBao: ThongBaoTypes.DuAn,
-                        idDuAn: duAn.IdDuAn
-                    );
-                }
+                //if (duAn.IdNhanVienQuanLy.HasValue && duAn.IdNhanVienQuanLy != oldPM)
+                //{
+                //    ThongBaoManager.Instance.Create(
+                //        userId: duAn.IdNhanVienQuanLy.Value,
+                //        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                //        noiDung: $"Dự án: {duAn.TenDuAn}",
+                //        loaiThongBao: ThongBaoTypes.DuAn,
+                //        idDuAn: duAn.IdDuAn
+                //    );
+                //}
 
                 return duAn;
             }
@@ -152,16 +152,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
 
-                if (duAn.IdNhanVienQuanLy.HasValue)
-                {
-                    ThongBaoManager.Instance.Create(
-                        userId: duAn.IdNhanVienQuanLy.Value,
-                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
-                        noiDung: $"Dự án: {duAn.TenDuAn}",
-                        loaiThongBao: ThongBaoTypes.DuAn,
-                        idDuAn: duAn.IdDuAn
-                    );
-                }
+                //if (duAn.IdNhanVienQuanLy.HasValue)
+                //{
+                //    ThongBaoManager.Instance.Create(
+                //        userId: duAn.IdNhanVienQuanLy.Value,
+                //        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                //        noiDung: $"Dự án: {duAn.TenDuAn}",
+                //        loaiThongBao: ThongBaoTypes.DuAn,
+                //        idDuAn: duAn.IdDuAn
+                //    );
+                //}
 
                 return duAn;
             }
@@ -272,13 +272,13 @@ namespace SweetSoft.QLDA.Core.Managers
                     IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
                 });
 
-                ThongBaoManager.Instance.Create(
-                    userId: id,
-                    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
-                    noiDung: $"Dự án: {tenDuAn}",
-                    loaiThongBao: ThongBaoTypes.DuAn,
-                    idDuAn: idDuAn
-                );
+                //ThongBaoManager.Instance.Create(
+                //    userId: id,
+                //    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                //    noiDung: $"Dự án: {tenDuAn}",
+                //    loaiThongBao: ThongBaoTypes.DuAn,
+                //    idDuAn: idDuAn
+                //);
             }
         }
         //2. GetMemberIds: Dùng lấy đống idNhanVien đã có trong dự án để đánh tích cái checkbox, dùng để hiển thị trong edit

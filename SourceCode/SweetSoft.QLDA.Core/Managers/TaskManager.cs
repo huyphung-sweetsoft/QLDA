@@ -195,14 +195,14 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     _repository.RemoveAssignment(idCongViec, id);
 
-                    ThongBaoManager.Instance.Create(
-                        userId: id,
-                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
-                        noiDung: $"Công việc: {tenCongViec}",
-                        loaiThongBao: ThongBaoTypes.HeThong,
-                        idCongViec: idCongViec,
-                        idDuAn: idDuAn
-                    );
+                    //ThongBaoManager.Instance.Create(
+                    //    userId: id,
+                    //    tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
+                    //    noiDung: $"Công việc: {tenCongViec}",
+                    //    loaiThongBao: ThongBaoTypes.HeThong,
+                    //    idCongViec: idCongViec,
+                    //    idDuAn: idDuAn
+                    //);
                 }
 
                 // 3. Chuẩn bị dữ liệu Auto-Join
@@ -230,13 +230,13 @@ namespace SweetSoft.QLDA.Core.Managers
                         TblDuAn d = DuAnManager.Instance.GetDuAnById(idDuAn);
                         string tenDuAn = d != null ? d.TenDuAn : "Dự án";
 
-                        ThongBaoManager.Instance.Create(
-                            userId: id,
-                            tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
-                            noiDung: $"Dự án: {tenDuAn}",
-                            loaiThongBao: ThongBaoTypes.DuAn,
-                            idDuAn: idDuAn
-                        );
+                        //ThongBaoManager.Instance.Create(
+                        //    userId: id,
+                        //    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                        //    noiDung: $"Dự án: {tenDuAn}",
+                        //    loaiThongBao: ThongBaoTypes.DuAn,
+                        //    idDuAn: idDuAn
+                        //);
                     }
 
                     // Thông báo: gửi cho nhân viên vừa được giao công việc
@@ -250,13 +250,13 @@ namespace SweetSoft.QLDA.Core.Managers
                             {
                                 string tieuDe = $"Bạn được giao công việc: {congViec.TenCongViec}";
 
-                                ThongBaoManager.Instance.Create(
-                                    userId          : assigneeUserId,
-                                    tieuDe          : tieuDe,
-                                    loaiThongBao    : ThongBaoTypes.CongViec,
-                                    idCongViec      : idCongViec,
-                                    idDuAn          : idDuAn
-                                );
+                                //ThongBaoManager.Instance.Create(
+                                //    userId          : assigneeUserId,
+                                //    tieuDe          : tieuDe,
+                                //    loaiThongBao    : ThongBaoTypes.CongViec,
+                                //    idCongViec      : idCongViec,
+                                //    idDuAn          : idDuAn
+                                //);
                             }
                             catch (Exception ex)
                             {
