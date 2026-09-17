@@ -13,11 +13,18 @@
 
         /* LƯỚI LỊCH (GRID) */
         .cal-header-row { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; border: 1px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; }
-        .cal-header-cell { padding: 10px; text-align: center; font-weight: 700; color: #475569; font-size: 13px; border-right: 1px solid #e2e8f0; }
-        .cal-header-cell:last-child { border-right: none; }
-        
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; overflow: hidden; }
-        .cal-cell { min-height: 100px; padding: 6px; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; background: #ffffff; transition: background 0.2s; }
+       .cal-header-cell { 
+            padding: 10px; text-align: center; font-weight: 700; color: #475569; 
+            font-size: 13px; border-right: 1px solid #e2e8f0; 
+            min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
+        }
+        .cal-header-cell:last-child { border-right: none; }      
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px; overflow: hidden; }      
+        .cal-cell { 
+            min-height: 100px; padding: 6px; border-right: 1px solid #e2e8f0; 
+            border-bottom: 1px solid #e2e8f0; background: #ffffff; transition: background 0.2s; 
+            min-width: 0; /* [FIX]: Ép cột không được phình to phá viền */
+        }
         .cal-cell:nth-child(7n) { border-right: none; }
         .cal-cell.is-clickable { cursor: pointer; }
         .cal-cell.is-clickable:hover { background: #f8fafc; box-shadow: inset 0 0 0 2px #bfdbfe; }

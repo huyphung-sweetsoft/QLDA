@@ -42,6 +42,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask CtrlTask1;
 
         /// <summary>
+        /// mdlEditTask control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlEditTask;
+
+        /// <summary>
         /// upModal control.
         /// </summary>
         /// <remarks>
@@ -49,15 +58,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.UpdatePanel upModal;
-
-        /// <summary>
-        /// litModalTitle control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litModalTitle;
 
         /// <summary>
         /// hfEditTaskId control.
@@ -166,6 +166,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtEditMoTa;
+
+        /// <summary>
+        /// upnlFooterEdit control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlFooterEdit;
 
         /// <summary>
         /// btnSaveTask control.

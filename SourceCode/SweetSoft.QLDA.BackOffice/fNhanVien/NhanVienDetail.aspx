@@ -191,7 +191,7 @@
                                         <h5 class="fw-bold text-dark mb-1"><%= GetResourceText(BackEndResourceKeys.PARTICIPATING) %></h5>
                                         <span class="text-muted" style="font-size: 13px; font-weight: 600;"><asp:Literal ID="ltrCountActiveProj" runat="server">0</asp:Literal> <%= GetResourceText(BackEndResourceKeys.ACTIVE_PROJECTS) %></span>
                                     </div>
-                                    <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="fas fa-bolt"></i></div>
+                                 <div class="icon-box" style="color: #1d4ed8 !important; background-color: #dbeafe !important;"><i class="fas fa-rocket"></i></div>
                                 </div>
                                 <div class="border-top pt-3 mt-auto text-end"><span class="text-primary fw-bold" style="font-size: 13px;"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %> <i class="fas fa-arrow-right ms-1"></i></span></div>
                         </div>
