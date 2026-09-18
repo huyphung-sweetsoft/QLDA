@@ -448,7 +448,7 @@
                 <asp:Panel
                     runat="server"
                     ID="pnlVersionUploader"
-                    CssClass="border rounded bg-light p-3 mb-3">
+                    CssClass="border rounded bg-light p-3 mb-3 document-file-box">
                     <h6 class="text-primary mb-2">
                         <i class="fas fa-cloud-upload-alt me-1"></i>
                         <%= GetResourceText(BackEndResourceKeys.UPLOAD_NEW_VERSION) %>
@@ -1097,10 +1097,12 @@
     <ContentTemplate>
         <asp:HiddenField runat="server" ID="hdfSigningResultId" />
         <div class="small text-muted mb-2"><%= GetResourceText(BackEndResourceKeys.SIGNING_RESULT_FILE_HINT) %></div>
-        <SweetSoft:FilesBox
-            runat="server"
-            ID="fbSigningResult"
-            IsMultiple="false" />
+        <div class="document-file-box">
+            <SweetSoft:FilesBox
+                runat="server"
+                ID="fbSigningResult"
+                IsMultiple="false" />
+        </div>
         <div class="mt-3">
             <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGNING_NOTE) %></label>
             <SweetSoft:ExtraTextBox
