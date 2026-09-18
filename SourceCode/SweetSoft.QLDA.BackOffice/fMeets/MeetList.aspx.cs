@@ -145,8 +145,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             _control.BindNhanVienThamGiaLichHop(meet.IdLichHop, hdfNhanVienIds, txtNhanVienThamGia);
 
             if (meet.ThoiGianBatDau != DateTime.MinValue)
-                txtThoiGianBatDau.DateValue = meet.ThoiGianBatDau;
-
+                txtThoiGianBatDau.DateValue = DateTime.SpecifyKind(meet.ThoiGianBatDau, DateTimeKind.Unspecified);
             if (meet.ThoiGianKetThuc != DateTime.MinValue)
             {
                 txtThoiGianKetThuc.Text = meet.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm");
