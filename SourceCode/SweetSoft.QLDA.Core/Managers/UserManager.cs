@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using SubSonic;
 using SweetSoft.QLDA.Core.Caches;
 using SweetSoft.QLDA.Core.EnumHelper;

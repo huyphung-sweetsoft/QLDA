@@ -143,6 +143,18 @@ namespace SweetSoft.QLDA.Core.Respositories
             string tenKhoanChi = parameters != null && parameters.ContainsKey("TenKhoanChi") ? parameters["TenKhoanChi"]?.ToString() : null;
             string maChiPhi = parameters != null && parameters.ContainsKey("MaChiPhi") ? parameters["MaChiPhi"]?.ToString() : null;
 
+            string idNhanVienDeNghi = parameters != null && parameters.ContainsKey("IdNhanVienDeNghi") ? parameters["IdNhanVienDeNghi"]?.ToString() : null;
+            string soTienMinStr = parameters != null && parameters.ContainsKey("SoTienMin") ? parameters["SoTienMin"]?.ToString() : null;
+            string soTienMaxStr = parameters != null && parameters.ContainsKey("SoTienMax") ? parameters["SoTienMax"]?.ToString() : null;
+
+            string trangThaiStr = parameters != null && parameters.ContainsKey("TrangThai") ? parameters["TrangThai"]?.ToString() : null;
+
+            string sqlIdNhanVien = string.IsNullOrEmpty(idNhanVienDeNghi) ? "NULL" : $"'{InlineQueryHelpers.SQLEncode(idNhanVienDeNghi)}'";
+            string sqlSoTienMin = string.IsNullOrEmpty(soTienMinStr) ? "NULL" : soTienMinStr.Replace(",", "");
+            string sqlSoTienMax = string.IsNullOrEmpty(soTienMaxStr) ? "NULL" : soTienMaxStr.Replace(",", "");
+
+            string sqlTrangThai = string.IsNullOrEmpty(trangThaiStr) ? "NULL" : trangThaiStr;
+
             string sql = $@"
                 DECLARE @startRow INT = {startRow};
                 DECLARE @endRow INT = {endRow};
@@ -150,6 +162,13 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
                 DECLARE @tenKhoanChi NVARCHAR(255) = N'%{InlineQueryHelpers.SQLEncode(tenKhoanChi)}%';
                 DECLARE @maChiPhi NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(maChiPhi)}%';
+
+                DECLARE @idNhanVienDeNghi VARCHAR(36) = {sqlIdNhanVien};
+                DECLARE @soTienMin DECIMAL(18,2) = {sqlSoTienMin};
+                DECLARE @soTienMax DECIMAL(18,2) = {sqlSoTienMax};
+        
+                -- Khai báo biến SQL cho Trạng thái
+                DECLARE @trangThai INT = {sqlTrangThai};
 
                 SELECT * FROM (
                     SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
@@ -167,8 +186,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                           AND (@singleKeyWord = N'%%'
                                 OR c.TenKhoanChi LIKE @singleKeyWord
                                 OR c.MaChiPhi LIKE @singleKeyWord)
+                  
+                          AND (@idNhanVienDeNghi IS NULL OR c.IdNhanVienDeNghi = @idNhanVienDeNghi)
+                          AND (@soTienMin IS NULL OR c.SoTien >= @soTienMin)
+                          AND (@soTienMax IS NULL OR c.SoTien <= @soTienMax)
+                  
+                          AND (@trangThai IS NULL OR c.TrangThai = @trangThai)
+
                     ) AS T
-                ) T1 WHERE RowNum > @startRow AND RowNum <= @endRow;";
+                ) T1 WHERE RowNum > @startRow AND RowNum <= @endRow;
+            ";
 
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null)

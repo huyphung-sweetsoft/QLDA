@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -87,6 +87,8 @@ namespace SweetSoft.QLDA.Core.Managers
                             duAn.IdDuAn);
                 }
 
+                Guid? oldPM = duAn.IdNhanVienQuanLy;
+
                 ObjectHelper.CopyBusinessProperties(
                      dto,
                      duAn,
@@ -108,6 +110,18 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn = _repository.Update(duAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
+
+                if (duAn.IdNhanVienQuanLy.HasValue && duAn.IdNhanVienQuanLy != oldPM)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: duAn.IdNhanVienQuanLy.Value,
+                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                        noiDung: $"Dự án: {duAn.TenDuAn}",
+                        loaiThongBao: ThongBaoTypes.DuAn,
+                        idDuAn: duAn.IdDuAn
+                    );
+                }
+
                 return duAn;
             }
             else
@@ -137,6 +151,18 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn = _repository.Insert(duAn);
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
+
+                if (duAn.IdNhanVienQuanLy.HasValue)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: duAn.IdNhanVienQuanLy.Value,
+                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                        noiDung: $"Dự án: {duAn.TenDuAn}",
+                        loaiThongBao: ThongBaoTypes.DuAn,
+                        idDuAn: duAn.IdDuAn
+                    );
+                }
+
                 return duAn;
             }
         }
@@ -146,7 +172,7 @@ namespace SweetSoft.QLDA.Core.Managers
             using (var scope = new TransactionScope())//Gọi cái TransactionScope là để đảm bảo ACID gì đó, nói chung là lưu dự án + lưu ds tv thành công cùng lúc
             {                                        //không để xảy ra tình trạng lưu thk này lỗi thk kia                   
                 TblDuAn duAn = CreateOrUpdate(dto);
-                ReplaceThanhVienDuAn(duAn.IdDuAn, selectedMemberIds);//Gọi thk này để đồng bộ danh sách nhân viên 
+                ReplaceThanhVienDuAn(duAn.IdDuAn, selectedMemberIds, duAn.IdNhanVienQuanLy);//Gọi thk này để đồng bộ danh sách nhân viên 
                 scope.Complete();
                 return duAn;
             }
@@ -214,10 +240,13 @@ namespace SweetSoft.QLDA.Core.Managers
         //1. ReplaceThanhVienDuAn: như tên, dùng để cập nhật danh sách thành viên của 1 dự án thôi, dùng trong edit
         //Giải thích logic cho dễ hiểu thì: Giả sử dự án đang có nv BCDE, sau đó muốn bỏ E thêm F thì thay vì nó xóa mềm hết 4 thk cũ rồi thêm 4 dòng mới là BCDF
         //Thì nó chỉ cần xóa mềm thk E và thêm thk F thôi, đỡ rác db
-        private void ReplaceThanhVienDuAn(Guid idDuAn, List<Guid> memberIds)
+        private void ReplaceThanhVienDuAn(Guid idDuAn, List<Guid> memberIds, Guid? idNhanVienQuanLy = null)
         {
             TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
             memberIds = (memberIds ?? new List<Guid>()).Distinct().ToList();
+
+            if (idNhanVienQuanLy.HasValue && idNhanVienQuanLy.Value != Guid.Empty)
+                memberIds = memberIds.Where(id => id != idNhanVienQuanLy.Value).ToList();
 
             List<Guid> danhSachCu = ThanhVienDuAnManager.Instance.GetIdNhanVienByDuAnAndVaiTro(idDuAn, vaiTroThanhVien.IdVaiTroDuAn);
 
@@ -227,13 +256,30 @@ namespace SweetSoft.QLDA.Core.Managers
             foreach (Guid id in canXoa)
                 ThanhVienDuAnManager.Instance.DeleteOne(idDuAn, vaiTroThanhVien.IdVaiTroDuAn, id);
 
+            string tenDuAn = "Dự án";
+            if (canThem.Any())
+            {
+                TblDuAn d = _repository.GetById(idDuAn);
+                if (d != null) tenDuAn = d.TenDuAn;
+            }
+
             foreach (Guid id in canThem)
+            {
                 ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn
                 {
                     IdDuAn = idDuAn,
                     IdNhanVien = id,
                     IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
                 });
+
+                ThongBaoManager.Instance.Create(
+                    userId: id,
+                    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                    noiDung: $"Dự án: {tenDuAn}",
+                    loaiThongBao: ThongBaoTypes.DuAn,
+                    idDuAn: idDuAn
+                );
+            }
         }
         //2. GetMemberIds: Dùng lấy đống idNhanVien đã có trong dự án để đánh tích cái checkbox, dùng để hiển thị trong edit
         public List<Guid> GetMemberIds(Guid idDuAn)
@@ -245,6 +291,129 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable GetProjectHistory(Guid idDuAn, Guid? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
         {
             return _auditManager.GetProjectHistory(idDuAn, userId, fromDate, toDate);
+        }
+
+        public void ValidateStatusTransition(DuAnStatus oldStatus, DuAnStatus newStatus)
+        {
+            if (oldStatus == newStatus) return;
+
+            switch (oldStatus)
+            {
+                case DuAnStatus.ChoThucHien:
+                    if (newStatus != DuAnStatus.DangThucHien && newStatus != DuAnStatus.KetThuc)
+                        throw new BusinessException("Không thể chuyển trạng thái từ '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), oldStatus) + "' sang '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), newStatus) + "'", statusCode: ErrorCodes.Conflict);
+                    break;
+                case DuAnStatus.DangThucHien:
+                    if (newStatus != DuAnStatus.TamDung && newStatus != DuAnStatus.HoanThanh && newStatus != DuAnStatus.KetThuc)
+                        throw new BusinessException("Không thể chuyển trạng thái từ '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), oldStatus) + "' sang '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), newStatus) + "'", statusCode: ErrorCodes.Conflict);
+                    break;
+                case DuAnStatus.TamDung:
+                    if (newStatus != DuAnStatus.DangThucHien && newStatus != DuAnStatus.KetThuc)
+                        throw new BusinessException("Không thể chuyển trạng thái từ '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), oldStatus) + "' sang '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), newStatus) + "'", statusCode: ErrorCodes.Conflict);
+                    break;
+                case DuAnStatus.HoanThanh:
+                case DuAnStatus.KetThuc:
+                    throw new BusinessException("Dự án đã đóng ở trạng thái '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), oldStatus) + "', không thể chuyển sang trạng thái khác.", statusCode: ErrorCodes.Conflict);
+                default:
+                    throw new BusinessException("Trạng thái dự án không hợp lệ.", statusCode: ErrorCodes.Conflict);
+            }
+        }
+
+        public void EnsureCanUpdateProgress(Guid idDuAn)
+        {
+            TblDuAn duAn = GetDuAnById(idDuAn);
+            if (duAn == null || duAn.DaXoa) throw new BusinessException("Không tìm thấy dự án.", statusCode: ErrorCodes.NotFound);
+            DuAnStatus status = (DuAnStatus)duAn.TrangThai;
+
+            if (status != DuAnStatus.DangThucHien)
+            {
+                throw new BusinessException("Không thể cập nhật tiến độ khi dự án đang ở trạng thái '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), status) + "'", statusCode: ErrorCodes.Conflict);
+            }
+        }
+
+        public void EnsureCanModifyStructure(Guid idDuAn)
+        {
+            TblDuAn duAn = GetDuAnById(idDuAn);
+            if (duAn == null || duAn.DaXoa) throw new BusinessException("Không tìm thấy dự án.", statusCode: ErrorCodes.NotFound);
+            DuAnStatus status = (DuAnStatus)duAn.TrangThai;
+
+            if (status == DuAnStatus.HoanThanh || status == DuAnStatus.KetThuc)
+            {
+                throw new BusinessException("Không thể chỉnh sửa cấu trúc (công việc, giai đoạn) khi dự án đã '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), status) + "'", statusCode: ErrorCodes.Conflict);
+            }
+        }
+
+        public SweetSoft.QLDA.Core.ValueObjects.DuAnTienDoViewModel GetDuAnTienDo(Guid idDuAn)
+        {
+            var result = new SweetSoft.QLDA.Core.ValueObjects.DuAnTienDoViewModel();
+
+            var project = GetDuAnById(idDuAn);
+            if (project != null)
+            {
+                // 1. Tiến độ thời gian
+                if (project.NgayBatDau != default(DateTime) && project.NgayDuKienHoanThanh != default(DateTime))
+                {
+                    DateTime start = project.NgayBatDau.Date;
+                    DateTime end = project.NgayDuKienHoanThanh.Date;
+                    DateTime now = DateTime.Now.Date;
+
+                    if (now < start)
+                    {
+                        result.TienDoThoiGian = 0;
+                    }
+                    else if (now > end)
+                    {
+                        result.TienDoThoiGian = 100;
+                    }
+                    else if (start < end)
+                    {
+                        decimal totalDays = (decimal)(end - start).TotalDays;
+                        decimal passedDays = (decimal)(now - start).TotalDays;
+                        if (totalDays > 0)
+                        {
+                            decimal p = (passedDays / totalDays) * 100m;
+                            result.TienDoThoiGian = Math.Max(0m, Math.Min(100m, p));
+                        }
+                    }
+                }
+
+                // 2. Tiến độ công việc
+                var allTasks = new SubSonic.Select()
+                    .From<SweetSoft.QLDA.DataAccess.TblCongViec>()
+                    .Where(SweetSoft.QLDA.DataAccess.TblCongViec.IdDuAnColumn).IsEqualTo(idDuAn)
+                    .And(SweetSoft.QLDA.DataAccess.TblCongViec.DaXoaColumn).IsEqualTo(false)
+                    .And(SweetSoft.QLDA.DataAccess.TblCongViec.IdGiaiDoanDuAnColumn).IsNull()
+                    .ExecuteAsCollection<SweetSoft.QLDA.DataAccess.TblCongViecCollection>();
+
+                if (allTasks != null && allTasks.Count > 0)
+                {
+                    // Lọc lấy các Task lá (không có con)
+                    var parentIds = allTasks.Where(t => t.IdCongViecCha.HasValue).Select(t => t.IdCongViecCha.Value).Distinct().ToHashSet();
+                    var leafTasks = allTasks.Where(t => !parentIds.Contains(t.IdCongViec)).ToList();
+
+                    decimal totalWeightedProgress = 0;
+                    decimal totalTime = 0;
+
+                    foreach (var task in leafTasks)
+                    {
+                        if (task.ThoiHanNgay.HasValue && task.ThoiHanNgay.Value > 0)
+                        {
+                            decimal time = (decimal)task.ThoiHanNgay.Value;
+                            decimal progress = task.TrangThai == (byte)2 ? 100m : (decimal)task.PhanTramHoanThanh;
+                            
+                            totalWeightedProgress += (time * progress);
+                            totalTime += time;
+                        }
+                    }
+
+                    if (totalTime > 0)
+                    {
+                        result.TienDoCongViec = Math.Max(0m, Math.Min(100m, totalWeightedProgress / totalTime));
+                    }
+                }
+            }
+
+            return result;
         }
 
     }

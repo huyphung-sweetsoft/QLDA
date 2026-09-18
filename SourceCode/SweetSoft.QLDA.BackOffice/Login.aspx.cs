@@ -40,7 +40,7 @@ namespace SweetSoft.QLDA.BackOffice
 
                 if (SweetContext.Current.User != null)
                 {
-                    Response.Redirect(GetRelativeClientPath("Home"));
+                    Response.Redirect(GetRelativeClientPath("Home/Overview"));
                     return;
                 }    
 

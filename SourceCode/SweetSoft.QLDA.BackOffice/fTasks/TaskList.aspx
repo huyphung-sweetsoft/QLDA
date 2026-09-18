@@ -48,7 +48,38 @@
     }
 
     .row-overdue-bg {
-        background-color: #fef2f2 !important;
+        background-color: #fee2e2 !important;
+        transition: background-color 0.2s ease !important;
+    }
+    .row-overdue-bg:hover, .row-overdue-bg.active {
+        background-color: #fecaca !important; 
+    }
+
+    .row-warning-bg {
+        background-color: #fffbeb !important; 
+        transition: background-color 0.2s ease !important; 
+    }
+    .row-warning-bg:hover, .row-warning-bg.active {
+        background-color: #fef3c7 !important; 
+    }
+
+    .btn-toggle-tree {
+        background-color: #ffffff !important;
+        color: #334155 !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 14px !important;
+        border-radius: 6px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-toggle-tree:hover {
+        background-color: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
     }
 
     .task-phase-name {
@@ -94,70 +125,6 @@
     .opt-pri-low      { color: #0284c7 !important; font-weight: 600; background-color: #f0f9ff; }
     .opt-pri-med      { color: #d97706 !important; font-weight: 600; background-color: #fffbeb; }
     .opt-pri-high     { color: #dc2626 !important; font-weight: 700; background-color: #fef2f2; }
-
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(2px);
-        z-index: 1050;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-    }
-    .modal-overlay.active {
-        display: flex;
-    }
-    .modal-card {
-        background: #ffffff;
-        border-radius: 10px;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-    }
-    .modal-header-sweet {
-        background: linear-gradient(135deg, #4c1d95, #6f42c1);
-        color: #ffffff;
-        padding: 14px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .modal-header-sweet h3 {
-        font-size: 15px;
-        font-weight: 700;
-        margin: 0;
-    }
-    .modal-header-sweet button {
-        background: none;
-        border: none;
-        color: #ffffff;
-        font-size: 18px;
-        cursor: pointer;
-    }
-    .modal-body-sweet {
-        padding: 20px;
-        max-height: 75vh;
-        overflow-y: auto;
-    }
-    .modal-body-sweet .form-control:disabled,
-    .modal-body-sweet .form-control[readonly],
-    .modal-body-sweet .form-select:disabled,
-    .modal-body-sweet input:disabled,
-    .modal-body-sweet select:disabled,
-    .modal-body-sweet textarea:disabled {
-        background: #f1f5f9 !important;
-        color: #64748b !important;
-        border-color: #cbd5e1 !important;
-        cursor: not-allowed !important;
-        opacity: 1 !important;
-    }
     .task-phase-box {
     background-color: #f3e8ff !important;
     border-left: 4px solid #6f42c1 !important;
@@ -179,6 +146,10 @@
         font-weight: 700 !important;
         color: #0f172a !important;
     }
+    .table-task-grid th:first-child,
+    .table-task-grid td:first-child {
+        display: none !important;
+    }
 </style>
 </asp:Content>
 
@@ -195,18 +166,11 @@
 </asp:Content>
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
-    <div id="editTaskModal" class="modal-overlay">
-        <asp:UpdatePanel ID="upModal" runat="server" UpdateMode="Conditional">
-            <ContentTemplate>
-                <div class="modal-card" style="width: 760px; max-width: 95vw;">
-                    <div class="modal-header-sweet">
-                        <h3>
-                            <i class="fas fa-tasks me-2"></i>
-                            <asp:Literal ID="litModalTitle" runat="server" Text="Cập nhật thông tin công việc"></asp:Literal>
-                        </h3>
-                        <button type="button" onclick="closeEditModal()">✕</button>
-                    </div>
-                    <div class="modal-body-sweet">
+    <SweetSoft:ExtraModal runat="server" ID="mdlEditTask" Type="Primary">
+        <ContentTemplate>
+            <asp:UpdatePanel ID="upModal" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <div class="p-3">
                         <asp:HiddenField ID="hfEditTaskId" runat="server" />
                         
                         <div class="row g-2 mb-3">
@@ -245,27 +209,23 @@
                                 <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.OWNER) %></label>
-                                <asp:DropDownList ID="ddlEditNhanVien" runat="server" CssClass="form-select"></asp:DropDownList>
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
+                                <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                         </div>
 
                         <div class="row g-2 mb-3">
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %>) <span class="text-danger">*</span></label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control" TextMode="Number" min="1"></asp:TextBox>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.START_DATE) %><span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
                                 <asp:TextBox ID="txtEditNgayKetThuc" runat="server" CssClass="form-control" TextMode="Date" ReadOnly="true"></asp:TextBox>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
-                                <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="form-select"></asp:DropDownList>
                             </div>
                         </div>
 
@@ -274,35 +234,131 @@
                             <asp:TextBox ID="txtEditMoTa" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control"></asp:TextBox>
                         </div>
                     </div>
-
-                    <div class="p-3 border-top bg-light d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()"><%= GetResourceText(BackEndResourceKeys.BACK_TO_LIST) %></button>
-                        <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary" 
-                                        CausesValidation="false" OnClick="btnSaveTask_Click">
-                            <i class="fas fa-save me-1"></i> <%= GetResourceText(BackEndResourceKeys.SAVE) %>
-                        </asp:LinkButton>
-                    </div>
-                </div>
-            </ContentTemplate>
-        </asp:UpdatePanel>
-    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </ContentTemplate>
+        <FooterTemplate>
+            <asp:UpdatePanel ID="upnlFooterEdit" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary waves-effect waves-light" 
+                                    CausesValidation="false" OnClick="btnSaveTask_Click">
+                        <i class="fas fa-save me-1"></i> <%= GetResourceText(BackEndResourceKeys.SAVE) %>
+                    </asp:LinkButton>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
-
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
-        function openEditModal() {
-            $('#editTaskModal').addClass('active');
+        var isOverdueFiltered = false;
+        var isTreeCollapsed = false;
+
+        // Hàm chính để xử lý ẩn/hiện các dòng dựa trên state
+        function applyTaskFilters() {
+            var gridRows = document.querySelectorAll('.table-task-grid tbody tr');
+
+            gridRows.forEach(function (row) {
+                if (!row.hasAttribute('data-level')) return;
+
+                var isOverdue = row.getAttribute('data-overdue') === '1';
+                var level = parseInt(row.getAttribute('data-level'), 10);
+
+                var showRow = true;
+
+                // Lọc trễ hạn
+                if (isOverdueFiltered && !isOverdue) {
+                    showRow = false;
+                }
+
+                // Thu gọn tree (chỉ hiện level 1)
+                if (isTreeCollapsed && level > 1) {
+                    showRow = false;
+                }
+
+                row.style.display = showRow ? '' : 'none';
+            });
         }
 
-        function closeEditModal() {
-            $('#editTaskModal').removeClass('active');
-        }
+        // Bật/tắt lọc trễ hạn
+        window.toggleOverdueFilter = function () {
+            isOverdueFiltered = !isOverdueFiltered;
 
-        $(document).on('keydown', function (e) {
-            if (e.key === "Escape" && $('#editTaskModal').hasClass('active')) {
-                closeEditModal();
+            // Nếu đang bật lọc trễ hạn mà tree đang thu gọn -> Mở rộng tree ra
+            if (isOverdueFiltered && isTreeCollapsed) {
+                isTreeCollapsed = false;
+                var btnTree = document.getElementById('btnToggleTree');
+                var lbl = document.getElementById('lblToggleText');
+                var icon = btnTree ? btnTree.querySelector('i') : null;
+
+                if (btnTree) {
+                    if (lbl) lbl.innerText = btnTree.getAttribute('data-collapse-text') || 'Thu gọn';
+                    if (icon) {
+                        icon.classList.remove('fa-folder');
+                        icon.classList.add('fa-folder-open');
+                    }
+                }
+            }
+
+            // Đổi style button lọc trễ hạn
+            var btnOverdue = document.getElementById('btnFilterOverdue');
+            if (btnOverdue) {
+                if (isOverdueFiltered) {
+                    btnOverdue.classList.add('active'); // Sửa lại thành 'active' cho khớp với CSS
+                } else {
+                    btnOverdue.classList.remove('active');
+                }
+            }
+
+            applyTaskFilters();
+        };
+
+        // Bật/tắt thu gọn công việc
+        window.toggleTaskTree = function () {
+            isTreeCollapsed = !isTreeCollapsed;
+
+            // Nếu đang thu gọn mà đang lọc trễ hạn -> Tắt lọc trễ hạn đi
+            if (isTreeCollapsed && isOverdueFiltered) {
+                isOverdueFiltered = false;
+                var btnOverdue = document.getElementById('btnFilterOverdue');
+                if (btnOverdue) btnOverdue.classList.remove('active');
+            }
+
+            var btn = document.getElementById('btnToggleTree');
+            var lbl = document.getElementById('lblToggleText');
+            var icon = btn ? btn.querySelector('i') : null;
+
+            if (btn) {
+                var expandText = btn.getAttribute('data-expand-text') || 'Mở rộng';
+                var collapseText = btn.getAttribute('data-collapse-text') || 'Thu gọn';
+
+                if (isTreeCollapsed) {
+                    // Trạng thái bị thu gọn -> Hiện text "Mở rộng" để người dùng click
+                    if (lbl) lbl.innerText = expandText;
+                    if (icon) {
+                        icon.classList.remove('fa-folder-open');
+                        icon.classList.add('fa-folder');
+                    }
+                } else {
+                    // Trạng thái đang mở rộng -> Hiện text "Thu gọn"
+                    if (lbl) lbl.innerText = collapseText;
+                    if (icon) {
+                        icon.classList.remove('fa-folder');
+                        icon.classList.add('fa-folder-open');
+                    }
+                }
+            }
+
+            // Gọi hàm apply để thực sự ẩn/hiện các dòng
+            applyTaskFilters();
+        };
+
+        // Bắt sự kiện thay đổi LocalStorage từ các Tab khác cùng trình duyệt
+        window.addEventListener("storage", function (e) {
+            if (e.key === "ScheduleChanged") {
+                window.location.reload();
             }
         });
     </script>

@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnList" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnList" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
@@ -163,5 +163,42 @@
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
+    <script>
+        function initProjectDateSync() {
+            var $startDate = $('#<%= dtNgayBatDau.ClientID %>');
+            var $endDate = $('#<%= dtNgayKetThuc.ClientID %>');
+            
+            if ($startDate.length && $endDate.length) {
+                // Remove previously attached handlers to avoid duplicates after UpdatePanel refresh
+                $startDate.off('apply.daterangepicker.syncDates');
+                
+                $startDate.on('apply.daterangepicker.syncDates', function(ev, picker) {
+                    var pickerEnd = $endDate.data('daterangepicker');
+                    if (pickerEnd && picker.startDate) {
+                        pickerEnd.minDate = picker.startDate.clone();
+                        
+                        // If current end date is before new start date, update it
+                        if (pickerEnd.startDate && pickerEnd.startDate.isBefore(picker.startDate, 'day')) {
+                            pickerEnd.setStartDate(picker.startDate.clone());
+                            pickerEnd.setEndDate(picker.startDate.clone());
+                            
+                            // Trigger apply manually since setStartDate doesn't fire it automatically
+                            $endDate.trigger('apply.daterangepicker', pickerEnd);
+                        }
+                    }
+                });
+            }
+        }
 
+        $(document).ready(function () {
+            initProjectDateSync();
+        });
+
+        // Re-init after UpdatePanel refresh
+        if (typeof Sys !== "undefined" && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+                initProjectDateSync();
+            });
+        }
+    </script>
 </asp:Content>

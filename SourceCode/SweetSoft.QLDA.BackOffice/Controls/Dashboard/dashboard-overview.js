@@ -19,12 +19,12 @@ function renderProjectStatusChart() {
     }
 
     if (typeof ApexCharts === "undefined") {
-        console.error("ApexCharts chưa được load.");
+        console.error("ApexCharts is unavailable.");
         return;
     }
 
     if (!window.projectStatusChartData) {
-        console.error("projectStatusChartData chưa tồn tại.");
+        console.error("projectStatusChartData is unavailable.");
         return;
     }
 
@@ -82,20 +82,24 @@ function renderProjectProgressChart() {
     }
 
     if (typeof ApexCharts === "undefined") {
-        console.error("ApexCharts chưa được load.");
+        console.error("ApexCharts is unavailable.");
         return;
     }
 
     if (!window.projectProgressChartData) {
-        console.error("projectProgressChartData chưa tồn tại.");
+        console.error("projectProgressChartData is unavailable.");
         return;
     }
 
     var data = window.projectProgressChartData;
+    var texts = window.dashboardOverviewTexts || {};
 
     var chartHeight = Math.max(360, data.length * 55);
 
     element.style.height = chartHeight + "px";
+    element.style.cursor = data.some(function (item) {
+        return item && item.detailUrl;
+    }) ? "pointer" : "default";
 
     var options = {
 
@@ -118,7 +122,7 @@ function renderProjectProgressChart() {
 
         series: [
             {
-                name: "Tiến độ",
+                name: texts.progress || "",
                 data: data.map(function (item) {
                     return Number(item.progress);
                 })
@@ -136,7 +140,7 @@ function renderProjectProgressChart() {
             max: 100,
             tickAmount: 5,
             title: {
-                text: "Tiến độ (%)"
+                text: texts.progressAxis || ""
             }
         },
 
@@ -228,15 +232,15 @@ function renderProjectProgressChart() {
                     ${escapeDashboardHtml(item.name)}
                 </div>
                 <div>
-                    <strong>Tiến độ:</strong>
+                    <strong>${escapeDashboardHtml(texts.progress || "")}:</strong>
                     ${item.progress}%
                 </div>
                 <div>
-                    <strong>Bắt đầu:</strong>
+                    <strong>${escapeDashboardHtml(texts.start || "")}:</strong>
                     ${escapeDashboardHtml(item.startDate)}
                 </div>
                 <div>
-                    <strong>Dự kiến:</strong>
+                    <strong>${escapeDashboardHtml(texts.expected || "")}:</strong>
                     ${escapeDashboardHtml(item.expectedEndDate)}
                 </div>
             </div>`;
@@ -251,6 +255,13 @@ function renderProjectProgressChart() {
             setTimeout(function() {
                 if (customTooltip.style.opacity === '0') customTooltip.style.display = 'none';
             }, 200);
+        },
+        dataPointSelection: function (event, chartContext, config) {
+            var item = data[config.dataPointIndex];
+
+            if (item && item.detailUrl) {
+                window.location.assign(item.detailUrl);
+            }
         }
     };
     chart.updateOptions(options);

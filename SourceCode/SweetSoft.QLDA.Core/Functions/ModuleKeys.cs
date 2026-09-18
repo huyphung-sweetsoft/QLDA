@@ -50,5 +50,7 @@ namespace SweetSoft.QLDA.Core.Functions
         Payment,
         ProjectDocument,
         Contract,
+        GanttChart,
+        ProjectReport
     }
 }

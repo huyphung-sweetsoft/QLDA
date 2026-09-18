@@ -1,0 +1,6 @@
+[2026-09-17 16:39:27] [Info] - Email sent successfully to dungnguyen.041104@gmail.com with subject: Thông tin tài khoản trên phần mềm quản lý dự án SweetSoft
+[2026-09-17 16:39:27] [Debug] - Updated email history 3cb0a001-3ab5-0070-96ad-49e7a6bb6542 to status Sent
+[2026-09-17 16:55:08] [Info] - Email sent successfully to dungnguyen.041104@gmail.com with subject: Thông tin tài khoản trên phần mềm quản lý dự án SweetSoft
+[2026-09-17 16:55:08] [Debug] - Updated email history 4bb0a001-fb13-0070-9393-8fe540c73e04 to status Sent
+[2026-09-17 16:59:44] [Info] - Email sent successfully to dungnguyen.041104@gmail.com with subject: Thông tin tài khoản trên phần mềm quản lý dự án SweetSoft
+[2026-09-17 16:59:44] [Debug] - Updated email history 4fb0a001-d548-0070-903f-62018f5244cf to status Sent

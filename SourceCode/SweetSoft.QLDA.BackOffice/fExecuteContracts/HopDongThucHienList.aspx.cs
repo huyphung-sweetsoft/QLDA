@@ -8,6 +8,7 @@ using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -81,11 +82,11 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             ddlKhachHang.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
             dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
 
-            string enterValueText = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
-            txtSoHopDong.PlaceHolder = enterValueText;
-            txtTenHopDong.PlaceHolder = enterValueText;
-            txtGiaTriHopDong.PlaceHolder = enterValueText;
-            txtMoTa.PlaceHolder = enterValueText;
+            txtSoHopDong.PlaceHolder = 
+                txtTenHopDong.PlaceHolder = 
+                txtGiaTriHopDong.PlaceHolder = 
+                txtMoTa.PlaceHolder = 
+                GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
         }
 
         #region Modal
@@ -96,12 +97,12 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             lbtSubmit.Visible = false;
 
-            txtSoHopDong.Text = string.Empty;
-            txtTenHopDong.Text = string.Empty;
-            txtGiaTriHopDong.Text = string.Empty;
-            txtNgayKy.Text = string.Empty;
-            txtNgayHieuLuc.Text = string.Empty;
-            txtNgayHetHan.Text = string.Empty;
+            txtSoHopDong.Text = 
+                txtTenHopDong.Text = 
+                txtGiaTriHopDong.Text = 
+                txtNgayKy.Text = 
+                txtNgayHieuLuc.Text = 
+                txtNgayHetHan.Text = 
             txtMoTa.Text = string.Empty;
 
             ddlKhachHang.SelectedIndex = 0;
@@ -146,9 +147,11 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             txtTenHopDong.Text = hopDong.TenHopDong;
             ddlKhachHang.SelectedValue = hopDong.IdKhachHang.ToString();
 
-            txtGiaTriHopDong.Text = hopDong.GiaTriHopDong.HasValue
+            txtGiaTriHopDong.Text =
+                hopDong.GiaTriHopDong.HasValue
                 ? hopDong.GiaTriHopDong.Value.ToString()
                 : string.Empty;
+
 
             txtNgayKy.Text = hopDong.NgayKy.HasValue ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd") : string.Empty;
             txtNgayHieuLuc.Text = hopDong.NgayHieuLuc.HasValue ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd") : string.Empty;

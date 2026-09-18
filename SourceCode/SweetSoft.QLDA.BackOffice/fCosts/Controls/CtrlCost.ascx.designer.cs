@@ -15,6 +15,33 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
     {
 
         /// <summary>
+        /// pnlSearchDropdowns control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel pnlSearchDropdowns;
+
+        /// <summary>
+        /// pnlSearchDefaultStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSearchDefaultStatus;
+
+        /// <summary>
+        /// ddlSearchTrangThaiChiPhi control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchTrangThaiChiPhi;
+
+        /// <summary>
         /// txtSearchSingle control.
         /// </summary>
         /// <remarks>
@@ -105,24 +132,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
 
         /// <summary>
-        /// lbtSearchAdvanced control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchAdvanced;
-
-        /// <summary>
-        /// lbtCancel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtCancel;
-
-        /// <summary>
         /// pnlSearch control.
         /// </summary>
         /// <remarks>
@@ -148,5 +157,50 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTenKhoanChi;
+
+        /// <summary>
+        /// ddlSearchNhanVienYeuCau control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlSearchNhanVienYeuCau;
+
+        /// <summary>
+        /// txtSearchSoTienMin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchSoTienMin;
+
+        /// <summary>
+        /// txtSearchSoTienMax control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchSoTienMax;
+
+        /// <summary>
+        /// lbtSearchAdvanced control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchAdvanced;
+
+        /// <summary>
+        /// lbtCancel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtCancel;
     }
 }

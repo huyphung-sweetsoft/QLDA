@@ -98,13 +98,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
             List<string> lstTableHeader = new List<string>
             {
-                GetResourceText(BackEndResourceKeys.INDEX), 
+                GetResourceText(BackEndResourceKeys.INDEX),
                 GetResourceText(BackEndResourceKeys.MEETING_CODE),
-                GetResourceText(BackEndResourceKeys.MEETING_NAME), 
-                GetResourceText(BackEndResourceKeys.START_TIME), 
-                GetResourceText(BackEndResourceKeys.END_TIME), 
-                GetResourceText(BackEndResourceKeys.MEETING_ROOM), 
-                GetResourceText(BackEndResourceKeys.STATUS), 
+                GetResourceText(BackEndResourceKeys.MEETING_NAME),
+                GetResourceText(BackEndResourceKeys.START_TIME),
+                GetResourceText(BackEndResourceKeys.END_TIME),
+                GetResourceText(BackEndResourceKeys.MEETING_ROOM),
+                GetResourceText(BackEndResourceKeys.STATUS),
                 GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.HeaderTexts = lstTableHeader;

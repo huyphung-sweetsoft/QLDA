@@ -177,6 +177,78 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkSchedule;
 
         /// <summary>
+        /// section_active_projects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl section_active_projects;
+
+        /// <summary>
+        /// ltrActiveCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrActiveCount;
+
+        /// <summary>
+        /// emptyActive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl emptyActive;
+
+        /// <summary>
+        /// rptActiveProjects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptActiveProjects;
+
+        /// <summary>
+        /// section_done_projects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl section_done_projects;
+
+        /// <summary>
+        /// ltrDoneCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDoneCount;
+
+        /// <summary>
+        /// emptyDone control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl emptyDone;
+
+        /// <summary>
+        /// rptDoneProjects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptDoneProjects;
+
+        /// <summary>
         /// CtrlUserDetail1 control.
         /// </summary>
         /// <remarks>

@@ -10,8 +10,6 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -21,7 +19,8 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
     {
         public EventHandler NewRiskHandlerCallback;
         public EventHandler EditRiskHandlerCallback;
-        private readonly RiskManager _riskManager = RiskManager.Instance;
+        private readonly ControlHelpers _controlHelpers = new ControlHelpers();
+
         public Guid ProjectId
         {
             get
@@ -41,46 +40,85 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
         protected bool IsDelete => this.CURRENT_PAGE.IsDelete;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             RegisterAsyncButton();
         }
+
         private void RegisterAsyncButton()
         {
             ScriptManager script = ScriptManager.GetCurrent(this.Page);
             script.RegisterAsyncPostBackControl(lbtSearchSingle);
             script.RegisterAsyncPostBackControl(lbtSearchAdvanced);
             script.RegisterAsyncPostBackControl(lbtCancel);
-        }   
+            script.RegisterAsyncPostBackControl(ddlSearchMucDoAnhHuong);
+            script.RegisterAsyncPostBackControl(ddlSearchMucDoRuiRo);
+        }
+
         public void InitControls()
         {
             ApplyControlsText();
             AssignSearchColumns();
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
+
+            _controlHelpers.BindMucDoAnhHuong(ddlSearchMucDoAnhHuong);
+            _controlHelpers.BindNhanVienDuAn(ddlSearchNhanVien, this.ProjectId);
+
+            ddlSearchMucDoRuiRo.Items.Clear();
+            ddlSearchMucDoRuiRo.Items.Add(new DropdownItem("-- --", ""));
+            ddlSearchMucDoRuiRo.Items.Add(new DropdownItem(GetResourceText(BackEndResourceKeys.VERY_LOW), "1"));
+            ddlSearchMucDoRuiRo.Items.Add(new DropdownItem(GetResourceText(BackEndResourceKeys.LOW), "2"));
+            ddlSearchMucDoRuiRo.Items.Add(new DropdownItem(GetResourceText(BackEndResourceKeys.MEDIUM), "3"));
+            ddlSearchMucDoRuiRo.Items.Add(new DropdownItem(GetResourceText(BackEndResourceKeys.HIGH), "4"));
+            ddlSearchMucDoRuiRo.Items.Add(new DropdownItem(GetResourceText(BackEndResourceKeys.VERY_HIGH), "5"));
+
             MasterTemplate master = Page.Master as MasterTemplate;
             master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearchSingle);
+
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
-            grvData.CurrentSortExpression = TblRuiRoDuAn.Columns.TenRuiRo; 
+            grvData.CurrentSortExpression = TblRuiRoDuAn.Columns.TenRuiRo;
             grvData.CurrentSortDerection = "ASC";
             grvData.Rebind();
+
             pnlSearch.Update();
             pnlButtons.Update();
         }
+
         private void AssignSearchColumns()
         {
             txtSearchTenRuiRo.SearchColumn = TblRuiRoDuAn.Columns.TenRuiRo;
         }
+
         public void Rebind()
         {
             grvData.CurrentPageIndex = 1;
             grvData.Rebind();
         }
+
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
+            txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+
             txtSearchTenRuiRo.SearchTagItemText = GetResourceText(BackEndResourceKeys.RISK_NAME);
+
+            ddlSearchMucDoAnhHuong.SearchTagItemText = GetResourceText(BackEndResourceKeys.IMPACT);
+            ddlSearchMucDoAnhHuong.Text = GetResourceText(BackEndResourceKeys.IMPACT);
+
+            ddlSearchMucDoRuiRo.SearchTagItemText = GetResourceText(BackEndResourceKeys.RISK_LEVEL);
+            ddlSearchMucDoRuiRo.Text = GetResourceText(BackEndResourceKeys.RISK_LEVEL);
+
+            ddlSearchNhanVien.Attributes["SearchTagItemText"] = GetResourceText(BackEndResourceKeys.MONITOR);
+
+            txtSearchXacSuatMin.SearchTagItemText = GetResourceText(BackEndResourceKeys.PROBABILITY) + " (Từ)";
+            txtSearchXacSuatMax.SearchTagItemText = GetResourceText(BackEndResourceKeys.PROBABILITY) + " (Đến)";
+
+            lbtSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.APPLY);
+            lbtCancel.Text = GetResourceText(BackEndResourceKeys.REFRESH);
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
+
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
@@ -93,6 +131,18 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
             };
             grvData.HeaderTexts = lstTableHeader;
         }
+
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            if (master != null)
+            {
+                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
+            }
+            upSearchTagBox.Update();
+            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
+        }
+
         protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
         {
             try
@@ -106,38 +156,31 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                 int totalRows = 0;
                 int rowIndex = (grid.CurrentPageIndex - 1) * grid.CurrentPageSize;
                 int pageSize = rowIndex + grid.CurrentPageSize;
-                DataTable dt = null;
-                if (grid.GridSearchType == GridSearchType.Single)
-                {
-                    dt = _riskManager.SearchRisk(
-                        this.ProjectId,
-                        txtSearchSingle.Text,
-                        null,
-                        $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                        rowIndex,
-                        pageSize,
-                        out totalRows
-                    );
-                }
-                else
-                {
-                    Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
-                    ControlHelpers controlHelpers = new ControlHelpers();
-                    if (pnlSearchPopup != null)
-                    {
-                        keyValueSearchs = controlHelpers.GetControlValues(pnlSearchPopup);
-                    }
 
-                    dt = _riskManager.SearchRisk(
-                        this.ProjectId,
-                        "",
-                        keyValueSearchs,
-                        $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                        rowIndex,
-                        pageSize,
-                        out totalRows
-                    );
+                Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
+
+                if (pnlSearchPopup != null)
+                {
+                    var advParams = _controlHelpers.GetControlValues(pnlSearchPopup);
+                    foreach (var item in advParams) keyValueSearchs[item.Key] = item.Value;
                 }
+
+                if (pnlSearchDefaultStatus != null)
+                {
+                    var defaultParams = _controlHelpers.GetControlValues(pnlSearchDefaultStatus);
+                    foreach (var item in defaultParams) keyValueSearchs[item.Key] = item.Value;
+                }
+
+                DataTable dt = RiskManager.Instance.SearchRisk(
+                    this.ProjectId,
+                    txtSearchSingle.Text,
+                    keyValueSearchs,
+                    $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
+                    rowIndex,
+                    pageSize,
+                    out totalRows
+                );
+
                 if (dt == null || dt.Rows.Count == 0)
                 {
                     grvData.DataSource = null;
@@ -163,6 +206,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
         protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             switch (e.CommandName)
@@ -232,6 +276,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                     break;
             }
         }
+
         public override void ConfirmRequest(ConfirmResult e)
         {
             if (e != null)
@@ -250,7 +295,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                         try
                         {
                             RiskManager.Instance.DeleteRisk(risk);
-                            
+
                             ShowSuccessDeleteData();
                             grvData.CurrentPageIndex = 1;
                             grvData.Rebind();
@@ -268,26 +313,36 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                 }
             }
         }
+
         protected void ctrlGridviewPaging_PageChanged(object sender, GridviewCustomPageChangeArgs e)
         {
             grvData.CurrentPageSize = e.CurrentPageSize;
             grvData.CurrentPageIndex = e.CurrentPageNumber;
             grvData.Rebind();
         }
+
         protected void btnSearch_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
             master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
             upSearchTagBox.Update();
         }
+
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
             try
             {
                 MasterTemplate master = Page.Master as MasterTemplate;
-                GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, null, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                if (master != null)
+                {
+                    GridSearchType? searchType;
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefaultStatus, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                }
+
+                pnlSearch.Update();
+                if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
                 upSearchTagBox.Update();
+
                 string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
                 ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
             }
@@ -296,6 +351,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
         protected void btnSearchAdvanced_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
@@ -311,6 +367,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
             master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
             upSearchTagBox.Update();
         }
+
         protected void lbtAdd_Click(object sender, EventArgs e)
         {
             if (!this.CURRENT_PAGE.IsAdd)
@@ -318,15 +375,17 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                 ShowAccessDeniedNotify();
                 return;
             }
-            if (NewRiskHandlerCallback != null) 
+            if (NewRiskHandlerCallback != null)
                 NewRiskHandlerCallback(Guid.Empty, EventArgs.Empty);
         }
+
         protected string GetMucDoAnhHuongText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
             MucDoAnhHuonEnum mucDo = (MucDoAnhHuonEnum)Convert.ToInt32(value);
-            return GetResourceText(_riskManager.GetValueForMucDoAnhHuong(mucDo));
+            return GetResourceText(RiskManager.Instance.GetValueForMucDoAnhHuong(mucDo));
         }
+
         protected string GetMucDoRuiRoText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";

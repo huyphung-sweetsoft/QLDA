@@ -4,13 +4,28 @@
 
 <div class="card-header">
     <div class="d-flex flex-column flex-xl-row gap-3">
+        <asp:UpdatePanel runat="server" ID="pnlSearchDropdowns" UpdateMode="Conditional">
+            <ContentTemplate>
+                <asp:Panel runat="server" ID="pnlSearchDefaultStatus">
+                    <div class="d-flex">
+                        <SweetSoft:BootstrapDropdown ID="ddlSearchTrangThaiChiPhi" runat="server"
+                            Text="Trạng thái" AllowClear="true" AutoPostBack="true" SearchColumn="TrangThai"
+                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                        </SweetSoft:BootstrapDropdown>
+                    </div>
+                </asp:Panel>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+        
         <div class="input-group max-w-500 mb-3">
             <a class="btn btn-info font-mobile-small btn-search-filter" onclick="CMSMasterJs.ShowOffcanvasSearch();" href="javascript:;">
                 <i class='fas fa-filter me-1'></i><%= GetResourceText(BackEndResourceKeys.FILTER) %>
             </a>
-            <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" PlaceHolder="Nhập từ khóa tìm kiếm..." CssClass="border-primary input-search-filter" ></SweetSoft:ExtraTextBox>
+            <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
             <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
         </div>
+        
         <div runat="server" id="tagOther" class="d-flex justify-content-end gap-3 w-full flex-wrap">
             <asp:UpdatePanel runat="server" ID="pnlButtons" UpdateMode="Conditional">
                 <ContentTemplate>
@@ -127,10 +142,6 @@
     <div class="offcanvas-header">
         <div class="flex flex-column flex-md-row align-items-center gap-3">
             <h5 class="offcanvas-title"><%= GetResourceText(BackEndResourceKeys.ADVANCED_SEARCH) %></h5>
-            <div class="d-flex align-items-center gap-1">
-                <SweetSoft:ExtraButton runat="server" ID="lbtSearchAdvanced" CssClass="flex-btn" ButtonStyle="Primary" ButtonIcon="Search" OnClick="btnSearchAdvanced_ServerClick">Áp dụng</SweetSoft:ExtraButton>
-                <SweetSoft:ExtraButton runat="server" ID="lbtCancel" CssClass="flex-btn" ButtonStyle="OutLineSecondary" ButtonIcon="Refresh" OnClick="btnCancel_Click">Làm mới</SweetSoft:ExtraButton>
-            </div>
         </div>
         <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -139,15 +150,34 @@
             <asp:UpdatePanel runat="server" ID="pnlSearch" UpdateMode="Conditional">
                 <ContentTemplate>
                     <asp:Panel runat="server" ID="pnlSearchPopup">
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.COST_NAME) %></label>
                                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchTenKhoanChi" SearchColumn="TenKhoanChi"></SweetSoft:ExtraTextBox>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.REQUESTER) %></label>
+                                <asp:DropDownList ID="ddlSearchNhanVienYeuCau" runat="server" CssClass="form-select" SearchColumn="IdNhanVienDeNghi"></asp:DropDownList>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.LOWEST_TOTAL_AMOUNT) %></label>
+                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSoTienMin" SearchColumn="SoTienMin" CssClass="format-currency"></SweetSoft:ExtraTextBox>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.HIGHEST_TOTAL_AMOUNT) %></label>
+                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSoTienMax" SearchColumn="SoTienMax" CssClass="format-currency"></SweetSoft:ExtraTextBox>
                             </div>
                         </div>
                     </asp:Panel>
                 </ContentTemplate>
             </asp:UpdatePanel>
+            <div class="d-flex align-items-center gap-2 mt-3">
+                <SweetSoft:ExtraButton runat="server" ID="lbtSearchAdvanced" CssClass="flex-btn" ButtonStyle="Primary" ButtonIcon="Search" OnClick="btnSearchAdvanced_ServerClick"><%= GetResourceText(BackEndResourceKeys.APPLY) %></SweetSoft:ExtraButton>
+                <SweetSoft:ExtraButton runat="server" ID="lbtCancel" CssClass="flex-btn" ButtonStyle="OutLineSecondary" ButtonIcon="Refresh" OnClick="btnCancel_Click"><%= GetResourceText(BackEndResourceKeys.REFRESH) %></SweetSoft:ExtraButton>
+            </div>
         </div>
     </div>
 </div>

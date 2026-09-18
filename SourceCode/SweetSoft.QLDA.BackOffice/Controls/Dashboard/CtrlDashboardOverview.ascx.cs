@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Dashboard;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using System.Web.UI.WebControls;
 namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
@@ -18,7 +19,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             {
                 List<string> cssLinks = new List<string>();
                 cssLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
-                    "/Controls/Dashboard/dashboard-style.css"));
+                    "/Controls/Dashboard/dashboard-style.css?v=2"));
 
                 List<string> jsLinks = new List<string>();
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
@@ -51,6 +52,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string ProjectStatusChartData { get; private set; }
 
         protected string ProjectProgressChartData { get; private set; }
+
+        protected string DashboardTextsJson { get; private set; }
         protected int ActiveProjectCount { get; private set; }
         protected decimal AtRiskProjectRate { get; private set; }
         protected List<ProjectAttentionStatistic> ProjectAttentionStatistics
@@ -66,6 +69,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected List<UpcomingMeetingSummary> UpcomingMeetings { get; private set; }
 
         protected bool IsProjectView { get; private set; }
+
+        protected Guid SelectedProjectId { get; private set; }
 
         protected string SelectedProjectCode { get; private set; }
 
@@ -119,6 +124,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
     filter != null &&
     filter.ProjectId.HasValue;
 
+            SelectedProjectId =
+                filter != null && filter.ProjectId.HasValue
+                    ? filter.ProjectId.Value
+                    : Guid.Empty;
             SelectedProjectCode = string.Empty;
             SelectedProjectName = string.Empty;
             SelectedProjectPlannedProgress = 0;
@@ -142,6 +151,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
                 if (project != null)
                 {
+                    SelectedProjectId = project.ProjectId;
                     SelectedProjectCode = project.ProjectCode;
                     SelectedProjectName = project.ProjectName;
                     SelectedProjectPlannedProgress = project.PlannedProgress;
@@ -218,6 +228,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 BuildProjectProgressChartData(
                     overview.ProjectProgressStatistics);
 
+            DashboardTextsJson = ToSafeJson(new
+            {
+                progress = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN),
+                progressAxis = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROGRESS_AXIS),
+                start = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_START),
+                expected = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EXPECTED)
+            });
+
             ProjectAttentionStatistics =
                 overview.ProjectAttentionStatistics;
 
@@ -274,12 +296,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             switch (health)
             {
-                case ProjectScheduleHealth.Completed: return "Hoàn thành";
-                case ProjectScheduleHealth.OnTrack: return "Đúng tiến độ";
-                case ProjectScheduleHealth.AtRisk: return "Có nguy cơ";
-                case ProjectScheduleHealth.BehindSchedule: return "Chậm tiến độ";
-                case ProjectScheduleHealth.Overdue: return "Quá hạn";
-                default: return "Chưa bắt đầu";
+                case ProjectScheduleHealth.Completed:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
+                case ProjectScheduleHealth.OnTrack:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_HEALTH_ON_TRACK);
+                case ProjectScheduleHealth.AtRisk:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_HEALTH_AT_RISK);
+                case ProjectScheduleHealth.BehindSchedule:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_HEALTH_BEHIND);
+                case ProjectScheduleHealth.Overdue:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE);
+                default:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED);
             }
         }
 
@@ -305,15 +339,17 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             if (SelectedProjectActualCompletionDate.HasValue)
             {
-                return "Hoàn thành ngày "
-                    + SelectedProjectActualCompletionDate.Value
-                        .ToString("dd/MM/yyyy");
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_ON),
+                    SelectedProjectActualCompletionDate.Value
+                        .ToString("dd/MM/yyyy"));
             }
 
             if (!SelectedProjectStartDate.HasValue
                 || !SelectedProjectExpectedEndDate.HasValue)
             {
-                return "Chưa có đủ thông tin thời gian";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_INSUFFICIENT_TIME_INFO);
             }
 
             DateTime today = DateTime.Today;
@@ -322,20 +358,27 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
             if (startDate > today)
             {
-                return "Bắt đầu sau " + (startDate - today).Days + " ngày";
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_STARTS_IN_DAYS),
+                    (startDate - today).Days);
             }
 
             if (endDate < today)
             {
-                return "Quá hạn " + (today - endDate).Days + " ngày";
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_DAYS),
+                    (today - endDate).Days);
             }
 
             if (endDate == today)
             {
-                return "Kết thúc hôm nay";
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_ENDS_TODAY);
             }
 
-            return "Còn " + (endDate - today).Days + " ngày";
+            return string.Format(
+                GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_REMAINING),
+                (endDate - today).Days);
         }
 
         protected string GetProjectTimelineBadgeCss()
@@ -358,6 +401,44 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             }
 
             return "bg-primary-subtle text-primary";
+        }
+
+        protected string GetProjectDetailUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectDetail);
+        }
+
+        protected string GetProjectTasksUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
+        }
+
+        protected string GetProjectRisksUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectRisks);
+        }
+
+        protected string GetProjectIssuesUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectIssues);
+        }
+
+        protected string GetProjectMeetingsUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectMeets);
+        }
+
+        private string GetProjectUrl(
+            Guid projectId,
+            Func<Guid, string> routeBuilder)
+        {
+            if (projectId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return CURRENT_PAGE.GetRelativeClientPath(
+                routeBuilder(projectId));
         }
 
         private string BuildProjectStatusChartData(
@@ -395,6 +476,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 {
                     code = x.ProjectCode,
                     name = x.ProjectName,
+                    detailUrl = GetProjectDetailUrl(x.ProjectId),
                     progress = x.Progress,
                     startDate = x.StartDate.ToString("dd/MM/yyyy"),
                     expectedEndDate =

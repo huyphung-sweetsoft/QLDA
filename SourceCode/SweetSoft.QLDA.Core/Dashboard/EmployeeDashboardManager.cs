@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Managers;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 
 namespace SweetSoft.QLDA.Core.Dashboard
@@ -78,20 +79,14 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DateTime today = DateTime.Now.Date;
 
             model.KPIs.OngoingTaskCount = tasksInPeriod.Count(t =>
-                t.NgayBatDau.HasValue &&
-                t.NgayBatDau.Value.Date <= today &&
-                !t.NgayHoanThanhThucTe.HasValue);
+                DashboardProgressCalculator.GetTaskState(t, today)
+                    == DashboardTaskState.InProgress);
 
             model.KPIs.UpcomingDeadlineTaskCount = tasksInPeriod.Count(t =>
-                !t.NgayHoanThanhThucTe.HasValue &&
-                t.NgayKetThuc.HasValue &&
-                t.NgayKetThuc.Value.Date >= today &&
-                (t.NgayKetThuc.Value.Date - today).TotalDays <= 3);
+                DashboardProgressCalculator.IsTaskDueSoon(t, today, 3));
 
             model.KPIs.OverdueTaskCount = tasksInPeriod.Count(t =>
-                !t.NgayHoanThanhThucTe.HasValue &&
-                t.NgayKetThuc.HasValue &&
-                t.NgayKetThuc.Value.Date < today);
+                DashboardProgressCalculator.IsTaskOverdue(t, today));
 
             // Chưa có dữ liệu định mức giờ làm việc để tính tải chính xác.
             model.KPIs.WorkloadPercent = 0;
@@ -129,15 +124,11 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     .Where(t => t.IdDuAn == project.IdDuAn)
                     .ToList();
 
-                int progress = 0;
-                if (project.NgayHoanThanhThucTe.HasValue)
-                {
-                    progress = 100;
-                }
-                else if (project.NgayBatDau.Date <= today && tasks.Count > 0)
-                {
-                    progress = (int)tasks.Average(t => t.PhanTramHoanThanh);
-                }
+                decimal progress =
+                    DashboardProgressCalculator.GetProjectActualProgress(
+                        project,
+                        tasks,
+                        today);
 
                 model.MyProjects.Add(new ProjectProgressStatistic
                 {
@@ -183,7 +174,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 {
                     Type = WarningType.Meeting,
                     Message = string.Format(
-                        "Có cuộc họp dự án {0} lúc {1:HH:mm} ngày {1:dd/MM}",
+                        UITextsReader.GetBackEndResourceText(
+                            BackEndResourceKeys.DASHBOARD_MEETING_ALERT),
                         meeting.ProjectName,
                         meeting.StartTime),
                     IconClass = "fe fe-calendar",
@@ -202,7 +194,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 {
                     Type = WarningType.OverdueTask,
                     Message = string.Format(
-                        "{0} công việc đã quá hạn",
+                        UITextsReader.GetBackEndResourceText(
+                            BackEndResourceKeys.DASHBOARD_OVERDUE_TASK_ALERT),
                         model.KPIs.OverdueTaskCount),
                     IconClass = "fe fe-alert-triangle",
                     TextClass = "text-danger"
@@ -215,7 +208,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 {
                     Type = WarningType.UpcomingTask,
                     Message = string.Format(
-                        "{0} công việc sắp đến hạn trong 3 ngày",
+                        UITextsReader.GetBackEndResourceText(
+                            BackEndResourceKeys.DASHBOARD_DUE_SOON_TASK_ALERT),
                         model.KPIs.UpcomingDeadlineTaskCount),
                     IconClass = "fe fe-clock",
                     TextClass = "text-warning"

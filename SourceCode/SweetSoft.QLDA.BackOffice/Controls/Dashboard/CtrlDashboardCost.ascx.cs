@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css")
+                        "/Controls/Dashboard/dashboard-style.css?v=2")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -30,7 +30,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-cost.js")
+                        "/Controls/Dashboard/dashboard-cost.js?v=2")
                 };
 
                 return new RegisterCSSAndJS(
@@ -48,6 +48,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string CostTrendChartData { get; private set; }
 
         protected string PaymentChartData { get; private set; }
+
+        protected string DashboardTextsJson { get; private set; }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -76,8 +78,9 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string FormatMoney(decimal value)
         {
-            return value.ToString("#,##0", CultureInfo.GetCultureInfo("vi-VN"))
-                + " đ";
+            return value.ToString("#,##0", CultureInfo.CurrentCulture)
+                + GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_CURRENCY_SUFFIX);
         }
 
         protected string GetAmountCss(decimal amount)
@@ -114,8 +117,31 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             ListItem selectedItem = ddlCompletionPeriod.SelectedItem;
             return selectedItem == null
-                ? "Tất cả thời gian"
+                ? GetResourceText(BackEndResourceKeys.DASHBOARD_ALL_TIME)
                 : selectedItem.Text;
+        }
+
+        protected string GetProjectDetailUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectDetail);
+        }
+
+        protected string GetProjectPaymentsUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectPayments);
+        }
+
+        private string GetProjectUrl(
+            Guid projectId,
+            Func<Guid, string> routeBuilder)
+        {
+            if (projectId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            return CURRENT_PAGE.GetRelativeClientPath(
+                routeBuilder(projectId));
         }
 
         private void InitDashboard(DashboardCostFilter filter)
@@ -127,6 +153,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 {
                     code = x.ProjectCode,
                     name = x.ProjectName,
+                    detailUrl = GetProjectDetailUrl(x.ProjectId),
                     contractValue = x.ContractValue,
                     actualCost = x.ActualCost,
                     grossProfit = x.GrossProfit,
@@ -145,13 +172,41 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 received = Model.ReceivedPayment,
                 outstanding = Model.OutstandingPayment
             });
+
+            DashboardTextsJson = JsonConvert.SerializeObject(new
+            {
+                locale = CultureInfo.CurrentUICulture.Name,
+                currencySuffix = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_CURRENCY_SUFFIX),
+                billionSuffix = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_BILLION_SUFFIX),
+                millionSuffix = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MILLION_SUFFIX),
+                noCompletedProjectComparison = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_COMPLETED_PROJECT_COMPARISON),
+                contractValue = GetResourceText(
+                    BackEndResourceKeys.TOTAL_CONTRACT_VALUE),
+                actualCost = GetResourceText(
+                    BackEndResourceKeys.ACTUAL_COST),
+                noContractOrPayment = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_CONTRACT_OR_PAYMENT),
+                received = GetResourceText(
+                    BackEndResourceKeys.RECEIVED_PAYMENT),
+                outstanding = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_OUTSTANDING_PAYMENT),
+                noCostTrend = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_COST_TREND),
+                incurredCost = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_INCURRED_COST)
+            }).Replace("</", "<\\/");
         }
 
         private void LoadProjectFilter()
         {
             ddlProjectFilter.Items.Clear();
             ListItem allCompletedProjects = new ListItem(
-                "Tất cả dự án đã hoàn thành",
+                GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_ALL_COMPLETED_PROJECTS),
                 AllCompletedProjectsValue);
             allCompletedProjects.Selected = true;
             ddlProjectFilter.Items.Add(allCompletedProjects);
@@ -170,7 +225,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             ddlCompletionPeriod.Items.Clear();
 
             ListItem allTime = new ListItem(
-                "Tất cả thời gian",
+                GetResourceText(BackEndResourceKeys.DASHBOARD_ALL_TIME),
                 ((int)DashboardCostPeriod.AllTime).ToString(
                     CultureInfo.InvariantCulture));
             allTime.Selected = true;

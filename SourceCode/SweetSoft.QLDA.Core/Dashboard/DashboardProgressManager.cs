@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Managers;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 
 namespace SweetSoft.QLDA.Core.Dashboard
 {
     public class DashboardProgressManager : BaseManager
     {
-        private const int DueSoonDays = 7;
-
         private static readonly Lazy<DashboardProgressManager> LazyInstance =
             new Lazy<DashboardProgressManager>(() => new DashboardProgressManager());
 
@@ -49,14 +48,18 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<ProjectScheduleStatistic> projectStatistics =
                 BuildProjectScheduleStatistics(projects, allProjectTasks, today);
 
-            int completedTaskCount = allProjectTasks.Count(IsCompleted);
-            int overdueTaskCount = allProjectTasks.Count(x => IsOverdue(x, today));
+            int completedTaskCount = allProjectTasks.Count(
+                DashboardProgressCalculator.IsTaskCompleted);
+            int overdueTaskCount = allProjectTasks.Count(x =>
+                DashboardProgressCalculator.IsTaskOverdue(x, today));
             int inProgressTaskCount = allProjectTasks.Count(x =>
-                GetTaskState(x, today) == ProgressTaskState.InProgress);
+                DashboardProgressCalculator.GetTaskState(x, today)
+                    == DashboardTaskState.InProgress);
             int notStartedTaskCount = allProjectTasks.Count(x =>
-                GetTaskState(x, today) == ProgressTaskState.NotStarted);
+                DashboardProgressCalculator.GetTaskState(x, today)
+                    == DashboardTaskState.NotStarted);
             int dueSoonTaskCount = allProjectTasks.Count(x =>
-                IsDueSoon(x, today));
+                DashboardProgressCalculator.IsTaskDueSoon(x, today));
 
             decimal overallProgress = projectStatistics.Count == 0
                 ? 0
@@ -115,7 +118,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return tasks
                 .Select(task =>
                 {
-                    ProgressTaskState state = GetTaskState(task, today);
+                    DashboardTaskState state =
+                        DashboardProgressCalculator.GetTaskState(task, today);
                     TblDuAn project;
                     projectById.TryGetValue(task.IdDuAn, out project);
 
@@ -128,6 +132,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     return new TaskProgressDetail
                     {
                         TaskId = task.IdCongViec,
+                        ProjectId = task.IdDuAn,
                         TaskCode = task.MaCongViec,
                         TaskName = task.TenCongViec,
                         ProjectCode = project == null
@@ -137,12 +142,13 @@ namespace SweetSoft.QLDA.Core.Dashboard
                             ? string.Empty
                             : project.TenDuAn,
                         PriorityName = priority == null
-                            ? "Chưa đặt ưu tiên"
+                            ? UITextsReader.GetBackEndResourceText(
+                                BackEndResourceKeys.DASHBOARD_PRIORITY_NOT_SET)
                             : priority.TenDoUuTien,
                         PriorityScore = priority == null
                             ? 0
                             : priority.DiemUuTien,
-                        Progress = NormalizeProgress(
+                        Progress = DashboardProgressCalculator.NormalizeProgress(
                             task.PhanTramHoanThanh),
                         Status = GetTaskStateText(state),
                         StatusCode = (int)state,
@@ -153,9 +159,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     };
                 })
                 .OrderBy(x =>
-                    x.StatusCode == (int)ProgressTaskState.Completed ? 1 : 0)
+                    x.StatusCode == (int)DashboardTaskState.Completed ? 1 : 0)
                 .ThenByDescending(x =>
-                    x.StatusCode == (int)ProgressTaskState.Completed
+                    x.StatusCode == (int)DashboardTaskState.Completed
                         ? 0
                         : x.PriorityScore)
                 .ThenBy(x => GetTaskStateOrder(x.StatusCode))
@@ -184,16 +190,20 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     .Where(x => x.IdDuAn == project.IdDuAn)
                     .ToList();
 
-                decimal actualProgress = GetProjectActualProgress(
+                decimal actualProgress =
+                    DashboardProgressCalculator.GetProjectActualProgress(
                     project,
                     projectTasks,
                     today);
-                decimal plannedProgress = GetPlannedProgress(project, today);
+                decimal plannedProgress =
+                    DashboardProgressCalculator.GetPlannedProgress(
+                        project,
+                        today);
                 decimal variance = Math.Round(
                     actualProgress - plannedProgress,
                     2);
                 int overdueTaskCount = projectTasks.Count(x =>
-                    IsOverdue(x, today));
+                    DashboardProgressCalculator.IsTaskOverdue(x, today));
 
                 result.Add(new ProjectScheduleStatistic
                 {
@@ -207,9 +217,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     PlannedProgress = plannedProgress,
                     Variance = variance,
                     TotalTaskCount = projectTasks.Count,
-                    CompletedTaskCount = projectTasks.Count(IsCompleted),
+                    CompletedTaskCount = projectTasks.Count(
+                        DashboardProgressCalculator.IsTaskCompleted),
                     OverdueTaskCount = overdueTaskCount,
-                    Health = GetProjectHealth(
+                    Health = DashboardProgressCalculator.GetProjectHealth(
                         project,
                         variance,
                         overdueTaskCount,
@@ -239,16 +250,21 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
                     return new ProjectTaskProgressStatistic
                     {
+                        ProjectId = project.IdDuAn,
                         ProjectCode = project.MaDuAn,
                         ProjectName = project.TenDuAn,
                         CompletedCount = projectTasks.Count(x =>
-                            GetTaskState(x, today) == ProgressTaskState.Completed),
+                            DashboardProgressCalculator.GetTaskState(x, today)
+                                == DashboardTaskState.Completed),
                         InProgressCount = projectTasks.Count(x =>
-                            GetTaskState(x, today) == ProgressTaskState.InProgress),
+                            DashboardProgressCalculator.GetTaskState(x, today)
+                                == DashboardTaskState.InProgress),
                         NotStartedCount = projectTasks.Count(x =>
-                            GetTaskState(x, today) == ProgressTaskState.NotStarted),
+                            DashboardProgressCalculator.GetTaskState(x, today)
+                                == DashboardTaskState.NotStarted),
                         OverdueCount = projectTasks.Count(x =>
-                            GetTaskState(x, today) == ProgressTaskState.Overdue)
+                            DashboardProgressCalculator.GetTaskState(x, today)
+                                == DashboardTaskState.Overdue)
                     };
                 })
                 .OrderByDescending(x => x.OverdueCount)
@@ -268,7 +284,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<ProgressTaskInfo> result = new List<ProgressTaskInfo>();
 
             foreach (TblCongViec task in tasks.Where(x =>
-                IsOverdue(x, today) || IsDueSoon(x, today)))
+                DashboardProgressCalculator.IsTaskOverdue(x, today)
+                || DashboardProgressCalculator.IsTaskDueSoon(x, today)))
             {
                 TblDuAn project;
                 projectById.TryGetValue(task.IdDuAn, out project);
@@ -284,16 +301,19 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 result.Add(new ProgressTaskInfo
                 {
                     TaskId = task.IdCongViec,
+                    ProjectId = task.IdDuAn,
                     TaskCode = task.MaCongViec,
                     TaskName = task.TenCongViec,
                     ProjectCode = project == null ? string.Empty : project.MaDuAn,
                     ProjectName = project == null ? string.Empty : project.TenDuAn,
                     PriorityName = priority == null
-                        ? "Chưa đặt ưu tiên"
+                        ? UITextsReader.GetBackEndResourceText(
+                            BackEndResourceKeys.DASHBOARD_PRIORITY_NOT_SET)
                         : priority.TenDoUuTien,
                     PriorityScore = priority == null ? 0 : priority.DiemUuTien,
                     Deadline = deadline,
-                    Progress = NormalizeProgress(task.PhanTramHoanThanh),
+                    Progress = DashboardProgressCalculator.NormalizeProgress(
+                        task.PhanTramHoanThanh),
                     DaysToDeadline = (deadline - today).Days,
                     IsOverdue = deadline < today
                 });
@@ -319,108 +339,25 @@ namespace SweetSoft.QLDA.Core.Dashboard
             {
                 new TaskProgressStatusStatistic
                 {
-                    Status = "Hoàn thành",
+                    Status = GetTaskStateText(DashboardTaskState.Completed),
                     Count = completed
                 },
                 new TaskProgressStatusStatistic
                 {
-                    Status = "Đang thực hiện",
+                    Status = GetTaskStateText(DashboardTaskState.InProgress),
                     Count = inProgress
                 },
                 new TaskProgressStatusStatistic
                 {
-                    Status = "Chưa bắt đầu",
+                    Status = GetTaskStateText(DashboardTaskState.NotStarted),
                     Count = notStarted
                 },
                 new TaskProgressStatusStatistic
                 {
-                    Status = "Quá hạn",
+                    Status = GetTaskStateText(DashboardTaskState.Overdue),
                     Count = overdue
                 }
             };
-        }
-
-        private static decimal GetProjectActualProgress(
-            TblDuAn project,
-            List<TblCongViec> tasks,
-            DateTime today)
-        {
-            if (project.NgayHoanThanhThucTe.HasValue)
-            {
-                return 100;
-            }
-
-            if (project.NgayBatDau.Date > today || tasks.Count == 0)
-            {
-                return 0;
-            }
-
-            return Math.Round(
-                Convert.ToDecimal(tasks.Average(x =>
-                    NormalizeProgress(x.PhanTramHoanThanh))),
-                2);
-        }
-
-        private static decimal GetPlannedProgress(
-            TblDuAn project,
-            DateTime today)
-        {
-            if (project.NgayHoanThanhThucTe.HasValue)
-            {
-                return 100;
-            }
-
-            DateTime startDate = project.NgayBatDau.Date;
-            DateTime endDate = project.NgayDuKienHoanThanh.Date;
-
-            if (today <= startDate)
-            {
-                return 0;
-            }
-
-            if (today >= endDate || endDate <= startDate)
-            {
-                return 100;
-            }
-
-            decimal elapsedDays = Convert.ToDecimal((today - startDate).TotalDays);
-            decimal totalDays = Convert.ToDecimal((endDate - startDate).TotalDays);
-
-            return Math.Round((elapsedDays / totalDays) * 100, 2);
-        }
-
-        private static ProjectScheduleHealth GetProjectHealth(
-            TblDuAn project,
-            decimal variance,
-            int overdueTaskCount,
-            DateTime today)
-        {
-            if (project.NgayHoanThanhThucTe.HasValue)
-            {
-                return ProjectScheduleHealth.Completed;
-            }
-
-            if (project.NgayBatDau.Date > today)
-            {
-                return ProjectScheduleHealth.NotStarted;
-            }
-
-            if (project.NgayDuKienHoanThanh.Date < today)
-            {
-                return ProjectScheduleHealth.Overdue;
-            }
-
-            if (variance <= -15)
-            {
-                return ProjectScheduleHealth.BehindSchedule;
-            }
-
-            if (variance < -5 || overdueTaskCount > 0)
-            {
-                return ProjectScheduleHealth.AtRisk;
-            }
-
-            return ProjectScheduleHealth.OnTrack;
         }
 
         private static int GetHealthOrder(ProjectScheduleHealth health)
@@ -436,80 +373,35 @@ namespace SweetSoft.QLDA.Core.Dashboard
             }
         }
 
-        private static ProgressTaskState GetTaskState(
-            TblCongViec task,
-            DateTime today)
-        {
-            if (IsCompleted(task))
-            {
-                return ProgressTaskState.Completed;
-            }
-
-            if (IsOverdue(task, today))
-            {
-                return ProgressTaskState.Overdue;
-            }
-
-            return NormalizeProgress(task.PhanTramHoanThanh) > 0
-                ? ProgressTaskState.InProgress
-                : ProgressTaskState.NotStarted;
-        }
-
-        private static bool IsCompleted(TblCongViec task)
-        {
-            return task.NgayHoanThanhThucTe.HasValue
-                || NormalizeProgress(task.PhanTramHoanThanh) >= 100;
-        }
-
-        private static bool IsOverdue(TblCongViec task, DateTime today)
-        {
-            return !IsCompleted(task)
-                && task.NgayKetThuc.HasValue
-                && task.NgayKetThuc.Value.Date < today;
-        }
-
-        private static bool IsDueSoon(TblCongViec task, DateTime today)
-        {
-            return !IsCompleted(task)
-                && task.NgayKetThuc.HasValue
-                && task.NgayKetThuc.Value.Date >= today
-                && task.NgayKetThuc.Value.Date <= today.AddDays(DueSoonDays);
-        }
-
-        private static int NormalizeProgress(int progress)
-        {
-            return Math.Max(0, Math.Min(100, progress));
-        }
-
-        private static string GetTaskStateText(ProgressTaskState state)
+        private static string GetTaskStateText(DashboardTaskState state)
         {
             switch (state)
             {
-                case ProgressTaskState.Completed: return "Hoàn thành";
-                case ProgressTaskState.InProgress: return "Đang thực hiện";
-                case ProgressTaskState.Overdue: return "Quá hạn";
-                default: return "Chưa bắt đầu";
+                case DashboardTaskState.Completed:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
+                case DashboardTaskState.InProgress:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS);
+                case DashboardTaskState.Overdue:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE);
+                default:
+                    return UITextsReader.GetBackEndResourceText(
+                        BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED);
             }
         }
 
         private static int GetTaskStateOrder(int statusCode)
         {
-            ProgressTaskState state = (ProgressTaskState)statusCode;
+            DashboardTaskState state = (DashboardTaskState)statusCode;
             switch (state)
             {
-                case ProgressTaskState.Overdue: return 0;
-                case ProgressTaskState.InProgress: return 1;
-                case ProgressTaskState.NotStarted: return 2;
+                case DashboardTaskState.Overdue: return 0;
+                case DashboardTaskState.InProgress: return 1;
+                case DashboardTaskState.NotStarted: return 2;
                 default: return 3;
             }
-        }
-
-        private enum ProgressTaskState
-        {
-            NotStarted = 0,
-            InProgress = 1,
-            Completed = 2,
-            Overdue = 3
         }
     }
 }

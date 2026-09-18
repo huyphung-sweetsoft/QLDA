@@ -1,4 +1,5 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+﻿using SubSonic; // BẮT BUỘC THÊM ĐỂ CHẠY LỆNH UPDATE/DELETE SANDBOX
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.FileManager;
@@ -7,10 +8,12 @@ using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
+using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Web.Security;
 using System.Web.UI;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Utils;
 namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 {
@@ -33,6 +36,39 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         }
 
         protected bool IsEditMode => DetailUserId != Guid.Empty;
+
+        private Guid TempAvatarSessionId
+        {
+            get
+            {
+                if (ViewState["TempAvatarSessionId"] == null)
+                    ViewState["TempAvatarSessionId"] = Guid.NewGuid();
+                return (Guid)ViewState["TempAvatarSessionId"];
+            }
+        }
+
+        // =========================================================================
+        // TRÍCH XUẤT AVATAR TỪ PAYLOAD FILESBOX (TRÁNH DESYNC)
+        // =========================================================================
+        private string ExtractAvatarFromFilesBox(string currentAvatar)
+        {
+            string newAvatar = currentAvatar;
+            bool isDeleted = false;
+
+            foreach (string key in Request.Params.AllKeys)
+            {
+                if (string.IsNullOrEmpty(key)) continue;
+
+                if (key.EndsWith("txtArFileRemove") && !string.IsNullOrEmpty(Request.Params[key]))
+                    isDeleted = true;
+
+                if (key.Contains("filePath$"))
+                    newAvatar = Request.Params[key];
+            }
+
+            if (isDeleted && newAvatar == currentAvatar) return "";
+            return newAvatar;
+        }
 
         public void InitControls()
         {
@@ -86,9 +122,9 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 
             // XỬ LÝ NÚT GẠT: Nếu là SystemUser thì ép BẬT, Employee thì mặc định TẮT
             chkEnableAccount.Checked = CurrentMode == UserPopupMode.SystemUser;
-            chkEnableAccount.Disabled = false; // Luôn mở khóa cho Admin thao tác
+            chkEnableAccount.Disabled = false;
 
-            txtUserName.Enabled = true; // Mở khóa TextBox & Icon Dấu sét
+            txtUserName.Enabled = true;
 
             // QUAN TRỌNG: ẨN HOÀN TOÀN KHỐI MẬT KHẨU Ở CHẾ ĐỘ THÊM MỚI
             divChangePassword.Visible = false;
@@ -98,8 +134,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             fbImage.SingleFilePath = "/Styles/images/user-icon.png";
             fbImage.SingleFilePathType = FileTypes.Internal;
             fbImage.IsMultiple = false;
-            // Cấp 1 Guid tạm để vượt qua khâu Validate định dạng của UploadHandler
-            fbImage.LoadFile(Guid.NewGuid(), FileUploadTypes.UserAvatar);
+            fbImage.LoadFile(TempAvatarSessionId, FileUploadTypes.UserAvatar); // DÙNG ID ẢO
             SetUIByMode();
 
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
@@ -120,12 +155,12 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             // 1. Load Khối A (Thông tin chung)
             txtFullName.Text = user.DisplayName;
             txtPhone.Text = user.MobileAlias;
-            chkStatus.Checked = user.IsActivated; // HR Status
+            chkStatus.Checked = user.IsActivated;
 
             fbImage.SingleFilePath = string.IsNullOrEmpty(user.Avatar) ? "/Styles/images/user-icon.png" : user.Avatar;
             fbImage.SingleFilePathType = FileTypes.Internal;
             fbImage.IsMultiple = false;
-            fbImage.LoadFile(user.UserId, FileUploadTypes.UserAvatar);
+            fbImage.LoadFile(TempAvatarSessionId, FileUploadTypes.UserAvatar); // DÙNG ID ẢO
 
             MembershipUser memUser = Membership.GetUser(user.UserName);
             if (memUser != null && !memUser.Email.Contains("no-email.com"))
@@ -150,14 +185,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 
             if (!hasAccount)
             {
-                // A. TRƯỜNG HỢP: TÀI KHOẢN MA (GHOST ACCOUNT)
-                txtUserName.Text = string.Empty;   // Xóa sạch tiền tố EMP_... trên UI
-                chkEnableAccount.Checked = false;  // Đang là Ghost nên chưa được cấp quyền
-                chkEnableAccount.Disabled = false; // CHỐT: Cho phép Admin gạt Bật để Nâng cấp!
+                txtUserName.Text = string.Empty;
+                chkEnableAccount.Checked = false;
+                chkEnableAccount.Disabled = false;
 
-                txtUserName.Enabled = true; // Mở khóa TextBox & Icon Dấu sét
+                txtUserName.Enabled = true;
 
-                divChangePassword.Visible = false; // Ẩn tính năng Đổi pass thủ công
+                divChangePassword.Visible = false;
                 divPassword.Visible = false;
             }
             else
@@ -165,13 +199,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 // B. TRƯỜNG HỢP: TÀI KHOẢN THẬT (REAL ACCOUNT)
                 txtUserName.Text = user.UserName;
                 chkEnableAccount.Checked = true;
-                chkEnableAccount.Disabled = true; // KHÓA CỨNG: Cấm tắt đi để hạ cấp về Ghost
+                chkEnableAccount.Disabled = true;
 
-                txtUserName.Enabled = false; // KHÓA CỨNG: Không cho đổi Username nữa
+                txtUserName.Enabled = false;
 
-                divChangePassword.Visible = true; // Hiện Checkbox cho phép đổi pass thủ công
+                divChangePassword.Visible = true;
                 divPassword.Visible = true;
-                divPassword.Attributes["data-edit"] = "true"; // Ẩn ô nhập pass đi, khi nào check mới hiện
+                divPassword.Attributes["data-edit"] = "true";
             }
 
             // Gán Role
@@ -196,7 +230,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
                 validationEngine.CheckValidControls(dlDetail.Controls);
                 AspnetUser dto = IsEditMode ? UserManager.Instance.GetUserById(DetailUserId) : new AspnetUser();
-                // Phân luồng theo Mode
+
                 if (CurrentMode == UserPopupMode.SystemUser)
                 {
                     dto.LaNhanVien = false;
@@ -207,17 +241,20 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     if (string.IsNullOrEmpty(txtCCCD.Text.Trim()))
                         validationEngine.AddErrorPrompt(txtCCCD.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_ENTER_THE_VALUE));
                 }
-                // MỤC 4: BƠM DỮ LIỆU TÀI KHOẢN VÀ VALIDATE MẬT KHẨU
-                // 1. Xác định trạng thái ban đầu của user (trước khi bấm lưu)
+
                 bool hasAccount = false;
                 if (IsEditMode && dto != null)
                     hasAccount = !IsGhostAccount(dto.UserName);
-                // 2. Map Dữ liệu Khối A & C
+
                 dto.DisplayName = txtFullName.Text.Trim();
                 dto.Email = string.IsNullOrEmpty(txtEmail.Text) ? $"{DateTime.UtcNow.Ticks}@no-email.com" : txtEmail.Text.Trim();
                 dto.MobileAlias = txtPhone.Text.Trim();
-                dto.IsActivated = chkStatus.Checked; // HR Status
-                dto.Avatar = (fbImage.SingleFilePath.Contains("no-file.png")) ? "" : fbImage.SingleFilePath;
+                dto.IsActivated = chkStatus.Checked;
+
+                // THAY THẾ CÁCH LẤY AVATAR CŨ (TRÁNH LỖI KHI DÙNG ID ẢO)
+                string oldAvatar = IsEditMode ? dto.Avatar : "";
+                dto.Avatar = ExtractAvatarFromFilesBox(oldAvatar);
+
                 if (dto.LaNhanVien)
                 {
                     dto.IdCCCD = txtCCCD.Text.Trim();
@@ -229,7 +266,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     if (Guid.TryParse(ddlPhongBan.SelectedValue, out Guid idPB) && idPB != Guid.Empty) dto.IdPhongBan = idPB;
                     if (Guid.TryParse(ddlChucDanh.SelectedValue, out Guid idCD) && idCD != Guid.Empty) dto.IdChucDanh = idCD;
                 }
-                // 3. BƠM DỮ LIỆU TÀI KHOẢN THEO INTENT
+
                 if (!chkEnableAccount.Checked)
                 {
                     // LUỒNG A: KHÔNG CẤP QUYỀN (Tạo mới Ghost hoặc Update Ghost)
@@ -244,7 +281,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     {
                         // Luồng B.1: Tạo mới Real HOẶC Nâng cấp từ Ghost lên Real
                         dto.UserName = txtUserName.Text.Trim();
-                        dto.Password = null; // Để null để UserManager tự sinh Pass!
+                        dto.Password = null;
                     }
                     else
                     {
@@ -262,11 +299,11 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                             if (txtConfirmPassword.Text.Trim() != txtPassword.Text.Trim())
                                 validationEngine.AddErrorPrompt(txtConfirmPassword.ClientID, GetResourceText(BackEndResourceKeys.RE_ENTER_INCORRECT_PASSWORD));
 
-                            dto.Password = txtPassword.Text; // Lấy pass tay
+                            dto.Password = txtPassword.Text;
                         }
                         else
                         {
-                            dto.Password = null; // Báo Backend không đổi Pass
+                            dto.Password = null;
                         }
                     }
                     // Đã cấp quyền thì lấy Role
@@ -275,18 +312,43 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     else
                         dto.RoleId = Guid.Empty;
                 }
-                // Dừng lại nếu có lỗi Validation (pass ngắn, pass ko khớp...)
+
                 if (!validationEngine.IsValid)
                 {
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
-                // 4. Đẩy xuống Backend xử lý
+
                 var result = UserManager.Instance.CreateOrUpdate(dto);
                 if (result == null)
                 {
                     ShowInvalidDataError();
                     return;
+                }
+
+                // =========================================================
+                // CHỐT HẠ SANDBOX: CHUYỂN QUYỀN SỞ HỮU TỪ ID ẢO SANG ID THẬT
+                // =========================================================
+                if (result.Avatar != oldAvatar && !string.IsNullOrEmpty(result.Avatar))
+                {
+                    new SubSonic.Update(TblUploadFile.Schema)
+                        .Set(TblUploadFile.Columns.RefId).EqualTo(result.UserId)
+                        .Where(TblUploadFile.Columns.RefId).IsEqualTo(TempAvatarSessionId)
+                        .Execute();
+
+                    new SubSonic.Delete().From(TblUploadFile.Schema)
+                        .Where(TblUploadFile.Columns.RefId).IsEqualTo(result.UserId)
+                        .And(TblUploadFile.Columns.FileUrl).IsEqualTo(oldAvatar)
+                        .Execute();
+                }
+                if (result.UserId == SweetContext.Current.UserId)
+                {
+                    SweetContext.Current.User = null;
+                    var master = this.Page.Master as SweetSoft.QLDA.BackOffice.MasterPages.MasterTemplate;
+                    if (master != null)
+                    {
+                        master.SetUserInfomation(result.DisplayName, result.Avatar);
+                    }
                 }
                 ShowNotify(IsEditMode ? GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY) : GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY), MSGType.Success);
                 dlDetail.CloseModal();
@@ -306,7 +368,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 ShowNotify(safeErrorMsg, MSGType.Error);
             }
         }
-        // BƯỚC 1A: Hàm nhận diện Ghost Account ở tầng UI
+
         private bool IsGhostAccount(string userName)
         {
             return string.IsNullOrEmpty(userName) || userName.StartsWith("EMP_");

@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
+using SubSonic;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Functions;
@@ -405,6 +406,10 @@ namespace SweetSoft.QLDA.Core.Managers
         public void DeleteMeet(TblLichHop meet)
         {
             _repository.DeleteMeet(meet);
+        }
+        public List<Guid> GetNhanVienCuocHop(Guid idCuocHop)
+        {
+            return _repository.GetNhanVienCuocHop(idCuocHop);
         }
     }
 }

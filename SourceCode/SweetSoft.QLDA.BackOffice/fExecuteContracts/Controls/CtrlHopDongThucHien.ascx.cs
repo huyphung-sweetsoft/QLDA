@@ -356,6 +356,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
 
             master.btnSearchSingle_Click(
                 searchTagBox,
+                pnlSearchDefault,
                 grvData,
                 txtSearchSingle);
 

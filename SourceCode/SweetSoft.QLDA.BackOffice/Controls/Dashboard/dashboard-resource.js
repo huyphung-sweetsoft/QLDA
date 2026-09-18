@@ -1,6 +1,15 @@
 (function () {
     "use strict";
 
+    var texts = window.dashboardResourceTexts || {};
+
+    function formatText(template) {
+        var values = Array.prototype.slice.call(arguments, 1);
+        return String(template || "").replace(/\{(\d+)\}/g, function (_, index) {
+            return values[Number(index)] == null ? "" : values[Number(index)];
+        });
+    }
+
     function formatPercent(value) {
         var number = Number(value) || 0;
         return number.toFixed(1).replace(".0", "") + "%";
@@ -43,8 +52,8 @@
                 zoom: { enabled: false }
             },
             series: [
-                { name: "Lịch phân công đã qua", data: actual },
-                { name: "Kế hoạch sắp tới", data: forecast }
+                { name: texts.pastAssignment || "", data: actual },
+                { name: texts.futurePlan || "", data: forecast }
             ],
             colors: ["#556ee6", "#f1b44c"],
             stroke: {
@@ -61,7 +70,7 @@
                 min: 0,
                 forceNiceScale: true,
                 labels: { formatter: formatPercent },
-                title: { text: "Mức sử dụng" }
+                title: { text: texts.utilization || "" }
             },
             annotations: {
                 yaxis: [{
@@ -71,7 +80,7 @@
                     label: {
                         borderColor: "#f46a6a",
                         style: { color: "#fff", background: "#f46a6a" },
-                        text: "Ngưỡng 100%"
+                        text: texts.threshold100 || ""
                     }
                 }]
             },
@@ -132,12 +141,18 @@
 
     function formatDays(value) {
         var number = Number(value) || 0;
-        return number.toFixed(1).replace(".0", "") + " ngày";
+        return formatText(
+            texts.dayFormat,
+            number.toFixed(1).replace(".0", ""));
     }
 
     function renderProject(container, project) {
-        var card = document.createElement("div");
-        card.className = "resource-drawer-project";
+        var card = document.createElement(project.detailUrl ? "a" : "div");
+        card.className = "resource-drawer-project" +
+            (project.detailUrl ? " d-block text-decoration-none text-reset" : "");
+        if (project.detailUrl) {
+            card.href = project.detailUrl;
+        }
 
         var heading = document.createElement("div");
         heading.className = "resource-drawer-project-heading";
@@ -145,7 +160,7 @@
             heading,
             "div",
             "fw-semibold",
-            (project.code || "Dự án") +
+            (project.code || texts.project || "") +
                 (project.name ? " · " + project.name : ""));
         appendText(
             heading,
@@ -161,25 +176,31 @@
             "div",
             "small text-muted mt-1",
             formatDays(project.allocatedDays) + " · " +
-                (Number(project.taskCount) || 0) + " công việc");
+                formatText(
+                    texts.taskCountFormat,
+                    Number(project.taskCount) || 0));
         container.appendChild(card);
     }
 
     function renderTask(container, task) {
-        var card = document.createElement("div");
-        card.className = "resource-drawer-task";
+        var card = document.createElement(task.tasksUrl ? "a" : "div");
+        card.className = "resource-drawer-task" +
+            (task.tasksUrl ? " d-block text-decoration-none text-reset" : "");
+        if (task.tasksUrl) {
+            card.href = task.tasksUrl;
+        }
 
         appendText(
             card,
             "div",
             "resource-drawer-task-project",
-            (task.projectCode || "Dự án") +
+            (task.projectCode || texts.project || "") +
                 (task.projectName ? " · " + task.projectName : ""));
         appendText(
             card,
             "div",
             "fw-semibold mt-1",
-            (task.code || "Công việc") +
+            (task.code || texts.task || "") +
                 (task.name ? " - " + task.name : ""));
 
         var meta = document.createElement("div");
@@ -229,12 +250,16 @@
                     ? "text-success"
                     : "text-secondary";
         capacity.textContent = formatDays(week.allocatedDays) + "/" +
-            formatDays(week.capacityDays) + " công suất" +
+            formatText(texts.capacityFormat, formatDays(week.capacityDays)) +
             (Number(week.overAllocatedDays) > 0
-                ? " · vượt " + formatDays(week.overAllocatedDays)
+                ? formatText(
+                    texts.excessFormat,
+                    formatDays(week.overAllocatedDays))
                 : "") +
             (Number(week.overlapDayCount) > 0
-                ? " · " + week.overlapDayCount + " ngày chồng lịch"
+                ? formatText(
+                    texts.overlapDaysFormat,
+                    week.overlapDayCount)
                 : "");
         projectContainer.textContent = "";
         taskContainer.textContent = "";
@@ -244,7 +269,7 @@
                 projectContainer,
                 "div",
                 "resource-drawer-empty",
-                "Nhân sự chưa được phân bổ vào dự án trong tuần này.");
+                texts.noProjectAllocation || "");
         } else {
             week.projects.forEach(function (project) {
                 renderProject(projectContainer, project);
@@ -256,7 +281,7 @@
                 taskContainer,
                 "div",
                 "resource-drawer-empty",
-                "Không có công việc trong tuần này.");
+                texts.noTasks || "");
         } else {
             week.tasks.forEach(function (task) {
                 renderTask(taskContainer, task);

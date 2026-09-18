@@ -1,5 +1,6 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="Gantts.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fGanttCharts.Gantts" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
@@ -97,6 +98,7 @@
         <div class="col-xl-12">
             <div class="card p-4 min-h-sreen">
                 <SweetSoft:Navigation runat="server" ID="Navigation1"/>
+                <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
                 <div class="title mb-4" style="font-size: 22px; font-weight: bold;"><%= GetProjectName() %></div>
 
                 <div class="legend mb-4" style="display: flex; gap: 20px; align-items: center; font-size: 13px; color: #555; flex-wrap: wrap;">

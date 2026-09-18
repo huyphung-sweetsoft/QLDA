@@ -1,258 +1,287 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="ProjectReport.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjectReports.ProjectReport" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
-        body { background-color: #f0f2f5; color: #333; }
+        .page-title h2 { font-size: 20px; color: #1e293b; font-weight: bold; margin: 10px 0 25px 0; text-transform: uppercase; }
 
-        .page-header { background: white; padding: 18px 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .page-title h2 { font-size: 20px; color: #1e293b; font-weight: bold; margin: 0; }
-        .page-title p { font-size: 13px; color: #64748b; margin-top: 4px; margin-bottom: 0; }
+        .report-layout { display: flex; flex-direction: column; gap: 25px; align-items: flex-start; }
+        @media (min-width: 1200px) { .report-layout { flex-direction: row; } }
 
-        .btn-group { display: flex; gap: 10px; }
-        .btn-custom { border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-        .btn-red { background-color: #dc2626; color: white; }
-        .btn-red:hover { background-color: #b91c1c; color: white; }
-        .btn-green { background-color: #16a34a; color: white; }
-        .btn-green:hover { background-color: #15803d; color: white; }
-        .btn-blue { background-color: #2563eb; color: white; }
-        .btn-blue:hover { background-color: #1d4ed8; color: white; }
+        .sidebar-left { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 1200px) { .sidebar-left { width: 220px; flex-shrink: 0; position: sticky; top: 20px; } }
 
-        .filter-card { background: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
-        .form-group-filter { display: flex; flex-direction: column; gap: 6px; }
-        .form-group-filter label { font-size: 13px; font-weight: 600; color: #475569; }
-        .form-group-filter .form-control { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; transition: border-color 0.2s; }
-        .form-group-filter .form-control:focus { border-color: #3b82f6; }
+        .form-group-vertical { display: flex; flex-direction: column; gap: 6px; }
+        .form-group-vertical label { font-size: 13.5px; font-weight: 600; color: #475569; margin: 0; }
+        .form-group-vertical .form-control { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13.5px; outline: none; transition: border-color 0.2s; }
+        .form-group-vertical .form-control:focus { border-color: #3b82f6; }
+
+        .btn-filter { width: 100%; background-color: #2563eb; color: white; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 14px; border: none; transition: background 0.2s; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-filter:hover { background-color: #1d4ed8; color: white; }
+
+        .main-center { flex-grow: 1; width: 100%; min-width: 0; }
+
+        .sidebar-right { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 1200px) { .sidebar-right { width: 180px; flex-shrink: 0; position: sticky; top: 20px; } }
+
+        .btn-export { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 15px; border-radius: 8px; font-size: 15px; font-weight: 600; border: none; transition: all 0.2s; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-export-pdf { background-color: #ef4444; color: white; }
+        .btn-export-pdf:hover { background-color: #dc2626; color: white; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(220,38,38,0.25); }
+        .btn-export-excel { background-color: #10b981; color: white; }
+        .btn-export-excel:hover { background-color: #059669; color: white; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16,185,129,0.25); }
+        .btn-export i { font-size: 18px; }
+
+        .report-paper { background: #ffffff; border-radius: 12px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05); padding: 45px 40px; width: 100%; border: 1px solid #f1f5f9; position: relative; }
+        .report-paper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 12px 12px 0 0; }
         
-        .report-paper { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); padding: 35px 40px; max-width: 1000px; margin: 0 auto 40px auto; border: 1px solid #e2e8f0; }
-        .report-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #3b82f6; }
-        .report-header h1 { font-size: 22px; color: #1e3a8a; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
-        .report-header .sub-date { font-size: 13.5px; color: #475569; margin-top: 6px; font-weight: 600; }
+        .report-header { text-align: center; margin-bottom: 35px; padding-bottom: 20px; border-bottom: 1px dashed #cbd5e1; }
+        .report-header h1 { font-size: 24px; color: #0f172a; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; }
+        .report-header .sub-date { font-size: 14px; color: #64748b; font-weight: 500; font-style: italic; }
 
-        .kpi-summary-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-bottom: 30px; }
-        .kpi-item { display: flex; flex-direction: column; gap: 4px; }
-        .kpi-title { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .kpi-number { font-size: 16px; font-weight: 700; color: #0f172a; }
-        .kpi-number.success { color: #16a34a; }
-        .kpi-number.danger { color: #dc2626; }
-        .kpi-number.warning { color: #d97706; }
-
-        .section-title { font-size: 15px; font-weight: 700; color: #1e293b; margin-top: 25px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .report-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
-        .report-table th, .report-table td { padding: 10px 12px; border: 1px solid #cbd5e1; text-align: left; vertical-align: middle; }
-        .report-table th { background-color: #f1f5f9; color: #334155; font-weight: 700; }
-
-        .report-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; }
-        .badge-success { background-color: #dcfce7; color: #15803d; }
-        .badge-danger { background-color: #fee2e2; color: #b91c1c; }
-        .badge-warning { background-color: #fef3c7; color: #b45309; }
-        .badge-info { background-color: #e0f2fe; color: #0369a1; }
-        .badge-high { background-color: #fee2e2; color: #991b1b; }
-        .badge-med { background-color: #fef3c7; color: #92400e; }
-        .badge-low { background-color: #f1f5f9; color: #475569; }
+        .kpi-summary-bar { display: flex; flex-wrap: wrap; justify-content: space-between; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 15px; margin-bottom: 40px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); gap: 15px;}
+        .kpi-item { flex: 1; text-align: center; min-width: 120px; border-right: 1px solid #e2e8f0; padding: 0 10px; }
+        .kpi-item:last-child { border-right: none; }
+        .kpi-title { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
+        .kpi-number { font-size: 24px; font-weight: 800; display: block; line-height: 1.1; }
         
-        /* State rỗng khi dự án chưa bắt đầu */
-        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 8px; border: 1px dashed #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .kpi-number.total { color: #3b82f6; }
+        .kpi-number.success { color: #10b981; }
+        .kpi-number.danger { color: #ef4444; }
+        .kpi-number.warning { color: #f59e0b; }
+
+        .section-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-top: 35px; margin-bottom: 15px; padding-left: 12px; border-left: 4px solid #3b82f6; line-height: 1.2; }
+        .section-title.danger { border-left-color: #ef4444; color: #b91c1c; }
+        .section-title.warning { border-left-color: #f59e0b; color: #b45309; }
+
+        /* ÉP BẢNG CHẾT CHIỀU RỘNG, KHÔNG CHO TẠO THANH CUỘN */
+        .report-paper .table { table-layout: fixed; width: 100%; border-color: #e2e8f0; margin-bottom: 0; word-wrap: break-word; }
+        .report-paper .table thead th { 
+            background-color: #f8fafc; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 12px; 
+            letter-spacing: 0.5px; padding: 14px 12px; border-bottom: 2px solid #cbd5e1; vertical-align: middle; 
+            white-space: normal; word-break: break-word; 
+        }
+        .report-paper .table tbody td { 
+            padding: 14px 12px; color: #334155; vertical-align: middle; font-size: 13.5px; 
+            white-space: normal !important; word-break: break-word; line-height: 1.5; 
+        }
+        .report-paper .table tbody tr:hover { background-color: #f8fafc; }
+
+        .report-badge { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; white-space: nowrap; line-height: 1.2; }
+        .badge-success { background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .badge-danger { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .badge-warning { background-color: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .badge-high { background-color: #fef2f2; color: #991b1b; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 20px; }
         .empty-state i { font-size: 50px; color: #94a3b8; margin-bottom: 15px; }
         .empty-state h4 { color: #334155; font-weight: 700; font-size: 18px; margin-bottom: 5px; }
-        .empty-state p { color: #64748b; font-size: 14px; }
+        .empty-state p { color: #64748b; font-size: 14px; margin:0; }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
         <div class="col-xl-12">
-            <SweetSoft:Navigation runat="server" ID="Navigation1"/>
-            <div class="page-header">
-                <div class="page-title">
-                    <h2><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %></h2>
-                    <p>Tổng hợp số liệu công việc hoàn thành, cảnh báo trễ hạn và quản trị vấn đề phát sinh.</p>
-                </div>
-                <div class="btn-group">
-                    <asp:LinkButton ID="btnExportPDF" runat="server" CssClass="btn-custom btn-red" OnClick="btnExportPDF_Click">
-                        <i class="fas fa-file-pdf"></i> Xuất File PDF
-                    </asp:LinkButton>
-                    <asp:LinkButton ID="btnExportExcel" runat="server" CssClass="btn-custom btn-green" OnClick="btnExportExcel_Click">
-                        <i class="fas fa-file-excel"></i> Xuất File Excel
-                    </asp:LinkButton>
-                </div>
+            <div class="card p-4 min-h-sreen">
+                <SweetSoft:Navigation runat="server" ID="Navigation1"/>
+                <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
+                
+                <asp:UpdatePanel ID="upReport" runat="server">
+                    <Triggers>
+                        <asp:PostBackTrigger ControlID="btnExportPDF" />
+                        <asp:PostBackTrigger ControlID="btnExportExcel" />
+                    </Triggers>
+                    <ContentTemplate>
+                        
+                        <div class="report-layout">
+                            
+                            <div class="sidebar-left">
+                                <div class="form-group-vertical">
+                                    <label><%= GetResourceText(BackEndResourceKeys.TIME_PERIOD) %>:</label>
+                                    <asp:DropDownList ID="ddlPeriod" runat="server" CssClass="form-control" 
+                                        AutoPostBack="true" 
+                                        OnSelectedIndexChanged="ddlPeriod_SelectedIndexChanged" 
+                                        onchange="toggleCustomDates(this.value)">
+                                    </asp:DropDownList>
+                                </div>
+                                
+                                <div class="form-group-vertical custom-date-group" style="display: none;">
+                                    <label><%= GetResourceText(BackEndResourceKeys.FROM_DATE) %>:</label>
+                                    <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                                </div>
+                                
+                                <div class="form-group-vertical custom-date-group mb-2" style="display: none;">
+                                    <label><%= GetResourceText(BackEndResourceKeys.TO_DATE) %>:</label>
+                                    <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                                </div>
+
+                                <asp:LinkButton ID="btnPreview" runat="server" CssClass="btn-filter" OnClick="btnPreview_Click">
+                                    <i class="fas fa-search"></i> <%= GetResourceText(BackEndResourceKeys.GENERATE_REPORT) %>
+                                </asp:LinkButton>
+                            </div>
+
+                            <div class="main-center">
+                                <asp:PlaceHolder ID="phNotStarted" runat="server" Visible="false">
+                                    <div class="empty-state">
+                                        <i class="fas fa-folder-open"></i>
+                                        <h4><%= GetResourceText(BackEndResourceKeys.PROJECT_NOT_STARTED) %></h4>
+                                        <p><%= GetResourceText(BackEndResourceKeys.PROJECT_HAS_NO_DATA) %></p>
+                                    </div>
+                                </asp:PlaceHolder>
+
+                                <asp:PlaceHolder ID="phReportContent" runat="server">
+                                    <div class="report-paper">
+                                        
+                                        <div class="report-header">
+                                            <h1><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %></h1>
+                                            <div class="sub-date">
+                                                <asp:Literal ID="ltrReportPeriod" runat="server"></asp:Literal>
+                                            </div>
+                                        </div>
+
+                                        <div class="kpi-summary-bar">
+                                            <div class="kpi-item">
+                                                <span class="kpi-title"><%= GetResourceText(BackEndResourceKeys.TOTAL_TASKS) %></span>
+                                                <span class="kpi-number total"><asp:Literal ID="ltrTotalTasks" runat="server">0</asp:Literal></span>
+                                            </div>
+                                            <div class="kpi-item">
+                                                <span class="kpi-title"><%= GetResourceText(BackEndResourceKeys.COMPLETED) %></span>
+                                                <span class="kpi-number success"><asp:Literal ID="ltrCompletedTasks" runat="server">0</asp:Literal></span>
+                                            </div>
+                                            <div class="kpi-item">
+                                                <span class="kpi-title"><%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %></span>
+                                                <span class="kpi-number danger"><asp:Literal ID="ltrOverdueTasks" runat="server">0</asp:Literal></span>
+                                            </div>
+                                            <div class="kpi-item">
+                                                <span class="kpi-title"><%= GetResourceText(BackEndResourceKeys.ISSUES_ARISING) %></span>
+                                                <span class="kpi-number warning"><asp:Literal ID="ltrTotalIssues" runat="server">0</asp:Literal></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="section-title">1. <%= GetResourceText(BackEndResourceKeys.COMPLETED_TASKS_SUMMARY) %></div>
+                                        <div class="mb-4">
+                                            <table class="table table-bordered table-hover w-100">
+                                                <thead class="text-center">
+                                                    <tr>
+                                                        <th width="12%"><%= GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
+                                                        <th width="38%" class="text-start"><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
+                                                        <th width="35%" class="text-start"><%= GetResourceText(BackEndResourceKeys.ASSIGNEE) %></th>
+                                                        <th width="15%"><%= GetResourceText(BackEndResourceKeys.COMPLETION_DATE) %></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rptCompletedTasks" runat="server">
+                                                        <ItemTemplate>
+                                                            <tr>
+                                                                <td class="text-center"><strong><%# Eval("MaCongViec") %></strong></td>
+                                                                <td class="text-start"><%# Eval("TenCongViec") %></td>
+                                                                <td class="text-start"><%# string.IsNullOrEmpty(Convert.ToString(Eval("Assignee"))) ? "—" : Eval("Assignee") %></td>
+                                                                <td class="text-center"><span class="report-badge badge-success"><%# Eval("NgayHoanThanhThucTe", "{0:dd/MM/yyyy}") %></span></td>
+                                                            </tr>
+                                                        </ItemTemplate>
+                                                        <FooterTemplate>
+                                                            <asp:PlaceHolder runat="server" Visible='<%# rptCompletedTasks.Items.Count == 0 %>'>
+                                                                <tr><td colspan="4" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_COMPLETED_TASKS_IN_PERIOD) %></td></tr>
+                                                            </asp:PlaceHolder>
+                                                        </FooterTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="section-title danger">2. <%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS_LIST) %></div>
+                                        <div class="mb-4">
+                                            <table class="table table-bordered table-hover w-100">
+                                                <thead class="text-center">
+                                                    <tr>
+                                                        <th width="12%"><%= GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
+                                                        <th width="35%" class="text-start"><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
+                                                        <th width="23%" class="text-start"><%= GetResourceText(BackEndResourceKeys.ASSIGNEE) %></th>
+                                                        <th width="15%"><%= GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
+                                                        <th width="15%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rptOverdueTasks" runat="server">
+                                                        <ItemTemplate>
+                                                            <tr>
+                                                                <td class="text-center"><strong><%# Eval("MaCongViec") %></strong></td>
+                                                                <td class="text-start"><%# Eval("TenCongViec") %></td>
+                                                                <td class="text-start"><%# string.IsNullOrEmpty(Convert.ToString(Eval("Assignee"))) ? "—" : Eval("Assignee") %></td>
+                                                                <td class="text-center fw-bold text-danger"><%# Eval("NgayKetThuc", "{0:dd/MM/yyyy}") %></td>
+                                                                <td class="text-center">
+                                                                    <span class="report-badge badge-danger"><%= GetResourceText(BackEndResourceKeys.OVERDUE) %> <%# Eval("DaysOverdue") %> <%= GetResourceText(BackEndResourceKeys.DAY) %></span>
+                                                                </td>
+                                                            </tr>
+                                                        </ItemTemplate>
+                                                        <FooterTemplate>
+                                                            <asp:PlaceHolder runat="server" Visible='<%# rptOverdueTasks.Items.Count == 0 %>'>
+                                                                <tr><td colspan="5" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_OVERDUE_TASKS) %></td></tr>
+                                                            </asp:PlaceHolder>
+                                                        </FooterTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="section-title warning">3. <%= GetResourceText(BackEndResourceKeys.ISSUES_LIST) %></div>
+                                        <div class="mb-2">
+                                            <table class="table table-bordered table-hover w-100">
+                                                <thead class="text-center">
+                                                    <tr>
+                                                        <th width="12%"><%= GetResourceText(BackEndResourceKeys.CODE) %></th>
+                                                        <th width="33%" class="text-start"><%= GetResourceText(BackEndResourceKeys.ISSUE_NAME) %></th>
+                                                        <th width="15%"><%= GetResourceText(BackEndResourceKeys.IMPACT) %></th>
+                                                        <th width="15%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                                        <th width="25%" class="text-start"><%= GetResourceText(BackEndResourceKeys.HANDLING_PLAN) %></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rptIssues" runat="server">
+                                                        <ItemTemplate>
+                                                            <tr>
+                                                                <td class="text-center"><strong><%# Eval("MaVanDe") %></strong></td>
+                                                                <td class="text-start"><%# Eval("TenVanDe") %></td>
+                                                                <td class="text-center">
+                                                                    <span class="report-badge <%# GetPriorityBadge(Convert.ToInt32(Eval("MucDoAnhHuong"))) %>"><%# GetPriorityText(Convert.ToInt32(Eval("MucDoAnhHuong"))) %></span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <span class="report-badge <%# GetIssueStatusBadge(Convert.ToInt32(Eval("TrangThai"))) %>"><%# GetIssueStatusText(Convert.ToInt32(Eval("TrangThai"))) %></span>
+                                                                </td>
+                                                                <td class="text-start"><%# Eval("KeHoachXuLy") %></td>
+                                                            </tr>
+                                                        </ItemTemplate>
+                                                        <FooterTemplate>
+                                                            <asp:PlaceHolder runat="server" Visible='<%# rptIssues.Items.Count == 0 %>'>
+                                                                <tr><td colspan="5" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_ISSUES) %></td></tr>
+                                                            </asp:PlaceHolder>
+                                                        </FooterTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                </asp:PlaceHolder>
+                            </div>
+
+                            <div class="sidebar-right">
+                                <asp:LinkButton ID="btnExportPDF" runat="server" CssClass="btn-export btn-export-pdf" OnClick="btnExportPDF_Click">
+                                    <i class="fas fa-file-pdf"></i> <%= GetResourceText(BackEndResourceKeys.EXPORT_PDF) %>
+                                </asp:LinkButton>
+                                <asp:LinkButton ID="btnExportExcel" runat="server" CssClass="btn-export btn-export-excel" OnClick="btnExportExcel_Click">
+                                    <i class="fas fa-file-excel"></i> <%= GetResourceText(BackEndResourceKeys.EXPORT_EXCEL) %>
+                                </asp:LinkButton>
+                            </div>
+
+                        </div> 
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+
             </div>
-
-            <asp:UpdatePanel ID="upReport" runat="server">
-                <ContentTemplate>
-                    
-                    <!-- KHI DỰ ÁN CHƯA BẮT ĐẦU -->
-                    <asp:PlaceHolder ID="phNotStarted" runat="server" Visible="false">
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <h4>Dự án chưa bắt đầu</h4>
-                            <p>Dự án này đang ở trạng thái chờ. Hệ thống chưa có dữ liệu tiến độ công việc để lập báo cáo.</p>
-                        </div>
-                    </asp:PlaceHolder>
-
-                    <!-- KHI DỰ ÁN ĐANG LÀM HOẶC ĐÃ XONG -->
-                    <asp:PlaceHolder ID="phReportContent" runat="server">
-                        <div class="filter-card">
-                            <div class="form-group-filter" style="min-width: 250px;">
-                                <label>Kỳ báo cáo:</label>
-                                <asp:DropDownList ID="ddlPeriod" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlPeriod_SelectedIndexChanged" onchange="toggleCustomDates(this.value)">
-                                    <asp:ListItem Text="Tuần này" Value="THIS_WEEK"></asp:ListItem>
-                                    <asp:ListItem Text="Tuần trước" Value="LAST_WEEK"></asp:ListItem>
-                                    <asp:ListItem Text="Tháng này" Value="THIS_MONTH"></asp:ListItem>
-                                    <asp:ListItem Text="Tháng trước" Value="LAST_MONTH"></asp:ListItem>
-                                    <asp:ListItem Text="Toàn thời gian" Value="ALL" Selected="True"></asp:ListItem>
-                                    <asp:ListItem Text="Tùy chọn..." Value="CUSTOM"></asp:ListItem>
-                                </asp:DropDownList>
-                            </div>
-                            
-                            <div class="form-group-filter custom-date-group" style="display: none;">
-                                <label>Từ ngày:</label>
-                                <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
-                            </div>
-                            
-                            <div class="form-group-filter custom-date-group" style="display: none;">
-                                <label>Đến ngày:</label>
-                                <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
-                            </div>
-
-                            <asp:LinkButton ID="btnPreview" runat="server" CssClass="btn-custom btn-blue" OnClick="btnPreview_Click">
-                                <i class="fas fa-search"></i> Lọc dữ liệu
-                            </asp:LinkButton>
-                        </div>
-
-                        <div class="report-paper">
-                            
-                            <div class="report-header">
-                                <h1>BÁO CÁO TIẾN ĐỘ DỰ ÁN</h1>
-                                <div class="sub-date">
-                                    <asp:Literal ID="ltrReportPeriod" runat="server"></asp:Literal>
-                                </div>
-                            </div>
-
-                            <div class="kpi-summary-bar">
-                                <div class="kpi-item">
-                                    <span class="kpi-title">Tổng số Task (Trong kỳ):</span>
-                                    <span class="kpi-number"><asp:Literal ID="ltrTotalTasks" runat="server">0</asp:Literal> công việc</span>
-                                </div>
-                                <div class="kpi-item">
-                                    <span class="kpi-title">Đã hoàn thành:</span>
-                                    <span class="kpi-number success"><asp:Literal ID="ltrCompletedTasks" runat="server">0</asp:Literal></span>
-                                </div>
-                                <div class="kpi-item">
-                                    <span class="kpi-title">Trễ hạn / Tắc nghẽn:</span>
-                                    <span class="kpi-number danger"><asp:Literal ID="ltrOverdueTasks" runat="server">0</asp:Literal></span>
-                                </div>
-                                <div class="kpi-item">
-                                    <span class="kpi-title">Vấn đề phát sinh:</span>
-                                    <span class="kpi-number warning"><asp:Literal ID="ltrTotalIssues" runat="server">0</asp:Literal> vấn đề</span>
-                                </div>
-                            </div>
-
-                            <div class="section-title">1. Tổng hợp Task đã hoàn thành</div>
-                            <table class="report-table">
-                                <thead>
-                                    <tr>
-                                        <th width="90">Mã Task</th>
-                                        <th>Tên công việc</th>
-                                        <th width="150">Người thực hiện</th>
-                                        <th width="120" class="text-center">Ngày hoàn thành</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <asp:Repeater ID="rptCompletedTasks" runat="server">
-                                        <ItemTemplate>
-                                            <tr>
-                                                <td><strong><%# Eval("MaCongViec") %></strong></td>
-                                                <td><%# Eval("TenCongViec") %></td>
-                                                <td><%# Eval("Assignee") %></td>
-                                                <td class="text-center"><span class="report-badge badge-success"><%# Eval("NgayHoanThanhThucTe", "{0:dd/MM/yyyy}") %></span></td>
-                                            </tr>
-                                        </ItemTemplate>
-                                        <FooterTemplate>
-                                            <asp:PlaceHolder runat="server" Visible='<%# rptCompletedTasks.Items.Count == 0 %>'>
-                                                <tr><td colspan="4" class="text-center text-muted py-3">Không có công việc nào hoàn thành trong kỳ này.</td></tr>
-                                            </asp:PlaceHolder>
-                                        </FooterTemplate>
-                                    </asp:Repeater>
-                                </tbody>
-                            </table>
-
-                            <div class="section-title" style="color: #b91c1c;">2. Danh sách Task bị trễ hạn / Cần chú ý</div>
-                            <table class="report-table">
-                                <thead>
-                                    <tr>
-                                        <th width="90">Mã Task</th>
-                                        <th>Tên công việc</th>
-                                        <th width="150">Người phụ trách</th>
-                                        <th width="110" class="text-center">Hạn chót</th>
-                                        <th width="160" class="text-center">Tình trạng trễ</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <asp:Repeater ID="rptOverdueTasks" runat="server">
-                                        <ItemTemplate>
-                                            <tr>
-                                                <td><strong><%# Eval("MaCongViec") %></strong></td>
-                                                <td><%# Eval("TenCongViec") %></td>
-                                                <td><%# Eval("Assignee") %></td>
-                                                <td class="text-center"><%# Eval("NgayKetThuc", "{0:dd/MM/yyyy}") %></td>
-                                                <td class="text-center">
-                                                    <span class="report-badge badge-danger">Trễ <%# Eval("DaysOverdue") %> ngày</span>
-                                                </td>
-                                            </tr>
-                                        </ItemTemplate>
-                                        <FooterTemplate>
-                                            <asp:PlaceHolder runat="server" Visible='<%# rptOverdueTasks.Items.Count == 0 %>'>
-                                                <tr><td colspan="5" class="text-center text-muted py-3">Tuyệt vời! Không có công việc nào bị trễ hạn.</td></tr>
-                                            </asp:PlaceHolder>
-                                        </FooterTemplate>
-                                    </asp:Repeater>
-                                </tbody>
-                            </table>
-
-                            <div class="section-title">3. Các Vấn đề / Issue phát sinh</div>
-                            <table class="report-table">
-                                <thead>
-                                    <tr>
-                                        <th width="80">Mã</th>
-                                        <th>Tiêu đề vấn đề (Issue)</th>
-                                        <th width="100" class="text-center">Mức độ</th>
-                                        <th width="110" class="text-center">Trạng thái</th>
-                                        <th>Hướng xử lý / Ghi chú</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <asp:Repeater ID="rptIssues" runat="server">
-                                        <ItemTemplate>
-                                            <tr>
-                                                <td><strong><%# Eval("MaVanDe") %></strong></td>
-                                                <td><%# Eval("TenVanDe") %></td>
-                                                <td class="text-center">
-                                                    <span class="report-badge <%# GetPriorityBadge(Convert.ToInt32(Eval("MucDoAnhHuong"))) %>"><%# GetPriorityText(Convert.ToInt32(Eval("MucDoAnhHuong"))) %></span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="report-badge <%# GetIssueStatusBadge(Convert.ToInt32(Eval("TrangThai"))) %>"><%# GetIssueStatusText(Convert.ToInt32(Eval("TrangThai"))) %></span>
-                                                </td>
-                                                <td><%# Eval("KeHoachXuLy") %></td>
-                                            </tr>
-                                        </ItemTemplate>
-                                        <FooterTemplate>
-                                            <asp:PlaceHolder runat="server" Visible='<%# rptIssues.Items.Count == 0 %>'>
-                                                <tr><td colspan="5" class="text-center text-muted py-3">Không có vấn đề phát sinh.</td></tr>
-                                            </asp:PlaceHolder>
-                                        </FooterTemplate>
-                                    </asp:Repeater>
-                                </tbody>
-                            </table>
-
-                        </div>
-                    </asp:PlaceHolder>
-
-                </ContentTemplate>
-            </asp:UpdatePanel>
-
         </div>
     </div>
 </asp:Content>

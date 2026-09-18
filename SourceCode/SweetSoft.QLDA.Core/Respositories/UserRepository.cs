@@ -120,9 +120,9 @@ namespace SweetSoft.QLDA.Core.Respositories
     
             AND (@isActivated IS NULL OR f.IsActivated = @isActivated)
             AND (@laNhanVien IS NULL OR f.LaNhanVien = @laNhanVien)
-            AND (@roleId = '{Guid.Empty}' OR r.RoleId = @roleId)
-            AND (@idPhongBan = '{Guid.Empty}' OR f.IdPhongBan = @idPhongBan)
-            AND (@idChucDanh = '{Guid.Empty}' OR f.IdChucDanh = @idChucDanh)
+            AND (@roleId = '00000000-0000-0000-0000-000000000000' OR @roleId = '' OR r.RoleId = @roleId)
+            AND (@idPhongBan = '00000000-0000-0000-0000-000000000000' OR @idPhongBan = '' OR f.IdPhongBan = @idPhongBan)
+            AND (@idChucDanh = '00000000-0000-0000-0000-000000000000' OR @idChucDanh = '' OR f.IdChucDanh = @idChucDanh)
             AND (@singleKeyWord = N'%%'
             OR f.Username LIKE @singleKeyWord
             OR f.DisplayName LIKE @singleKeyWord
@@ -220,9 +220,9 @@ namespace SweetSoft.QLDA.Core.Respositories
 
             AND (@isActivated IS NULL OR f.IsActivated = @isActivated)
             AND (@laNhanVien IS NULL OR f.LaNhanVien = @laNhanVien)
-            AND (@roleId = '{Guid.Empty}' OR r.RoleId = @roleId)
-            AND (@idPhongBan = '{Guid.Empty}' OR f.IdPhongBan = @idPhongBan)
-            AND (@idChucDanh = '{Guid.Empty}' OR f.IdChucDanh = @idChucDanh)
+            AND (@roleId = '00000000-0000-0000-0000-000000000000' OR @roleId = '' OR r.RoleId = @roleId)
+            AND (@idPhongBan = '00000000-0000-0000-0000-000000000000' OR @idPhongBan = '' OR f.IdPhongBan = @idPhongBan)
+            AND (@idChucDanh = '00000000-0000-0000-0000-000000000000' OR @idChucDanh = '' OR f.IdChucDanh = @idChucDanh)
         ) AS T
     ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
 
