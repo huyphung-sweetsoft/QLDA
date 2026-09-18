@@ -826,10 +826,12 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             TblCongViec firstChild = _repository.GetFirstChildTask(projectId, parentId);
             if (firstChild == null || firstChild.DaXoa == true) return;
-
+            firstChild.NgayBatDau = newStartDate;
             TblCongViec grandChild = _repository.GetFirstChildTask(projectId, firstChild.IdCongViec);
             if (grandChild != null)
             {
+                firstChild.NgayCapNhat = DateTime.Now;
+                firstChild.Save();
                 AutoSetFirstChildStartTime(projectId, firstChild.IdCongViec, newStartDate);
             }
             else
