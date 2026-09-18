@@ -97,6 +97,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
             bool isPhase = _taskManager.CheckPhase(task);
             bool hasChildren = _taskManager.CheckHasChildTasks(CurrentProjectId, task);
+
             SetFormControlsState(isPhase, hasChildren);
 
             _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
@@ -104,6 +105,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             _controlHelpers.BindPriorities(ddlEditDoUuTien, task.IdDoUuTien);
             _controlHelpers.BindTaskStatus(ddlEditTrangThai, task.TrangThai);
             UpdateMinStartDate();
+
+            byte trangThaiTask = task.TrangThai;
+
+            if (trangThaiTask == 2)
+            {
+                txtEditTenCv.Enabled = false;
+                txtEditMoTa.Enabled = false;
+                txtEditNgayBatDau.Enabled = false;
+                txtEditThoiHan.Enabled = false;
+                ddlEditCongViecCha.Enabled = false;
+                ddlEditPhuThuoc.Enabled = false;
+                ddlEditTrangThai.Enabled = false;
+                ddlEditDoUuTien.Enabled = false;
+            }
+            else if (trangThaiTask == 1)
+            {
+                txtEditNgayBatDau.Enabled = false;
+            }
 
             upModal.Update();
             mdlEditTask.OpenModal(true);

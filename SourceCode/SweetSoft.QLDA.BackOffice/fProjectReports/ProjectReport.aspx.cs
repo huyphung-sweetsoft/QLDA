@@ -13,7 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
 {
     public partial class ProjectReport : BaseAdminPage
     {
-        public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Project;
+        public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.ProjectReport;
 
         protected void Page_Load(object sender, EventArgs e)
         {

@@ -826,10 +826,12 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             TblCongViec firstChild = _repository.GetFirstChildTask(projectId, parentId);
             if (firstChild == null || firstChild.DaXoa == true) return;
-
+            firstChild.NgayBatDau = newStartDate;
             TblCongViec grandChild = _repository.GetFirstChildTask(projectId, firstChild.IdCongViec);
             if (grandChild != null)
             {
+                firstChild.NgayCapNhat = DateTime.Now;
+                firstChild.Save();
                 AutoSetFirstChildStartTime(projectId, firstChild.IdCongViec, newStartDate);
             }
             else
@@ -852,25 +854,38 @@ namespace SweetSoft.QLDA.Core.Managers
             DataTable dtChildren = _repository.GetChildTasks(projectId, parentTaskId);
             if (dtChildren != null && dtChildren.Rows.Count > 0)
             {
-                bool allCompleted = true;
+                int countNotStarted = 0;
+                int countCompleted = 0;
+                int totalChildren = dtChildren.Rows.Count;
+
                 foreach (DataRow row in dtChildren.Rows)
                 {
                     int trangThai = row["TrangThai"] != DBNull.Value ? Convert.ToInt32(row["TrangThai"]) : 0;
-                    if (trangThai != 2)
-                    {
-                        allCompleted = false;
-                        break;
-                    }
+
+                    if (trangThai == 0) countNotStarted++;
+                    else if (trangThai == 2) countCompleted++;
                 }
+
                 TblCongViec parentTask = FetchById(parentTaskId);
                 if (parentTask != null)
                 {
-                    byte newStatus = allCompleted ? (byte)2 : (byte)1;
+                    byte newStatus = 1;
+
+                    if (countCompleted == totalChildren)
+                    {
+                        newStatus = 2;
+                    }
+                    else if (countNotStarted == totalChildren)
+                    {
+                        newStatus = 0; 
+                    }
+
                     if (parentTask.TrangThai != newStatus)
                     {
                         parentTask.TrangThai = newStatus;
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
+
                         if (parentTask.IdCongViecCha.HasValue)
                         {
                             AutoSetParentStatus(projectId, parentTask.IdCongViecCha.Value);
