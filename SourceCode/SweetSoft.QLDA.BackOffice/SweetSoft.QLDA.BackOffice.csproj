@@ -556,13 +556,6 @@
     <Compile Include="fProjects\DuAnList.aspx.designer.cs">
       <DependentUpon>DuAnList.aspx</DependentUpon>
     </Compile>
-    <Compile Include="fProjects\ThanhToanList.aspx.cs">
-      <DependentUpon>ThanhToanList.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fProjects\ThanhToanList.aspx.designer.cs">
-      <DependentUpon>ThanhToanList.aspx</DependentUpon>
-    </Compile>
     <Compile Include="fRisks\Controls\CtrlRisk.ascx.cs">
       <DependentUpon>CtrlRisk.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
