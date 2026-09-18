@@ -1063,6 +1063,9 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
   </data>
+  <data name="CONTRACT_LIST" xml:space="preserve">
+    <value>Danh sách hợp đồng</value>
+  </data>
   <data name="CONTRACT_DOCUMENT" xml:space="preserve">
     <value>Hồ sơ hợp đồng</value>
   </data>

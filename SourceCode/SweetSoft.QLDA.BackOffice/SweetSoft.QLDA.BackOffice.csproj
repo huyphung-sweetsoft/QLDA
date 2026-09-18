@@ -181,6 +181,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
     <Compile Include="fCosts\Controls\CtrlCost.ascx.cs">
       <DependentUpon>CtrlCost.ascx</DependentUpon>
@@ -528,13 +529,6 @@
     <Compile Include="fProjects\Controls\CtrlProjectTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectTabs.ascx</DependentUpon>
     </Compile>
-    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.cs">
-      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fProjects\Controls\CtrlThanhToan.ascx.designer.cs">
-      <DependentUpon>CtrlThanhToan.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -759,8 +753,6 @@
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
-    <Content Include="fProjects\Controls\CtrlThanhToan.ascx" />
-    <Content Include="fProjects\ThanhToanList.aspx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
