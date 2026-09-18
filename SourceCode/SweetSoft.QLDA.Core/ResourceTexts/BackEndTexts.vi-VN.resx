@@ -1132,20 +1132,8 @@
   <data name="MEETING_CODE" xml:space="preserve">
     <value>Mã cuộc họp</value>
   </data>
-	<data name="MEETING_CODE" xml:space="preserve">
-    <value>Mã cuộc họp</value>
-	  </data>
   <data name="MEETING_ROOM" xml:space="preserve">
     <value>Địa điểm họp</value>
-  </data>
-  <data name="GENERAL_CONTENT" xml:space="preserve">
-    <value>Nội dung khái quát</value>
-  </data>
-  <data name="MEETING_ROOM" xml:space="preserve">
-    <value>Địa điểm họp</value>
-  </data>
-  <data name="GENERAL_CONTENT" xml:space="preserve">
-    <value>Nội dung khái quát</value>
   </data>
   <data name="GENERAL_CONTENT" xml:space="preserve">
     <value>Nội dung khái quát</value>
@@ -1813,227 +1801,669 @@
   <data name="DASHBOARD_EMPLOYEE" xml:space="preserve">
     <value>Nhân sự</value>
   </data>
-  <data name="DASHBOARD_STATUS_NOT_STARTED" xml:space="preserve"><value>Chưa bắt đầu</value></data>
-  <data name="DASHBOARD_STATUS_IN_PROGRESS" xml:space="preserve"><value>Đang thực hiện</value></data>
-  <data name="DASHBOARD_STATUS_COMPLETED" xml:space="preserve"><value>Hoàn thành</value></data>
-  <data name="DASHBOARD_STATUS_OVERDUE" xml:space="preserve"><value>Quá hạn</value></data>
-  <data name="DASHBOARD_HEALTH_ON_TRACK" xml:space="preserve"><value>Đúng tiến độ</value></data>
-  <data name="DASHBOARD_HEALTH_AT_RISK" xml:space="preserve"><value>Có nguy cơ</value></data>
-  <data name="DASHBOARD_HEALTH_BEHIND" xml:space="preserve"><value>Chậm tiến độ</value></data>
-  <data name="DASHBOARD_PRIORITY_NOT_SET" xml:space="preserve"><value>Chưa đặt ưu tiên</value></data>
-  <data name="DASHBOARD_UPDATED_AT" xml:space="preserve"><value>Cập nhật dữ liệu</value></data>
-  <data name="DASHBOARD_ALL_TIME" xml:space="preserve"><value>Tất cả thời gian</value></data>
-  <data name="DASHBOARD_PROJECT_COUNT" xml:space="preserve"><value>{0} dự án</value></data>
-  <data name="DASHBOARD_TASK_COUNT" xml:space="preserve"><value>{0} công việc</value></data>
-  <data name="DASHBOARD_DAY_COUNT" xml:space="preserve"><value>{0} ngày</value></data>
-  <data name="DASHBOARD_DAYS_OVERDUE" xml:space="preserve"><value>Quá {0} ngày</value></data>
-  <data name="DASHBOARD_DAYS_REMAINING" xml:space="preserve"><value>Còn {0} ngày</value></data>
-  <data name="DASHBOARD_DUE_TODAY" xml:space="preserve"><value>Đến hạn hôm nay</value></data>
-  <data name="DASHBOARD_NO_DEADLINE" xml:space="preserve"><value>Chưa đặt hạn</value></data>
-  <data name="DASHBOARD_COMPLETED_LABEL" xml:space="preserve"><value>Đã hoàn thành</value></data>
-  <data name="DASHBOARD_ACTUAL_PROGRESS" xml:space="preserve"><value>Tiến độ thực tế</value></data>
-  <data name="DASHBOARD_PLANNED_PROGRESS" xml:space="preserve"><value>Tiến độ kế hoạch</value></data>
-  <data name="DASHBOARD_AVERAGE_PROGRESS" xml:space="preserve"><value>Tiến độ trung bình</value></data>
-  <data name="DASHBOARD_TOTAL_TASKS" xml:space="preserve"><value>Tổng công việc</value></data>
-  <data name="DASHBOARD_FILTERED_PROJECT_TASKS" xml:space="preserve"><value>Của các dự án được lọc</value></data>
-  <data name="DASHBOARD_PROGRESS_COMPLETED_TASKS" xml:space="preserve"><value>Đã hoàn thành</value></data>
-  <data name="DASHBOARD_COMPLETED_OF_TOTAL" xml:space="preserve"><value>Đã hoàn thành trên tổng số</value></data>
-  <data name="DASHBOARD_PROGRESS_REACHED_100" xml:space="preserve"><value>Đạt 100%</value></data>
-  <data name="DASHBOARD_PROGRESS_RANGE_1_99" xml:space="preserve"><value>Từ 1% đến 99%</value></data>
-  <data name="DASHBOARD_DUE_SOON_TASK_COUNT" xml:space="preserve"><value>{0} việc sắp đến hạn</value></data>
-  <data name="DASHBOARD_VARIANCE" xml:space="preserve"><value>Độ lệch</value></data>
-  <data name="DASHBOARD_ACTUAL_MINUS_PLAN" xml:space="preserve"><value>Thực tế − Kế hoạch</value></data>
-  <data name="DASHBOARD_NEEDS_ATTENTION" xml:space="preserve"><value>Dự án cần chú ý</value></data>
-  <data name="DASHBOARD_NEEDS_ATTENTION_DESC" xml:space="preserve"><value>Chậm, rủi ro hoặc quá hạn</value></data>
-  <data name="DASHBOARD_PROGRESS_TITLE" xml:space="preserve"><value>Dashboard tiến độ dự án và công việc</value></data>
-  <data name="DASHBOARD_PROGRESS_FILTER_DESC" xml:space="preserve"><value>Tiến độ dự án được so sánh với tỷ lệ thời gian kế hoạch đã sử dụng; khoảng thời gian dùng để xác định các dự án thuộc phạm vi thống kê, còn số liệu công việc lấy toàn bộ công việc của các dự án đó.</value></data>
-  <data name="DASHBOARD_ACTUAL_VS_PLAN" xml:space="preserve"><value>Thực tế so với kế hoạch</value></data>
-  <data name="DASHBOARD_ACTUAL_VS_PLAN_DESC" xml:space="preserve"><value>Tiến độ thực hiện của dự án so với tỷ lệ thời gian kế hoạch đã sử dụng.</value></data>
-  <data name="DASHBOARD_PLAN_TIME_DESC" xml:space="preserve"><value>Kế hoạch được tính theo tỷ lệ thời gian từ ngày bắt đầu đến ngày dự kiến hoàn thành.</value></data>
-  <data name="DASHBOARD_EXPECTED_COMPLETION" xml:space="preserve"><value>Dự kiến hoàn thành</value></data>
-  <data name="DASHBOARD_ACTUAL_COMPLETION" xml:space="preserve"><value>Hoàn thành thực tế</value></data>
-  <data name="DASHBOARD_NOT_COMPLETED" xml:space="preserve"><value>Chưa hoàn thành</value></data>
-  <data name="DASHBOARD_PROGRESS_VARIANCE" xml:space="preserve"><value>Độ lệch tiến độ</value></data>
-  <data name="DASHBOARD_PROGRESS_VARIANCE_DESC" xml:space="preserve"><value>Tiến độ thực tế trừ tiến độ kế hoạch</value></data>
-  <data name="DASHBOARD_TASK_STATUS" xml:space="preserve"><value>Trạng thái công việc</value></data>
-  <data name="DASHBOARD_TASK_STATUS_DESC" xml:space="preserve"><value>Phân bố toàn bộ công việc của các dự án thuộc phạm vi lọc.</value></data>
-  <data name="DASHBOARD_TASK_PROGRESS" xml:space="preserve"><value>Tiến độ từng công việc</value></data>
-  <data name="DASHBOARD_TASK_PROGRESS_ORDER_DESC" xml:space="preserve"><value>Công việc chưa hoàn thành được xếp theo ưu tiên từ cao xuống thấp; công việc đã hoàn thành nằm cuối danh sách.</value></data>
-  <data name="DASHBOARD_TASK" xml:space="preserve"><value>Công việc</value></data>
-  <data name="DASHBOARD_DEADLINE" xml:space="preserve"><value>Hạn hoàn thành</value></data>
-  <data name="DASHBOARD_PROGRESS_COLUMN" xml:space="preserve"><value>Tiến độ</value></data>
-  <data name="DASHBOARD_NO_PROJECT_TASKS" xml:space="preserve"><value>Dự án chưa có công việc.</value></data>
-  <data name="DASHBOARD_PROJECT_TASK_STRUCTURE" xml:space="preserve"><value>Cơ cấu công việc theo dự án</value></data>
-  <data name="DASHBOARD_PROJECT_TASK_STRUCTURE_DESC" xml:space="preserve"><value>So sánh số công việc hoàn thành, đang thực hiện, chưa bắt đầu và quá hạn giữa các dự án.</value></data>
-  <data name="DASHBOARD_PROJECT_SCHEDULE_HEALTH" xml:space="preserve"><value>Sức khỏe tiến độ dự án</value></data>
-  <data name="DASHBOARD_PROJECT_SCHEDULE_HEALTH_DESC" xml:space="preserve"><value>Dự án có độ lệch âm lớn đang chậm hơn kế hoạch.</value></data>
-  <data name="DASHBOARD_VARIANCE_FORMULA" xml:space="preserve"><value>Độ lệch = Thực tế − Kế hoạch</value></data>
-  <data name="DASHBOARD_PLANNED_TIME" xml:space="preserve"><value>Thời gian kế hoạch</value></data>
-  <data name="DASHBOARD_ASSESSMENT" xml:space="preserve"><value>Đánh giá</value></data>
-  <data name="DASHBOARD_NO_PROJECTS_FILTER" xml:space="preserve"><value>Không có dự án phù hợp với bộ lọc.</value></data>
-  <data name="DASHBOARD_PRIORITY_TASKS" xml:space="preserve"><value>Công việc cần ưu tiên xử lý</value></data>
-  <data name="DASHBOARD_PRIORITY_TASKS_DESC" xml:space="preserve"><value>Công việc quá hạn hoặc sẽ đến hạn trong 7 ngày tới.</value></data>
-  <data name="DASHBOARD_ALERT" xml:space="preserve"><value>Cảnh báo</value></data>
-  <data name="DASHBOARD_NO_ATTENTION_TASKS" xml:space="preserve"><value>Không có công việc quá hạn hoặc sắp đến hạn.</value></data>
-  <data name="DASHBOARD_NO_PROJECT_PROGRESS_DATA" xml:space="preserve"><value>Không có dữ liệu tiến độ dự án.</value></data>
-  <data name="DASHBOARD_NO_TASKS_IN_PERIOD" xml:space="preserve"><value>Không có công việc trong kỳ.</value></data>
-  <data name="DASHBOARD_NO_PROJECT_TASK_DATA" xml:space="preserve"><value>Không có dữ liệu công việc theo dự án.</value></data>
-  <data name="DASHBOARD_PROJECT_ACTUAL_PROGRESS_DESC" xml:space="preserve"><value>So với toàn bộ công việc của dự án</value></data>
-  <data name="DASHBOARD_PARTICIPATING_EMPLOYEES" xml:space="preserve"><value>Nhân sự tham gia</value></data>
-  <data name="DASHBOARD_PROJECT_MEMBER_DESC" xml:space="preserve"><value>Thành viên thuộc dự án</value></data>
-  <data name="DASHBOARD_REASON" xml:space="preserve"><value>Nguyên nhân</value></data>
-  <data name="DASHBOARD_RISK_AND_ISSUE" xml:space="preserve"><value>Rủi ro và vấn đề</value></data>
-  <data name="DASHBOARD_PROJECT_SITUATION" xml:space="preserve"><value>Tình hình dự án</value></data>
-  <data name="DASHBOARD_PROJECT_SITUATION_DESC" xml:space="preserve"><value>Thông tin và mức độ hoàn thành so với kế hoạch.</value></data>
-  <data name="DASHBOARD_PROJECT_TASK_COMPLETION" xml:space="preserve"><value>Công việc: {0}/{1} đã hoàn thành</value></data>
-  <data name="DASHBOARD_NO_PROJECT_DATA_IN_PERIOD" xml:space="preserve"><value>Dự án không có dữ liệu trong khoảng thời gian đã chọn.</value></data>
-  <data name="DASHBOARD_AGGREGATE_WARNINGS" xml:space="preserve"><value>Cảnh báo tổng hợp</value></data>
-  <data name="DASHBOARD_AGGREGATE_WARNINGS_DESC" xml:space="preserve"><value>Các chỉ số cần theo dõi của dự án.</value></data>
-  <data name="DASHBOARD_DUE_SOON" xml:space="preserve"><value>Sắp đến hạn</value></data>
-  <data name="DASHBOARD_ITEMS_TO_MONITOR" xml:space="preserve"><value>Điểm cần theo dõi</value></data>
-  <data name="DASHBOARD_OVERDUE_TASK_WARNING" xml:space="preserve"><value>{0} công việc chưa hoàn thành và đã quá hạn.</value></data>
-  <data name="DASHBOARD_DUE_SOON_TASK_WARNING" xml:space="preserve"><value>{0} công việc sẽ đến hạn trong 7 ngày tới.</value></data>
-  <data name="DASHBOARD_RISK_WARNING" xml:space="preserve"><value>{0} rủi ro đang được ghi nhận.</value></data>
-  <data name="DASHBOARD_ISSUE_WARNING" xml:space="preserve"><value>{0} vấn đề cần theo dõi.</value></data>
-  <data name="DASHBOARD_NO_WARNINGS" xml:space="preserve"><value>Chưa ghi nhận cảnh báo trong phạm vi lọc.</value></data>
-  <data name="DASHBOARD_UPCOMING" xml:space="preserve"><value>Sắp tới</value></data>
-  <data name="DASHBOARD_UPCOMING_MEETINGS_DESC" xml:space="preserve"><value>Các lịch họp gần nhất trong khoảng thời gian đã chọn.</value></data>
-  <data name="DASHBOARD_SCHEDULE_COUNT" xml:space="preserve"><value>{0} lịch</value></data>
-  <data name="DASHBOARD_NO_UPCOMING_MEETINGS" xml:space="preserve"><value>Không có lịch họp sắp tới trong khoảng thời gian đã chọn.</value></data>
-  <data name="DASHBOARD_COMPLETED_ON" xml:space="preserve"><value>Hoàn thành ngày {0}</value></data>
-  <data name="DASHBOARD_INSUFFICIENT_TIME_INFO" xml:space="preserve"><value>Chưa có đủ thông tin thời gian</value></data>
-  <data name="DASHBOARD_STARTS_IN_DAYS" xml:space="preserve"><value>Bắt đầu sau {0} ngày</value></data>
-  <data name="DASHBOARD_OVERDUE_DAYS" xml:space="preserve"><value>Quá hạn {0} ngày</value></data>
-  <data name="DASHBOARD_ENDS_TODAY" xml:space="preserve"><value>Kết thúc hôm nay</value></data>
-  <data name="DASHBOARD_PROGRESS_AXIS" xml:space="preserve"><value>Tiến độ (%)</value></data>
-  <data name="DASHBOARD_START" xml:space="preserve"><value>Bắt đầu</value></data>
-  <data name="DASHBOARD_EXPECTED" xml:space="preserve"><value>Dự kiến</value></data>
-  <data name="DASHBOARD_COST_TITLE" xml:space="preserve"><value>Dashboard chi phí dự án đã hoàn thành</value></data>
-  <data name="DASHBOARD_COMPLETION_PERIOD" xml:space="preserve"><value>Thời gian hoàn thành</value></data>
-  <data name="DASHBOARD_COST_FILTER_DESC" xml:space="preserve"><value>Chỉ thống kê dự án đã có ngày hoàn thành thực tế. Khoảng thời gian lọc theo ngày hoàn thành dự án, còn chi phí và thanh toán được lấy toàn bộ vòng đời của các dự án phù hợp.</value></data>
-  <data name="DASHBOARD_NO_COMPLETED_PROJECTS" xml:space="preserve"><value>Chưa có dự án đã hoàn thành phù hợp với bộ lọc</value></data>
-  <data name="DASHBOARD_NO_COMPLETED_PROJECTS_DESC" xml:space="preserve"><value>Dự án chỉ xuất hiện khi Ngày hoàn thành thực tế đã được cập nhật; dự án đang thực hiện không được cộng vào các chỉ số tài chính.</value></data>
-  <data name="DASHBOARD_COMPLETED_PROJECTS" xml:space="preserve"><value>Dự án hoàn thành</value></data>
-  <data name="DASHBOARD_CONTRACT_REVENUE" xml:space="preserve"><value>Doanh thu theo hợp đồng</value></data>
-  <data name="DASHBOARD_AVERAGE_PER_PROJECT" xml:space="preserve"><value>Bình quân {0}/dự án</value></data>
-  <data name="DASHBOARD_GROSS_PROFIT" xml:space="preserve"><value>Lợi nhuận gộp</value></data>
-  <data name="DASHBOARD_CONTRACT_MINUS_COST" xml:space="preserve"><value>Hợp đồng − chi phí</value></data>
-  <data name="DASHBOARD_PROFIT_MARGIN" xml:space="preserve"><value>Biên lợi nhuận</value></data>
-  <data name="DASHBOARD_ON_CONTRACT_VALUE" xml:space="preserve"><value>Trên giá trị hợp đồng</value></data>
-  <data name="DASHBOARD_OUTSTANDING_AMOUNT" xml:space="preserve"><value>Còn {0}</value></data>
-  <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST" xml:space="preserve"><value>Hợp đồng so với chi phí thực tế</value></data>
-  <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC" xml:space="preserve"><value>So sánh giá trị hợp đồng và tổng chi phí của từng dự án đã hoàn thành.</value></data>
-  <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve"><value>Tình hình thu tiền</value></data>
-  <data name="DASHBOARD_PAYMENT_SITUATION_DESC" xml:space="preserve"><value>Số đã thu và còn phải thu so với tổng giá trị hợp đồng.</value></data>
-  <data name="DASHBOARD_COLLECTION_RATE" xml:space="preserve"><value>Tỷ lệ thu tiền: {0}%</value></data>
-  <data name="DASHBOARD_COST_TREND" xml:space="preserve"><value>Xu hướng phát sinh chi phí</value></data>
-  <data name="DASHBOARD_COST_TREND_DESC" xml:space="preserve"><value>Tổng chi phí theo tháng trong toàn bộ vòng đời của các dự án đã hoàn thành thuộc phạm vi lọc.</value></data>
-  <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve"><value>Hiệu quả tài chính theo dự án</value></data>
-  <data name="DASHBOARD_GROSS_PROFIT_FORMULA" xml:space="preserve"><value>Lợi nhuận gộp = giá trị hợp đồng − chi phí thực tế.</value></data>
-  <data name="DASHBOARD_SORT_MARGIN_ASC" xml:space="preserve"><value>Sắp xếp từ biên lợi nhuận thấp đến cao</value></data>
-  <data name="DASHBOARD_COMPLETION" xml:space="preserve"><value>Hoàn thành</value></data>
-  <data name="DASHBOARD_CONTRACT" xml:space="preserve"><value>Hợp đồng</value></data>
-  <data name="DASHBOARD_MARGIN_SHORT" xml:space="preserve"><value>Biên LN</value></data>
-  <data name="DASHBOARD_RECEIVED_OUTSTANDING" xml:space="preserve"><value>Đã thu / Còn thu</value></data>
-  <data name="DASHBOARD_NO_CONTRACT" xml:space="preserve"><value>Chưa gắn hợp đồng</value></data>
-  <data name="DASHBOARD_COST_ITEM_COUNT" xml:space="preserve"><value>{0} khoản chi</value></data>
-  <data name="DASHBOARD_NO_FINANCIAL_DATA" xml:space="preserve"><value>Không có dữ liệu tài chính của dự án đã hoàn thành.</value></data>
-  <data name="DASHBOARD_LARGEST_COST_ITEMS" xml:space="preserve"><value>Các khoản chi lớn nhất</value></data>
-  <data name="DASHBOARD_LARGEST_COST_ITEMS_DESC" xml:space="preserve"><value>Tối đa 15 khoản chi có giá trị cao nhất trong phạm vi dự án đã chọn.</value></data>
-  <data name="DASHBOARD_COST_ITEM_CODE" xml:space="preserve"><value>Mã khoản chi</value></data>
-  <data name="DASHBOARD_COST_ITEM_NAME" xml:space="preserve"><value>Tên khoản chi</value></data>
-  <data name="DASHBOARD_INCURRED_DATE" xml:space="preserve"><value>Ngày phát sinh</value></data>
-  <data name="DASHBOARD_AMOUNT" xml:space="preserve"><value>Số tiền</value></data>
-  <data name="DASHBOARD_NO_COST_ITEMS" xml:space="preserve"><value>Chưa có khoản chi phù hợp với bộ lọc.</value></data>
-  <data name="DASHBOARD_ALL_COMPLETED_PROJECTS" xml:space="preserve"><value>Tất cả dự án đã hoàn thành</value></data>
-  <data name="DASHBOARD_CURRENCY_SUFFIX" xml:space="preserve"><value> đ</value></data>
-  <data name="DASHBOARD_BILLION_SUFFIX" xml:space="preserve"><value> tỷ</value></data>
-  <data name="DASHBOARD_MILLION_SUFFIX" xml:space="preserve"><value> triệu</value></data>
-  <data name="DASHBOARD_NO_COMPLETED_PROJECT_COMPARISON" xml:space="preserve"><value>Không có dự án đã hoàn thành để so sánh.</value></data>
-  <data name="DASHBOARD_NO_CONTRACT_OR_PAYMENT" xml:space="preserve"><value>Chưa có giá trị hợp đồng hoặc thanh toán.</value></data>
-  <data name="DASHBOARD_OUTSTANDING_PAYMENT" xml:space="preserve"><value>Còn phải thu</value></data>
-  <data name="DASHBOARD_NO_COST_TREND" xml:space="preserve"><value>Chưa có chi phí phát sinh để hiển thị xu hướng.</value></data>
-  <data name="DASHBOARD_INCURRED_COST" xml:space="preserve"><value>Chi phí phát sinh</value></data>
-  <data name="DASHBOARD_RESOURCE_TITLE" xml:space="preserve"><value>Dashboard phân bổ nguồn lực</value></data>
-  <data name="DASHBOARD_RESOURCE_DESC" xml:space="preserve"><value>Tổng hợp ngày công từ thứ Hai đến thứ Sáu, phát hiện nhân sự chưa đủ tải hoặc được giao vượt quá năng lực của tuần.</value></data>
-  <data name="DASHBOARD_DISPLAY_RANGE" xml:space="preserve"><value>Khoảng hiển thị</value></data>
-  <data name="DASHBOARD_FOCUS_WEEK" xml:space="preserve"><value>Tuần trọng tâm</value></data>
-  <data name="DASHBOARD_PREVIOUS_WEEK" xml:space="preserve"><value>Tuần trước</value></data>
-  <data name="DASHBOARD_CURRENT_WEEK" xml:space="preserve"><value>Về tuần hiện tại</value></data>
-  <data name="DASHBOARD_NEXT_WEEK" xml:space="preserve"><value>Tuần sau</value></data>
-  <data name="DASHBOARD_WEEKLY_CALCULATION_DESC" xml:space="preserve"><value>Cách tính theo tuần: mỗi ngày một công việc còn hiệu lực tương đương một ngày công; mức tải tuần bằng tổng ngày công được giao chia cho số ngày làm việc thực tế theo cấu hình tuần và lịch ngoại lệ trong database. Ví dụ tuần có 5 ngày làm việc, nhân sự được giao 5 ngày ở dự án A và 2 ngày ở dự án B thì mức tải là 7/5 ngày, tương đương 140%.</value></data>
-  <data name="DASHBOARD_EMPLOYEES_IN_SCOPE" xml:space="preserve"><value>Nhân sự trong phạm vi</value></data>
-  <data name="DASHBOARD_ALLOCATED_EMPLOYEES" xml:space="preserve"><value>Đã được phân bổ</value></data>
-  <data name="DASHBOARD_SHARED_UTILIZATION" xml:space="preserve"><value>Sử dụng chung {0}%</value></data>
-  <data name="DASHBOARD_UNDERLOADED" xml:space="preserve"><value>Thiếu tải</value></data>
-  <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve"><value>Tải cân bằng</value></data>
-  <data name="DASHBOARD_OVERLOADED" xml:space="preserve"><value>Quá tải</value></data>
-  <data name="DASHBOARD_WEEKLY_RESOURCE_HEATMAP" xml:space="preserve"><value>Heatmap phân bổ nguồn lực theo tuần</value></data>
-  <data name="DASHBOARD_RESOURCE_HEATMAP_DESC" xml:space="preserve"><value>Nhấn vào từng ô để xem dự án, công việc và các ngày tạo nên mức tải; bảng bên dưới tổng hợp riêng từng tháng xuất hiện trong phạm vi.</value></data>
-  <data name="DASHBOARD_EMPLOYEE_LABEL" xml:space="preserve"><value>Nhân sự</value></data>
-  <data name="DASHBOARD_VIEW_EMPLOYEE_ALLOCATION" xml:space="preserve"><value>Xem phân bổ của {0} trong {1}</value></data>
-  <data name="DASHBOARD_NO_RESOURCE_MEMBERS" xml:space="preserve"><value>Dự án chưa có thành viên, quản lý hoặc nhân sự được giao công việc.</value></data>
-  <data name="DASHBOARD_MONTHLY_LOAD_SUMMARY" xml:space="preserve"><value>Tổng hợp mức tải theo tháng</value></data>
-  <data name="DASHBOARD_MONTHLY_LOAD_DESC" xml:space="preserve"><value>Mỗi tháng được tính theo toàn bộ ngày làm việc của tháng. Tuần giao tháng được cảnh báo tại tháng chứa phần lớn ngày làm việc của tuần đó.</value></data>
-  <data name="DASHBOARD_NO_MONTHLY_EMPLOYEES" xml:space="preserve"><value>Không có nhân sự để tổng hợp trong phạm vi đã chọn.</value></data>
-  <data name="DASHBOARD_EMPLOYEES_NEED_ATTENTION" xml:space="preserve"><value>Nhân sự cần chú ý</value></data>
-  <data name="DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC" xml:space="preserve"><value>Ưu tiên nhân sự quá tải, sau đó đến nhóm thiếu tải.</value></data>
-  <data name="DASHBOARD_NO_RESOURCE_WARNINGS" xml:space="preserve"><value>Không có nhân sự cần cảnh báo trong tuần.</value></data>
-  <data name="DASHBOARD_RESOURCE_LOAD_TREND" xml:space="preserve"><value>Xu hướng mức tải nguồn lực</value></data>
-  <data name="DASHBOARD_RESOURCE_LOAD_TREND_DESC" xml:space="preserve"><value>Mức dùng chung của phạm vi lọc trong 8 tuần, lấy tuần trọng tâm làm mốc.</value></data>
-  <data name="DASHBOARD_FUTURE_WEEK_DASHED" xml:space="preserve"><value>Đường nét đứt: tuần tương lai</value></data>
-  <data name="DASHBOARD_PROJECT_ALLOCATION" xml:space="preserve"><value>Phân bổ theo dự án trong tuần trọng tâm</value></data>
-  <data name="DASHBOARD_PROJECT_ALLOCATION_DESC" xml:space="preserve"><value>Ngày công phân bổ là tổng số ngày task chạy của từng người; năng lực khả dụng bằng số người có lịch × 5 ngày.</value></data>
-  <data name="DASHBOARD_SCHEDULED_EMPLOYEES" xml:space="preserve"><value>Nhân sự có lịch</value></data>
-  <data name="DASHBOARD_ALLOCATED_DAYS" xml:space="preserve"><value>Ngày công phân bổ</value></data>
-  <data name="DASHBOARD_AVAILABLE_CAPACITY" xml:space="preserve"><value>Năng lực khả dụng</value></data>
-  <data name="DASHBOARD_UTILIZATION" xml:space="preserve"><value>Mức sử dụng</value></data>
-  <data name="DASHBOARD_NO_PROJECT_ALLOCATION" xml:space="preserve"><value>Không có dự án phát sinh phân bổ trong tuần trọng tâm.</value></data>
-  <data name="DASHBOARD_WEEK_ALLOCATION_DETAIL" xml:space="preserve"><value>Chi tiết phân bổ trong tuần</value></data>
-  <data name="DASHBOARD_WEEKLY_LOAD" xml:space="preserve"><value>Mức tải tuần</value></data>
-  <data name="DASHBOARD_TASK_DETAIL" xml:space="preserve"><value>Chi tiết công việc</value></data>
-  <data name="DASHBOARD_MONTH_OVERLOADED" xml:space="preserve"><value>Quá tải cả tháng</value></data>
-  <data name="DASHBOARD_OVERLOADED_WEEK_COUNT" xml:space="preserve"><value>{0} tuần quá tải</value></data>
-  <data name="DASHBOARD_NO_OVERLOADED_WEEKS" xml:space="preserve"><value>Không có tuần quá tải trong tháng</value></data>
-  <data name="DASHBOARD_OVERLOADED_WEEKS" xml:space="preserve"><value>Các tuần quá tải: {0}</value></data>
-  <data name="DASHBOARD_NO_SCHEDULE" xml:space="preserve"><value>Chưa có lịch</value></data>
-  <data name="DASHBOARD_ALLOCATED_CAPACITY" xml:space="preserve"><value>{0}/{1} ngày</value></data>
-  <data name="DASHBOARD_OVERLOAD_DETAIL" xml:space="preserve"><value>Được giao {0} ngày công; vượt {1} ngày</value></data>
-  <data name="DASHBOARD_OVERLAP_DAYS" xml:space="preserve"><value>; {0} ngày chồng lịch</value></data>
-  <data name="DASHBOARD_NO_FOCUS_WEEK_TASKS" xml:space="preserve"><value>Chưa có công việc trong tuần trọng tâm</value></data>
-  <data name="DASHBOARD_LOW_WEEKLY_UTILIZATION" xml:space="preserve"><value>Mức dùng tuần chỉ {0}%</value></data>
-  <data name="DASHBOARD_WEEK_COUNT" xml:space="preserve"><value>{0} tuần</value></data>
-  <data name="DASHBOARD_WEEK_LABEL" xml:space="preserve"><value>Tuần {0}</value></data>
-  <data name="DASHBOARD_MONTH_LABEL" xml:space="preserve"><value>Tháng {0}</value></data>
-  <data name="DASHBOARD_PAST_ASSIGNMENT" xml:space="preserve"><value>Lịch phân công đã qua</value></data>
-  <data name="DASHBOARD_FUTURE_PLAN" xml:space="preserve"><value>Kế hoạch sắp tới</value></data>
-  <data name="DASHBOARD_THRESHOLD_100" xml:space="preserve"><value>Ngưỡng 100%</value></data>
-  <data name="DASHBOARD_CAPACITY" xml:space="preserve"><value>{0} công suất</value></data>
-  <data name="DASHBOARD_EXCESS" xml:space="preserve"><value> · vượt {0}</value></data>
-  <data name="DASHBOARD_SCHEDULE_OVERLAP_DAYS" xml:space="preserve"><value> · {0} ngày chồng lịch</value></data>
-  <data name="DASHBOARD_NO_WEEK_PROJECT_ALLOCATION" xml:space="preserve"><value>Nhân sự chưa được phân bổ vào dự án trong tuần này.</value></data>
-  <data name="DASHBOARD_NO_WEEK_TASKS" xml:space="preserve"><value>Không có công việc trong tuần này.</value></data>
-  <data name="DASHBOARD_EMPLOYEE_ALL_PROJECTS" xml:space="preserve"><value>Tất cả dự án của tôi</value></data>
-  <data name="DASHBOARD_EMPLOYEE_DEFAULT_NAME" xml:space="preserve"><value>Nhân viên</value></data>
-  <data name="DASHBOARD_GREETING" xml:space="preserve"><value>Xin chào, {0}</value></data>
-  <data name="DASHBOARD_PERSONAL_OVERVIEW" xml:space="preserve"><value>Tổng quan công việc cá nhân</value></data>
-  <data name="DASHBOARD_TASKS_IN_PROGRESS" xml:space="preserve"><value>Công việc đang thực hiện</value></data>
-  <data name="DASHBOARD_TASKS_DUE_SOON" xml:space="preserve"><value>Công việc sắp đến hạn</value></data>
-  <data name="DASHBOARD_PROJECTS_PARTICIPATING" xml:space="preserve"><value>Dự án đang tham gia</value></data>
-  <data name="DASHBOARD_CURRENT_LOAD" xml:space="preserve"><value>Mức tải hiện tại</value></data>
-  <data name="DASHBOARD_MY_TASKS" xml:space="preserve"><value>Công việc của tôi</value></data>
-  <data name="DASHBOARD_VIEW_ALL_TASKS" xml:space="preserve"><value>Xem tất cả công việc</value></data>
-  <data name="DASHBOARD_DUE" xml:space="preserve"><value>Hạn</value></data>
-  <data name="DASHBOARD_NO_TASKS" xml:space="preserve"><value>Không có công việc nào</value></data>
-  <data name="DASHBOARD_MY_WARNINGS" xml:space="preserve"><value>Cảnh báo của tôi</value></data>
-  <data name="DASHBOARD_NO_PERSONAL_WARNINGS" xml:space="preserve"><value>Không có cảnh báo nào</value></data>
-  <data name="DASHBOARD_MY_PROJECT_PROGRESS" xml:space="preserve"><value>Tiến độ các dự án của tôi</value></data>
-  <data name="DASHBOARD_MY_PROJECT_PROGRESS_DESC" xml:space="preserve"><value>Hiển thị các dự án bạn đang tham gia</value></data>
-  <data name="DASHBOARD_UPCOMING_SCHEDULE" xml:space="preserve"><value>Lịch sắp tới</value></data>
-  <data name="DASHBOARD_NO_UPCOMING_SCHEDULE" xml:space="preserve"><value>Không có lịch sắp tới</value></data>
-  <data name="DASHBOARD_MEETING_ALERT" xml:space="preserve"><value>Có cuộc họp dự án {0} lúc {1:HH:mm} ngày {1:dd/MM}</value></data>
-  <data name="DASHBOARD_OVERDUE_TASK_ALERT" xml:space="preserve"><value>{0} công việc đã quá hạn</value></data>
-  <data name="DASHBOARD_DUE_SOON_TASK_ALERT" xml:space="preserve"><value>{0} công việc sắp đến hạn trong 3 ngày</value></data>
+  <data name="DASHBOARD_STATUS_NOT_STARTED" xml:space="preserve">
+    <value>Chưa bắt đầu</value>
+  </data>
+  <data name="DASHBOARD_STATUS_IN_PROGRESS" xml:space="preserve">
+    <value>Đang thực hiện</value>
+  </data>
+  <data name="DASHBOARD_STATUS_COMPLETED" xml:space="preserve">
+    <value>Hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_STATUS_OVERDUE" xml:space="preserve">
+    <value>Quá hạn</value>
+  </data>
+  <data name="DASHBOARD_HEALTH_ON_TRACK" xml:space="preserve">
+    <value>Đúng tiến độ</value>
+  </data>
+  <data name="DASHBOARD_HEALTH_AT_RISK" xml:space="preserve">
+    <value>Có nguy cơ</value>
+  </data>
+  <data name="DASHBOARD_HEALTH_BEHIND" xml:space="preserve">
+    <value>Chậm tiến độ</value>
+  </data>
+  <data name="DASHBOARD_PRIORITY_NOT_SET" xml:space="preserve">
+    <value>Chưa đặt ưu tiên</value>
+  </data>
+  <data name="DASHBOARD_UPDATED_AT" xml:space="preserve">
+    <value>Cập nhật dữ liệu</value>
+  </data>
+  <data name="DASHBOARD_ALL_TIME" xml:space="preserve">
+    <value>Tất cả thời gian</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COUNT" xml:space="preserve">
+    <value>{0} dự án</value>
+  </data>
+  <data name="DASHBOARD_TASK_COUNT" xml:space="preserve">
+    <value>{0} công việc</value>
+  </data>
+  <data name="DASHBOARD_DAY_COUNT" xml:space="preserve">
+    <value>{0} ngày</value>
+  </data>
+  <data name="DASHBOARD_DAYS_OVERDUE" xml:space="preserve">
+    <value>Quá {0} ngày</value>
+  </data>
+  <data name="DASHBOARD_DAYS_REMAINING" xml:space="preserve">
+    <value>Còn {0} ngày</value>
+  </data>
+  <data name="DASHBOARD_DUE_TODAY" xml:space="preserve">
+    <value>Đến hạn hôm nay</value>
+  </data>
+  <data name="DASHBOARD_NO_DEADLINE" xml:space="preserve">
+    <value>Chưa đặt hạn</value>
+  </data>
+  <data name="DASHBOARD_COMPLETED_LABEL" xml:space="preserve">
+    <value>Đã hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_ACTUAL_PROGRESS" xml:space="preserve">
+    <value>Tiến độ thực tế</value>
+  </data>
+  <data name="DASHBOARD_PLANNED_PROGRESS" xml:space="preserve">
+    <value>Tiến độ kế hoạch</value>
+  </data>
+  <data name="DASHBOARD_AVERAGE_PROGRESS" xml:space="preserve">
+    <value>Tiến độ trung bình</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_TASKS" xml:space="preserve">
+    <value>Tổng công việc</value>
+  </data>
+  <data name="DASHBOARD_FILTERED_PROJECT_TASKS" xml:space="preserve">
+    <value>Của các dự án được lọc</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_COMPLETED_TASKS" xml:space="preserve">
+    <value>Đã hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_COMPLETED_OF_TOTAL" xml:space="preserve">
+    <value>Đã hoàn thành trên tổng số</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_REACHED_100" xml:space="preserve">
+    <value>Đạt 100%</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_RANGE_1_99" xml:space="preserve">
+    <value>Từ 1% đến 99%</value>
+  </data>
+  <data name="DASHBOARD_DUE_SOON_TASK_COUNT" xml:space="preserve">
+    <value>{0} việc sắp đến hạn</value>
+  </data>
+  <data name="DASHBOARD_VARIANCE" xml:space="preserve">
+    <value>Độ lệch</value>
+  </data>
+  <data name="DASHBOARD_ACTUAL_MINUS_PLAN" xml:space="preserve">
+    <value>Thực tế − Kế hoạch</value>
+  </data>
+  <data name="DASHBOARD_NEEDS_ATTENTION" xml:space="preserve">
+    <value>Dự án cần chú ý</value>
+  </data>
+  <data name="DASHBOARD_NEEDS_ATTENTION_DESC" xml:space="preserve">
+    <value>Chậm, rủi ro hoặc quá hạn</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_TITLE" xml:space="preserve">
+    <value>Dashboard tiến độ dự án và công việc</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_FILTER_DESC" xml:space="preserve">
+    <value>Tiến độ dự án được so sánh với tỷ lệ thời gian kế hoạch đã sử dụng; khoảng thời gian dùng để xác định các dự án thuộc phạm vi thống kê, còn số liệu công việc lấy toàn bộ công việc của các dự án đó.</value>
+  </data>
+  <data name="DASHBOARD_ACTUAL_VS_PLAN" xml:space="preserve">
+    <value>Thực tế so với kế hoạch</value>
+  </data>
+  <data name="DASHBOARD_ACTUAL_VS_PLAN_DESC" xml:space="preserve">
+    <value>Tiến độ thực hiện của dự án so với tỷ lệ thời gian kế hoạch đã sử dụng.</value>
+  </data>
+  <data name="DASHBOARD_PLAN_TIME_DESC" xml:space="preserve">
+    <value>Kế hoạch được tính theo tỷ lệ thời gian từ ngày bắt đầu đến ngày dự kiến hoàn thành.</value>
+  </data>
+  <data name="DASHBOARD_EXPECTED_COMPLETION" xml:space="preserve">
+    <value>Dự kiến hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_ACTUAL_COMPLETION" xml:space="preserve">
+    <value>Hoàn thành thực tế</value>
+  </data>
+  <data name="DASHBOARD_NOT_COMPLETED" xml:space="preserve">
+    <value>Chưa hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_VARIANCE" xml:space="preserve">
+    <value>Độ lệch tiến độ</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_VARIANCE_DESC" xml:space="preserve">
+    <value>Tiến độ thực tế trừ tiến độ kế hoạch</value>
+  </data>
+  <data name="DASHBOARD_TASK_STATUS" xml:space="preserve">
+    <value>Trạng thái công việc</value>
+  </data>
+  <data name="DASHBOARD_TASK_STATUS_DESC" xml:space="preserve">
+    <value>Phân bố toàn bộ công việc của các dự án thuộc phạm vi lọc.</value>
+  </data>
+  <data name="DASHBOARD_TASK_PROGRESS" xml:space="preserve">
+    <value>Tiến độ từng công việc</value>
+  </data>
+  <data name="DASHBOARD_TASK_PROGRESS_ORDER_DESC" xml:space="preserve">
+    <value>Công việc chưa hoàn thành được xếp theo ưu tiên từ cao xuống thấp; công việc đã hoàn thành nằm cuối danh sách.</value>
+  </data>
+  <data name="DASHBOARD_TASK" xml:space="preserve">
+    <value>Công việc</value>
+  </data>
+  <data name="DASHBOARD_DEADLINE" xml:space="preserve">
+    <value>Hạn hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_COLUMN" xml:space="preserve">
+    <value>Tiến độ</value>
+  </data>
+  <data name="DASHBOARD_NO_PROJECT_TASKS" xml:space="preserve">
+    <value>Dự án chưa có công việc.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_TASK_STRUCTURE" xml:space="preserve">
+    <value>Cơ cấu công việc theo dự án</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_TASK_STRUCTURE_DESC" xml:space="preserve">
+    <value>So sánh số công việc hoàn thành, đang thực hiện, chưa bắt đầu và quá hạn giữa các dự án.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_SCHEDULE_HEALTH" xml:space="preserve">
+    <value>Sức khỏe tiến độ dự án</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_SCHEDULE_HEALTH_DESC" xml:space="preserve">
+    <value>Dự án có độ lệch âm lớn đang chậm hơn kế hoạch.</value>
+  </data>
+  <data name="DASHBOARD_VARIANCE_FORMULA" xml:space="preserve">
+    <value>Độ lệch = Thực tế − Kế hoạch</value>
+  </data>
+  <data name="DASHBOARD_PLANNED_TIME" xml:space="preserve">
+    <value>Thời gian kế hoạch</value>
+  </data>
+  <data name="DASHBOARD_ASSESSMENT" xml:space="preserve">
+    <value>Đánh giá</value>
+  </data>
+  <data name="DASHBOARD_NO_PROJECTS_FILTER" xml:space="preserve">
+    <value>Không có dự án phù hợp với bộ lọc.</value>
+  </data>
+  <data name="DASHBOARD_PRIORITY_TASKS" xml:space="preserve">
+    <value>Công việc cần ưu tiên xử lý</value>
+  </data>
+  <data name="DASHBOARD_PRIORITY_TASKS_DESC" xml:space="preserve">
+    <value>Công việc quá hạn hoặc sẽ đến hạn trong 7 ngày tới.</value>
+  </data>
+  <data name="DASHBOARD_ALERT" xml:space="preserve">
+    <value>Cảnh báo</value>
+  </data>
+  <data name="DASHBOARD_NO_ATTENTION_TASKS" xml:space="preserve">
+    <value>Không có công việc quá hạn hoặc sắp đến hạn.</value>
+  </data>
+  <data name="DASHBOARD_NO_PROJECT_PROGRESS_DATA" xml:space="preserve">
+    <value>Không có dữ liệu tiến độ dự án.</value>
+  </data>
+  <data name="DASHBOARD_NO_TASKS_IN_PERIOD" xml:space="preserve">
+    <value>Không có công việc trong kỳ.</value>
+  </data>
+  <data name="DASHBOARD_NO_PROJECT_TASK_DATA" xml:space="preserve">
+    <value>Không có dữ liệu công việc theo dự án.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_ACTUAL_PROGRESS_DESC" xml:space="preserve">
+    <value>So với toàn bộ công việc của dự án</value>
+  </data>
+  <data name="DASHBOARD_PARTICIPATING_EMPLOYEES" xml:space="preserve">
+    <value>Nhân sự tham gia</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_MEMBER_DESC" xml:space="preserve">
+    <value>Thành viên thuộc dự án</value>
+  </data>
+  <data name="DASHBOARD_REASON" xml:space="preserve">
+    <value>Nguyên nhân</value>
+  </data>
+  <data name="DASHBOARD_RISK_AND_ISSUE" xml:space="preserve">
+    <value>Rủi ro và vấn đề</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_SITUATION" xml:space="preserve">
+    <value>Tình hình dự án</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_SITUATION_DESC" xml:space="preserve">
+    <value>Thông tin và mức độ hoàn thành so với kế hoạch.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_TASK_COMPLETION" xml:space="preserve">
+    <value>Công việc: {0}/{1} đã hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_NO_PROJECT_DATA_IN_PERIOD" xml:space="preserve">
+    <value>Dự án không có dữ liệu trong khoảng thời gian đã chọn.</value>
+  </data>
+  <data name="DASHBOARD_AGGREGATE_WARNINGS" xml:space="preserve">
+    <value>Cảnh báo tổng hợp</value>
+  </data>
+  <data name="DASHBOARD_AGGREGATE_WARNINGS_DESC" xml:space="preserve">
+    <value>Các chỉ số cần theo dõi của dự án.</value>
+  </data>
+  <data name="DASHBOARD_DUE_SOON" xml:space="preserve">
+    <value>Sắp đến hạn</value>
+  </data>
+  <data name="DASHBOARD_ITEMS_TO_MONITOR" xml:space="preserve">
+    <value>Điểm cần theo dõi</value>
+  </data>
+  <data name="DASHBOARD_OVERDUE_TASK_WARNING" xml:space="preserve">
+    <value>{0} công việc chưa hoàn thành và đã quá hạn.</value>
+  </data>
+  <data name="DASHBOARD_DUE_SOON_TASK_WARNING" xml:space="preserve">
+    <value>{0} công việc sẽ đến hạn trong 7 ngày tới.</value>
+  </data>
+  <data name="DASHBOARD_RISK_WARNING" xml:space="preserve">
+    <value>{0} rủi ro đang được ghi nhận.</value>
+  </data>
+  <data name="DASHBOARD_ISSUE_WARNING" xml:space="preserve">
+    <value>{0} vấn đề cần theo dõi.</value>
+  </data>
+  <data name="DASHBOARD_NO_WARNINGS" xml:space="preserve">
+    <value>Chưa ghi nhận cảnh báo trong phạm vi lọc.</value>
+  </data>
+  <data name="DASHBOARD_UPCOMING" xml:space="preserve">
+    <value>Sắp tới</value>
+  </data>
+  <data name="DASHBOARD_UPCOMING_MEETINGS_DESC" xml:space="preserve">
+    <value>Các lịch họp gần nhất trong khoảng thời gian đã chọn.</value>
+  </data>
+  <data name="DASHBOARD_SCHEDULE_COUNT" xml:space="preserve">
+    <value>{0} lịch</value>
+  </data>
+  <data name="DASHBOARD_NO_UPCOMING_MEETINGS" xml:space="preserve">
+    <value>Không có lịch họp sắp tới trong khoảng thời gian đã chọn.</value>
+  </data>
+  <data name="DASHBOARD_COMPLETED_ON" xml:space="preserve">
+    <value>Hoàn thành ngày {0}</value>
+  </data>
+  <data name="DASHBOARD_INSUFFICIENT_TIME_INFO" xml:space="preserve">
+    <value>Chưa có đủ thông tin thời gian</value>
+  </data>
+  <data name="DASHBOARD_STARTS_IN_DAYS" xml:space="preserve">
+    <value>Bắt đầu sau {0} ngày</value>
+  </data>
+  <data name="DASHBOARD_OVERDUE_DAYS" xml:space="preserve">
+    <value>Quá hạn {0} ngày</value>
+  </data>
+  <data name="DASHBOARD_ENDS_TODAY" xml:space="preserve">
+    <value>Kết thúc hôm nay</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_AXIS" xml:space="preserve">
+    <value>Tiến độ (%)</value>
+  </data>
+  <data name="DASHBOARD_START" xml:space="preserve">
+    <value>Bắt đầu</value>
+  </data>
+  <data name="DASHBOARD_EXPECTED" xml:space="preserve">
+    <value>Dự kiến</value>
+  </data>
+  <data name="DASHBOARD_COST_TITLE" xml:space="preserve">
+    <value>Dashboard chi phí dự án đã hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_COMPLETION_PERIOD" xml:space="preserve">
+    <value>Thời gian hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_COST_FILTER_DESC" xml:space="preserve">
+    <value>Chỉ thống kê dự án đã có ngày hoàn thành thực tế. Khoảng thời gian lọc theo ngày hoàn thành dự án, còn chi phí và thanh toán được lấy toàn bộ vòng đời của các dự án phù hợp.</value>
+  </data>
+  <data name="DASHBOARD_NO_COMPLETED_PROJECTS" xml:space="preserve">
+    <value>Chưa có dự án đã hoàn thành phù hợp với bộ lọc</value>
+  </data>
+  <data name="DASHBOARD_NO_COMPLETED_PROJECTS_DESC" xml:space="preserve">
+    <value>Dự án chỉ xuất hiện khi Ngày hoàn thành thực tế đã được cập nhật; dự án đang thực hiện không được cộng vào các chỉ số tài chính.</value>
+  </data>
+  <data name="DASHBOARD_COMPLETED_PROJECTS" xml:space="preserve">
+    <value>Dự án hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_CONTRACT_REVENUE" xml:space="preserve">
+    <value>Doanh thu theo hợp đồng</value>
+  </data>
+  <data name="DASHBOARD_AVERAGE_PER_PROJECT" xml:space="preserve">
+    <value>Bình quân {0}/dự án</value>
+  </data>
+  <data name="DASHBOARD_GROSS_PROFIT" xml:space="preserve">
+    <value>Lợi nhuận gộp</value>
+  </data>
+  <data name="DASHBOARD_CONTRACT_MINUS_COST" xml:space="preserve">
+    <value>Hợp đồng − chi phí</value>
+  </data>
+  <data name="DASHBOARD_PROFIT_MARGIN" xml:space="preserve">
+    <value>Biên lợi nhuận</value>
+  </data>
+  <data name="DASHBOARD_ON_CONTRACT_VALUE" xml:space="preserve">
+    <value>Trên giá trị hợp đồng</value>
+  </data>
+  <data name="DASHBOARD_OUTSTANDING_AMOUNT" xml:space="preserve">
+    <value>Còn {0}</value>
+  </data>
+  <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST" xml:space="preserve">
+    <value>Hợp đồng so với chi phí thực tế</value>
+  </data>
+  <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC" xml:space="preserve">
+    <value>So sánh giá trị hợp đồng và tổng chi phí của từng dự án đã hoàn thành.</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve">
+    <value>Tình hình thu tiền</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_SITUATION_DESC" xml:space="preserve">
+    <value>Số đã thu và còn phải thu so với tổng giá trị hợp đồng.</value>
+  </data>
+  <data name="DASHBOARD_COLLECTION_RATE" xml:space="preserve">
+    <value>Tỷ lệ thu tiền: {0}%</value>
+  </data>
+  <data name="DASHBOARD_COST_TREND" xml:space="preserve">
+    <value>Xu hướng phát sinh chi phí</value>
+  </data>
+  <data name="DASHBOARD_COST_TREND_DESC" xml:space="preserve">
+    <value>Tổng chi phí theo tháng trong toàn bộ vòng đời của các dự án đã hoàn thành thuộc phạm vi lọc.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve">
+    <value>Hiệu quả tài chính theo dự án</value>
+  </data>
+  <data name="DASHBOARD_GROSS_PROFIT_FORMULA" xml:space="preserve">
+    <value>Lợi nhuận gộp = giá trị hợp đồng − chi phí thực tế.</value>
+  </data>
+  <data name="DASHBOARD_SORT_MARGIN_ASC" xml:space="preserve">
+    <value>Sắp xếp từ biên lợi nhuận thấp đến cao</value>
+  </data>
+  <data name="DASHBOARD_COMPLETION" xml:space="preserve">
+    <value>Hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_CONTRACT" xml:space="preserve">
+    <value>Hợp đồng</value>
+  </data>
+  <data name="DASHBOARD_MARGIN_SHORT" xml:space="preserve">
+    <value>Biên LN</value>
+  </data>
+  <data name="DASHBOARD_RECEIVED_OUTSTANDING" xml:space="preserve">
+    <value>Đã thu / Còn thu</value>
+  </data>
+  <data name="DASHBOARD_NO_CONTRACT" xml:space="preserve">
+    <value>Chưa gắn hợp đồng</value>
+  </data>
+  <data name="DASHBOARD_COST_ITEM_COUNT" xml:space="preserve">
+    <value>{0} khoản chi</value>
+  </data>
+  <data name="DASHBOARD_NO_FINANCIAL_DATA" xml:space="preserve">
+    <value>Không có dữ liệu tài chính của dự án đã hoàn thành.</value>
+  </data>
+  <data name="DASHBOARD_LARGEST_COST_ITEMS" xml:space="preserve">
+    <value>Các khoản chi lớn nhất</value>
+  </data>
+  <data name="DASHBOARD_LARGEST_COST_ITEMS_DESC" xml:space="preserve">
+    <value>Tối đa 15 khoản chi có giá trị cao nhất trong phạm vi dự án đã chọn.</value>
+  </data>
+  <data name="DASHBOARD_COST_ITEM_CODE" xml:space="preserve">
+    <value>Mã khoản chi</value>
+  </data>
+  <data name="DASHBOARD_COST_ITEM_NAME" xml:space="preserve">
+    <value>Tên khoản chi</value>
+  </data>
+  <data name="DASHBOARD_INCURRED_DATE" xml:space="preserve">
+    <value>Ngày phát sinh</value>
+  </data>
+  <data name="DASHBOARD_AMOUNT" xml:space="preserve">
+    <value>Số tiền</value>
+  </data>
+  <data name="DASHBOARD_NO_COST_ITEMS" xml:space="preserve">
+    <value>Chưa có khoản chi phù hợp với bộ lọc.</value>
+  </data>
+  <data name="DASHBOARD_ALL_COMPLETED_PROJECTS" xml:space="preserve">
+    <value>Tất cả dự án đã hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_CURRENCY_SUFFIX" xml:space="preserve">
+    <value> đ</value>
+  </data>
+  <data name="DASHBOARD_BILLION_SUFFIX" xml:space="preserve">
+    <value> tỷ</value>
+  </data>
+  <data name="DASHBOARD_MILLION_SUFFIX" xml:space="preserve">
+    <value> triệu</value>
+  </data>
+  <data name="DASHBOARD_NO_COMPLETED_PROJECT_COMPARISON" xml:space="preserve">
+    <value>Không có dự án đã hoàn thành để so sánh.</value>
+  </data>
+  <data name="DASHBOARD_NO_CONTRACT_OR_PAYMENT" xml:space="preserve">
+    <value>Chưa có giá trị hợp đồng hoặc thanh toán.</value>
+  </data>
+  <data name="DASHBOARD_OUTSTANDING_PAYMENT" xml:space="preserve">
+    <value>Còn phải thu</value>
+  </data>
+  <data name="DASHBOARD_NO_COST_TREND" xml:space="preserve">
+    <value>Chưa có chi phí phát sinh để hiển thị xu hướng.</value>
+  </data>
+  <data name="DASHBOARD_INCURRED_COST" xml:space="preserve">
+    <value>Chi phí phát sinh</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_TITLE" xml:space="preserve">
+    <value>Dashboard phân bổ nguồn lực</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_DESC" xml:space="preserve">
+    <value>Tổng hợp ngày công từ thứ Hai đến thứ Sáu, phát hiện nhân sự chưa đủ tải hoặc được giao vượt quá năng lực của tuần.</value>
+  </data>
+  <data name="DASHBOARD_DISPLAY_RANGE" xml:space="preserve">
+    <value>Khoảng hiển thị</value>
+  </data>
+  <data name="DASHBOARD_FOCUS_WEEK" xml:space="preserve">
+    <value>Tuần trọng tâm</value>
+  </data>
+  <data name="DASHBOARD_PREVIOUS_WEEK" xml:space="preserve">
+    <value>Tuần trước</value>
+  </data>
+  <data name="DASHBOARD_CURRENT_WEEK" xml:space="preserve">
+    <value>Về tuần hiện tại</value>
+  </data>
+  <data name="DASHBOARD_NEXT_WEEK" xml:space="preserve">
+    <value>Tuần sau</value>
+  </data>
+  <data name="DASHBOARD_WEEKLY_CALCULATION_DESC" xml:space="preserve">
+    <value>Cách tính theo tuần: mỗi ngày một công việc còn hiệu lực tương đương một ngày công; mức tải tuần bằng tổng ngày công được giao chia cho số ngày làm việc thực tế theo cấu hình tuần và lịch ngoại lệ trong database. Ví dụ tuần có 5 ngày làm việc, nhân sự được giao 5 ngày ở dự án A và 2 ngày ở dự án B thì mức tải là 7/5 ngày, tương đương 140%.</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEES_IN_SCOPE" xml:space="preserve">
+    <value>Nhân sự trong phạm vi</value>
+  </data>
+  <data name="DASHBOARD_ALLOCATED_EMPLOYEES" xml:space="preserve">
+    <value>Đã được phân bổ</value>
+  </data>
+  <data name="DASHBOARD_SHARED_UTILIZATION" xml:space="preserve">
+    <value>Sử dụng chung {0}%</value>
+  </data>
+  <data name="DASHBOARD_UNDERLOADED" xml:space="preserve">
+    <value>Thiếu tải</value>
+  </data>
+  <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve">
+    <value>Tải cân bằng</value>
+  </data>
+  <data name="DASHBOARD_OVERLOADED" xml:space="preserve">
+    <value>Quá tải</value>
+  </data>
+  <data name="DASHBOARD_WEEKLY_RESOURCE_HEATMAP" xml:space="preserve">
+    <value>Heatmap phân bổ nguồn lực theo tuần</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_HEATMAP_DESC" xml:space="preserve">
+    <value>Nhấn vào từng ô để xem dự án, công việc và các ngày tạo nên mức tải; bảng bên dưới tổng hợp riêng từng tháng xuất hiện trong phạm vi.</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEE_LABEL" xml:space="preserve">
+    <value>Nhân sự</value>
+  </data>
+  <data name="DASHBOARD_VIEW_EMPLOYEE_ALLOCATION" xml:space="preserve">
+    <value>Xem phân bổ của {0} trong {1}</value>
+  </data>
+  <data name="DASHBOARD_NO_RESOURCE_MEMBERS" xml:space="preserve">
+    <value>Dự án chưa có thành viên, quản lý hoặc nhân sự được giao công việc.</value>
+  </data>
+  <data name="DASHBOARD_MONTHLY_LOAD_SUMMARY" xml:space="preserve">
+    <value>Tổng hợp mức tải theo tháng</value>
+  </data>
+  <data name="DASHBOARD_MONTHLY_LOAD_DESC" xml:space="preserve">
+    <value>Mỗi tháng được tính theo toàn bộ ngày làm việc của tháng. Tuần giao tháng được cảnh báo tại tháng chứa phần lớn ngày làm việc của tuần đó.</value>
+  </data>
+  <data name="DASHBOARD_NO_MONTHLY_EMPLOYEES" xml:space="preserve">
+    <value>Không có nhân sự để tổng hợp trong phạm vi đã chọn.</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEES_NEED_ATTENTION" xml:space="preserve">
+    <value>Nhân sự cần chú ý</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC" xml:space="preserve">
+    <value>Ưu tiên nhân sự quá tải, sau đó đến nhóm thiếu tải.</value>
+  </data>
+  <data name="DASHBOARD_NO_RESOURCE_WARNINGS" xml:space="preserve">
+    <value>Không có nhân sự cần cảnh báo trong tuần.</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_LOAD_TREND" xml:space="preserve">
+    <value>Xu hướng mức tải nguồn lực</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_LOAD_TREND_DESC" xml:space="preserve">
+    <value>Mức dùng chung của phạm vi lọc trong 8 tuần, lấy tuần trọng tâm làm mốc.</value>
+  </data>
+  <data name="DASHBOARD_FUTURE_WEEK_DASHED" xml:space="preserve">
+    <value>Đường nét đứt: tuần tương lai</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_ALLOCATION" xml:space="preserve">
+    <value>Phân bổ theo dự án trong tuần trọng tâm</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_ALLOCATION_DESC" xml:space="preserve">
+    <value>Ngày công phân bổ là tổng số ngày task chạy của từng người; năng lực khả dụng bằng số người có lịch × 5 ngày.</value>
+  </data>
+  <data name="DASHBOARD_SCHEDULED_EMPLOYEES" xml:space="preserve">
+    <value>Nhân sự có lịch</value>
+  </data>
+  <data name="DASHBOARD_ALLOCATED_DAYS" xml:space="preserve">
+    <value>Ngày công phân bổ</value>
+  </data>
+  <data name="DASHBOARD_AVAILABLE_CAPACITY" xml:space="preserve">
+    <value>Năng lực khả dụng</value>
+  </data>
+  <data name="DASHBOARD_UTILIZATION" xml:space="preserve">
+    <value>Mức sử dụng</value>
+  </data>
+  <data name="DASHBOARD_NO_PROJECT_ALLOCATION" xml:space="preserve">
+    <value>Không có dự án phát sinh phân bổ trong tuần trọng tâm.</value>
+  </data>
+  <data name="DASHBOARD_WEEK_ALLOCATION_DETAIL" xml:space="preserve">
+    <value>Chi tiết phân bổ trong tuần</value>
+  </data>
+  <data name="DASHBOARD_WEEKLY_LOAD" xml:space="preserve">
+    <value>Mức tải tuần</value>
+  </data>
+  <data name="DASHBOARD_TASK_DETAIL" xml:space="preserve">
+    <value>Chi tiết công việc</value>
+  </data>
+  <data name="DASHBOARD_MONTH_OVERLOADED" xml:space="preserve">
+    <value>Quá tải cả tháng</value>
+  </data>
+  <data name="DASHBOARD_OVERLOADED_WEEK_COUNT" xml:space="preserve">
+    <value>{0} tuần quá tải</value>
+  </data>
+  <data name="DASHBOARD_NO_OVERLOADED_WEEKS" xml:space="preserve">
+    <value>Không có tuần quá tải trong tháng</value>
+  </data>
+  <data name="DASHBOARD_OVERLOADED_WEEKS" xml:space="preserve">
+    <value>Các tuần quá tải: {0}</value>
+  </data>
+  <data name="DASHBOARD_NO_SCHEDULE" xml:space="preserve">
+    <value>Chưa có lịch</value>
+  </data>
+  <data name="DASHBOARD_ALLOCATED_CAPACITY" xml:space="preserve">
+    <value>{0}/{1} ngày</value>
+  </data>
+  <data name="DASHBOARD_OVERLOAD_DETAIL" xml:space="preserve">
+    <value>Được giao {0} ngày công; vượt {1} ngày</value>
+  </data>
+  <data name="DASHBOARD_OVERLAP_DAYS" xml:space="preserve">
+    <value>; {0} ngày chồng lịch</value>
+  </data>
+  <data name="DASHBOARD_NO_FOCUS_WEEK_TASKS" xml:space="preserve">
+    <value>Chưa có công việc trong tuần trọng tâm</value>
+  </data>
+  <data name="DASHBOARD_LOW_WEEKLY_UTILIZATION" xml:space="preserve">
+    <value>Mức dùng tuần chỉ {0}%</value>
+  </data>
+  <data name="DASHBOARD_WEEK_COUNT" xml:space="preserve">
+    <value>{0} tuần</value>
+  </data>
+  <data name="DASHBOARD_WEEK_LABEL" xml:space="preserve">
+    <value>Tuần {0}</value>
+  </data>
+  <data name="DASHBOARD_MONTH_LABEL" xml:space="preserve">
+    <value>Tháng {0}</value>
+  </data>
+  <data name="DASHBOARD_PAST_ASSIGNMENT" xml:space="preserve">
+    <value>Lịch phân công đã qua</value>
+  </data>
+  <data name="DASHBOARD_FUTURE_PLAN" xml:space="preserve">
+    <value>Kế hoạch sắp tới</value>
+  </data>
+  <data name="DASHBOARD_THRESHOLD_100" xml:space="preserve">
+    <value>Ngưỡng 100%</value>
+  </data>
+  <data name="DASHBOARD_CAPACITY" xml:space="preserve">
+    <value>{0} công suất</value>
+  </data>
+  <data name="DASHBOARD_EXCESS" xml:space="preserve">
+    <value> · vượt {0}</value>
+  </data>
+  <data name="DASHBOARD_SCHEDULE_OVERLAP_DAYS" xml:space="preserve">
+    <value> · {0} ngày chồng lịch</value>
+  </data>
+  <data name="DASHBOARD_NO_WEEK_PROJECT_ALLOCATION" xml:space="preserve">
+    <value>Nhân sự chưa được phân bổ vào dự án trong tuần này.</value>
+  </data>
+  <data name="DASHBOARD_NO_WEEK_TASKS" xml:space="preserve">
+    <value>Không có công việc trong tuần này.</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEE_ALL_PROJECTS" xml:space="preserve">
+    <value>Tất cả dự án của tôi</value>
+  </data>
+  <data name="DASHBOARD_EMPLOYEE_DEFAULT_NAME" xml:space="preserve">
+    <value>Nhân viên</value>
+  </data>
+  <data name="DASHBOARD_GREETING" xml:space="preserve">
+    <value>Xin chào, {0}</value>
+  </data>
+  <data name="DASHBOARD_PERSONAL_OVERVIEW" xml:space="preserve">
+    <value>Tổng quan công việc cá nhân</value>
+  </data>
+  <data name="DASHBOARD_TASKS_IN_PROGRESS" xml:space="preserve">
+    <value>Công việc đang thực hiện</value>
+  </data>
+  <data name="DASHBOARD_TASKS_DUE_SOON" xml:space="preserve">
+    <value>Công việc sắp đến hạn</value>
+  </data>
+  <data name="DASHBOARD_PROJECTS_PARTICIPATING" xml:space="preserve">
+    <value>Dự án đang tham gia</value>
+  </data>
+  <data name="DASHBOARD_CURRENT_LOAD" xml:space="preserve">
+    <value>Mức tải hiện tại</value>
+  </data>
+  <data name="DASHBOARD_MY_TASKS" xml:space="preserve">
+    <value>Công việc của tôi</value>
+  </data>
+  <data name="DASHBOARD_VIEW_ALL_TASKS" xml:space="preserve">
+    <value>Xem tất cả công việc</value>
+  </data>
+  <data name="DASHBOARD_DUE" xml:space="preserve">
+    <value>Hạn</value>
+  </data>
+  <data name="DASHBOARD_NO_TASKS" xml:space="preserve">
+    <value>Không có công việc nào</value>
+  </data>
+  <data name="DASHBOARD_MY_WARNINGS" xml:space="preserve">
+    <value>Cảnh báo của tôi</value>
+  </data>
+  <data name="DASHBOARD_NO_PERSONAL_WARNINGS" xml:space="preserve">
+    <value>Không có cảnh báo nào</value>
+  </data>
+  <data name="DASHBOARD_MY_PROJECT_PROGRESS" xml:space="preserve">
+    <value>Tiến độ các dự án của tôi</value>
+  </data>
+  <data name="DASHBOARD_MY_PROJECT_PROGRESS_DESC" xml:space="preserve">
+    <value>Hiển thị các dự án bạn đang tham gia</value>
+  </data>
+  <data name="DASHBOARD_UPCOMING_SCHEDULE" xml:space="preserve">
+    <value>Lịch sắp tới</value>
+  </data>
+  <data name="DASHBOARD_NO_UPCOMING_SCHEDULE" xml:space="preserve">
+    <value>Không có lịch sắp tới</value>
+  </data>
+  <data name="DASHBOARD_MEETING_ALERT" xml:space="preserve">
+    <value>Có cuộc họp dự án {0} lúc {1:HH:mm} ngày {1:dd/MM}</value>
+  </data>
+  <data name="DASHBOARD_OVERDUE_TASK_ALERT" xml:space="preserve">
+    <value>{0} công việc đã quá hạn</value>
+  </data>
+  <data name="DASHBOARD_DUE_SOON_TASK_ALERT" xml:space="preserve">
+    <value>{0} công việc sắp đến hạn trong 3 ngày</value>
+  </data>
   <data name="SET_AS_OFFICIAL_FILE" xml:space="preserve">
     <value>Chọn chính thức</value>
   </data>
@@ -2475,36 +2905,6 @@
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
-  <data name="COMPLETED" xml:space="preserve">
-    <value>Hoàn thành</value>
-  </data>
-  <data name="DUE_SOON" xml:space="preserve">
-    <value>Sắp đến hạn</value>
-  </data>
-  <data name="NOT_YET_STARTED" xml:space="preserve">
-    <value>Chưa bắt đầu</value>
-  </data>
-  <data name="TODAY" xml:space="preserve">
-    <value>Hôm nay</value>
-  </data>
-  <data name="DEPENDENT_LINK" xml:space="preserve">
-    <value>Liên kết phụ thuộc</value>
-  </data>
-  <data name="NO_OVERDUE_TASKS" xml:space="preserve">
-    <value>Không có công việc trễ hạn</value>
-  </data>
-  <data name="NO_ISSUES" xml:space="preserve">
-    <value>Không có vấn đề</value>
-  </data>
-  <data name="IN_PROGRESS" xml:space="preserve">
-    <value>Đang thực hiện</value>
-  </data>
-  <data name="PROJECT_REPORT_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý báo cáo tiến độ</value>
-  </data>
-  <data name="PROJECT_REPORT" xml:space="preserve">
-    <value>Báo cáo tiến độ dự án</value>
-  </data>
   <data name="PROVINCES" xml:space="preserve">
     <value>Các tỉnh</value>
   </data>
@@ -2658,7 +3058,13 @@
   <data name="HISTORY_ENTITY_RISK" xml:space="preserve">
     <value>rủi ro</value>
   </data>
-	<data name="thi" xml:space="preserve">
+  <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
-	  </data>
+  </data>
+  <data name="COST" xml:space="preserve">
+    <value>Chi phí</value>
+  </data>
+  <data name="PAYMENT" xml:space="preserve">
+    <value>Thanh toán</value>
+  </data>
 </root>

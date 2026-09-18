@@ -11,8 +11,10 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq; // BẮT BUỘC CÓ USING NÀY CHO LINQ
 using System.Transactions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fMeets
 {
@@ -32,7 +34,9 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
             CtrlMeet1.OpenMeetingDocumentHandlerCallback += OpenMeetingDocumentAction;
-            new ControlHelpers().BindNhanVienToCheckBoxList(cblNhanVien);
+
+            // Xóa BindNhanVienToCheckBoxList cũ ở đây vì đã bind ngầm vào rptNhanVien khi bấm nút
+
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -252,21 +256,57 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
+        // =========================================================================
+        // BẮT ĐẦU SỬA: HÀM MỞ POPUP CHỌN NHÂN VIÊN VÀ BIND VÀO REPEATER
+        // =========================================================================
         protected void btnMoPopupNhanVien_Click(object sender, EventArgs e)
         {
-            _control.BindNhanVienToCheckBoxList(cblNhanVien);
-            cblNhanVien.ClearSelection();
+            List<Guid> projectMemberIds = new Select(TblThanhVienDuAn.Columns.IdNhanVien)
+                .From(TblThanhVienDuAn.Schema)
+                .Where(TblThanhVienDuAn.Columns.IdDuAn).IsEqualTo(CtrlMeet1.ProjectId)
+                .And(TblThanhVienDuAn.Columns.DaXoa).IsEqualTo(false)
+                .ExecuteTypedList<Guid>();
 
-            string[] selectedIds = hdfNhanVienIds.Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (System.Web.UI.WebControls.ListItem item in cblNhanVien.Items)
+            var allUsers = UserManager.Instance.GetAllActiveNhanVien();
+            var usersInProject = allUsers
+                .Where(u => projectMemberIds.Contains(u.UserId))
+                .OrderBy(u => u.DisplayName)
+                .ToList();
+
+            var list = new List<object>();
+            for (int i = 0; i < usersInProject.Count; i++)
             {
-                if (Array.Exists(selectedIds, id => id == item.Value))
+                list.Add(new
                 {
-                    item.Selected = true;
-                }
+                    UserId = usersInProject[i].UserId,
+                    DisplayName = usersInProject[i].DisplayName,
+                    AvatarHtml = GetSingleAvatarHtml(usersInProject[i].DisplayName, usersInProject[i].Avatar, i)
+                });
             }
 
+            rptNhanVien.DataSource = list;
+            rptNhanVien.DataBind();
+
             dlChonNhanVien.OpenModal(true);
+        }
+
+        protected void rptNhanVien_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                HiddenField hdfUserId = (HiddenField)e.Item.FindControl("hdfUserId");
+                CheckBox chkSelect = (CheckBox)e.Item.FindControl("chkSelect");
+
+                if (hdfUserId != null && chkSelect != null)
+                {
+                    string[] selectedIds = hdfNhanVienIds.Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (Array.Exists(selectedIds, id => id == hdfUserId.Value))
+                    {
+                        chkSelect.Checked = true;
+                    }
+                }
+            }
         }
 
         protected void btnXacNhanNhanVien_Click(object sender, EventArgs e)
@@ -274,12 +314,18 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             List<string> ids = new List<string>();
             List<string> names = new List<string>();
 
-            foreach (System.Web.UI.WebControls.ListItem item in cblNhanVien.Items)
+            foreach (RepeaterItem item in rptNhanVien.Items)
             {
-                if (item.Selected)
+                if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
                 {
-                    ids.Add(item.Value);
-                    names.Add(item.Text);
+                    CheckBox chkSelect = (CheckBox)item.FindControl("chkSelect");
+                    if (chkSelect != null && chkSelect.Checked)
+                    {
+                        HiddenField hdfUserId = (HiddenField)item.FindControl("hdfUserId");
+                        HiddenField hdfDisplayName = (HiddenField)item.FindControl("hdfDisplayName");
+                        ids.Add(hdfUserId.Value);
+                        names.Add(hdfDisplayName.Value);
+                    }
                 }
             }
 
@@ -299,6 +345,33 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
             dlChonNhanVien.CloseModal();
         }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+        }
+
+        private string GetSingleAvatarHtml(string name, string avatar, int index)
+        {
+            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
+            string color = colors[index % colors.Length];
+            bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultAvatar)
+            {
+                string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
+                string fallbackHtml = $"<div class=\\'single-avatar-circle\\' style=\\'background-color: {color};\\'>{GetInitials(name)}</div>";
+                return $"<img src='{avatarUrl}' class='single-avatar-circle' style='object-fit: cover;' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+            }
+            else
+            {
+                return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
+            }
+        }
+        // KẾT THÚC SỬA
 
         public override void ConfirmRequest(ConfirmResult e)
         {
