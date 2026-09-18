@@ -140,8 +140,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 string text;
                 switch (ngay.TrangThaiLich)
                 {
+              
                     case "holiday":
-                        text = "🎉 " + (!string.IsNullOrEmpty(ngay.TenNgoaiLe) ? ngay.TenNgoaiLe : GetResourceText(BackEndResourceKeys.HOLIDAY));
+                        // [FIX]: Chỉ hiển thị chữ "Nghỉ lễ" thay vì lấy chi tiết TenNgoaiLe
+                        text = "🎉 " + GetResourceText(BackEndResourceKeys.HOLIDAY);
+                        break;
                         break;
                     case "weekend":
                         text = "⬜ " + GetResourceText(BackEndResourceKeys.WEEKEND);

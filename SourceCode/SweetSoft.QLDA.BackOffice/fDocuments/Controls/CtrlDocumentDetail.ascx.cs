@@ -1961,17 +1961,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 true);
         }
 
-        private void KeepVersionsTabOpen()
-        {
-            ScriptManager.RegisterStartupScript(
-                this.Page,
-                GetType(),
-                "KeepDocumentVersionsTabOpen",
-                "var tabElement=document.querySelector('[data-bs-target=\"#document-versions\"]');"
-                + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
-                true);
-        }
-
         private void BindHeader(DataRow document)
         {
             lblDocumentName.Text = GetValueText(document["TenTaiLieu"]);
