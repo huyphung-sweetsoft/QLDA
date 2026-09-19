@@ -75,12 +75,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             var listMembers = new List<object>();
 
-            foreach (var user in allUsers)
+            // CHUYỂN TỪ FOREACH SANG FOR ĐỂ LẤY INDEX ĐỔI MÀU AVATAR
+            for (int i = 0; i < allUsers.Count; i++)
             {
+                var user = allUsers[i];
                 listMembers.Add(new
                 {
                     UserId = user.UserId,
                     DisplayName = user.DisplayName,
+                    // BƠM AVATAR VÀO ĐÂY
+                    AvatarHtml = GetSingleAvatarHtml(user.DisplayName, user.Avatar, i),
                     ScheduleJson = GenerateScheduleJson(user.UserId, StartDate.Value, EndDate.Value)
                 });
             }
@@ -90,7 +94,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             ltrCountCompany.Text = listMembers.Count.ToString();
         }
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+        }
 
+        private string GetSingleAvatarHtml(string name, string avatar, int index)
+        {
+            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
+            string color = colors[index % colors.Length];
+            bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultAvatar)
+            {
+                string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
+                string fallbackHtml = $"<div class=\\'single-avatar-circle\\' style=\\'background-color: {color};\\'>{GetInitials(name)}</div>";
+                return $"<img src='{avatarUrl}' class='single-avatar-circle' style='object-fit: cover;' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+            }
+            else
+            {
+                return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
+            }
+        }
         private string GenerateScheduleJson(Guid userId, DateTime start, DateTime end)
         {
             // DÙNG CHUNG LOGIC LỊCH TRÌNH VỚI BÊN TASK (ĐÃ CÓ TRẠNG THÁI BUSY)
@@ -106,7 +134,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 switch (ngay.TrangThaiLich)
                 {
                     case "holiday":
-                        text = "🎉 " + (!string.IsNullOrEmpty(ngay.TenNgoaiLe) ? ngay.TenNgoaiLe : GetResourceText(BackEndResourceKeys.HOLIDAY));
+                        text = "🎉 " + GetResourceText(BackEndResourceKeys.HOLIDAY);
                         break;
                     case "weekend":
                         text = "⬜ " + GetResourceText(BackEndResourceKeys.WEEKEND);

@@ -107,8 +107,9 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                 if (user != null)
                 {
                     hdfCSRF.Value = SecurityUtilities.EncryptContent(user.UserId.ToString());
-                    TblUploadFile tblUploadFile = UploadManager.Instance.GetUploadFileByRefIdAndRefType(user.UserId, FileUploadTypes.UserAvatar);
-                    SetUserInfomation(user.DisplayName, tblUploadFile?.FileUrl ?? string.Empty);
+
+                    // [ĐÃ SỬA]: Lấy trực tiếp từ user.Avatar chuẩn thay vì query lại TblUploadFiles
+                    SetUserInfomation(user.DisplayName, user.Avatar);
                 }
                 btnCancel.ToolTip = btnCancel.Text = GetResourceText(BackEndResourceKeys.CLOSE);
                 // Các chức năng trong dự án được điều hướng bằng tab ngay

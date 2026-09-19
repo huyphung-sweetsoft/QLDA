@@ -225,6 +225,20 @@
         axisMax = Math.ceil(axisMax / tickStep) * tickStep;
         var tickAmount = axisMax / tickStep;
 
+        // ApexCharts may generate fractional ticks for a numeric stacked axis.
+        // Rounding those ticks (for example 4.5 and 5.4) made both labels
+        // appear as "5". Keep an integer scale for small task totals and use
+        // one decimal place for larger ranges so every tick remains distinct.
+        var maxTaskTotal = data.reduce(function (max, item) {
+            var total = (Number(item.completed) || 0)
+                + (Number(item.inProgress) || 0)
+                + (Number(item.notStarted) || 0)
+                + (Number(item.overdue) || 0);
+            return Math.max(max, total);
+        }, 0);
+        var axisMax = Math.max(1, Math.ceil(maxTaskTotal));
+        var tickAmount = axisMax <= 10 ? axisMax : 10;
+
         new ApexCharts(element, {
             chart: {
                 type: "bar",

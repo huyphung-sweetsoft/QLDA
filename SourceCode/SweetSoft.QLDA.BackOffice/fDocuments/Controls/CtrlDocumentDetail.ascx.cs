@@ -1,6 +1,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fFilesBox;
 using SweetSoft.QLDA.Core.FileManager;
+using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
@@ -12,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
+using System.Web;
 using System.Web.Hosting;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -30,12 +33,63 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             "SET_OFFICIAL_FILE";
         private const string ClearOfficialFileCommand =
             "CLEAR_OFFICIAL_FILE";
+        private const string CustomerDeliverySubmissionSessionKeyPrefix =
+            "DocumentCustomerDeliverySubmission:";
+
+        /// <summary>
+        /// A project detail page assigns this value on every request.  An empty
+        /// value preserves the existing company-document behaviour.
+        /// </summary>
+        public Guid ProjectId
+        {
+            get
+            {
+                object value = ViewState["ProjectId"];
+                if (value is Guid)
+                    return (Guid)value;
+
+                Guid result;
+                return Guid.TryParse(Convert.ToString(value), out result)
+                    ? result
+                    : Guid.Empty;
+            }
+            set { ViewState["ProjectId"] = value; }
+        }
+
+        private bool IsProjectContext
+        {
+            get { return ProjectId != Guid.Empty; }
+        }
+
+        protected string DocumentScopeIconCss
+        {
+            get
+            {
+                return IsProjectContext
+                    ? "fas fa-project-diagram me-1"
+                    : "fas fa-building me-1";
+            }
+        }
+
+        protected string DocumentScopeText
+        {
+            get
+            {
+                return GetResourceText(
+                    IsProjectContext
+                        ? BackEndResourceKeys.PROJECT_DOCUMENTS
+                        : BackEndResourceKeys.COMPANY_DOCUMENT);
+            }
+        }
+
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
             fbVersions.FileDeletionRequested +=
                 FbVersions_FileDeletionRequested;
             BindSigningSignerDropdown();
+            BindCustomerDeliveryDropdowns();
+            BindPhysicalStorageLocations();
         }
 
         protected override void OnLoad(EventArgs e)
@@ -47,11 +101,25 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 BindSigningSignerDropdown();
             }
             ConfigureSigningControls();
+            if (ddlCustomerDeliveryCustomer != null
+                && ddlCustomerDeliveryCustomer.Items.Count == 0)
+            {
+                BindCustomerDeliveryDropdowns();
+            }
+            ConfigureCustomerDeliveryControls();
+            if (ddlPhysicalStorageLocation != null
+                && ddlPhysicalStorageLocation.Items.Count == 0)
+            {
+                BindPhysicalStorageLocations();
+            }
+            ConfigurePhysicalStorageControls();
         }
 
         protected override void OnPreRender(EventArgs e)
         {
             RegisterSigningPostBackControls();
+            RegisterCustomerDeliveryPostBackControls();
+            RegisterPhysicalStoragePostBackControls();
             base.OnPreRender(e);
         }
 
@@ -78,6 +146,40 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             if (btnCancelSigningChanges != null)
                 script.RegisterAsyncPostBackControl(btnCancelSigningChanges);
+        }
+
+        private void RegisterCustomerDeliveryPostBackControls()
+        {
+            ScriptManager script = ScriptManager.GetCurrent(Page);
+            if (script == null)
+                return;
+
+            if (btnCustomerDeliverySend != null)
+                script.RegisterAsyncPostBackControl(btnCustomerDeliverySend);
+
+            if (btnCancelCustomerDelivery != null)
+                script.RegisterAsyncPostBackControl(btnCancelCustomerDelivery);
+
+            if (btnUpdateCustomerDeliveryStatus != null)
+                script.RegisterAsyncPostBackControl(
+                    btnUpdateCustomerDeliveryStatus);
+
+            if (btnCancelCustomerDeliveryStatus != null)
+                script.RegisterAsyncPostBackControl(
+                    btnCancelCustomerDeliveryStatus);
+        }
+
+        private void RegisterPhysicalStoragePostBackControls()
+        {
+            ScriptManager script = ScriptManager.GetCurrent(Page);
+            if (script == null)
+                return;
+
+            if (btnPhysicalStorageSave != null)
+                script.RegisterAsyncPostBackControl(btnPhysicalStorageSave);
+
+            if (btnCancelPhysicalStorage != null)
+                script.RegisterAsyncPostBackControl(btnCancelPhysicalStorage);
         }
 
         private void ConfigureSigningControls()
@@ -124,6 +226,153 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
         }
 
+        private void ConfigureCustomerDeliveryControls()
+        {
+            if (btnOpenCustomerDelivery != null)
+            {
+                btnOpenCustomerDelivery.Text = GetResourceText(
+                    BackEndResourceKeys.SEND_CUSTOMER);
+            }
+            if (btnCustomerDeliverySend != null)
+            {
+                btnCustomerDeliverySend.Text = GetResourceText(
+                    BackEndResourceKeys.SEND_CUSTOMER);
+            }
+            if (btnCancelCustomerDelivery != null)
+                btnCancelCustomerDelivery.Text = GetResourceText(
+                    BackEndResourceKeys.CANCEL);
+            if (btnUpdateCustomerDeliveryStatus != null)
+            {
+                btnUpdateCustomerDeliveryStatus.Text = GetResourceText(
+                    BackEndResourceKeys.UPDATE_CUSTOMER_DELIVERY);
+            }
+            if (btnCancelCustomerDeliveryStatus != null)
+            {
+                btnCancelCustomerDeliveryStatus.Text = GetResourceText(
+                    BackEndResourceKeys.CANCEL);
+            }
+
+            if (ddlCustomerDeliveryVersion != null)
+            {
+                ddlCustomerDeliveryVersion.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.SELECT_VALUE);
+                ddlCustomerDeliveryVersion.Attributes["onchange"] =
+                    GetDropdownHiddenFieldScript(
+                        hdfCustomerDeliveryVersion);
+            }
+            if (ddlCustomerDeliveryCustomer != null)
+            {
+                ddlCustomerDeliveryCustomer.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.SELECT_VALUE);
+                ddlCustomerDeliveryCustomer.Attributes["onchange"] =
+                    GetDropdownHiddenFieldScript(
+                        hdfCustomerDeliveryCustomer);
+            }
+            if (ddlCustomerDeliveryChannel != null)
+            {
+                ddlCustomerDeliveryChannel.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.SELECT_VALUE);
+                ddlCustomerDeliveryChannel.Attributes["onchange"] =
+                    GetDropdownHiddenFieldScript(
+                        hdfCustomerDeliveryChannel);
+            }
+            if (ddlCustomerDeliveryStatus != null)
+            {
+                ddlCustomerDeliveryStatus.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.SELECT_VALUE);
+                ddlCustomerDeliveryStatus.Attributes["onchange"] =
+                    GetDropdownHiddenFieldScript(
+                        hdfCustomerDeliveryStatus);
+            }
+            if (txtCustomerDeliveryRecipient != null)
+            {
+                txtCustomerDeliveryRecipient.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.ENTER_THE_VALUE);
+            }
+            if (txtCustomerDeliveryEmail != null)
+            {
+                txtCustomerDeliveryEmail.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.TO_EMAIL);
+            }
+            if (txtCustomerDeliveryNote != null)
+            {
+                txtCustomerDeliveryNote.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.ENTER_THE_VALUE);
+            }
+            if (chkCustomerDeliveryBeforeSigning != null)
+            {
+                chkCustomerDeliveryBeforeSigning.OnText = GetResourceText(
+                    BackEndResourceKeys.YES);
+                chkCustomerDeliveryBeforeSigning.OffText = GetResourceText(
+                    BackEndResourceKeys.NO);
+            }
+            if (txtCustomerDeliveryStatusNote != null)
+            {
+                txtCustomerDeliveryStatusNote.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.ENTER_THE_VALUE);
+            }
+        }
+
+        private void ConfigurePhysicalStorageControls()
+        {
+            if (btnOpenPhysicalStorage != null)
+            {
+                btnOpenPhysicalStorage.Text = GetResourceText(
+                    BackEndResourceKeys.STORE_PHYSICAL_COPY);
+            }
+            if (btnPhysicalStorageSave != null)
+            {
+                btnPhysicalStorageSave.Text = GetResourceText(
+                    BackEndResourceKeys.STORE_PHYSICAL_COPY);
+            }
+            if (btnCancelPhysicalStorage != null)
+            {
+                btnCancelPhysicalStorage.Text = GetResourceText(
+                    BackEndResourceKeys.CANCEL);
+            }
+            if (ddlPhysicalStorageLocation != null)
+            {
+                ddlPhysicalStorageLocation.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.SELECT_VALUE);
+                ddlPhysicalStorageLocation.Attributes["onchange"] =
+                    GetDropdownHiddenFieldScript(
+                        hdfPhysicalStorageLocation)
+                    + GetPhysicalStorageLocationPathScript();
+            }
+            if (txtPhysicalStorageCode != null)
+            {
+                txtPhysicalStorageCode.PlaceHolder = "LT-2026-000001";
+            }
+            if (txtPhysicalStorageOriginalCondition != null)
+            {
+                txtPhysicalStorageOriginalCondition.PlaceHolder =
+                    GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
+            }
+            if (txtPhysicalStorageNote != null)
+            {
+                txtPhysicalStorageNote.PlaceHolder = GetResourceText(
+                    BackEndResourceKeys.ENTER_THE_VALUE);
+            }
+            if (chkPhysicalStorageManualCode != null)
+            {
+                chkPhysicalStorageManualCode.OnText = GetResourceText(
+                    BackEndResourceKeys.YES);
+                chkPhysicalStorageManualCode.OffText = GetResourceText(
+                    BackEndResourceKeys.NO);
+            }
+        }
+
+        private static string GetDropdownHiddenFieldScript(
+            System.Web.UI.WebControls.HiddenField hiddenField)
+        {
+            if (hiddenField == null)
+                return string.Empty;
+
+            return "var valueField=document.getElementById('"
+                + hiddenField.ClientID
+                + "');if(valueField){valueField.value=this.value;}";
+        }
+
         private Guid? OfficialFileId
         {
             get
@@ -153,13 +402,45 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             set { ViewState["RequiresSigning"] = value; }
         }
 
+        private DataTable GetDocumentDetail(Guid idTaiLieu)
+        {
+            return IsProjectContext
+                ? CreateRequestDocumentManager().GetProjectDocumentDetail(
+                    idTaiLieu,
+                    ProjectId)
+                : DocumentManager.Instance.GetCompanyDocumentDetail(idTaiLieu);
+        }
+
+        private void EnsureDocumentActionAccess(
+            Guid idTaiLieu,
+            ActionKeys action)
+        {
+            if (!IsProjectContext)
+            {
+                // The shared version/signing repository methods now support
+                // both scopes. Keep the company page from being used with a
+                // forged project-document id during an asynchronous postback.
+                if (DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu)
+                    == null)
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hồ sơ công ty.");
+                }
+                return;
+            }
+
+            CreateRequestDocumentManager().EnsureProjectDocumentAccess(
+                idTaiLieu,
+                ProjectId,
+                action);
+        }
+
         public bool InitControls(Guid idTaiLieu)
         {
             if (idTaiLieu == Guid.Empty)
                 return false;
 
-            DataTable detail = DocumentManager.Instance
-                .GetCompanyDocumentDetail(idTaiLieu);
+            DataTable detail = GetDocumentDetail(idTaiLieu);
             if (detail.Rows.Count == 0)
                 return false;
 
@@ -218,6 +499,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || customerHistory.Rows.Count > 0;
             phCustomerTab.Visible = showCustomer;
             phCustomerPane.Visible = showCustomer;
+            pnlCustomerActions.Visible = requiresCustomer
+                && CURRENT_PAGE.IsEdit
+                && versions.Rows.Count > 0;
             BindRepeater(
                 rptCustomer,
                 pnlCustomer,
@@ -228,6 +512,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || storageHistory.Rows.Count > 0;
             phStorageTab.Visible = showStorage;
             phStoragePane.Visible = showStorage;
+            pnlPhysicalStorageActions.Visible = requiresStorage
+                && CURRENT_PAGE.IsEdit;
             BindRepeater(
                 rptStorage,
                 pnlStorage,
@@ -240,7 +526,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 pnlNoActivity,
                 activityHistory);
 
-            btnBack.NavigateUrl = RewriteURLHelper.Documents;
+            btnBack.NavigateUrl = IsProjectContext
+                ? RewriteURLHelper.ProjectDocuments(ProjectId)
+                : RewriteURLHelper.Documents;
             btnBack.ToolTip = btnBack.Text = GetResourceText(
                 BackEndResourceKeys.BACK_TO_LIST);
             return true;
@@ -282,6 +570,23 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            Guid idTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || idTaiLieu == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Không xác định được hồ sơ cần cập nhật.");
+            }
+
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                throw new InvalidOperationException(
+                    GetResourceText(
+                        BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
+            }
+
+            EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+
             if (isSigningResultSaved)
             {
                 Guid signingId;
@@ -300,21 +605,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 mdlSigningResult.UpdateContentModal();
                 KeepSigningTabOpen();
                 return;
-            }
-
-            Guid idTaiLieu;
-            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
-                || idTaiLieu == Guid.Empty)
-            {
-                throw new InvalidOperationException(
-                    "Không xác định được hồ sơ cần cập nhật.");
-            }
-
-            if (!CURRENT_PAGE.IsEdit)
-            {
-                throw new InvalidOperationException(
-                    GetResourceText(
-                        BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
             }
 
             if (isBeforeSave)
@@ -363,6 +653,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+
             DocumentVersionFileDeletionResult result =
                 CreateRequestDocumentManager()
                     .DeleteDocumentVersionFiles(idTaiLieu, e.FileIds);
@@ -406,6 +698,232 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
         }
 
+        private void BindCustomerDeliveryDropdowns()
+        {
+            if (ddlCustomerDeliveryCustomer != null
+                && ddlCustomerDeliveryCustomer.Items.Count == 0)
+            {
+                new ControlHelpers().BindKhachHang(
+                    ddlCustomerDeliveryCustomer);
+                ddlCustomerDeliveryCustomer.Items.Insert(
+                    0,
+                    new ListItem(
+                        GetResourceText(BackEndResourceKeys.SELECT_VALUE),
+                        string.Empty));
+            }
+
+            if (ddlCustomerDeliveryChannel != null
+                && ddlCustomerDeliveryChannel.Items.Count == 0)
+            {
+                ddlCustomerDeliveryChannel.Items.Add(
+                    new ListItem(
+                        GetCustomerDeliveryChannelText(
+                            DocumentCustomerDeliveryChannelKeys.Email),
+                        DocumentCustomerDeliveryChannelKeys.Email));
+                ddlCustomerDeliveryChannel.Items.Add(
+                    new ListItem(
+                        GetCustomerDeliveryChannelText(
+                            DocumentCustomerDeliveryChannelKeys.Direct),
+                        DocumentCustomerDeliveryChannelKeys.Direct));
+                ddlCustomerDeliveryChannel.Items.Add(
+                    new ListItem(
+                        GetCustomerDeliveryChannelText(
+                            DocumentCustomerDeliveryChannelKeys.Other),
+                        DocumentCustomerDeliveryChannelKeys.Other));
+            }
+
+            if (ddlCustomerDeliveryStatus != null
+                && ddlCustomerDeliveryStatus.Items.Count == 0)
+            {
+                ddlCustomerDeliveryStatus.Items.Add(
+                    new ListItem(
+                        GetCustomerStatusText(
+                            true,
+                            DocumentCustomerStatusKeys.Sent),
+                        DocumentCustomerStatusKeys.Sent));
+                ddlCustomerDeliveryStatus.Items.Add(
+                    new ListItem(
+                        GetCustomerStatusText(
+                            true,
+                            DocumentCustomerStatusKeys.WaitingForReturn),
+                        DocumentCustomerStatusKeys.WaitingForReturn));
+                ddlCustomerDeliveryStatus.Items.Add(
+                    new ListItem(
+                        GetCustomerStatusText(
+                            true,
+                            DocumentCustomerStatusKeys.ReceivedBack),
+                        DocumentCustomerStatusKeys.ReceivedBack));
+            }
+        }
+
+        private void BindCustomerDeliveryVersions(DataTable versions)
+        {
+            ddlCustomerDeliveryVersion.Items.Clear();
+            ddlCustomerDeliveryVersion.Items.Add(
+                new ListItem(
+                    GetResourceText(BackEndResourceKeys.SELECT_VALUE),
+                    string.Empty));
+            if (versions == null)
+                return;
+
+            foreach (DataRow version in versions.Rows)
+            {
+                Guid? versionId = GetGuid(version, "IdPhienBanTaiLieu");
+                if (!versionId.HasValue || versionId.Value == Guid.Empty)
+                    continue;
+
+                string text = "v" + GetValueText(version["SoPhienBan"]);
+                if (GetBoolean(version, "LaPhienBanHienTai"))
+                {
+                    text += " · " + GetResourceText(
+                        BackEndResourceKeys.CURRENT_VERSION);
+                }
+
+                ddlCustomerDeliveryVersion.Items.Add(
+                    new ListItem(text, versionId.Value.ToString()));
+            }
+        }
+
+        private void BindPhysicalStorageLocations()
+        {
+            if (ddlPhysicalStorageLocation == null)
+                return;
+
+            string selectedValue = ddlPhysicalStorageLocation.SelectedValue;
+            List<TblNoiLuuTru> allLocations =
+                DocumentStorageLocationManager.Instance.GetAll()
+                ?? new List<TblNoiLuuTru>();
+            Dictionary<Guid, TblNoiLuuTru> locationsById =
+                allLocations
+                .Where(item => item != null && item.IdNoiLuuTru != Guid.Empty)
+                .GroupBy(item => item.IdNoiLuuTru)
+                .ToDictionary(group => group.Key, group => group.First());
+
+            ddlPhysicalStorageLocation.Items.Clear();
+            ddlPhysicalStorageLocation.Items.Add(
+                new ListItem(
+                    GetResourceText(BackEndResourceKeys.SELECT_VALUE),
+                    string.Empty));
+
+            foreach (TblNoiLuuTru location in allLocations
+                .Where(item => item != null
+                    && item.IdNoiLuuTru != Guid.Empty
+                    && item.KichHoat
+                    && !item.DaXoa)
+                .OrderBy(item => item.ThuTuHienThi)
+                .ThenBy(item => item.TenNoiLuuTru))
+            {
+                string storagePath = GetPhysicalStorageLocationPath(
+                    location,
+                    locationsById);
+                ListItem option = new ListItem(
+                    GetPhysicalStorageLocationOptionText(location),
+                    location.IdNoiLuuTru.ToString());
+                option.Attributes["data-storage-path"] = storagePath;
+                option.Attributes["title"] = storagePath;
+                ddlPhysicalStorageLocation.Items.Add(option);
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedValue)
+                && ddlPhysicalStorageLocation.Items.FindByValue(
+                    selectedValue) != null)
+            {
+                ddlPhysicalStorageLocation.SelectedValue = selectedValue;
+            }
+
+            UpdatePhysicalStorageLocationPath(
+                ddlPhysicalStorageLocation.SelectedValue);
+        }
+
+        private static string GetPhysicalStorageLocationOptionText(
+            TblNoiLuuTru location)
+        {
+            string code = (location.MaNoiLuuTru ?? string.Empty).Trim();
+            string name = (location.TenNoiLuuTru ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(code))
+                return string.IsNullOrWhiteSpace(name)
+                    ? location.IdNoiLuuTru.ToString()
+                    : name;
+            return string.IsNullOrWhiteSpace(name)
+                ? code
+                : code + " — " + name;
+        }
+
+        private static string GetPhysicalStorageLocationPath(
+            TblNoiLuuTru location,
+            IDictionary<Guid, TblNoiLuuTru> locationsById)
+        {
+            List<string> parts = new List<string>();
+            HashSet<Guid> visited = new HashSet<Guid>();
+            TblNoiLuuTru current = location;
+
+            while (current != null
+                && current.IdNoiLuuTru != Guid.Empty
+                && visited.Add(current.IdNoiLuuTru))
+            {
+                string code = (current.MaNoiLuuTru ?? string.Empty).Trim();
+                string name = (current.TenNoiLuuTru ?? string.Empty).Trim();
+                string text = string.IsNullOrWhiteSpace(code)
+                    ? name
+                    : string.IsNullOrWhiteSpace(name)
+                        ? code
+                        : code + " - " + name;
+                if (!string.IsNullOrWhiteSpace(text))
+                    parts.Insert(0, text);
+
+                if (!current.IdNoiLuuTruCha.HasValue
+                    || !locationsById.TryGetValue(
+                        current.IdNoiLuuTruCha.Value,
+                        out current))
+                {
+                    break;
+                }
+            }
+
+            return parts.Count == 0
+                ? location.IdNoiLuuTru.ToString()
+                : string.Join("  ›  ", parts);
+        }
+
+        private string GetPhysicalStorageLocationPathScript()
+        {
+            if (pnlPhysicalStorageLocationPath == null
+                || lblPhysicalStorageLocationPath == null)
+            {
+                return string.Empty;
+            }
+
+            return "var selectedOption=this.options[this.selectedIndex];"
+                + "var storagePath=selectedOption?selectedOption.getAttribute('data-storage-path'):'';"
+                + "var storagePathText=document.getElementById('"
+                + lblPhysicalStorageLocationPath.ClientID
+                + "');if(storagePathText){storagePathText.textContent=storagePath||'';}"
+                + "var storagePathPanel=document.getElementById('"
+                + pnlPhysicalStorageLocationPath.ClientID
+                + "');if(storagePathPanel){storagePathPanel.style.display=storagePath?'block':'none';}";
+        }
+
+        private void UpdatePhysicalStorageLocationPath(string selectedValue)
+        {
+            if (pnlPhysicalStorageLocationPath == null
+                || lblPhysicalStorageLocationPath == null)
+            {
+                return;
+            }
+
+            ListItem selected = string.IsNullOrWhiteSpace(selectedValue)
+                ? null
+                : ddlPhysicalStorageLocation.Items.FindByValue(selectedValue);
+            string storagePath = selected == null
+                ? string.Empty
+                : selected.Attributes["data-storage-path"];
+
+            lblPhysicalStorageLocationPath.Text =
+                HttpUtility.HtmlEncode(storagePath ?? string.Empty);
+            pnlPhysicalStorageLocationPath.Style["display"] =
+                string.IsNullOrWhiteSpace(storagePath) ? "none" : "block";
+        }
+
         protected void btnOpenSubmitSigning_Click(
             object sender,
             EventArgs e)
@@ -426,6 +944,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 DataTable versions = CreateRequestDocumentManager()
                     .GetDocumentVersions(idTaiLieu);
                 DataRow currentVersion = null;
@@ -451,8 +970,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 hdfSubmitSigningDocumentId.Value = idTaiLieu.ToString();
                 lblSubmitSigningVersion.Text = "v"
                     + GetValueText(currentVersion["SoPhienBan"]);
-                DataTable detail = CreateRequestDocumentManager()
-                    .GetCompanyDocumentDetail(idTaiLieu);
+                DataTable detail = GetDocumentDetail(idTaiLieu);
                 lblSubmitSigningMethod.Text = detail.Rows.Count == 0
                     ? string.Empty
                     : GetSigningMethodText(detail.Rows[0]["HinhThucKy"]);
@@ -501,6 +1019,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 CreateRequestDocumentManager().SubmitDocumentSigning(
                     idTaiLieu,
                     idNguoiKy,
@@ -582,6 +1101,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 DataTable detail = CreateRequestDocumentManager()
                     .GetSigningDetail(idTaiLieu, idTrinhKyTaiLieu);
                 if (detail.Rows.Count == 0
@@ -671,6 +1191,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 CreateRequestDocumentManager().CompleteDocumentSigning(
                     idTaiLieu,
                     idTrinhKyTaiLieu,
@@ -731,6 +1252,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 CreateRequestDocumentManager()
                     .RequestDocumentSigningChanges(
                         idTaiLieu,
@@ -790,6 +1312,579 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 idTaiLieu);
         }
 
+        protected void btnOpenCustomerDelivery_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || idTaiLieu == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+                DataTable detail = GetDocumentDetail(idTaiLieu);
+                if (detail.Rows.Count == 0
+                    || !GetBoolean(detail.Rows[0], "CanGuiKhachHang"))
+                {
+                    ShowNotify(
+                        "Hồ sơ này chưa được cấu hình gửi khách hàng.",
+                        MSGType.Warning);
+                    return;
+                }
+
+                DataTable versions = CreateRequestDocumentManager()
+                    .GetDocumentVersions(idTaiLieu);
+                if (versions.Rows.Count == 0)
+                {
+                    ShowNotify(
+                        "Hồ sơ chưa có phiên bản để gửi khách hàng.",
+                        MSGType.Warning);
+                    return;
+                }
+
+                BindCustomerDeliveryDropdowns();
+                BindCustomerDeliveryVersions(versions);
+                hdfCustomerDeliveryDocumentId.Value = idTaiLieu.ToString();
+                hdfCustomerDeliveryVersion.Value = string.Empty;
+                hdfCustomerDeliveryCustomer.Value = string.Empty;
+                hdfCustomerDeliveryChannel.Value =
+                    DocumentCustomerDeliveryChannelKeys.Email;
+                hdfCustomerDeliverySubmissionToken.Value =
+                    Guid.NewGuid().ToString("N");
+                ddlCustomerDeliveryVersion.SelectedValue = string.Empty;
+                ddlCustomerDeliveryCustomer.SelectedValue = string.Empty;
+                ddlCustomerDeliveryChannel.SelectedValue =
+                    DocumentCustomerDeliveryChannelKeys.Email;
+                txtCustomerDeliveryRecipient.Text = string.Empty;
+                txtCustomerDeliveryEmail.Text = string.Empty;
+                txtCustomerDeliveryNote.Text = string.Empty;
+                dtCustomerDeliveryDeadline.DateValue = null;
+                chkCustomerDeliveryBeforeSigning.Checked = false;
+                mdlCustomerDelivery.Title = GetResourceText(
+                    BackEndResourceKeys.SEND_CUSTOMER);
+                mdlCustomerDelivery.OpenModal(true);
+                KeepCustomerTabOpen();
+            }
+            catch (Exception exc)
+            {
+                LogCustomerDeliveryHandlerError("open", idTaiLieu, exc);
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+        }
+
+        protected void btnCustomerDeliverySend_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idPhienBanTaiLieu;
+            Guid idKhachHang;
+            string versionValue = GetPostedDropdownValue(
+                hdfCustomerDeliveryVersion,
+                ddlCustomerDeliveryVersion);
+            string customerValue = GetPostedDropdownValue(
+                hdfCustomerDeliveryCustomer,
+                ddlCustomerDeliveryCustomer);
+            string channelValue = GetPostedDropdownValue(
+                hdfCustomerDeliveryChannel,
+                ddlCustomerDeliveryChannel);
+            if (!Guid.TryParse(
+                    hdfCustomerDeliveryDocumentId.Value,
+                    out idTaiLieu)
+                || !Guid.TryParse(versionValue, out idPhienBanTaiLieu)
+                || !Guid.TryParse(customerValue, out idKhachHang)
+                || idTaiLieu == Guid.Empty
+                || idPhienBanTaiLieu == Guid.Empty
+                || idKhachHang == Guid.Empty)
+            {
+                ShowNotify(
+                    "Vui lòng chọn phiên bản và khách hàng cần gửi.",
+                    MSGType.Warning);
+                return;
+            }
+
+            Guid submissionToken;
+            if (!Guid.TryParse(
+                    hdfCustomerDeliverySubmissionToken.Value,
+                    out submissionToken)
+                || submissionToken == Guid.Empty)
+            {
+                ShowNotify(
+                    "Phiên gửi khách hàng đã hết hiệu lực. Vui lòng mở lại biểu mẫu gửi.",
+                    MSGType.Warning);
+                return;
+            }
+
+            bool isSubmissionReserved = false;
+            bool hasCreatedCustomerDelivery = false;
+            try
+            {
+                if (!TryReserveCustomerDeliverySubmission(submissionToken))
+                {
+                    CloseCustomerDeliveryModal();
+                    RefreshCustomerDeliveryDetail(idTaiLieu);
+                    ShowNotify(
+                        "Yêu cầu gửi khách hàng này đã được xử lý. Danh sách đã được làm mới.",
+                        MSGType.Success);
+                    return;
+                }
+
+                isSubmissionReserved = true;
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+                CreateRequestDocumentManager().SendDocumentToCustomer(
+                    idTaiLieu,
+                    idPhienBanTaiLieu,
+                    idKhachHang,
+                    txtCustomerDeliveryRecipient.Text,
+                    txtCustomerDeliveryEmail.Text,
+                    channelValue,
+                    dtCustomerDeliveryDeadline.DateValue,
+                    chkCustomerDeliveryBeforeSigning.Checked,
+                    txtCustomerDeliveryNote.Text);
+                hasCreatedCustomerDelivery = true;
+                RefreshCustomerDeliveryDetail(idTaiLieu);
+                CloseCustomerDeliveryModal();
+                ShowSuccessSaveData();
+            }
+            catch (InvalidOperationException exc)
+            {
+                if (isSubmissionReserved && !hasCreatedCustomerDelivery)
+                    ReleaseCustomerDeliverySubmission(submissionToken);
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                if (isSubmissionReserved && !hasCreatedCustomerDelivery)
+                    ReleaseCustomerDeliverySubmission(submissionToken);
+                LogCustomerDeliveryHandlerError("send", idTaiLieu, exc);
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+
+        protected void btnCancelCustomerDelivery_Click(
+            object sender,
+            EventArgs e)
+        {
+            mdlCustomerDelivery.CloseModal(true);
+            KeepCustomerTabOpen();
+        }
+
+        protected void rptCustomer_ItemCommand(
+            object source,
+            RepeaterCommandEventArgs e)
+        {
+            if (!string.Equals(
+                    e.CommandName,
+                    "UPDATE_CUSTOMER_DELIVERY",
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idGuiNhanKhachHang;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || !Guid.TryParse(
+                    Convert.ToString(e.CommandArgument),
+                    out idGuiNhanKhachHang)
+                || idTaiLieu == Guid.Empty
+                || idGuiNhanKhachHang == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+                DataTable delivery = CreateRequestDocumentManager()
+                    .GetCustomerDeliveryDetail(
+                        idTaiLieu,
+                        idGuiNhanKhachHang);
+                if (delivery.Rows.Count == 0)
+                {
+                    ShowNotify(
+                        "Lần gửi khách hàng đã thay đổi hoặc không còn tồn tại.",
+                        MSGType.Warning);
+                    return;
+                }
+
+                BindCustomerDeliveryDropdowns();
+                DataRow item = delivery.Rows[0];
+                string status = Convert.ToString(item["TrangThai"]);
+                if (status != DocumentCustomerStatusKeys.Sent
+                    && status != DocumentCustomerStatusKeys.WaitingForReturn
+                    && status != DocumentCustomerStatusKeys.ReceivedBack)
+                {
+                    status = DocumentCustomerStatusKeys.Sent;
+                }
+
+                hdfCustomerDeliveryStatusDocumentId.Value =
+                    idTaiLieu.ToString();
+                hdfCustomerDeliveryStatusId.Value =
+                    idGuiNhanKhachHang.ToString();
+                hdfCustomerDeliveryStatus.Value = status;
+                ddlCustomerDeliveryStatus.SelectedValue = status;
+                txtCustomerDeliveryStatusNote.Text = Convert.ToString(
+                    item["GhiChu"]);
+                lblCustomerDeliveryStatusVersion.Text = "v"
+                    + GetValueText(item["SoPhienBan"]);
+                lblCustomerDeliveryStatusCustomer.Text = JoinNonEmpty(
+                    GetValueText(item["TenKhachHang"]),
+                    GetRecipientText(
+                        item["TenNguoiNhan"],
+                        item["EmailNguoiNhan"]));
+                mdlCustomerDeliveryStatus.Title = GetResourceText(
+                    BackEndResourceKeys.UPDATE_CUSTOMER_DELIVERY);
+                mdlCustomerDeliveryStatus.OpenModal(true);
+                KeepCustomerTabOpen();
+            }
+            catch (Exception exc)
+            {
+                LogCustomerDeliveryHandlerError(
+                    "open status",
+                    idTaiLieu,
+                    exc);
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+        }
+
+        protected void btnUpdateCustomerDeliveryStatus_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idGuiNhanKhachHang;
+            string status = GetPostedDropdownValue(
+                hdfCustomerDeliveryStatus,
+                ddlCustomerDeliveryStatus);
+            if (!Guid.TryParse(
+                    hdfCustomerDeliveryStatusDocumentId.Value,
+                    out idTaiLieu)
+                || !Guid.TryParse(
+                    hdfCustomerDeliveryStatusId.Value,
+                    out idGuiNhanKhachHang)
+                || idTaiLieu == Guid.Empty
+                || idGuiNhanKhachHang == Guid.Empty
+                || string.IsNullOrWhiteSpace(status))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+                CreateRequestDocumentManager().UpdateCustomerDeliveryStatus(
+                    idTaiLieu,
+                    idGuiNhanKhachHang,
+                    status,
+                    txtCustomerDeliveryStatusNote.Text);
+                mdlCustomerDeliveryStatus.CloseModal(true);
+                RefreshCustomerDeliveryDetail(idTaiLieu);
+                ShowSuccessSaveData();
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                LogCustomerDeliveryHandlerError(
+                    "update status",
+                    idTaiLieu,
+                    exc);
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+
+        protected void btnCancelCustomerDeliveryStatus_Click(
+            object sender,
+            EventArgs e)
+        {
+            mdlCustomerDeliveryStatus.CloseModal(true);
+            KeepCustomerTabOpen();
+        }
+
+        private string GetPostedDropdownValue(
+            System.Web.UI.WebControls.HiddenField hiddenField,
+            SweetSoft.QLDA.Controls.ExtraDropdown dropdown)
+        {
+            string value = hiddenField == null
+                ? null
+                : Request.Form[hiddenField.UniqueID];
+            if (string.IsNullOrWhiteSpace(value) && dropdown != null)
+            {
+                value = Request.Form[
+                    dropdown.UniqueID + dropdown.HdfValue];
+            }
+            if (string.IsNullOrWhiteSpace(value) && dropdown != null)
+                value = dropdown.SelectedValue;
+
+            return value;
+        }
+
+        private void RefreshCustomerDeliveryDetail(Guid idTaiLieu)
+        {
+            InitControls(idTaiLieu);
+            upDetail.Update();
+            KeepCustomerTabOpen();
+        }
+
+        private static bool TryReserveCustomerDeliverySubmission(
+            Guid submissionToken)
+        {
+            HttpContext context = HttpContext.Current;
+            if (context == null || context.Session == null)
+                return true;
+
+            string sessionKey = CustomerDeliverySubmissionSessionKeyPrefix
+                + submissionToken.ToString("N");
+            if (context.Session[sessionKey] != null)
+                return false;
+
+            // A modal receives one token when it opens.  Keep that token in the
+            // server session after a successful request so a repeated postback
+            // from the same click cannot create a second delivery record.
+            context.Session[sessionKey] = DateTime.UtcNow;
+            return true;
+        }
+
+        private static void ReleaseCustomerDeliverySubmission(
+            Guid submissionToken)
+        {
+            HttpContext context = HttpContext.Current;
+            if (context == null || context.Session == null)
+                return;
+
+            context.Session.Remove(
+                CustomerDeliverySubmissionSessionKeyPrefix
+                + submissionToken.ToString("N"));
+        }
+
+        private void CloseCustomerDeliveryModal()
+        {
+            if (mdlCustomerDelivery == null)
+                return;
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "CloseDocumentCustomerDeliveryModal",
+                "CMSMasterJs.CloseDialog('#" + mdlCustomerDelivery.ClientID
+                    + "');",
+                true);
+        }
+
+        private void KeepCustomerTabOpen()
+        {
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                GetType(),
+                "KeepDocumentCustomerTabOpen",
+                "var tabElement=document.querySelector('[data-bs-target=\"#document-customer\"]');"
+                + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
+                true);
+        }
+
+        private static void LogCustomerDeliveryHandlerError(
+            string operation,
+            Guid idTaiLieu,
+            Exception exception)
+        {
+            SysLogger.LogError(
+                exception,
+                "Document customer delivery {0} handler failed for document {1}",
+                operation,
+                idTaiLieu);
+        }
+
+        protected void btnOpenPhysicalStorage_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || idTaiLieu == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+                DataTable detail = GetDocumentDetail(idTaiLieu);
+                if (detail.Rows.Count == 0
+                    || !GetBoolean(detail.Rows[0], "CanLuuVatLy"))
+                {
+                    ShowNotify(
+                        "Hồ sơ này chưa được cấu hình lưu bản cứng.",
+                        MSGType.Warning);
+                    return;
+                }
+
+                BindPhysicalStorageLocations();
+                if (ddlPhysicalStorageLocation.Items.Count <= 1)
+                {
+                    ShowNotify(
+                        "Chưa có nơi lưu trữ đang hoạt động để chọn.",
+                        MSGType.Warning);
+                    return;
+                }
+
+                hdfPhysicalStorageDocumentId.Value = idTaiLieu.ToString();
+                hdfPhysicalStorageLocation.Value = string.Empty;
+                ddlPhysicalStorageLocation.SelectedValue = string.Empty;
+                UpdatePhysicalStorageLocationPath(string.Empty);
+                chkPhysicalStorageManualCode.Checked = false;
+                txtPhysicalStorageCode.Text = string.Empty;
+                txtPhysicalStorageOriginalCondition.Text = string.Empty;
+                txtPhysicalStorageNote.Text = string.Empty;
+                mdlPhysicalStorage.Title = GetResourceText(
+                    BackEndResourceKeys.STORE_PHYSICAL_COPY);
+                mdlPhysicalStorage.OpenModal(true);
+                KeepPhysicalStorageTabOpen();
+            }
+            catch (Exception exc)
+            {
+                LogPhysicalStorageHandlerError("open", idTaiLieu, exc);
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+        }
+
+        protected void btnPhysicalStorageSave_Click(
+            object sender,
+            EventArgs e)
+        {
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid idTaiLieu;
+            Guid idNoiLuuTru;
+            string storageLocationValue = GetPostedDropdownValue(
+                hdfPhysicalStorageLocation,
+                ddlPhysicalStorageLocation);
+            if (!Guid.TryParse(
+                    hdfPhysicalStorageDocumentId.Value,
+                    out idTaiLieu)
+                || !Guid.TryParse(storageLocationValue, out idNoiLuuTru)
+                || idTaiLieu == Guid.Empty
+                || idNoiLuuTru == Guid.Empty)
+            {
+                ShowNotify(
+                    "Vui lòng chọn nơi lưu trữ.",
+                    MSGType.Warning);
+                return;
+            }
+
+            try
+            {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
+                DocumentPhysicalStorageOperationResult result =
+                    CreateRequestDocumentManager().StoreDocumentPhysicalCopy(
+                        idTaiLieu,
+                        idNoiLuuTru,
+                        chkPhysicalStorageManualCode.Checked,
+                        txtPhysicalStorageCode.Text,
+                        txtPhysicalStorageOriginalCondition.Text,
+                        txtPhysicalStorageNote.Text);
+                mdlPhysicalStorage.CloseModal(true);
+                RefreshPhysicalStorageDetail(idTaiLieu);
+                ShowNotify(
+                    string.Format(
+                        GetResourceText(
+                            BackEndResourceKeys.PHYSICAL_STORAGE_SAVED_MESSAGE),
+                        result.MaLuuTru),
+                    MSGType.Success);
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
+            }
+            catch (Exception exc)
+            {
+                LogPhysicalStorageHandlerError("save", idTaiLieu, exc);
+                ShowNotify(exc.Message, MSGType.Error);
+            }
+        }
+
+        protected void btnCancelPhysicalStorage_Click(
+            object sender,
+            EventArgs e)
+        {
+            mdlPhysicalStorage.CloseModal(true);
+            KeepPhysicalStorageTabOpen();
+        }
+
+        private void RefreshPhysicalStorageDetail(Guid idTaiLieu)
+        {
+            InitControls(idTaiLieu);
+            upDetail.Update();
+            KeepPhysicalStorageTabOpen();
+        }
+
+        private void KeepPhysicalStorageTabOpen()
+        {
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                GetType(),
+                "KeepDocumentPhysicalStorageTabOpen",
+                "var tabElement=document.querySelector('[data-bs-target=\"#document-storage\"]');"
+                + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
+                true);
+        }
+
+        private static void LogPhysicalStorageHandlerError(
+            string operation,
+            Guid idTaiLieu,
+            Exception exception)
+        {
+            SysLogger.LogError(
+                exception,
+                "Document physical storage {0} handler failed for document {1}",
+                operation,
+                idTaiLieu);
+        }
+
         protected void rptVersions_ItemCommand(
             object source,
             RepeaterCommandEventArgs e)
@@ -826,6 +1921,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
+                EnsureDocumentActionAccess(idTaiLieu, ActionKeys.Update);
                 if (setOfficial)
                 {
                     DocumentManager.Instance.SetOfficialFile(
@@ -864,6 +1960,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
                 true);
         }
+
+        //private void KeepVersionsTabOpen()
+        //{
+        //    ScriptManager.RegisterStartupScript(
+        //        this.Page,
+        //        GetType(),
+        //        "KeepDocumentVersionsTabOpen",
+        //        "var tabElement=document.querySelector('[data-bs-target=\"#document-versions\"]');"
+        //        + "if(tabElement&&window.bootstrap){bootstrap.Tab.getOrCreateInstance(tabElement).show();}",
+        //        true);
+        //}
 
         private void BindHeader(DataRow document)
         {
@@ -1151,6 +2258,36 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             return GetValueText(statusValue);
         }
 
+        protected string GetCustomerStatusCss(object statusValue)
+        {
+            string status = Convert.ToString(statusValue);
+            if (status == DocumentCustomerStatusKeys.Sent)
+                return "badge bg-primary";
+            if (status == DocumentCustomerStatusKeys.WaitingForReturn)
+                return "badge bg-warning text-dark";
+            if (status == DocumentCustomerStatusKeys.ReceivedBack)
+                return "badge bg-success";
+            return "badge bg-secondary";
+        }
+
+        protected string GetCustomerDeliveryChannelText(object value)
+        {
+            string channel = Convert.ToString(value);
+            if (channel == DocumentCustomerDeliveryChannelKeys.Email)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.CUSTOMER_DELIVERY_CHANNEL_EMAIL);
+            }
+            if (channel == DocumentCustomerDeliveryChannelKeys.Direct)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.CUSTOMER_DELIVERY_CHANNEL_DIRECT);
+            }
+            if (channel == DocumentCustomerDeliveryChannelKeys.Other)
+                return GetResourceText(BackEndResourceKeys.OTHER);
+            return GetValueText(value);
+        }
+
         protected string GetPhysicalStorageStatusText(
             object requiredValue,
             object statusValue)
@@ -1407,6 +2544,21 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return GetResourceText(
                     BackEndResourceKeys.ACTIVITY_COMPLETE_SIGNING);
             }
+            if (activityType == DocumentActivityTypeKeys.SendCustomerDelivery)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_SEND_CUSTOMER_DELIVERY);
+            }
+            if (activityType == DocumentActivityTypeKeys.UpdateCustomerDelivery)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_UPDATE_CUSTOMER_DELIVERY);
+            }
+            if (activityType == DocumentActivityTypeKeys.StorePhysicalCopy)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.ACTIVITY_STORE_PHYSICAL_COPY);
+            }
 
             return GetValueText(value);
         }
@@ -1424,6 +2576,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (referenceType == DocumentActivityReferenceKeys.Signing)
             {
                 return GetResourceText(BackEndResourceKeys.SIGNING_HISTORY);
+            }
+            if (referenceType
+                == DocumentActivityReferenceKeys.CustomerDelivery)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.CUSTOMER_DELIVERY_HISTORY);
+            }
+            if (referenceType
+                == DocumentActivityReferenceKeys.PhysicalStorage)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.PHYSICAL_STORAGE_HISTORY);
             }
 
             return GetValueText(value);

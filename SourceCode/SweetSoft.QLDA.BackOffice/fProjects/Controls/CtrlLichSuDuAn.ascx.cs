@@ -42,37 +42,21 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void BindHistory()
         {
-            Guid? userId =
-                GetSelectedUserId();
+            Guid? userId = GetSelectedUserId();
 
-            DateTime? fromDate =
-                ParseDate(
-                    txtHistoryFromDate.Text);
+            DateTime? fromDate = ParseDate( txtHistoryFromDate.Text);
 
-            DateTime? toDate =
-                ParseDate(
-                    txtHistoryToDate.Text);
+            DateTime? toDate = ParseDate( txtHistoryToDate.Text);
 
-            DataTable history =
-                DuAnManager.Instance
-                    .GetProjectHistory(
-                        IdDuAn,
-                        userId,
-                        fromDate,
-                        toDate);
+            DataTable history = DuAnManager.Instance.GetProjectHistory( IdDuAn, userId, fromDate, toDate);
 
-            bool hasData =
-                history != null &&
-                history.Rows.Count > 0;
+            bool hasData = history != null && history.Rows.Count > 0;
 
-            rptProjectHistory.Visible =
-                hasData;
+            rptProjectHistory.Visible = hasData;
 
-            pnlEmptyHistory.Visible =
-                !hasData;
+            pnlEmptyHistory.Visible = !hasData;
 
-            rptProjectHistory.DataSource =
-                hasData
+            rptProjectHistory.DataSource = hasData
                     ? history
                     : null;
 
@@ -83,36 +67,25 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void BindHistoryUsers()
         {
-            string selectedValue =
-                ddlHistoryUser.SelectedValue;
+            string selectedValue = ddlHistoryUser.SelectedValue;
 
-            DataTable history =
-                DuAnManager.Instance
-                    .GetProjectHistory(
-                        IdDuAn);
+            DataTable history = DuAnManager.Instance.GetProjectHistory( IdDuAn);
 
             ddlHistoryUser.Items.Clear();
 
-            ddlHistoryUser.Items.Add(
-                new ListItem(
-                    "Tất cả người thực hiện",
-                    string.Empty));
+            ddlHistoryUser.Items.Add( new ListItem( "Tất cả người thực hiện", string.Empty));
 
             if (history == null)
                 return;
 
-            HashSet<Guid> addedUsers =
-                new HashSet<Guid>();
+            HashSet<Guid> addedUsers = new HashSet<Guid>();
 
             foreach (DataRow row
                 in history.Rows)
             {
                 Guid userId;
 
-                if (!TryGetGuid(
-                        row,
-                        "UserId",
-                        out userId))
+                if (!TryGetGuid( row, "UserId", out userId))
                 {
                     continue;
                 }
@@ -120,54 +93,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 if (!addedUsers.Add(userId))
                     continue;
 
-                string displayName =
-                    GetColumnText(
-                        row,
-                        "ChangedBy");
+                string displayName = GetColumnText( row, "ChangedBy");
 
-                if (string.IsNullOrWhiteSpace(
-                        displayName))
+                if (string.IsNullOrWhiteSpace( displayName))
                 {
-                    displayName =
-                        userId.ToString();
+                    displayName = userId.ToString();
                 }
 
-                ddlHistoryUser.Items.Add(
-                    new ListItem(
-                        displayName,
-                        userId.ToString()));
+                ddlHistoryUser.Items.Add( new ListItem( displayName, userId.ToString()));
             }
 
-            if (!string.IsNullOrWhiteSpace(
-                    selectedValue) &&
-                ddlHistoryUser.Items.FindByValue(
-                    selectedValue) != null)
+            if (!string.IsNullOrWhiteSpace( selectedValue) && ddlHistoryUser.Items.FindByValue( selectedValue) != null)
             {
-                ddlHistoryUser.SelectedValue =
-                    selectedValue;
+                ddlHistoryUser.SelectedValue = selectedValue;
             }
         }
 
-        protected void lbtFilterHistory_Click(
-            object sender,
-            EventArgs e)
+        protected void lbtFilterHistory_Click( object sender, EventArgs e)
         {
-            DateTime? fromDate =
-                ParseDate(
-                    txtHistoryFromDate.Text);
+            DateTime? fromDate = ParseDate( txtHistoryFromDate.Text);
 
-            DateTime? toDate =
-                ParseDate(
-                    txtHistoryToDate.Text);
+            DateTime? toDate = ParseDate( txtHistoryToDate.Text);
 
-            if (fromDate.HasValue &&
-                toDate.HasValue &&
-                fromDate.Value.Date >
-                toDate.Value.Date)
+            if (fromDate.HasValue && toDate.HasValue && fromDate.Value.Date > toDate.Value.Date)
             {
-                ShowNotify(
-                    "Từ ngày không được lớn hơn đến ngày.",
-                    MSGType.Error);
+                ShowNotify( "Từ ngày không được lớn hơn đến ngày.", MSGType.Error);
 
                 ShowDrawer();
                 return;
@@ -177,63 +127,42 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             ShowDrawer();
         }
 
-        protected void lbtClearHistoryFilter_Click(
-            object sender,
-            EventArgs e)
+        protected void lbtClearHistoryFilter_Click( object sender, EventArgs e)
         {
             ddlHistoryUser.SelectedIndex = 0;
 
-            txtHistoryFromDate.Text =
-                string.Empty;
+            txtHistoryFromDate.Text = string.Empty;
 
-            txtHistoryToDate.Text =
-                string.Empty;
+            txtHistoryToDate.Text = string.Empty;
 
             BindHistory();
             ShowDrawer();
         }
 
-        protected void rptProjectHistory_ItemDataBound(
-            object sender,
-            RepeaterItemEventArgs e)
+        protected void rptProjectHistory_ItemDataBound( object sender, RepeaterItemEventArgs e)
         {
-            if (e.Item.ItemType !=
-                    ListItemType.Item &&
-                e.Item.ItemType !=
-                    ListItemType.AlternatingItem)
+            if (e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem)
             {
                 return;
             }
 
-            DataRowView row =
-                e.Item.DataItem as DataRowView;
+            DataRowView row = e.Item.DataItem as DataRowView;
 
             if (row == null)
                 return;
 
-            Label lblContent =
-                e.Item.FindControl(
-                    "lblHistoryContent")
-                as Label;
+            Label lblContent = e.Item.FindControl( "lblHistoryContent") as Label;
 
-            Label lblTime =
-                e.Item.FindControl(
-                    "lblHistoryTime")
-                as Label;
+            Label lblTime = e.Item.FindControl( "lblHistoryTime") as Label;
 
             if (lblContent != null)
             {
-                lblContent.Text =
-                    HttpUtility.HtmlEncode(
-                        BuildHistoryContent(
-                            row.Row));
+                lblContent.Text = HttpUtility.HtmlEncode( BuildHistoryContent( row.Row));
             }
 
             if (lblTime != null)
             {
-                lblTime.Text =
-                    FormatHistoryTime(
-                        row.Row);
+                lblTime.Text = FormatHistoryTime( row.Row);
             }
         }
 
@@ -241,10 +170,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             Guid userId;
 
-            if (Guid.TryParse(
-                    ddlHistoryUser.SelectedValue,
-                    out userId) &&
-                userId != Guid.Empty)
+            if (Guid.TryParse( ddlHistoryUser.SelectedValue, out userId) && userId != Guid.Empty)
             {
                 return userId;
             }
@@ -252,17 +178,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             return null;
         }
 
-        private DateTime? ParseDate(
-            string value)
+        private DateTime? ParseDate( string value)
         {
             DateTime result;
 
-            if (DateTime.TryParseExact(
-                    value,
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out result))
+            if (DateTime.TryParseExact( value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out result))
             {
                 return result;
             }
@@ -270,93 +190,53 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             return null;
         }
 
-        private bool TryGetGuid(
-            DataRow row,
-            string columnName,
-            out Guid value)
+        private bool TryGetGuid( DataRow row, string columnName, out Guid value)
         {
             value = Guid.Empty;
 
-            if (row == null ||
-                !row.Table.Columns.Contains(
-                    columnName) ||
-                row[columnName] == null ||
-                row[columnName] == DBNull.Value)
+            if (row == null || !row.Table.Columns.Contains( columnName) || row[columnName] == null || row[columnName] == DBNull.Value)
             {
                 return false;
             }
 
-            return Guid.TryParse(
-                Convert.ToString(
-                    row[columnName]),
-                out value);
+            return Guid.TryParse( Convert.ToString( row[columnName]), out value);
         }
 
         private void ShowDrawer()
         {
             string script = @"
                 (function () {
-                    var element =
-                        document.getElementById(
-                            'project-history-offcanvas');
+                    var element = document.getElementById( 'project-history-offcanvas');
 
-                    if (!element ||
-                        typeof bootstrap === 'undefined') {
+                    if (!element || typeof bootstrap === 'undefined') {
                         return;
                     }
 
-                    var drawer =
-                        bootstrap.Offcanvas
-                            .getOrCreateInstance(
-                                element);
+                    var drawer = bootstrap.Offcanvas.getOrCreateInstance( element);
 
                     drawer.show();
                 })();";
 
-            ScriptManager.RegisterStartupScript(
-                Page,
-                Page.GetType(),
-                "OpenProjectHistoryDrawer",
-                script,
-                true);
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "OpenProjectHistoryDrawer", script, true);
         }
 
         // Đưa các hàm format lịch sử hiện có
-        // từ DuAnDetail.aspx.cs vào control này:
-        //
-        // BuildHistoryContent(DataRow row)
+        // từ DuAnDetail.aspx.cs vào control này: // // BuildHistoryContent(DataRow row)
         // GetHistoryEntityName(string tableName)
         // BuildDefaultHistoryContent(...)
         // FormatHistoryTime(DataRow row)
         // GetColumnText(DataRow row, string columnName)
-        private string BuildHistoryContent(
-    DataRow row)
+        private string BuildHistoryContent( DataRow row)
         {
-            string resourceKey =
-                GetColumnText(
-                    row,
-                    "Description");
+            string resourceKey = GetColumnText( row, "Description");
 
-            string actor =
-                GetColumnText(
-                    row,
-                    "ChangedBy");
+            string actor = GetColumnText( row, "ChangedBy");
 
-            string tableName =
-                GetColumnText(
-                    row,
-                    "TableName");
+            string tableName = GetColumnText( row, "TableName");
 
-            string title =
-                GetColumnText(
-                    row,
-                    "Title");
+            string title = GetColumnText( row, "Title");
 
-            if (string.IsNullOrWhiteSpace(actor) ||
-                string.Equals(
-                    actor,
-                    "[System]",
-                    StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(actor) || string.Equals( actor, "[System]", StringComparison.OrdinalIgnoreCase))
             {
                 actor = "Hệ thống";
             }
@@ -364,161 +244,90 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             if (string.IsNullOrWhiteSpace(title))
                 title = "Chưa xác định";
 
-            string entityName =
-                GetHistoryEntityName(
-                    tableName);
+            string entityName = GetHistoryEntityName( tableName);
 
-            string template =
-                string.IsNullOrWhiteSpace(resourceKey)
+            string template = string.IsNullOrWhiteSpace(resourceKey)
                     ? null
                     : GetResourceText(resourceKey);
 
-            if (string.IsNullOrWhiteSpace(template) ||
-                string.Equals(
-                    template,
-                    resourceKey,
-                    StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(template) || string.Equals( template, resourceKey, StringComparison.OrdinalIgnoreCase))
             {
-                return BuildDefaultHistoryContent(
-                    row,
-                    actor,
-                    entityName,
-                    title);
+                return BuildDefaultHistoryContent( row, actor, entityName, title);
             }
 
-            bool isContainerAction = string.Equals(resourceKey, BackEndResourceKeys.HISTORY_ADDED_TO_CONTAINER, StringComparison.OrdinalIgnoreCase) ||
-                                    string.Equals(resourceKey, BackEndResourceKeys.HISTORY_REMOVED_FROM_CONTAINER, StringComparison.OrdinalIgnoreCase);
+            bool isContainerAction = string.Equals(resourceKey, BackEndResourceKeys.HISTORY_ADDED_TO_CONTAINER, StringComparison.OrdinalIgnoreCase) || string.Equals(resourceKey, BackEndResourceKeys.HISTORY_REMOVED_FROM_CONTAINER, StringComparison.OrdinalIgnoreCase);
             if (isContainerAction)
             {
                 string containerName = GetResourceText(BackEndResourceKeys.PROJECT);
-                return string.Format(
-                    template,
-                    actor,          // {0}: Administrator
+                return string.Format( template, actor,          // {0}: Administrator
                     title,          // {1}: Nguyễn Thị A
                     containerName);
             }
 
             try
             {
-                return string.Format(
-                    template,
-                    actor,
-                    entityName,
-                    title);
+                return string.Format( template, actor, entityName, title);
             }
             catch (FormatException)
             {
-                return BuildDefaultHistoryContent(
-                    row,
-                    actor,
-                    entityName,
-                    title);
+                return BuildDefaultHistoryContent( row, actor, entityName, title);
             }
         }
 
-        private string GetHistoryEntityName(
-    string tableName)
+        private string GetHistoryEntityName( string tableName)
         {
             switch (tableName)
             {
-                case nameof(TblDuAn):
-                    return "dự án";
+                case nameof(TblDuAn): return "dự án";
 
-                case nameof(TblGiaiDoanDuAn):
-                    return "giai đoạn";
+                case nameof(TblGiaiDoanDuAn): return "giai đoạn";
 
-                case nameof(TblCongViec):
-                    return "công việc";
+                case nameof(TblCongViec): return "công việc";
 
-                case nameof(TblThanhVienDuAn):
-                    return "thành viên dự án";
+                case nameof(TblThanhVienDuAn): return "thành viên dự án";
 
-                case nameof(TblHopDongThucHien):
-                    return "hợp đồng";
+                case nameof(TblHopDongThucHien): return "hợp đồng";
 
-                default:
-                    return "thông tin";
+                default: return "thông tin";
             }
         }
 
-        private string BuildDefaultHistoryContent(
-    DataRow row,
-    string actor,
-    string entityName,
-    string title)
+        private string BuildDefaultHistoryContent( DataRow row, string actor, string entityName, string title)
         {
-            string actionType =
-                GetColumnText(
-                    row,
-                    "ActionType");
+            string actionType = GetColumnText( row, "ActionType");
 
             switch (actionType)
             {
-                case "CREATE":
-                    return string.Format(
-                        "{0} đã thêm {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                case "CREATE": return string.Format( "{0} đã thêm {1} \"{2}\".", actor, entityName, title);
 
-                case "UPDATE":
-                    return string.Format(
-                        "{0} đã cập nhật {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                case "UPDATE": return string.Format( "{0} đã cập nhật {1} \"{2}\".", actor, entityName, title);
 
-                case "DELETE":
-                    return string.Format(
-                        "{0} đã xóa {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                case "DELETE": return string.Format( "{0} đã xóa {1} \"{2}\".", actor, entityName, title);
 
-                default:
-                    return string.Format(
-                        "{0} đã thao tác trên {1} \"{2}\".",
-                        actor,
-                        entityName,
-                        title);
+                default: return string.Format( "{0} đã thao tác trên {1} \"{2}\".", actor, entityName, title);
             }
         }
 
-        private string FormatHistoryTime(
-    DataRow row)
+        private string FormatHistoryTime( DataRow row)
         {
-            if (!row.Table.Columns.Contains(
-                    "ChangedAt") ||
-                row["ChangedAt"] == null ||
-                row["ChangedAt"] == DBNull.Value)
+            if (!row.Table.Columns.Contains( "ChangedAt") || row["ChangedAt"] == null || row["ChangedAt"] == DBNull.Value)
             {
                 return string.Empty;
             }
 
-            DateTime changedAt =
-                Convert.ToDateTime(
-                    row["ChangedAt"]);
+            DateTime changedAt = Convert.ToDateTime( row["ChangedAt"]);
 
-            return changedAt
-                .ToLocalTime()
-                .ToString("dd/MM/yyyy HH:mm");
+            return changedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
         }
 
-        private string GetColumnText(
-    DataRow row,
-    string columnName)
+        private string GetColumnText( DataRow row, string columnName)
         {
-            if (row == null ||
-                !row.Table.Columns.Contains(
-                    columnName) ||
-                row[columnName] == null ||
-                row[columnName] == DBNull.Value)
+            if (row == null || !row.Table.Columns.Contains( columnName) || row[columnName] == null || row[columnName] == DBNull.Value)
             {
                 return string.Empty;
             }
 
-            return Convert.ToString(
-                row[columnName]);
+            return Convert.ToString( row[columnName]);
         }
     }
 }

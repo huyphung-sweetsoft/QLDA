@@ -20,7 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
         public EventHandler NewMeetingHandlerCallback;
         public EventHandler EditMeetingHandlerCallback;
-        private MeetManager _manager = new MeetManager();
+        public EventHandler OpenMeetingDocumentHandlerCallback;
 
         public Guid ProjectId
         {
@@ -97,13 +97,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
             List<string> lstTableHeader = new List<string>
             {
-                GetResourceText(BackEndResourceKeys.INDEX), 
+                GetResourceText(BackEndResourceKeys.INDEX),
                 GetResourceText(BackEndResourceKeys.MEETING_CODE),
-                GetResourceText(BackEndResourceKeys.MEETING_NAME), 
-                GetResourceText(BackEndResourceKeys.START_TIME), 
-                GetResourceText(BackEndResourceKeys.END_TIME), 
-                GetResourceText(BackEndResourceKeys.MEETING_ROOM), 
-                GetResourceText(BackEndResourceKeys.STATUS), 
+                GetResourceText(BackEndResourceKeys.MEETING_NAME),
+                "Người tham gia",
+                GetResourceText(BackEndResourceKeys.START_TIME),
+                GetResourceText(BackEndResourceKeys.END_TIME),
+                GetResourceText(BackEndResourceKeys.MEETING_ROOM),
+                GetResourceText(BackEndResourceKeys.STATUS),
                 GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.HeaderTexts = lstTableHeader;
@@ -127,12 +128,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
                 if (grid.GridSearchType == GridSearchType.Single)
                 {
-                    dt = _manager.SearchMeeting(this.ProjectId, txtSearchSingle.Text, null, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    dt = MeetManager.Instance.SearchMeeting(this.ProjectId, txtSearchSingle.Text, null, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }
                 else
                 {
                     Dictionary<string, object> keyValueSearchs = new ControlHelpers().GetControlValues(pnlSearchPopup);
-                    dt = _manager.SearchMeeting(this.ProjectId, "", keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    dt = MeetManager.Instance.SearchMeeting(this.ProjectId, "", keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }
 
                 if (dt == null || dt.Rows.Count == 0)
@@ -166,6 +167,62 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             switch (e.CommandName)
             {
+                case "VIEW_MEMBERS":
+                    if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    int rowIndexMeet = 0;
+                    if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        rowIndexMeet = ((GridViewRow)((WebControl)(e.CommandSource)).NamingContainer).RowIndex;
+                    else
+                        rowIndexMeet = Convert.ToInt32(e.CommandArgument);
+
+                    Guid idCuocHop = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexMeet].Value.ToString(), out idCuocHop))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    TblLichHop meet = TblLichHop.FetchByID(idCuocHop);
+                    if (meet == null) return;
+
+                    Guid? hostId = meet.IdNguoiTao;
+                    DateTime startDate = meet.ThoiGianBatDau;
+                    DateTime endDate = meet.ThoiGianKetThuc;
+
+                    ((CtrlXemNhanVienMeet)CtrlXemNhanVienMeet1).OpenModal(idCuocHop, startDate, endDate, meet.TenCuocHop, hostId);
+                    break;
+
+                case "MEETING_DOCUMENT":
+                    if (!this.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid meetingDocumentId;
+                    if (!Guid.TryParse(
+                        Convert.ToString(e.CommandArgument),
+                        out meetingDocumentId)
+                        || meetingDocumentId == Guid.Empty)
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (OpenMeetingDocumentHandlerCallback != null)
+                    {
+                        OpenMeetingDocumentHandlerCallback(
+                            meetingDocumentId,
+                            EventArgs.Empty);
+                    }
+
+                    break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit) { ShowAccessDeniedNotify(); return; }
                     int rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
@@ -271,7 +328,69 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             if (value == null || value == DBNull.Value) return "—";
             TrangThaiCuocHopEnum status = (TrangThaiCuocHopEnum)Convert.ToInt32(value);
-            return GetResourceText(_manager.GetValuForTrangThaiCuoHop(status));
+            return GetResourceText(MeetManager.Instance.GetValueForTrangThaiCuoHop(status));
+        }
+
+        public string GetAssigneeDisplay(object tenNhanVienObj, object avatarsObj)
+        {
+            string names = tenNhanVienObj?.ToString() ?? "";
+            string avatars = avatarsObj?.ToString() ?? "";
+
+            if (string.IsNullOrWhiteSpace(names)) return "";
+
+            string[] nameArray = names.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+            string[] avatarArray = avatars.Split(new string[] { "," }, StringSplitOptions.None);
+
+            string html = "";
+            string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
+
+            int maxDisplay = 2;
+            int count = nameArray.Length;
+
+            for (int i = 0; i < Math.Min(count, maxDisplay); i++)
+            {
+                string name = nameArray[i].Trim();
+                string avatar = (i < avatarArray.Length) ? avatarArray[i].Trim() : "";
+                string color = colors[i % colors.Length];
+                bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+                if (!isDefaultAvatar)
+                {
+                    string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
+                    string fallbackHtml = $"<div class=\\'avatar-circle\\' style=\\'background-color: {color};\\' title=\\'{name}\\'>{GetInitials(name)}</div>";
+                    html += $"<img src='{avatarUrl}' class='avatar-circle' style='object-fit: cover;' title='{name}' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+                }
+                else
+                {
+                    string initials = GetInitials(name);
+                    html += $"<div class='avatar-circle' style='background-color: {color};' title='{name}'>{initials}</div>";
+                }
+            }
+
+            if (count > maxDisplay)
+            {
+                html += $"<div class='avatar-circle avatar-more' title='Và {count - maxDisplay} người khác'>+{count - maxDisplay}</div>";
+            }
+
+            return html;
+        }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+        }
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            if (master != null)
+            {
+                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
+            }
+            upSearchTagBox.Update();
+            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
         }
     }
 }

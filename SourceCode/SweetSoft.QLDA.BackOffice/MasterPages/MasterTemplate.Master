@@ -262,7 +262,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <div class="btnCtrMenu"><i class='bx bx-menu'></i></div>
                                     </div>
                                     <div class="wrapLogoHeader">
-                                        <a class="linkLogoHeader" href="<%= GetRelativeClientPath("/") %>" title="Trang chủ">
+                                        <a class="linkLogoHeader" href="<%= GetRelativeClientPath("Home/Overview/") %>" title="Trang chủ">
                                             <img class="imgLogoHeader" src="<%=GetRelativeClientPath("/Styles/images/SweetSoft-logo-light.png") %>" alt="Trang chủ" />
                                         </a>
                                     </div>
@@ -354,7 +354,49 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                         </ul>
                                                     </li>
                                                 </ul>
-                                                <div class="wrapperRight">
+                                                 <div class="wrapperRight">
+                                                     <%-- Icon chuông thông báo --%>
+                                                     <div class="dropdown" id="bellDropdownWrapper">
+                                                         <a href="javascript:void(0)"
+                                                            class="dropdown-notification dropdown-toggle position-relative"
+                                                            id="bellToggle"
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-auto-close="outside"
+                                                            aria-expanded="false"
+                                                            title="Thông báo">
+                                                             <i class="fas fa-bell font-size-22 text-secondary"></i>
+                                                             <span id="badgeUnread"
+                                                                   class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                                   style="display:none; font-size:10px;">0</span>
+                                                         </a>
+                                                         <div class="dropdown-menu dropdown-menu-end notification p-0 shadow"
+                                                              style="min-width: 380px; max-width: 95vw;"
+                                                              aria-labelledby="bellToggle">
+                                                             <%-- Header --%>
+                                                             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                                                 <h6 class="mb-0 fw-bold">Thông báo</h6>
+                                                                 <a href="javascript:void(0)" id="btnMarkAllRead"
+                                                                    class="small text-primary text-decoration-none"
+                                                                    style="display:none">Đọc tất cả</a>
+                                                             </div>
+                                                             <%-- Danh sách --%>
+                                                             <div class="notification-body" id="notificationList">
+                                                                 <div class="text-center text-muted py-4 small" id="notificationEmpty">
+                                                                     <i class="bx bx-bell-off font-size-24 d-block mb-1"></i>
+                                                                     Không có thông báo nào
+                                                                 </div>
+                                                             </div>
+                                                             <%-- Footer: Xem thêm --%>
+                                                             <div class="border-top text-center py-2" id="notificationFooter" style="display:none">
+                                                                 <a href="javascript:void(0)" id="btnLoadMore"
+                                                                    class="small text-primary text-decoration-none">
+                                                                     <span id="btnLoadMoreText">Xem thêm</span>
+                                                                     <span id="btnLoadMoreSpinner" class="spinner-border spinner-border-sm ms-1" style="display:none"></span>
+                                                                 </a>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+
                                                     <div class="avatar__image-box flex-center gap-2 cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
                                                         <div class="avatar__image">
                                                             <div class="wrapImgResize imgSquare rounded-circle">
@@ -632,6 +674,215 @@ scratch. This page gets rid of all links and provides the needed markup only.
             }
             updateTime();
             setInterval(updateTime, 1000);
+        </script>
+        <script>
+            // ================================================================
+            // Notification Bell — Polling + Lazy Load
+            // ================================================================
+            (function () {
+                var _currentPage = 1;
+                var _hasMore     = false;
+                var _loading     = false;
+                var _initialized = false;
+
+                // ---- Icon helpers ----
+                var iconMap = {
+                    'CONG_VIEC' : { icon: 'bx bx-task',         bg: 'bg-primary-subtle',  text: 'text-primary'  },
+                    'DU_AN'     : { icon: 'bx bx-briefcase',    bg: 'bg-success-subtle',  text: 'text-success'  },
+                    'LICH_HOP'  : { icon: 'bx bx-calendar',    bg: 'bg-warning-subtle',  text: 'text-warning'  },
+                    'VAN_DE'    : { icon: 'bx bx-error-circle', bg: 'bg-danger-subtle',   text: 'text-danger'   },
+                    'TAI_LIEU'  : { icon: 'bx bx-file',        bg: 'bg-info-subtle',     text: 'text-info'     },
+                    'HE_THONG'  : { icon: 'bx bx-bell',        bg: 'bg-secondary-subtle',text: 'text-secondary'}
+                };
+
+                function getIconMeta(loai) {
+                    return iconMap[loai] || iconMap['HE_THONG'];
+                }
+
+                // ---- Render một notification item ----
+                function buildItem(n) {
+                    var meta    = getIconMeta(n.loaiThongBao);
+                    var unread  = !n.daDoc ? 'fw-semibold' : '';
+                    var bgUnread= !n.daDoc ? 'style="background:#f0f4ff"' : '';
+                    var link    = n.duongDanLienKet || 'javascript:void(0)';
+
+                    return '<a href="' + link + '" ' +
+                                'class="notification-item d-flex gap-2 px-3 py-2 text-decoration-none text-dark" ' +
+                                bgUnread + ' ' +
+                                'data-id="' + n.id + '" ' +
+                                'onclick="NotificationBell.onItemClick(this, event)">' +
+                               '<div class="notification-icon rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ' + meta.bg + '">' +
+                                   '<i class="' + meta.icon + ' ' + meta.text + ' font-size-18"></i>' +
+                               '</div>' +
+                               '<div class="flex-grow-1 overflow-hidden">' +
+                                   '<p class="mb-0 ' + unread + ' text-truncate fs-14">' + n.tieuDe + '</p>' +
+                                   '<small class="text-muted">' + n.ngayTao + '</small>' +
+                               '</div>' +
+                           '</a>';
+                }
+
+                // ---- Cập nhật badge ----
+                function updateBadge(count) {
+                    var badge = document.getElementById('badgeUnread');
+                    if (!badge) return;
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                // ---- Gọi API đếm badge & lấy thông báo mới (polling 30s) ----
+                function pollNotifications() {
+                    $.ajax({
+                        type       : 'POST',
+                        url        : '/WebService.asmx/GetLatestNotifications',
+                        contentType: 'application/json; charset=utf-8',
+                        dataType   : 'json',
+                        success    : function (res) {
+                            if (!res || !res.d || !res.d.success) return;
+
+                            var result = res.d;
+
+                            // 1. Cập nhật badge
+                            updateBadge(result.unreadCount);
+
+                            var markAll = document.getElementById('btnMarkAllRead');
+                            if (markAll) markAll.style.display = result.unreadCount > 0 ? '' : 'none';
+
+                            // 2. Cập nhật danh sách thông báo
+                            if (result.data && result.data.length > 0) {
+                                var list = document.getElementById('notificationList');
+                                if (!list) return;
+
+                                result.data.forEach(function (n) {
+                                    var exists = document.querySelector('#notificationList .notification-item[data-id="' + n.id + '"]');
+                                    if (!exists) {
+                                        list.insertAdjacentHTML('afterbegin', buildItem(n));
+                                    }
+                                });
+
+                                var empty = document.getElementById('notificationEmpty');
+                                if (empty) empty.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+
+                // ---- Tải danh sách thông báo ----
+                function loadNotifications(page) {
+                    if (_loading) return;
+                    _loading = true;
+
+                    var spinner = document.getElementById('btnLoadMoreSpinner');
+                    if (spinner) spinner.style.display = '';
+
+                    $.ajax({
+                        type       : 'POST',
+                        url        : '/WebService.asmx/GetNotifications',
+                        contentType: 'application/json; charset=utf-8',
+                        data       : JSON.stringify({ page: page }),
+                        dataType   : 'json',
+                        success    : function (res) {
+                            if (!res || !res.d || !res.d.success) return;
+
+                            var result = res.d;
+                            var list   = document.getElementById('notificationList');
+                            var empty  = document.getElementById('notificationEmpty');
+                            var footer = document.getElementById('notificationFooter');
+
+                            if (page === 1) {
+                                list.innerHTML = '';
+                            }
+
+                            if (result.data && result.data.length > 0) {
+                                if (empty) empty.style.display = 'none';
+                                result.data.forEach(function (n) {
+                                    list.insertAdjacentHTML('beforeend', buildItem(n));
+                                });
+                            } else if (page === 1) {
+                                if (empty) empty.style.display = '';
+                            }
+
+                            _hasMore     = result.hasMore;
+                            _currentPage = page;
+                            if (footer) footer.style.display = _hasMore ? '' : 'none';
+                        },
+                        complete: function () {
+                            _loading = false;
+                            if (spinner) spinner.style.display = 'none';
+                        }
+                    });
+                }
+
+                // ---- Xử lý click vào item (đánh dấu đã đọc) ----
+                window.NotificationBell = {
+                    onItemClick: function (el, evt) {
+                        var id   = el.getAttribute('data-id');
+                        var href = el.getAttribute('href');
+
+                        // Đánh dấu đã đọc
+                        $.ajax({
+                            type       : 'POST',
+                            url        : '/WebService.asmx/MarkNotificationAsRead',
+                            contentType: 'application/json; charset=utf-8',
+                            data       : JSON.stringify({ id: id }),
+                            dataType   : 'json'
+                        });
+
+                        // Bỏ highlight chưa đọc
+                        el.removeAttribute('style');
+                        var title = el.querySelector('p');
+                        if (title) title.classList.remove('fw-semibold');
+
+                        // Giảm badge
+                        var badge = document.getElementById('badgeUnread');
+                        if (badge && badge.style.display !== 'none') {
+                            var cnt = parseInt(badge.textContent) || 0;
+                            cnt = Math.max(0, cnt - 1);
+                            updateBadge(cnt);
+                        }
+                    }
+                };
+
+                // ---- Đọc tất cả ----
+                $(document).on('click', '#btnMarkAllRead', function () {
+                    $.ajax({
+                        type       : 'POST',
+                        url        : '/WebService.asmx/MarkAllNotificationsAsRead',
+                        contentType: 'application/json; charset=utf-8',
+                        dataType   : 'json',
+                        success    : function () {
+                            // Bỏ toàn bộ highlight
+                            $('#notificationList .notification-item').each(function () {
+                                $(this).removeAttr('style');
+                                $(this).find('p').removeClass('fw-semibold');
+                            });
+                            updateBadge(0);
+                            $('#btnMarkAllRead').hide();
+                        }
+                    });
+                });
+
+                // ---- Xem thêm ----
+                $(document).on('click', '#btnLoadMore', function () {
+                    loadNotifications(_currentPage + 1);
+                });
+
+                // ---- Lần đầu mở dropdown: load trang 1 ----
+                $(document).on('show.bs.dropdown', '#bellDropdownWrapper', function () {
+                    if (!_initialized) {
+                        _initialized = true;
+                        loadNotifications(1);
+                    }
+                });
+
+                // ---- Polling 30s ----
+                pollNotifications();
+                setInterval(pollNotifications, 30000);
+
+            })();
         </script>
     </form>
 </body>

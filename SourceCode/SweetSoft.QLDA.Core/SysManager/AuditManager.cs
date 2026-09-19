@@ -26,12 +26,7 @@ namespace SweetSoft.QLDA.Core.SysManager
     {
         public enum Actions
         {
-            CREATE,
-            UPDATE,
-            DELETE,
-            LOGIN,
-            LOGOUT,
-            EXPORT
+            CREATE, UPDATE, DELETE, LOGIN, LOGOUT, EXPORT
         }
         public static string GetFullTag(string key)
         {
@@ -43,23 +38,11 @@ namespace SweetSoft.QLDA.Core.SysManager
             {
                 switch (action)
                 {
-                    case Actions.CREATE:
-                    case Actions.LOGIN:
-                    case Actions.EXPORT:
-                        //case ExportExcel:
-                        //case ExportPdf:
-                        return "badge bg-info";
-                    //case Actions.CREATE:
-                    case Actions.UPDATE:
-                    case Actions.LOGOUT:
-                        //case ResetPasword:
-                        return "badge bg-warning";
-                    //case UnLock:
-                    //    return "badge bg-primary";
-                    case Actions.DELETE:
-                        return "badge bg-danger";
-                    default:
-                        return "badge badge-soft-dark";
+                    case Actions.CREATE: case Actions.LOGIN: case Actions.EXPORT: //case ExportExcel: //case ExportPdf: return "badge bg-info";
+                    //case Actions.CREATE: case Actions.UPDATE: case Actions.LOGOUT: //case ResetPasword: return "badge bg-warning";
+                    //case UnLock: //    return "badge bg-primary";
+                    case Actions.DELETE: return "badge bg-danger";
+                    default: return "badge badge-soft-dark";
                 }
             }
             return "badge badge-soft-dark";
@@ -70,20 +53,13 @@ namespace SweetSoft.QLDA.Core.SysManager
             {
                 switch (action)
                 {
-                    case Actions.CREATE:
-                        return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ADD_NEW)}]";
-                    case Actions.UPDATE:
-                        return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.UPDATE)}]";
-                    case Actions.DELETE:
-                        return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.DELETE)}]";
-                    case Actions.LOGIN:
-                        return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN)}]";
-                    case Actions.LOGOUT:
-                        return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGOUT)}]";
-                    case Actions.EXPORT:
-                        return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.EXPORT_EXCEL)}]";
-                    default:
-                        return $"[{UITextsReader.GetBackEndResourceText(key.ToUpper())}]";
+                    case Actions.CREATE: return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ADD_NEW)}]";
+                    case Actions.UPDATE: return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.UPDATE)}]";
+                    case Actions.DELETE: return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.DELETE)}]";
+                    case Actions.LOGIN: return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN)}]";
+                    case Actions.LOGOUT: return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGOUT)}]";
+                    case Actions.EXPORT: return $"[{UITextsReader.GetBackEndResourceText(BackEndResourceKeys.EXPORT_EXCEL)}]";
+                    default: return $"[{UITextsReader.GetBackEndResourceText(key.ToUpper())}]";
                 }
             }
             return key;
@@ -95,22 +71,15 @@ namespace SweetSoft.QLDA.Core.SysManager
         private readonly ClientInfo _clientInfo;
         private readonly AuditConfiguration _configuration;
 
-        private static readonly HashSet<string> ExcludedProperties = new HashSet<string>
-    {
-        "IsNew", "Errors", "IsDirty", "IsLoaded", "TableName",
-        "DirtyColumns", "ProviderName", "NullExceptionMessage",
-        "InvalidTypeExceptionMessage", "LengthExceptionMessage", "ValidateWhenSaving",
-        "NgayCapNhat", "NguoiCapNhat"
+        private static readonly HashSet<string> ExcludedProperties = new HashSet<string> {
+        "IsNew", "Errors", "IsDirty", "IsLoaded", "TableName", "DirtyColumns", "ProviderName", "NullExceptionMessage", "InvalidTypeExceptionMessage", "LengthExceptionMessage", "ValidateWhenSaving", "NgayCapNhat", "NguoiCapNhat"
     };
 
-        private static readonly HashSet<string> RefIdProperties = new HashSet<string>
-    {
+        private static readonly HashSet<string> RefIdProperties = new HashSet<string> {
         "RefId", "OrderId", "PhysicalGoldConversionId", "IdDuAn"
     };
 
-        public AuditManager(ClientInfo clientInfo,
-                           IAuditRepository auditRepository = null,
-                           AuditConfiguration configuration = null)
+        public AuditManager(ClientInfo clientInfo, IAuditRepository auditRepository = null, AuditConfiguration configuration = null)
         {
             _clientInfo = clientInfo ?? new ClientInfo();
             _auditRepository = auditRepository ?? new AuditRepository(SubsonicHelpers.SysProvider);
@@ -131,8 +100,7 @@ namespace SweetSoft.QLDA.Core.SysManager
             }
             catch (Exception ex)
             {
-                SysLogger.LogError(ex, "Failed to log action {Action} for {TableName} with ID {EntityId}",
-                    action, tableName, entityId);
+                SysLogger.LogError(ex, "Failed to log action {Action} for {TableName} with ID {EntityId}", action, tableName, entityId);
 
                 if (_configuration.ThrowOnAuditFailure)
                     throw new AuditException($"Failed to log audit action: {ex.Message}", ex);
@@ -287,7 +255,7 @@ namespace SweetSoft.QLDA.Core.SysManager
 
             numberOfRecords = Math.Max(1, Math.Min(numberOfRecords, 20));
 
-            return _auditRepository.GetProjectHistory(idDuAn,null,null,null,numberOfRecords);
+            return _auditRepository.GetProjectHistory(idDuAn, null, null, null, numberOfRecords);
         }
 
         public DataTable GetProjectHistory(Guid idDuAn, Guid? userId = null, DateTime? fromDate = null, DateTime? toDate = null)
@@ -297,7 +265,7 @@ namespace SweetSoft.QLDA.Core.SysManager
 
         #endregion
 
-            #region Private Methods
+        #region Private Methods
 
         private async Task<AuditLog> CreateAuditLogAsync<T>(LogActions.Actions action, T entity, string tableName, Guid entityId, string changeBy, Guid? referenceId, string title, string description)
         {
@@ -306,20 +274,7 @@ namespace SweetSoft.QLDA.Core.SysManager
 
             return new AuditLog
             {
-                Id = UUIDv7.NewGuid(),
-                Title = string.IsNullOrWhiteSpace(title) ? GetEntityTitle(entity, tableName) : title.Trim(),
-                CustomerId = customerId,
-                RefId = referenceId ?? refId,
-                TableName = tableName,
-                RecordId = entityId,
-                ActionType = action.ToString(),
-                Changes = changes,
-                Description = string.IsNullOrWhiteSpace(description) ? GetHistoryDescription(action) : description.Trim(),
-                ChangedBy = !string.IsNullOrEmpty(changeBy) ? changeBy : _clientInfo.UserName,
-                UserId = _clientInfo.UserId,
-                IPAddress = _clientInfo.IpAddress,
-                UserAgent = _clientInfo.UserAgent,
-                ChangedAt = DateTime.UtcNow
+                Id = UUIDv7.NewGuid(), Title = string.IsNullOrWhiteSpace(title) ? GetEntityTitle(entity, tableName) : title.Trim(), CustomerId = customerId, RefId = referenceId ?? refId, TableName = tableName, RecordId = entityId, ActionType = action.ToString(), Changes = changes, Description = string.IsNullOrWhiteSpace(description) ? GetHistoryDescription(action) : description.Trim(), ChangedBy = !string.IsNullOrEmpty(changeBy) ? changeBy : _clientInfo.UserName, UserId = _clientInfo.UserId, IPAddress = _clientInfo.IpAddress, UserAgent = _clientInfo.UserAgent, ChangedAt = DateTime.UtcNow
             };
         }
 
@@ -328,20 +283,7 @@ namespace SweetSoft.QLDA.Core.SysManager
             var (customerId, refId) = await ExtractIdentifiersAsync(newEntity, oldEntity).ConfigureAwait(false);
             return new AuditLog
             {
-                Id = UUIDv7.NewGuid(),
-                Title = string.IsNullOrWhiteSpace(title) ? GetEntityTitle(newEntity, tableName) : title.Trim(),
-                CustomerId = customerId,
-                RefId = referenceId ?? refId,
-                TableName = tableName,
-                RecordId = entityId,
-                ActionType = LogActions.Actions.UPDATE.ToString(),
-                Changes = changes.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
-                Description = string.IsNullOrWhiteSpace(description) ? GetHistoryDescription(LogActions.Actions.UPDATE) : description.Trim(),
-                ChangedBy = !string.IsNullOrEmpty(changeBy) ? changeBy : _clientInfo.UserName,
-                UserId = _clientInfo.UserId,
-                IPAddress = _clientInfo.IpAddress,
-                UserAgent = _clientInfo.UserAgent,
-                ChangedAt = DateTime.UtcNow
+                Id = UUIDv7.NewGuid(), Title = string.IsNullOrWhiteSpace(title) ? GetEntityTitle(newEntity, tableName) : title.Trim(), CustomerId = customerId, RefId = referenceId ?? refId, TableName = tableName, RecordId = entityId, ActionType = LogActions.Actions.UPDATE.ToString(), Changes = changes.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value), Description = string.IsNullOrWhiteSpace(description) ? GetHistoryDescription(LogActions.Actions.UPDATE) : description.Trim(), ChangedBy = !string.IsNullOrEmpty(changeBy) ? changeBy : _clientInfo.UserName, UserId = _clientInfo.UserId, IPAddress = _clientInfo.IpAddress, UserAgent = _clientInfo.UserAgent, ChangedAt = DateTime.UtcNow
             };
         }
 
@@ -350,8 +292,7 @@ namespace SweetSoft.QLDA.Core.SysManager
             var changes = new Dictionary<string, ChangeInfo>();
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            await Task.Run(() =>
-            {
+            await Task.Run(() => {
                 foreach (var property in properties.Where(p => !ExcludedProperties.Contains(p.Name)))
                 {
                     var oldValue = SafeGetPropertyValue(oldEntity, property);
@@ -364,9 +305,7 @@ namespace SweetSoft.QLDA.Core.SysManager
                     {
                         changes[property.Name] = new ChangeInfo
                         {
-                            OldValue = oldValue,
-                            NewValue = newValue,
-                            PropertyType = property.PropertyType.Name
+                            OldValue = oldValue, NewValue = newValue, PropertyType = property.PropertyType.Name
                         };
                     }
                 }
@@ -380,8 +319,7 @@ namespace SweetSoft.QLDA.Core.SysManager
             var properties = new Dictionary<string, object>();
             var entityProperties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            await Task.Run(() =>
-            {
+            await Task.Run(() => {
                 foreach (var property in entityProperties.Where(p => !ExcludedProperties.Contains(p.Name)))
                 {
                     var value = SafeGetPropertyValue(entity, property);
@@ -394,8 +332,7 @@ namespace SweetSoft.QLDA.Core.SysManager
 
         private async Task<(Guid? customerId, Guid? refId)> ExtractIdentifiersAsync<T>(T entity, T fallbackEntity = default)
         {
-            return await Task.Run(() =>
-            {
+            return await Task.Run(() => {
                 Guid? customerId = null;
                 Guid? refId = null;
 
@@ -428,14 +365,10 @@ namespace SweetSoft.QLDA.Core.SysManager
             {
                 switch (action)
                 {
-                    case LogActions.Actions.LOGIN:
-                        return GetResourceText(BackEndResourceKeys.LOGIN);
-                    case LogActions.Actions.LOGOUT:
-                        return GetResourceText(BackEndResourceKeys.LOGOUT);
-                    case LogActions.Actions.EXPORT:
-                        return GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
-                    default:
-                        return GetTableDisplayName(tableName);
+                    case LogActions.Actions.LOGIN: return GetResourceText(BackEndResourceKeys.LOGIN);
+                    case LogActions.Actions.LOGOUT: return GetResourceText(BackEndResourceKeys.LOGOUT);
+                    case LogActions.Actions.EXPORT: return GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
+                    default: return GetTableDisplayName(tableName);
                 }
             }
             catch (Exception ex)
@@ -449,19 +382,12 @@ namespace SweetSoft.QLDA.Core.SysManager
         {
             switch (tableName)
             {
-                case nameof(AspnetUser):
-                case "aspnet_Users":
-                    return GetResourceText(BackEndResourceKeys.USER_LIST);
-                case nameof(AspnetRole):
-                    return GetResourceText(BackEndResourceKeys.USER_GROUP);
-                case nameof(TblEmailHistory):
-                    return GetResourceText(BackEndResourceKeys.SEND_MAIL);
-                case nameof(TblSetting):
-                    return GetResourceText(BackEndResourceKeys.SETTINGS);
-                case nameof(TblUploadFile):
-                    return "Tập tin hệ thống";
-                default:
-                    return tableName;
+                case nameof(AspnetUser): case "aspnet_Users": return GetResourceText(BackEndResourceKeys.USER_LIST);
+                case nameof(AspnetRole): return GetResourceText(BackEndResourceKeys.USER_GROUP);
+                case nameof(TblEmailHistory): return GetResourceText(BackEndResourceKeys.SEND_MAIL);
+                case nameof(TblSetting): return GetResourceText(BackEndResourceKeys.SETTINGS);
+                case nameof(TblUploadFile): return "Tập tin hệ thống";
+                default: return tableName;
             }
         }
 
@@ -527,119 +453,68 @@ namespace SweetSoft.QLDA.Core.SysManager
                 throw new ArgumentException("PageSize must be between 1 and 1000", nameof(searchRequest.PageSize));
         }
 
-        private string GetHistoryDescription( LogActions.Actions action)
+        private string GetHistoryDescription(LogActions.Actions action)
         {
             switch (action)
             {
-                case LogActions.Actions.CREATE:
-                    return BackEndResourceKeys
-                        .HISTORY_CREATED_ENTITY;
+                case LogActions.Actions.CREATE: return BackEndResourceKeys.HISTORY_CREATED_ENTITY;
 
-                case LogActions.Actions.UPDATE:
-                    return BackEndResourceKeys
-                        .HISTORY_UPDATED_ENTITY;
+                case LogActions.Actions.UPDATE: return BackEndResourceKeys.HISTORY_UPDATED_ENTITY;
 
-                case LogActions.Actions.DELETE:
-                    return BackEndResourceKeys
-                        .HISTORY_DELETED_ENTITY;
+                case LogActions.Actions.DELETE: return BackEndResourceKeys.HISTORY_DELETED_ENTITY;
 
-                default:
-                    return null;
+                default: return null;
             }
         }
 
-        private string GetEntityTitle<T>(
-    T entity,
-    string tableName)
+        private string GetEntityTitle<T>( T entity, string tableName)
         {
             if (entity == null)
                 return null;
 
-            string[] propertyNames =
-                GetTitlePropertyNames(tableName);
+            string[] propertyNames = GetTitlePropertyNames(tableName);
 
             foreach (string propertyName
                 in propertyNames)
             {
-                PropertyInfo property =
-                    typeof(T).GetProperty(
-                        propertyName,
-                        BindingFlags.Public |
-                        BindingFlags.Instance |
-                        BindingFlags.IgnoreCase);
+                PropertyInfo property = typeof(T).GetProperty( propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
-                if (property == null ||
-                    !property.CanRead)
+                if (property == null || !property.CanRead)
                 {
                     continue;
                 }
 
-                string value =
-                    SafeGetPropertyValue(
-                        entity,
-                        property);
+                string value = SafeGetPropertyValue( entity, property);
 
                 if (!string.IsNullOrWhiteSpace(value))
                     return value.Trim();
             }
 
-            return GetAuditTitle(
-                tableName,
-                LogActions.Actions.UPDATE);
+            return GetAuditTitle( tableName, LogActions.Actions.UPDATE);
         }
 
-        private string[] GetTitlePropertyNames(
-    string tableName)
+        private string[] GetTitlePropertyNames( string tableName)
         {
             switch (tableName)
             {
-                case nameof(TblDuAn):
-                    return new[]
-                    {
-                "TenDuAn",
-                "MaDuAn"
+                case nameof(TblDuAn): return new[] { "TenDuAn", "MaDuAn"
             };
 
-                case nameof(TblGiaiDoanDuAn):
-                    return new[]
-                    {
-                "TenGiaiDoanTuyChinh",
-
-                /*
-                 * Theo dữ liệu audit bạn gửi,
-                 * SubSonic trả tên giai đoạn chung
+                case nameof(TblGiaiDoanDuAn): return new[] { "TenGiaiDoanTuyChinh", /* * Theo dữ liệu audit bạn gửi, * SubSonic trả tên giai đoạn chung
                  * trong property TblGiaiDoan.
-                 */
-                "TblGiaiDoan"
+                 */ "TblGiaiDoan"
             };
 
-                case nameof(TblCongViec):
-                    return new[]
-                    {
-                "TenCongViec",
-                "MaCongViec"
+                case nameof(TblCongViec): return new[] { "TenCongViec", "MaCongViec"
             };
 
-                case nameof(TblKhachHang):
-                    return new[]
-                    {
-                "TenKhachHang"
+                case nameof(TblKhachHang): return new[] { "TenKhachHang"
             };
 
-                case nameof(TblHopDongThucHien):
-                    return new[]
-                    {
-                "SoHopDong",
-                "TenHopDong"
+                case nameof(TblHopDongThucHien): return new[] { "SoHopDong", "TenHopDong"
             };
 
-                default:
-                    return new[]
-                    {
-                "Ten",
-                "Name",
-                "Title",
-                "Ma"
+                default: return new[] { "Ten", "Name", "Title", "Ma"
             };
             }
         }

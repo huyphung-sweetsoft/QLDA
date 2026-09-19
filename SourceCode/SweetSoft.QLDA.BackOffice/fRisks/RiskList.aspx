@@ -65,7 +65,7 @@
                 </div>
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTINGENCY) %></label>
+                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.HANDLING_PLAN) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtKeHoachUngPho" TextMode="MultiLine" Rows="3" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>

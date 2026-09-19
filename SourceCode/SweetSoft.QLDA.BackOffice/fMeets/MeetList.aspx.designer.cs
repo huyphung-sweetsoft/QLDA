@@ -26,6 +26,10 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         /// <summary>
         /// CtrlProjectTabs1 control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
 
         /// <summary>
@@ -155,13 +159,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         protected global::SweetSoft.QLDA.Controls.ExtraModal dlChonNhanVien;
 
         /// <summary>
-        /// cblNhanVien control.
+        /// rptNhanVien control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblNhanVien;
+        protected global::System.Web.UI.WebControls.Repeater rptNhanVien;
 
         /// <summary>
         /// btnXacNhanNhanVien control.

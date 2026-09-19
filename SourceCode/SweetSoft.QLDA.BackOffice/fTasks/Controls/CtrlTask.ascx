@@ -1,15 +1,16 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fTasks/Controls/CtrlChonNhanVienTask.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVienTask" %>
+<%@ Register Src="~/fTasks/Controls/CtrlXemNhanVienTask.ascx" TagPrefix="SweetSoft" TagName="CtrlXemNhanVienTask" %>
+
 <style>
-    /* CSS CHO AVATAR STACK CỦA OWNER */
     .avatar-group { 
         display: inline-flex !important; 
         align-items: center; 
         justify-content: center; 
         gap: 6px !important; 
         flex-wrap: nowrap !important; 
-        white-space: nowrap !important; /* KHÓA CHẾT: Cấm tuyệt đối việc rớt dòng */
+        white-space: nowrap !important;
     }  
     .avatar-stack-container { 
         display: flex; 
@@ -28,47 +29,197 @@
         width: 26px; height: 26px; border-radius: 6px; background-color: #2563eb; color: white; 
         display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; 
         text-decoration: none; font-size: 12px; transition: background 0.2s, transform 0.1s;
-        flex-shrink: 0; /* Giữ nguyên hình vuông cứng, không bị bóp méo hay rớt dòng */
+        flex-shrink: 0; 
     }
     .btn-assign-task:hover { 
         background-color: #1d4ed8; color: white; transform: scale(1.05); 
     }
+    /* CSS CHO TOOLTIP TASK THÔNG MINH */
+    .sched-day-card { 
+        position: relative; 
+        cursor: pointer; 
+        overflow: visible !important; /* [QUAN TRỌNG]: Cho phép Tooltip tràn ra ngoài ô */
+        -webkit-user-select: none; /* [QUAN TRỌNG]: Chống bôi đen text / Dấu nháy */
+        user-select: none; 
+    }
+    /* Khôi phục bo góc */
+    .sd-header { border-radius: 5px 5px 0 0; }
+    .sd-body { border-radius: 0 0 5px 5px; }
+    .custom-task-tooltip {
+        position: absolute; 
+        background-color: #0f172a; color: #ffffff; padding: 10px 14px; border-radius: 8px;
+        font-size: 12px; white-space: nowrap; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+        opacity: 0; visibility: hidden; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1055; pointer-events: none; /* Cấm tương tác để không chắn click chuột */
+    }
+    .custom-task-tooltip::after { /* Mũi tên trỏ xuống */
+        content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+        border-width: 6px; border-style: solid; border-color: #0f172a transparent transparent transparent;
+    }
+    .sched-day-card {
+    position: relative;
+    cursor: pointer;
+    overflow: visible !important;
+    -webkit-user-select: none;
+    user-select: none;
+    }
+
+    .sd-header {
+        border-radius: 6px 6px 0 0;
+    }
+
+    .sd-body {
+        border-radius: 0 0 6px 6px;
+    }
+
+    .custom-task-tooltip {
+        position: fixed !important;
+        z-index: 999999 !important;
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 11px 14px;
+        min-width: 180px;
+        max-width: 420px;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+        font-size: 12px;
+        line-height: 1.5;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .custom-task-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -6px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #ffffff transparent transparent transparent;
+    }
+
+    .sched-day-card:hover .custom-task-tooltip,
+    .sched-day-card.show-tooltip .custom-task-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .tooltip-task-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        text-align: left;
+    }
+
+    .tooltip-task-list li {
+        margin: 0;
+        padding: 7px 0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+    }
+
+    .tooltip-task-list li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .tooltip-task-list li:first-child {
+        padding-top: 0;
+    }
+
+    .t-code {
+        display: inline-block;
+        color: #2563eb;
+        font-weight: 700;
+        margin-right: 6px;
+    }
+    
+    /* UI NÚT CHỈ XEM (MÀU XÁM) NẾU KHÔNG CÓ QUYỀN EDIT */
+    .btn-assign-task.view-only {
+        background-color: #64748b;
+    }
+    .btn-assign-task.view-only:hover {
+        background-color: #475569;
+    }
+
+    .btn-filter-overdue, .btn-tool-folder { transition: all 0.2s; }
+    .btn-filter-overdue.active-filter {
+        background-color: #fee2e2 !important; color: #ef4444 !important; border-color: #ef4444 !important;
+    }
+    .btn-tool-folder.active-filter {
+        background-color: #e0f2fe !important; color: #0ea5e9 !important; border-color: #0ea5e9 !important;
+    }
+
+    /* FIX MÀU HOVER: Tone màu Pastel cực kỳ dịu mắt và sang trọng */
+    /* Quá hạn: Nền đỏ hồng pastel nhạt -> Hover đậm lên 1 chút */
+    .row-overdue-bg > td { background-color: #fef2f2 !important; transition: background-color 0.2s ease; }
+    .table-hover > tbody > tr.row-overdue-bg:hover > td { background-color: #fee2e2 !important; }
+
+    /* Sắp đến hạn: Nền vàng hổ phách siêu nhạt -> Hover đậm lên 1 chút */
+    .row-warning-bg > td { background-color: #fffbeb !important; transition: background-color 0.2s ease; }
+    .table-hover > tbody > tr.row-warning-bg:hover > td { background-color: #fef3c7 !important; } 
 </style>
+
 <div class="card-body p-0 mt-2">
     <asp:UpdatePanel ID="upMain" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
             <asp:HiddenField runat="server" ID="hfDeletingTaskId" />
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <div class="d-flex gap-2 align-items-center flex-wrap">
+            
+            <!-- THANH CÔNG CỤ TRÊN CÙNG (GỘP 1 HÀNG) -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                
+                <!-- NHÓM BÊN TRÁI: 2 Nút JS + Search -->
+                <div class="d-flex gap-2 align-items-center flex-wrap flex-grow-1">
                     <button type="button" class="btn-filter-overdue" id="btnFilterOverdue" onclick="toggleOverdueFilter()">
-                        <i class="fas fa-exclamation-triangle"></i> Chỉ hiện công việc quá hạn ( <span id="lblOverdueCount" runat="server">0</span> )
+                        <i class="fas fa-exclamation-triangle"></i> <%= GetResourceText(BackEndResourceKeys.SHOW_ONLY_OVERDUE_TASKS) %> ( <span id="lblOverdueCount" runat="server">0</span> )
                     </button>
-                    <button type="button" class="btn-tool-folder" onclick="expandAllTasks()">
-                        <i class="far fa-folder-open"></i> Mở rộng tất cả
+                    
+                    <button type="button" class="btn-tool-folder" id="btnToggleTree" onclick="toggleTaskTree()" 
+                            data-expand-text="<%= GetResourceText(BackEndResourceKeys.EXPAND_ALL) %>" 
+                            data-collapse-text="<%= GetResourceText(BackEndResourceKeys.COLLAPSE_ALL) %>">
+                        <i class="far fa-folder-open"></i> <span id="lblToggleText"><%= GetResourceText(BackEndResourceKeys.COLLAPSE_ALL) %></span>
                     </button>
-                    <button type="button" class="btn-tool-folder" onclick="collapseAllTasks()">
-                        <i class="far fa-folder"></i> Thu gọn tất cả
-                    </button>
+                    
+                    <div class="input-group mb-0" style="max-width: 350px;">
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
+                        <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
+                    </div>
                 </div>
-                <SweetSoft:ExtraButton runat="server" ID="lbtAdd" OnClick="lbtAdd_Click" CssClass="waves-effect waves-light font-mobile-small" ButtonStyle="Info" ButtonIcon="Add" Visible="false">Add new</SweetSoft:ExtraButton>
+
+                <!-- NHÓM BÊN PHẢI: Chú thích màu + Nút Thêm Mới -->
+                <div class="d-flex gap-3 align-items-center flex-wrap">
+                    <div class="d-flex align-items-center gap-3 font-mobile-small fw-medium">
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="width: 16px; height: 16px; background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: 4px;"></span>
+                            <span class="text-danger"><%= GetResourceText("OVERDUE") %></span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="width: 16px; height: 16px; background-color: #fffbeb; border: 1px solid #fcd34d; border-radius: 4px;"></span>
+                            <span class="text-warning text-dark"><%= GetResourceText("DUE_SOON") %></span>
+                        </div>
+                    </div>
+                    
+                    <SweetSoft:ExtraButton runat="server" ID="lbtAdd" OnClick="lbtAdd_Click" CssClass="waves-effect waves-light font-mobile-small" ButtonStyle="Info" ButtonIcon="Add" Visible="false">Add new</SweetSoft:ExtraButton>
+                </div>
+                
             </div>
-             <div class="input-group max-w-500">
-                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" PlaceHolder="Nhập từ khóa tìm kiếm..." CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
-                 <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
-             </div>
+
+            <!-- BẢNG DỮ LIỆU ĐÃ ĐƯỢC ÉP FULL WIDTH BẰNG W-100 -->
             <SweetSoft:GridviewExtension ID="grvData" runat="server"
-                AllowSorting="false"
-                AutoGenerateColumns="false"
-                CssClass="table table-bordered table-task-grid"
-                IsEnableSelectColumn="false"
-                IsEnableIndex="false"
-                ValueField="IdCongViec"
-                DataNameField="TenCongViec"
-                DataKeyNames="IdCongViec"
-                GridLines="None"
-                OnNeedDataSource="grvData_NeedDataSource"
-                OnRowCommand="grvData_RowCommand"
-                OnRowDataBound="grvData_RowDataBound">
+                AllowSorting="false" ShowHeader="true" ShowHeaderWhenEmpty="true" AutoGenerateColumns="false"
+                CssClass="table table-bordered table-task-grid table-hover align-middle w-100"
+                IsEnableSelectColumn="false" IsEnableIndex="false"
+                ValueField="IdCongViec" DataNameField="TenCongViec" DataKeyNames="IdCongViec" GridLines="None"
+                OnNeedDataSource="grvData_NeedDataSource" OnRowCommand="grvData_RowCommand" OnRowDataBound="grvData_RowDataBound">
                 <Columns>
                     <asp:TemplateField HeaderText="TaskName" HeaderStyle-CssClass="text-center">
                         <ItemTemplate>
@@ -76,12 +227,9 @@
                                 CommandName="ITEM_DETAIL" 
                                 CommandArgument='<%# Eval("IdCongViec") %>'
                                 CssClass="text-decoration-none text-dark"
-                                Visible='<%# this.IsEdit %>'>
+                                Visible='<%# this.IsView || this.IsEdit %>'>
                                 <%# GetFormattedTaskName(Eval("MaCongViec"), Eval("TenCongViec")) %>
                             </asp:LinkButton>
-                            <span runat="server" visible='<%# !this.IsEdit %>'>
-                                <%# GetFormattedTaskName(Eval("MaCongViec"), Eval("TenCongViec")) %>
-                            </span>
                         </ItemTemplate>
                     </asp:TemplateField>
 
@@ -91,14 +239,13 @@
                                 <div class="avatar-stack-container">
                                     <%# GetAssigneeDisplay(Eval("TenNhanVien"), Eval("Avatars")) %>
                                 </div>
-                                <!-- Nút Gán Việc (Dấu +) -->
                                 <asp:LinkButton runat="server" ID="lbtAssign" 
                                     CommandName="ASSIGN_TASK" 
                                     CommandArgument='<%# Eval("IdCongViec") %>' 
-                                    CssClass="btn-assign-task" 
-                                    ToolTip="Phân công nhân sự" 
-                                    Visible='<%# this.IsEdit %>'>
-                                    <i class="fas fa-plus"></i>
+                                    CssClass='<%# this.IsEdit ? "btn-assign-task" : "btn-assign-task view-only" %>' 
+                                    ToolTip='<%# GetResourceText(BackEndResourceKeys.PERSONEL_ASSIGNMENT) %>'
+                                    Visible='<%# this.IsEdit || this.IsView %>'>
+                                    <i class='<%# this.IsEdit ? "fas fa-plus" : "fas fa-user-friends" %>'></i>
                                 </asp:LinkButton>
                             </div>
                         </ItemTemplate>
@@ -145,13 +292,17 @@
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
                                 ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline"
                                 ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
-                                ButtonIcon='<%# this.IsView ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
+                                ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
                             </SweetSoft:SmartLinkButton>
 
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
                                 ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
                                 ResourceKey='<%# BackEndResourceKeys.DELETE %>'
                                 ButtonIcon="fas fa-trash">
+                            </SweetSoft:SmartLinkButton>
+                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
+                                ID="lbtViewSchedule" CommandName="VIEW_SCHEDULE" CssClass="btn-grid-action text-decoration-none text-info me-2"
+                                ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-calendar-alt">
                             </SweetSoft:SmartLinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
@@ -162,7 +313,109 @@
                     </div>
                 </EmptyDataTemplate>
             </SweetSoft:GridviewExtension>
+            
             <SweetSoft:CtrlChonNhanVienTask runat="server" ID="CtrlChonNhanVienTask1" />
+            <SweetSoft:CtrlXemNhanVienTask runat="server" ID="CtrlXemNhanVienTask1" />
         </ContentTemplate>
     </asp:UpdatePanel>
+    <!-- MODAL XEM LỊCH BIỂU TASK -->
+           <SweetSoft:ExtraModal
+            runat="server"
+            ID="mdlTaskSchedule"
+            Type="Primary"
+            DefaultButton="btnCloseTaskSchedule">
+            <ContentTemplate>
+                <asp:UpdatePanel
+                    ID="upnlTaskSchedule"
+                    runat="server"
+                    UpdateMode="Conditional">
+                    <ContentTemplate>
+                        <div class="p-3">
+                            <div style="font-size: 13px;
+                                        color: #1e40af;
+                                        background: #eff6ff;
+                                        padding: 10px 12px;
+                                        border-radius: 6px;
+                                        border: 1px solid #bfdbfe;
+                                        margin-bottom: 12px;">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                <%= GetResourceText(BackEndResourceKeys.EXECUTION_TIME) %>:
+                                <strong>
+                                    <asp:Literal
+                                        ID="ltrScheduleTaskName"
+                                        runat="server">
+                                    </asp:Literal>
+                                </strong>
+                            </div>
+                            <asp:HiddenField
+                                ID="hdfSingleTaskScheduleJson"
+                                runat="server" />
+                            <div style="max-height:60vh;
+                                        overflow-y:auto;
+                                        padding:15px 5px 40px 5px;">
+                                <div id="task-timeline-container"
+                                     class="row-sched-timeline-grid-7col">
+                                </div>
+                            </div>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+            </ContentTemplate>
+        </SweetSoft:ExtraModal>
+            <script type="text/javascript">
+                window.CMSMasterJs = window.CMSMasterJs || {};
+                CMSMasterJs.RenderSingleTaskSchedule = function () {
+                    var container = $('#task-timeline-container');
+                    container.empty();
+                    
+                    var jsonString = $('#<%= hdfSingleTaskScheduleJson.ClientID %>').val();
+                    if (!jsonString) return;
+
+                    try {
+                        var decodedJson = $('<textarea/>').html(jsonString).text();
+                        var scheduleData = JSON.parse(decodedJson);
+                        
+                        for (var dateKey in scheduleData) {
+                            var dayData = scheduleData[dateKey];
+                            var dateParts = dateKey.split('-');
+                            var formattedDate = dateParts[2] + '/' + dateParts[1];
+
+                            // Tạo nội dung Tooltip xịn sò
+                            var tooltipHtml = "";
+                            var hasTasks = (dayData.status === "busy" && dayData.tasks && dayData.tasks.length > 0);
+                            
+                            if (hasTasks) {
+                                tooltipHtml = '<div class="custom-task-tooltip"><ul class="tooltip-task-list">';
+                                for (var i = 0; i < dayData.tasks.length; i++) {
+                                    tooltipHtml += '<li><span class="t-code">[' + dayData.tasks[i].code + ']</span>' + dayData.tasks[i].name + '</li>';
+                                }
+                                tooltipHtml += '</ul></div>';
+                            }
+
+                            // Gắn Click event nếu có task để kích hoạt cơ chế Ghim (Pin)
+                            var clickAttr = hasTasks ? 'onclick="CMSMasterJs.PinTooltip(this, event)"' : '';
+
+                            var html = '<div class="sched-day-card" ' + clickAttr + '>' +
+                                            '<div class="sd-header">' + formattedDate + '<small>' + dayData.dayName + '</small></div>' +
+                                            '<div class="sd-body ' + dayData.status + '">' + dayData.displayText + '</div>' +
+                                            tooltipHtml + 
+                                       '</div>';
+                            container.append(html);
+                        }
+                    } catch (e) {
+                        console.error("Lỗi vẽ JSON Lịch biểu Task: ", e);
+                    }
+                };
+                // Hàm ghim Tooltip khi click (Chống chạm ra ngoài)
+                CMSMasterJs.PinTooltip = function (element, event) {
+                    event.stopPropagation(); 
+                    var isPinned = $(element).hasClass('show-tooltip');
+                    $('.sched-day-card').removeClass('show-tooltip'); // Gỡ ghim ô cũ
+                    if (!isPinned) $(element).addClass('show-tooltip'); // Ghim ô mới
+                };
+                // Chạm ra ngoài màn hình -> Mất Tooltip
+                $(document).on('click', function () {
+                    $('.sched-day-card').removeClass('show-tooltip');
+                });
+            </script>
 </div>

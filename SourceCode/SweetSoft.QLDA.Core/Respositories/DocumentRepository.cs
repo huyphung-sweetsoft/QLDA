@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using SubSonic;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Managers;
@@ -8,8 +9,10 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web.Hosting;
@@ -34,6 +37,59 @@ namespace SweetSoft.QLDA.Core.Respositories
         public Guid IdPhienBanTaiLieu { get; set; }
 
         public Guid IdFile { get; set; }
+
+        // The repository fills this only after the business transaction has
+        // succeeded. DocumentManager writes it to AuditLog after the scope
+        // is disposed, so a rolled-back signing operation never has a log.
+        public string AuditActivityType { get; set; }
+
+        public string AuditReferenceType { get; set; }
+
+        public Guid? AuditReferenceId { get; set; }
+
+        public string AuditChanges { get; set; }
+
+        public string AuditDescription { get; set; }
+    }
+
+    public sealed class DocumentCustomerDeliveryOperationResult
+    {
+        public Guid IdGuiNhanKhachHang { get; set; }
+
+        public Guid IdPhienBanTaiLieu { get; set; }
+
+        // The repository fills this only after the business transaction has
+        // succeeded. DocumentManager writes it to AuditLog after the scope
+        // is disposed, so a rolled-back delivery operation never has a log.
+        public string AuditActivityType { get; set; }
+
+        public string AuditReferenceType { get; set; }
+
+        public Guid? AuditReferenceId { get; set; }
+
+        public string AuditChanges { get; set; }
+
+        public string AuditDescription { get; set; }
+    }
+
+    public sealed class DocumentPhysicalStorageOperationResult
+    {
+        public Guid IdLuuTruVatLy { get; set; }
+
+        public string MaLuuTru { get; set; }
+
+        // The repository fills this only after the business transaction has
+        // succeeded. DocumentManager writes it to AuditLog after the scope
+        // is disposed, so a rolled-back storage operation never has a log.
+        public string AuditActivityType { get; set; }
+
+        public string AuditReferenceType { get; set; }
+
+        public Guid? AuditReferenceId { get; set; }
+
+        public string AuditChanges { get; set; }
+
+        public string AuditDescription { get; set; }
     }
 
     public class DocumentRepository : BaseRepository<TblTaiLieu>
@@ -215,10 +271,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                           OR ISNULL(t.MoTa, N'') LIKE @keyword
                           OR ISNULL(l.TenLoai, N'') LIKE @keyword
                           OR ISNULL(n.TenNhom, N'') LIKE @keyword
-                          OR ISNULL(d.MaDuAn, '') LIKE @keyword
-                          OR ISNULL(d.TenDuAn, N'') LIKE @keyword
-                          OR ISNULL(nv.DisplayName, N'') LIKE @keyword
-                      )
+                           OR ISNULL(d.MaDuAn, '') LIKE @keyword
+                           OR ISNULL(d.TenDuAn, N'') LIKE @keyword
+                           OR ISNULL(nv.DisplayName, N'') LIKE @keyword
+                           OR EXISTS
+                           (
+                               SELECT 1
+                               FROM TblLuuTruVatLy storage
+                               WHERE storage.IdTaiLieu = t.IdTaiLieu
+                                 AND storage.DaXoa = 0
+                                 AND storage.LaViTriHienTai = 1
+                                 AND storage.MaLuuTru LIKE @keyword
+                           )
+                       )
                       AND (@maTaiLieu = '%%' OR t.MaTaiLieu LIKE @maTaiLieu)
                       AND (@tenTaiLieu = N'%%' OR t.TenTaiLieu LIKE @tenTaiLieu)
                       AND (@moTa = N'%%' OR ISNULL(t.MoTa, N'') LIKE @moTa)
@@ -306,10 +371,63 @@ namespace SweetSoft.QLDA.Core.Respositories
                 return null;
 
             TblTaiLieu item = TblTaiLieu.FetchByID(id);
-            if (item == null || item.DaXoa || item.IdDuAn.HasValue)
+            if (item == null || item.DaXoa)
                 return null;
 
             return item;
+        }
+
+        public TblTaiLieu GetCompanyById(Guid id)
+        {
+            TblTaiLieu item = GetById(id);
+            return item != null && !item.IdDuAn.HasValue
+                ? item
+                : null;
+        }
+
+        public TblTaiLieu GetProjectById(Guid id, Guid projectId)
+        {
+            if (projectId == Guid.Empty)
+                return null;
+
+            TblTaiLieu item = GetById(id);
+            return item != null
+                && item.IdDuAn.HasValue
+                && item.IdDuAn.Value == projectId
+                ? item
+                : null;
+        }
+
+        /// <summary>
+        /// Checks the optional execution-contract link without relying on a
+        /// regenerated SubSonic property.  The dynamic branch keeps normal
+        /// document operations compatible until the additive migration has
+        /// been installed in an environment.
+        /// </summary>
+        public bool IsDocumentLinkedToActiveContract(Guid idTaiLieu)
+        {
+            if (idTaiLieu == Guid.Empty)
+                return false;
+
+            string sql = $@"
+                IF COL_LENGTH(N'dbo.TblHopDongThucHien', N'IdTaiLieu') IS NULL
+                BEGIN
+                    SELECT CAST(0 AS INT);
+                    RETURN;
+                END;
+
+                DECLARE @sql NVARCHAR(MAX) = N'
+                    SELECT CASE WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM dbo.TblHopDongThucHien
+                        WHERE IdTaiLieu = ''{idTaiLieu}''
+                          AND DaXoa = 0
+                    ) THEN 1 ELSE 0 END;';
+
+                EXEC sys.sp_executesql @sql;";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) == 1;
         }
 
         public bool IsCodeExisted(string maTaiLieu, Guid excludeId)
@@ -324,6 +442,30 @@ namespace SweetSoft.QLDA.Core.Respositories
                 FROM TblTaiLieu
                 WHERE DaXoa = 0
                   AND IdDuAn IS NULL
+                  AND MaTaiLieu = '{safeCode}'
+                  AND (@excludeId IS NULL OR IdTaiLieu <> @excludeId);";
+
+            return new InlineQuery().ExecuteScalar<int>(sql) > 0;
+        }
+
+        public bool IsProjectCodeExisted(
+            string maTaiLieu,
+            Guid projectId,
+            Guid excludeId)
+        {
+            if (projectId == Guid.Empty)
+                return false;
+
+            string safeCode = Encode(maTaiLieu, 100);
+            string excludeSql = excludeId == Guid.Empty
+                ? "NULL"
+                : "'" + excludeId + "'";
+            string sql = $@"
+                DECLARE @excludeId UNIQUEIDENTIFIER = {excludeSql};
+                SELECT COUNT(1)
+                FROM TblTaiLieu
+                WHERE DaXoa = 0
+                  AND IdDuAn = '{projectId}'
                   AND MaTaiLieu = '{safeCode}'
                   AND (@excludeId IS NULL OR IdTaiLieu <> @excludeId);";
 
@@ -431,7 +573,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             Guid idTaiLieu,
             IEnumerable<Guid> fileIds,
             string currentUserName,
-            Guid currentUserId,
             DateTime currentDate)
         {
             if (idTaiLieu == Guid.Empty)
@@ -474,7 +615,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                             d.IdFileBanChinhThuc
                         FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
                         WHERE d.IdTaiLieu = @DocumentId
-                          AND d.IdDuAn IS NULL
                           AND d.DaXoa = 0;",
                     new Dictionary<string, object>
                     {
@@ -483,7 +623,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 if (documentRows.Rows.Count == 0)
                 {
                     throw new InvalidOperationException(
-                        "Không tìm thấy hồ sơ công ty.");
+                        "Không tìm thấy hồ sơ.");
                 }
 
                 Guid? officialFileId = GetNullableGuid(
@@ -679,65 +819,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                           AND p.DaXoa = 0;",
                     currentParameters);
 
-                string actorIdSql = "NULL";
-                foreach (TblPhienBanTaiLieu version in result.DeletedVersions)
-                {
-                    Dictionary<string, object> historyParameters =
-                        new Dictionary<string, object>
-                        {
-                            { "@HistoryId", Guid.NewGuid() },
-                            { "@DocumentId", idTaiLieu },
-                            { "@ActionType", DocumentActivityTypeKeys.DeleteVersion },
-                            { "@ReferenceType", DocumentActivityReferenceKeys.DocumentVersion },
-                            { "@ReferenceId", version.IdPhienBanTaiLieu },
-                            { "@Changes", BuildVersionDeletionDetails(version, ownedFiles) },
-                            { "@Description", "Đã xóa một phiên bản tài liệu." },
-                            { "@CurrentUserName", safeUserName },
-                            { "@CurrentDate", currentDate }
-                        };
-                    if (currentUserId != Guid.Empty)
-                    {
-                        actorIdSql = "@ActorId";
-                        historyParameters["@ActorId"] = currentUserId;
-                    }
-
-                    InsertDocumentVersionDeletionHistory(
-                        historyParameters,
-                        actorIdSql);
-                }
-
-                HashSet<Guid> versionFileIds = new HashSet<Guid>(
-                    result.DeletedVersions
-                        .Where(version => version.IdFileNoiDung.HasValue)
-                        .Select(version => version.IdFileNoiDung.Value));
-                foreach (TblUploadFile file in result.DeletedFiles
-                    .Where(item => !versionFileIds.Contains(item.Id)))
-                {
-                    Dictionary<string, object> historyParameters =
-                        new Dictionary<string, object>
-                        {
-                            { "@HistoryId", Guid.NewGuid() },
-                            { "@DocumentId", idTaiLieu },
-                            { "@ActionType", DocumentActivityTypeKeys.DeleteVersion },
-                            { "@ReferenceType", DocumentActivityReferenceKeys.DocumentVersion },
-                            { "@Changes", "Tệp không gắn phiên bản: "
-                                + GetFileDisplayName(file)
-                                + "; Id tệp: " + file.Id },
-                            { "@Description", "Đã xóa một tệp phiên bản tài liệu." },
-                            { "@CurrentUserName", safeUserName },
-                            { "@CurrentDate", currentDate }
-                        };
-                    if (currentUserId != Guid.Empty)
-                    {
-                        actorIdSql = "@ActorId";
-                        historyParameters["@ActorId"] = currentUserId;
-                    }
-
-                    InsertDocumentVersionDeletionHistory(
-                        historyParameters,
-                        actorIdSql);
-                }
-
                 int deletedCount = ExecuteNonQuery(
                     @"
                         DELETE FROM TblUploadFile
@@ -932,8 +1013,29 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public DataTable GetCompanyDocumentDetail(Guid idTaiLieu)
         {
+            return GetDocumentDetail(idTaiLieu, null);
+        }
+
+        public DataTable GetProjectDocumentDetail(
+            Guid idTaiLieu,
+            Guid projectId)
+        {
+            if (projectId == Guid.Empty)
+                return new DataTable();
+
+            return GetDocumentDetail(idTaiLieu, projectId);
+        }
+
+        private DataTable GetDocumentDetail(
+            Guid idTaiLieu,
+            Guid? projectId)
+        {
             if (idTaiLieu == Guid.Empty)
                 return new DataTable();
+
+            string scopeCondition = projectId.HasValue
+                ? "AND t.IdDuAn = @ProjectId"
+                : "AND t.IdDuAn IS NULL";
 
             string sql = $@"
                 SELECT TOP 1
@@ -977,10 +1079,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                     ON u.Id = t.IdFileBanChinhThuc
                    AND u.IsDeleted = 0
                 WHERE t.IdTaiLieu = '{idTaiLieu}'
-                  AND t.IdDuAn IS NULL
+                  {scopeCondition}
                   AND t.DaXoa = 0;";
 
-            return ExecuteDataTable(sql);
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            if (projectId.HasValue)
+                parameters["@ProjectId"] = projectId.Value;
+
+            return ExecuteDataTable(sql, parameters);
         }
 
         public DataTable GetSigningHistory(Guid idTaiLieu)
@@ -1015,7 +1121,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                    AND p.DaXoa = 0
                 INNER JOIN TblTaiLieu d
                     ON d.IdTaiLieu = p.IdTaiLieu
-                   AND d.IdDuAn IS NULL
                    AND d.DaXoa = 0
                 LEFT JOIN aspnet_Users sender
                     ON sender.UserId = s.IdNguoiGui
@@ -1068,7 +1173,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                    AND p.DaXoa = 0
                 INNER JOIN TblTaiLieu d
                     ON d.IdTaiLieu = p.IdTaiLieu
-                   AND d.IdDuAn IS NULL
                    AND d.DaXoa = 0
                 LEFT JOIN TblUploadFile f
                     ON f.Id = s.IdFileSauKy
@@ -1144,7 +1248,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                             d.TrangThaiTaiLieu
                         FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
                         WHERE d.IdTaiLieu = @DocumentId
-                          AND d.IdDuAn IS NULL
                           AND d.DaXoa = 0;",
                     new Dictionary<string, object>
                     {
@@ -1152,7 +1255,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     });
                 if (documentRows.Rows.Count == 0)
                     throw new InvalidOperationException(
-                        "Không tìm thấy hồ sơ công ty.");
+                        "Không tìm thấy hồ sơ.");
 
                 DataRow document = documentRows.Rows[0];
                 if (!GetBoolean(document, "CanTrinhKy"))
@@ -1393,7 +1496,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                             NguoiCapNhat = @CurrentUserName,
                             NgayCapNhat = @CurrentDate
                         WHERE IdTaiLieu = @DocumentId
-                          AND IdDuAn IS NULL
                           AND DaXoa = 0;",
                     new Dictionary<string, object>
                     {
@@ -1406,21 +1508,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                     throw new InvalidOperationException(
                         "Không thể cập nhật trạng thái hồ sơ trình ký.");
 
-                InsertSigningHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.SubmitSigning,
-                    signingId,
-                    "Phiên bản: v"
-                        + Convert.ToString(currentVersion["SoPhienBan"])
-                        + "; Người ký: "
-                        + (string.IsNullOrWhiteSpace(safeSignerName)
-                            ? idNguoiKy.ToString()
-                            : safeSignerName)
-                        + "; Hình thức ký: " + safeMethod,
-                    "Đã trình ký hồ sơ.",
-                    currentUserId,
-                    safeUserName,
-                    currentDate);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.SubmitSigning;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = signingId;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(currentVersion["SoPhienBan"])
+                    + "; Người ký: "
+                    + (string.IsNullOrWhiteSpace(safeSignerName)
+                        ? idNguoiKy.ToString()
+                        : safeSignerName)
+                    + "; Hình thức ký: " + safeMethod;
+                result.AuditDescription = "Đã trình ký hồ sơ.";
 
                 scope.Complete();
                 result.IdPhienBanTaiLieu = versionId;
@@ -1430,7 +1530,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             return result;
         }
 
-        public void RequestDocumentSigningChanges(
+        public DocumentSigningOperationResult RequestDocumentSigningChanges(
             Guid idTaiLieu,
             Guid idTrinhKyTaiLieu,
             string reason,
@@ -1454,6 +1554,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                     "Lý do yêu cầu điều chỉnh không được vượt quá 500 ký tự.");
 
             string safeUserName = NormalizeUserName(currentUserName);
+            DocumentSigningOperationResult result =
+                new DocumentSigningOperationResult
+                {
+                    IdTrinhKyTaiLieu = idTrinhKyTaiLieu
+                };
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
                 new TimeSpan(0, 10, 0)))
@@ -1463,7 +1568,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                         SELECT TOP 1 d.IdTaiLieu
                         FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
                         WHERE d.IdTaiLieu = @DocumentId
-                          AND d.IdDuAn IS NULL
                           AND d.DaXoa = 0
                           AND d.CanTrinhKy = 1;",
                     new Dictionary<string, object>
@@ -1472,7 +1576,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     });
                 if (documentRows.Rows.Count == 0)
                     throw new InvalidOperationException(
-                        "Không tìm thấy hồ sơ công ty cần trình ký.");
+                        "Không tìm thấy hồ sơ cần trình ký.");
 
                 EnsureActiveUser(currentUserId);
 
@@ -1541,7 +1645,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                             NguoiCapNhat = @CurrentUserName,
                             NgayCapNhat = @CurrentDate
                         WHERE IdTaiLieu = @DocumentId
-                          AND IdDuAn IS NULL
                           AND DaXoa = 0;",
                     new Dictionary<string, object>
                     {
@@ -1551,20 +1654,21 @@ namespace SweetSoft.QLDA.Core.Respositories
                         { "@CurrentDate", currentDate }
                     });
 
-                InsertSigningHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.RequestSigningChanges,
-                    idTrinhKyTaiLieu,
-                    "Phiên bản: v"
-                        + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
-                        + "; Lý do: " + safeReason,
-                    "Đã yêu cầu điều chỉnh hồ sơ trình ký.",
-                    currentUserId,
-                    safeUserName,
-                    currentDate);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.RequestSigningChanges;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = idTrinhKyTaiLieu;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
+                    + "; Lý do: " + safeReason;
+                result.AuditDescription =
+                    "Đã yêu cầu điều chỉnh hồ sơ trình ký.";
 
                 scope.Complete();
             }
+
+            return result;
         }
 
         public DocumentSigningOperationResult CompleteDocumentSigning(
@@ -1603,7 +1707,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                         SELECT TOP 1 d.IdTaiLieu
                         FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
                         WHERE d.IdTaiLieu = @DocumentId
-                          AND d.IdDuAn IS NULL
                           AND d.DaXoa = 0
                           AND d.CanTrinhKy = 1;",
                     new Dictionary<string, object>
@@ -1612,7 +1715,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     });
                 if (documentRows.Rows.Count == 0)
                     throw new InvalidOperationException(
-                        "Không tìm thấy hồ sơ công ty cần trình ký.");
+                        "Không tìm thấy hồ sơ cần trình ký.");
 
                 EnsureActiveUser(currentUserId);
 
@@ -1709,7 +1812,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                             NguoiCapNhat = @CurrentUserName,
                             NgayCapNhat = @CurrentDate
                         WHERE IdTaiLieu = @DocumentId
-                          AND IdDuAn IS NULL
                           AND DaXoa = 0;",
                     new Dictionary<string, object>
                     {
@@ -1720,24 +1822,546 @@ namespace SweetSoft.QLDA.Core.Respositories
                         { "@CurrentDate", currentDate }
                     });
 
-                InsertSigningHistory(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.CompleteSigning,
-                    idTrinhKyTaiLieu,
-                    "Phiên bản: v"
-                        + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
-                        + "; Tệp sau ký: "
-                        + GetFileDisplayName(resultFile),
-                    "Đã hoàn tất ký hồ sơ.",
-                    currentUserId,
-                    safeUserName,
-                    currentDate);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.CompleteSigning;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = idTrinhKyTaiLieu;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(signingRows.Rows[0]["SoPhienBan"])
+                    + "; Tệp sau ký: "
+                    + GetFileDisplayName(resultFile);
+                result.AuditDescription = "Đã hoàn tất ký hồ sơ.";
 
                 scope.Complete();
                 result.IdPhienBanTaiLieu = GetGuid(
                     signingRows.Rows[0],
                     "IdPhienBanTaiLieu");
                 result.IdFile = resultFileId;
+            }
+
+            return result;
+        }
+
+        public DataTable GetCustomerDeliveryDetail(
+            Guid idTaiLieu,
+            Guid idGuiNhanKhachHang)
+        {
+            if (idTaiLieu == Guid.Empty
+                || idGuiNhanKhachHang == Guid.Empty)
+            {
+                return new DataTable();
+            }
+
+            return ExecuteDataTable(
+                @"
+                    SELECT TOP 1
+                        g.IdGuiNhanKhachHang,
+                        g.IdPhienBanTaiLieu,
+                        p.SoPhienBan,
+                        g.IdKhachHang,
+                        ISNULL(k.TenKhachHang, N'') AS TenKhachHang,
+                        g.TenNguoiNhan,
+                        g.EmailNguoiNhan,
+                        g.KenhGui,
+                        g.TrangThai,
+                        g.HanPhanHoi,
+                        g.GhiChu
+                    FROM TblGuiNhanKhachHang g
+                    INNER JOIN TblPhienBanTaiLieu p
+                        ON p.IdPhienBanTaiLieu = g.IdPhienBanTaiLieu
+                       AND p.DaXoa = 0
+                    LEFT JOIN TblKhachHang k
+                        ON k.IdKhachHang = g.IdKhachHang
+                       AND k.DaXoa = 0
+                    WHERE g.IdGuiNhanKhachHang = @DeliveryId
+                      AND g.DaXoa = 0
+                      AND p.IdTaiLieu = @DocumentId;",
+                new Dictionary<string, object>
+                {
+                    { "@DeliveryId", idGuiNhanKhachHang },
+                    { "@DocumentId", idTaiLieu }
+                });
+        }
+
+        public DocumentCustomerDeliveryOperationResult
+            SendDocumentToCustomer(
+                Guid idTaiLieu,
+                Guid idPhienBanTaiLieu,
+                Guid idKhachHang,
+                string tenNguoiNhan,
+                string emailNguoiNhan,
+                string kenhGui,
+                DateTime? hanPhanHoi,
+                bool choPhepGuiTruocKhiKy,
+                string ghiChu,
+                Guid currentUserId,
+                string currentUserName,
+                DateTime currentDate)
+        {
+            // This is the business delivery record. SMTP delivery is intentionally
+            // handled separately, so this operation never implies an email was
+            // transmitted by the system.
+            if (idTaiLieu == Guid.Empty
+                || idPhienBanTaiLieu == Guid.Empty
+                || idKhachHang == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Thông tin gửi khách hàng không hợp lệ.");
+            }
+
+            string safeRecipient = (tenNguoiNhan ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(safeRecipient))
+            {
+                throw new InvalidOperationException(
+                    "Vui lòng nhập người nhận.");
+            }
+            if (safeRecipient.Length > 150)
+            {
+                throw new InvalidOperationException(
+                    "Người nhận không được vượt quá 150 ký tự.");
+            }
+
+            string safeEmail = (emailNguoiNhan ?? string.Empty).Trim();
+            if (safeEmail.Length > 256)
+            {
+                throw new InvalidOperationException(
+                    "Email người nhận không được vượt quá 256 ký tự.");
+            }
+            if (!string.IsNullOrWhiteSpace(safeEmail)
+                && !RegexUtilities.IsValidEmail(safeEmail))
+            {
+                throw new InvalidOperationException(
+                    "Email người nhận không hợp lệ.");
+            }
+
+            string safeChannel = (kenhGui ?? string.Empty)
+                .Trim()
+                .ToUpperInvariant();
+            if (!IsCustomerDeliveryChannel(safeChannel))
+            {
+                throw new InvalidOperationException(
+                    "Kênh gửi khách hàng không hợp lệ.");
+            }
+            if (safeChannel == DocumentCustomerDeliveryChannelKeys.Email
+                && string.IsNullOrWhiteSpace(safeEmail))
+            {
+                throw new InvalidOperationException(
+                    "Vui lòng nhập email người nhận khi chọn kênh Email.");
+            }
+
+            string safeNote = (ghiChu ?? string.Empty).Trim();
+            if (safeNote.Length > 500)
+            {
+                throw new InvalidOperationException(
+                    "Ghi chú không được vượt quá 500 ký tự.");
+            }
+            if (currentUserId == Guid.Empty)
+                throw new InvalidOperationException("Tài khoản hiện tại không hợp lệ.");
+
+            string safeUserName = NormalizeUserName(currentUserName);
+            Guid deliveryId = Guid.NewGuid();
+            DocumentCustomerDeliveryOperationResult result =
+                new DocumentCustomerDeliveryOperationResult
+                {
+                    IdGuiNhanKhachHang = deliveryId,
+                    IdPhienBanTaiLieu = idPhienBanTaiLieu
+                };
+
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TimeSpan(0, 10, 0)))
+            {
+                DataTable documentRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1
+                            d.IdTaiLieu,
+                            d.CanTrinhKy,
+                            d.IdFileBanChinhThuc
+                        FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
+                        WHERE d.IdTaiLieu = @DocumentId
+                          AND d.DaXoa = 0
+                          AND d.CanGuiKhachHang = 1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu }
+                    });
+                if (documentRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hồ sơ cần gửi khách hàng hoặc hồ sơ chưa được cấu hình gửi khách hàng.");
+                }
+
+                EnsureActiveUser(currentUserId);
+
+                DataTable customerRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1
+                            k.IdKhachHang,
+                            k.TenKhachHang
+                        FROM TblKhachHang k WITH (UPDLOCK, HOLDLOCK)
+                        WHERE k.IdKhachHang = @CustomerId
+                          AND k.DaXoa = 0
+                          AND k.KichHoat = 1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@CustomerId", idKhachHang }
+                    });
+                if (customerRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Khách hàng không tồn tại hoặc đã ngừng hoạt động.");
+                }
+
+                DataTable versionRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1
+                            p.IdPhienBanTaiLieu,
+                            p.SoPhienBan,
+                            p.IdFileNoiDung,
+                            f.Id AS IdFile,
+                            f.FileUrl
+                        FROM TblPhienBanTaiLieu p WITH (UPDLOCK, HOLDLOCK)
+                        INNER JOIN TblUploadFile f WITH (UPDLOCK, HOLDLOCK)
+                            ON f.Id = p.IdFileNoiDung
+                           AND f.RefId = @DocumentId
+                           AND f.RefType = @VersionRefType
+                           AND f.IsDeleted = 0
+                        WHERE p.IdPhienBanTaiLieu = @VersionId
+                          AND p.IdTaiLieu = @DocumentId
+                          AND p.DaXoa = 0;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@VersionId", idPhienBanTaiLieu },
+                        {
+                            "@VersionRefType",
+                            FileUploadTypes.DocumentVersion.ToString()
+                        }
+                    });
+                if (versionRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Phiên bản được chọn không tồn tại hoặc không thuộc hồ sơ này.");
+                }
+
+                DataRow document = documentRows.Rows[0];
+                DataRow version = versionRows.Rows[0];
+                Guid versionFileId = GetGuid(version, "IdFile");
+                if (versionFileId == Guid.Empty
+                    || !IsFileAvailable(version["FileUrl"]))
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy tệp vật lý của phiên bản được chọn.");
+                }
+
+                DataTable signedRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1 s.IdTrinhKyTaiLieu
+                        FROM TblTrinhKyTaiLieu s WITH (UPDLOCK, HOLDLOCK)
+                        WHERE s.IdPhienBanTaiLieu = @VersionId
+                          AND s.DaXoa = 0
+                          AND s.TrangThaiTrinhKy = @SignedStatus;",
+                    new Dictionary<string, object>
+                    {
+                        { "@VersionId", idPhienBanTaiLieu },
+                        { "@SignedStatus", DocumentSigningStatusKeys.Signed }
+                    });
+                bool isSignedVersion = signedRows.Rows.Count > 0;
+                bool isPreSigningDelivery = GetBoolean(
+                    document,
+                    "CanTrinhKy") && !isSignedVersion;
+                if (isPreSigningDelivery && !choPhepGuiTruocKhiKy)
+                {
+                    throw new InvalidOperationException(
+                        "Hồ sơ yêu cầu trình ký; vui lòng chọn phiên bản đã ký hoặc bật tùy chọn gửi trước khi ký.");
+                }
+
+                Guid officialFileId = GetGuid(document, "IdFileBanChinhThuc");
+                // A version explicitly sent before it is signed must never be
+                // recorded as an official customer delivery, even when it was
+                // temporarily selected as the document's official file.
+                bool isOfficialVersion = !isPreSigningDelivery
+                    && (isSignedVersion
+                    || (officialFileId != Guid.Empty
+                        && officialFileId == versionFileId));
+
+                ExecuteNonQuery(
+                    @"
+                        INSERT INTO TblGuiNhanKhachHang
+                        (
+                            IdGuiNhanKhachHang,
+                            IdPhienBanTaiLieu,
+                            IdKhachHang,
+                            IdNguoiThucHien,
+                            TenNguoiNhan,
+                            EmailNguoiNhan,
+                            NgayGui,
+                            HanPhanHoi,
+                            NgayNhanLai,
+                            KenhGui,
+                            TrangThai,
+                            LaBanChinhThuc,
+                            GhiChu,
+                            DaXoa,
+                            NguoiTao,
+                            NguoiCapNhat,
+                            NgayCapNhat,
+                            IdFileNhanLai
+                        )
+                        VALUES
+                        (
+                            @DeliveryId,
+                            @VersionId,
+                            @CustomerId,
+                            @CurrentUserId,
+                            @Recipient,
+                            NULLIF(@RecipientEmail, ''),
+                            @CurrentDate,
+                            @ResponseDeadline,
+                            NULL,
+                            @Channel,
+                            @SentStatus,
+                            @IsOfficialVersion,
+                            NULLIF(@Note, ''),
+                            0,
+                            @CurrentUserName,
+                            @CurrentUserName,
+                            @CurrentDate,
+                            NULL
+                        );",
+                    new Dictionary<string, object>
+                    {
+                        { "@DeliveryId", deliveryId },
+                        { "@VersionId", idPhienBanTaiLieu },
+                        { "@CustomerId", idKhachHang },
+                        { "@CurrentUserId", currentUserId },
+                        { "@Recipient", safeRecipient },
+                        { "@RecipientEmail", safeEmail },
+                        { "@CurrentDate", currentDate },
+                        {
+                            "@ResponseDeadline",
+                            hanPhanHoi.HasValue
+                                ? (object)hanPhanHoi.Value
+                                : DBNull.Value
+                        },
+                        { "@Channel", safeChannel },
+                        { "@SentStatus", DocumentCustomerStatusKeys.Sent },
+                        { "@IsOfficialVersion", isOfficialVersion },
+                        { "@Note", safeNote },
+                        { "@CurrentUserName", safeUserName }
+                    });
+
+                ExecuteNonQuery(
+                    @"
+                        UPDATE TblTaiLieu
+                        SET TrangThaiGuiKhach = @SentStatus,
+                            NguoiCapNhat = @CurrentUserName,
+                            NgayCapNhat = @CurrentDate
+                        WHERE IdTaiLieu = @DocumentId
+                          AND DaXoa = 0;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@SentStatus", DocumentCustomerStatusKeys.Sent },
+                        { "@CurrentUserName", safeUserName },
+                        { "@CurrentDate", currentDate }
+                    });
+
+                string customerName = Convert.ToString(
+                    customerRows.Rows[0]["TenKhachHang"]);
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.SendCustomerDelivery;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.CustomerDelivery;
+                result.AuditReferenceId = deliveryId;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(version["SoPhienBan"])
+                    + "; Khách hàng: " + customerName
+                    + "; Người nhận: " + safeRecipient
+                    + "; Kênh: " + safeChannel
+                    + "; Bản gửi: " + (isOfficialVersion
+                        ? "Chính thức"
+                        : "Chưa ký/chưa chính thức")
+                    + (isPreSigningDelivery
+                        ? "; Gửi trước khi ký: Có"
+                        : string.Empty)
+                    + (hanPhanHoi.HasValue
+                        ? "; Hạn phản hồi: "
+                            + hanPhanHoi.Value.ToString("dd/MM/yyyy")
+                        : string.Empty);
+                result.AuditDescription =
+                    isPreSigningDelivery
+                        ? "Đã ghi nhận gửi hồ sơ cho khách hàng trước khi ký."
+                        : "Đã ghi nhận gửi hồ sơ cho khách hàng.";
+
+                scope.Complete();
+            }
+
+            return result;
+        }
+
+        public DocumentCustomerDeliveryOperationResult
+            UpdateCustomerDeliveryStatus(
+                Guid idTaiLieu,
+                Guid idGuiNhanKhachHang,
+                string trangThai,
+                string ghiChu,
+                Guid currentUserId,
+                string currentUserName,
+                DateTime currentDate)
+        {
+            if (idTaiLieu == Guid.Empty || idGuiNhanKhachHang == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Không xác định được lần gửi khách hàng.");
+            }
+            if (currentUserId == Guid.Empty)
+                throw new InvalidOperationException("Tài khoản hiện tại không hợp lệ.");
+
+            string safeStatus = (trangThai ?? string.Empty)
+                .Trim()
+                .ToUpperInvariant();
+            if (!IsCustomerDeliveryStatus(safeStatus))
+            {
+                throw new InvalidOperationException(
+                    "Trạng thái gửi khách hàng không hợp lệ.");
+            }
+
+            string safeNote = (ghiChu ?? string.Empty).Trim();
+            if (safeNote.Length > 500)
+            {
+                throw new InvalidOperationException(
+                    "Ghi chú không được vượt quá 500 ký tự.");
+            }
+
+            string safeUserName = NormalizeUserName(currentUserName);
+            DocumentCustomerDeliveryOperationResult result =
+                new DocumentCustomerDeliveryOperationResult
+                {
+                    IdGuiNhanKhachHang = idGuiNhanKhachHang
+                };
+
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TimeSpan(0, 10, 0)))
+            {
+                DataTable documentRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1 d.IdTaiLieu
+                        FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
+                        WHERE d.IdTaiLieu = @DocumentId
+                          AND d.DaXoa = 0
+                          AND d.CanGuiKhachHang = 1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu }
+                    });
+                if (documentRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hồ sơ cần cập nhật gửi khách hàng.");
+                }
+
+                EnsureActiveUser(currentUserId);
+
+                DataTable deliveryRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1
+                            g.IdGuiNhanKhachHang,
+                            g.IdPhienBanTaiLieu,
+                            g.TrangThai,
+                            p.SoPhienBan,
+                            ISNULL(k.TenKhachHang, N'') AS TenKhachHang,
+                            g.TenNguoiNhan
+                        FROM TblGuiNhanKhachHang g WITH (UPDLOCK, HOLDLOCK)
+                        INNER JOIN TblPhienBanTaiLieu p WITH (UPDLOCK, HOLDLOCK)
+                            ON p.IdPhienBanTaiLieu = g.IdPhienBanTaiLieu
+                           AND p.DaXoa = 0
+                        LEFT JOIN TblKhachHang k
+                            ON k.IdKhachHang = g.IdKhachHang
+                           AND k.DaXoa = 0
+                        WHERE g.IdGuiNhanKhachHang = @DeliveryId
+                          AND g.DaXoa = 0
+                          AND p.IdTaiLieu = @DocumentId;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DeliveryId", idGuiNhanKhachHang },
+                        { "@DocumentId", idTaiLieu }
+                    });
+                if (deliveryRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Lần gửi khách hàng không tồn tại hoặc không thuộc hồ sơ này.");
+                }
+
+                ExecuteNonQuery(
+                    @"
+                        UPDATE TblGuiNhanKhachHang
+                        SET TrangThai = @Status,
+                            NgayNhanLai = CASE
+                                WHEN @Status = @ReceivedBackStatus
+                                THEN ISNULL(NgayNhanLai, @CurrentDate)
+                                ELSE NULL
+                            END,
+                            GhiChu = CASE
+                                WHEN NULLIF(@Note, '') IS NULL THEN GhiChu
+                                ELSE @Note
+                            END,
+                            NguoiCapNhat = @CurrentUserName,
+                            NgayCapNhat = @CurrentDate
+                        WHERE IdGuiNhanKhachHang = @DeliveryId
+                          AND DaXoa = 0;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DeliveryId", idGuiNhanKhachHang },
+                        { "@Status", safeStatus },
+                        {
+                            "@ReceivedBackStatus",
+                            DocumentCustomerStatusKeys.ReceivedBack
+                        },
+                        { "@Note", safeNote },
+                        { "@CurrentUserName", safeUserName },
+                        { "@CurrentDate", currentDate }
+                    });
+
+                ExecuteNonQuery(
+                    @"
+                        UPDATE TblTaiLieu
+                        SET TrangThaiGuiKhach = @Status,
+                            NguoiCapNhat = @CurrentUserName,
+                            NgayCapNhat = @CurrentDate
+                        WHERE IdTaiLieu = @DocumentId
+                          AND DaXoa = 0;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@Status", safeStatus },
+                        { "@CurrentUserName", safeUserName },
+                        { "@CurrentDate", currentDate }
+                    });
+
+                DataRow delivery = deliveryRows.Rows[0];
+                result.IdPhienBanTaiLieu = GetGuid(
+                    delivery,
+                    "IdPhienBanTaiLieu");
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.UpdateCustomerDelivery;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.CustomerDelivery;
+                result.AuditReferenceId = idGuiNhanKhachHang;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(delivery["SoPhienBan"])
+                    + "; Khách hàng: "
+                    + Convert.ToString(delivery["TenKhachHang"])
+                    + "; Trạng thái: " + safeStatus
+                    + (string.IsNullOrWhiteSpace(safeNote)
+                        ? string.Empty
+                        : "; Ghi chú: " + safeNote);
+                result.AuditDescription =
+                    "Đã cập nhật trạng thái gửi khách hàng.";
+
+                scope.Complete();
             }
 
             return result;
@@ -1787,6 +2411,294 @@ namespace SweetSoft.QLDA.Core.Respositories
             return ExecuteDataTable(sql);
         }
 
+        public DocumentPhysicalStorageOperationResult
+            StoreDocumentPhysicalCopy(
+                Guid idTaiLieu,
+                Guid idNoiLuuTru,
+                bool nhapMaThuCong,
+                string maLuuTru,
+                string tinhTrangBanGoc,
+                string ghiChu,
+                Guid currentUserId,
+                string currentUserName,
+                DateTime currentDate)
+        {
+            if (idTaiLieu == Guid.Empty || idNoiLuuTru == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Thông tin lưu bản cứng không hợp lệ.");
+            }
+
+            string safeManualStorageCode = NormalizePhysicalStorageCode(
+                maLuuTru);
+            if (nhapMaThuCong)
+            {
+                if (string.IsNullOrWhiteSpace(safeManualStorageCode))
+                {
+                    throw new InvalidOperationException(
+                        "Vui lòng nhập mã lưu trữ.");
+                }
+                if (safeManualStorageCode.Length > 100)
+                {
+                    throw new InvalidOperationException(
+                        "Mã lưu trữ không được vượt quá 100 ký tự.");
+                }
+                if (!Regex.IsMatch(
+                        safeManualStorageCode,
+                        @"^[A-Z0-9][A-Z0-9_-]*$"))
+                {
+                    throw new InvalidOperationException(
+                        "Mã lưu trữ chỉ được gồm chữ không dấu, số, dấu gạch ngang hoặc gạch dưới.");
+                }
+            }
+
+            string safeOriginalCopyCondition =
+                (tinhTrangBanGoc ?? string.Empty).Trim();
+            if (safeOriginalCopyCondition.Length > 255)
+            {
+                throw new InvalidOperationException(
+                    "Tình trạng bản gốc không được vượt quá 255 ký tự.");
+            }
+
+            string safeNote = (ghiChu ?? string.Empty).Trim();
+            if (safeNote.Length > 500)
+            {
+                throw new InvalidOperationException(
+                    "Ghi chú không được vượt quá 500 ký tự.");
+            }
+
+            if (currentUserId == Guid.Empty)
+                throw new InvalidOperationException("Tài khoản hiện tại không hợp lệ.");
+
+            string safeUserName = NormalizeUserName(currentUserName);
+            Guid physicalStorageId = Guid.NewGuid();
+            DocumentPhysicalStorageOperationResult result =
+                new DocumentPhysicalStorageOperationResult
+                {
+                    IdLuuTruVatLy = physicalStorageId
+                };
+
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TimeSpan(0, 10, 0)))
+            {
+                DataTable documentRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1 d.IdTaiLieu
+                        FROM TblTaiLieu d WITH (UPDLOCK, HOLDLOCK)
+                        WHERE d.IdTaiLieu = @DocumentId
+                          AND d.DaXoa = 0
+                          AND d.CanLuuVatLy = 1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu }
+                    });
+                if (documentRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hồ sơ cần lưu bản cứng hoặc hồ sơ chưa được cấu hình lưu bản cứng.");
+                }
+
+                EnsureActiveUser(currentUserId);
+
+                DataTable storageLocationRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1
+                            n.IdNoiLuuTru,
+                            n.MaNoiLuuTru,
+                            n.TenNoiLuuTru
+                        FROM TblNoiLuuTru n WITH (UPDLOCK, HOLDLOCK)
+                        WHERE n.IdNoiLuuTru = @StorageLocationId
+                          AND n.DaXoa = 0
+                          AND n.KichHoat = 1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@StorageLocationId", idNoiLuuTru }
+                    });
+                if (storageLocationRows.Rows.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "Nơi lưu trữ không tồn tại hoặc đã ngừng hoạt động.");
+                }
+
+                DataTable currentStorageRows = ExecuteDataTable(
+                    @"
+                        SELECT TOP 1
+                            v.IdLuuTruVatLy,
+                            v.MaLuuTru
+                        FROM TblLuuTruVatLy v WITH (UPDLOCK, HOLDLOCK)
+                        WHERE v.IdTaiLieu = @DocumentId
+                          AND v.DaXoa = 0
+                          AND v.LaViTriHienTai = 1
+                        ORDER BY v.NgayLuu DESC, v.IdLuuTruVatLy DESC;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu }
+                    });
+
+                bool hasCurrentStorage = currentStorageRows.Rows.Count > 0;
+                string storageCode;
+                if (hasCurrentStorage)
+                {
+                    storageCode = Convert.ToString(
+                        currentStorageRows.Rows[0]["MaLuuTru"]);
+                    if (string.IsNullOrWhiteSpace(storageCode))
+                    {
+                        throw new InvalidOperationException(
+                            "Bản ghi lưu trữ hiện tại chưa có mã lưu trữ. Vui lòng kiểm tra lại dữ liệu cũ.");
+                    }
+
+                    if (nhapMaThuCong
+                        && !string.Equals(
+                            storageCode,
+                            safeManualStorageCode,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(
+                            "Hồ sơ đã được cấp mã lưu trữ. Khi cập nhật vị trí, mã lưu trữ phải được giữ nguyên.");
+                    }
+                }
+                else if (nhapMaThuCong)
+                {
+                    EnsurePhysicalStorageCodeIsAvailable(
+                        safeManualStorageCode);
+                    storageCode = safeManualStorageCode;
+                }
+                else
+                {
+                    storageCode = GetNextPhysicalStorageCode(currentDate);
+                }
+
+                ExecuteNonQuery(
+                    @"
+                        UPDATE TblLuuTruVatLy
+                        SET LaViTriHienTai = 0,
+                            NguoiCapNhat = @CurrentUserName,
+                            NgayCapNhat = @CurrentDate
+                        WHERE IdTaiLieu = @DocumentId
+                          AND DaXoa = 0
+                          AND LaViTriHienTai = 1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@CurrentUserName", safeUserName },
+                        { "@CurrentDate", currentDate }
+                    });
+
+                ExecuteNonQuery(
+                    @"
+                        INSERT INTO TblLuuTruVatLy
+                        (
+                            IdLuuTruVatLy,
+                            IdTaiLieu,
+                            IdNoiLuuTru,
+                            IdNguoiThucHien,
+                            MaLuuTru,
+                            TrangThaiLuuTru,
+                            TinhTrangBanGoc,
+                            NgayLuu,
+                            NgayLayRa,
+                            NgayHoanTra,
+                            LaViTriHienTai,
+                            GhiChu,
+                            DaXoa,
+                            NguoiTao,
+                            NgayTao,
+                            NguoiCapNhat,
+                            NgayCapNhat
+                        )
+                        VALUES
+                        (
+                            @PhysicalStorageId,
+                            @DocumentId,
+                            @StorageLocationId,
+                            @CurrentUserId,
+                            @StorageCode,
+                            @StoredStatus,
+                            NULLIF(@OriginalCopyCondition, ''),
+                            @CurrentDate,
+                            NULL,
+                            NULL,
+                            1,
+                            NULLIF(@Note, ''),
+                            0,
+                            @CurrentUserName,
+                            @CurrentDate,
+                            @CurrentUserName,
+                            @CurrentDate
+                        );",
+                    new Dictionary<string, object>
+                    {
+                        { "@PhysicalStorageId", physicalStorageId },
+                        { "@DocumentId", idTaiLieu },
+                        { "@StorageLocationId", idNoiLuuTru },
+                        { "@CurrentUserId", currentUserId },
+                        { "@StorageCode", storageCode },
+                        {
+                            "@StoredStatus",
+                            DocumentPhysicalStorageStatusKeys.Stored
+                        },
+                        {
+                            "@OriginalCopyCondition",
+                            safeOriginalCopyCondition
+                        },
+                        { "@Note", safeNote },
+                        { "@CurrentUserName", safeUserName },
+                        { "@CurrentDate", currentDate }
+                    });
+
+                ExecuteNonQuery(
+                    @"
+                        UPDATE TblTaiLieu
+                        SET TrangThaiLuuTru = @StoredStatus,
+                            NguoiCapNhat = @CurrentUserName,
+                            NgayCapNhat = @CurrentDate
+                        WHERE IdTaiLieu = @DocumentId
+                          AND DaXoa = 0;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        {
+                            "@StoredStatus",
+                            DocumentPhysicalStorageStatusKeys.Stored
+                        },
+                        { "@CurrentUserName", safeUserName },
+                        { "@CurrentDate", currentDate }
+                    });
+
+                DataRow storageLocation = storageLocationRows.Rows[0];
+                string locationCode = Convert.ToString(
+                    storageLocation["MaNoiLuuTru"]);
+                string locationName = Convert.ToString(
+                    storageLocation["TenNoiLuuTru"]);
+                result.MaLuuTru = storageCode;
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.StorePhysicalCopy;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.PhysicalStorage;
+                result.AuditReferenceId = physicalStorageId;
+                result.AuditChanges = "Mã lưu trữ: " + storageCode
+                    + "; Nơi lưu trữ: " + locationCode
+                    + (string.IsNullOrWhiteSpace(locationName)
+                        ? string.Empty
+                        : " - " + locationName)
+                    + (string.IsNullOrWhiteSpace(safeOriginalCopyCondition)
+                        ? string.Empty
+                        : "; Tình trạng bản gốc: "
+                            + safeOriginalCopyCondition)
+                    + (string.IsNullOrWhiteSpace(safeNote)
+                        ? string.Empty
+                        : "; Ghi chú: " + safeNote);
+                result.AuditDescription = hasCurrentStorage
+                    ? "Đã cập nhật vị trí lưu bản cứng."
+                    : "Đã ghi nhận lưu bản cứng.";
+
+                scope.Complete();
+            }
+
+            return result;
+        }
+
         public DataTable GetPhysicalStorageHistory(Guid idTaiLieu)
         {
             if (idTaiLieu == Guid.Empty)
@@ -1825,27 +2737,38 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
         {
+            DataTable history = CreateDocumentActivityHistoryTable();
             if (idTaiLieu == Guid.Empty)
-                return new DataTable();
+                return history;
 
-            string sql = $@"
-                SELECT
-                    h.IdLichSuTaiLieu,
-                    h.LoaiHanhDong,
-                    h.LoaiThamChieu,
-                    h.NoiDungThayDoi,
-                    h.MoTa,
-                    h.NguoiTao,
-                    h.NgayTao,
-                    ISNULL(actor.DisplayName, N'') AS TenNguoiThucHien
-                FROM TblLichSuTaiLieu h
-                LEFT JOIN aspnet_Users actor
-                    ON actor.UserId = h.IdNhanVienThucHien
-                   AND actor.IsDeleted = 0
-                WHERE h.IdTaiLieu = '{idTaiLieu}'
-                ORDER BY h.NgayTao DESC, h.IdLichSuTaiLieu DESC;";
+            try
+            {
+                DateTime earliestAuditDate = new DateTime(
+                    1753,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    DateTimeKind.Utc);
+                List<AuditLogDto> auditLogs = GetDocumentAuditHistoryAsync(
+                        idTaiLieu,
+                        earliestAuditDate)
+                    .GetAwaiter()
+                    .GetResult();
 
-            return ExecuteDataTable(sql);
+                foreach (AuditLogDto auditLog in auditLogs)
+                    AddDocumentAuditHistoryRow(history, auditLog);
+            }
+            catch (Exception exception)
+            {
+                SysLogger.LogError(
+                    exception,
+                    "Failed to load AuditLog history for document "
+                    + idTaiLieu);
+            }
+
+            return history;
         }
 
         public void InsertDocumentVersion(TblPhienBanTaiLieu item)
@@ -1860,14 +2783,9 @@ namespace SweetSoft.QLDA.Core.Respositories
                 item.Save();
         }
 
-        public void InsertDocumentHistory(TblLichSuTaiLieu item)
-        {
-            if (item != null)
-                item.Save();
-        }
-
-        // Stage 2 (simplified): opt-in helpers using the existing audit API.
-        // Stage 3 will replace the legacy history call sites; do not call both for one event.
+        // Document-only business events such as versioning and signing use
+        // this helper. Basic TblTaiLieu CRUD is still logged by Insert,
+        // Update and Delete below.
         public Task WriteDocumentAuditAsync(
             Guid documentId,
             string activityType,
@@ -1879,17 +2797,19 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             if (documentId == Guid.Empty || string.IsNullOrWhiteSpace(activityType))
                 throw new ArgumentException("Hồ sơ và loại hoạt động không được để trống.");
-            if (actor == null || !actor.UserId.HasValue || actor.UserId.Value == Guid.Empty
-                || string.IsNullOrWhiteSpace(actor.UserName))
-                throw new ArgumentException("Cần thông tin người thực hiện từ request hiện tại.", nameof(actor));
-
             // Capture this operation's actor, not the AuditManager cached by a singleton.
             var currentActor = new ClientInfo
             {
-                UserId = actor.UserId,
-                UserName = actor.UserName,
-                IpAddress = actor.IpAddress,
-                UserAgent = actor.UserAgent
+                UserId = actor != null
+                    && actor.UserId.HasValue
+                    && actor.UserId.Value != Guid.Empty
+                        ? actor.UserId
+                        : (Guid?)null,
+                UserName = actor == null || string.IsNullOrWhiteSpace(actor.UserName)
+                    ? "[System]"
+                    : actor.UserName.Trim(),
+                IpAddress = actor == null ? string.Empty : actor.IpAddress,
+                UserAgent = actor == null ? string.Empty : actor.UserAgent
             };
             var action = activityType == DocumentActivityTypeKeys.CreateDocument
                 ? LogActions.Actions.CREATE
@@ -1902,7 +2822,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             // A structured document view must HtmlDecode once, then render as encoded text.
             var entry = new
             {
-                RefId = documentId,
                 LoaiHanhDong = System.Web.HttpUtility.HtmlEncode(activityType),
                 LoaiThamChieu = System.Web.HttpUtility.HtmlEncode(referenceType ?? string.Empty),
                 IdThamChieu = referenceId,
@@ -1979,6 +2898,340 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
             return Task.FromResult(logs.OrderByDescending(log => log.ChangedAt)
                 .ThenByDescending(log => log.Id).ToList());
+        }
+
+        private static DataTable CreateDocumentActivityHistoryTable()
+        {
+            DataTable history = new DataTable();
+            history.Columns.Add("IdLichSuTaiLieu", typeof(Guid));
+            history.Columns.Add("LoaiHanhDong", typeof(string));
+            history.Columns.Add("LoaiThamChieu", typeof(string));
+            history.Columns.Add("NoiDungThayDoi", typeof(string));
+            history.Columns.Add("MoTa", typeof(string));
+            history.Columns.Add("NguoiTao", typeof(string));
+            history.Columns.Add("NgayTao", typeof(DateTime));
+            history.Columns.Add("TenNguoiThucHien", typeof(string));
+            return history;
+        }
+
+        private static void AddDocumentAuditHistoryRow(
+            DataTable history,
+            AuditLogDto auditLog)
+        {
+            if (history == null || auditLog == null)
+                return;
+
+            JObject auditChanges = ParseAuditChanges(auditLog.Changes);
+            string activityType = GetAuditText(
+                auditChanges,
+                "LoaiHanhDong");
+            string referenceType = GetAuditText(
+                auditChanges,
+                "LoaiThamChieu");
+            string changes = GetAuditText(
+                auditChanges,
+                "NoiDungThayDoi");
+            string description = GetAuditText(auditChanges, "MoTa");
+
+            if (string.IsNullOrWhiteSpace(activityType))
+            {
+                activityType = GetDocumentActivityType(auditLog.ActionType);
+                referenceType = DocumentActivityReferenceKeys.Document;
+                description = GetGenericDocumentAuditDescription(
+                    auditLog.ActionType,
+                    auditLog.Title);
+                changes = BuildGenericDocumentAuditChanges(
+                    auditChanges,
+                    auditLog.ActionType);
+            }
+
+            DataRow row = history.NewRow();
+            row["IdLichSuTaiLieu"] = auditLog.Id;
+            row["LoaiHanhDong"] = activityType ?? string.Empty;
+            row["LoaiThamChieu"] = referenceType ?? string.Empty;
+            row["NoiDungThayDoi"] = changes ?? string.Empty;
+            row["MoTa"] = description ?? string.Empty;
+            row["NguoiTao"] = auditLog.ChangedBy ?? string.Empty;
+            row["NgayTao"] = auditLog.ChangedAt;
+            row["TenNguoiThucHien"] = string.Empty;
+            history.Rows.Add(row);
+        }
+
+        private static JObject ParseAuditChanges(string changes)
+        {
+            if (string.IsNullOrWhiteSpace(changes))
+                return null;
+
+            try
+            {
+                return JObject.Parse(changes);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string GetAuditText(JObject changes, string key)
+        {
+            if (changes == null || string.IsNullOrWhiteSpace(key))
+                return string.Empty;
+
+            JToken value = changes[key];
+            if (value == null || value.Type == JTokenType.Null)
+                return string.Empty;
+
+            return System.Web.HttpUtility.HtmlDecode(
+                Convert.ToString(value));
+        }
+
+        private static string GetDocumentActivityType(string actionType)
+        {
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.CREATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentActivityTypeKeys.CreateDocument;
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.DELETE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentActivityTypeKeys.DeleteDocument;
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.UPDATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentActivityTypeKeys.UpdateDocument;
+            }
+
+            return actionType ?? string.Empty;
+        }
+
+        private static string GetGenericDocumentAuditDescription(
+            string actionType,
+            string title)
+        {
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.CREATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "Đã tạo hồ sơ.";
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.DELETE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "Đã xóa hồ sơ.";
+            }
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.UPDATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return "Đã cập nhật thông tin hồ sơ.";
+            }
+
+            return string.IsNullOrWhiteSpace(title)
+                ? "Đã cập nhật nhật ký hồ sơ."
+                : title;
+        }
+
+        private static string BuildGenericDocumentAuditChanges(
+            JObject auditChanges,
+            string actionType)
+        {
+            if (auditChanges == null)
+                return string.Empty;
+
+            if (string.Equals(
+                    actionType,
+                    LogActions.Actions.CREATE.ToString(),
+                    StringComparison.OrdinalIgnoreCase)
+                || string.Equals(
+                    actionType,
+                    LogActions.Actions.DELETE.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                List<string> details = new List<string>();
+                AddGenericAuditDetail(
+                    details,
+                    "Mã hồ sơ",
+                    GetAuditText(auditChanges, "MaTaiLieu"));
+                AddGenericAuditDetail(
+                    details,
+                    "Tên hồ sơ",
+                    GetAuditText(auditChanges, "TenTaiLieu"));
+                return string.Join("; ", details);
+            }
+
+            List<string> changes = new List<string>();
+            foreach (JProperty property in auditChanges.Properties())
+            {
+                JObject change = property.Value as JObject;
+                if (change == null)
+                    continue;
+
+                string oldValue = GetAuditTokenText(change["OldValue"]);
+                string newValue = GetAuditTokenText(change["NewValue"]);
+                AddGenericDocumentChange(
+                    changes,
+                    property.Name,
+                    oldValue,
+                    newValue);
+            }
+
+            return string.Join("; ", changes);
+        }
+
+        private static void AddGenericAuditDetail(
+            ICollection<string> details,
+            string label,
+            string value)
+        {
+            if (details == null || string.IsNullOrWhiteSpace(value))
+                return;
+
+            details.Add(label + ": " + FormatAuditValue(value));
+        }
+
+        private static void AddGenericDocumentChange(
+            ICollection<string> changes,
+            string propertyName,
+            string oldValue,
+            string newValue)
+        {
+            if (changes == null || string.IsNullOrWhiteSpace(propertyName))
+                return;
+
+            if (string.Equals(oldValue, newValue, StringComparison.Ordinal))
+                return;
+
+            if (string.Equals(
+                    propertyName,
+                    "NguoiCapNhat",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "NgayCapNhat",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "DaXoa",
+                    StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "IdFileBanChinhThuc",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("File chính thức đã thay đổi.");
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "IdLoaiTaiLieu",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("Loại tài liệu đã thay đổi.");
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "IdNhanVienPhuTrach",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("Người phụ trách đã thay đổi.");
+                return;
+            }
+
+            if (string.Equals(
+                    propertyName,
+                    "TrangThaiTaiLieu",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "TrangThaiGuiKhach",
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    propertyName,
+                    "TrangThaiLuuTru",
+                    StringComparison.Ordinal))
+            {
+                changes.Add("Trạng thái hồ sơ đã thay đổi.");
+                return;
+            }
+
+            string label = GetDocumentAuditFieldLabel(propertyName);
+            if (string.IsNullOrWhiteSpace(label))
+                return;
+
+            changes.Add(
+                label
+                + ": “"
+                + FormatAuditValue(oldValue)
+                + "” → “"
+                + FormatAuditValue(newValue)
+                + "”");
+        }
+
+        private static string GetDocumentAuditFieldLabel(string propertyName)
+        {
+            switch (propertyName)
+            {
+                case "MaTaiLieu":
+                    return "Mã hồ sơ";
+                case "TenTaiLieu":
+                    return "Tên hồ sơ";
+                case "MoTa":
+                    return "Mô tả";
+                case "CanTrinhKy":
+                    return "Cần trình ký";
+                case "HinhThucKy":
+                    return "Hình thức ký";
+                case "CanGuiKhachHang":
+                    return "Cần gửi khách hàng";
+                case "CanLuuVatLy":
+                    return "Cần lưu bản cứng";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static string GetAuditTokenText(JToken value)
+        {
+            if (value == null || value.Type == JTokenType.Null)
+                return string.Empty;
+
+            return System.Web.HttpUtility.HtmlDecode(Convert.ToString(value));
+        }
+
+        private static string FormatAuditValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "Không có";
+            if (string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
+                return "Có";
+            if (string.Equals(value, "false", StringComparison.OrdinalIgnoreCase))
+                return "Không";
+
+            string normalized = value.Replace("\r", " ")
+                .Replace("\n", " ")
+                .Trim();
+            return normalized.Length <= 500
+                ? normalized
+                : normalized.Substring(0, 497) + "...";
         }
 
         public bool HasSigningRecords(Guid idTaiLieu)
@@ -2116,65 +3369,99 @@ namespace SweetSoft.QLDA.Core.Respositories
                     "Tài khoản hiện tại không còn hoạt động.");
         }
 
-        private static void InsertSigningHistory(
-            Guid documentId,
-            string actionType,
-            Guid signingId,
-            string changes,
-            string description,
-            Guid currentUserId,
-            string currentUserName,
-            DateTime currentDate)
-        {
-            ExecuteNonQuery(
-                @"
-                    INSERT INTO TblLichSuTaiLieu
-                    (
-                        IdLichSuTaiLieu,
-                        IdTaiLieu,
-                        LoaiHanhDong,
-                        LoaiThamChieu,
-                        IdThamChieu,
-                        NoiDungThayDoi,
-                        MoTa,
-                        IdNhanVienThucHien,
-                        NguoiTao,
-                        NgayTao
-                    )
-                    VALUES
-                    (
-                        @HistoryId,
-                        @DocumentId,
-                        @ActionType,
-                        @ReferenceType,
-                        @ReferenceId,
-                        @Changes,
-                        @Description,
-                        @ActorId,
-                        @CurrentUserName,
-                        @CurrentDate
-                    );",
-                new Dictionary<string, object>
-                {
-                    { "@HistoryId", Guid.NewGuid() },
-                    { "@DocumentId", documentId },
-                    { "@ActionType", actionType },
-                    { "@ReferenceType", DocumentActivityReferenceKeys.Signing },
-                    { "@ReferenceId", signingId },
-                    { "@Changes", changes ?? string.Empty },
-                    { "@Description", description ?? string.Empty },
-                    { "@ActorId", currentUserId },
-                    { "@CurrentUserName", currentUserName },
-                    { "@CurrentDate", currentDate }
-                });
-        }
-
         private static string NormalizeUserName(string userName)
         {
             string value = string.IsNullOrWhiteSpace(userName)
                 ? "[System]"
                 : userName.Trim();
             return value.Length <= 150 ? value : value.Substring(0, 150);
+        }
+
+        private static bool IsCustomerDeliveryChannel(string value)
+        {
+            return value == DocumentCustomerDeliveryChannelKeys.Email
+                || value == DocumentCustomerDeliveryChannelKeys.Direct
+                || value == DocumentCustomerDeliveryChannelKeys.Other;
+        }
+
+        private static bool IsCustomerDeliveryStatus(string value)
+        {
+            return value == DocumentCustomerStatusKeys.Sent
+                || value == DocumentCustomerStatusKeys.WaitingForReturn
+                || value == DocumentCustomerStatusKeys.ReceivedBack;
+        }
+
+        private static string NormalizePhysicalStorageCode(string value)
+        {
+            return (value ?? string.Empty).Trim().ToUpperInvariant();
+        }
+
+        private static void EnsurePhysicalStorageCodeIsAvailable(
+            string storageCode)
+        {
+            int recordCount = ExecuteScalarInt(
+                @"
+                    SELECT COUNT(1)
+                    FROM TblLuuTruVatLy v WITH (UPDLOCK, HOLDLOCK)
+                    WHERE v.DaXoa = 0
+                      AND UPPER(LTRIM(RTRIM(v.MaLuuTru))) = @StorageCode;",
+                new Dictionary<string, object>
+                {
+                    { "@StorageCode", storageCode }
+                });
+            if (recordCount > 0)
+            {
+                throw new InvalidOperationException(
+                    "Mã lưu trữ đã được sử dụng. Vui lòng nhập mã khác.");
+            }
+        }
+
+        private static string GetNextPhysicalStorageCode(
+            DateTime currentDate)
+        {
+            string prefix = "LT-" + currentDate.ToString(
+                "yyyy",
+                CultureInfo.InvariantCulture) + "-";
+
+            // UPDLOCK + HOLDLOCK runs inside the surrounding TransactionScope.
+            // It serializes generation for one year, so two concurrent users do
+            // not receive the same next number through this application flow.
+            int lastSequence = ExecuteScalarInt(
+                @"
+                    SELECT ISNULL(
+                        MAX(
+                            TRY_CONVERT(
+                                INT,
+                                SUBSTRING(
+                                    v.MaLuuTru,
+                                    LEN(@StorageCodePrefix) + 1,
+                                    100)
+                            )
+                        ),
+                        0
+                    )
+                    FROM TblLuuTruVatLy v WITH (UPDLOCK, HOLDLOCK)
+                    WHERE v.DaXoa = 0
+                      AND v.MaLuuTru LIKE @StorageCodePrefix + '%'
+                      AND SUBSTRING(
+                            v.MaLuuTru,
+                            LEN(@StorageCodePrefix) + 1,
+                            100
+                          ) NOT LIKE '%[^0-9]%';",
+                new Dictionary<string, object>
+                {
+                    { "@StorageCodePrefix", prefix }
+                });
+
+            if (lastSequence == int.MaxValue)
+            {
+                throw new InvalidOperationException(
+                    "Không thể tự sinh thêm mã lưu trữ cho năm hiện tại.");
+            }
+
+            return prefix + (lastSequence + 1).ToString(
+                "D6",
+                CultureInfo.InvariantCulture);
         }
 
         private static bool IsAllowedSigningResultExtension(DataRow row)
@@ -2356,55 +3643,6 @@ namespace SweetSoft.QLDA.Core.Respositories
             return string.Join(",", parameterNames);
         }
 
-        private static void InsertDocumentVersionDeletionHistory(
-            IDictionary<string, object> parameters,
-            string actorIdSql)
-        {
-            string referenceIdSql = parameters.ContainsKey("@ReferenceId")
-                ? "@ReferenceId"
-                : "NULL";
-            string safeActorIdSql = string.Equals(
-                    actorIdSql,
-                    "@ActorId",
-                    StringComparison.Ordinal)
-                ? actorIdSql
-                : "NULL";
-
-            ExecuteNonQuery(
-                @"
-                    INSERT INTO TblLichSuTaiLieu
-                    (
-                        IdLichSuTaiLieu,
-                        IdTaiLieu,
-                        LoaiHanhDong,
-                        LoaiThamChieu,
-                        IdThamChieu,
-                        NoiDungThayDoi,
-                        MoTa,
-                        IdNhanVienThucHien,
-                        NguoiTao,
-                        NgayTao
-                    )
-                    VALUES
-                    (
-                        @HistoryId,
-                        @DocumentId,
-                        @ActionType,
-                        @ReferenceType,
-                        "
-                + referenceIdSql
-                + @",
-                        @Changes,
-                        @Description,
-                        "
-                + safeActorIdSql
-                + @",
-                        @CurrentUserName,
-                        @CurrentDate
-                    );",
-                parameters);
-        }
-
         private static TblUploadFile ToUploadFile(DataRow row)
         {
             return new TblUploadFile
@@ -2442,47 +3680,12 @@ namespace SweetSoft.QLDA.Core.Respositories
             };
         }
 
-        private static string BuildVersionDeletionDetails(
-            TblPhienBanTaiLieu version,
-            DataTable ownedFiles)
-        {
-            string fileName = string.Empty;
-            if (version != null && version.IdFileNoiDung.HasValue)
-            {
-                foreach (DataRow row in ownedFiles.Rows)
-                {
-                    if (GetGuid(row, "Id") == version.IdFileNoiDung.Value)
-                    {
-                        fileName = GetFileDisplayName(row);
-                        break;
-                    }
-                }
-            }
-
-            return "Phiên bản: v"
-                + (version == null ? string.Empty : version.SoPhienBan)
-                + "; Tệp: " + fileName
-                + "; Id tệp: "
-                + (version == null || !version.IdFileNoiDung.HasValue
-                    ? string.Empty
-                    : version.IdFileNoiDung.Value.ToString());
-        }
-
         private static string GetFileDisplayName(DataRow row)
         {
             string originalName = Convert.ToString(row["OriginalFileName"]);
             if (!string.IsNullOrWhiteSpace(originalName))
                 return originalName;
             return Convert.ToString(row["Name"]);
-        }
-
-        private static string GetFileDisplayName(TblUploadFile file)
-        {
-            if (file == null)
-                return string.Empty;
-            return string.IsNullOrWhiteSpace(file.OriginalFileName)
-                ? file.Name
-                : file.OriginalFileName;
         }
 
         private static Guid GetGuid(DataRow row, string columnName)
@@ -2573,69 +3776,62 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         private void LogCreate(TblTaiLieu item)
         {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _auditManager.LogActionAsync(
-                            LogActions.Actions.CREATE,
-                            item,
-                            _tableName,
-                            item.IdTaiLieu)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(
-                        ex,
-                        "Failed to log CREATE action for TblTaiLieu");
-                }
-            });
+            if (item == null)
+                return;
+
+            ExecuteAuditSafely(
+                () => _auditManager.LogActionAsync(
+                    LogActions.Actions.CREATE,
+                    item,
+                    _tableName,
+                    item.IdTaiLieu,
+                    item.NguoiTao ?? string.Empty),
+                "Failed to log CREATE action for TblTaiLieu");
         }
 
         private void LogUpdate(TblTaiLieu itemOld, TblTaiLieu itemNew)
         {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _auditManager.LogChangesAsync(
-                            itemOld,
-                            itemNew,
-                            _tableName,
-                            itemNew.IdTaiLieu,
-                            itemNew.NguoiCapNhat ?? string.Empty)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(
-                        ex,
-                        "Failed to log changes for TblTaiLieu");
-                }
-            });
+            if (itemOld == null || itemNew == null)
+                return;
+
+            ExecuteAuditSafely(
+                () => _auditManager.LogChangesAsync(
+                    itemOld,
+                    itemNew,
+                    _tableName,
+                    itemNew.IdTaiLieu,
+                    itemNew.NguoiCapNhat ?? string.Empty),
+                "Failed to log changes for TblTaiLieu");
         }
 
         private void LogDelete(TblTaiLieu item)
         {
-            Task.Run(async () =>
+            if (item == null)
+                return;
+
+            ExecuteAuditSafely(
+                () => _auditManager.LogActionAsync(
+                    LogActions.Actions.DELETE,
+                    item,
+                    _tableName,
+                    item.IdTaiLieu,
+                    item.NguoiCapNhat ?? item.NguoiTao ?? string.Empty),
+                "Failed to log DELETE action for TblTaiLieu");
+        }
+
+        private static void ExecuteAuditSafely(
+            Func<Task> auditOperation,
+            string errorMessage)
+        {
+            try
             {
-                try
-                {
-                    await _auditManager.LogActionAsync(
-                            LogActions.Actions.DELETE,
-                            item,
-                            _tableName,
-                            item.IdTaiLieu)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    SysLogger.LogError(
-                        ex,
-                        "Failed to log DELETE action for TblTaiLieu");
-                }
-            });
+                if (auditOperation != null)
+                    auditOperation().GetAwaiter().GetResult();
+            }
+            catch (Exception exception)
+            {
+                SysLogger.LogError(exception, errorMessage);
+            }
         }
 
         private static string GetParameterText(

@@ -6168,3 +6168,15 @@ input[switch]:checked + label {
 .btn-check:focus + .btn-outline-info, .btn-outline-info:focus{
     background-color: unset;
 }
+
+/* Keep the document form modal from creating a horizontal scrollbar.
+   The project overrides Bootstrap's row gutters globally; scope the
+   compensation to this modal so other screens keep their existing layout. */
+.document-modal-body {
+    overflow-x: hidden;
+}
+
+.document-modal-body .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}

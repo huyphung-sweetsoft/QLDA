@@ -21,22 +21,87 @@
     .btn-calendar-only:hover { background: #eff6ff; border-color: #93c5fd; transform: scale(1.1); }
 
     /* OVERLAY LỊCH BỂU TRƯỢT */
-    .row-schedule-overlay { position: absolute; inset: 0; background: #ffffff; z-index: 5; display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); height: 100%; }
+    .row-schedule-overlay {
+    position: absolute;
+    inset: 0;
+    background: #ffffff;
+    z-index: 5;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 100%;
+    overflow: hidden;
+    }
     .member-item-row.show-schedule .row-schedule-overlay { transform: translateX(0); }
     .btn-back-row-slide { background: #f1f5f9; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #2563eb; flex-shrink: 0; margin-top: 4px; }
     .btn-back-row-slide:hover { background: #e0f2fe; border-color: #2563eb; transform: translateX(-2px); }
 
-    .row-sched-timeline-grid-7col { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex: 1; padding: 2px 0; }
-    .sched-day-card { border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; background: white; min-height: 52px; }
-    .sd-header { background: #f1f5f9; padding: 3px 2px; text-align: center; font-weight: 800; font-size: 11px; border-bottom: 1px solid #cbd5e1; color: #1e293b; line-height: 1.1; }
+    .row-sched-timeline-grid-7col {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-rows: 80px;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 2px 4px 2px 0;
+    align-content: start;
+    box-sizing: border-box;
+    }
+    .sched-day-card {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    width: 100%;
+    min-width: 0;
+    height: 80px;
+    box-sizing: border-box;
+    }
+    .sd-header {
+    background: #f1f5f9;
+    padding: 5px 2px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 11px;
+    border-bottom: 1px solid #cbd5e1;
+    color: #1e293b;
+    line-height: 1.1;
+    flex-shrink: 0;
+    }
     .sd-header small { font-size: 9.5px; font-weight: 600; color: #64748b; display: block; }
-    .sd-body { padding: 4px 2px; text-align: center; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 32px; line-height: 1.25; }
+    .sd-body {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4px 2px;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-size: 10px;
+    line-height: 1.15;
+    }
 
     /* MÀU TRẠNG THÁI LỊCH */
     .sd-body.holiday { background-color: #fef3c7; color: #b45309; border-top: 2.5px solid #f59e0b; }
     .sd-body.weekend { background-color: #f8fafc; color: #64748b; }
     .sd-body.free { background-color: #e6f4ea; color: #137333; border-top: 2.5px solid #34a853; }
     .sd-body.busy { background-color: #fee2e2; color: #b91c1c; border-top: 2.5px solid #ef4444; }
+    .single-avatar-circle {
+        width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary" DefaultButton="btnConfirm">
@@ -64,6 +129,7 @@
                                         <div class="member-info-group">
                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
+                                            <%# Eval("AvatarHtml") %>
                                             <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
                                         </div>
                                         <button type="button" class="btn-calendar-only" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>', true)">📅</button>
@@ -115,6 +181,7 @@
 
                 var jsonString = rowEl.find('input[type="hidden"][id*="hdfScheduleJson"]').val();
                 var timelineGrid = rowEl.find('#timeline-' + userId);
+
                 timelineGrid.empty();
 
                 if (jsonString) {
@@ -124,26 +191,45 @@
 
                         for (var dateKey in scheduleData) {
                             countDays++;
+
                             var dayData = scheduleData[dateKey];
                             var dateParts = dateKey.split('-');
                             var formattedDate = dateParts[2] + '/' + dateParts[1];
 
                             var html = '<div class="sched-day-card">' +
-                                '<div class="sd-header">' + formattedDate + '<small>' + dayData.dayName + '</small></div>' +
-                                '<div class="sd-body ' + dayData.status + '">' + dayData.text + '</div>' +
+                                '<div class="sd-header">' +
+                                formattedDate +
+                                '<small>' + dayData.dayName + '</small>' +
+                                '</div>' +
+                                '<div class="sd-body ' + dayData.status + '">' +
+                                dayData.text +
+                                '</div>' +
                                 '</div>';
+
                             timelineGrid.append(html);
                         }
 
                         var rowCount = Math.ceil(countDays / 7);
-                        var calculatedMinHeight = Math.max(88, rowCount * 62 + 20);
-                        rowEl.css('min-height', calculatedMinHeight + 'px');
+                        var visibleRows = Math.min(rowCount, 4);
+
+                        var rowHeight = 80;
+                        var gap = 6;
+                        var verticalPadding = 22;
+
+                        var scheduleHeight =
+                            visibleRows * rowHeight +
+                            Math.max(0, visibleRows - 1) * gap +
+                            verticalPadding;
+
+                        rowEl.css('min-height', scheduleHeight + 'px');
+
                     } catch (e) {
                         console.error("Lỗi parse JSON lịch biểu: ", e);
                     }
                 }
 
                 rowEl.addClass('show-schedule');
+
             } else {
                 rowEl.removeClass('show-schedule');
                 rowEl.css('min-height', '52px');

@@ -7,8 +7,10 @@ using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.ValueObjects;
 using SweetSoft.QLDA.DataAccess;
+using SweetSoft.QLDA.Core.Utils;
 using System;
 using System.Data;
+using SweetSoft.QLDA.Controls.Helpers;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -31,6 +33,8 @@ namespace SweetSoft.QLDA.Core.Managers
             // 1. Validate null và dự án
             BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
             BusinessValidator.ThrowIf(dto.IdDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA, nameof(dto.IdDuAn));
+
+            DuAnManager.Instance.EnsureCanModifyStructure(dto.IdDuAn);
 
             // 2. Xác định loại giai đoạn
             bool isCommonStage = dto.IdGiaiDoan.HasValue && dto.IdGiaiDoan.Value != Guid.Empty;
@@ -108,6 +112,11 @@ namespace SweetSoft.QLDA.Core.Managers
                         .CheckHasChildTasks(
                             item.IdDuAn,
                             rootTask);
+
+                if (item.NgayHoanThanhThucTe != dto.NgayHoanThanhThucTe)
+                {
+                    DuAnManager.Instance.EnsureCanUpdateProgress(dto.IdDuAn);
+                }
 
                 DateTime? oldStartDate =
                     item.NgayBatDau;
@@ -218,6 +227,20 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (item.ThuTuGiaiDoan <= 0)
                     item.ThuTuGiaiDoan = _repository.GetNextOrder(item.IdDuAn);
 
+                ValidateStageTimeline(dto, item.ThuTuGiaiDoan);
+
+                BusinessValidator.ThrowIf(
+                    !dto.NgayDuKienHoanThanh.HasValue,
+                    BackEndResourceKeys.PLEASE_ENTER_THE_VALUE,
+                    nameof(dto.NgayDuKienHoanThanh));
+
+                BusinessValidator.ThrowIf(
+                    dto.NgayBatDau.HasValue &&
+                    dto.NgayDuKienHoanThanh.Value.Date <
+                        dto.NgayBatDau.Value.Date,
+                    BackEndResourceKeys.INVALID_DATA,
+                    nameof(dto.NgayDuKienHoanThanh));
+
                 bool duplicateOrder = _repository.IsOrderExists(item.IdDuAn, item.ThuTuGiaiDoan, Guid.Empty);
                 BusinessValidator.ThrowIf(duplicateOrder, BackEndResourceKeys.INVALID_DATA, nameof(dto.ThuTuGiaiDoan), ErrorCodes.Conflict);
 
@@ -238,6 +261,9 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+            
+            AutoSetDependentStageTime(item);
+            
             return item;
         }
 
@@ -246,15 +272,21 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetById(id);
         }
 
+        public int GetNextOrder(Guid idDuAn)
+        {
+            return _repository.GetNextOrder(idDuAn);
+        }
+
+        public DateTime? GetPreviousStageEndDate(Guid idDuAn, int currentOrder)
+        {
+            return _repository.GetPreviousStageEndDate(idDuAn, currentOrder);
+        }
+
         public DataTable GetByIdDuAn(Guid idDuAn)
         {
             return _repository.GetByIdDuAn(idDuAn);
         }
 
-        public int GetNextOrder(Guid idDuAn)
-        {
-            return _repository.GetNextOrder(idDuAn);
-        }
 
         private void CreateCongViecFromGiaiDoan(TblGiaiDoanDuAn giaiDoan, string tenGiaiDoan)
         {
@@ -309,18 +341,15 @@ namespace SweetSoft.QLDA.Core.Managers
                 BackEndResourceKeys.INVALID_DATA,
                 nameof(dto.NgayHoanThanhThucTe));
 
-            DateTime? previousStartDate =
-                _repository.GetPreviousStageStartDate(
+            DateTime? previousEndDate =
+                _repository.GetPreviousStageEndDate(
                     dto.IdDuAn,
                     currentOrder);
 
-            BusinessValidator.ThrowIf(
-                previousStartDate.HasValue &&
-                startDate <
-                    previousStartDate.Value.Date,
-                BackEndResourceKeys.INVALID_DATA,
-                nameof(dto.NgayBatDau),
-                ErrorCodes.Conflict);
+            if (previousEndDate.HasValue && startDate <= previousEndDate.Value.Date)
+            {
+                throw new BusinessException("Ngày bắt đầu giai đoạn phải sau ngày kết thúc của giai đoạn trước đó.", ErrorCodes.Conflict.ToString());
+            }
 
             DateTime? nextStartDate =
                 _repository.GetNextStageStartDate(
@@ -369,6 +398,84 @@ namespace SweetSoft.QLDA.Core.Managers
             }
 
             return null;
+        }
+
+        public void AutoSetDependentStageTime(TblGiaiDoanDuAn currentStage)
+        {
+            if (currentStage == null || !currentStage.NgayDuKienHoanThanh.HasValue)
+                return;
+
+            TblGiaiDoanDuAn nextStage = _repository.GetNextStage(currentStage.IdDuAn, currentStage.ThuTuGiaiDoan);
+            if (nextStage != null && nextStage.DaXoa != true)
+            {
+                DateTime minStart = currentStage.NgayDuKienHoanThanh.Value.Date.AddDays(1);
+                if (!nextStage.NgayBatDau.HasValue || nextStage.NgayBatDau.Value.Date < minStart)
+                {
+                    DateTime oldStartDate = nextStage.NgayBatDau ?? minStart;
+                    int thoiHan = 1;
+                    if (nextStage.NgayBatDau.HasValue && nextStage.NgayDuKienHoanThanh.HasValue)
+                    {
+                        thoiHan = (nextStage.NgayDuKienHoanThanh.Value.Date - nextStage.NgayBatDau.Value.Date).Days + 1;
+                    }
+                    else if (nextStage.NgayDuKienHoanThanh.HasValue)
+                    {
+                        thoiHan = (nextStage.NgayDuKienHoanThanh.Value.Date - minStart.Date).Days + 1;
+                    }
+
+                    if (thoiHan < 1) thoiHan = 1;
+
+                    nextStage.NgayBatDau = minStart;
+                    nextStage.NgayDuKienHoanThanh = minStart.AddDays(thoiHan - 1);
+                    nextStage.NgayCapNhat = DateTime.Now;
+                    nextStage.NguoiCapNhat = SweetContext.Current.UserName;
+                    
+                    nextStage = _repository.Update(nextStage);
+                    
+                    TaskManager.Instance.UpdateStageTask(nextStage, GetStageDisplayName(nextStage), oldStartDate);
+
+                    AutoSetDependentStageTime(nextStage);
+                }
+            }
+        }
+
+        public void ShiftFirstAffectedPhase(Guid projectId, DateTime newProjectStartDate)
+        {
+            DataTable dtPhases = GetByIdDuAn(projectId);
+            if (dtPhases != null && dtPhases.Rows.Count > 0)
+            {
+                // Lấy ngày bắt đầu dự án (đã là Local Time)
+                DateTime localNewProjectStartDate = newProjectStartDate.Date;
+
+                foreach (DataRow row in dtPhases.Rows)
+                {
+                    if (row["NgayBatDau"] != DBNull.Value && DateTime.TryParse(row["NgayBatDau"].ToString(), out DateTime phaseStartDate))
+                    {
+                        if (phaseStartDate.Date < localNewProjectStartDate.Date)
+                        {
+                            Guid phaseId = Guid.Parse(row["IdGiaiDoanDuAn"].ToString());
+                            TblGiaiDoanDuAn phase = GetById(phaseId);
+                            if (phase != null && phase.NgayBatDau.HasValue && phase.NgayDuKienHoanThanh.HasValue)
+                            {
+                                DateTime oldPhaseStartDate = phase.NgayBatDau.Value;
+                                DateTime oldPhaseEndDate = phase.NgayDuKienHoanThanh.Value;
+                                TimeSpan duration = oldPhaseEndDate - oldPhaseStartDate;
+
+                                phase.NgayBatDau = localNewProjectStartDate;
+                                phase.NgayDuKienHoanThanh = localNewProjectStartDate.Add(duration);
+                                phase.NgayCapNhat = DateTime.UtcNow;
+                                phase.NguoiCapNhat = SweetContext.Current.UserName;
+
+                                phase = _repository.Update(phase);
+
+                                TaskManager.Instance.UpdateStageTask(phase, GetStageDisplayName(phase), oldPhaseStartDate);
+
+                                AutoSetDependentStageTime(phase);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
     }

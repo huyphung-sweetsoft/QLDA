@@ -10,6 +10,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
     public class BackEndResourceKeys
     {
         // Document management
+        public const string NO_PERMISSION_EDIT = "NO_PERMISSION_EDIT";
+        public const string NO_PERMISSION_ADD = "NO_PERMISSION_ADD";
         public const string DOCUMENT_MANAGEMENT = "DOCUMENT_MANAGEMENT";
         public const string DOCUMENT_GROUP = "DOCUMENT_GROUP";
         public const string DOCUMENT_GROUP_LIST = "DOCUMENT_GROUP_LIST";
@@ -43,6 +45,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         // These values mirror aspnet_Functions.FunctionName so the common
         // menu renderer can resolve dashboard labels without special mapping.
         public const string DASHBOARD = "Dashboard";
+        public const string COST = "COST";
+        public const string PAYMENT = "PAYMENT";
         public const string CONFIRM_PASSWORD = "CONFIRM_PASSWORD";
         public const string DELETE = "DELETE";
         public const string DISPLAY_NAME = "DISPLAY_NAME";
@@ -297,6 +301,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROJECT_MANAGER = "PROJECT_MANAGER";
         public const string PROJECT_CODE = "PROJECT_CODE";
         public const string CONTRACT = "CONTRACT";
+        public const string CONTRACT_LIST = "CONTRACT_LIST";
+        public const string CONTRACT_DOCUMENT = "CONTRACT_DOCUMENT";
+        public const string CONTRACT_DOCUMENT_IDENTITY_LOCKED = "CONTRACT_DOCUMENT_IDENTITY_LOCKED";
         public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
         public const string SIGN_DATE = "SIGN_DATE";
@@ -366,12 +373,44 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DAY = "DAY";
         public const string JOIN_DATE = "JOIN_DATE";
         public const string VIEW_DETAIL = "VIEW_DETAIL";
-        
-        
-
-
-
-
+        public const string COMPLETED_100_PERCENT = "COMPLETED_100_PERCENT";
+        public const string DURATION_D = "DURATION_D";
+        public const string PRIORITY_P = "PRIORITY_P";
+        public const string WORKLOAD = "WORKLOAD";
+        public const string STANDARD_DAYS = "STANDARD_DAYS";
+        public const string TIME_FRAME = "TIME_FRAME";
+        public const string ALLOCATION_PERCENTAGE = "ALLOCATION_PERCENTAGE";
+        public const string COEFFICIENT = "COEFFICIENT";
+        public const string ROLE = "ROLE";
+        public const string CAPACITY = "CAPACITY";
+        public const string PERSONAL_INFORMATION_DETAILS = "PERSONAL_INFORMATION_DETAILS";
+        public const string PROJECT_ALLOCATION_DETAILS = "PROJECT_ALLOCATION_DETAILS";
+        public const string PARTICIPATED = "PARTICIPATED";
+        public const string PARTICIPATED_PROJECTS = "PARTICIPATED_PROJECTS";
+        public const string PROJECT_TIME = "PROJECT_TIME";
+        public const string CONTRIBUTION = "CONTRIBUTION";
+        public const string DEADLINE = "DEADLINE";
+        public const string TIMEFRAME = "TIMEFRAME";
+        public const string BELONG_TO_GROUP = "BELONG_TO_GROUP";
+        public const string NO_TASKS_IN_THIS_PHASE = "NO_TASKS_IN_THIS_PHASE";
+        public const string GENERAL_SCHEDULE = "GENERAL_SCHEDULE";
+        public const string MONDAY = "MONDAY";
+        public const string TUESDAY = "TUESDAY";
+        public const string WEDNESDAY = "WEDNESDAY";
+        public const string THURSDAY = "THURSDAY";
+        public const string FRIDAY = "FRIDAY";
+        public const string SATURDAY = "SATURDAY";
+        public const string SUNDAY = "SUNDAY";
+        public const string WEEK = "WEEK";
+        public const string PREVIOUS = "PREVIOUS";
+        public const string NEXT = "NEXT";
+        public const string SCHEDULE_DETAILS = "SCHEDULE_DETAILS";
+        public const string OTHER_TASKS = "OTHER_TASKS";
+        public const string AND = "AND";
+        public const string OTHER_PROJECT_UNIDENTIFIED = "OTHER_PROJECT_UNIDENTIFIED";
+        public const string SCHEDULE_OF_USER = "SCHEDULE_OF_USER";
+        public const string MY_PERSONAL_SCHEDULE = "MY_PERSONAL_SCHEDULE";
+        public const string EMPLOYEE_SCHEDULE = "EMPLOYEE_SCHEDULE";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
@@ -431,7 +470,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string TASK_LIST = "TASK_LIST";
         public const string TASK_CODE = "TASK_CODE";
         public const string TASK_NAME = "TASK_NAME";
-        public const string OWNER = "OWNER";
+        public const string ASSIGNEE = "ASSIGNEE";
         public const string PRIORITY = "PRIORITY";
         public const string DURATION = "DURATION";
         public const string DEPENDENT = "DEPENDENT";
@@ -446,6 +485,16 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DEPENDENT_LINK = "DEPENDENT_LINK";
         public const string NO_OVERDUE_TASKS = "NO_OVERDUE_TASKS";
         public const string NO_ISSUES = "NO_ISSUES";
+        public const string SHOW_ONLY_OVERDUE_TASKS = "SHOW_ONLY_OVERDUE_TASKS";
+        public const string EXPAND_ALL = "EXPAND_ALL";
+        public const string COLLAPSE_ALL = "COLLAPSE_ALL";
+        public const string PERSONEL_ASSIGNMENT = "PERSONEL_ASSIGNMENT";
+        public const string ASSIGN_TASK_SUCCESS = "ASSIGN_TASK_SUCCESS";
+        public const string REQUIRE_TASK_DATES_BEFORE_ASSIGN = "REQUIRE_TASK_DATES_BEFORE_ASSIGN";
+        public const string CANNOT_ASSIGN_TO_PARENT_TASK = "CANNOT_ASSIGN_TO_PARENT_TASK";
+        public const string INVALID_START_DATE_LIMIT = "INVALID_START_DATE_LIMIT";
+        public const string TASK_DURATION_MUST_BE_POSITIVE = "TASK_DURATION_MUST_BE_POSITIVE";
+        public const string TASK_HAS_NO_ASSIGNEE = "TASK_HAS_NO_ASSIGNEE";
         //Risk
         public const string RISK_LIST = "RISK_LIST";
         public const string RISK_CODE = "RISK_CODE";
@@ -455,7 +504,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string IMPACT = "IMPACT";
         public const string MONITOR = "MONITOR";
         public const string MITIGATION = "MITIGATION";
-        public const string CONTINGENCY = "CONTINGENCY";
+        public const string HANDLING_PLAN = "HANDLING_PLAN";
         public const string NOT_ENTERED = "NOT_ENTERED";
         public const string CAN_NOT_BE_BLANK = "CAN_NOT_BE_BLANK";
         public const string VERY_LOW = "VERY_LOW";
@@ -465,7 +514,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string VERY_HIGH = "VERY_HIGH";
 
         //Issue
-        public const string ISSUE_LIST = "ISSUE_LIST";
+        public const string ISSUES_LIST = "ISSUES_LIST";
         public const string ISSUE_CODE = "ISSUE_CODE";
         public const string ISSUE_NAME = "ISSUE_NAME";
         public const string WORK_AFFECTED = "WORK_AFFECTED";
@@ -478,6 +527,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MEETING_MANAGEMENT = "MEETING_MANAGEMENT";
         public const string MEET_SCHE = "MEET_SCHE";
         public const string MEETING_LIST = "MEETING_LIST";
+        public const string MEETING_DOCUMENT = "MEETING_DOCUMENT";
         public const string MEETING_CODE = "MEETING_CODE";
         public const string MEETING_NAME = "MEETING_NAME";
         public const string GENERAL_CONTENT = "GENERAL_CONTENT";
@@ -488,9 +538,13 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SCHEDULED = "SCHEDULED";
         public const string UPCOMING = "UPCOMING";
         public const string ONGOING = "ONGOING";
+        public const string TIME_PARSING_ERROR = "TIME_PARSING_ERROR";
+        public const string MEET_DURATION = "MEET_DURATION";
+
         //Cost
         public const string COST_MANAGEMENT = "COST_MANAGEMENT";
         public const string COST_LIST = "COST_LIST";
+        public const string COST_DOCUMENT = "COST_DOCUMENT";
         public const string COST_CODE = "COST_CODE";
         public const string COST_NAME = "COST_NAME";
         public const string REQUESTER = "REQUESTER";
@@ -502,10 +556,29 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string APPROVED = "APPROVED";
         public const string REJECTED = "REJECTED";
         public const string FAST_APPROVAL = "FAST_APPROVAL";
+        public const string LOWEST_TOTAL_AMOUNT = "LOWEST_TOTAL_AMOUNT";
+        public const string HIGHEST_TOTAL_AMOUNT = "HIGHEST_TOTAL_AMOUNT";
+        public const string APPROVE_COST_SUCCESS = "APPROVE_COST_SUCCESS";
+
         //Project Report
         public const string PROJECT_REPORT = "PROJECT_REPORT";
         public const string PROJECT_REPORT_MANAGEMENT = "PROJECT_REPORT_MANAGEMENT";
-
+        public const string TIME_PERIOD = "TIME_PERIOD";
+        public const string GENERATE_REPORT = "GENERATE_REPORT";
+        public const string PROJECT_NOT_STARTED = "PROJECT_NOT_STARTED";
+        public const string PROJECT_HAS_NO_DATA = "PROJECT_HAS_NO_DATA";
+        public const string TOTAL_TASKS = "TOTAL_TASKS";
+        public const string ISSUES_ARISING = "ISSUES_ARISING";
+        public const string COMPLETED_TASKS_SUMMARY = "COMPLETED_TASKS_SUMMARY";
+        public const string COMPLETION_DATE = "COMPLETION_DATE";
+        public const string NO_COMPLETED_TASKS_IN_PERIOD = "NO_COMPLETED_TASKS_IN_PERIOD";
+        public const string OVERDUE_TASKS_LIST = "OVERDUE_TASKS_LIST";
+        public const string EXPORT_PDF = "EXPORT_PDF";
+        public const string LAST_WEEK = "LAST_WEEK";
+        public const string LAST_MONTH = "LAST_MONTH";
+        public const string ALL_TIME = "ALL_TIME";
+        public const string CUSTOM = "CUSTOM";
+        public const string FROM_TO_FORMAT = "FROM_TO_FORMAT";
 
         //Document
         public const string DOCUMENT_TEMPLATE = "DOCUMENT_TEMPLATE";
@@ -560,6 +633,11 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SIGNING_HISTORY = "SIGNING_HISTORY";
         public const string CUSTOMER_DELIVERY_HISTORY = "CUSTOMER_DELIVERY_HISTORY";
         public const string PHYSICAL_STORAGE_HISTORY = "PHYSICAL_STORAGE_HISTORY";
+        public const string STORE_PHYSICAL_COPY = "STORE_PHYSICAL_COPY";
+        public const string PHYSICAL_STORAGE_CODE = "PHYSICAL_STORAGE_CODE";
+        public const string USE_MANUAL_STORAGE_CODE = "USE_MANUAL_STORAGE_CODE";
+        public const string PHYSICAL_STORAGE_CODE_NOTICE = "PHYSICAL_STORAGE_CODE_NOTICE";
+        public const string PHYSICAL_STORAGE_SAVED_MESSAGE = "PHYSICAL_STORAGE_SAVED_MESSAGE";
         public const string DOCUMENT_ACTIVITY_HISTORY = "DOCUMENT_ACTIVITY_HISTORY";
         public const string NOT_APPLICABLE = "NOT_APPLICABLE";
         public const string NO_DOCUMENT_VERSIONS = "NO_DOCUMENT_VERSIONS";
@@ -576,6 +654,17 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string RECIPIENT = "RECIPIENT";
         public const string CHANNEL = "CHANNEL";
         public const string RESPONSE_DEADLINE = "RESPONSE_DEADLINE";
+        public const string SEND_CUSTOMER = "SEND_CUSTOMER";
+        public const string UPDATE_CUSTOMER_DELIVERY = "UPDATE_CUSTOMER_DELIVERY";
+        public const string CUSTOMER_DELIVERY_VERSION = "CUSTOMER_DELIVERY_VERSION";
+        public const string CUSTOMER_DELIVERY_CHANNEL_EMAIL = "CUSTOMER_DELIVERY_CHANNEL_EMAIL";
+        public const string CUSTOMER_DELIVERY_CHANNEL_DIRECT = "CUSTOMER_DELIVERY_CHANNEL_DIRECT";
+        public const string CUSTOMER_DELIVERY_RECORD_NOTICE = "CUSTOMER_DELIVERY_RECORD_NOTICE";
+        public const string ALLOW_SEND_BEFORE_SIGNING = "ALLOW_SEND_BEFORE_SIGNING";
+        public const string SEND_BEFORE_SIGNING_NOTICE = "SEND_BEFORE_SIGNING_NOTICE";
+        public const string ACTIVITY_SEND_CUSTOMER_DELIVERY = "ACTIVITY_SEND_CUSTOMER_DELIVERY";
+        public const string ACTIVITY_UPDATE_CUSTOMER_DELIVERY = "ACTIVITY_UPDATE_CUSTOMER_DELIVERY";
+        public const string ACTIVITY_STORE_PHYSICAL_COPY = "ACTIVITY_STORE_PHYSICAL_COPY";
         public const string STORAGE_LOCATION = "STORAGE_LOCATION";
         public const string CURRENT_LOCATION = "CURRENT_LOCATION";
         public const string ORIGINAL_COPY_CONDITION = "ORIGINAL_COPY_CONDITION";

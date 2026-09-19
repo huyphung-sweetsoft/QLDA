@@ -29,6 +29,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Users => "/Users";
         public static string NhanVien => "/Employees";
         public static string Documents => "/Documents";
+        public static string Schedule => "/Schedule";
         public static string DocumentDetail(Guid documentId)
         {
             return $"/Document/{SecurityUtilities.ProtectUrlParameter(documentId.ToString())}";
@@ -44,6 +45,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string ProjectDetail(Guid idDuAn)
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(idDuAn.ToString())}";
+        }
+        public static string ProjectDocuments(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Documents";
+        }
+        public static string ProjectDocumentDetail(Guid projectId, Guid documentId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Document/{SecurityUtilities.ProtectUrlParameter(documentId.ToString())}";
         }
         public static string ProjectTasks(Guid projectId)
         {
@@ -94,6 +103,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string ViewNhanVien(Guid idNhanVien)
         {
             return $"/NhanViens?idNhanVien={SecurityUtilities.ProtectUrlParameter(idNhanVien.ToString())}";
+        }
+        public static string ViewDetailEmpFromProfile(Guid userId)
+        {
+            return $"/Profile/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
         }
         // Dành cho Menu: Tự xem lịch của mình (Không truyền ID)
         public static string LichCaNhan => "/Lich-ca-nhan";
@@ -170,5 +183,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
             return $"/Customers/{SecurityUtilities.ProtectUrlParameter(idKhachHang.ToString())}";
         }
 
+        public static string Contracts => "/Contracts";
     }
 }

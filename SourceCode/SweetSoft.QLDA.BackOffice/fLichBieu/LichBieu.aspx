@@ -41,7 +41,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link px-3 fw-bold" data-bs-toggle="tab" href="#lich-ngoai-le" role="tab">
-                                    <i class="fas fa-umbrella-beach me-2"></i><%= GetResourceText(BackEndResourceKeys.HOLIDAY_AND_MAKEUP_WORK) %>
+                                    <i class="fas fa-umbrella-beach me-2"></i><%= GetResourceText(BackEndResourceKeys.HOLIDAY) %>
                                 </a>
                             </li>
                         </ul>

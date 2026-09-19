@@ -13,10 +13,11 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
 {
     public partial class Gantts : BaseAdminPage
     {
-        public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Project;
+        public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.GanttChart;
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             if (!IsPostBack)
             {
                 if (!this.IsView)
