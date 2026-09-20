@@ -5,7 +5,22 @@
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server"></asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
+    <!-- BẮT ĐẦU THÊM: CSS CHO AVATAR TRONG POPUP -->
+    <style>
+        .single-avatar-circle {
+            width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .member-item-label {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;
+        }
+        .member-item-label:hover { background-color: #f8fafc; }
+        .member-item-label input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; margin: 0; }
+    </style>
+    <!-- KẾT THÚC THÊM -->
+</asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
@@ -59,11 +74,13 @@
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" Enabled="false" CssClass="disabled"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
+
+                <!-- BẮT ĐẦU SỬA: TEXTBOX HIỂN THỊ MULTILINE -->
                 <div class="col-lg-12">
                     <div class="mb-3">
                         <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME) %></label>
                         <div class="input-group">
-                            <asp:TextBox runat="server" ID="txtNhanVienThamGia" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                            <asp:TextBox runat="server" ID="txtNhanVienThamGia" CssClass="form-control bg-white" ReadOnly="true" TextMode="MultiLine" Rows="2" Style="resize: none;"></asp:TextBox>
                             <asp:HiddenField runat="server" ID="hdfNhanVienIds" />
                             <asp:LinkButton runat="server" ID="btnMoPopupNhanVien" CssClass="btn btn-secondary" OnClick="btnMoPopupNhanVien_Click">
                                 <i class="fa fa-users"></i> <%= GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE) %>
@@ -71,6 +88,8 @@
                         </div>
                     </div>
                 </div>
+                <!-- KẾT THÚC SỬA -->
+
                 <div class="col-lg-12">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_ROOM) %></label>
@@ -92,25 +111,41 @@
                 OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false">Lưu</SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
+
+    <!-- BẮT ĐẦU SỬA: POPUP CHỌN NHÂN VIÊN (SEARCH + CHỌN TẤT CẢ + REPEATER AVATAR) -->
     <SweetSoft:ExtraModal runat="server" ID="dlChonNhanVien" Type="Info" DefaultButton="btnXacNhanNhanVien">
         <ContentTemplate>
+            <div class="row align-items-center mb-3">
+                <div class="col-md-7 mb-2 mb-md-0">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" id="txtSearchEmployee" class="form-control border-start-0 ps-0" placeholder="Tìm tên nhân viên..." autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-md-5 d-flex justify-content-md-end">
+                    <div class="form-check form-switch custom-switch-primary">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="chkSelectAllEmployees">
+                        <label class="form-check-label fw-bold cursor-pointer user-select-none" for="chkSelectAllEmployees">Chọn tất cả</label>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-12">
-                    <table class="table table-bordered mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME) %></th>
-                            </tr>
-                        </thead>
-                    </table>
-                
-                    <div style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-top: none;">
-                        <asp:CheckBoxList runat="server" ID="cblNhanVien" Width="100%" 
-                            CssClass="table table-hover table-borderless mb-0" 
-                            RepeatLayout="Table" 
-                            RepeatColumns="1" 
-                            RepeatDirection="Vertical">
-                        </asp:CheckBoxList>
+                    <div style="max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px;">
+                        <asp:Repeater ID="rptNhanVien" runat="server" OnItemDataBound="rptNhanVien_ItemDataBound">
+                            <ItemTemplate>
+                                <label class="member-item-label m-0 w-100">
+                                    <asp:CheckBox runat="server" ID="chkSelect" />
+                                    <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
+                                    <asp:HiddenField runat="server" ID="hdfDisplayName" Value='<%# Eval("DisplayName") %>' />
+                                    
+                                    <%# Eval("AvatarHtml") %>
+                                    
+                                    <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
+                                </label>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </div>
                 </div>
             </div>
@@ -121,64 +156,92 @@
             </SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
+    <!-- KẾT THÚC SỬA -->
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
-        $(document).ready(function () {
+        // BỌC JS VÀO PageLoaded ĐỂ KHÔNG BỊ LỖI KHI POSTBACK
+        Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function () {
+            
+            // Hàm tính giờ (Giữ nguyên của bác)
             function calcMeetingTime() {
                 var startText = $('#<%= txtThoiGianBatDau.ClientID %>').val();
-        var durationText = $('#<%= txtThoiLuong.ClientID %>').val();
+                var durationText = $('#<%= txtThoiLuong.ClientID %>').val();
 
-        if (startText && durationText) {
-            // Tách chuỗi dd/MM/yyyy HH:mm
-            var parts = startText.split(' ');
-            var dmy = parts[0].split('/');
-            var hm = parts[1].split(':');
+                if (startText && durationText) {
+                    var parts = startText.split(' ');
+                    var dmy = parts[0].split('/');
+                    var hm = parts[1].split(':');
 
-            if (dmy.length === 3 && hm.length === 2) {
-                // Tạo đối tượng Date (Năm, Tháng (0-11), Ngày, Giờ, Phút)
-                var startDate = new Date(dmy[2], parseInt(dmy[1]) - 1, dmy[0], hm[0], hm[1]);
-                var minutes = parseInt(durationText, 10);
+                    if (dmy.length === 3 && hm.length === 2) {
+                        var startDate = new Date(dmy[2], parseInt(dmy[1]) - 1, dmy[0], hm[0], hm[1]);
+                        var minutes = parseInt(durationText, 10);
 
-                if (!isNaN(minutes) && minutes > 0) {
-                    // 1. Cộng phút để tính Thời gian kết thúc
-                    var endDate = new Date(startDate.getTime());
-                    endDate.setMinutes(endDate.getMinutes() + minutes);
+                        if (!isNaN(minutes) && minutes > 0) {
+                            var endDate = new Date(startDate.getTime());
+                            endDate.setMinutes(endDate.getMinutes() + minutes);
 
-                    // Format lại thành chuỗi xuất ra UI
-                    var endStr = String(endDate.getDate()).padStart(2, '0') + '/' +
-                        String(endDate.getMonth() + 1).padStart(2, '0') + '/' +
-                        endDate.getFullYear() + ' ' +
-                        String(endDate.getHours()).padStart(2, '0') + ':' +
-                        String(endDate.getMinutes()).padStart(2, '0');
+                            var endStr = String(endDate.getDate()).padStart(2, '0') + '/' +
+                                String(endDate.getMonth() + 1).padStart(2, '0') + '/' +
+                                endDate.getFullYear() + ' ' +
+                                String(endDate.getHours()).padStart(2, '0') + ':' +
+                                String(endDate.getMinutes()).padStart(2, '0');
 
-                    $('#<%= txtThoiGianKetThuc.ClientID %>').val(endStr);
+                            $('#<%= txtThoiGianKetThuc.ClientID %>').val(endStr);
 
-                        // 2. Tính luôn trạng thái cuộc họp ngay trên màn hình
-                        var now = new Date();
-                        var status = 0; // Đã lên lịch
+                            var now = new Date();
+                            var status = 0; // Đã lên lịch
 
-                        if (now > endDate) {
-                            status = 3; // Kết thúc
-                        } else if (now >= startDate && now <= endDate) {
-                            status = 2; // Đang diễn ra
-                        } else {
-                            var diffMinutes = (startDate - now) / 60000;
-                            if (diffMinutes > 0 && diffMinutes <= 15) {
-                                status = 1; // Sắp diễn ra
+                            if (now > endDate) {
+                                status = 3; // Kết thúc
+                            } else if (now >= startDate && now <= endDate) {
+                                status = 2; // Đang diễn ra
+                            } else {
+                                var diffMinutes = (startDate - now) / 60000;
+                                if (diffMinutes > 0 && diffMinutes <= 15) {
+                                    status = 1; // Sắp diễn ra
+                                }
                             }
+                            $('#<%= ddlTrangThai.ClientID %>').val(status).trigger('change');
                         }
-                        $('#<%= ddlTrangThai.ClientID %>').val(status).trigger('change');
+                    }
                 }
             }
-        }
-    }
 
-    $(document).on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
-        calcMeetingTime();
-    });
-});
+            $(document).off('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>')
+                       .on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
+                    calcMeetingTime();
+                });
+
+            // BẮT ĐẦU SỬA: TÍNH NĂNG TÌM KIẾM VÀ CHỌN TẤT CẢ CHO CheckBoxList
+            var $searchBox = $('#txtSearchEmployee');
+            var $selectAll = $('#chkSelectAllEmployees');
+            var $chkListRows = $('.member-item-label');
+
+            $searchBox.val('');
+            $selectAll.prop('checked', false);
+
+            $searchBox.off('keyup').on('keyup', function () {
+                var value = $(this).val().toLowerCase();
+                $chkListRows.filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+                $selectAll.prop('checked', false);
+            });
+
+            $selectAll.off('change').on('change', function () {
+                var isChecked = $(this).is(':checked');
+                $chkListRows.filter(':visible').find('input[type="checkbox"]').prop('checked', isChecked);
+            });
+
+            $chkListRows.find('input[type="checkbox"]').off('change').on('change', function () {
+                if (!$(this).is(':checked')) {
+                    $selectAll.prop('checked', false);
+                }
+            });
+            // KẾT THÚC SỬA JS
+        });
     </script>
 </asp:Content>

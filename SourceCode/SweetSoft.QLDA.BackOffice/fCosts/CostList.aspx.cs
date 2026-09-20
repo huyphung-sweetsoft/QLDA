@@ -22,7 +22,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         public EventHandler NewCostHandlerCallback;
         public EventHandler EditCostHandlerCallback;
         public EventHandler OpenCostDocumentHandlerCallback;
-        private CostManager _manager = new CostManager();
         private ControlHelpers _controlHelpers = new ControlHelpers();
         public Guid ProjectId
         {
@@ -294,7 +293,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                 {
                     try
                     {
-                        _manager.DeleteCost(cost);
+                        CostManager.Instance.DeleteCost(cost);
                         ShowSuccessDeleteData();
                         grvData.CurrentPageIndex = 1;
                         grvData.Rebind();
@@ -381,7 +380,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
             if (value == null || value == DBNull.Value) return "—";
             int statusCode = Convert.ToInt32(value);
             TrangThaiChiPhi status = (TrangThaiChiPhi)statusCode;
-            string text = GetResourceText(_manager.GetValueForTrangThaiChiPhi(status));
+            string text = GetResourceText(CostManager.Instance.GetValueForTrangThaiChiPhi(status));
             string cssClass = "badge-status badge-status-pending";
             if (statusCode == 1)
             {

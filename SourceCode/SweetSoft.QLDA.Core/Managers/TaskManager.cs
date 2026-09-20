@@ -212,14 +212,14 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     _repository.RemoveAssignment(idCongViec, id);
 
-                    ThongBaoManager.Instance.Create(
-                        userId: id,
-                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
-                        noiDung: $"Công việc: {tenCongViec}",
-                        loaiThongBao: ThongBaoTypes.HeThong,
-                        idCongViec: idCongViec,
-                        idDuAn: idDuAn
-                    );
+                    //ThongBaoManager.Instance.Create(
+                    //    userId: id,
+                    //    tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
+                    //    noiDung: $"Công việc: {tenCongViec}",
+                    //    loaiThongBao: ThongBaoTypes.HeThong,
+                    //    idCongViec: idCongViec,
+                    //    idDuAn: idDuAn
+                    //);
                 }
 
                 // 3. Chuẩn bị dữ liệu Auto-Join
@@ -247,13 +247,13 @@ namespace SweetSoft.QLDA.Core.Managers
                         TblDuAn d = DuAnManager.Instance.GetDuAnById(idDuAn);
                         string tenDuAn = d != null ? d.TenDuAn : "Dự án";
 
-                        ThongBaoManager.Instance.Create(
-                            userId: id,
-                            tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
-                            noiDung: $"Dự án: {tenDuAn}",
-                            loaiThongBao: ThongBaoTypes.DuAn,
-                            idDuAn: idDuAn
-                        );
+                        //ThongBaoManager.Instance.Create(
+                        //    userId: id,
+                        //    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                        //    noiDung: $"Dự án: {tenDuAn}",
+                        //    loaiThongBao: ThongBaoTypes.DuAn,
+                        //    idDuAn: idDuAn
+                        //);
                     }
 
                     // Thông báo: gửi cho nhân viên vừa được giao công việc
@@ -267,13 +267,13 @@ namespace SweetSoft.QLDA.Core.Managers
                             {
                                 string tieuDe = $"Bạn được giao công việc: {congViec.TenCongViec}";
 
-                                ThongBaoManager.Instance.Create(
-                                    userId          : assigneeUserId,
-                                    tieuDe          : tieuDe,
-                                    loaiThongBao    : ThongBaoTypes.CongViec,
-                                    idCongViec      : idCongViec,
-                                    idDuAn          : idDuAn
-                                );
+                                //ThongBaoManager.Instance.Create(
+                                //    userId          : assigneeUserId,
+                                //    tieuDe          : tieuDe,
+                                //    loaiThongBao    : ThongBaoTypes.CongViec,
+                                //    idCongViec      : idCongViec,
+                                //    idDuAn          : idDuAn
+                                //);
                             }
                             catch (Exception ex)
                             {
@@ -854,25 +854,38 @@ namespace SweetSoft.QLDA.Core.Managers
             DataTable dtChildren = _repository.GetChildTasks(projectId, parentTaskId);
             if (dtChildren != null && dtChildren.Rows.Count > 0)
             {
-                bool allCompleted = true;
+                int countNotStarted = 0;
+                int countCompleted = 0;
+                int totalChildren = dtChildren.Rows.Count;
+
                 foreach (DataRow row in dtChildren.Rows)
                 {
                     int trangThai = row["TrangThai"] != DBNull.Value ? Convert.ToInt32(row["TrangThai"]) : 0;
-                    if (trangThai != 2)
-                    {
-                        allCompleted = false;
-                        break;
-                    }
+
+                    if (trangThai == 0) countNotStarted++;
+                    else if (trangThai == 2) countCompleted++;
                 }
+
                 TblCongViec parentTask = FetchById(parentTaskId);
                 if (parentTask != null)
                 {
-                    byte newStatus = allCompleted ? (byte)2 : (byte)1;
+                    byte newStatus = 1;
+
+                    if (countCompleted == totalChildren)
+                    {
+                        newStatus = 2;
+                    }
+                    else if (countNotStarted == totalChildren)
+                    {
+                        newStatus = 0; 
+                    }
+
                     if (parentTask.TrangThai != newStatus)
                     {
                         parentTask.TrangThai = newStatus;
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
+
                         if (parentTask.IdCongViecCha.HasValue)
                         {
                             AutoSetParentStatus(projectId, parentTask.IdCongViecCha.Value);
