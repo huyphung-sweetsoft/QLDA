@@ -3070,4 +3070,159 @@
   <data name="PAYMENT" xml:space="preserve">
     <value>Thanh toán</value>
   </data>
+  <data name="OPEN_SCHEDULE" xml:space="preserve">
+    <value>Mở lịch biểu</value>
+  </data>
+  <data name="PROVINCES" xml:space="preserve">
+    <value>Các tỉnh</value>
+  </data>
+  <data name="TEMPLATE_NAME" xml:space="preserve">
+    <value>Tên mẫu email</value>
+  </data>
+  <data name="BULK_DELETE" xml:space="preserve">
+    <value>Xóa hàng loạt</value>
+  </data>
+  
+  <data name="UPDATE_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Vượt chướng ngại vật</value>
+  </data>
+  <data name="UPDATE_FINISH_QUESTION" xml:space="preserve">
+    <value>Cập nhật câu hỏi phần thi Về đích</value>
+  </data>
+  <data name="PLEASE_COMFIRM_COMPETITION_UPDATE_COMPLETE" xml:space="preserve">
+    <value>Vui lòng xác nhận hoàn thành cuộc thi, sau khi hoàn thành các dữ liệu sẽ không thể chỉnh sửa. </value>
+  </data>
+  <data name="PLEASE_COMFIRM_COMPETITION_ROUND_UPDATE_COMPLETE" xml:space="preserve">
+    <value>Vui lòng xác nhận hoàn thành vòng thi, sau khi hoàn thành các dữ liệu trong vòng thi này sẽ không thể chỉnh sửa. </value>
+  </data>
+  <data name="DATA_ALREADY_UPDATED" xml:space="preserve">
+    <value>Dữ liệu đã được cập nhật trước đó!</value>
+  </data>
+  <data name="VIEW_START_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Khởi động</value>
+  </data>
+  <data name="VIEW_OVERCOME_OBSTACLE_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Vượt chướng ngại vật</value>
+  </data>
+  <data name="VIEW_FINISH_QUESTION" xml:space="preserve">
+    <value>Xem câu hỏi phần thi Về đích</value>
+  </data>
+  <data name="THIS_ROUND_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
+    <value>Vòng thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
+  </data>
+  <data name="THIS_COMPETITION_IS_COMPLETED_CAN_NOT_CHANGE" xml:space="preserve">
+    <value>Cuộc thi này đã hoàn thành, không thể thay đổi dữ liệu</value>
+  </data>
+  <data name="RESULT" xml:space="preserve">
+    <value>Kết quả</value>
+  </data>
+  <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
+    <value>Vui lòng chọn khối</value>
+  </data>
+	<data name="EDIT_INFORMATION" xml:space="preserve">
+    <value>Sửa thông tin</value>
+	  </data>
+  <data name="COMPLETED_100_PERCENT" xml:space="preserve">
+    <value>Hoàn tất 100%</value>
+  </data>
+  <data name="DURATION_D" xml:space="preserve">
+    <value>Ưu tiên (P)</value>
+  </data>
+  <data name="PRIORITY_P" xml:space="preserve">
+    <value>Ưu tiên (P)</value>
+  </data>
+  <data name="WORKLOAD" xml:space="preserve">
+    <value>Workload (D x P)</value>
+  </data>
+  <data name="STANDARD_DAYS" xml:space="preserve">
+    <value>Ngày chuẩn</value>
+  </data>
+  <data name="ALLOCATION_PERCENTAGE" xml:space="preserve">
+    <value>% Allocation =</value>
+  </data>
+  <data name="TIME_FRAME" xml:space="preserve">
+    <value>Khung thời gian</value>
+  </data>
+  <data name="ROLE" xml:space="preserve">
+    <value>Vai trò</value>
+  </data>
+  <data name="COEFFICIENT" xml:space="preserve">
+    <value>Hệ số</value>
+  </data>
+  <data name="CAPACITY" xml:space="preserve">
+    <value>Capacity (Sức chứa)</value>
+  </data>
+  <data name="SET_AS_OFFICIAL_FILE" xml:space="preserve">
+    <value>Chọn chính thức</value>
+  </data>
+  <data name="CLEAR_OFFICIAL_FILE" xml:space="preserve">
+    <value>Bỏ chính thức</value>
+  </data>
+  <data name="ACTIVITY_SET_OFFICIAL_FILE" xml:space="preserve">
+    <value>Chọn file chính thức</value>
+  </data>
+  <data name="ACTIVITY_CLEAR_OFFICIAL_FILE" xml:space="preserve">
+    <value>Bỏ chọn file chính thức</value>
+  </data>
+  <data name="SIGNING_PENDING" xml:space="preserve"><value>Chờ ký</value></data>
+  <data name="SIGNING_REQUEST_CHANGES" xml:space="preserve"><value>Yêu cầu điều chỉnh</value></data>
+  <data name="SIGNING_COMPLETED" xml:space="preserve"><value>Đã ký</value></data>
+  <data name="SUBMIT_FOR_SIGNING" xml:space="preserve"><value>Trình ký</value></data>
+  <data name="CONFIRM_SIGNED" xml:space="preserve"><value>Xác nhận đã ký</value></data>
+  <data name="REQUEST_CHANGES" xml:space="preserve"><value>Yêu cầu điều chỉnh</value></data>
+  <data name="SIGNING_NOTE" xml:space="preserve"><value>Ghi chú trình ký</value></data>
+  <data name="SIGNING_VERSION" xml:space="preserve"><value>Phiên bản trình ký</value></data>
+  <data name="SIGNING_RESULT_FILE" xml:space="preserve"><value>Tệp sau khi ký</value></data>
+  <data name="SIGNING_RESULT_FILE_HINT" xml:space="preserve"><value>Tải lên đúng một tệp PDF hoặc ảnh scan/chụp sau khi ký.</value></data>
+  <data name="SIGNING_SIGNER_REQUIRED" xml:space="preserve"><value>Vui lòng chọn người ký.</value></data>
+  <data name="SIGNING_CHANGE_REASON_REQUIRED" xml:space="preserve"><value>Vui lòng nhập lý do yêu cầu điều chỉnh.</value></data>
+  <data name="SIGNING_RESULT_REQUIRED" xml:space="preserve"><value>Vui lòng lưu đúng một tệp kết quả ký trước khi xác nhận.</value></data>
+  <data name="ACTIVITY_SUBMIT_SIGNING" xml:space="preserve"><value>Trình ký tài liệu</value></data>
+  <data name="ACTIVITY_REQUEST_SIGNING_CHANGES" xml:space="preserve"><value>Yêu cầu điều chỉnh trình ký</value></data>
+  <data name="ACTIVITY_COMPLETE_SIGNING" xml:space="preserve"><value>Hoàn tất ký tài liệu</value></data>
+  <data name="PAYMENT_LIST" xml:space="preserve">
+    <value>Danh sách thanh toán</value>
+  </data>
+  <data name="PAYMENT_CODE" xml:space="preserve">
+    <value>Mã đợt thanh toán</value>
+  </data>
+  <data name="PAYMENT_NAME" xml:space="preserve">
+    <value>Tên đợt thanh toán</value>
+  </data>
+  <data name="PAYMENT_AMOUNT" xml:space="preserve">
+    <value>Số tiền (VNĐ)</value>
+  </data>
+  <data name="PAYMENT_DUE_DATE" xml:space="preserve">
+    <value>Hạn thanh toán</value>
+  </data>
+  <data name="PAYMENT_ACTUAL_DATE" xml:space="preserve">
+    <value>Ngày thanh toán thực tế</value>
+  </data>
+  <data name="PAYMENT_UNPAID" xml:space="preserve">
+    <value>Chưa thanh toán</value>
+  </data>
+  <data name="PAYMENT_OVERDUE" xml:space="preserve">
+    <value>Trễ hạn</value>
+  </data>
+  <data name="PAYMENT_PAID" xml:space="preserve">
+    <value>Đã thanh toán</value>
+  </data>
+  <data name="PAYMENT_EDIT_STATUS" xml:space="preserve">
+    <value>Cập nhật thanh toán</value>
+  </data>
+  <data name="PAYMENT_SEARCH_PLACEHOLDER" xml:space="preserve">
+    <value>Nhập mã đợt, tên đợt thanh toán...</value>
+  </data>
+  <data name="PAYMENT_DATE_REQUIRED" xml:space="preserve">
+    <value>Vui lòng chọn ngày thanh toán thực tế không lớn hơn hôm nay.</value>
+  </data>
+  <data name="PAYMENT_QUICK_APPROVE" xml:space="preserve">
+    <value>Đã thanh toán</value>
+  </data>
+  <data name="PAYMENT_QUICK_APPROVE_CONFIRM" xml:space="preserve">
+    <value>Bạn có chắc muốn duyệt thanh toán {0} không?</value>
+  </data>
+  <data name="PAYMENT_DELETE_CONFIRM" xml:space="preserve">
+    <value>Bạn có chắc muốn xóa thanh toán {0} không?</value>
+  </data>
 </root>
