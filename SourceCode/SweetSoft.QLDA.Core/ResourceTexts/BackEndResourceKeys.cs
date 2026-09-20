@@ -45,6 +45,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         // These values mirror aspnet_Functions.FunctionName so the common
         // menu renderer can resolve dashboard labels without special mapping.
         public const string DASHBOARD = "Dashboard";
+        public const string COST = "COST";
+        public const string PAYMENT = "PAYMENT";
         public const string CONFIRM_PASSWORD = "CONFIRM_PASSWORD";
         public const string DELETE = "DELETE";
         public const string DISPLAY_NAME = "DISPLAY_NAME";

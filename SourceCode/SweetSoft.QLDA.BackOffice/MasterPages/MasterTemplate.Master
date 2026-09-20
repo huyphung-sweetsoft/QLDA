@@ -262,7 +262,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <div class="btnCtrMenu"><i class='bx bx-menu'></i></div>
                                     </div>
                                     <div class="wrapLogoHeader">
-                                        <a class="linkLogoHeader" href="<%= GetRelativeClientPath("/") %>" title="Trang chủ">
+                                        <a class="linkLogoHeader" href="<%= GetRelativeClientPath("Home/Overview/") %>" title="Trang chủ">
                                             <img class="imgLogoHeader" src="<%=GetRelativeClientPath("/Styles/images/SweetSoft-logo-light.png") %>" alt="Trang chủ" />
                                         </a>
                                     </div>
