@@ -326,10 +326,11 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdPhongBan.AutoIncrement = false;
 				colvarIdPhongBan.IsNullable = true;
 				colvarIdPhongBan.IsPrimaryKey = false;
-				colvarIdPhongBan.IsForeignKey = false;
+				colvarIdPhongBan.IsForeignKey = true;
 				colvarIdPhongBan.IsReadOnly = false;
 				colvarIdPhongBan.DefaultSetting = @"";
-				colvarIdPhongBan.ForeignKeyTableName = "";
+				
+					colvarIdPhongBan.ForeignKeyTableName = "TblLoai";
 				schema.Columns.Add(colvarIdPhongBan);
 				
 				TableSchema.TableColumn colvarIdChucDanh = new TableSchema.TableColumn(schema);
@@ -339,10 +340,11 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdChucDanh.AutoIncrement = false;
 				colvarIdChucDanh.IsNullable = true;
 				colvarIdChucDanh.IsPrimaryKey = false;
-				colvarIdChucDanh.IsForeignKey = false;
+				colvarIdChucDanh.IsForeignKey = true;
 				colvarIdChucDanh.IsReadOnly = false;
 				colvarIdChucDanh.DefaultSetting = @"";
-				colvarIdChucDanh.ForeignKeyTableName = "";
+				
+					colvarIdChucDanh.ForeignKeyTableName = "TblLoai";
 				schema.Columns.Add(colvarIdChucDanh);
 				
 				TableSchema.TableColumn colvarNgaySinh = new TableSchema.TableColumn(schema);
@@ -1041,6 +1043,28 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetApplication.FetchByID(this.ApplicationId); }
 			set { SetColumnValue("ApplicationId", value.ApplicationId); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblLoai ActiveRecord object related to this AspnetUser
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblLoai TblLoai
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblLoai.FetchByID(this.IdChucDanh); }
+			set { SetColumnValue("IdChucDanh", value.IdLoai); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblLoai ActiveRecord object related to this AspnetUser
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblLoai TblLoaiToIdPhongBan
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblLoai.FetchByID(this.IdPhongBan); }
+			set { SetColumnValue("IdPhongBan", value.IdLoai); }
 		}
 		
 		
