@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
@@ -19,6 +19,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
     {
         public EventHandler NewProjectHandlerCallBack;
         public EventHandler EditProjectHandlerCallBack;
+        public EventHandler ManageProjectTypeHandlerCallBack;
 
         protected bool IsEdit
         {
@@ -408,6 +409,26 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             parameters[TblDuAn.Columns.IdKhachHang] = IdKhachHang;
 
             return parameters;
+        }
+
+        protected void btnQuanLyLoaiDuAn_Click(object sender, EventArgs e)
+        {
+            if (ManageProjectTypeHandlerCallBack != null)
+                ManageProjectTypeHandlerCallBack(this, EventArgs.Empty);
+        }
+
+        public void ReloadProjectTypeDropdown()
+        {
+            string selectedValue = ddlSearchProjectType.SelectedValue;
+
+            new ControlHelpers().BindLoaiDuAn(ddlSearchProjectType);
+
+            if (!string.IsNullOrEmpty(selectedValue))
+            {
+                ddlSearchProjectType.SelectedValue = selectedValue;
+            }
+
+            upnlSearchDefault.Update();
         }
     }
 }

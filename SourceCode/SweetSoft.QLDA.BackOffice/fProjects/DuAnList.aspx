@@ -5,6 +5,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.EnumHelper.Defines" %>
 <%@ Register Src="~/fProjects/Controls/CtrlDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAn" %>
 <%@ Register Src="~/fProjects/Controls/CtrlChonNhanVien.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVien" %>
+<%@ Register Src="~/Controls/CtrlQuanLyLoai.ascx" TagPrefix="SweetSoft" TagName="CtrlQuanLyLoai" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -158,6 +159,7 @@
             </asp:UpdatePanel>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
+    <SweetSoft:CtrlQuanLyLoai runat="server" ID="CtrlQuanLyLoai1" OnDataChanged="CtrlQuanLyLoai1_OnDataChanged" />
     <SweetSoft:CtrlChonNhanVien runat="server" ID="CtrlChonNhanVien1"/>
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">

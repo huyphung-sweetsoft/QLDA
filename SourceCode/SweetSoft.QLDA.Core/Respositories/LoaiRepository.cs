@@ -33,5 +33,63 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .OrderAsc(TblLoai.Columns.ThuTuHienThi);
             return select.ExecuteTypedList<TblLoai>();
         }
+
+        public bool IsDuplicate(string doiTuong, string tenLoai, Guid? excludeId = null)
+        {
+            Select select = new Select();
+            select.From(TblLoai.Schema)
+                .Where(TblLoai.DoiTuongColumn).IsEqualTo(doiTuong)
+                .And(TblLoai.TenLoaiColumn).IsEqualTo(tenLoai)
+                .And(TblLoai.DaXoaColumn).IsEqualTo(false);
+
+            if (excludeId.HasValue)
+            {
+                select.And(TblLoai.IdLoaiColumn).IsNotEqualTo(excludeId.Value);
+            }
+
+            return select.GetRecordCount() > 0;
+        }
+
+        public override TblLoai Insert(TblLoai item)
+        {
+            item.Save();
+            Task.Run(async () =>
+            {
+                await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, item.IdLoai);
+            });
+            return item;
+        }
+
+        public override TblLoai Update(TblLoai itemNew)
+        {
+            var id = itemNew.IdLoai;
+            TblLoai itemOld = GetById(id);
+            itemNew.Save();
+            
+            string updatedBy = itemNew.NguoiCapNhat ?? "";
+            
+            Task.Run(async () =>
+            {
+                await _auditManager.LogChangesAsync(itemOld, itemNew, _tableName, id, updatedBy);
+            });
+            return itemNew;
+        }
+
+        public bool DeleteLoai(Guid idLoai)
+        {
+            TblLoai item = GetById(idLoai);
+            if (item != null)
+            {
+                item.DaXoa = true;
+                item.Save();
+                
+                Task.Run(async () =>
+                {
+                    await _auditManager.LogActionAsync(LogActions.Actions.DELETE, item, _tableName, idLoai);
+                });
+                return true;
+            }
+            return false;
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 select * from(
                     select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from(
                         select kh.*,
-                        lkh.TenLoaiKhachHang,
+                        l.TenLoai AS TenLoaiKhachHang,
                         ISNULL(d.SoLuongDuAn,0) AS SoLuongDuAn,
                         COUNT(1) OVER() AS total_records
                         from TblKhachHang as kh

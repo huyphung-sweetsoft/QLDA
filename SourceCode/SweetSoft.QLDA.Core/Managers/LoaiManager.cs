@@ -1,3 +1,4 @@
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
@@ -41,6 +42,53 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetByDoiTuong(doiTuong);
         }
 
+        public TblLoai InsertLoai(TblLoai entity)
+        {
+            if (string.IsNullOrWhiteSpace(entity.TenLoai))
+                throw new ArgumentException("Tên loại không được để trống.");
 
+            entity.TenLoai = entity.TenLoai.Trim();
+
+            if (_repository.IsDuplicate(entity.DoiTuong, entity.TenLoai))
+                throw new InvalidOperationException($"Tên '{entity.TenLoai}' đã tồn tại trong đối tượng '{entity.DoiTuong}'.");
+
+            entity.IdLoai = Guid.NewGuid();
+            entity.NgayTao = DateTime.Now;
+            if (string.IsNullOrEmpty(entity.NguoiTao))
+                entity.NguoiTao = SweetContext.Current.UserName;
+                
+            entity.DaXoa = false;
+            
+            // Set max ThuTuHienThi
+            var currentList = GetByDoiTuong(entity.DoiTuong);
+            if (currentList.Any())
+                entity.ThuTuHienThi = currentList.Max(x => x.ThuTuHienThi) + 1;
+            else
+                entity.ThuTuHienThi = 1;
+
+            return _repository.Insert(entity);
+        }
+
+        public TblLoai UpdateLoai(TblLoai entity)
+        {
+            if (string.IsNullOrWhiteSpace(entity.TenLoai))
+                throw new ArgumentException("Tên loại không được để trống.");
+
+            entity.TenLoai = entity.TenLoai.Trim();
+
+            if (_repository.IsDuplicate(entity.DoiTuong, entity.TenLoai, entity.IdLoai))
+                throw new InvalidOperationException($"Tên '{entity.TenLoai}' đã tồn tại trong đối tượng '{entity.DoiTuong}'.");
+
+            entity.NgayCapNhat = DateTime.Now;
+            if (string.IsNullOrEmpty(entity.NguoiCapNhat))
+                entity.NguoiCapNhat = SweetContext.Current.UserName;
+
+            return _repository.Update(entity);
+        }
+
+        public bool DeleteLoai(Guid idLoai)
+        {
+            return _repository.DeleteLoai(idLoai);
+        }
     }
 }
