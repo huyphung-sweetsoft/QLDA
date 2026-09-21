@@ -1,9 +1,10 @@
-﻿//-----------------------PROGRAMER LOGS---------------------------
+//-----------------------PROGRAMER LOGS---------------------------
 using SubSonic;
 using SweetSoft.QLDA.BackOffice.Controls;
 using SweetSoft.QLDA.BackOffice.Controls.AutoComplete;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Controls.Helpers;
+using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Helpers;
@@ -544,7 +545,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public void BindChucDanh(ExtraDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblLoai> chucDanh = LoaiManager.Instance.GetAllChucDanh();
+            List<TblLoai> chucDanh = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.ChucDanh);
             if (chucDanh == null)
                 chucDanh = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -555,7 +556,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public void BindChucDanh(BootstrapDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblLoai> chucDanh = LoaiManager.Instance.GetAllChucDanh();
+            List<TblLoai> chucDanh = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.ChucDanh);
             if (chucDanh == null)
                 chucDanh = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -566,7 +567,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public void BindPhongBan(ExtraDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblLoai> phongBan = LoaiManager.Instance.GetAllPhongBan();
+            List<TblLoai> phongBan = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.PhongBan);
             if (phongBan == null)
                 phongBan = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -577,7 +578,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public void BindPhongBan(BootstrapDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblLoai> phongBan = LoaiManager.Instance.GetAllPhongBan();
+            List<TblLoai> phongBan = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.PhongBan);
             if (phongBan == null)
                 phongBan = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -702,7 +703,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = "";
-            List<TblLoai> tblLoaiDuAns = LoaiManager.Instance.GetAllLoaiDuAn();
+            List<TblLoai> tblLoaiDuAns = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.DuAn);
             if (tblLoaiDuAns == null)
                 tblLoaiDuAns = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -715,7 +716,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = "";
-            List<TblLoai> tblLoaiDuAns = LoaiManager.Instance.GetAllLoaiDuAn();
+            List<TblLoai> tblLoaiDuAns = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.DuAn);
             if (tblLoaiDuAns == null)
                 tblLoaiDuAns = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -767,7 +768,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<TblLoai> tblLoaiKhachHangs = LoaiManager.Instance.GetAllLoaiKhachHang();
+            List<TblLoai> tblLoaiKhachHangs = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.KhachHang);
             if (tblLoaiKhachHangs == null)
                 tblLoaiKhachHangs = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;
@@ -780,7 +781,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<TblLoai> tblLoaiKhachHangs = LoaiManager.Instance.GetAllLoaiKhachHang();
+            List<TblLoai> tblLoaiKhachHangs = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.KhachHang);
             if (tblLoaiKhachHangs == null)
                 tblLoaiKhachHangs = new List<TblLoai>();
             ddl.DataTextField = TblLoai.Columns.TenLoai;

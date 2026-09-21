@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
@@ -24,41 +24,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .ExecuteSingle<TblLoai>();
         }
 
-        public List<TblLoai> GetAllLoaiDuAn()
+        public List<TblLoai> GetByDoiTuong(string doiTuong)
         {
             Select select = new Select();
             select.From(TblLoai.Schema)
-                .Where(TblLoai.DoiTuongColumn).IsEqualTo("DU_AN")
-                .And(TblLoai.DaXoaColumn).IsEqualTo(false)
-                .OrderAsc(TblLoai.Columns.ThuTuHienThi);
-            return select.ExecuteTypedList<TblLoai>();
-        }
-
-        public List<TblLoai> GetAllLoaiKhachHang()
-        {
-            Select select = new Select();
-            select.From(TblLoai.Schema)
-                .Where(TblLoai.DoiTuongColumn).IsEqualTo("KHACH_HANG")
-                .And(TblLoai.DaXoaColumn).IsEqualTo(false)
-                .OrderAsc(TblLoai.Columns.ThuTuHienThi);
-            return select.ExecuteTypedList<TblLoai>();
-        }
-
-        public List<TblLoai> GetAllPhongBan()
-        {
-            Select select = new Select();
-            select.From(TblLoai.Schema)
-                .Where(TblLoai.DoiTuongColumn).IsEqualTo("PHONG_BAN")
-                .And(TblLoai.DaXoaColumn).IsEqualTo(false)
-                .OrderAsc(TblLoai.Columns.ThuTuHienThi);
-            return select.ExecuteTypedList<TblLoai>();
-        }
-
-        public List<TblLoai> GetAllChucDanh()
-        {
-            Select select = new Select();
-            select.From(TblLoai.Schema)
-                .Where(TblLoai.DoiTuongColumn).IsEqualTo("CHUC_DANH")
+                .Where(TblLoai.DoiTuongColumn).IsEqualTo(doiTuong)
                 .And(TblLoai.DaXoaColumn).IsEqualTo(false)
                 .OrderAsc(TblLoai.Columns.ThuTuHienThi);
             return select.ExecuteTypedList<TblLoai>();

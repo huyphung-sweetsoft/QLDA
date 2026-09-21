@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
+using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
@@ -12,6 +12,13 @@ namespace SweetSoft.QLDA.Core.Managers
 {
     public class LoaiManager : BaseManager
     {
+        public static class LoaiDoiTuong
+        {
+            public const string KhachHang = "KHACH_HANG";
+            public const string DuAn = "DU_AN";
+            public const string PhongBan = "PHONG_BAN";
+            public const string ChucDanh = "CHUC_DANH";
+        }
         private static readonly Lazy<LoaiManager> _instance = new Lazy<LoaiManager>(() => new LoaiManager());
 
         public static LoaiManager Instance => _instance.Value;
@@ -29,24 +36,9 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetById(id);
         }
 
-        public List<TblLoai> GetAllLoaiDuAn()
+        public List<TblLoai> GetByDoiTuong(string doiTuong)
         {
-            return _repository.GetAllLoaiDuAn();
-        }
-
-        public List<TblLoai> GetAllLoaiKhachHang()
-        {
-            return _repository.GetAllLoaiKhachHang();
-        }
-
-        public List<TblLoai> GetAllPhongBan()
-        {
-            return _repository.GetAllPhongBan();
-        }
-
-        public List<TblLoai> GetAllChucDanh()
-        {
-            return _repository.GetAllChucDanh();
+            return _repository.GetByDoiTuong(doiTuong);
         }
 
 
