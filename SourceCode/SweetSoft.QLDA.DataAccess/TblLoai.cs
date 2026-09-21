@@ -15,23 +15,23 @@ using SubSonic.Utilities;
 namespace SweetSoft.QLDA.DataAccess
 {
 	/// <summary>
-	/// Strongly-typed collection for the TblLoaiDuAn class.
+	/// Strongly-typed collection for the TblLoai class.
 	/// </summary>
     [Serializable]
-	public partial class TblLoaiDuAnCollection : ActiveList<TblLoaiDuAn, TblLoaiDuAnCollection>
+	public partial class TblLoaiCollection : ActiveList<TblLoai, TblLoaiCollection>
 	{	   
-		public TblLoaiDuAnCollection() {}
+		public TblLoaiCollection() {}
         
         /// <summary>
 		/// Filters an existing collection based on the set criteria. This is an in-memory filter
 		/// Thanks to developingchris for this!
         /// </summary>
-        /// <returns>TblLoaiDuAnCollection</returns>
-		public TblLoaiDuAnCollection Filter()
+        /// <returns>TblLoaiCollection</returns>
+		public TblLoaiCollection Filter()
         {
             for (int i = this.Count - 1; i > -1; i--)
             {
-                TblLoaiDuAn o = this[i];
+                TblLoai o = this[i];
                 foreach (SubSonic.Where w in this.wheres)
                 {
                     bool remove = false;
@@ -62,14 +62,14 @@ namespace SweetSoft.QLDA.DataAccess
 		
 	}
 	/// <summary>
-	/// This is an ActiveRecord class which wraps the TblLoaiDuAn table.
+	/// This is an ActiveRecord class which wraps the TblLoai table.
 	/// </summary>
 	[Serializable]
-	public partial class TblLoaiDuAn : ActiveRecord<TblLoaiDuAn>, IActiveRecord
+	public partial class TblLoai : ActiveRecord<TblLoai>, IActiveRecord
 	{
 		#region .ctors and Default Settings
 		
-		public TblLoaiDuAn()
+		public TblLoai()
 		{
 		  SetSQLProps();
 		  InitSetDefaults();
@@ -78,7 +78,7 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		private void InitSetDefaults() { SetDefaults(); }
 		
-		public TblLoaiDuAn(bool useDatabaseDefaults)
+		public TblLoai(bool useDatabaseDefaults)
 		{
 			SetSQLProps();
 			if(useDatabaseDefaults)
@@ -86,14 +86,14 @@ namespace SweetSoft.QLDA.DataAccess
 			MarkNew();
 		}
         
-		public TblLoaiDuAn(object keyID)
+		public TblLoai(object keyID)
 		{
 			SetSQLProps();
 			InitSetDefaults();
 			LoadByKey(keyID);
 		}
 		 
-		public TblLoaiDuAn(string columnName, object columnValue)
+		public TblLoai(string columnName, object columnValue)
 		{
 			SetSQLProps();
 			InitSetDefaults();
@@ -121,37 +121,49 @@ namespace SweetSoft.QLDA.DataAccess
 			if(!IsSchemaInitialized)
 			{
 				//Schema declaration
-				TableSchema.Table schema = new TableSchema.Table("TblLoaiDuAn", TableType.Table, DataService.GetInstance("DataAccessProvider"));
+				TableSchema.Table schema = new TableSchema.Table("TblLoai", TableType.Table, DataService.GetInstance("DataAccessProvider"));
 				schema.Columns = new TableSchema.TableColumnCollection();
 				schema.SchemaName = @"dbo";
 				//columns
 				
-				TableSchema.TableColumn colvarIdLoaiDuAn = new TableSchema.TableColumn(schema);
-				colvarIdLoaiDuAn.ColumnName = "IdLoaiDuAn";
-				colvarIdLoaiDuAn.DataType = DbType.Guid;
-				colvarIdLoaiDuAn.MaxLength = 0;
-				colvarIdLoaiDuAn.AutoIncrement = false;
-				colvarIdLoaiDuAn.IsNullable = false;
-				colvarIdLoaiDuAn.IsPrimaryKey = true;
-				colvarIdLoaiDuAn.IsForeignKey = false;
-				colvarIdLoaiDuAn.IsReadOnly = false;
+				TableSchema.TableColumn colvarIdLoai = new TableSchema.TableColumn(schema);
+				colvarIdLoai.ColumnName = "IdLoai";
+				colvarIdLoai.DataType = DbType.Guid;
+				colvarIdLoai.MaxLength = 0;
+				colvarIdLoai.AutoIncrement = false;
+				colvarIdLoai.IsNullable = false;
+				colvarIdLoai.IsPrimaryKey = true;
+				colvarIdLoai.IsForeignKey = false;
+				colvarIdLoai.IsReadOnly = false;
+				colvarIdLoai.DefaultSetting = @"";
+				colvarIdLoai.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarIdLoai);
 				
-						colvarIdLoaiDuAn.DefaultSetting = @"(newid())";
-				colvarIdLoaiDuAn.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarIdLoaiDuAn);
+				TableSchema.TableColumn colvarDoiTuong = new TableSchema.TableColumn(schema);
+				colvarDoiTuong.ColumnName = "DoiTuong";
+				colvarDoiTuong.DataType = DbType.AnsiString;
+				colvarDoiTuong.MaxLength = 50;
+				colvarDoiTuong.AutoIncrement = false;
+				colvarDoiTuong.IsNullable = false;
+				colvarDoiTuong.IsPrimaryKey = false;
+				colvarDoiTuong.IsForeignKey = false;
+				colvarDoiTuong.IsReadOnly = false;
+				colvarDoiTuong.DefaultSetting = @"";
+				colvarDoiTuong.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDoiTuong);
 				
-				TableSchema.TableColumn colvarTenLoaiDuAn = new TableSchema.TableColumn(schema);
-				colvarTenLoaiDuAn.ColumnName = "TenLoaiDuAn";
-				colvarTenLoaiDuAn.DataType = DbType.String;
-				colvarTenLoaiDuAn.MaxLength = 250;
-				colvarTenLoaiDuAn.AutoIncrement = false;
-				colvarTenLoaiDuAn.IsNullable = false;
-				colvarTenLoaiDuAn.IsPrimaryKey = false;
-				colvarTenLoaiDuAn.IsForeignKey = false;
-				colvarTenLoaiDuAn.IsReadOnly = false;
-				colvarTenLoaiDuAn.DefaultSetting = @"";
-				colvarTenLoaiDuAn.ForeignKeyTableName = "";
-				schema.Columns.Add(colvarTenLoaiDuAn);
+				TableSchema.TableColumn colvarTenLoai = new TableSchema.TableColumn(schema);
+				colvarTenLoai.ColumnName = "TenLoai";
+				colvarTenLoai.DataType = DbType.String;
+				colvarTenLoai.MaxLength = 250;
+				colvarTenLoai.AutoIncrement = false;
+				colvarTenLoai.IsNullable = false;
+				colvarTenLoai.IsPrimaryKey = false;
+				colvarTenLoai.IsForeignKey = false;
+				colvarTenLoai.IsReadOnly = false;
+				colvarTenLoai.DefaultSetting = @"";
+				colvarTenLoai.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarTenLoai);
 				
 				TableSchema.TableColumn colvarMoTa = new TableSchema.TableColumn(schema);
 				colvarMoTa.ColumnName = "MoTa";
@@ -175,8 +187,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarThuTuHienThi.IsPrimaryKey = false;
 				colvarThuTuHienThi.IsForeignKey = false;
 				colvarThuTuHienThi.IsReadOnly = false;
-				
-						colvarThuTuHienThi.DefaultSetting = @"((0))";
+				colvarThuTuHienThi.DefaultSetting = @"";
 				colvarThuTuHienThi.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarThuTuHienThi);
 				
@@ -189,8 +200,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarKichHoat.IsPrimaryKey = false;
 				colvarKichHoat.IsForeignKey = false;
 				colvarKichHoat.IsReadOnly = false;
-				
-						colvarKichHoat.DefaultSetting = @"((1))";
+				colvarKichHoat.DefaultSetting = @"";
 				colvarKichHoat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarKichHoat);
 				
@@ -203,8 +213,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarDaXoa.IsPrimaryKey = false;
 				colvarDaXoa.IsForeignKey = false;
 				colvarDaXoa.IsReadOnly = false;
-				
-						colvarDaXoa.DefaultSetting = @"((0))";
+				colvarDaXoa.DefaultSetting = @"";
 				colvarDaXoa.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarDaXoa);
 				
@@ -230,8 +239,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayTao.IsPrimaryKey = false;
 				colvarNgayTao.IsForeignKey = false;
 				colvarNgayTao.IsReadOnly = false;
-				
-						colvarNgayTao.DefaultSetting = @"(getdate())";
+				colvarNgayTao.DefaultSetting = @"";
 				colvarNgayTao.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayTao);
 				
@@ -264,27 +272,35 @@ namespace SweetSoft.QLDA.DataAccess
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
-				DataService.Providers["DataAccessProvider"].AddSchema("TblLoaiDuAn",schema);
+				DataService.Providers["DataAccessProvider"].AddSchema("TblLoai",schema);
 			}
 		}
 		#endregion
 		
 		#region Props
 		  
-		[XmlAttribute("IdLoaiDuAn")]
+		[XmlAttribute("IdLoai")]
 		[Bindable(true)]
-		public Guid IdLoaiDuAn 
+		public Guid IdLoai 
 		{
-			get { return GetColumnValue<Guid>(Columns.IdLoaiDuAn); }
-			set { SetColumnValue(Columns.IdLoaiDuAn, value); }
+			get { return GetColumnValue<Guid>(Columns.IdLoai); }
+			set { SetColumnValue(Columns.IdLoai, value); }
 		}
 		  
-		[XmlAttribute("TenLoaiDuAn")]
+		[XmlAttribute("DoiTuong")]
 		[Bindable(true)]
-		public string TenLoaiDuAn 
+		public string DoiTuong 
 		{
-			get { return GetColumnValue<string>(Columns.TenLoaiDuAn); }
-			set { SetColumnValue(Columns.TenLoaiDuAn, value); }
+			get { return GetColumnValue<string>(Columns.DoiTuong); }
+			set { SetColumnValue(Columns.DoiTuong, value); }
+		}
+		  
+		[XmlAttribute("TenLoai")]
+		[Bindable(true)]
+		public string TenLoai 
+		{
+			get { return GetColumnValue<string>(Columns.TenLoai); }
+			set { SetColumnValue(Columns.TenLoai, value); }
 		}
 		  
 		[XmlAttribute("MoTa")]
@@ -354,6 +370,94 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
+		private SweetSoft.QLDA.DataAccess.AspnetUserCollection colAspnetUsers;
+		public SweetSoft.QLDA.DataAccess.AspnetUserCollection AspnetUsers()
+		{
+			if(colAspnetUsers == null)
+			{
+				colAspnetUsers = new SweetSoft.QLDA.DataAccess.AspnetUserCollection().Where(AspnetUser.Columns.IdChucDanh, IdLoai).Load();
+				colAspnetUsers.ListChanged += new ListChangedEventHandler(colAspnetUsers_ListChanged);
+			}
+			return colAspnetUsers;
+		}
+				
+		void colAspnetUsers_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetUsers[e.NewIndex].IdChucDanh = IdLoai;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.AspnetUserCollection colAspnetUsersFromTblLoai;
+		public SweetSoft.QLDA.DataAccess.AspnetUserCollection AspnetUsersFromTblLoai()
+		{
+			if(colAspnetUsersFromTblLoai == null)
+			{
+				colAspnetUsersFromTblLoai = new SweetSoft.QLDA.DataAccess.AspnetUserCollection().Where(AspnetUser.Columns.IdPhongBan, IdLoai).Load();
+				colAspnetUsersFromTblLoai.ListChanged += new ListChangedEventHandler(colAspnetUsersFromTblLoai_ListChanged);
+			}
+			return colAspnetUsersFromTblLoai;
+		}
+				
+		void colAspnetUsersFromTblLoai_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colAspnetUsersFromTblLoai[e.NewIndex].IdPhongBan = IdLoai;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblDuAnCollection colTblDuAnRecords;
+		public SweetSoft.QLDA.DataAccess.TblDuAnCollection TblDuAnRecords()
+		{
+			if(colTblDuAnRecords == null)
+			{
+				colTblDuAnRecords = new SweetSoft.QLDA.DataAccess.TblDuAnCollection().Where(TblDuAn.Columns.IdLoaiDuAn, IdLoai).Load();
+				colTblDuAnRecords.ListChanged += new ListChangedEventHandler(colTblDuAnRecords_ListChanged);
+			}
+			return colTblDuAnRecords;
+		}
+				
+		void colTblDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblDuAnRecords[e.NewIndex].IdLoaiDuAn = IdLoai;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblKhachHangCollection colTblKhachHangRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhachHangCollection TblKhachHangRecords()
+		{
+			if(colTblKhachHangRecords == null)
+			{
+				colTblKhachHangRecords = new SweetSoft.QLDA.DataAccess.TblKhachHangCollection().Where(TblKhachHang.Columns.IdLoaiKhachHang, IdLoai).Load();
+				colTblKhachHangRecords.ListChanged += new ListChangedEventHandler(colTblKhachHangRecords_ListChanged);
+			}
+			return colTblKhachHangRecords;
+		}
+				
+		void colTblKhachHangRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhachHangRecords[e.NewIndex].IdLoaiKhachHang = IdLoai;
+            }
+		}
+		#endregion
+		
 			
 		
 		//no foreign key tables defined (0)
@@ -370,13 +474,15 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLoaiDuAn,string varTenLoaiDuAn,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdLoai,string varDoiTuong,string varTenLoai,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
-			TblLoaiDuAn item = new TblLoaiDuAn();
+			TblLoai item = new TblLoai();
 			
-			item.IdLoaiDuAn = varIdLoaiDuAn;
+			item.IdLoai = varIdLoai;
 			
-			item.TenLoaiDuAn = varTenLoaiDuAn;
+			item.DoiTuong = varDoiTuong;
+			
+			item.TenLoai = varTenLoai;
 			
 			item.MoTa = varMoTa;
 			
@@ -404,13 +510,15 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLoaiDuAn,string varTenLoaiDuAn,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdLoai,string varDoiTuong,string varTenLoai,string varMoTa,int varThuTuHienThi,bool varKichHoat,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
 		{
-			TblLoaiDuAn item = new TblLoaiDuAn();
+			TblLoai item = new TblLoai();
 			
-				item.IdLoaiDuAn = varIdLoaiDuAn;
+				item.IdLoai = varIdLoai;
 			
-				item.TenLoaiDuAn = varTenLoaiDuAn;
+				item.DoiTuong = varDoiTuong;
+			
+				item.TenLoai = varTenLoai;
 			
 				item.MoTa = varMoTa;
 			
@@ -441,72 +549,79 @@ namespace SweetSoft.QLDA.DataAccess
         #region Typed Columns
         
         
-        public static TableSchema.TableColumn IdLoaiDuAnColumn
+        public static TableSchema.TableColumn IdLoaiColumn
         {
             get { return Schema.Columns[0]; }
         }
         
         
         
-        public static TableSchema.TableColumn TenLoaiDuAnColumn
+        public static TableSchema.TableColumn DoiTuongColumn
         {
             get { return Schema.Columns[1]; }
         }
         
         
         
-        public static TableSchema.TableColumn MoTaColumn
+        public static TableSchema.TableColumn TenLoaiColumn
         {
             get { return Schema.Columns[2]; }
         }
         
         
         
-        public static TableSchema.TableColumn ThuTuHienThiColumn
+        public static TableSchema.TableColumn MoTaColumn
         {
             get { return Schema.Columns[3]; }
         }
         
         
         
-        public static TableSchema.TableColumn KichHoatColumn
+        public static TableSchema.TableColumn ThuTuHienThiColumn
         {
             get { return Schema.Columns[4]; }
         }
         
         
         
-        public static TableSchema.TableColumn DaXoaColumn
+        public static TableSchema.TableColumn KichHoatColumn
         {
             get { return Schema.Columns[5]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiTaoColumn
+        public static TableSchema.TableColumn DaXoaColumn
         {
             get { return Schema.Columns[6]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayTaoColumn
+        public static TableSchema.TableColumn NguoiTaoColumn
         {
             get { return Schema.Columns[7]; }
         }
         
         
         
-        public static TableSchema.TableColumn NguoiCapNhatColumn
+        public static TableSchema.TableColumn NgayTaoColumn
         {
             get { return Schema.Columns[8]; }
         }
         
         
         
-        public static TableSchema.TableColumn NgayCapNhatColumn
+        public static TableSchema.TableColumn NguoiCapNhatColumn
         {
             get { return Schema.Columns[9]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NgayCapNhatColumn
+        {
+            get { return Schema.Columns[10]; }
         }
         
         
@@ -515,8 +630,9 @@ namespace SweetSoft.QLDA.DataAccess
 		#region Columns Struct
 		public struct Columns
 		{
-			 public static string IdLoaiDuAn = @"IdLoaiDuAn";
-			 public static string TenLoaiDuAn = @"TenLoaiDuAn";
+			 public static string IdLoai = @"IdLoai";
+			 public static string DoiTuong = @"DoiTuong";
+			 public static string TenLoai = @"TenLoai";
 			 public static string MoTa = @"MoTa";
 			 public static string ThuTuHienThi = @"ThuTuHienThi";
 			 public static string KichHoat = @"KichHoat";
@@ -531,10 +647,80 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
+        public void SetPKValues()
+        {
+                if (colAspnetUsers != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetUser item in colAspnetUsers)
+                    {
+                        if (item.IdChucDanh == null ||item.IdChucDanh != IdLoai)
+                        {
+                            item.IdChucDanh = IdLoai;
+                        }
+                    }
+               }
+		
+                if (colAspnetUsersFromTblLoai != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.AspnetUser item in colAspnetUsersFromTblLoai)
+                    {
+                        if (item.IdPhongBan == null ||item.IdPhongBan != IdLoai)
+                        {
+                            item.IdPhongBan = IdLoai;
+                        }
+                    }
+               }
+		
+                if (colTblDuAnRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblDuAn item in colTblDuAnRecords)
+                    {
+                        if (item.IdLoaiDuAn == null ||item.IdLoaiDuAn != IdLoai)
+                        {
+                            item.IdLoaiDuAn = IdLoai;
+                        }
+                    }
+               }
+		
+                if (colTblKhachHangRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhachHang item in colTblKhachHangRecords)
+                    {
+                        if (item.IdLoaiKhachHang != IdLoai)
+                        {
+                            item.IdLoaiKhachHang = IdLoai;
+                        }
+                    }
+               }
+		}
         #endregion
     
         #region Deep Save
 		
+        public void DeepSave()
+        {
+            Save();
+            
+                if (colAspnetUsers != null)
+                {
+                    colAspnetUsers.SaveAll();
+               }
+		
+                if (colAspnetUsersFromTblLoai != null)
+                {
+                    colAspnetUsersFromTblLoai.SaveAll();
+               }
+		
+                if (colTblDuAnRecords != null)
+                {
+                    colTblDuAnRecords.SaveAll();
+               }
+		
+                if (colTblKhachHangRecords != null)
+                {
+                    colTblKhachHangRecords.SaveAll();
+               }
+		}
         #endregion
 	}
 }

@@ -139,7 +139,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @idDuAn UNIQUEIDENTIFIER = '{InlineQueryHelpers.SQLEncode(id)}';
                 select TOP 1
                     d.*,
-                    dt.TenLoaiDuAn,
+                    l.TenLoai AS TenLoaiDuAn,
                     kh.TenKhachHang,
                     hd.SoHopDong,
                     hd.GiaTriHopDong,
@@ -149,7 +149,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 from TblDuAn d
                 left join aspnet_Users u on u.UserId = d.IdNhanVienQuanLy
                 left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
-                left join TblLoaiDuAn dt on dt.IdLoaiDuAn = d.IdLoaiDuAn
+                left join TblLoai l on l.IdLoai = d.IdLoaiDuAn
                 left join TblHopDongThucHien hd on hd.IdHopDongThucHien = d.IdHopDongThucHien
                 where d.IdDuAn = @idDuAn
                 and d.DaXoa = 0;";

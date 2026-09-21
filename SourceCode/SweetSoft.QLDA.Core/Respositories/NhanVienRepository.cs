@@ -34,14 +34,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                     , u.UserName
                     , ms.Email
                     , u.MobileAlias AS PhoneNumber -- <--- BỔ SUNG CỘT SỐ ĐIỆN THOẠI Ở ĐÂY
-                    , pb.TenPhongBan
-                    , cd.TenChucDanh
+                    , lpb.TenLoai AS TenPhongBan
+                    , lcd.TenLoai AS TenChucDanh
                     , COUNT(1) OVER() AS total_records
                 FROM TblNhanVien f
                 LEFT JOIN aspnet_Users u ON u.UserId = f.UserId
                 LEFT JOIN aspnet_Membership ms ON ms.UserId = u.UserId
-                LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-                LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+                LEFT JOIN TblLoai lpb ON lpb.IdLoai = f.IdPhongBan
+                LEFT JOIN TblLoai lcd ON lcd.IdLoai = f.IdChucDanh
                 WHERE f.DaXoa = 0
                     AND (@userId = '{Guid.Empty}' OR @userId = '' OR f.UserId = @userId)
                     AND (@idPhongBan = '{Guid.Empty}' OR @idPhongBan = '' OR f.IdPhongBan = @idPhongBan)
@@ -82,14 +82,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                     , u.UserName
                     , ms.Email
                     , u.MobileAlias AS PhoneNumber -- <--- BỔ SUNG CỘT SỐ ĐIỆN THOẠI Ở ĐÂY
-                    , pb.TenPhongBan
-                    , cd.TenChucDanh
+                    , lpb.TenLoai AS TenPhongBan
+                    , lcd.TenLoai AS TenChucDanh
                     , COUNT(1) OVER() AS total_records
                 FROM TblNhanVien f
                 LEFT JOIN aspnet_Users u ON u.UserId = f.UserId
                 LEFT JOIN aspnet_Membership ms ON ms.UserId = u.UserId
-                LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-                LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+                LEFT JOIN TblLoai lpb ON lpb.IdLoai = f.IdPhongBan
+                LEFT JOIN TblLoai lcd ON lcd.IdLoai = f.IdChucDanh
                 WHERE f.DaXoa = 0
                     AND (@idPhongBan = '{Guid.Empty}' OR @idPhongBan = '' OR f.IdPhongBan = @idPhongBan)
                     AND (@idChucDanh = '{Guid.Empty}' OR @idChucDanh = '' OR f.IdChucDanh = @idChucDanh)
@@ -138,14 +138,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                     , u.UserName
                     , ms.Email
                     , u.MobileAlias AS PhoneNumber -- <--- BỔ SUNG CỘT SỐ ĐIỆN THOẠI Ở ĐÂY (ĐÃ CÓ SẴN Ở HÀM 3 NHƯNG ĐẢM BẢO CHUẨN ĐỒNG BỘ)
-                    , pb.TenPhongBan
-                    , cd.TenChucDanh
+                    , lpb.TenLoai AS TenPhongBan
+                    , lcd.TenLoai AS TenChucDanh
                     , COUNT(1) OVER() AS total_records
                 FROM TblNhanVien f
                 LEFT JOIN aspnet_Users u ON u.UserId = f.UserId
                 LEFT JOIN aspnet_Membership ms ON ms.UserId = u.UserId
-                LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-                LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+                LEFT JOIN TblLoai lpb ON lpb.IdLoai = f.IdPhongBan
+                LEFT JOIN TblLoai lcd ON lcd.IdLoai = f.IdChucDanh
                 WHERE f.DaXoa = 0
                     AND (@tenNhanVien = N'%%' OR f.TenNhanVien LIKE @tenNhanVien)
                     AND (@IdCCCD = N'%%' OR f.IdCCCD LIKE @IdCCCD)
@@ -249,14 +249,14 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             string sql = $@"
         SELECT f.*
-             , pb.TenPhongBan
-             , cd.TenChucDanh
+             , lpb.TenLoai AS TenPhongBan
+             , lcd.TenLoai AS TenChucDanh
              , u.MobileAlias AS PhoneNumber
              , u.Username
              , m.Email
         FROM TblNhanVien f
-        LEFT JOIN TblPhongBan pb ON f.IdPhongBan = pb.IdPhongBan
-        LEFT JOIN TblChucDanh cd ON f.IdChucDanh = cd.IdChucDanh
+        LEFT JOIN TblLoai lpb ON f.IdPhongBan = lpb.IdLoai
+        LEFT JOIN TblLoai lcd ON f.IdChucDanh = lcd.IdLoai
         LEFT JOIN aspnet_Users u ON f.UserId = u.UserId
         LEFT JOIN aspnet_Membership m ON f.UserId = m.UserId
         WHERE f.IdNhanVien = '{idNhanVien}' AND f.DaXoa = 0";
