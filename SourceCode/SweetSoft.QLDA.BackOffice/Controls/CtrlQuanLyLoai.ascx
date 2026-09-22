@@ -44,8 +44,8 @@
 
                                     <asp:TemplateField HeaderText="Thao tác" ItemStyle-Width="120px" ItemStyle-CssClass="text-center" HeaderStyle-CssClass="text-center">
                                         <ItemTemplate>
-                                            <SweetSoft:SmartLinkButton runat="server" ID="btnEdit" CommandName="Edit" VisibleConditionKey="true" ButtonIcon="fas fa-edit" ToolTip="Sửa" CssClass="btn btn-sm btn-outline-primary"></SweetSoft:SmartLinkButton>
-                                            <SweetSoft:SmartLinkButton runat="server" ID="btnDelete" CommandName="Delete" VisibleConditionKey="true" CommandArgument='<%# Eval("IdLoai") %>' ButtonIcon="fas fa-trash" ToolTip="Xóa" CssClass="btn btn-sm btn-outline-danger" OnClientClick="return confirm('Bạn có chắc chắn muốn xóa mục này?');"></SweetSoft:SmartLinkButton>
+                                            <SweetSoft:SmartLinkButton runat="server" ID="btnEdit" CommandName="Edit" VisibleConditionKey="true" ButtonIcon="fas fa-pencil-alt" ToolTip="Sửa" CssClass="btn btn-sm btn-outline-primary"></SweetSoft:SmartLinkButton>
+                                            <SweetSoft:SmartLinkButton runat="server" ID="btnDelete" CommandName="Delete" VisibleConditionKey="true" CommandArgument='<%# Eval("IdLoai") %>' ButtonIcon="fas fa-trash" ToolTip="Xóa" CssClass="btn-grid-action text-decoration-underline text-danger"></SweetSoft:SmartLinkButton>
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <SweetSoft:SmartLinkButton runat="server" ID="btnUpdate" CommandName="Update" VisibleConditionKey="true" ButtonIcon="fas fa-save" ToolTip="Lưu" CssClass="btn btn-sm btn-primary"></SweetSoft:SmartLinkButton>

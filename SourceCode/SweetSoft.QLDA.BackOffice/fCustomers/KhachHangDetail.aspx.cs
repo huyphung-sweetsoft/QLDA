@@ -44,6 +44,7 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         }
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlKhachHangForm1.SaveCompleted += CtrlKhachHangForm1_SaveCompleted;
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -83,6 +84,18 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
             }
         }
 
+        protected void lbtEditCustomer_Click(object sender, EventArgs e)
+        {
+            Guid idKhachHang = this.QueryId;
+            if (idKhachHang == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            CtrlKhachHangForm1.OpenEdit(idKhachHang);
+        }
+
         private void BindCustomerInformation(DataRow row)
         {
             lblTenKhachHang.Text = GetDisplayText(row, "TenKhachHang");
@@ -117,6 +130,12 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
                 return "<p class='text-muted'>Chưa có nội dung mô tả</p>";
             }
             return HttpUtility.HtmlDecode(value);
+        }
+
+        private void CtrlKhachHangForm1_SaveCompleted(object sender, EventArgs e)
+        {
+            BindData();
+            upCustomerDetail.Update();
         }
     }
 }

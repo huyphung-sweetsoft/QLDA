@@ -1,4 +1,4 @@
-<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnList" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="DuAnList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.DuAnList" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
@@ -6,6 +6,7 @@
 <%@ Register Src="~/fProjects/Controls/CtrlDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAn" %>
 <%@ Register Src="~/fProjects/Controls/CtrlChonNhanVien.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVien" %>
 <%@ Register Src="~/Controls/CtrlQuanLyLoai.ascx" TagPrefix="SweetSoft" TagName="CtrlQuanLyLoai" %>
+<%@ Register Src="~/fProjects/Controls/CtrlDuAnForm.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAnForm" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -36,171 +37,10 @@
     </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
-    <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" Title="Project Infomation">
-        <ContentTemplate>
-            <div class="row js-validation validationEngineContainer">
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_CODE) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtMaDuAn"></SweetSoft:ExtraTextBox>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_NAME) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtTenDuAn" Required="true"></SweetSoft:ExtraTextBox>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_TYPE) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlLoaiDuAn" Required="true" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
-                    </div>
-                </div>
-                <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
-                    <ContentTemplate>
-                        <div class="row">
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false"/>
-                                     <asp:Button runat="server" ID="btnSearchHopDong" OnClick="txtSoHopDong_TextChanged" style="display:none;" CausesValidation="false" UseSubmitBehavior="false" />
-                                 </div>
-                             </div>
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDong" Enabled="false" Required="false"/>
-                                 </div>
-                             </div>
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtNgayKy" Enabled="false" Required="false"/>
-                                 </div>
-                             </div>
-                        </div>
-                    </ContentTemplate>
-                </asp:UpdatePanel>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayBatDau" SingleDatePicker="true" PlaceHolder="Select start date" />
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayKetThuc" SingleDatePicker="true" PlaceHolder="Select end date" />
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" PlaceHolder="Select status" />
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_MANAGEMENT) %></label>
-        
-                        <!-- Bọc UpdatePanel và bật AutoPostBack để chạy ngầm Ajax khi đổi PM -->
-                        <asp:UpdatePanel runat="server" ID="upPM" UpdateMode="Conditional">
-                            <ContentTemplate>
-                                <SweetSoft:ExtraDropdown runat="server" ID="ddlNhanVienQuanLy" Required="true" 
-                                    PlaceHolder="Select the value"
-                                    AutoPostBack="true" 
-                                    OnSelectedIndexChanged="ddlNhanVienQuanLy_SelectedIndexChanged">
-                                </SweetSoft:ExtraDropdown>
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
-
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PROJECT_MEMBERS) %></label>
-                        <asp:UpdatePanel runat="server" ID="upNhanVienThamGia" UpdateMode="Conditional">
-                            <ContentTemplate>
-                                <div class="input-group">
-                                    <SweetSoft:ExtraTextBox runat="server" ID="txtSoLuongNhanVien" Enabled="false" PlaceHolder="Chưa chọn nhân viên nào" />
-                                    <!-- Xóa chữ, đổi ButtonIcon thành UserPlus (tương đương person-add) -->
-                                    <SweetSoft:ExtraButton runat="server" ID="btnChonNhanVien" ButtonStyle="Secondary" ButtonIcon="UserPlus"
-                                        CausesValidation="false" OnClick="btnChonNhanVien_Click" ToolTip="Thêm thành viên">
-                                    </SweetSoft:ExtraButton>
-                                </div>
-                            </ContentTemplate>
-                        </asp:UpdatePanel>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SUMMARY) %></label>
-                        <CKEditor:CKEditorControl ID="txtMoTa" Width="100%" CssClass="ck-editor"
-                            Toolbar="Full" BodyId="StatucPageContent" Language="vi-VN" AutoParagraph="false"
-                            BasePath="~/Styles/plugins/ckeditor/" runat="server" Height="200">
-                        </CKEditor:CKEditorControl>
-                    </div>
-                </div>
-            </div>
-        </ContentTemplate>
-        <FooterTemplate>
-            <asp:UpdatePanel runat="server" UpdateMode="Conditional">
-                <ContentTemplate>
-                    <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true"
-                        OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false">Lưu</SweetSoft:ExtraButton>
-                </ContentTemplate>
-            </asp:UpdatePanel>
-        </FooterTemplate>
-    </SweetSoft:ExtraModal>
+    <SweetSoft:CtrlDuAnForm runat="server" ID="CtrlDuAnForm1"></SweetSoft:CtrlDuAnForm>
     <SweetSoft:CtrlQuanLyLoai runat="server" ID="CtrlQuanLyLoai1" OnDataChanged="CtrlQuanLyLoai1_OnDataChanged" />
-    <SweetSoft:CtrlChonNhanVien runat="server" ID="CtrlChonNhanVien1"/>
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
-    <script>
-        function initProjectDateSync() {
-            var $startDate = $('#<%= dtNgayBatDau.ClientID %>');
-            var $endDate = $('#<%= dtNgayKetThuc.ClientID %>');
-            
-            if ($startDate.length && $endDate.length) {
-                // Remove previously attached handlers to avoid duplicates after UpdatePanel refresh
-                $startDate.off('apply.daterangepicker.syncDates');
-                
-                $startDate.on('apply.daterangepicker.syncDates', function(ev, picker) {
-                    var pickerEnd = $endDate.data('daterangepicker');
-                    if (pickerEnd && picker.startDate) {
-                        pickerEnd.minDate = picker.startDate.clone();
-                        
-                        // If current end date is before new start date, update it
-                        if (pickerEnd.startDate && pickerEnd.startDate.isBefore(picker.startDate, 'day')) {
-                            pickerEnd.setStartDate(picker.startDate.clone());
-                            pickerEnd.setEndDate(picker.startDate.clone());
-                            
-                            // Trigger apply manually since setStartDate doesn't fire it automatically
-                            $endDate.trigger('apply.daterangepicker', pickerEnd);
-                        }
-                    }
-                });
-            }
-        }
-
-        $(document).ready(function () {
-            initProjectDateSync();
-        });
-
-        // Re-init after UpdatePanel refresh
-        if (typeof Sys !== "undefined" && Sys.WebForms && Sys.WebForms.PageRequestManager) {
-            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
-                initProjectDateSync();
-            });
-        }
-    </script>
 </asp:Content>
