@@ -24,6 +24,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
 
         /// <summary>
+        /// upProjectDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upProjectDetail;
+
+        /// <summary>
         /// lblTenDuAn control.
         /// </summary>
         /// <remarks>
@@ -31,6 +40,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTenDuAn;
+
+        /// <summary>
+        /// lblTrangThaiHead control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTrangThaiHead;
 
         /// <summary>
         /// iCurrentStatusIcon control.
@@ -58,6 +76,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptStatusDropdown;
+
+        /// <summary>
+        /// upEditProject control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upEditProject;
+
+        /// <summary>
+        /// lbtEditProject control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtEditProject;
 
         /// <summary>
         /// CtrlProjectTabs1 control.
@@ -276,6 +312,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblSoHopDong;
 
         /// <summary>
+        /// lbtOpenContractDocument control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtOpenContractDocument;
+
+        /// <summary>
         /// lblNoContract control.
         /// </summary>
         /// <remarks>
@@ -328,6 +373,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlLichSuDuAn CtrlLichSuDuAn1;
+
+        /// <summary>
+        /// CtrlDuAnForm1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlDuAnForm CtrlDuAnForm1;
 
         /// <summary>
         /// dlContractDetail control.

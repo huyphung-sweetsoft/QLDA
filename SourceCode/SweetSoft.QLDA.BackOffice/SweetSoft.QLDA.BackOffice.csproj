@@ -204,6 +204,13 @@
     <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.designer.cs">
       <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fCustomers\Controls\CtrlKhachHangForm.ascx.cs">
+      <DependentUpon>CtrlKhachHangForm.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\Controls\CtrlKhachHangForm.ascx.designer.cs">
+      <DependentUpon>CtrlKhachHangForm.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fCustomers\KhachHangDetail.aspx.cs">
       <DependentUpon>KhachHangDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -508,6 +515,13 @@
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.designer.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAnForm.ascx.cs">
+      <DependentUpon>CtrlDuAnForm.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAnForm.ascx.designer.cs">
+      <DependentUpon>CtrlDuAnForm.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.cs">
       <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -699,6 +713,7 @@
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
     <Content Include="fCosts\CostList.aspx" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
+    <Content Include="fCustomers\Controls\CtrlKhachHangForm.ascx" />
     <Content Include="fCustomers\KhachHangDetail.aspx" />
     <Content Include="fCustomers\KhachHangList.aspx" />
     <Content Include="fDocuments\Controls\CtrlDocumentDetail.ascx" />
@@ -751,6 +766,7 @@
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />

@@ -1,4 +1,5 @@
 using SweetSoft.QLDA.BackOffice.MasterPages;
+using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
 using System;
@@ -102,7 +103,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls
             try
             {
                 Guid idLoai = Guid.Parse(grvData.DataKeys[e.RowIndex].Value.ToString());
-                var txtTenLoaiEdit = (SweetSoft.QLDA.Controls.ExtraTextBox)grvData.Rows[e.RowIndex].FindControl("txtTenLoaiEdit");
+                var txtTenLoaiEdit = (ExtraTextBox)grvData.Rows[e.RowIndex].FindControl("txtTenLoaiEdit");
                 
                 if (txtTenLoaiEdit != null)
                 {
