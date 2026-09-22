@@ -33,12 +33,12 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::SweetSoft.QLDA.BackOffice.fNhanVien.Controls.CtrlNhanViens CtrlNhanViens1;
 
         /// <summary>
-        /// CtrlUserDetail1 control.
+        /// CtrlNhanVienPopup1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUserDetail CtrlUserDetail1;
+        protected global::SweetSoft.QLDA.BackOffice.fNhanVien.Controls.CtrlNhanVienPopup CtrlNhanVienPopup1;
     }
 }

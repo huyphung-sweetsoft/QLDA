@@ -33,12 +33,12 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
         protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUsers CtrlUsers1;
 
         /// <summary>
-        /// CtrlUserDetail1 control.
+        /// CtrlUserPopup1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUserDetail CtrlUserDetail1;
+        protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUserPopup CtrlUserPopup1;
     }
 }

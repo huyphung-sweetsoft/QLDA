@@ -350,6 +350,18 @@ namespace SweetSoft.QLDA.Core.Respositories
             select.And(AspnetMembership.UserIdColumn).IsNotEqualTo(ID);
             return select.GetRecordCount() > 0;
         }
+        public bool IsEmailExistInAdminGroup(Guid ID, string email)
+        {
+            Select select = new Select();
+            select.From(AspnetUser.Schema);
+            select.InnerJoin(AspnetMembership.UserIdColumn, AspnetUser.UserIdColumn); // Join 2 bảng
+            select.Where(AspnetMembership.EmailColumn).IsEqualTo(email);
+            select.And(AspnetUser.UserIdColumn).IsNotEqualTo(ID);
+            select.And(AspnetUser.LaNhanVienColumn).IsEqualTo(false); // Chỉ check nhóm quản trị
+            select.And(AspnetUser.IsDeletedColumn).IsEqualTo(false); // <-- ĐÃ SỬA TẠI ĐÂY
+
+            return select.GetRecordCount() > 0;
+        }
         public bool IsUserNameExist(Guid ID, string userName)
         {
             Select select = new Select();
