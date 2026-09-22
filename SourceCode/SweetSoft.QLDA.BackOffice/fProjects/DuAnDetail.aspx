@@ -5,6 +5,7 @@
 <%@ Register Src="~/fProjects/Controls/CtrlLichSuDuAn.ascx" TagPrefix="SweetSoft" TagName="CtrlLichSuDuAn" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <%@ Register Src="~/fProjects/Controls/CtrlDuAnForm.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAnForm" %>
+<%@ Register Src="~/fProjects/Controls/CtrlChonNhanVien.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVien" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -283,8 +284,17 @@
                                             </div>
                                         </div>
 
-                                        <div class="mt-2">
+                                        <div class="mt-2 d-flex align-items-center gap-2">
                                             <asp:Literal ID="ltrThanhVienGroup" runat="server"></asp:Literal>
+
+                                            <asp:LinkButton runat="server" ID="lbtThemThanhVien"
+                                                CssClass="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                                Style="width:30px;height:30px;"
+                                                OnClick="lbtThemThanhVien_Click"
+                                                CausesValidation="false"
+                                                ToolTip="Thêm thành viên">
+                                                <i class="fas fa-plus"></i>
+                                            </asp:LinkButton>
                                         </div>
                                     </div>
                                 </section>
@@ -416,6 +426,7 @@
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <SweetSoft:CtrlLichSuDuAn runat="server" ID="CtrlLichSuDuAn1" />
     <SweetSoft:CtrlDuAnForm runat="server" ID="CtrlDuAnForm1" />
+    <SweetSoft:CtrlChonNhanVien runat="server" ID="CtrlChonNhanVien1" />
     <SweetSoft:ExtraModal
     runat="server"
     ID="dlContractDetail"
