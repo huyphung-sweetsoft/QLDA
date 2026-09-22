@@ -354,37 +354,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
-		#region PrimaryKey Methods		
-		
-        protected override void SetPrimaryKey(object oValue)
-        {
-            base.SetPrimaryKey(oValue);
-            
-            SetPKValues();
-        }
-        
-		
-		private SweetSoft.QLDA.DataAccess.TblKhachHangCollection colTblKhachHangRecords;
-		public SweetSoft.QLDA.DataAccess.TblKhachHangCollection TblKhachHangRecords()
-		{
-			if(colTblKhachHangRecords == null)
-			{
-				colTblKhachHangRecords = new SweetSoft.QLDA.DataAccess.TblKhachHangCollection().Where(TblKhachHang.Columns.IdLoaiKhachHang, IdLoaiKhachHang).Load();
-				colTblKhachHangRecords.ListChanged += new ListChangedEventHandler(colTblKhachHangRecords_ListChanged);
-			}
-			return colTblKhachHangRecords;
-		}
-				
-		void colTblKhachHangRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblKhachHangRecords[e.NewIndex].IdLoaiKhachHang = IdLoaiKhachHang;
-            }
-		}
-		#endregion
-		
 			
 		
 		//no foreign key tables defined (0)
@@ -562,32 +531,10 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
-        public void SetPKValues()
-        {
-                if (colTblKhachHangRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblKhachHang item in colTblKhachHangRecords)
-                    {
-                        if (item.IdLoaiKhachHang != IdLoaiKhachHang)
-                        {
-                            item.IdLoaiKhachHang = IdLoaiKhachHang;
-                        }
-                    }
-               }
-		}
         #endregion
     
         #region Deep Save
 		
-        public void DeepSave()
-        {
-            Save();
-            
-                if (colTblKhachHangRecords != null)
-                {
-                    colTblKhachHangRecords.SaveAll();
-               }
-		}
         #endregion
 	}
 }

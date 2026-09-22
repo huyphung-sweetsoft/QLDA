@@ -674,6 +674,7 @@
     <Content Include="Controls\AutoComplete\jquery-ui.min.js" />
     <Content Include="Controls\Breadcrumb\CtrlBreadcrumb.ascx" />
     <Content Include="Controls\Captcha.ascx" />
+    <Content Include="Controls\CtrlQuanLyLoai.ascx" />
     <Content Include="Controls\CtrlAutoCompleteUser.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardCost.ascx" />
@@ -1934,6 +1935,13 @@
     </Compile>
     <Compile Include="Controls\Captcha.ascx.designer.cs">
       <DependentUpon>Captcha.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CtrlQuanLyLoai.ascx.cs">
+      <DependentUpon>CtrlQuanLyLoai.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\CtrlQuanLyLoai.ascx.designer.cs">
+      <DependentUpon>CtrlQuanLyLoai.ascx</DependentUpon>
     </Compile>
     <Compile Include="Controls\CtrlAutoCompleteUser.ascx.cs">
       <DependentUpon>CtrlAutoCompleteUser.ascx</DependentUpon>

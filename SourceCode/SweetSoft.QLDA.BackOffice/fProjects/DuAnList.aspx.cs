@@ -1,4 +1,5 @@
 using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Controls;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
@@ -69,6 +70,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             CtrlDuAn1.NewProjectHandlerCallBack += NewProjectAction;
             CtrlDuAn1.EditProjectHandlerCallBack += EditProjectAction;
+            CtrlDuAn1.ManageProjectTypeHandlerCallBack += ManageProjectTypeAction;
             //Đăng ký lắng nghe cái popup chọn nhân viên
             CtrlChonNhanVien1.OnConfirmSelection += CtrlChonNhanVien1_OnConfirmSelection;
             txtSoHopDong.EnterSubmitClientID = btnSearchHopDong.ClientID;
@@ -404,6 +406,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             int count = this.SelectedMemberIds.Count;
             txtSoLuongNhanVien.Text = count > 0 ? $"Đã chọn {count} nhân viên" : "";
+        }
+
+        protected void ManageProjectTypeAction(object sender, EventArgs e)
+        {
+            CtrlQuanLyLoai1.ShowModal(LoaiManager.LoaiDoiTuong.DuAn);
+        }
+
+        protected void CtrlQuanLyLoai1_OnDataChanged(object sender, EventArgs e)
+        {
+            string selectedValue = ddlLoaiDuAn.SelectedValue;
+            new ControlHelpers().BindLoaiDuAn(ddlLoaiDuAn);
+            
+            if (!string.IsNullOrEmpty(selectedValue) && ddlLoaiDuAn.Items.FindByValue(selectedValue) != null)
+            {
+                ddlLoaiDuAn.SelectedValue = selectedValue;
+            }
+
+            CtrlDuAn1.ReloadProjectTypeDropdown();
         }
     }
 }
