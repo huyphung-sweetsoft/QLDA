@@ -95,6 +95,7 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
             lblNguoiLienHe.Text = GetDisplayText(row, "TenNguoiLienHe");
             lblDienThoaiLienHe.Text = GetDisplayText(row, "DienThoaiLienHe");
             lblEmailLienHe.Text = GetDisplayText(row, "EmailLienHe");
+            lblTrangThai.Text = GetDisplayText(row, "KichHoat") == "True" ? "Đang hợp tác" : "Ngừng hợp tác";
             ltrMoTa.Text = GetHtmlText(row, "GhiChu");
         }
 

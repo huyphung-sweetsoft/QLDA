@@ -20,7 +20,7 @@
                             </h4>
 
                             <span class="badge rounded-pill bg-light text-secondary border px-3 py-2">
-                               Đang hoạt động
+                               <asp:Label runat="server" ID="lblTrangThai"></asp:Label>
                             </span>
                         </div>
                          <div class="small text-muted mt-1">

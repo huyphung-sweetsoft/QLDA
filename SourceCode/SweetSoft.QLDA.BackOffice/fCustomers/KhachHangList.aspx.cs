@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fCustomers.Controls;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Managers;
@@ -43,7 +43,6 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         {
             CtrlKhachHang.NewCustomerHandlerCallBack += NewCustomerAction;
             CtrlKhachHang.EditCustomerHandlerCallBack += EditCustomerAction;
-
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -71,8 +70,8 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
                 = txtEmailLienHe.PlaceHolder
                 = "";
 
-            chkStatus.OnText = GetResourceText(BackEndResourceKeys.ACTIVE);
-            chkStatus.OffText = GetResourceText(BackEndResourceKeys.INACTIVE);
+            chkStatus.OnText = "Đang hợp tác";
+            chkStatus.OffText = "Ngừng hợp tác";
         }
 
         private void RefreshCustomerInfo()

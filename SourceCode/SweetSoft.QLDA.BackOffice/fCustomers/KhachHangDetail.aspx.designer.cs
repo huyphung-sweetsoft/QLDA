@@ -33,6 +33,15 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         protected global::System.Web.UI.WebControls.Label lblTenKhachHang;
 
         /// <summary>
+        /// lblTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTrangThai;
+
+        /// <summary>
         /// lblLoaiKhachHangSubLabel control.
         /// </summary>
         /// <remarks>
