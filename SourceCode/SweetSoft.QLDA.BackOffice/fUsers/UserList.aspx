@@ -4,7 +4,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
 <%@ Register Src="~/fUsers/Controls/CtrlUsers.ascx" TagPrefix="SweetSoft" TagName="CtrlUsers" %>
-<%@ Register Src="~/fUsers/Controls/CtrlUserDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlUserDetail" %>
+<%@ Register Src="~/fUsers/Controls/CtrlUserPopup.ascx" TagPrefix="SweetSoft" TagName="CtrlUserPopup" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
@@ -14,20 +14,19 @@
             display: none;
         }
 
-            div[data-edit="true"].show {
-                display: block;
-            }
-            .file-box-single{
-                width:100px;
-            }
-            .file-box .uploaded-content .item img{
-                width: 60px;
-            }
-            .file-box-single .control-help {
-                display: none !important;
-            }
-                display: none !important;
-            }
+        div[data-edit="true"].show {
+            display: block;
+        }
+        .file-box-single{
+            width:100px;
+        }
+        .file-box .uploaded-content .item img{
+            width: 60px;
+        }
+        .file-box-single .control-help {
+            display: none !important;
+        }
+              
     </style>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -41,7 +40,7 @@
     </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
-    <SweetSoft:CtrlUserDetail runat="server" ID="CtrlUserDetail1" />
+    <SweetSoft:CtrlUserPopup runat="server" ID="CtrlUserPopup1" />
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>

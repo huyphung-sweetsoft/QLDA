@@ -705,7 +705,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             return Server.HtmlDecode(UITextsReader.GetBackEndResourceText(new CultureInfo(SweetContext.Current.CurrentLanguageCode), messageId));
             //return LanguageHelpers.GetResourceText(SweetContext.Current.CurrentLanguageCode, messageId);
         }
-
+         
         /// <param name="scriptName"></param>
         /// <param name="param"></param>
         public void RunScript(string scriptName, string param)
@@ -1325,7 +1325,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     return true;
                 return PromptControdClientIDs.Count == 0 && PromptErrorMessages.Count == 0;
             }
-        }
+        } 
 
         public void CheckValidControls(ControlCollection controls)
         {

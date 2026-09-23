@@ -157,7 +157,7 @@ namespace SweetSoft.QLDA.Core.Managers
             if (resultItem != null)
             {
                 ForceRefreshCache();
-                TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
+                //TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
             }
             return resultItem;
         }
@@ -179,7 +179,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (isDeleted)
                 {
                     ForceRefreshCache();
-                    TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
+                    //TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
                 }
                 return isDeleted;
             }

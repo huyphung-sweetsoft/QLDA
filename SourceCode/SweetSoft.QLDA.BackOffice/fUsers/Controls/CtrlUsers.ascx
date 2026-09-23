@@ -8,7 +8,7 @@
                 <asp:Panel runat="server" ID="pnlSearchDefault">
                     <div class="d-flex">
                         <SweetSoft:BootstrapDropdown ID="ddlSearchStatus" runat="server"
-                            Text="Trạng thái"
+                            Text="Trạng thái đăng nhập"
                             AllowClear="true"
                             AutoPostBack="true"
                             SearchColumn="IsActivated"
@@ -24,16 +24,10 @@
                             ValueIsOfTypeGUID="True"
                             SearchPlaceholder="Tìm kiếm nhóm người dùng..."
                             NoResultsText="Không tìm thấy nhóm người dùng"
+                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
                             OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                         </SweetSoft:BootstrapDropdown>
-                        <SweetSoft:BootstrapDropdown ID="ddlSearchLaNhanVien" runat="server"
-                            Text="Loại tài khoản"
-                            AutoPostBack="true"
-                            AllowClear="true"
-                            SearchColumn="LaNhanVien"
-                            CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
-                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
-                        </SweetSoft:BootstrapDropdown>
+                     
                     </div>
                 </asp:Panel>
             </ContentTemplate>
@@ -96,14 +90,6 @@
                                          class="avatar-sm rounded-circle" 
                                          style="width: 42px; height: 42px; object-fit: cover;" 
                                          onerror="this.onerror=null; this.src='/Styles/images/user-icon.png'">
-                
-                                    <!-- Huy hiệu (Badge) đè góc phải dưới -->
-                                    <span class="position-absolute bottom-0 start-100 translate-middle badge rounded-pill <%# Convert.ToBoolean(Eval("LaNhanVien")) ? "bg-success" : "bg-secondary" %>" 
-                                          style="font-size: 0.6rem; padding: 0.3em 0.4em; border: 2px solid white;"
-                                          title='<%# Convert.ToBoolean(Eval("LaNhanVien")) ? GetResourceText(BackEndResourceKeys.EMPLOYEE_ACCOUNT) : string.Format("{0}/{1}", GetResourceText(BackEndResourceKeys.SYSTEM_ACCOUNT), GetResourceText(BackEndResourceKeys.GUEST))%>' 
-                                          data-bs-toggle="tooltip">
-                                        <i class='<%# Convert.ToBoolean(Eval("LaNhanVien")) ? "fas fa-user-tie" : "fas fa-desktop" %>'></i>
-                                    </span>
                                 </div>
             
                                 <!-- 2. KHU VỰC VĂN BẢN (Tự động chiếm phần còn lại, dài quá thì bẻ chữ) -->
@@ -136,7 +122,9 @@
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Status" HeaderStyle-CssClass="text-center" SortExpression="IsActivated" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <%# this.CURRENT_PAGE.GetStatusText(Eval("IsActivated")) %>
+                            <span class='badge <%# Convert.ToBoolean(Eval("IsActivated")) ? "bg-success" : "bg-danger" %>'>
+                                <%# Convert.ToBoolean(Eval("IsActivated")) ? GetResourceText(BackEndResourceKeys.LOGIN_ALLOWED) : GetResourceText(BackEndResourceKeys.LOGIN_NOT_ALLOWED) %>
+                            </span>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="2FA" HeaderStyle-CssClass="text-center" SortExpression="AuthenticatorKey" ItemStyle-CssClass="text-center">
