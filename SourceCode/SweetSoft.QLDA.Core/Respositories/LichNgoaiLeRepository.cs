@@ -93,9 +93,20 @@ namespace SweetSoft.QLDA.Core.Respositories
         }
 
         // ĐÃ NÂNG CẤP: Dùng InlineQuery, nhận chuỗi orderBy và trả về DataTable chuẩn kiến trúc
-        public DataTable SearchPaging(string searchTerm, bool? isWorkingDay, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        // Nhận thêm tham số Dictionary<string, object> keyValueSearchs
+        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> keyValueSearchs, bool? isWorkingDay, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
+
+            // 1. Bóc tách giá trị Năm từ Dictionary nếu có
+            string yearParam = "NULL";
+            if (keyValueSearchs != null && keyValueSearchs.ContainsKey("Nam") && !string.IsNullOrEmpty(keyValueSearchs["Nam"]?.ToString()))
+            {
+                if (int.TryParse(keyValueSearchs["Nam"].ToString(), out int nam))
+                {
+                    yearParam = nam.ToString();
+                }
+            }
 
             // Ép kiểu orderBy mặc định nếu UI không truyền xuống
             if (string.IsNullOrEmpty(orderBy))
@@ -104,35 +115,39 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
 
             string sql = $@"
-            DECLARE @startRow INT = {pageNumber};
-            DECLARE @endRow INT = {pageSize};
-            
-            -- KIỂU BIT: Dùng logic giống UserRepository để xử lý Null an toàn
-            DECLARE @isWorkingDay BIT = {(isWorkingDay.HasValue ? $"'{InlineQueryHelpers.SQLEncode(isWorkingDay.Value.ToString())}'" : "NULL")};
-            
-            DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
+    DECLARE @startRow INT = {pageNumber};
+    DECLARE @endRow INT = {pageSize};
+    
+    -- KIỂU BIT: Dùng logic giống UserRepository để xử lý Null an toàn
+    DECLARE @isWorkingDay BIT = {(isWorkingDay.HasValue ? $"'{InlineQueryHelpers.SQLEncode(isWorkingDay.Value.ToString())}'" : "NULL")};
+    
+    DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm)}%';
 
-            SELECT * FROM (
-                SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
-                    SELECT f.*
-                    , COUNT(1) OVER() AS total_records
-                    FROM TblLichNgoaiLe f
-                    WHERE f.DaXoa = 0 
-                    AND (@isWorkingDay IS NULL OR f.LaNgayLamViec = @isWorkingDay)
-                    AND (@singleKeyWord = N'%%' 
-                        OR f.TenNgoaiLe LIKE @singleKeyWord 
-                        OR f.MoTa LIKE @singleKeyWord)
-                ) AS T
-            ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
+    -- KHAI BÁO BIẾN NĂM ĐỂ LỌC
+    DECLARE @year INT = {yearParam};
+
+    SELECT * FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
+            SELECT f.*
+            , COUNT(1) OVER() AS total_records
+            FROM TblLichNgoaiLe f
+            WHERE f.DaXoa = 0 
+            AND (@isWorkingDay IS NULL OR f.LaNgayLamViec = @isWorkingDay)
+            -- BỔ SUNG ĐIỀU KIỆN LỌC THEO NĂM CỦA NGÀY BẮT ĐẦU
+            AND (@year IS NULL OR YEAR(f.NgayBatDau) = @year)
+            AND (@singleKeyWord = N'%%' 
+                OR f.TenNgoaiLe LIKE @singleKeyWord 
+                OR f.MoTa LIKE @singleKeyWord)
+        ) AS T
+    ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
+
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
             if (iDataReader == null)
                 return null;
 
             DataTable dt = new DataTable();
             dt.Load(iDataReader);
-            System.Diagnostics.Debug.WriteLine($"TRƯỚC GetTotal: {dt.Rows.Count} dòng"); // thêm dòng này
             InlineQueryHelpers.GetTotal(ref dt, out totalRecord);
-            System.Diagnostics.Debug.WriteLine($"SAU GetTotal: {dt.Rows.Count} dòng");   // thêm dòng này
             return dt;
         }
 

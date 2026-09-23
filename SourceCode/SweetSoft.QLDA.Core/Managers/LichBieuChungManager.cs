@@ -102,9 +102,9 @@ namespace SweetSoft.QLDA.Core.Managers
 
         #region NHÓM 2: QUẢN LÝ LỊCH NGOẠI LỆ - LỄ TẾT/LÀM BÙ (LỚP 2)
 
-        public DataTable SearchLichNgoaiLePaging(string searchTerm, bool? isWorkingDay, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchLichNgoaiLePaging(string searchTerm, Dictionary<string, object> keyValueSearchs, bool? isWorkingDay, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
-            return _ngoaiLeRepository.SearchPaging(searchTerm, isWorkingDay, orderBy, pageNumber, pageSize, out totalRecord);
+            return _ngoaiLeRepository.SearchPaging(searchTerm, keyValueSearchs, isWorkingDay, orderBy, pageNumber, pageSize, out totalRecord);
         }
         public TblLichNgoaiLe GetLichNgoaiLeById(Guid id)
         {
