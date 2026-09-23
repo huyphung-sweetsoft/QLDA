@@ -298,7 +298,7 @@
     <value>Tải xuống ứng dụng xác thực</value>
   </data>
   <data name="EDIT" xml:space="preserve">
-    <value>Sửa</value>
+    <value>Chỉnh sửa</value>
   </data>
   <data name="EMAIL_ALREADY_EXISTS" xml:space="preserve">
     <value>Email đã tồn tại</value>
@@ -2873,7 +2873,7 @@
     <value>Vấn đề phát sinh</value>
   </data>
   <data name="COMPLETED_TASKS_SUMMARY" xml:space="preserve">
-    <value>Tổng hợp Task đã hoàn thành</value>
+    <value>DANH SÁCH CÔNG VIỆC ĐÃ HOÀN THÀNH</value>
   </data>
   <data name="COMPLETION_DATE" xml:space="preserve">
     <value>Ngày hoàn thành</value>

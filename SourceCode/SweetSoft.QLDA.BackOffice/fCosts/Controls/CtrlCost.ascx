@@ -88,9 +88,20 @@
                         <ItemTemplate><%# Eval("TrangThai") != DBNull.Value ? GetTrangThaiChiPhiText(Eval("TrangThai")) : "—" %></ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
+                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="180px">
                         <ItemTemplate>
                             <div class="d-flex justify-content-center align-items-center gap-1">
+                                
+                                <asp:LinkButton runat="server"
+                                    ID="lbtApprove"
+                                    CommandName="OPEN_APPROVE_MODAL"
+                                    CommandArgument='<%# Eval("IdChiPhi") %>'
+                                    Visible='<%# this.IsPM && Eval("TrangThai") != DBNull.Value && Eval("TrangThai").ToString() == "0" %>'
+                                    CssClass="btn btn-outline-success btn-sm text-center btn-smart-link"
+                                    ToolTip="Xử lý (Duyệt/Từ chối)">
+                                    <i class="fas fa-check-circle"></i>
+                                </asp:LinkButton>
+
                                 <asp:LinkButton runat="server"
                                     ID="lbtCostDocument"
                                     Visible='<%# this.IsView %>'
@@ -113,20 +124,6 @@
                             </div>
                         </ItemTemplate>
                     </asp:TemplateField>
-
-                    <asp:TemplateField HeaderText="FastApproval" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
-                        <ItemTemplate>
-                            <SweetSoft:SmartLinkButton runat="server" 
-                                ID="lbtApprove" 
-                                CommandName="ITEM_APPROVE" 
-                                CommandArgument='<%# Eval("IdChiPhi") %>'
-                                VisibleConditionKey='<%# this.IsEdit && Eval("TrangThai") != DBNull.Value && Eval("TrangThai").ToString() == "0" %>'
-                                OnClientClick="return confirm('Bạn có chắc chắn muốn duyệt khoản chi này?');"
-                                ButtonIcon="fas fa-check-circle"
-                                ResourceKey='<%# BackEndResourceKeys.FAST_APPROVAL %>'>
-                            </SweetSoft:SmartLinkButton>
-                        </ItemTemplate>
-                    </asp:TemplateField>
                 </Columns>
                 <EmptyDataTemplate>
                     <%= GetResourceText(BackEndResourceKeys.NO_DATA) %>
@@ -137,6 +134,44 @@
         </ContentTemplate>
     </asp:UpdatePanel>
 </div>
+
+<!-- POPUP DUYỆT / TỪ CHỐI NHANH -->
+<SweetSoft:ExtraModal runat="server" ID="mdlFastApprove" Type="Primary" Title="Xử lý khoản chi">
+    <ContentTemplate>
+        <asp:HiddenField ID="hdfApproveCostId" runat="server" />
+        
+        <div id="divApproveMode" class="p-2">
+            <div class="text-center mb-2 mt-2" id="grpActionButtons">
+                <h5 class="text-primary mb-2">Xác nhận xử lý khoản chi</h5>
+                <p class="text-muted">Vui lòng chọn hành động "Duyệt" hoặc "Từ chối" cho khoản chi này.</p>
+                
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <asp:LinkButton ID="btnQuickApprove" runat="server" CssClass="btn btn-success px-4" OnClick="btnQuickApprove_Click">
+                        <i class="fas fa-check me-2"></i> Duyệt
+                    </asp:LinkButton>
+                    
+                    <button type="button" class="btn btn-danger px-4" onclick="$('#grpActionButtons').hide(); $('#divRejectReason').fadeIn();">
+                        <i class="fas fa-times me-2"></i> Từ chối
+                    </button>
+                </div>
+            </div>
+
+            <div id="divRejectReason" style="display: none;" class="mt-3 border-top pt-3">
+                <div class="mb-3">
+                    <label class="form-label text-danger fw-bold">Lý do từ chối (Bắt buộc) <span class="text-danger">*</span></label>
+                    <asp:TextBox runat="server" ID="txtRejectReason" CssClass="form-control" TextMode="MultiLine" Rows="3" placeholder="Nhập lý do chi tiết để nhân viên điều chỉnh..."></asp:TextBox>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary" onclick="$('#divRejectReason').hide(); $('#grpActionButtons').fadeIn(); $('#<%= txtRejectReason.ClientID %>').val('');">Quay lại</button>
+                    
+                    <asp:LinkButton ID="btnConfirmReject" runat="server" CssClass="btn btn-danger" OnClick="btnConfirmReject_Click">
+                        <i class="fas fa-paper-plane me-1"></i> Xác nhận Từ chối
+                    </asp:LinkButton>
+                </div>
+            </div>
+        </div>
+    </ContentTemplate>
+</SweetSoft:ExtraModal>
 
 <div class="offcanvas offcanvas-end offcanvas-form-search" id="search-offcanvas" aria-hidden="true">
     <div class="offcanvas-header">
