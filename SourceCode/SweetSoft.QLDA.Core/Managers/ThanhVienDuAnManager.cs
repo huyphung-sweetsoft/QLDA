@@ -249,5 +249,9 @@ namespace SweetSoft.QLDA.Core.Managers
             }
             return result;
         }
+        public DataTable GetThanhVienDuAnDetail(Guid idDuAn)
+        {
+            return _repository.GetThanhVienDuAnDetail(idDuAn);
+        }
     }
 }
