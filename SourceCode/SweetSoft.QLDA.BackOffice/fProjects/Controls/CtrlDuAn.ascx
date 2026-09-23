@@ -53,8 +53,9 @@
              <asp:UpdatePanel runat="server" ID="pnlButtons" UpdateMode="Conditional">
                  <ContentTemplate>
                      <div class="d-flex">
+                         <SweetSoft:ExtraButton runat="server" ID="btnQuanLyLoaiDuAn" OnClick="btnQuanLyLoaiDuAn_Click" CssClass="waves-effect waves-light font-mobile-small me-2" ButtonStyle="Secondary"><i class="fas fa-cogs"></i> Quản lý loại dự án</SweetSoft:ExtraButton>
                          <SweetSoft:ExtraButton runat="server" ID="btnExport" OnClick="btnExport_Click" ButtonStyle="OutLineInfo"
-                             CssClass="waves-effect waves-light flex-btn font-mobile-small me-2" ButtonIcon="Excel" IsSubmit="false" Visible="false">Export Excel</SweetSoft:ExtraButton>
+                             CssClass="waves-effect waves-light flex-btn font-mobile-small me-2" ButtonIcon="Excel" IsSubmit="false" Visible="false">Export Excel</SweetSoft:ExtraButton>                        
                          <SweetSoft:ExtraButton runat="server" ID="lbtAdd" OnClick="lbtAdd_Click" CssClass="waves-effect waves-light font-mobile-small" ButtonStyle="Info" ButtonIcon="Add" Visible="false">Add new</SweetSoft:ExtraButton>
                      </div>
                  </ContentTemplate>
@@ -112,14 +113,14 @@
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
-                                ID="lbtEdit" CommandName="ITEM_EDIT" CssClass="btn-grid-action text-decoration-underline"
+                                ID="lbtEdit" CommandName="ITEM_EDIT" CssClass="btn-grid-action text-decoration-underline text-warning"
                                 ResourceKey='<%# BackEndResourceKeys.EDIT%>'
                                 ButtonIcon="fas fa-pencil-alt"></SweetSoft:SmartLinkButton>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
-                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline ms-2 me-2"
+                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
+                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline text-info"
                                 ResourceKey='<%# BackEndResourceKeys.VIEW%>'
                                 ButtonIcon="fas fa-eye"></SweetSoft:SmartLinkButton>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
+                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
                                 ID="SmartLinkButton1" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
                                 ResourceKey='<%# BackEndResourceKeys.DELETE%>'
                                 ButtonIcon="fas fa-trash"></SweetSoft:SmartLinkButton>

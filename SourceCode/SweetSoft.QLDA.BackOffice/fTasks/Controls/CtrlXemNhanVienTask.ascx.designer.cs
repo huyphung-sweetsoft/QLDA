@@ -7,38 +7,47 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fCustomers
+namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
 
 
-    public partial class KhachHangList
+    public partial class CtrlXemNhanVienTask
     {
 
         /// <summary>
-        /// Navigation1 control.
+        /// mdlViewTaskMember control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlViewTaskMember;
 
         /// <summary>
-        /// CtrlKhachHang control.
+        /// ltrTaskInfoNote control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHang CtrlKhachHang;
+        protected global::System.Web.UI.WebControls.Literal ltrTaskInfoNote;
 
         /// <summary>
-        /// CtrlKhachHangForm1 control.
+        /// rptAssignedMembers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHangForm CtrlKhachHangForm1;
+        protected global::System.Web.UI.WebControls.Repeater rptAssignedMembers;
+
+        /// <summary>
+        /// divEmpty control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divEmpty;
     }
 }
