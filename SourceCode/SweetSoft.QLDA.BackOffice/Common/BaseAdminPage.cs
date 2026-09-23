@@ -481,6 +481,22 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             Title = !string.IsNullOrEmpty(pageTitle) ? pageTitle + " | " + _settingManager.GetSettingValue($"{SettingKeys.TitleOfWebsite}_{SweetContext.Current.CurrentLanguageCode}") : _settingManager.GetSettingValue($"{SettingKeys.TitleOfWebsite}_{SweetContext.Current.CurrentLanguageCode}");
         }
+        public bool IsPM
+        {
+            get
+            {
+                try
+                {
+                    Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.CurrentProjectId);
+
+                    return pmId.HasValue && pmId.Value == SweetContext.Current.UserId;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
         public bool IsView
         {
             get

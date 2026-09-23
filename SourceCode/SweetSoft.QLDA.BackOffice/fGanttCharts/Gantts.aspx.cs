@@ -29,7 +29,7 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
                     return;
                 }
 
-                modalIssues.Title = GetResourceText(BackEndResourceKeys.WARNINGS);
+                modalIssues.Title = "Thông tin công việc";
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.GANTT_CHART));
                 Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.GANTT_CHART);
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
@@ -175,19 +175,91 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
             string taskCode = hdfSelectedTaskCode.Value;
             if (string.IsNullOrEmpty(taskId) || string.IsNullOrEmpty(taskCode)) return;
 
-            rptOverdueTasks.DataSource = GanttChartManager.Instance.GetOverdueTasks(CurrentProjectId, taskCode);
-            rptOverdueTasks.DataBind();
+            DataTable dtAllTasks = GanttChartManager.Instance.GetGanttTasks(CurrentProjectId);
+            DataTable dtTaskInfo = null;
+            List<string> targetIds = new List<string>();
+            string rootTaskName = "";
 
-            rptIssues.DataSource = GanttChartManager.Instance.GetTaskIssues(taskId);
-            rptIssues.DataBind();
+            if (dtAllTasks != null)
+            {
+                dtTaskInfo = dtAllTasks.Clone();
+                dtTaskInfo.Columns.Add("RelativeLevel", typeof(int));
+                int baseLevel = taskCode.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries).Length;
 
+                foreach (DataRow row in dtAllTasks.Rows)
+                {
+                    string code = row["MaCongViec"]?.ToString() ?? "";
+
+                    if (code == taskCode || code.StartsWith(taskCode + "."))
+                    {
+                        DataRow newRow = dtTaskInfo.NewRow();
+                        foreach (DataColumn col in dtAllTasks.Columns)
+                        {
+                            newRow[col.ColumnName] = row[col.ColumnName];
+                        }
+
+                        int currentLevel = code.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries).Length;
+                        newRow["RelativeLevel"] = currentLevel - baseLevel + 1;
+
+                        dtTaskInfo.Rows.Add(newRow);
+                        targetIds.Add(row["IdCongViec"]?.ToString() ?? "");
+
+                        if (code == taskCode)
+                        {
+                            rootTaskName = row["TenCongViec"]?.ToString() ?? "";
+                        }
+                    }
+                }
+            }
+
+            h6TaskTitle.InnerHtml = $"<i class='fas fa-info-circle me-1'></i> {taskCode}. {rootTaskName}";
+            modalIssues.Title = "Thông tin công việc";
+
+            rptTaskInfo.DataSource = dtTaskInfo;
+            rptTaskInfo.DataBind();
+
+            DataTable dtTaskIssues = null;
+            foreach (string id in targetIds)
+            {
+                if (string.IsNullOrEmpty(id)) continue;
+                DataTable dt = GanttChartManager.Instance.GetTaskIssues(id);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    if (dtTaskIssues == null) dtTaskIssues = dt.Clone();
+                    foreach (DataRow r in dt.Rows) dtTaskIssues.ImportRow(r);
+                }
+            }
+
+            bool hasIssues = dtTaskIssues != null && dtTaskIssues.Rows.Count > 0;
+            phHasIssues.Visible = hasIssues;
+            phNoIssues.Visible = !hasIssues;
+
+            if (hasIssues)
+            {
+                rptIssues.DataSource = dtTaskIssues;
+                rptIssues.DataBind();
+            }
             modalIssues.OpenModal(true);
         }
 
         #region Helpers dùng cho file ASPX
-        protected string GetRowClass(int level)
+
+        protected int GetTaskLevel(object maCvObj)
         {
-            return level > 1 ? $"task-level-child level-{level}" : "";
+            if (maCvObj == null || maCvObj == DBNull.Value) return 1;
+            string maCv = maCvObj.ToString();
+            int level = maCv.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries).Length;
+            return level == 0 ? 1 : level;
+        }
+
+        protected string GetRowClass(int level, bool hasChild)
+        {
+            string cls = level > 1 ? $"task-level-child level-{level}" : "";
+            if (level >= 2 && hasChild)
+            {
+                cls += " collapsed";
+            }
+            return cls.Trim();
         }
 
         protected string GetClickEvents(bool hasChild, string maCv)
@@ -197,28 +269,47 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
 
         protected string GetTaskStatusText(int status)
         {
-            if (status == 1) return GetResourceText(BackEndResourceKeys.DOING);
-            if (status == 2) return GetResourceText(BackEndResourceKeys.COMPLETED);
-            return GetResourceText(BackEndResourceKeys.NOT_YET_STARTED);
+            if (status == 1) return "Đang làm";
+            if (status == 2) return "Hoàn thành";
+            return "Chưa bắt đầu";
         }
 
         protected string GetTaskStatusBadge(int status)
         {
-            if (status == 1) return "bg-primary";
-            else return "bg-success";
+            if (status == 1) return "gantt-badge-doing";
+            if (status == 2) return "gantt-badge-done";
+            return "gantt-badge-todo";
+        }
+
+        protected string GetTaskWarningHtml(object trangThaiObj, object ngayKetThucObj)
+        {
+            int status = trangThaiObj != DBNull.Value ? Convert.ToInt32(trangThaiObj) : 0;
+            if (status == 2) return "";
+
+            if (ngayKetThucObj != DBNull.Value)
+            {
+                DateTime endDate = Convert.ToDateTime(ngayKetThucObj).Date;
+                int remainingDays = (int)(endDate - DateTime.Now.Date).TotalDays;
+
+                if (remainingDays < 0)
+                    return "<div class='mt-1 text-danger' style='font-size: 11px; font-weight: bold;'>(Trễ hạn)</div>";
+                else if (remainingDays <= 2)
+                    return "<div class='mt-1 text-warning' style='font-size: 11px; font-weight: bold;'>(Sắp đến hạn)</div>";
+            }
+            return "";
         }
 
         protected string GetIssueStatusText(int status)
         {
-            if (status == 1) return GetResourceText(BackEndResourceKeys.PROCESSING);
-            else return GetResourceText(BackEndResourceKeys.PROCESSED);
+            if (status == 1) return "Đang xử lý";
+            else return "Đã xử lý";
         }
 
         protected string GetIssueStatusBadge(int status)
         {
-            if (status == 1) return "bg-primary";
-            if (status == 2) return "bg-success";
-            return "bg-secondary";
+            if (status == 1) return "gantt-badge-doing";
+            if (status == 2) return "gantt-badge-done";
+            return "gantt-badge-todo";
         }
         #endregion
     }
