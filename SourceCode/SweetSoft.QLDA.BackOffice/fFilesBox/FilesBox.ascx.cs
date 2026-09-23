@@ -289,6 +289,28 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     return;
                 }
 
+                // Opt-in dossier snapshot path: the owner saves one complete set atomically.
+                // Do not run shared deletion/metadata mutation on immutable historical uploads.
+                if (UseDocumentFileSets)
+                {
+                    try
+                    {
+                        if (string.IsNullOrEmpty(SaveDataCallbackKey))
+                            throw new InvalidOperationException("Chưa cấu hình xử lý lưu bộ file.");
+                        DataCallback(SaveDataCallbackKey, null, null);
+                        txtArFileRemove.Value = string.Empty;
+                        LoadFile(this.RefId.Value, this._refType.Value);
+                        ScriptManager.RegisterClientScriptBlock(this.Page, GetType(),
+                            "FilesBox.DiscardFile", "FilesBox.DiscardFile();", true);
+                        this.CURRENT_PAGE.ShowSuccessSaveData();
+                    }
+                    catch (InvalidOperationException exc)
+                    {
+                        this.CURRENT_PAGE.ShowNotify(exc.Message, MSGType.Warning);
+                    }
+                    return;
+                }
+
                 //---------------------------------------------
                 #region delete file
                 List<Guid> listFileRemoveId =
@@ -638,6 +660,38 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             return fileIds;
         }
 
+        public bool UseDocumentFileSets
+        {
+            get { return (bool?)ViewState["UseDocumentFileSets"] ?? false; }
+            set { ViewState["UseDocumentFileSets"] = value; }
+        }
+
+        public Guid? ExpectedDocumentVersionId
+        {
+            get { return (Guid?)ViewState["ExpectedDocumentVersionId"]; }
+        }
+
+        public List<Guid> GetSubmittedDocumentFileIds()
+        {
+            var ids = new HashSet<Guid>();
+            var removed = new HashSet<Guid>(GetPendingRemovedFileIds());
+            string prefix = ClientID + "filePath$";
+            foreach (string key in Request.Form.AllKeys)
+            {
+                if (string.IsNullOrEmpty(key) || !key.StartsWith(prefix, StringComparison.Ordinal)) continue;
+                string suffix = key.Substring(prefix.Length);
+                if (suffix.EndsWith("|New", StringComparison.Ordinal)) suffix = suffix.Substring(0, suffix.Length - 4);
+                Guid id;
+                if (!Guid.TryParse(suffix, out id) || id == Guid.Empty)
+                    throw new InvalidOperationException("File chưa tải lên hoàn tất. Vui lòng thử lại.");
+                if (!removed.Contains(id)) ids.Add(id);
+            }
+            var loaded = (Guid[])ViewState["LoadedDocumentFileIds"] ?? new Guid[0];
+            if (loaded.Any(id => !removed.Contains(id) && !ids.Contains(id)))
+                throw new InvalidOperationException("Danh sách file gửi lên chưa đầy đủ. Vui lòng tải lại trang.");
+            return ids.OrderBy(id => id).ToList();
+        }
+
         public void LoadFile(Guid refId, FileUploadTypes refType)
         {
             this.RefId = refId;
@@ -648,6 +702,17 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             ltrCurrentFiles.Text = "";
 
             UploadManager fileManager = new UploadManager(SweetContext.Current, refId, refType);
+
+            if (UseDocumentFileSets)
+            {
+                if (refType != FileUploadTypes.DocumentVersion)
+                    throw new InvalidOperationException("Chế độ bộ file chỉ dùng cho phiên bản hồ sơ.");
+                var snapshot = new DocumentManager(SweetContext.Current).GetCurrentDocumentFileSet(refId);
+                ViewState["ExpectedDocumentVersionId"] = snapshot.VersionId;
+                ViewState["LoadedDocumentFileIds"] = snapshot.FileIds.ToArray();
+                fileManager.TblUploadFiles = (fileManager.TblUploadFiles ?? new List<TblUploadFile>())
+                    .Where(file => snapshot.FileIds.Contains(file.Id)).ToList();
+            }
 
             divControls.Visible = IsEnabled;
             if (fileManager.TblUploadFiles == null || fileManager.TblUploadFiles.Count == 0)
@@ -692,6 +757,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             }
 
             string listCurrentFile = string.Empty;
+            string itemTemplate = htmlFormatFile.InnerHtml;
+            if (UseDocumentFileSets)
+                itemTemplate = itemTemplate.Replace("class=\"title\"", "class=\"title\" readonly=\"readonly\"");
             int index = 0;
             foreach (TblUploadFile file in fileManager.TblUploadFiles)
             {
@@ -737,7 +805,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 else
                     fileSrc = file.FileUrl;
 
-                listCurrentFile += string.Format(htmlFormatFile.InnerHtml
+                listCurrentFile += string.Format(itemTemplate
                     , fileSrc
                     , fileTitle
                     , string.Empty

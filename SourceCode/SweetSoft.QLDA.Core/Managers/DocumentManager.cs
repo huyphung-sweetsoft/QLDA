@@ -17,6 +17,116 @@ using System.Web.Hosting;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
+    // Strict XHTML subset for the dossier editor. Never render untrusted HTML directly.
+    public static class DocumentContentHtml
+    {
+        public static string Sanitize(string html)
+        {
+            html = html ?? string.Empty;
+            if (html.Length > 200000)
+                throw new ArgumentException("Nội dung hồ sơ không được vượt quá 200.000 ký tự.");
+            // Convert named HTML entities to numeric XML entities; not an HTML filtering regex.
+            html = System.Text.RegularExpressions.Regex.Replace(html, @"&[a-zA-Z][a-zA-Z0-9]+;", m => {
+                string decoded = System.Web.HttpUtility.HtmlDecode(m.Value);
+                if (decoded == m.Value) return "&amp;" + m.Value.Substring(1);
+                return string.Concat(decoded.Select(c => "&#" + ((int)c).ToString(CultureInfo.InvariantCulture) + ";"));
+            });
+            var settings = new System.Xml.XmlReaderSettings {
+                DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+                XmlResolver = null, MaxCharactersInDocument = 1500000
+            };
+            var document = new System.Xml.XmlDocument { XmlResolver = null, PreserveWhitespace = true };
+            try {
+                using (var reader = System.Xml.XmlReader.Create(new StringReader("<root>" + html + "</root>"), settings))
+                    document.Load(reader);
+            } catch (System.Xml.XmlException) {
+                throw new ArgumentException("Nội dung có định dạng không hợp lệ. Vui lòng dán dưới dạng văn bản rồi định dạng lại.");
+            }
+            var output = new System.Text.StringBuilder();
+            foreach (System.Xml.XmlNode node in document.DocumentElement.ChildNodes)
+                AppendSafe(node, output, 0);
+            if (output.Length > 200000)
+                throw new ArgumentException("Nội dung sau định dạng vượt quá 200.000 ký tự. Vui lòng rút gọn nội dung.");
+            return output.ToString();
+        }
+
+        private static void AppendSafe(System.Xml.XmlNode node, System.Text.StringBuilder output, int depth)
+        {
+            if (depth > 64) throw new ArgumentException("Nội dung có quá nhiều lớp định dạng.");
+            if (node is System.Xml.XmlText || node is System.Xml.XmlCDataSection
+                || node is System.Xml.XmlWhitespace || node is System.Xml.XmlSignificantWhitespace) {
+                output.Append(System.Web.HttpUtility.HtmlEncode(node.Value));
+                return;
+            }
+            if (node.NodeType != System.Xml.XmlNodeType.Element || node.NamespaceURI.Length != 0) return;
+            string tag = node.Name.ToLowerInvariant();
+            const string allowed = "|p|div|span|strong|b|em|i|u|s|strike|sub|sup|ul|ol|li|blockquote|h1|h2|h3|h4|h5|h6|table|thead|tbody|tfoot|tr|td|th|br|hr|pre|code|a|";
+            if (!allowed.Contains("|" + tag + "|")) return;
+            output.Append('<').Append(tag);
+            string style = SafeStyle(node.Attributes["style"] == null ? null : node.Attributes["style"].Value);
+            if (style.Length > 0)
+                output.Append(" style=\"").Append(System.Web.HttpUtility.HtmlAttributeEncode(style)).Append('"');
+            if (tag == "td" || tag == "th")
+                foreach (string name in new[] { "colspan", "rowspan" }) {
+                    int span;
+                    var attribute = node.Attributes[name];
+                    if (attribute != null && int.TryParse(attribute.Value, out span) && span > 0 && span <= 100)
+                        output.Append(' ').Append(name).Append("=\"").Append(span).Append('"');
+                }
+            if (tag == "a") {
+                var href = node.Attributes["href"];
+                Uri uri;
+                if (href != null && Uri.TryCreate(href.Value, UriKind.Absolute, out uri)
+                    && (uri.Scheme == "https" || uri.Scheme == "http" || uri.Scheme == "mailto"))
+                    output.Append(" href=\"").Append(System.Web.HttpUtility.HtmlAttributeEncode(uri.AbsoluteUri)).Append('"');
+            }
+            if (tag == "br" || tag == "hr") { output.Append(" />"); return; }
+            output.Append('>');
+            foreach (System.Xml.XmlNode child in node.ChildNodes) AppendSafe(child, output, depth + 1);
+            output.Append("</").Append(tag).Append('>');
+        }
+
+        private static string SafeStyle(string style)
+        {
+            var result = new List<string>();
+            foreach (string declaration in (style ?? string.Empty).Split(';')) {
+                int separator = declaration.IndexOf(':');
+                if (separator < 0) continue;
+                string name = declaration.Substring(0, separator).Trim().ToLowerInvariant();
+                string value = declaration.Substring(separator + 1).Trim().ToLowerInvariant();
+                bool valid = false;
+                switch (name) {
+                    case "text-align":
+                        valid = new[] { "left", "center", "right", "justify" }.Contains(value);
+                        break;
+                    case "font-size":
+                        valid = System.Text.RegularExpressions.Regex.IsMatch(value, @"\A(?:[89]|[1-6][0-9]|7[0-2])(?:px|pt)\z");
+                        break;
+                    case "margin-left":
+                        valid = System.Text.RegularExpressions.Regex.IsMatch(value, @"\A(?:0|[1-9][0-9]?|1[0-9]{2}|200)px\z");
+                        break;
+                    case "color":
+                    case "background-color":
+                        valid = System.Text.RegularExpressions.Regex.IsMatch(value, @"\A#[0-9a-f]{3}(?:[0-9a-f]{3})?\z")
+                            || System.Text.RegularExpressions.Regex.IsMatch(value, @"\Argb\(\s*(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\s*,\s*(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\s*,\s*(?:[0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\s*\)\z");
+                        break;
+                    case "font-family":
+                        var fonts = new[] { "arial", "helvetica", "sans-serif", "serif", "monospace", "comic sans ms", "cursive", "courier new", "courier", "georgia", "lucida sans unicode", "lucida grande", "tahoma", "geneva", "times new roman", "times", "trebuchet ms", "verdana" };
+                        valid = value.Split(',').All(f => fonts.Contains(f.Trim().Trim('\'', '"')));
+                        break;
+                }
+                if (valid) result.Add(name + ":" + value);
+            }
+            return string.Join(";", result);
+        }
+
+        public static string ForDisplay(string html)
+        {
+            try { return Sanitize(html); }
+            catch (ArgumentException) { return System.Web.HttpUtility.HtmlEncode(html ?? string.Empty); }
+        }
+    }
+
     public static class DocumentStatusKeys
     {
         public const string Drafting = "DANG_SOAN_THAO";
@@ -62,6 +172,25 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string Project = DocumentRepository.DocumentScopeProject;
     }
 
+    /// <summary>
+    /// Quyền thao tác chi tiết trên một hồ sơ.  Không dùng ActionKeys ở đây:
+    /// ActionKeys là quyền mở module/list cũ, còn các khóa này là quyền ACL
+    /// cho từng hồ sơ cụ thể.
+    /// </summary>
+    public static class DocumentPermissionKeys
+    {
+        public const string View = "View";
+        public const string Update = "Update"; // tương thích quyền cũ
+        public const string UpdateInfo = "UpdateInfo";
+        public const string ManageFiles = "ManageFiles";
+        public const string Signing = "Signing";
+        public const string CustomerDelivery = "CustomerDelivery";
+        public const string PhysicalStorage = "PhysicalStorage";
+        public const string Delete = "Delete";
+        public const string Export = "Export";
+        public const string Manage = "Manage";
+    }
+
     public static class DocumentActivityTypeKeys
     {
         public const string CreateDocument = "TAO_HO_SO";
@@ -69,6 +198,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string DeleteDocument = "XOA_HO_SO";
         public const string CreateFromTemplate = "TAO_TU_MAU";
         public const string UploadVersion = "TAI_LEN_PHIEN_BAN";
+        public const string RestoreVersion = "KHOI_PHUC_PHIEN_BAN";
         public const string DeleteVersion = "XOA_PHIEN_BAN";
         public const string SetOfficialFile = "CHON_FILE_CHINH_THUC";
         public const string ClearOfficialFile = "BO_CHON_FILE_CHINH_THUC";
@@ -178,6 +308,110 @@ namespace SweetSoft.QLDA.Core.Managers
                 out totalRecord);
         }
 
+        public bool CanAccessDocument(Guid id, ActionKeys action)
+        {
+            return CanAccessDocument(id, action.ToString());
+        }
+
+        public bool CanAccessDocument(Guid id, string action)
+        {
+            return _repository.CanAccess(
+                SweetContext.Current.UserId,
+                id,
+                action);
+        }
+        public void EnsureDocumentAccess(Guid id, ActionKeys action)
+        {
+            EnsureDocumentAccess(id, action.ToString());
+        }
+
+        public void EnsureDocumentAccess(Guid id, string action)
+        {
+            if (!CanAccessDocument(id, action))
+                throw new UnauthorizedAccessException(
+                    "Bạn không có quyền thao tác hồ sơ này.");
+        }
+
+        /// <summary>
+        /// Dùng cho các trang cũ chỉ hiểu IsEdit/ActionKeys.Update. Một tài
+        /// liệu vẫn được mở ở chế độ thao tác nếu người dùng có ít nhất một
+        /// quyền cập nhật chi tiết; thao tác thật sự sẽ được kiểm tra lại
+        /// bằng đúng khóa quyền ở từng nghiệp vụ.
+        /// </summary>
+        public bool CanAccessDocumentAnyUpdateAction(Guid id)
+        {
+            return CanAccessDocument(id, DocumentPermissionKeys.Update)
+                || CanAccessDocument(id, DocumentPermissionKeys.UpdateInfo)
+                || CanAccessDocument(id, DocumentPermissionKeys.ManageFiles)
+                || CanAccessDocument(id, DocumentPermissionKeys.Signing)
+                || CanAccessDocument(id, DocumentPermissionKeys.CustomerDelivery)
+                || CanAccessDocument(id, DocumentPermissionKeys.PhysicalStorage);
+        }
+        public bool CanManageDocument(Guid id)
+        {
+            return _repository.CanAccess(SweetContext.Current.UserId,id,"Manage");
+        }
+        public TblTaiLieu GetAccessibleDocument(Guid id)
+        {
+            EnsureDocumentAccess(id,ActionKeys.View);
+            return _repository.GetById(id);
+        }
+        public bool CanAccessDocumentArea(ActionKeys action)
+        {
+            Guid user=SweetContext.Current.UserId;
+            return _repository.HasGroupRight(user,"DocumentAdministration.View")
+                || _repository.HasGroupRight(user,"Document."+action);
+        }
+        public bool CanCreateCompanyDocument()
+        {
+            return _repository.HasGroupRight(SweetContext.Current.UserId,"DocumentAdministration.View")
+                || _repository.HasGroupRight(SweetContext.Current.UserId,"Document.Create");
+        }
+        public DataTable GetDocumentGrantMembers(Guid id)
+        {
+            return GetDocumentGrantMembers(id, false);
+        }
+
+        public DataTable GetDocumentGrantMembers(Guid id, bool includeExternalUsers)
+        {
+            return GetDocumentGrantMembers(id, includeExternalUsers, false);
+        }
+
+        public DataTable GetDocumentGrantMembers(
+            Guid id,
+            bool includeExternalUsers,
+            bool onlyExternalUsers)
+        {
+            if(!CanManageDocument(id)) throw new UnauthorizedAccessException();
+            if ((includeExternalUsers || onlyExternalUsers)
+                && !CanGrantDocumentOutsideProject(id))
+                throw new UnauthorizedAccessException();
+            return _repository.GetGrantMembers(
+                id,
+                includeExternalUsers,
+                onlyExternalUsers);
+        }
+
+        public bool CanGrantDocumentOutsideProject(Guid id)
+        {
+            return CanManageDocument(id)
+                && _repository.HasGroupRight(
+                    SweetContext.Current.UserId,
+                    "DocumentAdministration.View");
+        }
+        public string GetDocumentGrantStamp(Guid id)
+        {
+            if(!CanManageDocument(id)) throw new UnauthorizedAccessException();
+            return _repository.GetGrantStamp(id);
+        }
+        public void SaveDocumentGrants(Guid id, IEnumerable<DocumentGrant> grants, string expectedStamp)
+        {
+            var list=grants.ToList();
+            _repository.SaveGrants(SweetContext.Current.UserId,id,list,expectedStamp);
+            WriteDocumentAudit(id,DocumentActivityTypeKeys.UpdateDocument,DocumentActivityReferenceKeys.Document,id,
+                Newtonsoft.Json.JsonConvert.SerializeObject(list),"Đã cập nhật quyền truy cập hồ sơ.");
+        }
+
         /// <summary>
         /// Returns documents that belong to exactly one project.  The scope and
         /// project filter are imposed here instead of trusting values posted by
@@ -192,7 +426,8 @@ namespace SweetSoft.QLDA.Core.Managers
             int endRow,
             out int totalRecord)
         {
-            RequireProjectDocumentAccess(projectId, ActionKeys.View);
+            if (!CanEnterProjectDocumentArea(projectId))
+                throw new UnauthorizedAccessException();
 
             Dictionary<string, object> projectParameters = parameters == null
                 ? new Dictionary<string, object>()
@@ -212,47 +447,70 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         /// <summary>
-        /// A project document is available only to an administrator, the
-        /// project manager, or an active member of that project who has the
-        /// requested permission of the ProjectDocument module.
+        /// Checks project-level permissions used for creating/list-level
+        /// operations. Opening an individual dossier is handled by
+        /// CanOpenProjectDocument so a specifically granted outsider can
+        /// still access that dossier without gaining project-wide access.
         /// </summary>
         public bool CanAccessProjectDocument(
             Guid projectId,
             ActionKeys action)
         {
-            Guid userId = SweetContext.Current.UserId;
-            if (userId == Guid.Empty || projectId == Guid.Empty)
-                return false;
+            return CanAccessProjectDocument(projectId, action.ToString());
+        }
 
-            TblDuAn project = DuAnManager.Instance.GetDuAnById(projectId);
-            if (project == null)
-                return false;
+        public bool CanAccessProjectDocument(
+            Guid projectId,
+            string action)
+        {
+            return _repository.CanAccessProject(
+                SweetContext.Current.UserId,
+                projectId,
+                action);
+        }
 
-            if (!FunctionManager.Instance.IsActionKeyExisted(
-                    userId,
-                    ModuleKeys.ProjectDocument,
-                    action))
-            {
-                return false;
-            }
+        public bool CanOpenProjectDocument(
+            Guid documentId,
+            Guid projectId,
+            ActionKeys action)
+        {
+            return CanOpenProjectDocument(documentId, projectId, action.ToString());
+        }
 
-            if (UserManager.Instance.IsAdministrator(userId)
-                || project.IdNhanVienQuanLy == userId)
-            {
-                return true;
-            }
+        public bool CanOpenProjectDocument(
+            Guid documentId,
+            Guid projectId,
+            string action)
+        {
+            return _repository.CanAccessProjectDocument(
+                SweetContext.Current.UserId,
+                documentId,
+                projectId,
+                action);
+        }
 
-            return new Select()
-                .From(TblThanhVienDuAn.Schema)
-                .Where(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(projectId)
-                .And(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(userId)
-                .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
-                .GetRecordCount() > 0;
+        /// <summary>
+        /// Cho phép mở tab/danh sách Hồ sơ dự án. Đây không phải quyền xem
+        /// mọi hồ sơ: truy vấn danh sách vẫn lọc từng hồ sơ bằng ACL riêng.
+        /// </summary>
+        public bool CanEnterProjectDocumentArea(Guid projectId)
+        {
+            return projectId != Guid.Empty
+                && _repository.CanEnterProjectDocumentArea(
+                    SweetContext.Current.UserId,
+                    projectId);
         }
 
         private void RequireProjectDocumentAccess(
             Guid projectId,
             ActionKeys action)
+        {
+            RequireProjectDocumentAccess(projectId, action.ToString());
+        }
+
+        private void RequireProjectDocumentAccess(
+            Guid projectId,
+            string action)
         {
             if (!CanAccessProjectDocument(projectId, action))
                 throw new UnauthorizedAccessException();
@@ -260,6 +518,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public TblTaiLieu GetCompanyDocumentById(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetCompanyById(idTaiLieu);
         }
 
@@ -267,7 +526,8 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid projectId)
         {
-            RequireProjectDocumentAccess(projectId, ActionKeys.View);
+            if (!CanOpenProjectDocument(idTaiLieu, projectId, ActionKeys.View))
+                throw new UnauthorizedAccessException("Bạn không có quyền xem hồ sơ này.");
             return _repository.GetProjectById(idTaiLieu, projectId);
         }
 
@@ -283,7 +543,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public List<TblDuAn> GetAvailableProjects()
         {
-            return _repository.GetAvailableProjects();
+            return _repository.GetAvailableProjects().Where(p => CanAccessProjectDocument(p.IdDuAn,ActionKeys.View)).ToList();
+        }
+
+        public List<TblDuAn> GetProjectsAvailableForDocumentCreation()
+        {
+            return _repository.GetAvailableProjects()
+                .Where(p => CanAccessProjectDocument(p.IdDuAn, ActionKeys.Create))
+                .ToList();
         }
 
         public TblLoaiTaiLieu GetDocumentTypeDefaults(Guid idLoaiTaiLieu)
@@ -296,11 +563,13 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public DataTable GetDocumentVersions(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetDocumentVersionsWithFiles(idTaiLieu);
         }
 
         public DataTable GetCompanyDocumentDetail(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetCompanyDocumentDetail(idTaiLieu);
         }
 
@@ -308,7 +577,8 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid projectId)
         {
-            RequireProjectDocumentAccess(projectId, ActionKeys.View);
+            if (!CanOpenProjectDocument(idTaiLieu, projectId, ActionKeys.View))
+                throw new UnauthorizedAccessException("Bạn không có quyền xem hồ sơ này.");
             return _repository.GetProjectDocumentDetail(
                 idTaiLieu,
                 projectId);
@@ -324,7 +594,16 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid projectId,
             ActionKeys action)
         {
-            RequireProjectDocumentAccess(projectId, action);
+            EnsureProjectDocumentAccess(idTaiLieu, projectId, action.ToString());
+        }
+
+        public void EnsureProjectDocumentAccess(
+            Guid idTaiLieu,
+            Guid projectId,
+            string action)
+        {
+            if (!CanOpenProjectDocument(idTaiLieu, projectId, action))
+                throw new UnauthorizedAccessException("Bạn không có quyền thao tác hồ sơ này.");
             if (_repository.GetProjectById(idTaiLieu, projectId) == null)
             {
                 throw new InvalidOperationException(
@@ -334,6 +613,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public DataTable GetSigningHistory(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetSigningHistory(idTaiLieu);
         }
 
@@ -341,6 +621,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid idTrinhKyTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetSigningDetail(
                 idTaiLieu,
                 idTrinhKyTaiLieu);
@@ -351,6 +632,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idNguoiKy,
             string ghiChu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.Signing);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException(
@@ -378,6 +660,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTrinhKyTaiLieu,
             string reason)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.Signing);
             DocumentSigningOperationResult result =
                 _repository.RequestDocumentSigningChanges(
                     idTaiLieu,
@@ -394,6 +677,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTrinhKyTaiLieu,
             string note)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.Signing);
             DocumentSigningOperationResult result =
                 _repository.CompleteDocumentSigning(
                     idTaiLieu,
@@ -408,6 +692,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public DataTable GetCustomerDeliveryHistory(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetCustomerDeliveryHistory(idTaiLieu);
         }
 
@@ -415,6 +700,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid idGuiNhanKhachHang)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetCustomerDeliveryDetail(
                 idTaiLieu,
                 idGuiNhanKhachHang);
@@ -431,6 +717,7 @@ namespace SweetSoft.QLDA.Core.Managers
             bool choPhepGuiTruocKhiKy,
             string ghiChu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.CustomerDelivery);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -465,6 +752,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 string trangThai,
                 string ghiChu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.CustomerDelivery);
             DocumentCustomerDeliveryOperationResult result =
                 _repository.UpdateCustomerDeliveryStatus(
                     idTaiLieu,
@@ -480,6 +768,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public DataTable GetPhysicalStorageHistory(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetPhysicalStorageHistory(idTaiLieu);
         }
 
@@ -492,6 +781,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 string tinhTrangBanGoc,
                 string ghiChu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.PhysicalStorage);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -518,7 +808,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
             return _repository.GetDocumentActivityHistory(idTaiLieu);
+        }
+
+        public string GetDocumentContent(Guid documentId)
+        {
+            EnsureDocumentAccess(documentId,ActionKeys.View);
+            return DocumentContentHtml.ForDisplay(_repository.GetDocumentContent(documentId));
         }
 
         public TblTaiLieu SaveCompanyDocument(
@@ -531,8 +828,10 @@ namespace SweetSoft.QLDA.Core.Managers
             bool canTrinhKy,
             string hinhThucKy,
             bool canGuiKhachHang,
-            bool canLuuVatLy)
+            bool canLuuVatLy, string noiDungHtml = null)
         {
+            if (idTaiLieu == Guid.Empty) { if(!CanCreateCompanyDocument()) throw new UnauthorizedAccessException(); }
+            else EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.UpdateInfo);
             return SaveDocument(
                 null,
                 string.Empty,
@@ -545,7 +844,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 canTrinhKy,
                 hinhThucKy,
                 canGuiKhachHang,
-                canLuuVatLy);
+                canLuuVatLy, noiDungHtml);
         }
 
         public TblTaiLieu SaveProjectDocument(
@@ -559,13 +858,12 @@ namespace SweetSoft.QLDA.Core.Managers
             bool canTrinhKy,
             string hinhThucKy,
             bool canGuiKhachHang,
-            bool canLuuVatLy)
+            bool canLuuVatLy, string noiDungHtml = null)
         {
-            RequireProjectDocumentAccess(
-                projectId,
-                idTaiLieu == Guid.Empty
-                    ? ActionKeys.Create
-                    : ActionKeys.Update);
+            if (idTaiLieu == Guid.Empty)
+                RequireProjectDocumentAccess(projectId, ActionKeys.Create);
+            else
+                EnsureProjectDocumentAccess(idTaiLieu, projectId, DocumentPermissionKeys.UpdateInfo);
 
             TblDuAn project = DuAnManager.Instance.GetDuAnById(projectId);
             if (project == null)
@@ -586,7 +884,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 canTrinhKy,
                 hinhThucKy,
                 canGuiKhachHang,
-                canLuuVatLy);
+                canLuuVatLy, noiDungHtml);
         }
 
         private TblTaiLieu SaveDocument(
@@ -601,7 +899,7 @@ namespace SweetSoft.QLDA.Core.Managers
             bool canTrinhKy,
             string hinhThucKy,
             bool canGuiKhachHang,
-            bool canLuuVatLy)
+            bool canLuuVatLy, string noiDungHtml = null)
         {
             maTaiLieu = (maTaiLieu ?? string.Empty).Trim().ToUpperInvariant();
             tenTaiLieu = (tenTaiLieu ?? string.Empty).Trim();
@@ -610,6 +908,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 .Trim()
                 .ToUpperInvariant();
 
+            if(idTaiLieu != Guid.Empty) EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.UpdateInfo);
             bool isProjectDocument = projectId.HasValue;
             string documentScopeText = isProjectDocument
                 ? "hồ sơ dự án"
@@ -760,9 +1059,8 @@ namespace SweetSoft.QLDA.Core.Managers
                     DocumentPhysicalStorageStatusKeys.NotStored;
             }
 
-            TblTaiLieu savedItem = isNew
-                ? _repository.Insert(item)
-                : _repository.Update(item);
+            string safeContent = noiDungHtml == null ? null : DocumentContentHtml.Sanitize(noiDungHtml);
+            TblTaiLieu savedItem = _repository.SaveWithContent(item, isNew, safeContent);
 
             return savedItem;
         }
@@ -771,6 +1069,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid idMauTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -936,135 +1235,93 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
+        public DocumentFileSet GetCurrentDocumentFileSet(Guid idTaiLieu)
+        {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
+            return _repository.GetCurrentDocumentFileSet(idTaiLieu);
+        }
+
+        public void SaveDocumentFileSet(Guid idTaiLieu, Guid? expectedVersionId, IEnumerable<Guid> fileIds)
+        {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
+            var ids = (fileIds ?? Enumerable.Empty<Guid>()).ToList();
+            var document = _repository.GetById(idTaiLieu);
+            if (document == null || document.DaXoa)
+                throw new InvalidOperationException("Không tìm thấy hồ sơ.");
+            var ownedFiles = _repository.GetDocumentVersionFiles(idTaiLieu).ToDictionary(f => f.Id);
+            foreach (Guid id in ids)
+            {
+                TblUploadFile file;
+                if (!ownedFiles.TryGetValue(id, out file) || !IsDocumentFileAvailable(file))
+                    throw new InvalidOperationException("File không thuộc hồ sơ hoặc không còn trên ổ đĩa.");
+            }
+            DocumentFileSet saved = _repository.SaveDocumentFileSet(
+                idTaiLieu, expectedVersionId, ids, GetCurrentUserName(), DateTime.UtcNow);
+            if (saved.Created)
+                WriteDocumentAudit(idTaiLieu, DocumentActivityTypeKeys.UploadVersion,
+                    DocumentActivityReferenceKeys.DocumentVersion, saved.VersionId,
+                    "Danh sách file: " + string.Join(", ", ids),
+                    "Đã lưu phiên bản hồ sơ gồm " + ids.Count + " file.");
+        }
+
+        public DocumentFileSet RestoreDocumentFileSet(
+            Guid idTaiLieu,
+            Guid idPhienBanTaiLieu)
+        {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
+            if (idPhienBanTaiLieu == Guid.Empty)
+                throw new InvalidOperationException("Không xác định được mốc lịch sử cần khôi phục.");
+
+            TblPhienBanTaiLieu source = _repository.GetDocumentVersionById(
+                idTaiLieu,
+                idPhienBanTaiLieu);
+            if (source == null)
+                throw new InvalidOperationException("Mốc lịch sử không tồn tại hoặc không thuộc hồ sơ này.");
+
+            List<Guid> fileIds = _repository.GetDocumentVersionFileIds(
+                idTaiLieu,
+                idPhienBanTaiLieu);
+            DocumentFileSet current = _repository.GetCurrentDocumentFileSet(idTaiLieu);
+            string sourceVersion = string.IsNullOrWhiteSpace(source.SoPhienBan)
+                ? idPhienBanTaiLieu.ToString("D")
+                : source.SoPhienBan;
+            string description = "Khôi phục bộ file từ mốc v" + sourceVersion
+                + " gồm " + fileIds.Count + " file.";
+
+            DocumentFileSet saved = _repository.SaveDocumentFileSet(
+                idTaiLieu,
+                current.VersionId,
+                fileIds,
+                GetCurrentUserName(),
+                DateTime.UtcNow,
+                description,
+                "RESTORE");
+            if (saved.Created)
+            {
+                WriteDocumentAudit(
+                    idTaiLieu,
+                    DocumentActivityTypeKeys.RestoreVersion,
+                    DocumentActivityReferenceKeys.DocumentVersion,
+                    saved.VersionId,
+                    "Khôi phục từ phiên bản: " + idPhienBanTaiLieu,
+                    description);
+            }
+
+            return saved;
+        }
+
+        [Obsolete("Use SaveDocumentFileSet with the complete submitted file set and expected version.")]
         public void SyncDocumentVersions(Guid idTaiLieu)
         {
-            TblTaiLieu document = _repository.GetById(idTaiLieu);
-            if (document == null)
-                throw new InvalidOperationException("Không tìm thấy hồ sơ.");
-
-            List<TblUploadFile> files = _repository
-                .GetDocumentVersionFiles(idTaiLieu)
-                .OrderBy(file => file.CreatedDate)
-                .ThenBy(file => file.DisplayOrder)
-                .ThenBy(file => file.Id)
-                .ToList();
-            List<TblPhienBanTaiLieu> allVersions = _repository
-                .GetDocumentVersions(idTaiLieu, true)
-                .OrderBy(version => version.NgayTao)
-                .ThenBy(version => version.IdPhienBanTaiLieu)
-                .ToList();
-
-            HashSet<Guid> activeFileIds = new HashSet<Guid>(
-                files.Select(file => file.Id));
-            DateTime currentDate = DateTime.UtcNow;
-            string currentUserName = GetCurrentUserName();
-
-            List<TblPhienBanTaiLieu> missingFileVersions = allVersions
-                .Where(version =>
-                    !version.DaXoa
-                    && version.IdFileNoiDung.HasValue
-                    && !activeFileIds.Contains(version.IdFileNoiDung.Value))
-                .ToList();
-
-            foreach (TblPhienBanTaiLieu version in missingFileVersions)
-            {
-                Guid missingFileId = version.IdFileNoiDung.Value;
-                if (document.IdFileBanChinhThuc.HasValue
-                    && document.IdFileBanChinhThuc.Value == missingFileId)
-                {
-                    throw new InvalidOperationException(
-                        "Không thể đồng bộ vì file chính thức của hồ sơ đã bị mất. Vui lòng kiểm tra lại dữ liệu file.");
-                }
-
-                if (_repository.HasActiveWorkflowForVersion(
-                        version.IdPhienBanTaiLieu))
-                {
-                    throw new InvalidOperationException(
-                        "Không thể đồng bộ vì tệp của phiên bản đang được dùng trong quá trình trình ký hoặc gửi khách hàng đã bị mất.");
-                }
-            }
-
-            foreach (TblPhienBanTaiLieu version in missingFileVersions)
-            {
-                Guid removedFileId = version.IdFileNoiDung.Value;
-                version.IdFileNoiDung = null;
-                version.DaXoa = true;
-                version.LaPhienBanHienTai = false;
-                version.NguoiCapNhat = currentUserName;
-                version.NgayCapNhat = currentDate;
-                _repository.UpdateDocumentVersion(version);
-
-                WriteDocumentAudit(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.DeleteVersion,
-                    DocumentActivityReferenceKeys.DocumentVersion,
-                    version.IdPhienBanTaiLieu,
-                    "Phiên bản: v" + version.SoPhienBan
-                        + "; Id tệp: " + removedFileId,
-                    "Đã xóa một phiên bản tài liệu.");
-            }
-
-            List<TblPhienBanTaiLieu> activeVersions = allVersions
-                .Where(version => !version.DaXoa)
-                .ToList();
-            HashSet<Guid> linkedFileIds = new HashSet<Guid>(
-                activeVersions
-                    .Where(version => version.IdFileNoiDung.HasValue)
-                    .Select(version => version.IdFileNoiDung.Value));
-
-            foreach (TblUploadFile file in files
-                .Where(file => !linkedFileIds.Contains(file.Id)))
-            {
-                TblPhienBanTaiLieu previousCurrent = activeVersions
-                    .FirstOrDefault(version => version.LaPhienBanHienTai);
-                ClearCurrentVersion(activeVersions, currentUserName, currentDate);
-
-                TblPhienBanTaiLieu newVersion = new TblPhienBanTaiLieu
-                {
-                    IdPhienBanTaiLieu = UUIDv7.NewGuid(),
-                    IdTaiLieu = idTaiLieu,
-                    SoPhienBan = GetNextVersionNumber(allVersions),
-                    NguonTao = "UPLOAD",
-                    IdPhienBanNguon = previousCurrent == null
-                        ? (Guid?)null
-                        : previousCurrent.IdPhienBanTaiLieu,
-                    MoTaPhienBan = "Tải lên file "
-                        + GetUploadFileName(file),
-                    NoiDungTrucTiep = null,
-                    LaPhienBanHienTai = true,
-                    DaXoa = false,
-                    NguoiTao = currentUserName,
-                    NgayTao = currentDate,
-                    IdFileNoiDung = file.Id
-                };
-
-                _repository.InsertDocumentVersion(newVersion);
-                WriteDocumentAudit(
-                    idTaiLieu,
-                    DocumentActivityTypeKeys.UploadVersion,
-                    DocumentActivityReferenceKeys.DocumentVersion,
-                    newVersion.IdPhienBanTaiLieu,
-                    "Phiên bản: v"
-                        + newVersion.SoPhienBan
-                        + "; Tệp: "
-                        + GetUploadFileName(file),
-                    "Đã tải lên một phiên bản tài liệu mới.");
-                allVersions.Add(newVersion);
-                activeVersions.Add(newVersion);
-                linkedFileIds.Add(file.Id);
-                currentDate = currentDate.AddTicks(1);
-            }
-
-            EnsureOneCurrentVersion(
-                activeVersions,
-                currentUserName,
-                DateTime.UtcNow);
+            throw new InvalidOperationException("Hãy lưu toàn bộ bộ file bằng SaveDocumentFileSet.");
         }
+
 
         public TblTaiLieu SetOfficialFile(
             Guid idTaiLieu,
             Guid idPhienBanTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -1114,6 +1371,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid idPhienBanTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -1156,6 +1414,7 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             IEnumerable<Guid> fileIds)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -1208,13 +1467,14 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         /// <summary>
-        /// Deletes selected document-version files through the repository
-        /// transaction, then removes only safe physical files after commit.
+        /// Compatibility entry point: removing files now creates a new snapshot;
+        /// never delete uploads or clear historical version references.
         /// </summary>
         public DocumentVersionFileDeletionResult DeleteDocumentVersionFiles(
             Guid idTaiLieu,
             IEnumerable<Guid> fileIds)
         {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
             if (idTaiLieu == Guid.Empty)
                 throw new InvalidOperationException(
                     "Không xác định được hồ sơ cần cập nhật.");
@@ -1227,26 +1487,17 @@ namespace SweetSoft.QLDA.Core.Managers
             if (requestedFileIds.Count == 0)
                 return new DocumentVersionFileDeletionResult();
 
-            DocumentVersionFileDeletionResult result = _repository
-                .DeleteDocumentVersionFiles(
-                    idTaiLieu,
-                    requestedFileIds,
-                    GetCurrentUserName(),
-                    DateTime.UtcNow);
-
-            if (result == null)
-                return new DocumentVersionFileDeletionResult();
-
-            WriteDeletedVersionFileAudits(idTaiLieu, result);
-            result.WarningMessage = CleanupDeletedDocumentVersionFiles(
-                idTaiLieu,
-                requestedFileIds,
-                result.DeletedFiles);
-            return result;
+            DocumentFileSet current = GetCurrentDocumentFileSet(idTaiLieu);
+            if (requestedFileIds.Any(id => !current.FileIds.Contains(id)))
+                throw new InvalidOperationException("File cần gỡ không thuộc bộ file hiện tại.");
+            SaveDocumentFileSet(idTaiLieu, current.VersionId,
+                current.FileIds.Except(requestedFileIds));
+            return new DocumentVersionFileDeletionResult();
         }
 
         public bool DeleteCompanyDocument(Guid idTaiLieu)
         {
+            EnsureDocumentAccess(idTaiLieu,ActionKeys.Delete);
             TblTaiLieu item = _repository.GetCompanyById(idTaiLieu);
             if (item == null)
                 return false;
@@ -1273,7 +1524,10 @@ namespace SweetSoft.QLDA.Core.Managers
             Guid idTaiLieu,
             Guid projectId)
         {
-            RequireProjectDocumentAccess(projectId, ActionKeys.Delete);
+            EnsureProjectDocumentAccess(
+                idTaiLieu,
+                projectId,
+                ActionKeys.Delete);
 
             TblTaiLieu item = _repository.GetProjectById(
                 idTaiLieu,

@@ -21,6 +21,77 @@ namespace SweetSoft.QLDA.Core.FileManager
 {
     public class UploadManager : BaseManager
     {
+        private static bool IsDocumentFile(TblUploadFile file)
+        {
+            return file!=null && (file.RefType=="DocumentVersion" || file.RefType=="DocumentSigningResult");
+        }
+        private void EnsureDocumentFileWrite(TblUploadFile file)
+        {
+            if(file==null) return;
+            var old=_repository.GetById(file.Id);
+            if(IsDocumentFile(old) && (file.RefId!=old.RefId || file.RefType!=old.RefType || file.FileUrl!=old.FileUrl || file.IsDeleted!=old.IsDeleted))
+                throw new InvalidOperationException("Không được thay liên kết hoặc xóa file lịch sử hồ sơ.");
+            if(!IsDocumentFile(file)) return;
+            var repository=new DocumentRepository(null);
+            var document=repository.ResolveUploadDocument(file.RefId,file.RefType);
+            string action = file.RefType == "DocumentSigningResult"
+                ? DocumentPermissionKeys.Signing
+                : DocumentPermissionKeys.ManageFiles;
+            if(!document.HasValue || !repository.CanAccess(SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId,document.Value,action))
+                throw new UnauthorizedAccessException("Bạn không có quyền cập nhật file hồ sơ.");
+        }
+        private void EnsureDocumentFileDelete(TblUploadFile file)
+        {
+            if (!IsDocumentFile(file))
+                return;
+
+            var repository = new DocumentRepository(null);
+            Guid? documentId = repository.ResolveUploadDocument(
+                file.RefId,
+                file.RefType);
+            string action = file.RefType == "DocumentSigningResult"
+                ? DocumentPermissionKeys.Signing
+                : DocumentPermissionKeys.ManageFiles;
+            if (!documentId.HasValue
+                || !repository.CanAccess(
+                    SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId,
+                    documentId.Value,
+                    action))
+            {
+                throw new UnauthorizedAccessException(
+                    "Bạn không có quyền cập nhật file hồ sơ.");
+            }
+
+            // A file that is part of a saved version, official file, signing
+            // result, customer return, template, or historical snapshot must
+            // be removed through the dossier workflow.  Unreferenced files
+            // are allowed here so a failed/staged upload can be cleaned up.
+            string fileId = file.Id.ToString("D");
+            string sql = $@"
+                SELECT CASE WHEN EXISTS
+                (
+                    SELECT 1 FROM dbo.TblPhienBanTaiLieu
+                    WHERE IdFileNoiDung = '{fileId}'
+                       OR ISNULL(DanhSachFileJson, N'') LIKE '%{fileId}%'
+                    UNION ALL
+                    SELECT 1 FROM dbo.TblTaiLieu
+                    WHERE IdFileBanChinhThuc = '{fileId}'
+                    UNION ALL
+                    SELECT 1 FROM dbo.TblTrinhKyTaiLieu
+                    WHERE IdFileSauKy = '{fileId}'
+                    UNION ALL
+                    SELECT 1 FROM dbo.TblGuiNhanKhachHang
+                    WHERE IdFileNhanLai = '{fileId}'
+                    UNION ALL
+                    SELECT 1 FROM dbo.TblMauTaiLieu
+                    WHERE IdFileMau = '{fileId}'
+                ) THEN 1 ELSE 0 END;";
+            if (new InlineQuery().ExecuteScalar<int>(sql) == 1)
+            {
+                throw new InvalidOperationException(
+                    "Hãy gỡ file trong hồ sơ. Không xóa trực tiếp file lịch sử.");
+            }
+        }
         private static string Namespace
         {
             get
@@ -125,6 +196,7 @@ namespace SweetSoft.QLDA.Core.FileManager
         }
         public bool Save(out string errorField, out string errorMess)
         {
+            EnsureDocumentFileWrite(this.File);
             errorField = "";
             errorMess = "";
             #region vadid input
@@ -181,6 +253,7 @@ namespace SweetSoft.QLDA.Core.FileManager
         {
             if (item == null)
                 return null;
+            EnsureDocumentFileWrite(item);
             item.Save();
             Task.Run(async () =>
             {
@@ -197,6 +270,8 @@ namespace SweetSoft.QLDA.Core.FileManager
         }
         public string RemoveFiles(List<Guid> fileIDs, FileUploadTypes uploadTypes)
         {
+            foreach(Guid id in fileIDs)
+                EnsureDocumentFileDelete(_repository.GetById(id));
             string filePaths = _repository.GetFilePaths(fileIDs, uploadTypes);
             if(!string.IsNullOrEmpty(filePaths))
             {
@@ -224,6 +299,7 @@ namespace SweetSoft.QLDA.Core.FileManager
         }
         public bool DeleteFile(out string errorField, out string errorMess)
         {
+            EnsureDocumentFileDelete(this.File);
             errorField = "";
             errorMess = "";
             if (this.File == null || this.File.IsDeleted)

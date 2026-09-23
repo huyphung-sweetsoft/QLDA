@@ -15,37 +15,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (IsPostBack)
-                return;
-
-            if (!this.IsView)
-            {
-                Response.Redirect(
-                    GetRelativeClientPath(RewriteURLHelper.Error403),
-                    true);
-                return;
-            }
-
-            string pageTitle = GetResourceText(
-                BackEndResourceKeys.DOCUMENT_GROUP_LIST);
-
-            SetMetaTagsOgTags(pageTitle);
-            Navigation1.MainTitle = pageTitle;
-            Navigation1.keyValuePairUrls =
-                new Dictionary<string, string>
-                {
-                    {
-                        RewriteURLHelper.DocumentGroups,
-                        pageTitle
-                    }
-                };
-
-            CtrlDocumentGroups1.InitControls();
+            Response.Redirect(GetRelativeClientPath(RewriteURLHelper.DocumentTypes), true);
         }
 
         public override void ConfirmRequest(ConfirmResult e)
         {
-            CtrlDocumentGroups1.ConfirmRequest(e);
+            // Retired catalogue: no mutations from legacy confirmation postbacks.
         }
     }
 }

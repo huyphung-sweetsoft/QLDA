@@ -2,7 +2,7 @@
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
-<div class="<%=this.IsMultiple? "":"file-box-single"%> file-box" onmouseover="FilesBox.FocusFileBox(this);" data-clientid="<%=this.ClientID %>">
+<div class="<%=this.IsMultiple? "":"file-box-single"%> <%=UseDocumentFileSets ? "document-file-set" : ""%> file-box" onmouseover="FilesBox.FocusFileBox(this);" data-clientid="<%=this.ClientID %>">
     <div class="loading" style="display: none;">
         <div class="lds-hourglass"></div>
     </div>

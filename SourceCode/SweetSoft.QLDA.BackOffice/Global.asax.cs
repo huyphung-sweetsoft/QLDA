@@ -73,7 +73,9 @@ namespace SweetSoft.QLDA.BackOffice
                 Response.Headers.Remove("Server");
                 Response.Headers.Remove("X-AspNet-Version");
                 Response.Headers.Remove("Expires");
-                Response.Headers.Remove("Cache-Control");
+                if (!Request.Path.StartsWith(VirtualPathUtility.ToAbsolute("~/Uploads/DocumentVersion/"), StringComparison.OrdinalIgnoreCase)
+                    && !Request.Path.StartsWith(VirtualPathUtility.ToAbsolute("~/Uploads/DocumentSigningResult/"), StringComparison.OrdinalIgnoreCase))
+                    Response.Headers.Remove("Cache-Control");
                 Response.Headers.Remove("Connection");
                 Response.Headers.Remove("access-control-allow-origin");
             }
