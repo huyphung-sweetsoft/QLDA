@@ -11,7 +11,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq; // BẮT BUỘC CÓ USING NÀY CHO LINQ
+using System.Linq;
 using System.Transactions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -62,12 +62,11 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         {
             ddlTrangThai.PlaceHolder = "--";
             dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
-            btnXacNhanNhanVien.Text=GetResourceText(BackEndResourceKeys.CONFIRM);
+            btnXacNhanNhanVien.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
             txtThoiGianKetThuc.PlaceHolder = "--";
 
             txtTenCuocHop.PlaceHolder = txtNoiDungCuocHop.PlaceHolder = txtThoiGianBatDau.PlaceHolder =
             txtDiaDiemHop.PlaceHolder = txtThoiLuong.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
-
             dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
         }
 
@@ -254,31 +253,26 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             }
         }
 
-        // =========================================================================
-        // BẮT ĐẦU SỬA: HÀM MỞ POPUP CHỌN NHÂN VIÊN VÀ BIND VÀO REPEATER
-        // =========================================================================
         protected void btnMoPopupNhanVien_Click(object sender, EventArgs e)
         {
-            List<Guid> projectMemberIds = new Select(TblThanhVienDuAn.Columns.IdNhanVien)
-                .From(TblThanhVienDuAn.Schema)
-                .Where(TblThanhVienDuAn.Columns.IdDuAn).IsEqualTo(CtrlMeet1.ProjectId)
-                .And(TblThanhVienDuAn.Columns.DaXoa).IsEqualTo(false)
-                .ExecuteTypedList<Guid>();
-
-            var allUsers = UserManager.Instance.GetAllActiveNhanVien();
-            var usersInProject = allUsers
-                .Where(u => projectMemberIds.Contains(u.UserId))
-                .OrderBy(u => u.DisplayName)
-                .ToList();
+            DataTable dtUsers = ThanhVienDuAnManager.Instance.GetThanhVienDuAnDetail(CtrlMeet1.ProjectId);
 
             var list = new List<object>();
-            for (int i = 0; i < usersInProject.Count; i++)
+            for (int i = 0; i < dtUsers.Rows.Count; i++)
             {
+                DataRow row = dtUsers.Rows[i];
+
+                Guid userId = (Guid)row["UserId"];
+                string displayName = row["DisplayName"] != DBNull.Value ? row["DisplayName"].ToString() : "";
+                string email = row["Email"] != DBNull.Value ? row["Email"].ToString() : "";
+                string avatar = row["Avatar"] != DBNull.Value ? row["Avatar"].ToString() : "";
+
                 list.Add(new
                 {
-                    UserId = usersInProject[i].UserId,
-                    DisplayName = usersInProject[i].DisplayName,
-                    AvatarHtml = GetSingleAvatarHtml(usersInProject[i].DisplayName, usersInProject[i].Avatar, i)
+                    UserId = userId,
+                    DisplayName = displayName,
+                    Email = email,
+                    AvatarHtml = GetSingleAvatarHtml(displayName, avatar, i)
                 });
             }
 
@@ -368,7 +362,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
             }
         }
-        // KẾT THÚC SỬA
 
         public override void ConfirmRequest(ConfirmResult e)
         {
