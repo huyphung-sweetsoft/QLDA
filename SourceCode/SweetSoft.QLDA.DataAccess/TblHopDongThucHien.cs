@@ -312,6 +312,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
+				TableSchema.TableColumn colvarIdTaiLieu = new TableSchema.TableColumn(schema);
+				colvarIdTaiLieu.ColumnName = "IdTaiLieu";
+				colvarIdTaiLieu.DataType = DbType.Guid;
+				colvarIdTaiLieu.MaxLength = 0;
+				colvarIdTaiLieu.AutoIncrement = false;
+				colvarIdTaiLieu.IsNullable = true;
+				colvarIdTaiLieu.IsPrimaryKey = false;
+				colvarIdTaiLieu.IsForeignKey = true;
+				colvarIdTaiLieu.IsReadOnly = false;
+				colvarIdTaiLieu.DefaultSetting = @"";
+				
+					colvarIdTaiLieu.ForeignKeyTableName = "TblTaiLieu";
+				schema.Columns.Add(colvarIdTaiLieu);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -433,6 +447,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
 		}
+		  
+		[XmlAttribute("IdTaiLieu")]
+		[Bindable(true)]
+		public Guid? IdTaiLieu 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdTaiLieu); }
+			set { SetColumnValue(Columns.IdTaiLieu, value); }
+		}
 		
 		#endregion
 		
@@ -483,6 +505,17 @@ namespace SweetSoft.QLDA.DataAccess
 		}
 		
 		
+		/// <summary>
+		/// Returns a TblTaiLieu ActiveRecord object related to this TblHopDongThucHien
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblTaiLieu TblTaiLieu
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblTaiLieu.FetchByID(this.IdTaiLieu); }
+			set { SetColumnValue("IdTaiLieu", value.IdTaiLieu); }
+		}
+		
+		
 		#endregion
 		
 		
@@ -497,7 +530,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu)
 		{
 			TblHopDongThucHien item = new TblHopDongThucHien();
 			
@@ -529,6 +562,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
+			item.IdTaiLieu = varIdTaiLieu;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -539,7 +574,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu)
 		{
 			TblHopDongThucHien item = new TblHopDongThucHien();
 			
@@ -570,6 +605,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NguoiCapNhat = varNguoiCapNhat;
 			
 				item.NgayCapNhat = varNgayCapNhat;
+			
+				item.IdTaiLieu = varIdTaiLieu;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -682,6 +719,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn IdTaiLieuColumn
+        {
+            get { return Schema.Columns[14]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -700,6 +744,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NgayTao = @"NgayTao";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
+			 public static string IdTaiLieu = @"IdTaiLieu";
 						
 		}
 		#endregion
