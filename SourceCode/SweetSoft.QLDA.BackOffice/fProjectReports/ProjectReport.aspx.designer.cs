@@ -33,15 +33,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
 
         /// <summary>
-        /// btnExportExcel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnExportExcel;
-
-        /// <summary>
         /// upReport control.
         /// </summary>
         /// <remarks>
@@ -85,6 +76,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnPreview;
+
+        /// <summary>
+        /// btnExportPDF control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnExportPDF;
 
         /// <summary>
         /// phNotStarted control.
@@ -150,6 +150,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         protected global::System.Web.UI.WebControls.Literal ltrTotalIssues;
 
         /// <summary>
+        /// phDashboard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phDashboard;
+
+        /// <summary>
         /// rptCompletedTasks control.
         /// </summary>
         /// <remarks>
@@ -159,13 +168,22 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         protected global::System.Web.UI.WebControls.Repeater rptCompletedTasks;
 
         /// <summary>
-        /// rptOverdueTasks control.
+        /// rptDoingTasks control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptOverdueTasks;
+        protected global::System.Web.UI.WebControls.Repeater rptDoingTasks;
+
+        /// <summary>
+        /// rptTodoTasks control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptTodoTasks;
 
         /// <summary>
         /// rptIssues control.
@@ -175,15 +193,5 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptIssues;
-
-        /// <summary>
-        /// btnExportPDF control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnExportPDF;
-
     }
 }

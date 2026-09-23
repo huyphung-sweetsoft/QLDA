@@ -212,14 +212,14 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     _repository.RemoveAssignment(idCongViec, id);
 
-                    //ThongBaoManager.Instance.Create(
-                    //    userId: id,
-                    //    tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
-                    //    noiDung: $"Công việc: {tenCongViec}",
-                    //    loaiThongBao: ThongBaoTypes.HeThong,
-                    //    idCongViec: idCongViec,
-                    //    idDuAn: idDuAn
-                    //);
+                    ThongBaoManager.Instance.Create(
+                        userId: id,
+                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
+                        noiDung: $"Công việc: {tenCongViec}",
+                        loaiThongBao: ThongBaoTypes.HeThong,
+                        idCongViec: idCongViec,
+                        idDuAn: idDuAn
+                    );
                 }
 
                 // 3. Chuẩn bị dữ liệu Auto-Join

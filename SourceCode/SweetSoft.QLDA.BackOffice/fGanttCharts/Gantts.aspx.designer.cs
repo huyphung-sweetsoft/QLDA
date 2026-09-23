@@ -96,13 +96,31 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         protected global::SweetSoft.QLDA.Controls.ExtraModal modalIssues;
 
         /// <summary>
-        /// rptOverdueTasks control.
+        /// h6TaskTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptOverdueTasks;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl h6TaskTitle;
+
+        /// <summary>
+        /// rptTaskInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptTaskInfo;
+
+        /// <summary>
+        /// phHasIssues control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phHasIssues;
 
         /// <summary>
         /// rptIssues control.
@@ -112,5 +130,14 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptIssues;
+
+        /// <summary>
+        /// phNoIssues control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phNoIssues;
     }
 }

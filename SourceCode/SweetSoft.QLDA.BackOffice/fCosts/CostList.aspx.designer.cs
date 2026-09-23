@@ -96,13 +96,13 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNhanVienYeuCau;
 
         /// <summary>
-        /// txtNgayTao control.
+        /// ddlNhanVienYeuCau control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNgayTao;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVienYeuCau;
 
         /// <summary>
         /// ddlTrangThai control.
@@ -112,6 +112,42 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThai;
+
+        /// <summary>
+        /// txtNguoiTao control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNguoiTao;
+
+        /// <summary>
+        /// txtNgayTao control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNgayTao;
+
+        /// <summary>
+        /// divLyDoTuChoi control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divLyDoTuChoi;
+
+        /// <summary>
+        /// txtLyDoTuChoi control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtLyDoTuChoi;
 
         /// <summary>
         /// txtMoTaChiTiet control.

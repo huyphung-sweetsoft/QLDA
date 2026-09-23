@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdChiPhi,Guid IdDuAn,Guid? IdNhanVienDeNghi,string MaChiPhi,string TenKhoanChi,string MoTaChiTiet,byte TrangThai,bool DaXoa,DateTime NgayTao,decimal? DonGia,int? SoLuong,decimal SoTien,string LyDoTuChoi)
+	    public void Insert(Guid IdChiPhi,Guid IdDuAn,Guid? IdNhanVienDeNghi,string MaChiPhi,string TenKhoanChi,string MoTaChiTiet,byte TrangThai,bool DaXoa,DateTime NgayTao,decimal? DonGia,int? SoLuong,decimal SoTien,string LyDoTuChoi,Guid? IdTaiLieu,Guid? IdNguoiTao)
 	    {
 		    TblChiPhi item = new TblChiPhi();
 		    
@@ -110,6 +110,10 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.LyDoTuChoi = LyDoTuChoi;
             
+            item.IdTaiLieu = IdTaiLieu;
+            
+            item.IdNguoiTao = IdNguoiTao;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -118,7 +122,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdChiPhi,Guid IdDuAn,Guid? IdNhanVienDeNghi,string MaChiPhi,string TenKhoanChi,string MoTaChiTiet,byte TrangThai,bool DaXoa,DateTime NgayTao,decimal? DonGia,int? SoLuong,decimal SoTien,string LyDoTuChoi)
+	    public void Update(Guid IdChiPhi,Guid IdDuAn,Guid? IdNhanVienDeNghi,string MaChiPhi,string TenKhoanChi,string MoTaChiTiet,byte TrangThai,bool DaXoa,DateTime NgayTao,decimal? DonGia,int? SoLuong,decimal SoTien,string LyDoTuChoi,Guid? IdTaiLieu,Guid? IdNguoiTao)
 	    {
 		    TblChiPhi item = new TblChiPhi();
 	        item.MarkOld();
@@ -149,6 +153,10 @@ namespace SweetSoft.QLDA.DataAccess
 			item.SoTien = SoTien;
 				
 			item.LyDoTuChoi = LyDoTuChoi;
+				
+			item.IdTaiLieu = IdTaiLieu;
+				
+			item.IdNguoiTao = IdNguoiTao;
 				
 	        item.Save(UserName);
 	    }
