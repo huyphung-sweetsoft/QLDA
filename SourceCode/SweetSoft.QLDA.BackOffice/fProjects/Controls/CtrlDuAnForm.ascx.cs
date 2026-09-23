@@ -87,6 +87,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             CtrlChonNhanVien1.OnConfirmSelection += CtrlChonNhanVien1_OnConfirmSelection;
 
             txtSoHopDong.EnterSubmitClientID = btnSearchHopDong.ClientID;
+            ApplyControlsText();
         }
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
@@ -369,6 +370,18 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             //Dọn sạch data rác của list nv trước khi nhấn nút thêm dự án
             this.SelectedMemberIds = new List<Guid>();
             UpdateMemberCountUI();
+        }
+
+        private void ApplyControlsText()
+        {
+            ddlKhachHang.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
+            ddlLoaiDuAn.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
+            ddlNhanVienQuanLy.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
+
+            txtTenDuAn.PlaceHolder = txtGiaTriHopDong.PlaceHolder
+                = txtSoHopDong.PlaceHolder
+                = txtNgayKy.PlaceHolder
+                = txtMaDuAn.PlaceHolder = "";
         }
 
         private void UpdateMemberCountUI()

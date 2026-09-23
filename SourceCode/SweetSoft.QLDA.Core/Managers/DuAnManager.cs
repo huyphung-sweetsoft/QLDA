@@ -343,9 +343,9 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
-        public SweetSoft.QLDA.Core.ValueObjects.DuAnTienDoViewModel GetDuAnTienDo(Guid idDuAn)
+        public DuAnTienDoViewModel GetDuAnTienDo(Guid idDuAn)
         {
-            var result = new SweetSoft.QLDA.Core.ValueObjects.DuAnTienDoViewModel();
+            var result = new DuAnTienDoViewModel();
 
             var project = GetDuAnById(idDuAn);
             if (project != null)

@@ -88,6 +88,10 @@ namespace SweetSoft.QLDA.Core.Managers
         public static string SmtpMaxRetryDelaySeconds = string.Format(SettingKeyPrefix, "SmtpMaxRetryDelaySeconds");
         #endregion
 
+        #region Project Settings
+        public static string ProjectCodePrefix = string.Format(SettingKeyPrefix, "ProjectCodePrefix");
+        public static string ProjectCodeStartNumber = string.Format(SettingKeyPrefix, "ProjectCodeStartNumber");
+        #endregion
     }
     public class SettingManager : ISettingManager
     {
