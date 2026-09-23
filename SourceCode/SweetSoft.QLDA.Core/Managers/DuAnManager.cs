@@ -39,6 +39,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblDuAn CreateOrUpdate(TblDuAn dto)
         {
             //validate input data
+            BusinessValidator.ThrowIfNullOrEmpty(dto.MaDuAn, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.MaDuAn));
             BusinessValidator.ThrowIfNull(dto, BackEndResourceKeys.INVALID_DATA);
             BusinessValidator.ThrowIfNullOrEmpty(dto.TenDuAn, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.TenDuAn));
             BusinessValidator.ThrowIf(dto.IdLoaiDuAn == Guid.Empty, BackEndResourceKeys.PLEASE_SELECT_THE_VALUE, nameof(dto.IdLoaiDuAn));
@@ -93,7 +94,6 @@ namespace SweetSoft.QLDA.Core.Managers
                      dto,
                      duAn,
                      x => x.IdDuAn,
-                     x => x.MaDuAn,
                      x => x.NgayHoanThanhThucTe,
                      x => x.DaXoa,
                      x => x.NguoiTao,
@@ -102,6 +102,7 @@ namespace SweetSoft.QLDA.Core.Managers
                      x => x.NgayCapNhat,
                      x => x.IdHopDongThucHien);
 
+                duAn.MaDuAn = dto.MaDuAn;
                 Guid? idHopDong = dto.IdHopDongThucHien;
                 duAn.TrangThai = dto.TrangThai;
                 duAn.IdHopDongThucHien = idHopDong.HasValue && idHopDong.Value != Guid.Empty ? idHopDong : null;
@@ -111,16 +112,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
 
-                //if (duAn.IdNhanVienQuanLy.HasValue && duAn.IdNhanVienQuanLy != oldPM)
-                //{
-                //    ThongBaoManager.Instance.Create(
-                //        userId: duAn.IdNhanVienQuanLy.Value,
-                //        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
-                //        noiDung: $"Dự án: {duAn.TenDuAn}",
-                //        loaiThongBao: ThongBaoTypes.DuAn,
-                //        idDuAn: duAn.IdDuAn
-                //    );
-                //}
+                if (duAn.IdNhanVienQuanLy.HasValue && duAn.IdNhanVienQuanLy != oldPM)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: duAn.IdNhanVienQuanLy.Value,
+                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                        noiDung: $"Dự án: {duAn.TenDuAn}",
+                        loaiThongBao: ThongBaoTypes.DuAn,
+                        idDuAn: duAn.IdDuAn
+                    );
+                }
 
                 return duAn;
             }
@@ -152,16 +153,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
 
-                //if (duAn.IdNhanVienQuanLy.HasValue)
-                //{
-                //    ThongBaoManager.Instance.Create(
-                //        userId: duAn.IdNhanVienQuanLy.Value,
-                //        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
-                //        noiDung: $"Dự án: {duAn.TenDuAn}",
-                //        loaiThongBao: ThongBaoTypes.DuAn,
-                //        idDuAn: duAn.IdDuAn
-                //    );
-                //}
+                if (duAn.IdNhanVienQuanLy.HasValue)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: duAn.IdNhanVienQuanLy.Value,
+                        tieuDe: $"Bạn đã được gán làm Quản lý dự án (PM) cho dự án: {duAn.TenDuAn}",
+                        noiDung: $"Dự án: {duAn.TenDuAn}",
+                        loaiThongBao: ThongBaoTypes.DuAn,
+                        idDuAn: duAn.IdDuAn
+                    );
+                }
 
                 return duAn;
             }
@@ -204,8 +205,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public string GenerateProjectCode()
         {
-            return _repository.GenerateMaDuAn();
+            string prefix = SettingManager.Instance.GetSettingValue(SettingKeys.ProjectCodePrefix);
+            if (string.IsNullOrWhiteSpace(prefix))
+                prefix = "PRJ";
+
+            int startNumber = SettingManager.Instance.GetSettingValueInt(SettingKeys.ProjectCodeStartNumber, 1);
+            return _repository.GenerateMaDuAn(prefix, startNumber);
         }
+
         public Guid? LayIdNhanVienQuanLy(Guid idDuAn)
         {
             return _repository.GetIdNhanVienQuanLy(idDuAn);
@@ -416,5 +423,12 @@ namespace SweetSoft.QLDA.Core.Managers
             return result;
         }
 
+        public bool IsProjectCodeExists(string maDuAn, Guid idDuAn)
+        {
+            if (string.IsNullOrWhiteSpace(maDuAn))
+                return false;
+            TblDuAn duAn = _repository.GetByMaDuAn(maDuAn.Trim());
+            return duAn != null && duAn.IdDuAn != idDuAn;
+        }
     }
 }

@@ -168,6 +168,12 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     ShowAccessDeniedNotify();
                     return;
                 }
+                if (DuAnManager.Instance.IsProjectCodeExists(txtMaDuAn.Text, this.IdDuAn))
+                {
+                    ShowNotify("Mã dự án đã tồn tại.", MSGType.Error);
+                    return;
+                }
+                duAn.MaDuAn = txtMaDuAn.Text;
                 duAn.TenDuAn = txtTenDuAn.Text.Trim();
                 duAn.MoTa = txtMoTa.Text.Trim();
                 duAn.IdHopDongThucHien = this.IdHopDongThucHien == Guid.Empty ? (Guid?)null : this.IdHopDongThucHien;
@@ -226,6 +232,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         public void OpenAdd()
         {
             RefreshProjectInfo();
+            txtMaDuAn.Text = DuAnManager.Instance.GenerateProjectCode();
             lbtSubmit.Visible = this.IsAdd;
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.SAVE);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
@@ -255,7 +262,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             this.IdDuAn = duAn.IdDuAn;
 
             txtMaDuAn.Text = duAn.MaDuAn;
-            txtMaDuAn.Enabled = false;
+            txtMaDuAn.Enabled = true;
 
             txtTenDuAn.Text = duAn.TenDuAn;
             txtMoTa.Text = duAn.MoTa;
@@ -357,7 +364,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             new ControlHelpers().BindNhanVien(ddlNhanVienQuanLy);
             lbtSubmit.Visible = false;
             //---------------------------------------------------
-            txtMaDuAn.Enabled = false;
+            txtMaDuAn.Enabled = true;
             txtMaDuAn.Text = txtTenDuAn.Text
                 = txtGiaTriHopDong.Text
                 = txtSoHopDong.Text
@@ -366,6 +373,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             dtNgayBatDau.DateValue = null;
             dtNgayKetThuc.DateValue = null;
             ddlTrangThai.SelectedIndex = 0;
+            ddlKhachHang.SelectedIndex = -1;
+            ddlLoaiDuAn.SelectedIndex = -1;
+            ddlNhanVienQuanLy.SelectedIndex = -1;
             this.IdDuAn = Guid.Empty;
             //Dọn sạch data rác của list nv trước khi nhấn nút thêm dự án
             this.SelectedMemberIds = new List<Guid>();
