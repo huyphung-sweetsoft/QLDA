@@ -84,6 +84,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             CtrlLichSuDuAn1.IdDuAn = QueryId;
             pnlContract.Visible = this.IsContractView;
             CtrlDuAnForm1.SaveCompleted += CtrlDuAnForm1_SaveCompleted;
+            CtrlChonNhanVien1.OnConfirmSelection += CtrlChonNhanVien1_OnConfirmSelection;
             if (_auditManager == null)
                 _auditManager = new AuditManager(new Core.SysManager.Models.ClientInfo()
                 {
@@ -279,6 +280,52 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             CtrlDuAnForm1.OpenEdit(idDuAn);
         }
+
+        protected void lbtThemThanhVien_Click(object sender, EventArgs e)
+        {
+            TblDuAn duAn = DuAnManager.Instance.GetDuAnById(this.QueryId);
+
+            if (duAn == null || duAn.DaXoa)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            if (duAn.NgayBatDau == null || duAn.NgayDuKienHoanThanh == null)
+            {
+                ShowNotify(GetResourceText(BackEndResourceKeys.PLEASE_SELECT_START_AND_END_DATE), MSGType.Error);
+                return;
+            }
+
+            CtrlChonNhanVien1.StartDate = duAn.NgayBatDau;
+            CtrlChonNhanVien1.EndDate = duAn.NgayDuKienHoanThanh;
+            CtrlChonNhanVien1.SelectedUserIds = DuAnManager.Instance.GetMemberIds(duAn.IdDuAn);
+            CtrlChonNhanVien1.IdNhanVienQuanLy = duAn.IdNhanVienQuanLy;
+            CtrlChonNhanVien1.OpenPicker();
+        }
+
+        protected void CtrlChonNhanVien1_OnConfirmSelection(List<Guid> selectedIds)
+        {
+            try
+            {
+                TblDuAn duAn = DuAnManager.Instance.GetDuAnById(this.QueryId);
+                if (duAn == null || duAn.DaXoa)
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+
+                DuAnManager.Instance.CreateOrUpdate(duAn, selectedIds);
+
+                BindData();
+                upProjectDetail.Update();
+            }
+            catch (Exception ex)
+            {
+                ShowNotify(ex.Message, MSGType.Error);
+            }
+        }
+
         private string BuildHistoryContent(DataRow row)
         {
             string resourceKey = GetColumnText(row, "Description");
@@ -592,25 +639,20 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             BindStatusDropdown();
 
             Guid idHopDongThucHien = Guid.Empty;
-            if (row.Table.Columns.Contains(
-        "IdHopDongThucHien") &&
-    row["IdHopDongThucHien"] !=
-        DBNull.Value)
+            if (row.Table.Columns.Contains("IdHopDongThucHien") && row["IdHopDongThucHien"] != DBNull.Value)
             {
-                Guid.TryParse(
-                    Convert.ToString(
-                        row["IdHopDongThucHien"]),
-                    out idHopDongThucHien);
+                Guid.TryParse(Convert.ToString(row["IdHopDongThucHien"]), out idHopDongThucHien);
             }
 
-            this.IdHopDongThucHien =
-                idHopDongThucHien;
+            this.IdHopDongThucHien =idHopDongThucHien;
 
-            lbtViewContract.Visible =
-                idHopDongThucHien != Guid.Empty;
+            lbtViewContract.Visible = idHopDongThucHien != Guid.Empty;
 
-            lblNoContract.Visible =
-                idHopDongThucHien == Guid.Empty;
+            lblNoContract.Visible =  idHopDongThucHien == Guid.Empty;
+
+            lbtEditProject.Visible = this.IsEdit;
+
+            lbtThemThanhVien.Visible = this.IsEdit;
         }
 
         private bool CanOpenContractDocument(Guid idHopDongThucHien)

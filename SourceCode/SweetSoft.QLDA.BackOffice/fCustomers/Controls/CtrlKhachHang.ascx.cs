@@ -20,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers.Controls
     {
         public EventHandler NewCustomerHandlerCallBack;
         public EventHandler EditCustomerHandlerCallBack;
+        public EventHandler ManageCustomerTypeHandlerCallBack;
 
         protected bool IsEdit
         {
@@ -385,6 +386,12 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers.Controls
             }
 
             return parameters;
+        }
+
+        protected void btnQuanLyLoaiKhachHang_Click(object sender, EventArgs e)
+        {
+            if (ManageCustomerTypeHandlerCallBack != null)
+                ManageCustomerTypeHandlerCallBack(this, EventArgs.Empty);
         }
     }
 }

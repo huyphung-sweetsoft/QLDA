@@ -155,9 +155,29 @@
                                                 </div>
                                             </fieldset>
                                         </div>
+
                                         <div class="col-lg-12 mt-3">
                                             <span class="text-info fw-bold"><%= GetResourceText(BackEndResourceKeys.OTHER_SETTINGS) %></span>
                                             <hr class="mt-0" />
+                                            <div class="col-lg-16 col-md-6 col-sm-12 mt-2">
+                                                <fieldset class="fieldset-box">
+                                                    <legend class="text-primary fw-bold">Cấu hình mã dự án</legend>
+                                                    <div class="row">
+                                                        <div class="col-lg-6">
+                                                            <div class="mt-3">
+                                                                <label class="form-label">Tiền tố mã dự án</label>
+                                                                <SweetSoft:ExtraTextBox runat="server" ID="txtProjectCodePrefix" PlaceHolder="PRJ"></SweetSoft:ExtraTextBox>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <div class="mt-3">
+                                                                <label class="form-label">Số thứ tự bắt đầu</label>
+                                                                <SweetSoft:ExtraTextBox runat="server" ID="txtProjectCodeStartNumber" PlaceHolder="1"></SweetSoft:ExtraTextBox>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                            </div>
                                         </div>
                                         <div class="col-lg-12">
                                             <div class="mt-3">
@@ -207,6 +227,7 @@
                                             </ContentTemplate>
                                         </asp:UpdatePanel>
                                         <%--End TimeZone--%>
+
                                     </div>
                                 </div>
                                 <!-- end card body -->
