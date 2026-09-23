@@ -6,9 +6,19 @@
         <!-- Vùng Panel cho các Dropdown lọc (tạm để trống để giữ cấu trúc) -->
         <asp:UpdatePanel runat="server" ID="upnlSearchDefault" UpdateMode="Conditional">
             <ContentTemplate>
-                <asp:Panel runat="server" ID="pnlSearchDefault">
-                    <div class="d-flex">
-                    </div>
+                <asp:Panel runat="server" ID="pnlSearchDefault" class="d-flex align-items-center">
+                    <SweetSoft:BootstrapDropdown ID="ddlSearchNam" runat="server"
+                        Text="Năm"
+                        AllowClear="true"
+                        AutoPostBack="true"
+                        SearchColumn="Nam" 
+                        EnableSearch="true"
+                        ValueIsOfTypeGUID="False"
+                        SearchPlaceholder="Tìm năm..."
+                        NoResultsText="Không tìm thấy"
+                        CssClass="border-radius-1 me-2" 
+                        OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
+                    </SweetSoft:BootstrapDropdown>
                 </asp:Panel>
             </ContentTemplate>
         </asp:UpdatePanel>

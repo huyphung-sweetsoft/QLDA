@@ -302,6 +302,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarLyDoTuChoi.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarLyDoTuChoi);
 				
+				TableSchema.TableColumn colvarIdTaiLieu = new TableSchema.TableColumn(schema);
+				colvarIdTaiLieu.ColumnName = "IdTaiLieu";
+				colvarIdTaiLieu.DataType = DbType.Guid;
+				colvarIdTaiLieu.MaxLength = 0;
+				colvarIdTaiLieu.AutoIncrement = false;
+				colvarIdTaiLieu.IsNullable = true;
+				colvarIdTaiLieu.IsPrimaryKey = false;
+				colvarIdTaiLieu.IsForeignKey = true;
+				colvarIdTaiLieu.IsReadOnly = false;
+				colvarIdTaiLieu.DefaultSetting = @"";
+				
+					colvarIdTaiLieu.ForeignKeyTableName = "TblTaiLieu";
+				schema.Columns.Add(colvarIdTaiLieu);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -415,6 +429,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<string>(Columns.LyDoTuChoi); }
 			set { SetColumnValue(Columns.LyDoTuChoi, value); }
 		}
+		  
+		[XmlAttribute("IdTaiLieu")]
+		[Bindable(true)]
+		public Guid? IdTaiLieu 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdTaiLieu); }
+			set { SetColumnValue(Columns.IdTaiLieu, value); }
+		}
 		
 		#endregion
 		
@@ -445,6 +467,17 @@ namespace SweetSoft.QLDA.DataAccess
 		}
 		
 		
+		/// <summary>
+		/// Returns a TblTaiLieu ActiveRecord object related to this TblChiPhi
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblTaiLieu TblTaiLieu
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblTaiLieu.FetchByID(this.IdTaiLieu); }
+			set { SetColumnValue("IdTaiLieu", value.IdTaiLieu); }
+		}
+		
+		
 		#endregion
 		
 		
@@ -459,7 +492,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien,string varLyDoTuChoi)
+		public static void Insert(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien,string varLyDoTuChoi,Guid? varIdTaiLieu)
 		{
 			TblChiPhi item = new TblChiPhi();
 			
@@ -489,6 +522,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.LyDoTuChoi = varLyDoTuChoi;
 			
+			item.IdTaiLieu = varIdTaiLieu;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -499,7 +534,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien,string varLyDoTuChoi)
+		public static void Update(Guid varIdChiPhi,Guid varIdDuAn,Guid? varIdNhanVienDeNghi,string varMaChiPhi,string varTenKhoanChi,string varMoTaChiTiet,byte varTrangThai,bool varDaXoa,DateTime varNgayTao,decimal? varDonGia,int? varSoLuong,decimal varSoTien,string varLyDoTuChoi,Guid? varIdTaiLieu)
 		{
 			TblChiPhi item = new TblChiPhi();
 			
@@ -528,6 +563,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.SoTien = varSoTien;
 			
 				item.LyDoTuChoi = varLyDoTuChoi;
+			
+				item.IdTaiLieu = varIdTaiLieu;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -633,6 +670,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn IdTaiLieuColumn
+        {
+            get { return Schema.Columns[13]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -650,6 +694,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string SoLuong = @"SoLuong";
 			 public static string SoTien = @"SoTien";
 			 public static string LyDoTuChoi = @"LyDoTuChoi";
+			 public static string IdTaiLieu = @"IdTaiLieu";
 						
 		}
 		#endregion
