@@ -1,4 +1,5 @@
 using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.fFilesBox;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -10,6 +11,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using static SweetSoft.QLDA.Controls.EnumHelper;
@@ -48,11 +51,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private string GetAddDocumentText()
         {
-            return IsProjectContext
-                ? GetResourceText(BackEndResourceKeys.ADD_NEW)
-                    + " "
-                    + GetResourceText(BackEndResourceKeys.PROJECT_DOCUMENTS)
-                : GetResourceText(BackEndResourceKeys.ADD_COMPANY_DOCUMENT);
+            return "Thêm hồ sơ";
         }
 
         private TblTaiLieu GetDocumentByCurrentScope(Guid idTaiLieu)
@@ -61,13 +60,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ? DocumentManager.Instance.GetProjectDocumentById(
                     idTaiLieu,
                     ProjectId)
-                : DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+                : DocumentManager.Instance.GetAccessibleDocument(idTaiLieu);
         }
 
-        private string GetDocumentDetailUrl(Guid idTaiLieu)
+        private string GetDocumentDetailUrl(Guid idTaiLieu, Guid? documentProjectId)
         {
-            return IsProjectContext
-                ? RewriteURLHelper.ProjectDocumentDetail(ProjectId, idTaiLieu)
+            return documentProjectId.HasValue
+                ? RewriteURLHelper.ProjectDocumentDetail(documentProjectId.Value, idTaiLieu)
                 : RewriteURLHelper.DocumentDetail(idTaiLieu);
         }
 
@@ -113,6 +112,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
         }
 
+        protected bool CanAccessRow(object id, string action)
+        {
+            if (string.Equals(action, "Update", StringComparison.OrdinalIgnoreCase))
+            {
+                return DocumentManager.Instance.CanAccessDocument(
+                    (Guid)id,
+                    SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.UpdateInfo);
+            }
+            return DocumentManager.Instance.CanAccessDocument((Guid)id,
+                (SweetSoft.QLDA.Core.Functions.ActionKeys)Enum.Parse(typeof(SweetSoft.QLDA.Core.Functions.ActionKeys),action));
+        }
         protected bool IsAdd
         {
             get { return CURRENT_PAGE.IsAdd; }
@@ -123,23 +133,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             get { return CURRENT_PAGE.IsView; }
         }
 
-        protected bool IsEdit
-        {
-            get { return CURRENT_PAGE.IsEdit; }
-        }
-
-        protected bool IsDelete
-        {
-            get { return CURRENT_PAGE.IsDelete; }
-        }
-
         protected void Page_Load(object sender, EventArgs e)
         {
             RegisterAsyncButtons();
+            Page.Form.Enctype = "multipart/form-data";
+            ScriptManager scriptManager = ScriptManager.GetCurrent(Page);
+            if (scriptManager != null)
+                scriptManager.RegisterPostBackControl(btnSave);
         }
 
         protected override void OnPreRender(EventArgs e)
         {
+            ConfigureGridLayout();
             ApplyQuickFilterState();
             base.OnPreRender(e);
         }
@@ -153,6 +158,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 SelectedDocumentScope = DocumentScopeKeys.Project;
             ResetForm();
             InitGridData();
+        }
+
+        private void ConfigureGridLayout()
+        {
+            pnlDocumentGrid.CssClass = IsProjectContext
+                ? "card-body p-0 document-project-context"
+                : "card-body p-0";
         }
 
         private void RegisterAsyncButtons()
@@ -279,6 +291,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ddlNguoiPhuTrach.PlaceHolder =
                 GetResourceText(
                     BackEndResourceKeys.SELECT_RESPONSIBLE_EMPLOYEE);
+            ddlCreateProject.PlaceHolder = "Hồ sơ công ty (không chọn dự án)";
             ddlHinhThucKy.PlaceHolder =
                 GetResourceText(BackEndResourceKeys.SIGNING_METHOD);
             ddlInitialTemplate.PlaceHolder =
@@ -305,7 +318,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 GetResourceText(BackEndResourceKeys.DOCUMENT_CODE),
                 GetResourceText(BackEndResourceKeys.DOCUMENT_NAME),
                 GetResourceText(BackEndResourceKeys.DOCUMENT_SCOPE),
-                GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE),
+                "Loại hồ sơ",
                 GetResourceText(BackEndResourceKeys.RESPONSIBLE_EMPLOYEE),
                 GetResourceText(BackEndResourceKeys.DOCUMENT_STATUS),
                 GetResourceText(BackEndResourceKeys.ALLOW_SIGNING),
@@ -324,8 +337,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             ControlHelpers controlHelpers = new ControlHelpers();
             BindDocumentScopes();
-            controlHelpers.BindDocumentGroups(ddlSearchNhomTaiLieu);
-            controlHelpers.BindDocumentGroups(ddlNhomTaiLieu);
+            ddlSearchNhomTaiLieu.Items.Clear();
+            ddlNhomTaiLieu.Items.Clear();
             controlHelpers.BindDocumentStatuses(ddlSearchTrangThai);
             BindQuickDocumentTypes();
             BindDocumentFormTypes(null);
@@ -350,6 +363,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ddlSearchHasOfficialFile,
                 true);
             BindProjects();
+            BindCreateProjects();
             BindEmployees();
         }
 
@@ -376,36 +390,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ddlSearchLoaiTaiLieu.Items.Clear();
             ddlSearchLoaiTaiLieu.ClearSelection();
 
-            if (!SelectedDocumentGroupId.HasValue)
-                return;
-
             ControlHelpers controlHelpers = new ControlHelpers();
             controlHelpers.BindDocumentTypes(
                 ddlSearchLoaiTaiLieu,
-                SelectedDocumentGroupId);
+                (Guid?)null);
         }
 
         private void BindDocumentFormTypes(Guid? idNhomTaiLieu)
         {
             ddlLoaiTaiLieu.Items.Clear();
 
-            if (!idNhomTaiLieu.HasValue
-                || idNhomTaiLieu.Value == Guid.Empty)
-            {
-                ddlLoaiTaiLieu.Items.Add(
-                    new ListItem(
-                        GetResourceText(
-                            BackEndResourceKeys
-                                .SELECT_DOCUMENT_GROUP_FIRST),
-                        string.Empty));
-                ddlLoaiTaiLieu.SelectedIndex = 0;
-                ddlLoaiTaiLieu.Enabled = false;
-                return;
-            }
-
             new ControlHelpers().BindDocumentTypes(
                 ddlLoaiTaiLieu,
-                idNhomTaiLieu);
+                (Guid?)null);
             ddlLoaiTaiLieu.Enabled = true;
         }
 
@@ -435,11 +432,32 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ddlSearchDuAn.ClearSelection();
         }
 
+        private void BindCreateProjects()
+        {
+            ddlCreateProject.Items.Clear();
+            ddlCreateProject.Items.Add(new ListItem(
+                "Hồ sơ công ty (không chọn dự án)", string.Empty));
+
+            if (IsProjectContext)
+                return;
+
+            foreach (TblDuAn project in DocumentManager.Instance
+                .GetProjectsAvailableForDocumentCreation())
+            {
+                string text = string.IsNullOrWhiteSpace(project.MaDuAn)
+                    ? project.TenDuAn
+                    : project.MaDuAn + " · " + project.TenDuAn;
+                ddlCreateProject.Items.Add(new ListItem(
+                    text, project.IdDuAn.ToString()));
+            }
+        }
+
         private void ApplyQuickFilterParameters(
             Dictionary<string, object> parameters)
         {
             if (parameters == null)
                 return;
+            SelectedDocumentGroupId = null;
 
             if (IsProjectContext)
             {
@@ -485,12 +503,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ? SelectedDocumentGroupId.Value.ToString()
                     : string.Empty;
 
-            bool hasSelectedGroup = SelectedDocumentGroupId.HasValue;
-            ddlSearchLoaiTaiLieu.Enabled = hasSelectedGroup;
-            ddlSearchLoaiTaiLieu.Text = hasSelectedGroup
-                ? GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE)
-                : GetResourceText(
-                    BackEndResourceKeys.SELECT_DOCUMENT_GROUP_FIRST);
+            ddlSearchLoaiTaiLieu.Enabled = true;
+            ddlSearchLoaiTaiLieu.Text = "Loại hồ sơ";
+            ddlSearchLoaiTaiLieu.CssClass = IsProjectContext
+                ? "border-top-left-radius-1 border-bottom-left-radius-1"
+                : string.Empty;
         }
 
         private void ApplyActiveSearch()
@@ -509,6 +526,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     pnlSearchDefault,
                     grvData,
                     txtSearch);
+                upMain.Update();
                 return;
             }
 
@@ -517,6 +535,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 pnlSearchDefault,
                 pnlSearchPopup,
                 grvData);
+            upMain.Update();
         }
 
         private void BindEmployees()
@@ -578,6 +597,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             grvData.CurrentPageIndex = 1;
             grvData.Rebind();
+            upMain.Update();
         }
 
         protected void grvData_NeedDataSource(
@@ -682,12 +702,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             grvData.Rebind();
         }
 
+        private string DecodeDocumentContent()
+        {
+            string encoded = hdfDocumentContent.Value ?? string.Empty;
+            if (encoded.Length > 1100000)
+                throw new ArgumentException("Nội dung hồ sơ quá dài.");
+            try { return new System.Text.UTF8Encoding(false, true).GetString(Convert.FromBase64String(encoded)); }
+            catch (FormatException) { throw new ArgumentException("Nội dung hồ sơ không hợp lệ. Vui lòng mở lại form."); }
+            catch (System.Text.DecoderFallbackException) { throw new ArgumentException("Mã hóa nội dung hồ sơ không hợp lệ."); }
+        }
+
         private void ResetForm()
         {
             hdfIdTaiLieu.Value = string.Empty;
+            pnlCreateProject.Visible = !IsProjectContext;
+            pnlInitialFileUpload.Visible = true;
+            SelectDropdownValue(ddlCreateProject, string.Empty);
             txtMaTaiLieu.Text = string.Empty;
             txtTenTaiLieu.Text = string.Empty;
             txtMoTa.Text = string.Empty;
+            hdfDocumentContent.Value = string.Empty;
             SelectDropdownValue(ddlNhomTaiLieu, string.Empty);
             BindDocumentFormTypes(null);
             SelectDropdownValue(ddlNguoiPhuTrach, string.Empty);
@@ -714,20 +748,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ShowEditForm(TblTaiLieu item)
         {
             hdfIdTaiLieu.Value = item.IdTaiLieu.ToString();
+            pnlCreateProject.Visible = false;
+            pnlInitialFileUpload.Visible = false;
             txtMaTaiLieu.Text = item.MaTaiLieu;
             txtTenTaiLieu.Text = item.TenTaiLieu;
             txtMoTa.Text = item.MoTa;
-            TblLoaiTaiLieu documentType = DocumentManager.Instance
-                .GetDocumentTypeDefaults(item.IdLoaiTaiLieu);
-            Guid? documentGroupId = documentType == null
-                ? (Guid?)null
-                : documentType.IdNhomTaiLieu;
-            SelectDropdownValue(
-                ddlNhomTaiLieu,
-                documentGroupId.HasValue
-                    ? documentGroupId.Value.ToString()
-                    : string.Empty);
-            BindDocumentFormTypes(documentGroupId);
+            hdfDocumentContent.Value = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(
+                DocumentManager.Instance.GetDocumentContent(item.IdTaiLieu)));
+            BindDocumentFormTypes(null);
             SelectDropdownValue(
                 ddlLoaiTaiLieu,
                 item.IdLoaiTaiLieu.ToString());
@@ -795,56 +823,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void BindInitialTemplates(Guid idLoaiTaiLieu)
         {
             ddlInitialTemplate.Items.Clear();
-            ddlInitialTemplate.Items.Add(
-                new ListItem(
-                    GetResourceText(
-                        BackEndResourceKeys.SELECT_DOCUMENT_TEMPLATE),
-                    string.Empty));
-
-            DataTable templates = idLoaiTaiLieu == Guid.Empty
-                ? new DataTable()
-                : DocumentTemplateManager.Instance
-                    .GetAvailableTemplatesByType(idLoaiTaiLieu);
-            bool hasTemplates = templates != null
-                && templates.Rows.Count > 0;
-            if (hasTemplates)
-            {
-                foreach (DataRow row in templates.Rows)
-                {
-                    string text = Convert.ToString(row["TenMau"]);
-                    string version = Convert.ToString(
-                        row["PhienBanMau"]);
-                    if (!string.IsNullOrWhiteSpace(version))
-                        text += " · " + version;
-                    if (Convert.ToBoolean(row["LaMauMacDinh"]))
-                    {
-                        text += " · "
-                            + GetResourceText(
-                                BackEndResourceKeys.DEFAULT_TEMPLATE);
-                    }
-
-                    ddlInitialTemplate.Items.Add(
-                        new ListItem(
-                            text,
-                            Convert.ToString(row["IdMauTaiLieu"])));
-                }
-
-                ddlInitialTemplate.SelectedIndex = 1;
-            }
-            else
-            {
-                ddlInitialTemplate.SelectedIndex = 0;
-            }
-
-            ddlInitialTemplate.Enabled = hasTemplates;
-            pnlNoInitialTemplates.Visible = !hasTemplates;
+            rbInitialTemplate.Checked = false;
+            rbInitialUpload.Checked = true;
             ApplyInitialSourceState();
         }
 
         private void ApplyInitialSourceState()
         {
-            pnlInitialUploadInfo.Visible = rbInitialUpload.Checked;
-            pnlInitialTemplate.Visible = rbInitialTemplate.Checked;
+            pnlInitialContent.Visible = false;
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -1062,13 +1048,76 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             dlDetail.UpdateContentModal();
         }
 
+        private void ShowSaveWarning(string message)
+        {
+            string fileHint = fuInitialFiles.HasFiles
+                ? " Nếu đã chọn file, vui lòng chọn lại trước khi lưu."
+                : string.Empty;
+            ShowNotify(message + fileHint, MSGType.Warning);
+            dlDetail.OpenModal(true);
+        }
+
+        private string UploadInitialFiles(
+            Guid documentId,
+            IList<HttpPostedFile> files,
+            SecureFileUploadHandler uploader)
+        {
+            if (files.Count == 0)
+                return null;
+
+            var uploadedIds = new List<Guid>();
+            string warning = null;
+            foreach (HttpPostedFile file in files)
+            {
+                SecureFileUploadHandler.UploadResult result;
+                try
+                {
+                    result = uploader.UploadDocumentVersionFile(documentId, file);
+                }
+                catch (Exception exc)
+                {
+                    SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(
+                        exc, "Initial document file upload failed");
+                    warning = "Một file chưa tải lên do lỗi máy chủ.";
+                    break;
+                }
+                if (!result.Success || !result.FileId.HasValue)
+                {
+                    warning = "Một file chưa tải lên: " + result.Message;
+                    break;
+                }
+
+                uploadedIds.Add(result.FileId.Value);
+            }
+
+            if (uploadedIds.Count > 0)
+            {
+                try
+                {
+                    DocumentManager.Instance.SaveDocumentFileSet(
+                        documentId, null, uploadedIds);
+                }
+                catch (Exception exc)
+                {
+                    SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(
+                        exc, "Save initial document file set failed");
+                    return "Hồ sơ đã được tạo nhưng các file chưa được gắn vào hồ sơ. "
+                        + "Vui lòng mở hồ sơ để tải lại file.";
+                }
+            }
+
+            return warning == null
+                ? null
+                : warning + " Hồ sơ đã được tạo; vui lòng mở hồ sơ để tải lại file còn thiếu.";
+        }
+
         protected void btnSave_Click(object sender, EventArgs e)
         {
             Guid idTaiLieu = Guid.Empty;
             if (!string.IsNullOrEmpty(hdfIdTaiLieu.Value)
                 && !Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu))
             {
-                ShowInvalidDataError();
+                ShowSaveWarning("Thông tin hồ sơ không hợp lệ.");
                 return;
             }
 
@@ -1079,22 +1128,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            if (!isNew && !this.IsEdit)
+            if (!isNew && !DocumentManager.Instance.CanAccessDocument(
+                idTaiLieu,
+                SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.UpdateInfo))
             {
                 ShowAccessDeniedNotify();
-                return;
-            }
-
-            Guid idNhomTaiLieu;
-            if (!Guid.TryParse(
-                    ddlNhomTaiLieu.SelectedValue,
-                    out idNhomTaiLieu)
-                || idNhomTaiLieu == Guid.Empty)
-            {
-                ShowNotify(
-                    GetResourceText(
-                        BackEndResourceKeys.SELECT_DOCUMENT_GROUP),
-                    MSGType.Warning);
                 return;
             }
 
@@ -1104,21 +1142,84 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     out idLoaiTaiLieu)
                 || idLoaiTaiLieu == Guid.Empty)
             {
-                ShowNotify("Vui lòng chọn loại tài liệu.", MSGType.Warning);
+                ShowSaveWarning("Vui lòng chọn loại hồ sơ.");
                 return;
             }
 
             TblLoaiTaiLieu selectedDocumentType =
                 DocumentManager.Instance
                     .GetDocumentTypeDefaults(idLoaiTaiLieu);
-            if (selectedDocumentType == null
-                || selectedDocumentType.IdNhomTaiLieu
-                    != idNhomTaiLieu)
+            if (selectedDocumentType == null)
             {
-                ShowNotify(
-                    "Loại tài liệu không thuộc nhóm đã chọn.",
-                    MSGType.Warning);
+                ShowSaveWarning("Loại hồ sơ không tồn tại hoặc đã khóa.");
                 return;
+            }
+
+            Guid? selectedProjectId;
+            if (isNew)
+            {
+                selectedProjectId = IsProjectContext
+                    ? (Guid?)ProjectId
+                    : null;
+            }
+            else
+            {
+                TblTaiLieu existingDocument = GetDocumentByCurrentScope(idTaiLieu);
+                if (existingDocument == null)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+
+                selectedProjectId = existingDocument.IdDuAn;
+            }
+
+            if (isNew && !IsProjectContext
+                && !string.IsNullOrWhiteSpace(ddlCreateProject.SelectedValue))
+            {
+                Guid projectId;
+                if (!Guid.TryParse(ddlCreateProject.SelectedValue, out projectId)
+                    || projectId == Guid.Empty
+                    || ddlCreateProject.Items.FindByValue(
+                        ddlCreateProject.SelectedValue) == null)
+                {
+                    ShowSaveWarning("Vui lòng chọn dự án hợp lệ.");
+                    return;
+                }
+
+                selectedProjectId = projectId;
+            }
+
+            var initialFiles = new List<HttpPostedFile>();
+            SecureFileUploadHandler uploader = null;
+            if (isNew)
+            {
+                initialFiles = fuInitialFiles.PostedFiles
+                    .Cast<HttpPostedFile>()
+                    .Where(file => file != null
+                        && !string.IsNullOrWhiteSpace(file.FileName))
+                    .ToList();
+                if (initialFiles.Count > 10)
+                {
+                    ShowSaveWarning("Chỉ được chọn tối đa 10 file cho một hồ sơ.");
+                    return;
+                }
+
+                if (initialFiles.Count > 0)
+                {
+                    uploader = new SecureFileUploadHandler();
+                    foreach (HttpPostedFile file in initialFiles)
+                    {
+                        SecureFileUploadHandler.UploadResult validation =
+                            uploader.ValidateDocumentVersionFile(file);
+                        if (!validation.Success)
+                        {
+                            ShowSaveWarning("File đã chọn không hợp lệ: "
+                                + validation.Message);
+                            return;
+                        }
+                    }
+                }
             }
 
             Guid? idNhanVienPhuTrach = null;
@@ -1128,34 +1229,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 Guid employeeId;
                 if (!Guid.TryParse(employeeValue, out employeeId))
                 {
-                    ShowInvalidDataError();
+                    ShowSaveWarning("Người phụ trách không hợp lệ.");
                     return;
                 }
 
                 idNhanVienPhuTrach = employeeId;
             }
 
-            Guid idMauTaiLieu = Guid.Empty;
-            if (isNew && rbInitialTemplate.Checked)
-            {
-                if (!Guid.TryParse(
-                        ddlInitialTemplate.SelectedValue,
-                        out idMauTaiLieu)
-                    || idMauTaiLieu == Guid.Empty)
-                {
-                    ShowNotify(
-                        GetResourceText(
-                            BackEndResourceKeys.SELECT_DOCUMENT_TEMPLATE),
-                        MSGType.Warning);
-                    return;
-                }
-            }
-
             try
             {
-                TblTaiLieu savedItem = IsProjectContext
+                TblTaiLieu savedItem = selectedProjectId.HasValue
                     ? DocumentManager.Instance.SaveProjectDocument(
-                        ProjectId,
+                        selectedProjectId.Value,
                         idTaiLieu,
                         idLoaiTaiLieu,
                         idNhanVienPhuTrach,
@@ -1165,7 +1250,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         chkCanTrinhKy.Checked,
                         ddlHinhThucKy.SelectedValue,
                         chkCanGuiKhachHang.Checked,
-                        chkCanLuuVatLy.Checked)
+                        chkCanLuuVatLy.Checked, DecodeDocumentContent())
                     : DocumentManager.Instance.SaveCompanyDocument(
                         idTaiLieu,
                         idLoaiTaiLieu,
@@ -1176,43 +1261,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         chkCanTrinhKy.Checked,
                         ddlHinhThucKy.SelectedValue,
                         chkCanGuiKhachHang.Checked,
-                        chkCanLuuVatLy.Checked);
+                        chkCanLuuVatLy.Checked, DecodeDocumentContent());
 
                 if (isNew)
                 {
-                    if (idMauTaiLieu != Guid.Empty)
-                    {
-                        try
-                        {
-                            DocumentManager.Instance
-                                .CreateInitialVersionFromTemplate(
-                                    savedItem.IdTaiLieu,
-                                    idMauTaiLieu);
-                        }
-                        catch
-                        {
-                            if (IsProjectContext)
-                            {
-                                DocumentManager.Instance
-                                    .DeleteProjectDocument(
-                                        savedItem.IdTaiLieu,
-                                        ProjectId);
-                            }
-                            else
-                            {
-                                DocumentManager.Instance
-                                    .DeleteCompanyDocument(
-                                        savedItem.IdTaiLieu);
-                            }
-                            throw;
-                        }
-                    }
-
-                    CURRENT_PAGE.ShowSuccessAddNewData();
+                    string uploadWarning = UploadInitialFiles(
+                        savedItem.IdTaiLieu, initialFiles, uploader);
+                    if (!string.IsNullOrEmpty(uploadWarning))
+                        Session["DocumentInitialUploadWarning_"
+                            + savedItem.IdTaiLieu.ToString("N")] = uploadWarning;
+                    else
+                        Session["DocumentCreationSuccess_"
+                            + savedItem.IdTaiLieu.ToString("N")] =
+                            initialFiles.Count == 0
+                                ? "Đã tạo hồ sơ."
+                                : "Đã tạo hồ sơ và gắn "
+                                    + initialFiles.Count + " file.";
                     Response.Redirect(
-                        (IsProjectContext
+                        (selectedProjectId.HasValue
                             ? RewriteURLHelper.ProjectDocumentDetail(
-                                ProjectId,
+                                selectedProjectId.Value,
                                 savedItem.IdTaiLieu)
                             : RewriteURLHelper.DocumentDetail(
                                 savedItem.IdTaiLieu))
@@ -1230,15 +1298,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
             catch (ArgumentException exc)
             {
-                ShowNotify(exc.Message, MSGType.Warning);
+                ShowSaveWarning(exc.Message);
             }
             catch (InvalidOperationException exc)
             {
-                ShowNotify(exc.Message, MSGType.Warning);
+                ShowSaveWarning(exc.Message);
             }
             catch (Exception exc)
             {
                 ShowNotify(exc.Message, MSGType.Error);
+                dlDetail.OpenModal(true);
             }
         }
 
@@ -1270,7 +1339,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
-                TblTaiLieu viewItem = GetDocumentByCurrentScope(idTaiLieu);
+                TblTaiLieu viewItem = DocumentManager.Instance.GetAccessibleDocument(idTaiLieu);
                 if (viewItem == null)
                 {
                     ShowInvalidNotFoundData();
@@ -1278,13 +1347,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 }
 
                 Response.Redirect(
-                    GetDocumentDetailUrl(idTaiLieu));
+                    GetDocumentDetailUrl(idTaiLieu, viewItem.IdDuAn));
                 return;
             }
 
             if (e.CommandName == "EDIT_ITEM")
             {
-                if (!this.IsEdit)
+                if (!DocumentManager.Instance.CanAccessDocument(
+                        idTaiLieu,
+                        SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.UpdateInfo))
                 {
                     ShowAccessDeniedNotify();
                     return;
@@ -1301,7 +1372,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            if (!this.IsDelete)
+            if (!DocumentManager.Instance.CanAccessDocument(
+                    idTaiLieu,
+                    SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.Delete))
             {
                 ShowAccessDeniedNotify();
                 return;
@@ -1345,12 +1418,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            if (!this.IsDelete)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
             Guid idTaiLieu;
             if (!Guid.TryParse(
                     Convert.ToString(e.Value),
@@ -1362,10 +1429,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                bool deleted = IsProjectContext
+                if (!DocumentManager.Instance.CanAccessDocument(
+                    idTaiLieu,
+                    SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.Delete))
+                {
+                    ShowAccessDeniedNotify();
+                    return;
+                }
+
+                TblTaiLieu deleteItem = DocumentManager.Instance
+                    .GetAccessibleDocument(idTaiLieu);
+                if (deleteItem == null)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+
+                bool deleted = deleteItem.IdDuAn.HasValue
                     ? DocumentManager.Instance.DeleteProjectDocument(
                         idTaiLieu,
-                        ProjectId)
+                        deleteItem.IdDuAn.Value)
                     : DocumentManager.Instance.DeleteCompanyDocument(idTaiLieu);
                 if (!deleted)
                 {
@@ -1393,9 +1476,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             string groupName = Convert.ToString(groupNameValue);
             string documentTypeName = Convert.ToString(documentTypeNameValue);
-            return string.IsNullOrEmpty(groupName)
-                ? documentTypeName
-                : groupName + " / " + documentTypeName;
+            return documentTypeName;
         }
 
         protected bool IsCompanyDocument(object projectIdValue)
@@ -1404,20 +1485,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || projectIdValue == DBNull.Value
                 || string.IsNullOrWhiteSpace(
                     Convert.ToString(projectIdValue));
-        }
-
-        protected bool IsDocumentInCurrentScope(object projectIdValue)
-        {
-            if (!IsProjectContext)
-                return IsCompanyDocument(projectIdValue);
-
-            Guid documentProjectId;
-            return projectIdValue != null
-                && projectIdValue != DBNull.Value
-                && Guid.TryParse(
-                    Convert.ToString(projectIdValue),
-                    out documentProjectId)
-                && documentProjectId == ProjectId;
         }
 
         protected string GetDocumentScopeText(

@@ -5,6 +5,10 @@ FilesBox.ValidatedFile = [];
 // Temporary identifiers used client-side only until the server returns the UUIDv7 id.
 FilesBox.PendingUploadIds = [];
 FilesBox.DisableFocusFileBox = false;
+// State for the current asynchronous upload batch. A failed request must
+// finish the batch as well; otherwise the automatic postback never happens
+// and the page looks stuck with files that are not yet in a document version.
+FilesBox.UploadBatch = null;
 
 /**
  * Configuration object - can be overridden
@@ -79,6 +83,38 @@ FilesBox.FindItemByKey = function (key) {
     }
 
     return item;
+};
+
+FilesBox.MarkUploadFailed = function (ar) {
+    var batch = FilesBox.UploadBatch;
+    if (!batch || !ar) {
+        return;
+    }
+
+    var key = FilesBox.NormalizePendingKey(ar);
+    batch.failedKeys[key] = true;
+};
+
+FilesBox.MarkUploadFinished = function (ar, succeeded) {
+    var batch = FilesBox.UploadBatch;
+    if (!batch || !ar) {
+        return;
+    }
+
+    var key = FilesBox.NormalizePendingKey(ar);
+    if (batch.finishedKeys[key]) {
+        return;
+    }
+
+    batch.finishedKeys[key] = true;
+    batch.completed++;
+    if (!succeeded) {
+        batch.failedKeys[key] = true;
+    }
+
+    if (batch.completed >= batch.total) {
+        FilesBox.OnAllUploadsComplete();
+    }
 };
 FilesBox.AddFile = function (isMultiple, type) {
     var ipfFile = $(".file-box.active .ipfFile");
@@ -613,7 +649,12 @@ FilesBox.SaveFile = function (refType, refId) {
     if ($('.file-box.active.file-box-single').length === 0)
         $('#UpdateProgress1').show();
 
-    countUploaddingFile = FilesBox.ValidatedFile.length;
+    FilesBox.UploadBatch = {
+        total: FilesBox.ValidatedFile.length,
+        completed: 0,
+        failedKeys: {},
+        finishedKeys: {}
+    };
     var timing = 0;
     const folder = $('[data-selector="hdfFolderFileBox"]').val();
     FilesBox.ValidatedFile.forEach(function (file, index) {
@@ -622,6 +663,10 @@ FilesBox.SaveFile = function (refType, refId) {
         var tag = FilesBox.FindItemByKey(pendingKey);
         if (tag.length === 0) {
             console.error('Pending upload element not found for', pendingKey);
+            // Keep the batch counter moving even when the client-side item
+            // disappeared before the request was scheduled. Otherwise the
+            // save button remains disabled forever and the user cannot retry.
+            FilesBox.MarkUploadFinished(pendingKey, false);
             return;
         }
         var title = tag.find("input.title").val();
@@ -647,6 +692,7 @@ FilesBox.SaveFile = function (refType, refId) {
 FilesBox.SendFile = function (folder, file, refType, refId, title, order, ar) {
     // Validate input parameters
     if (!FilesBox.ValidateUploadParameters(file, refType, refId, title, ar)) {
+        FilesBox.MarkUploadFinished(ar, false);
         return;
     }
 
@@ -873,6 +919,7 @@ FilesBox.HandleUploadSuccess = function (response, ar) {
             }
 
             if (!serverFileId) {
+                FilesBox.MarkUploadFailed(ar);
                 FilesBox.ShowError("Server did not return a file identifier", ar);
                 return;
             }
@@ -882,10 +929,12 @@ FilesBox.HandleUploadSuccess = function (response, ar) {
             // Handle API error response
             var errorMessage = result.message || "Upload failed";
             var errorCode = result.errorCode || "UNKNOWN_ERROR";
+            FilesBox.MarkUploadFailed(ar);
             FilesBox.ShowError(errorMessage + " (" + errorCode + ")", ar);
         } else {
             // Ambiguous result
             console.warn("Ambiguous result:", result);
+            FilesBox.MarkUploadFailed(ar);
             FilesBox.ShowError("Unexpected server response format", ar);
         }
 
@@ -893,6 +942,7 @@ FilesBox.HandleUploadSuccess = function (response, ar) {
         console.error("Response handling error:", e);
         console.error("Original response:", response);
 
+        FilesBox.MarkUploadFailed(ar);
         FilesBox.ShowError("Failed to parse server response: " + e.message, ar);
     }
 };
@@ -958,6 +1008,7 @@ FilesBox.OnUploadSuccess = function (fileId, ar, message) {
 
     if (item.length === 0) {
         console.error("Could not find item with key:", ar);
+        FilesBox.MarkUploadFailed(ar);
         FilesBox.ShowError("UI synchronization error", ar);
         return;
     }
@@ -985,16 +1036,6 @@ FilesBox.OnUploadSuccess = function (fileId, ar, message) {
         item.find(".progress-content").hide();
         item.find(".img-container").removeClass("uploading");
     }, 1000);
-
-    // Update global counter
-    if (typeof countUploaddingFile !== 'undefined') {
-        countUploaddingFile--;
-        console.log("Remaining uploads:", countUploaddingFile);
-
-        if (countUploaddingFile <= 0) {
-            FilesBox.OnAllUploadsComplete();
-        }
-    }
 
     // Show success message if provided
     if (message) {
@@ -1051,6 +1092,7 @@ FilesBox.HandleUploadError = function (xhr, status, error, ar) {
         }
     }
 
+    FilesBox.MarkUploadFailed(ar);
     FilesBox.ShowError(errorMessage + errorDetails, ar);
 };
 
@@ -1060,7 +1102,12 @@ FilesBox.HandleUploadError = function (xhr, status, error, ar) {
 FilesBox.HandleUploadComplete = function (ar) {
     // Clean up any temporary states
     var item = FilesBox.FindItemByKey(ar);
+    var batch = FilesBox.UploadBatch;
+    var key = FilesBox.NormalizePendingKey(ar);
     if (item.length === 0) {
+        FilesBox.MarkUploadFinished(
+            ar,
+            !batch || !batch.failedKeys[key]);
         return;
     }
     item.find(".img-container").removeClass("uploading");
@@ -1070,6 +1117,10 @@ FilesBox.HandleUploadComplete = function (ar) {
     if (item.attr('data-temp-id') === normalizedTemp) {
         item.removeAttr('data-temp-id');
     }
+
+    FilesBox.MarkUploadFinished(
+        ar,
+        !batch || !batch.failedKeys[key]);
 };
 
 /**
@@ -1123,12 +1174,29 @@ FilesBox.OnAllUploadsComplete = function () {
     // Hide global progress indicator
     $('#UpdateProgress1').hide();
 
+    var batch = FilesBox.UploadBatch;
+    if (batch && Object.keys(batch.failedKeys).length > 0) {
+        // Remove failed temporary items from the submitted form. Successful
+        // files remain visible and can be saved after the user re-selects the
+        // failed files, so a partial batch is never recorded as a version.
+        Object.keys(batch.failedKeys).forEach(function (key) {
+            var item = FilesBox.FindItemByKey(key + '|New');
+            if (item.length > 0 && item.attr('data-ar') !== key) {
+                item.remove();
+            }
+        });
+        FilesBox.UploadBatch = null;
+        FilesBox.ShowError(
+            "Có tệp tải lên không thành công. Vui lòng chọn lại tệp lỗi rồi bấm Lưu.");
+        return;
+    }
+
     // Trigger save action
     var saveButton = $('.file-box.active [data-selector="btnApplyFile"]')[0];
     if (saveButton) {
         saveButton.click();
     }
-    if (FilesBox.ValidatedFile.length > 1)
+    if (batch && batch.total > 1)
         FilesBox.ShowNotification("success", "Tất cả các tập tin đã được tải lên thành công");
 };
 

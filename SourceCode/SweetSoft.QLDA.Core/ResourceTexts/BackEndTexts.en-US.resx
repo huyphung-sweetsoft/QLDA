@@ -1450,6 +1450,9 @@
   <data name="DOCUMENT_LIST" xml:space="preserve">
     <value>Document list</value>
   </data>
+  <data name="DOCUMENT_ADMINISTRATION" xml:space="preserve">
+    <value>System-wide document administration</value>
+  </data>
   <data name="DOCUMENT_CODE" xml:space="preserve">
     <value>Document code</value>
   </data>

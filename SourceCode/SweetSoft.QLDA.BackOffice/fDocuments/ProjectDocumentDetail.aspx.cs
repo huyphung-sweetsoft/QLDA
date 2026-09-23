@@ -63,8 +63,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 return;
             }
 
-            if (!IsView
-                || !DocumentManager.Instance.CanAccessProjectDocument(
+            if (!IsView)
+            {
+                Response.Redirect(
+                    GetRelativeClientPath(RewriteURLHelper.Error403),
+                    true);
+                return;
+            }
+
+            Guid idTaiLieu = QueryId;
+            if (idTaiLieu == Guid.Empty
+                || !DocumentManager.Instance.CanOpenProjectDocument(
+                    idTaiLieu,
                     CurrentProjectId,
                     ActionKeys.View))
             {
@@ -74,10 +84,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 return;
             }
 
-            if (IsPostBack)
-                return;
-
-            Guid idTaiLieu = QueryId;
             TblTaiLieu document = DocumentManager.Instance
                 .GetProjectDocumentById(idTaiLieu, CurrentProjectId);
             if (document == null)
@@ -87,6 +93,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                     true);
                 return;
             }
+
+            // Validate the document on every postback, but only rebuild the
+            // navigation and child control on the initial request.
+            if (IsPostBack)
+                return;
 
             string listTitle = GetResourceText(
                 BackEndResourceKeys.PROJECT_DOCUMENTS);

@@ -13,6 +13,10 @@
         <span><%= GetResourceText(BackEndResourceKeys.PERMISSION) %></span>
         <a runat="server" id="btnAddPermission" visible="false" onserverclick="btnAddPermission_ServerClick" class="btn btn-info btn-outline-info p-1"><i class="icon fas fa-plus me-1"></i><%=GetResourceText(BackEndResourceKeys.ADD_NEW) %></a>
     </legend>
+    <div class="small text-muted mb-2">
+        Dòng <strong>ProjectDocument</strong> có thêm các quyền chi tiết cho hồ sơ dự án.
+        Cột <strong>Cập nhật</strong> ở dòng này là quyền cũ để tương thích; nhóm mới nên dùng các cột thao tác chi tiết.
+    </div>
     <asp:UpdatePanel runat="server" ID="pnlPermission" UpdateMode="Conditional">
         <ContentTemplate>
             <div class="table-extra table-responsive">
