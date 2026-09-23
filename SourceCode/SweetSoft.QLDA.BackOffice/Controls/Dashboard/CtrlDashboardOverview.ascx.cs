@@ -70,6 +70,17 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected bool IsProjectView { get; private set; }
 
+        protected bool IsProjectDashboard
+        {
+            get
+            {
+                Guid projectId;
+                return Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out projectId);
+            }
+        }
+
         protected Guid SelectedProjectId { get; private set; }
 
         protected string SelectedProjectCode { get; private set; }
@@ -102,10 +113,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            ddlDateRange.AutoPostBack = IsProjectDashboard;
+            btnApplyDashboardFilter.Visible = !IsProjectDashboard;
+
             if (!IsPostBack)
             {
-                btnApplyDashboardFilter.Text = GetResourceText(Core.ResourceTexts.BackEndResourceKeys.APPLY);
-                LoadProjectFilter();
+                if (!IsProjectDashboard)
+                {
+                    btnApplyDashboardFilter.Text =
+                        GetResourceText(Core.ResourceTexts.BackEndResourceKeys.APPLY);
+                    LoadProjectFilter();
+                }
+
                 LoadDateRangeFilter();
                 InitDashboard();
             }
@@ -543,6 +562,26 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     )
                 );
             }
+
+            SelectProjectFromQuery();
+        }
+
+        private void SelectProjectFromQuery()
+        {
+            Guid projectId;
+            if (!Guid.TryParse(
+                Page.Request.QueryString["project"],
+                out projectId))
+            {
+                return;
+            }
+
+            ListItem item = ddlProjectFilter.Items.FindByValue(
+                projectId.ToString());
+            if (item != null)
+            {
+                ddlProjectFilter.SelectedValue = item.Value;
+            }
         }
 
 
@@ -553,6 +592,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             DashboardFilter filter = BuildDashboardFilter();
 
             InitDashboard(filter);
+        }
+
+        protected void ddlDateRange_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
+        {
+            InitDashboard(BuildDashboardFilter());
         }
 
         private void LoadDateRangeFilter()
@@ -574,8 +620,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             Guid? projectId = null;
 
-            if (!string.IsNullOrEmpty(
-                ddlProjectFilter.SelectedValue))
+            if (!IsProjectDashboard
+                && ddlProjectFilter != null
+                && !string.IsNullOrEmpty(
+                    ddlProjectFilter.SelectedValue))
             {
                 Guid parsedProjectId;
 
@@ -584,6 +632,17 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     out parsedProjectId))
                 {
                     projectId = parsedProjectId;
+                }
+            }
+
+            if (!projectId.HasValue)
+            {
+                Guid queryProjectId;
+                if (Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out queryProjectId))
+                {
+                    projectId = queryProjectId;
                 }
             }
 

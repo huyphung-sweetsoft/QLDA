@@ -98,12 +98,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .Where(x => activeEmployeeIds.Contains(x.IdNhanVien))
                 .ToList();
 
-            Dictionary<Guid, TblPhongBan> departments = _repository
+            Dictionary<Guid, TblLoai> departments = _repository
                 .GetDepartments()
-                .ToDictionary(x => x.IdPhongBan);
-            Dictionary<Guid, TblChucDanh> jobTitles = _repository
+                .ToDictionary(x => x.IdLoai);
+            Dictionary<Guid, TblLoai> jobTitles = _repository
                 .GetJobTitles()
-                .ToDictionary(x => x.IdChucDanh);
+                .ToDictionary(x => x.IdLoai);
             Dictionary<Guid, TblDuAn> projectById = projects
                 .ToDictionary(x => x.IdDuAn);
             Dictionary<Guid, TblCongViec> taskById = tasks
@@ -244,8 +244,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<TblCongViecNhanVien> assignments,
             Dictionary<Guid, TblCongViec> taskById,
             Dictionary<Guid, TblDuAn> projectById,
-            Dictionary<Guid, TblPhongBan> departments,
-            Dictionary<Guid, TblChucDanh> jobTitles,
+            Dictionary<Guid, TblLoai> departments,
+            Dictionary<Guid, TblLoai> jobTitles,
             List<DateTime> windowDays,
             List<ResourceWeekInfo> weeks,
             List<ResourceMonthInfo> months,
@@ -307,7 +307,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     ? 0
                     : anchorLoad.DailyLoads.Max(x => x.AllocationPercent);
 
-                TblPhongBan department = null;
+                TblLoai department = null;
                 if (employee.IdPhongBan.HasValue)
                 {
                     departments.TryGetValue(
@@ -315,7 +315,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         out department);
                 }
 
-                TblChucDanh jobTitle = null;
+                TblLoai jobTitle = null;
                 if (employee.IdChucDanh.HasValue)
                 {
                     jobTitles.TryGetValue(
@@ -330,10 +330,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     UserName = employee.UserName,
                     DepartmentName = department == null
                         ? string.Empty
-                        : department.TenPhongBan,
+                        : department.TenLoai,
                     JobTitleName = jobTitle == null
                         ? string.Empty
-                        : jobTitle.TenChucDanh,
+                        : jobTitle.TenLoai,
                     AllocatedDays = Math.Round(allocatedDays, 1),
                     CapacityDays = anchorLoad.CapacityDays,
                     AverageUtilization = averageUtilization,

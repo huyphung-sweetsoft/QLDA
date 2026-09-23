@@ -165,6 +165,40 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 ViewState["IsMultiple"] = value;
             }
         }
+        /// <summary>
+        /// Uses the file picker as a lightweight attachment control. The
+        /// caller keeps the normal form Save button as the only save action.
+        /// </summary>
+        public bool IsSimpleUpload
+        {
+            get
+            {
+                try
+                {
+                    if (ViewState["IsSimpleUpload"] != null)
+                        return (bool)ViewState["IsSimpleUpload"];
+                    return false;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            set
+            {
+                ViewState["IsSimpleUpload"] = value;
+            }
+        }
+
+        public string CurrentRefId
+        {
+            get => RefId.HasValue ? RefId.Value.ToString() : string.Empty;
+        }
+
+        public string CurrentRefType
+        {
+            get => _refType.HasValue ? _refType.Value.ToString() : string.Empty;
+        }
         public string AcceptType
         {
             get
@@ -250,6 +284,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 if (IsPostBack)
                     return;
                 divControls.Visible = IsEnabled;
+                btnDiscardFile.Visible = IsEnabled && !IsSimpleUpload;
                 btnDiscardFile.Title = btnDiscardFile.InnerText = GetResourceText(BackEndResourceKeys.CANCEL);
                 btnApplyFile.Title = btnApplyFile.InnerText = GetResourceText(BackEndResourceKeys.SAVE_CHANGES);
                 ScriptManager.RegisterStartupScript(this.Page, GetType(), "HtmlFormatFile"
@@ -650,6 +685,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             UploadManager fileManager = new UploadManager(SweetContext.Current, refId, refType);
 
             divControls.Visible = IsEnabled;
+            btnDiscardFile.Visible = IsEnabled && !IsSimpleUpload;
             if (fileManager.TblUploadFiles == null || fileManager.TblUploadFiles.Count == 0)
             {
                 if (!this.IsMultiple)

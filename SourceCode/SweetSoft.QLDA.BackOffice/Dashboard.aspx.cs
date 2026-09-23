@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Web.UI;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
+using SweetSoft.QLDA.Core.ResourceTexts;
 
 namespace SweetSoft.QLDA.BackOffice
 {
@@ -16,7 +18,59 @@ namespace SweetSoft.QLDA.BackOffice
         protected void Page_Init(object sender, EventArgs e)
         {
             PreserveMenuOnPostBack();
+            CtrlProjectTabs1.ProjectId = GetProjectIdFromQuery();
             LoadDashboard(PAGE_FUNCTION_CODE);
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                BindNavigation();
+            }
+        }
+
+        private Guid GetProjectIdFromQuery()
+        {
+            Guid projectId;
+            return Guid.TryParse(Request.QueryString["project"], out projectId)
+                ? projectId
+                : Guid.Empty;
+        }
+
+        private void BindNavigation()
+        {
+            Guid projectId = GetProjectIdFromQuery();
+            Navigation1.Visible = projectId != Guid.Empty;
+            if (projectId == Guid.Empty)
+                return;
+
+            string dashboardTitle = GetDashboardTitle(PAGE_FUNCTION_CODE);
+
+            Navigation1.MainTitle = dashboardTitle;
+            Navigation1.keyValuePairUrls = new Dictionary<string, string>
+            {
+                {
+                    GetRelativeClientPath(RewriteURLHelper.Projects),
+                    GetResourceText(BackEndResourceKeys.PROJECT_LIST)
+                },
+                { "javascript:;", dashboardTitle }
+            };
+        }
+
+        private string GetDashboardTitle(ModuleKeys module)
+        {
+            switch (module)
+            {
+                case ModuleKeys.DashboardProgress:
+                    return GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS);
+                case ModuleKeys.DashboardCost:
+                    return GetResourceText(BackEndResourceKeys.DASHBOARD_COST);
+                case ModuleKeys.DashboardResource:
+                    return GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE);
+                default:
+                    return GetResourceText(BackEndResourceKeys.DASHBOARD_OVERVIEW);
+            }
         }
 
         /// <summary>

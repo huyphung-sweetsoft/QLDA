@@ -13,6 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
     public partial class CtrlDashboardOverview
     {
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlProjectDashboardTabs CtrlProjectDashboardTabs1;
 
         /// <summary>
         /// ddlProjectFilter control.

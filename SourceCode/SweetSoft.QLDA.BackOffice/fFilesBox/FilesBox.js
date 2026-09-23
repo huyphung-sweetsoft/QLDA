@@ -5,6 +5,10 @@ FilesBox.ValidatedFile = [];
 // Temporary identifiers used client-side only until the server returns the UUIDv7 id.
 FilesBox.PendingUploadIds = [];
 FilesBox.DisableFocusFileBox = false;
+// State used by simple upload controls that submit through the owning form.
+FilesBox.UploadInProgress = false;
+FilesBox.SimpleUploadComplete = null;
+FilesBox.UploadFailed = false;
 
 /**
  * Configuration object - can be overridden
@@ -606,6 +610,28 @@ FilesBox.GetPermission = function () {
     console.log(filePers);
 };
 
+/**
+ * Start a pending upload for a lightweight file picker. The owning form can
+ * provide a callback and continue its normal postback after all files finish.
+ */
+FilesBox.SaveSimpleUpload = function (box) {
+    box = $(box);
+    if (box.length === 0 || FilesBox.ValidatedFile.length === 0)
+        return true;
+
+    $('.file-box.active').removeClass('active');
+    box.addClass('active');
+
+    var refType = box.attr('data-ref-type');
+    var refId = box.attr('data-ref-id');
+    if (!refType || !refId) {
+        FilesBox.ShowError('Không xác định được nơi lưu tệp đính kèm.');
+        return false;
+    }
+
+    return FilesBox.SaveFile(refType, refId);
+};
+
 FilesBox.SaveFile = function (refType, refId) {
     if (FilesBox.ValidatedFile.length === 0)
         return true;
@@ -613,6 +639,8 @@ FilesBox.SaveFile = function (refType, refId) {
     if ($('.file-box.active.file-box-single').length === 0)
         $('#UpdateProgress1').show();
 
+    FilesBox.UploadInProgress = true;
+    FilesBox.UploadFailed = false;
     countUploaddingFile = FilesBox.ValidatedFile.length;
     var timing = 0;
     const folder = $('[data-selector="hdfFolderFileBox"]').val();
@@ -1051,7 +1079,16 @@ FilesBox.HandleUploadError = function (xhr, status, error, ar) {
         }
     }
 
+    FilesBox.UploadFailed = true;
     FilesBox.ShowError(errorMessage + errorDetails, ar);
+
+    // A failed request must release the form-save lock. Otherwise the
+    // payment form would keep waiting for an upload that can never finish.
+    if (typeof countUploaddingFile !== 'undefined' && countUploaddingFile > 0) {
+        countUploaddingFile--;
+        if (countUploaddingFile <= 0)
+            FilesBox.OnAllUploadsComplete();
+    }
 };
 
 /**
@@ -1122,6 +1159,23 @@ FilesBox.ShowNotification = function (type, message) {
 FilesBox.OnAllUploadsComplete = function () {
     // Hide global progress indicator
     $('#UpdateProgress1').hide();
+
+    FilesBox.UploadInProgress = false;
+
+    if (FilesBox.UploadFailed) {
+        FilesBox.UploadFailed = false;
+        FilesBox.SimpleUploadComplete = null;
+        return;
+    }
+
+    // Simple upload controls do not expose the FilesBox "Save changes"
+    // button. Let the owning form continue its normal save postback instead.
+    if (typeof FilesBox.SimpleUploadComplete === 'function') {
+        var complete = FilesBox.SimpleUploadComplete;
+        FilesBox.SimpleUploadComplete = null;
+        complete();
+        return;
+    }
 
     // Trigger save action
     var saveButton = $('.file-box.active [data-selector="btnApplyFile"]')[0];

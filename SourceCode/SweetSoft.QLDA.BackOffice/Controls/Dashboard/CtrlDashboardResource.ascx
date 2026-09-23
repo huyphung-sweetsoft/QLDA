@@ -5,17 +5,15 @@
     Inherits="SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardResource" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/Controls/Dashboard/CtrlProjectDashboardTabs.ascx"
+    TagPrefix="SweetSoft" TagName="CtrlProjectDashboardTabs" %>
 
 <div class="container-fluid dashboard-resource">
     <div class="d-flex flex-column flex-xl-row align-items-xl-start justify-content-between mb-3">
         <div class="flex-grow-1">
-            <h4 class="mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_TITLE) %></h4>
-            <p class="text-muted mb-0">
-                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_DESC) %>
-            </p>
-
+            <h4 class="mb-1 <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_TITLE) %></h4>
             <div class="row g-2 mt-2 align-items-end">
-                <div class="col-12 col-md-5 col-xl-4">
+                <div class="col-12 col-md-5 col-xl-4 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
                     <label class="form-label mb-1 text-nowrap">
                         <%= GetResourceText(BackEndResourceKeys.PROJECT_SCOPE) %>
                     </label>
@@ -28,18 +26,27 @@
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-7 col-md-3 col-xl-2">
-                    <label class="form-label mb-1 text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DISPLAY_RANGE) %></label>
+                <% if (IsProjectDashboard) { %>
+                <div class="col-auto d-flex align-items-end dashboard-project-tabs-inline">
+                    <SweetSoft:CtrlProjectDashboardTabs
+                        runat="server"
+                        ID="CtrlProjectDashboardTabs1" />
+                </div>
+                <% } %>
+
+                <div class="col-7 col-md-3 col-xl-2 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
+                    <label class="form-label mb-1 text-nowrap <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DISPLAY_RANGE) %></label>
                     <SweetSoft:ExtraDropdown
                         ID="ddlWeekCount"
                         runat="server"
                         CssClass="form-select"
                         EmptyItemValue="-1"
-                        SimpleInit="true">
+                        SimpleInit="true"
+                        OnSelectedIndexChanged="ddlWeekCount_SelectedIndexChanged">
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-5 col-md-auto">
+                <div class="col-5 col-md-auto <%= IsProjectDashboard ? "d-none" : string.Empty %>">
                     <SweetSoft:ExtraButton
                         ID="btnApplyResourceFilter"
                         runat="server"
@@ -52,7 +59,7 @@
             </div>
         </div>
 
-        <div class="resource-week-navigator bg-white border rounded shadow-sm mt-3 mt-xl-0 ms-xl-4">
+        <div class="resource-week-navigator bg-white border rounded shadow-sm mt-3 mt-xl-0 ms-xl-4 <%= IsProjectDashboard ? "dashboard-project-date-card dashboard-project-week-navigator" : string.Empty %>">
             <div class="small text-muted text-uppercase fw-medium mb-2"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_FOCUS_WEEK) %></div>
             <div class="d-flex align-items-center justify-content-between gap-2">
                 <asp:LinkButton
@@ -84,7 +91,7 @@
         </div>
     </div>
 
-    <div class="alert alert-info resource-method-note d-flex align-items-start mb-3" role="alert">
+    <div class="alert alert-info resource-method-note d-flex align-items-start mb-3 <%= IsProjectDashboard ? "d-none" : string.Empty %>" role="alert">
         <i class="bx bx-info-circle fs-4 me-2"></i>
         <div>
             <%= GetResourceText(BackEndResourceKeys.DASHBOARD_WEEKLY_CALCULATION_DESC) %>
@@ -166,7 +173,7 @@
             </div>
 
             <div class="resource-heatmap-scroll">
-                <table class="table resource-heatmap-table align-middle mb-0">
+                <table class="table dashboard-data-table table-bordered resource-heatmap-table align-middle mb-0">
                     <thead>
                         <tr class="resource-week-row">
                             <th class="resource-person-column"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></th>
@@ -225,7 +232,7 @@
                         <%= GetResourceText(BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_DESC) %>
                     </p>
                     <div class="resource-monthly-scroll flex-grow-1">
-                        <table class="table resource-monthly-table align-middle mb-0">
+                        <table class="table dashboard-data-table table-bordered resource-monthly-table align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th class="resource-person-column"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL) %></th>
@@ -320,7 +327,7 @@
                 <%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_ALLOCATION_DESC) %>
             </p>
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
                     <thead>
                         <tr>
                             <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>

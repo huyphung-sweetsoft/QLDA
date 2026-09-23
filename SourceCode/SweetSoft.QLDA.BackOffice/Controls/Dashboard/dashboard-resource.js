@@ -286,7 +286,7 @@
         var wrapper = document.createElement("div");
         wrapper.className = "table-responsive";
         var table = document.createElement("table");
-        table.className = "table table-sm resource-drawer-day-table mb-0";
+        table.className = "table dashboard-data-table table-bordered table-sm resource-drawer-day-table mb-0";
         var head = document.createElement("thead");
         var headRow = document.createElement("tr");
         [texts.date || "Date", texts.status || "Status",

@@ -53,6 +53,23 @@
     color: white;
 }
 
+/* Bảng số liệu trong Dashboard dùng cùng kiểu lưới với bảng Quản lý dự án. */
+.dashboard-data-table {
+    border-color: #d9dee3;
+}
+
+.dashboard-data-table thead,
+.dashboard-data-table thead th {
+    background: #f8f9fc !important;
+    color: #4a1387 !important;
+    border-color: #d9dee3 !important;
+    font-weight: 700;
+}
+
+.dashboard-data-table tbody td {
+    border-color: #d9dee3;
+}
+
 .table-container .table-responsive {
     background-color: #f3f6f8 !important;
 }
@@ -187,6 +204,99 @@
 
 .dashboard-overview .overview-alert-card {
     min-height: 105px;
+}
+
+/* Bộ tab chỉ dùng trên Dashboard của một dự án; căn cùng đáy với bộ lọc. */
+.dashboard-project-tabs-inline {
+    position: relative;
+    left: -.75rem;
+}
+
+.dashboard-project-tabs-inline .project-dashboard-tabs {
+    margin-bottom: 0 !important;
+}
+
+/* Thu gọn thẻ ngày/tuần khi đang xem Dashboard trong phạm vi một dự án. */
+.dashboard-project-date-card {
+    padding: .5rem 1rem !important;
+    margin-left: .75rem !important;
+    margin-top: 0 !important;
+}
+
+.dashboard-overview .dashboard-project-date-card > div:first-child,
+.dashboard-project-date-card .progress-date-icon,
+.dashboard-project-date-card .cost-date-icon {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+    margin-right: .5rem !important;
+}
+
+.dashboard-project-date-card .fs-4,
+.dashboard-project-date-card .fw-bold {
+    font-size: 1.15rem !important;
+}
+
+/* Ba thẻ ngày của Tổng quan, Tiến độ và Chi phí giữ kích thước gần như ban đầu. */
+.dashboard-overview .dashboard-project-date-card,
+.dashboard-progress .dashboard-project-date-card,
+.dashboard-cost .dashboard-project-date-card {
+    padding: 1rem 1.5rem !important;
+}
+
+.dashboard-overview .dashboard-project-date-card > div:first-child,
+.dashboard-progress .dashboard-project-date-card .progress-date-icon,
+.dashboard-cost .dashboard-project-date-card .cost-date-icon {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    margin-right: 1rem !important;
+}
+
+.dashboard-overview .dashboard-project-date-card .fs-4 {
+    font-size: 1.5rem !important;
+}
+
+.dashboard-progress .dashboard-project-date-card .fw-bold,
+.dashboard-cost .dashboard-project-date-card .fw-bold {
+    font-size: 1rem !important;
+}
+
+.dashboard-resource .dashboard-project-date-card {
+    min-width: 260px;
+}
+
+/* Thu gọn thẻ Tuần trọng tâm khi xem Dashboard của một dự án. */
+.dashboard-resource .dashboard-project-week-navigator {
+    margin-top: 0 !important;
+}
+
+/* Trên màn hình lớn, thẻ ngày/tuần trải theo chiều cao của hai hàng menu
+   phía trái: mép trên ngang menu dự án, mép dưới ngang bộ tab Dashboard. */
+@media (min-width: 992px) {
+    .dashboard-overview .dashboard-project-date-card,
+    .dashboard-progress .dashboard-project-date-card,
+    .dashboard-cost .dashboard-project-date-card {
+        min-height: 90px;
+        margin-top: -3.25rem !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .dashboard-resource .dashboard-project-week-navigator {
+        min-height: 90px;
+        margin-top: -3.25rem !important;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .dashboard-project-date-card {
+        margin-top: 0 !important;
+    }
+
+    .dashboard-resource .dashboard-project-week-navigator {
+        margin-top: 0 !important;
+    }
 }
 
 @media (max-width: 575.98px) {

@@ -5,16 +5,18 @@
     Inherits="SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardOverview" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/Controls/Dashboard/CtrlProjectDashboardTabs.ascx"
+    TagPrefix="SweetSoft" TagName="CtrlProjectDashboardTabs" %>
 
 <div class="container-fluid dashboard-overview">
 
     <!-- Tiêu đề & Ngày tháng -->
     <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3">
         <div class="flex-grow-1">
-            <h4 class="mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OVERVIEW) %></h4>
-            <div class="row g-2 mt-3 align-items-end">
+            <h4 class="mb-1 <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OVERVIEW) %></h4>
+            <div class="row g-2 <%= IsProjectDashboard ? "mt-0" : "mt-3" %> align-items-end">
 
-    <div class="col-12 col-sm-6 col-md-5 col-xl-4">
+    <div class="col-12 col-sm-6 col-md-5 col-xl-4 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
 
         <label class="form-label mb-1 text-nowrap">
             <%= GetResourceText(BackEndResourceKeys.PROJECT_SCOPE) %>
@@ -29,9 +31,17 @@
 
     </div>
 
-    <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+    <% if (IsProjectDashboard) { %>
+    <div class="col-auto d-flex align-items-end dashboard-project-tabs-inline">
+        <SweetSoft:CtrlProjectDashboardTabs
+            runat="server"
+            ID="CtrlProjectDashboardTabs1" />
+    </div>
+    <% } %>
 
-        <label class="form-label mb-1 text-nowrap">
+    <div class="col-12 col-sm-6 col-md-4 col-xl-3 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
+
+        <label class="form-label mb-1 text-nowrap <%= IsProjectDashboard ? "d-none" : string.Empty %>">
             <%= GetResourceText(BackEndResourceKeys.DATE_RANGE) %>
         </label>
 
@@ -39,12 +49,13 @@
             ID="ddlDateRange"
             runat="server"
             CssClass="form-select"
-            SimpleInit="true">
+            SimpleInit="true"
+            OnSelectedIndexChanged="ddlDateRange_SelectedIndexChanged">
         </SweetSoft:ExtraDropdown>
 
     </div>
 
-    <div class="col-12 col-md-3 col-xl-auto mt-3 mt-md-0">
+    <div class="col-12 col-md-3 col-xl-auto mt-3 mt-md-0 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
 
         <SweetSoft:ExtraButton
             ID="btnApplyDashboardFilter"
@@ -58,13 +69,10 @@
     </div>
 
 </div>
-            <p class="text-muted mt-2 mb-0">
-                <%= GetResourceText(BackEndResourceKeys.TRACK_OVERALL_PROJECT_STATUS) %>
-            </p>
         </div>
         
         <!-- Widget hiển thị ngày hiện tại -->
-        <div class="d-flex align-items-center bg-white border rounded px-4 py-3 mt-3 mt-lg-0 shadow-sm ms-lg-4" style="min-width: max-content;">
+        <div class="d-flex align-items-center bg-white border rounded px-4 py-3 mt-3 mt-lg-0 shadow-sm ms-lg-4 <%= IsProjectDashboard ? "dashboard-project-date-card" : string.Empty %>" style="min-width: max-content;">
             <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
                 <i class="bx bx-calendar fs-3"></i>
             </div>
@@ -375,7 +383,7 @@
 
                 <div class="table-responsive">
 
-                    <table class="table table-sm table-hover align-middle mb-0">
+                    <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
 
                         <thead>
                             <tr>

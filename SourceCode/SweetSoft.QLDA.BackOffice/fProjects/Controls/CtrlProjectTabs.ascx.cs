@@ -53,6 +53,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             ulProjectTabs.Controls.Clear();
             AddOverviewTab();
+            AddDashboardTab();
 
             IEnumerable<AspnetFunction> functions;
             try
@@ -98,6 +99,19 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 GetResourceText(BackEndResourceKeys.OVERVIEW),
                 "fas fa-info-circle",
                 GetRelativeClientPath(RewriteURLHelper.ProjectDetail(ProjectId)));
+        }
+
+        private void AddDashboardTab()
+        {
+            if (!CanViewAnyDashboard())
+                return;
+
+            AddTab(
+                ModuleKeys.DashboardOverview,
+                GetResourceText(BackEndResourceKeys.DASHBOARD),
+                "fas fa-chart-line",
+                GetRelativeClientPath(
+                    RewriteURLHelper.DashboardOverviewForProject(ProjectId)));
         }
 
         private void AddTab(
@@ -184,6 +198,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             {
                 return false;
             }
+        }
+
+        private bool CanViewAnyDashboard()
+        {
+            return CanView(ModuleKeys.DashboardOverview)
+                || CanView(ModuleKeys.DashboardProgress)
+                || CanView(ModuleKeys.DashboardCost)
+                || CanView(ModuleKeys.DashboardResource);
         }
     }
 }

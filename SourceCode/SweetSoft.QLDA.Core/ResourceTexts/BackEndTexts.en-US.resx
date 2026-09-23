@@ -2027,16 +2027,16 @@
     <value>Project and task progress dashboard</value>
   </data>
   <data name="DASHBOARD_PROGRESS_FILTER_DESC" xml:space="preserve">
-    <value>Project progress is compared with elapsed planned time; the date range determines which projects are included, while task figures cover all tasks belonging to those projects.</value>
+    <value>Project progress is compared with elapsed planned working days; the date range determines which projects are included, while task figures cover all tasks belonging to those projects.</value>
   </data>
   <data name="DASHBOARD_ACTUAL_VS_PLAN" xml:space="preserve">
     <value>Actual versus plan</value>
   </data>
   <data name="DASHBOARD_ACTUAL_VS_PLAN_DESC" xml:space="preserve">
-    <value>Project completion progress compared with elapsed planned time.</value>
+    <value>Project completion progress compared with elapsed planned working days.</value>
   </data>
   <data name="DASHBOARD_PLAN_TIME_DESC" xml:space="preserve">
-    <value>Plan is calculated from the elapsed time between the start date and expected completion date.</value>
+    <value>Plan is calculated from configured working days, holidays, and make-up days.</value>
   </data>
   <data name="DASHBOARD_EXPECTED_COMPLETION" xml:space="preserve">
     <value>Expected completion</value>
@@ -2219,13 +2219,13 @@
     <value>Completion period</value>
   </data>
   <data name="DASHBOARD_COST_FILTER_DESC" xml:space="preserve">
-    <value>Only projects with an actual completion date are included. The period filters project completion dates, while costs and payments cover the full lifecycle of matching projects.</value>
+    <value>Projects marked Completed are included; legacy projects with an actual completion date are retained. The period filters by actual completion date, or the expected completion date when it is unavailable.</value>
   </data>
   <data name="DASHBOARD_NO_COMPLETED_PROJECTS" xml:space="preserve">
     <value>No completed projects match the filter</value>
   </data>
   <data name="DASHBOARD_NO_COMPLETED_PROJECTS_DESC" xml:space="preserve">
-    <value>A project appears only after its actual completion date is updated; active projects are excluded from financial indicators.</value>
+    <value>A project appears when it is marked Completed; legacy projects with an actual completion date are also retained.</value>
   </data>
   <data name="DASHBOARD_COMPLETED_PROJECTS" xml:space="preserve">
     <value>Completed projects</value>
@@ -2255,7 +2255,7 @@
     <value>Contract versus actual cost</value>
   </data>
   <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC" xml:space="preserve">
-    <value>Compare contract value with total cost for each completed project.</value>
+    <value>Compare contract value with total approved cost for each completed project.</value>
   </data>
   <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve">
     <value>Payment situation</value>
@@ -2270,7 +2270,7 @@
     <value>Cost occurrence trend</value>
   </data>
   <data name="DASHBOARD_COST_TREND_DESC" xml:space="preserve">
-    <value>Monthly costs across the full lifecycle of completed projects in the selected scope.</value>
+    <value>Monthly approved costs across the full lifecycle of completed projects in the selected scope.</value>
   </data>
   <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve">
     <value>Financial performance by project</value>
@@ -2306,7 +2306,7 @@
     <value>Largest cost items</value>
   </data>
   <data name="DASHBOARD_LARGEST_COST_ITEMS_DESC" xml:space="preserve">
-    <value>Up to 15 highest-value cost items in the selected project scope.</value>
+    <value>Up to 15 highest-value approved cost items in the selected project scope.</value>
   </data>
   <data name="DASHBOARD_COST_ITEM_CODE" xml:space="preserve">
     <value>Cost item code</value>
@@ -2513,7 +2513,7 @@
     <value>100% threshold</value>
   </data>
   <data name="DASHBOARD_CAPACITY" xml:space="preserve">
-    <value>{0} capacity</value>
+    <value>{0} working days</value>
   </data>
   <data name="DASHBOARD_EXCESS" xml:space="preserve">
     <value> · exceeds by {0}</value>
@@ -3066,5 +3066,38 @@
   </data>
   <data name="ERROR_OCCURED" xml:space="preserve">
     <value>Error occured</value>
+  </data>
+  <data name="CONTINGENCY" xml:space="preserve">
+    <value>Contingency</value>
+  </data>
+  <data name="ISSUE_LIST" xml:space="preserve">
+    <value>Issue list</value>
+  </data>
+  <data name="DASHBOARD_CURRENT_PROJECT_STAGE" xml:space="preserve">
+    <value>Current project stage</value>
+  </data>
+  <data name="DASHBOARD_DAILY_ALLOCATION_DETAIL" xml:space="preserve">
+    <value>Daily allocation</value>
+  </data>
+  <data name="DASHBOARD_HOLIDAY_DAY" xml:space="preserve">
+    <value>Holiday: {0}</value>
+  </data>
+  <data name="DASHBOARD_HOLIDAY_DAYS" xml:space="preserve">
+    <value> · {0} holiday days</value>
+  </data>
+  <data name="DASHBOARD_NO_ASSIGNMENT_WEEK" xml:space="preserve">
+    <value>No task assignment this week</value>
+  </data>
+  <data name="DASHBOARD_NO_TASKS_ON_DAY" xml:space="preserve">
+    <value>No assigned tasks</value>
+  </data>
+  <data name="DASHBOARD_NON_WORKING_DAY" xml:space="preserve">
+    <value>Non-working day</value>
+  </data>
+  <data name="DASHBOARD_WEEKLY_LOAD_FORMULA" xml:space="preserve">
+    <value>Calculation: {0} allocated workdays / {1} working days in the week. Each active task on a day counts as one workday.</value>
+  </data>
+  <data name="DASHBOARD_WORKING_DAY" xml:space="preserve">
+    <value>Working day</value>
   </data>
 </root>

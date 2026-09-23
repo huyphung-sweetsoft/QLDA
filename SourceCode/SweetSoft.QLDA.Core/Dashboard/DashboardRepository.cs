@@ -260,26 +260,28 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return ExecuteList<TblCongViecNhanVien>(sql, parameters);
         }
 
-        public List<TblPhongBan> GetDepartments()
+        public List<TblLoai> GetDepartments()
         {
             const string sql =
-                "SELECT d.* FROM TblPhongBan d" +
-                " WHERE d.DaXoa = 0 AND d.KichHoat = 1" +
-                " ORDER BY d.ThuTuHienThi, d.TenPhongBan";
+                "SELECT d.* FROM dbo.TblLoai d" +
+                " WHERE d.DoiTuong = 'PHONG_BAN'" +
+                " AND d.DaXoa = 0 AND d.KichHoat = 1" +
+                " ORDER BY d.ThuTuHienThi, d.TenLoai";
 
-            return ExecuteList<TblPhongBan>(
+            return ExecuteList<TblLoai>(
                 sql,
                 new Dictionary<string, object>());
         }
 
-        public List<TblChucDanh> GetJobTitles()
+        public List<TblLoai> GetJobTitles()
         {
             const string sql =
-                "SELECT j.* FROM TblChucDanh j" +
-                " WHERE j.DaXoa = 0 AND j.KichHoat = 1" +
-                " ORDER BY j.ThuTuHienThi, j.TenChucDanh";
+                "SELECT j.* FROM dbo.TblLoai j" +
+                " WHERE j.DoiTuong = 'CHUC_DANH'" +
+                " AND j.DaXoa = 0 AND j.KichHoat = 1" +
+                " ORDER BY j.ThuTuHienThi, j.TenLoai";
 
-            return ExecuteList<TblChucDanh>(
+            return ExecuteList<TblLoai>(
                 sql,
                 new Dictionary<string, object>());
         }

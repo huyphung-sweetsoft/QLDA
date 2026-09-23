@@ -187,6 +187,35 @@
     align-content: center;
     align-self: center;
 }
+
+/* Payment attachments use a simple add/remove picker. The regular FilesBox
+   keeps sorting and its separate "save changes" workflow for other screens. */
+.file-box.simple-upload .sorting-control,
+.file-box.simple-upload .control-help,
+.file-box.simple-upload .btn-apply-file,
+.file-box.simple-upload .control .btn-danger {
+    display: none !important;
+}
+
+.file-box.simple-upload .file-actions,
+.file-box.simple-upload .sort-item,
+.file-box.simple-upload .uploaded-content .item .title,
+.file-box.simple-upload .uploaded-content .item .order,
+.file-box.simple-upload .img-control.left {
+    display: none !important;
+}
+
+.file-box .simple-upload-file-name {
+    display: none;
+}
+
+.file-box.simple-upload .simple-upload-file-name {
+    display: block;
+    overflow: hidden;
+    padding: 0 .25rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 /*.file-box .uploaded-content .item:hover {
     outline: 1px solid rgba(0, 160, 175, 0.5);
 }*/

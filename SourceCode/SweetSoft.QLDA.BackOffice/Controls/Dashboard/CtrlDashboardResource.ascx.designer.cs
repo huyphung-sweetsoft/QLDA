@@ -11,6 +11,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
     public partial class CtrlDashboardResource
     {
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlProjectDashboardTabs CtrlProjectDashboardTabs1;
+
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlProjectFilter;
 
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlWeekCount;

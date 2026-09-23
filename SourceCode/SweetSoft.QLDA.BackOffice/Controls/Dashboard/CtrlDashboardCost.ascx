@@ -5,6 +5,8 @@
     Inherits="SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboardCost" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/Controls/Dashboard/CtrlProjectDashboardTabs.ascx"
+    TagPrefix="SweetSoft" TagName="CtrlProjectDashboardTabs" %>
 
 <style>
     /* =========================================================
@@ -131,10 +133,10 @@
 <div class="container-fluid dashboard-cost">
     <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3">
         <div class="flex-grow-1">
-            <h4 class="mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TITLE) %></h4>
+            <h4 class="mb-1 <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TITLE) %></h4>
 
-            <div class="row g-2 mt-3 align-items-end">
-                <div class="col-12 col-sm-6 col-md-5 col-xl-4">
+            <div class="row g-2 <%= IsProjectDashboard ? "mt-0" : "mt-3" %> align-items-end">
+                <div class="col-12 col-sm-6 col-md-5 col-xl-4 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
                     <label class="form-label mb-1 text-nowrap">
                         <%= GetResourceText(BackEndResourceKeys.PROJECT_SCOPE) %>
                     </label>
@@ -147,18 +149,27 @@
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                    <label class="form-label mb-1 text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETION_PERIOD) %></label>
+                <% if (IsProjectDashboard) { %>
+                <div class="col-auto d-flex align-items-end dashboard-project-tabs-inline">
+                    <SweetSoft:CtrlProjectDashboardTabs
+                        runat="server"
+                        ID="CtrlProjectDashboardTabs1" />
+                </div>
+                <% } %>
+
+                <div class="col-12 col-sm-6 col-md-4 col-xl-3 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
+                    <label class="form-label mb-1 text-nowrap <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETION_PERIOD) %></label>
                     <SweetSoft:ExtraDropdown
                         ID="ddlCompletionPeriod"
                         runat="server"
                         CssClass="form-select"
                         EmptyItemValue="-1"
-                        SimpleInit="true">
+                        SimpleInit="true"
+                        OnSelectedIndexChanged="ddlCompletionPeriod_SelectedIndexChanged">
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-12 col-md-3 col-xl-auto mt-3 mt-md-0">
+                <div class="col-12 col-md-3 col-xl-auto mt-3 mt-md-0 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
                     <SweetSoft:ExtraButton
                         ID="btnApplyCostFilter"
                         runat="server"
@@ -170,12 +181,9 @@
                 </div>
             </div>
 
-            <p class="text-muted mt-2 mb-0">
-                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_FILTER_DESC) %>
-            </p>
         </div>
 
-        <div class="d-flex align-items-center bg-white border rounded px-4 py-3 mt-3 mt-lg-0 shadow-sm ms-lg-4 cost-date-card">
+        <div class="d-flex align-items-center bg-white border rounded px-4 py-3 mt-3 mt-lg-0 shadow-sm ms-lg-4 cost-date-card <%= IsProjectDashboard ? "dashboard-project-date-card" : string.Empty %>">
             <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3 cost-date-icon">
                 <i class="bx bx-wallet fs-3"></i>
             </div>
@@ -361,7 +369,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 cost-project-table">
+                <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0 cost-project-table">
                     <thead>
                         <tr>
                             <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
@@ -440,7 +448,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
                     <thead>
                         <tr>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_CODE) %></th>

@@ -18,6 +18,44 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string DashboardResource => "/Home/Resources";
         public static string DashboardProgress => "/Home/Progress";
         public static string DashboardCost => "/Home/Costs";
+
+        /// <summary>
+        /// Builds a dashboard URL scoped to one project.  The dashboard
+        /// controls read the same query-string key when initializing their
+        /// project filter, so switching dashboard tabs keeps the context.
+        /// </summary>
+        public static string DashboardForProject(
+            string dashboardUrl,
+            Guid projectId)
+        {
+            if (string.IsNullOrWhiteSpace(dashboardUrl)
+                || projectId == Guid.Empty)
+            {
+                return dashboardUrl;
+            }
+
+            return dashboardUrl + "?project=" + projectId.ToString("D");
+        }
+
+        public static string DashboardOverviewForProject(Guid projectId)
+        {
+            return DashboardForProject(DashboardOverview, projectId);
+        }
+
+        public static string DashboardResourceForProject(Guid projectId)
+        {
+            return DashboardForProject(DashboardResource, projectId);
+        }
+
+        public static string DashboardProgressForProject(Guid projectId)
+        {
+            return DashboardForProject(DashboardProgress, projectId);
+        }
+
+        public static string DashboardCostForProject(Guid projectId)
+        {
+            return DashboardForProject(DashboardCost, projectId);
+        }
         public static string AuditLogs => "/Audit-logs";
         public static string Settings => "/Settings";
         public static string Countries => "/Countries";

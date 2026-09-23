@@ -1,6 +1,8 @@
+using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
@@ -22,9 +24,16 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             get => ViewState["PaymentId"] == null ? Guid.Empty : (Guid)ViewState["PaymentId"];
             set => ViewState["PaymentId"] = value;
         }
+        private Guid PaymentFileSessionId
+        {
+            get => ViewState["PaymentFileSessionId"] == null
+                ? Guid.Empty : (Guid)ViewState["PaymentFileSessionId"];
+            set => ViewState["PaymentFileSessionId"] = value;
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlProjectTabs1.ProjectId = CurrentProjectId;
             if (CurrentProjectId == Guid.Empty)
             {
                 Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Projects), true);
@@ -67,6 +76,7 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
                 return;
             }
             PaymentId = Guid.Empty;
+            PaymentFileSessionId = Guid.NewGuid();
             TblDuAn project = DuAnManager.Instance.GetDuAnById(CurrentProjectId);
             if (project == null)
             {
@@ -75,7 +85,7 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             }
             string nextCode = ThanhToanManager.Instance.GetNextPaymentCode(CurrentProjectId);
             lblMaDotPrefix.Visible = false;
-            txtMaDot.Enabled = false;
+            txtMaDot.Enabled = true;
             txtMaDot.CssClass = string.Empty;
             txtMaDot.Attributes.Remove("style");
             txtMaDot.TextMode = TextBoxMode.SingleLine;
@@ -89,7 +99,8 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             dtHanThanhToan.DateValue = null;
             dtNgayThanhToan.DateValue = null;
             txtGhiChu.Text = string.Empty;
-            BindStatuses((byte)ThanhToanStatus.ChuaThanhToan, null);
+            BindStatuses((byte)ThanhToanStatus.ChuaThanhToan);
+            LoadPaymentFiles(PaymentFileSessionId);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
             lbtSubmit.Visible = true;
             dlDetail.OpenModal(true);
@@ -110,8 +121,9 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
                 return;
             }
             PaymentId = item.IdThanhToan;
+            PaymentFileSessionId = item.IdThanhToan;
             lblMaDotPrefix.Visible = false;
-            txtMaDot.Enabled = false;
+            txtMaDot.Enabled = true;
             txtMaDot.CssClass = string.Empty;
             txtMaDot.Attributes.Remove("style");
             txtMaDot.TextMode = TextBoxMode.SingleLine;
@@ -124,24 +136,22 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             txtSoTien.Text = ConvertNumber(item.SoTien);
             dtHanThanhToan.DateValue = item.HanThanhToan;
             txtGhiChu.Text = item.GhiChu;
-            BindStatuses(item.TrangThai, item.HanThanhToan);
+            BindStatuses(item.TrangThai);
             dtNgayThanhToan.DateValue = item.NgayThanhToanThucTe;
+            LoadPaymentFiles(PaymentId);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.PAYMENT_EDIT_STATUS);
             lbtSubmit.Visible = true;
             dlDetail.OpenModal(true);
         }
 
-        private void BindStatuses(byte selectedStatus, DateTime? dueDate)
+        private void BindStatuses(byte selectedStatus)
         {
             ddlTrangThai.Items.Clear();
-            ThanhToanStatus unpaidStatus = dueDate.HasValue && dueDate.Value.Date < DateTime.Today
-                ? ThanhToanStatus.TreHan
-                : ThanhToanStatus.ChuaThanhToan;
-            AddStatusItem(unpaidStatus);
+            AddStatusItem(ThanhToanStatus.ChuaThanhToan);
             AddStatusItem(ThanhToanStatus.DaThanhToan);
             ddlTrangThai.SelectedValue = selectedStatus == (byte)ThanhToanStatus.DaThanhToan
                 ? ((byte)ThanhToanStatus.DaThanhToan).ToString()
-                : ((byte)unpaidStatus).ToString();
+                : ((byte)ThanhToanStatus.ChuaThanhToan).ToString();
         }
 
         private void AddStatusItem(ThanhToanStatus status)
@@ -163,7 +173,14 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             }
             byte status;
             if (!byte.TryParse(ddlTrangThai.SelectedValue, out status)
-                || !Enum.IsDefined(typeof(ThanhToanStatus), status))
+                || (status != (byte)ThanhToanStatus.ChuaThanhToan
+                    && status != (byte)ThanhToanStatus.DaThanhToan))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+            string paymentCode = (txtMaDot.Text ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(paymentCode) || paymentCode.Length > 50)
             {
                 ShowInvalidDataError();
                 return;
@@ -198,6 +215,9 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             }
             try
             {
+                List<Guid> removedAttachmentIds =
+                    fbPaymentFiles.GetPendingRemovedFileIds();
+
                 if (isNew)
                 {
                     DateTime? dueDate = GetPaymentDateValue(dtHanThanhToan);
@@ -206,17 +226,21 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
                         ShowInvalidDataError();
                         return;
                     }
-                    ThanhToanManager.Instance.CreatePayment(CurrentProjectId,
-                        paymentName, amount, dueDate.Value, status, actualPaymentDate, note);
+                    TblThanhToan createdPayment = ThanhToanManager.Instance.CreatePayment(CurrentProjectId,
+                        paymentCode, paymentName, amount, dueDate.Value, status, actualPaymentDate, note);
+                    MovePaymentAttachments(PaymentFileSessionId, createdPayment.IdThanhToan);
+                    RemovePaymentAttachments(removedAttachmentIds);
                     ShowNotify(GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY));
                 }
                 else
                 {
-                    ThanhToanManager.Instance.UpdatePayment(PaymentId, CurrentProjectId, paymentName,
-                        amount, status, actualPaymentDate, note);
+                    ThanhToanManager.Instance.UpdatePayment(PaymentId, CurrentProjectId, paymentCode,
+                        paymentName, amount, status, actualPaymentDate, note);
+                    RemovePaymentAttachments(removedAttachmentIds);
                     ShowSuccessSaveData();
                 }
                 PaymentId = Guid.Empty;
+                PaymentFileSessionId = Guid.Empty;
                 dlDetail.CloseModal();
                 CtrlThanhToan1.Rebind();
             }
@@ -259,6 +283,38 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan
             return control.DateValueForDisplay.HasValue
                 ? control.DateValueForDisplay.Value.Date
                 : (DateTime?)null;
+        }
+
+        private void LoadPaymentFiles(Guid refId)
+        {
+            if (refId == Guid.Empty)
+                return;
+
+            fbPaymentFiles.IsEnabled = IsAdd || IsEdit;
+            fbPaymentFiles.IsMultiple = true;
+            fbPaymentFiles.LoadFile(refId, FileUploadTypes.PaymentAttachment);
+        }
+
+        private static void MovePaymentAttachments(Guid sourceRefId, Guid paymentId)
+        {
+            if (sourceRefId == Guid.Empty || paymentId == Guid.Empty || sourceRefId == paymentId)
+                return;
+
+            new Update(TblUploadFile.Schema)
+                .Set(TblUploadFile.Columns.RefId).EqualTo(paymentId)
+                .Where(TblUploadFile.Columns.RefId).IsEqualTo(sourceRefId)
+                .And(TblUploadFile.Columns.RefType).IsEqualTo(FileUploadTypes.PaymentAttachment.ToString())
+                .Execute();
+        }
+
+        private static void RemovePaymentAttachments(List<Guid> fileIds)
+        {
+            if (fileIds == null || fileIds.Count == 0)
+                return;
+
+            UploadManager.Instance.RemoveFiles(
+                fileIds,
+                FileUploadTypes.PaymentAttachment);
         }
 
     }

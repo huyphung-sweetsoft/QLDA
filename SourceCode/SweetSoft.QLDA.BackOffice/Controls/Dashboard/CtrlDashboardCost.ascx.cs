@@ -51,6 +51,17 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string DashboardTextsJson { get; private set; }
 
+        protected bool IsProjectDashboard
+        {
+            get
+            {
+                Guid projectId;
+                return Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out projectId);
+            }
+        }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -59,17 +70,31 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            ddlCompletionPeriod.AutoPostBack = IsProjectDashboard;
+            btnApplyCostFilter.Visible = !IsProjectDashboard;
+
             if (!IsPostBack)
             {
-                btnApplyCostFilter.Text =
-                    GetResourceText(BackEndResourceKeys.APPLY);
-                LoadProjectFilter();
+                if (!IsProjectDashboard)
+                {
+                    btnApplyCostFilter.Text =
+                        GetResourceText(BackEndResourceKeys.APPLY);
+                    LoadProjectFilter();
+                }
+
                 LoadCompletionPeriodFilter();
                 InitDashboard(BuildCostFilter());
             }
         }
 
         protected void btnApplyCostFilter_Click(
+            object sender,
+            EventArgs e)
+        {
+            InitDashboard(BuildCostFilter());
+        }
+
+        protected void ddlCompletionPeriod_SelectedIndexChanged(
             object sender,
             EventArgs e)
         {
@@ -223,6 +248,26 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     project.MaDuAn + " - " + project.TenDuAn,
                     project.IdDuAn.ToString()));
             }
+
+            SelectProjectFromQuery();
+        }
+
+        private void SelectProjectFromQuery()
+        {
+            Guid projectId;
+            if (!Guid.TryParse(
+                Page.Request.QueryString["project"],
+                out projectId))
+            {
+                return;
+            }
+
+            ListItem item = ddlProjectFilter.Items.FindByValue(
+                projectId.ToString());
+            if (item != null)
+            {
+                ddlProjectFilter.SelectedValue = item.Value;
+            }
         }
 
         private void LoadCompletionPeriodFilter()
@@ -255,12 +300,25 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             Guid? projectId = null;
             Guid parsedProjectId;
 
-            if (!string.IsNullOrEmpty(ddlProjectFilter.SelectedValue)
+            if (!IsProjectDashboard
+                && ddlProjectFilter != null
+                && !string.IsNullOrEmpty(ddlProjectFilter.SelectedValue)
                 && Guid.TryParse(
                     ddlProjectFilter.SelectedValue,
                     out parsedProjectId))
             {
                 projectId = parsedProjectId;
+            }
+
+            if (!projectId.HasValue)
+            {
+                Guid queryProjectId;
+                if (Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out queryProjectId))
+                {
+                    projectId = queryProjectId;
+                }
             }
 
             DashboardCostPeriod period = DashboardCostPeriod.AllTime;

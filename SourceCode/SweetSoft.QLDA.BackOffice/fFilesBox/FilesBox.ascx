@@ -2,7 +2,7 @@
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
-<div class="<%=this.IsMultiple? "":"file-box-single"%> file-box" onmouseover="FilesBox.FocusFileBox(this);" data-clientid="<%=this.ClientID %>">
+<div class="<%=this.IsMultiple? "":"file-box-single"%> file-box <%=this.IsSimpleUpload ? "simple-upload" : ""%>" onmouseover="FilesBox.FocusFileBox(this);" data-clientid="<%=this.ClientID %>" data-ref-id="<%=this.CurrentRefId %>" data-ref-type="<%=this.CurrentRefType %>">
     <div class="loading" style="display: none;">
         <div class="lds-hourglass"></div>
     </div>
@@ -81,6 +81,7 @@
                 <a title="View" href="javascript:void(0);" class="img-control right d-none hidden" onclick="FilesBox.LayoutFilePopUp(this);" data-path="{11}"><i class="fa fa-search"></i></a>
             </div>
             <input name="{3}" data-selector="{3}" data-default="{5}" title="{1}" class="title" value="{1}">
+            <span class="simple-upload-file-name" title="{1}">{1}</span>
             <input name="{6}" data-selector="{6}" value="{4}" type="number" title="Display order" class="order" />
             <input id="{10}" data-selector="{10}" name="{8}" value="{11}" title="Path" class="file-path" />
             <div style="display: none;" class="progress-content">

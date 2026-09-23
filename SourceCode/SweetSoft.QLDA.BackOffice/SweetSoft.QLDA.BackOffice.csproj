@@ -351,6 +351,13 @@
     <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.designer.cs">
       <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.cs">
+      <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.designer.cs">
+      <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -702,6 +709,7 @@
     <Content Include="Controls\Dashboard\CtrlDashboardOverview.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardProgress.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
+    <Content Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx" />
     <Content Include="Controls\Dashboard\dashboard-overview.js" />
     <Content Include="Controls\Dashboard\dashboard-cost.js" />
     <Content Include="Controls\Dashboard\dashboard-progress.js" />
