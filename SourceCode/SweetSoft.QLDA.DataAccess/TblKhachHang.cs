@@ -164,7 +164,7 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdLoaiKhachHang.IsReadOnly = false;
 				colvarIdLoaiKhachHang.DefaultSetting = @"";
 				
-					colvarIdLoaiKhachHang.ForeignKeyTableName = "TblLoaiKhachHang";
+					colvarIdLoaiKhachHang.ForeignKeyTableName = "TblLoai";
 				schema.Columns.Add(colvarIdLoaiKhachHang);
 				
 				TableSchema.TableColumn colvarIdSoThue = new TableSchema.TableColumn(schema);
@@ -596,13 +596,13 @@ namespace SweetSoft.QLDA.DataAccess
 		#region ForeignKey Properties
 		
 		/// <summary>
-		/// Returns a TblLoaiKhachHang ActiveRecord object related to this TblKhachHang
+		/// Returns a TblLoai ActiveRecord object related to this TblKhachHang
 		/// 
 		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblLoaiKhachHang TblLoaiKhachHang
+		public SweetSoft.QLDA.DataAccess.TblLoai TblLoai
 		{
-			get { return SweetSoft.QLDA.DataAccess.TblLoaiKhachHang.FetchByID(this.IdLoaiKhachHang); }
-			set { SetColumnValue("IdLoaiKhachHang", value.IdLoaiKhachHang); }
+			get { return SweetSoft.QLDA.DataAccess.TblLoai.FetchByID(this.IdLoaiKhachHang); }
+			set { SetColumnValue("IdLoaiKhachHang", value.IdLoai); }
 		}
 		
 		

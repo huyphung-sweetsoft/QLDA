@@ -15,6 +15,15 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
     {
 
         /// <summary>
+        /// upCustomerDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upCustomerDetail;
+
+        /// <summary>
         /// Navigation1 control.
         /// </summary>
         /// <remarks>
@@ -33,6 +42,15 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         protected global::System.Web.UI.WebControls.Label lblTenKhachHang;
 
         /// <summary>
+        /// lblTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTrangThai;
+
+        /// <summary>
         /// lblLoaiKhachHangSubLabel control.
         /// </summary>
         /// <remarks>
@@ -40,6 +58,24 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblLoaiKhachHangSubLabel;
+
+        /// <summary>
+        /// upEditCustomer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upEditCustomer;
+
+        /// <summary>
+        /// lbtEditCustomer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtEditCustomer;
 
         /// <summary>
         /// lblLoaiKhachHang control.
@@ -130,5 +166,14 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlDuAn CtrlDuAn1;
+
+        /// <summary>
+        /// CtrlKhachHangForm1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHangForm CtrlKhachHangForm1;
     }
 }

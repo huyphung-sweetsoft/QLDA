@@ -29,8 +29,8 @@ namespace SweetSoft.QLDA.Core.Respositories
             SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
                 SELECT f.*
                 , ms.Email
-                , pb.TenPhongBan
-                , cd.TenChucDanh
+                , lpb.TenLoai AS TenPhongBan
+                , lcd.TenLoai AS TenChucDanh
                 , RoleName = (
                     SELECT TOP 1 RoleName FROM aspnet_Roles r
                     INNER JOIN aspnet_UsersInRoles mp ON mp.RoleId = r.RoleId 
@@ -40,8 +40,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                 FROM aspnet_Users f
                 INNER JOIN aspnet_Membership ms ON ms.UserId = f.UserId
                 LEFT JOIN aspnet_UsersInRoles r ON r.UserId = f.UserId 
-                LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-                LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+                LEFT JOIN TblLoai lpb ON lpb.IdLoai = f.IdPhongBan
+                LEFT JOIN TblLoai lcd ON lcd.IdLoai = f.IdChucDanh
                 WHERE f.IsDeleted = 0 
                 AND (@roleId = '{Guid.Empty}' OR @roleId = '' OR r.RoleId = @roleId)
                 AND (@singleKeyWord = N'%%'
@@ -103,8 +103,8 @@ namespace SweetSoft.QLDA.Core.Respositories
         SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
             SELECT f.*
             , ms.Email
-            , pb.TenPhongBan
-            , cd.TenChucDanh
+            , lpb.TenLoai AS TenPhongBan
+            , lcd.TenLoai AS TenChucDanh
             , RoleName = (
                 SELECT TOP 1 RoleName FROM aspnet_Roles r
                 INNER JOIN aspnet_UsersInRoles mp ON mp.RoleId = r.RoleId 
@@ -114,8 +114,8 @@ namespace SweetSoft.QLDA.Core.Respositories
             FROM aspnet_Users f
             INNER JOIN aspnet_Membership ms ON ms.UserId = f.UserId
             LEFT JOIN aspnet_UsersInRoles r ON r.UserId = f.UserId 
-            LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-            LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+            LEFT JOIN TblLoai lpb ON lpb.IdLoai = f.IdPhongBan
+            LEFT JOIN TblLoai lcd ON lcd.IdLoai = f.IdChucDanh
             WHERE f.IsDeleted = 0 
     
             AND (@isActivated IS NULL OR f.IsActivated = @isActivated)
@@ -192,8 +192,8 @@ namespace SweetSoft.QLDA.Core.Respositories
         SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* FROM (
             SELECT f.*
             , ms.Email
-            , pb.TenPhongBan
-            , cd.TenChucDanh
+            , lpb.TenLoai AS TenPhongBan
+            , lcd.TenLoai AS TenChucDanh
             , RoleName = (
                 SELECT TOP 1 RoleName FROM aspnet_Roles r
                 INNER JOIN aspnet_UsersInRoles mp ON mp.RoleId = r.RoleId 
@@ -203,8 +203,8 @@ namespace SweetSoft.QLDA.Core.Respositories
             FROM aspnet_Users f 
             INNER JOIN aspnet_Membership ms ON ms.UserId = f.UserId
             LEFT JOIN aspnet_UsersInRoles r ON r.UserId = f.UserId 
-            LEFT JOIN TblPhongBan pb ON pb.IdPhongBan = f.IdPhongBan
-            LEFT JOIN TblChucDanh cd ON cd.IdChucDanh = f.IdChucDanh
+            LEFT JOIN TblLoai lpb ON lpb.IdLoai = f.IdPhongBan
+            LEFT JOIN TblLoai lcd ON lcd.IdLoai = f.IdChucDanh
             WHERE f.IsDeleted = 0 
             
             AND (@userName = N'%%' OR f.UserName LIKE @userName)
@@ -409,12 +409,12 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             string sql = $@"
         SELECT f.*
-            , pb.TenPhongBan
-            , cd.TenChucDanh
+            , lpb.TenLoai AS TenPhongBan
+            , lcd.TenLoai AS TenChucDanh
             , m.Email
             FROM aspnet_Users f
-            LEFT JOIN TblPhongBan pb ON f.IdPhongBan = pb.IdPhongBan
-            LEFT JOIN TblChucDanh cd ON f.IdChucDanh = cd.IdChucDanh
+            LEFT JOIN TblLoai lpb ON f.IdPhongBan = lpb.IdLoai
+            LEFT JOIN TblLoai lcd ON f.IdChucDanh = lcd.IdLoai
             LEFT JOIN aspnet_Membership m ON f.UserId = m.UserId
             WHERE f.UserId = '{userId}' AND f.IsDeleted = 0";
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);

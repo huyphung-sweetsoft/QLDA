@@ -33,120 +33,12 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHang CtrlKhachHang;
 
         /// <summary>
-        /// dlDetail control.
+        /// CtrlKhachHangForm1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
-
-        /// <summary>
-        /// txtTenKhachHang control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenKhachHang;
-
-        /// <summary>
-        /// ddlLoaiKhachHang control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlLoaiKhachHang;
-
-        /// <summary>
-        /// txtIdSoThue control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtIdSoThue;
-
-        /// <summary>
-        /// txtSoDienThoai control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSoDienThoai;
-
-        /// <summary>
-        /// txtEmail control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtEmail;
-
-        /// <summary>
-        /// txtDiaChi control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtDiaChi;
-
-        /// <summary>
-        /// txtNguoiLienHe control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNguoiLienHe;
-
-        /// <summary>
-        /// txtEmailLienHe control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtEmailLienHe;
-
-        /// <summary>
-        /// txtSDTLienHe control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSDTLienHe;
-
-        /// <summary>
-        /// chkStatus control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkStatus;
-
-        /// <summary>
-        /// txtMoTa control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::CKEditor.NET.CKEditorControl txtMoTa;
-
-        /// <summary>
-        /// lbtSubmit control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHangForm CtrlKhachHangForm1;
     }
 }
