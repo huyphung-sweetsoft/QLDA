@@ -7,6 +7,23 @@
     padding: 15px;
 }
 
+/* Khung nền trắng bọc Dashboard, chỉ cao theo nội dung hiển thị. */
+.dashboard-page-shell {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: .5rem;
+    background: #fff;
+    border: 1px solid #e4e8ed;
+    border-radius: .375rem;
+    box-shadow: 0 1px 3px rgba(18, 38, 63, .08);
+}
+
+.dashboard-page-shell #dashboardContent,
+.dashboard-page-shell #dashboardContent > .container-fluid {
+    min-height: 0 !important;
+    height: auto !important;
+}
+
 .stat-card {
     background: linear-gradient(135deg, #4a1387 0%, #7b2cb8 100%);
     border-radius: 15px;

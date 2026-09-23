@@ -15,20 +15,16 @@
     ContentPlaceHolderID="cpMain"
     runat="server">
 
-    <div class="row">
-        <div class="col-xl-12">
-            <div class="card p-2 min-h-sreen">
-                <SweetSoft:Navigation
-                    runat="server"
-                    ID="Navigation1" />
+    <div class="dashboard-page-shell">
+        <SweetSoft:Navigation
+            runat="server"
+            ID="Navigation1" />
 
-                <SweetSoft:CtrlProjectTabs
-                    runat="server"
-                    ID="CtrlProjectTabs1" />
+        <SweetSoft:CtrlProjectTabs
+            runat="server"
+            ID="CtrlProjectTabs1" />
 
-                <div id="dashboardContent" runat="server">
-                </div>
-            </div>
+        <div id="dashboardContent" runat="server">
         </div>
     </div>
 
