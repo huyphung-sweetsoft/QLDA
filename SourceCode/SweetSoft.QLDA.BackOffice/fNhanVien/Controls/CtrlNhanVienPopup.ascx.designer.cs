@@ -7,290 +7,227 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
+namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
 {
 
 
-    public partial class CtrlChonNhanVienTask
+    public partial class CtrlNhanVienPopup
     {
 
         /// <summary>
-        /// mdlTaskMemberPicker control.
+        /// dlDetail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlTaskMemberPicker;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
 
         /// <summary>
-        /// upnlMemberPicker control.
+        /// fbImage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upnlMemberPicker;
+        protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbImage;
 
         /// <summary>
-        /// ltrTaskInfoNote control.
+        /// txtFullName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrTaskInfoNote;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtFullName;
 
         /// <summary>
-        /// upCountProj control.
+        /// txtNgaySinh control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upCountProj;
+        protected global::System.Web.UI.WebControls.TextBox txtNgaySinh;
 
         /// <summary>
-        /// ltrCountProj control.
+        /// ddlGioiTinh control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlGioiTinh;
 
         /// <summary>
-        /// upnlSearchProj control.
+        /// txtCCCD control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upnlSearchProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtCCCD;
 
         /// <summary>
-        /// pnlSearchProj control.
+        /// txtEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSearchProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtEmail;
 
         /// <summary>
-        /// ddlChucDanhProj control.
+        /// txtPhone control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlChucDanhProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtPhone;
 
         /// <summary>
-        /// txtSearchProj control.
+        /// txtDiaChi control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtDiaChi;
 
         /// <summary>
-        /// lbtSearchProj control.
+        /// ddlPhongBan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlPhongBan;
 
         /// <summary>
-        /// upSearchTagProj control.
+        /// ddlChucDanh control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upSearchTagProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlChucDanh;
 
         /// <summary>
-        /// searchTagBoxProj control.
+        /// txtNgayGiaNhap control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBoxProj;
+        protected global::System.Web.UI.WebControls.TextBox txtNgayGiaNhap;
 
         /// <summary>
-        /// upListProj control.
+        /// chkStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upListProj;
+        protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkStatus;
 
         /// <summary>
-        /// rptProjectMembers control.
+        /// divToggleAccount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptProjectMembers;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divToggleAccount;
 
         /// <summary>
-        /// pnlNoDataProj control.
+        /// chkEnableAccount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoDataProj;
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox chkEnableAccount;
 
         /// <summary>
-        /// ltrNoDataProj control.
+        /// boxAccountInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrNoDataProj;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl boxAccountInfo;
 
         /// <summary>
-        /// upCountCompany control.
+        /// txtUserName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upCountCompany;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtUserName;
 
         /// <summary>
-        /// ltrCountCompany control.
+        /// ddlRole control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountCompany;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlRole;
 
         /// <summary>
-        /// upnlSearchCompany control.
+        /// divChangePassword control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upnlSearchCompany;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divChangePassword;
 
         /// <summary>
-        /// pnlSearchCompany control.
+        /// chkChangePassword control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSearchCompany;
+        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox chkChangePassword;
 
         /// <summary>
-        /// ddlChucDanhCompany control.
+        /// divPassword control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlChucDanhCompany;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divPassword;
 
         /// <summary>
-        /// txtSearchCompany control.
+        /// txtPassword control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchCompany;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtPassword;
 
         /// <summary>
-        /// lbtSearchCompany control.
+        /// txtConfirmPassword control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchCompany;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtConfirmPassword;
 
         /// <summary>
-        /// upSearchTagCompany control.
+        /// lbtSubmit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upSearchTagCompany;
-
-        /// <summary>
-        /// searchTagBoxCompany control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBoxCompany;
-
-        /// <summary>
-        /// upListCompany control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upListCompany;
-
-        /// <summary>
-        /// rptCompanyMembers control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCompanyMembers;
-
-        /// <summary>
-        /// pnlNoDataCompany control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoDataCompany;
-
-        /// <summary>
-        /// ltrNoDataCompany control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrNoDataCompany;
-
-        /// <summary>
-        /// upnlTaskMemberFooter control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upnlTaskMemberFooter;
-
-        /// <summary>
-        /// btnConfirmTaskAssign control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton btnConfirmTaskAssign;
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
     }
 }
