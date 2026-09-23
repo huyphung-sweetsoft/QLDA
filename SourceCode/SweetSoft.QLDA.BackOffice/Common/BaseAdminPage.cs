@@ -481,6 +481,22 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             Title = !string.IsNullOrEmpty(pageTitle) ? pageTitle + " | " + _settingManager.GetSettingValue($"{SettingKeys.TitleOfWebsite}_{SweetContext.Current.CurrentLanguageCode}") : _settingManager.GetSettingValue($"{SettingKeys.TitleOfWebsite}_{SweetContext.Current.CurrentLanguageCode}");
         }
+        public bool IsPM
+        {
+            get
+            {
+                try
+                {
+                    Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.CurrentProjectId);
+
+                    return pmId.HasValue && pmId.Value == SweetContext.Current.UserId;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
         public bool IsView
         {
             get
@@ -705,7 +721,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             return Server.HtmlDecode(UITextsReader.GetBackEndResourceText(new CultureInfo(SweetContext.Current.CurrentLanguageCode), messageId));
             //return LanguageHelpers.GetResourceText(SweetContext.Current.CurrentLanguageCode, messageId);
         }
-
+         
         /// <param name="scriptName"></param>
         /// <param name="param"></param>
         public void RunScript(string scriptName, string param)
@@ -1325,7 +1341,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     return true;
                 return PromptControdClientIDs.Count == 0 && PromptErrorMessages.Count == 0;
             }
-        }
+        } 
 
         public void CheckValidControls(ControlCollection controls)
         {

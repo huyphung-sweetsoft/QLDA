@@ -272,13 +272,13 @@ namespace SweetSoft.QLDA.Core.Managers
                     IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
                 });
 
-                //ThongBaoManager.Instance.Create(
-                //    userId: id,
-                //    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
-                //    noiDung: $"Dự án: {tenDuAn}",
-                //    loaiThongBao: ThongBaoTypes.DuAn,
-                //    idDuAn: idDuAn
-                //);
+                ThongBaoManager.Instance.Create(
+                    userId: id,
+                    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                    noiDung: $"Dự án: {tenDuAn}",
+                    loaiThongBao: ThongBaoTypes.DuAn,
+                    idDuAn: idDuAn
+                );
             }
         }
         //2. GetMemberIds: Dùng lấy đống idNhanVien đã có trong dự án để đánh tích cái checkbox, dùng để hiển thị trong edit

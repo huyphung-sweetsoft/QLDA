@@ -474,6 +474,71 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 dropdown.Items.Add(new ListItem(i.ToString(), i.ToString()));
             dropdown.SelectedValue = DateTime.UtcNow.Year.ToString();
         }
+        // 1. Dành cho BootstrapDropdown (chuẩn đang dùng)
+        public void BindDynamicYears(BootstrapDropdown dropdown, string tableName, string dateColumn, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các năm --", "");
+            }
+
+            // Truy vấn động moi các năm đang có thực tế trong Database
+            string sql = $"SELECT DISTINCT YEAR({dateColumn}) AS Nam FROM {tableName} WHERE {dateColumn} IS NOT NULL ORDER BY Nam DESC";
+
+            using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["Nam"] != DBNull.Value)
+                        {
+                            string year = reader["Nam"].ToString();
+                            dropdown.AddItem(year, year);
+                        }
+                    }
+                    reader.Close();
+                }
+            }
+            dropdown.ClearSelection();
+        }
+
+        // 2. Cung cấp luôn 1 bản cho ExtraDropdown để dùng khi cần
+        public void BindDynamicYears(ExtraDropdown dropdown, string tableName, string dateColumn, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.PlaceHolder = string.Empty;
+                dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các năm --";
+                dropdown.EmptyItemValue = "";
+            }
+
+            string sql = $"SELECT DISTINCT YEAR({dateColumn}) AS Nam FROM {tableName} WHERE {dateColumn} IS NOT NULL ORDER BY Nam DESC";
+
+            using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["Nam"] != DBNull.Value)
+                        {
+                            string year = reader["Nam"].ToString();
+                            dropdown.Items.Add(new ListItem(year, year));
+                        }
+                    }
+                    reader.Close();
+                }
+            }
+            dropdown.SelectedIndex = -1;
+        }
         public void BindStatus(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();
@@ -493,8 +558,8 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
-            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ACTIVE), "1");
-            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.INACTIVE), "0");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN_ALLOWED), "1");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN_NOT_ALLOWED), "0");
             dropdown.SelectedIndex = -1;
         }
         public void BindLaNhanVien(ExtraDropdown dropdown, bool isAll = false)

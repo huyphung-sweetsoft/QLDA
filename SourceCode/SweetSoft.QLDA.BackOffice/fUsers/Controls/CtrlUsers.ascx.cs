@@ -93,9 +93,8 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             txtSearchEmail.SearchTagItemText = "Email";
             txtSearchPhone.SearchTagItemText = GetResourceText(BackEndResourceKeys.PHONE_NUMBER);
             txtSearchCreatedDate.SearchTagItemText = GetResourceText(BackEndResourceKeys.CREATED_DATE);
-            ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
+            ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.ALLOW_LOGIN);
             ddlSearchRole.SearchTagItemText = GetResourceText(BackEndResourceKeys.USER_GROUP);
-            ddlSearchLaNhanVien.SearchTagItemText = GetResourceText(BackEndResourceKeys.ACCOUNT_TYPE);
             //------------------------------------------------
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);//tooltip: là cái chú thích nhỏ hiện ra khi mình hover vào cái nút, dùng kĩ thuật gán liên hoàn để gán cái chú thích này chung nội dung vs cái text hiển thị trong nút
             lbtCancel.ToolTip = lbtCancel.Text = GetResourceText(BackEndResourceKeys.REFRESH);
@@ -116,7 +115,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 "Email",
                 GetResourceText(BackEndResourceKeys.PHONE_NUMBER),
                 GetResourceText(BackEndResourceKeys.USER_GROUP),
-                GetResourceText(BackEndResourceKeys.STATUS),
+                GetResourceText(BackEndResourceKeys.ALLOW_LOGIN),
                 "2FA",
                 GetResourceText(BackEndResourceKeys.LAST_LOGIN_DATE),
                 GetResourceText(BackEndResourceKeys.ACTION),
@@ -136,7 +135,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             ControlHelpers controlHelpers = new ControlHelpers();
             controlHelpers.BindStatus(ddlSearchStatus);
             controlHelpers.BindRoles(ddlSearchRole);
-            controlHelpers.BindLaNhanVien(ddlSearchLaNhanVien);
             if (this.RoleId != Guid.Empty)
                 ddlSearchRole.SelectedValue = this.RoleId.ToString();
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
@@ -162,7 +160,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             txtSearchPhone.SearchColumn = AspnetUser.Columns.MobileAlias;
             ddlSearchStatus.SearchColumn = AspnetUser.Columns.IsActivated;
             ddlSearchRole.SearchColumn = AspnetRole.Columns.RoleId;
-            ddlSearchLaNhanVien.SearchColumn = AspnetUser.Columns.LaNhanVien;
             txtSearchCreatedDate.SearchColumn = AspnetUser.Columns.LastActivityDate;
             ddlSearchRole.Enabled = this.RoleId == Guid.Empty;
         }
@@ -200,7 +197,12 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                         else
                             keyValueSearchs["RoleId"] = this.RoleId;
                     }
-                    dt = UserManager.Instance.SearchUsers(txtSearchSingle.Text, keyValueSearchs, $"LaNhanVien DESC, {grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    // Ép cứng điều kiện chỉ lấy tài khoản hệ thống
+                    if (!keyValueSearchs.ContainsKey("LaNhanVien"))
+                        keyValueSearchs.Add("LaNhanVien", false);
+                    else
+                        keyValueSearchs["LaNhanVien"] = false;
+                    dt = UserManager.Instance.SearchUsers(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }    
                 else
                 {
@@ -219,7 +221,12 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                         else
                             keyValueSearchs["RoleId"] = this.RoleId;
                     }
-                    dt = UserManager.Instance.SearchUsers(keyValueSearchs, $"LaNhanVien DESC, {grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                    // Ép cứng điều kiện chỉ lấy tài khoản hệ thống
+                    if (!keyValueSearchs.ContainsKey("LaNhanVien"))
+                        keyValueSearchs.Add("LaNhanVien", false);
+                    else
+                        keyValueSearchs["LaNhanVien"] = false;
+                    dt = UserManager.Instance.SearchUsers(keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 }
                 if (dt == null || dt.Rows.Count == 0)//Kiểm tra xem cái bảng dt vừa lấy từ database có data hay ko, nếu ko thig ẩn phân trang, ẩn nút export dữ liệu,.,...
                 {
@@ -446,8 +453,14 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
                 upnlSearchDefault.Update();
                 pnlSearch.Update();
-                string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
-                ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+
+                // Ô keyword nằm ngoài UpdatePanel nên chỉ cần xóa phía client khi ĐÚNG tag keyword bị đóng
+                // (cùng điều kiện mà MasterTemplate dùng để xóa txtSearchSingle.Text ở server)
+                if (tag != null && tag.Key == txtSearchSingle.ClientID)
+                {
+                    string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
+                    ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+                }
             }
             catch (Exception exc)
             {
@@ -481,7 +494,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     else
                         keyValueSearchs["RoleId"] = this.RoleId;
                 }
-                dt = UserManager.Instance.SearchUsers(txtSearchSingle.Text, keyValueSearchs, $"LaNhanVien DESC, {grvData.CurrentSortExpression} {grvData.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                dt = UserManager.Instance.SearchUsers(txtSearchSingle.Text, keyValueSearchs, $"{grvData.CurrentSortExpression} {grvData.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
             }
             else
             {
@@ -532,7 +545,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     "Địa chỉ email",
                     GetResourceText(BackEndResourceKeys.PHONE_NUMBER),
                     GetResourceText(BackEndResourceKeys.USER_GROUP),
-                    GetResourceText(BackEndResourceKeys.STATUS),
+                    GetResourceText(BackEndResourceKeys.ALLOW_LOGIN),
                     GetResourceText(BackEndResourceKeys.CREATED_DATE)
                 },
                 ShowColumns = new HashSet<string>()//Chỉ chính xác cột vật lý trong CSDL sẽ được truy xuất
@@ -552,10 +565,10 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                         ColumnName = "IsActivated",
                         ValueMappings = new Dictionary<string, string>
                         {
-                            { "True", GetResourceText(BackEndResourceKeys.ACTIVE) },
-                            { "False", GetResourceText(BackEndResourceKeys.INACTIVE)},
+                            { "True", GetResourceText(BackEndResourceKeys.LOGIN_ALLOWED) },
+                            { "False", GetResourceText(BackEndResourceKeys.LOGIN_NOT_ALLOWED)},
                         },
-                        DefaultText = GetResourceText(BackEndResourceKeys.ACTIVE)
+                        DefaultText = GetResourceText(BackEndResourceKeys.LOGIN_ALLOWED)
                     },
                 }
             };

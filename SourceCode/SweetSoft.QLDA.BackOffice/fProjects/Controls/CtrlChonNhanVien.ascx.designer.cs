@@ -24,6 +24,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraModal mdlMemberPicker;
 
         /// <summary>
+        /// upnlMemberPicker control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlMemberPicker;
+
+        /// <summary>
         /// ltrInfoNote control.
         /// </summary>
         /// <remarks>
@@ -31,6 +40,78 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal ltrInfoNote;
+
+        /// <summary>
+        /// upnlSearchDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlSearchDefault;
+
+        /// <summary>
+        /// pnlSearchDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlSearchDefault;
+
+        /// <summary>
+        /// ddlSearchChucDanh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchChucDanh;
+
+        /// <summary>
+        /// txtSearchSingle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchSingle;
+
+        /// <summary>
+        /// lbtSearchSingle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchSingle;
+
+        /// <summary>
+        /// upSearchTagBox control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upSearchTagBox;
+
+        /// <summary>
+        /// searchTagBox control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBox;
+
+        /// <summary>
+        /// upMemberList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upMemberList;
 
         /// <summary>
         /// ltrCountCompany control.
@@ -49,6 +130,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptCompanyMembers;
+
+        /// <summary>
+        /// pnlNoData control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoData;
+
+        /// <summary>
+        /// ltrNoData control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrNoData;
 
         /// <summary>
         /// btnConfirm control.
