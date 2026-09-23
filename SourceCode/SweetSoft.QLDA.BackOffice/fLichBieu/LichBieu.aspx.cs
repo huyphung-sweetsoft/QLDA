@@ -274,7 +274,7 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
 
                 // 2. SAU KHI LỊCH TUẦN ĐÃ LƯU XONG: Làm mới Cache và Sync Task đúng 1 lần duy nhất
                 LichBieuChungManager.Instance.ForceRefreshCache();
-                TaskManager.Instance.SyncPendingTasksAfterScheduleChange(DateTime.Today);
+                //TaskManager.Instance.SyncPendingTasksAfterScheduleChange(DateTime.Today);
 
                 ShowSuccessSaveData();
                 BindData();

@@ -1063,9 +1063,6 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
   </data>
-  <data name="CONTRACT_LIST" xml:space="preserve">
-    <value>Danh sách hợp đồng</value>
-  </data>
   <data name="CONTRACT_DOCUMENT" xml:space="preserve">
     <value>Hồ sơ hợp đồng</value>
   </data>
@@ -2854,6 +2851,9 @@
   <data name="TASK_HAS_NO_ASSIGNEE" xml:space="preserve">
     <value>Cập nhật câu hỏi phần thi Về đích</value>
   </data>
+  <data name="CONTRACT_LIST" xml:space="preserve">
+    <value>Danh sách hợp đồng</value>
+  </data>
   <data name="TIME_PERIOD" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
@@ -2910,6 +2910,21 @@
   </data>
   <data name="PAYMENT" xml:space="preserve">
     <value>Thanh toán</value>
+  </data>
+  <data name="ALLOW_LOGIN" xml:space="preserve">
+    <value>Cho phép đăng nhập</value>
+  </data>
+  <data name="LOGIN_ALLOWED" xml:space="preserve">
+    <value>Cho phép </value>
+  </data>
+  <data name="LOGIN_NOT_ALLOWED" xml:space="preserve">
+    <value>Không cho phép</value>
+  </data>
+  <data name="WORKING_STATUS" xml:space="preserve">
+    <value>Tình trạng công tác</value>
+  </data>
+  <data name="RESIGNED" xml:space="preserve">
+    <value>Nghỉ việc</value>
   </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
@@ -3069,5 +3084,8 @@
   </data>
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
+  </data>
+  <data name="ERROR_OCCURED" xml:space="preserve">
+    <value>Có lỗi xảy ra </value>
   </data>
 </root>

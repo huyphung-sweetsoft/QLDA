@@ -7,38 +7,29 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fUsers
+namespace SweetSoft.QLDA.BackOffice
 {
 
 
-    public partial class UserList
+    public partial class Default
     {
 
         /// <summary>
-        /// Navigation1 control.
+        /// ltrContent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::System.Web.UI.WebControls.Literal ltrContent;
 
         /// <summary>
-        /// CtrlUsers1 control.
+        /// ctrlDashboard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUsers CtrlUsers1;
-
-        /// <summary>
-        /// CtrlUserPopup1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUserPopup CtrlUserPopup1;
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlDashboard ctrlDashboard;
     }
 }

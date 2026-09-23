@@ -480,6 +480,13 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fNhanVien\LichCaNhan.aspx.cs">
       <DependentUpon>LichCaNhan.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -620,6 +627,13 @@
     <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.designer.cs">
       <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.designer.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -640,13 +654,6 @@
     </Compile>
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.cs">
-      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.designer.cs">
-      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -761,6 +768,7 @@
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
+    <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\LichCaNhan.aspx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
@@ -771,8 +779,8 @@
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
-    <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
+    <Content Include="fUsers\Controls\CtrlUserPopup.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="fProjectReports\ProjectReport.aspx" />
