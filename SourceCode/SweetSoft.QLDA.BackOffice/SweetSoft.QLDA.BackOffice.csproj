@@ -482,7 +482,6 @@
     </Compile>
     <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
       <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
       <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
