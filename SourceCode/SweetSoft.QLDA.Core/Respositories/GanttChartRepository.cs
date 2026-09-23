@@ -23,6 +23,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     c.TenCongViec,
                     c.NgayBatDau,
                     c.NgayKetThuc,
+                    c.NgayHoanThanhThucTe,
                     c.TrangThai,
                     CAST(CASE WHEN c.NgayKetThuc < CAST(GETDATE() AS DATE) AND ISNULL(c.TrangThai, 0) <> 2 THEN 1 ELSE 0 END AS BIT) AS IsOverdue,
                     STUFF((

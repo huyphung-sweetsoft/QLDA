@@ -51,15 +51,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchRole;
 
         /// <summary>
-        /// ddlSearchLaNhanVien control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchLaNhanVien;
-
-        /// <summary>
         /// txtSearchSingle control.
         /// </summary>
         /// <remarks>

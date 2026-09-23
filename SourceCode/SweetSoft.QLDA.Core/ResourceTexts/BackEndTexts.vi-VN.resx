@@ -298,7 +298,7 @@
     <value>Tải xuống ứng dụng xác thực</value>
   </data>
   <data name="EDIT" xml:space="preserve">
-    <value>Sửa</value>
+    <value>Chỉnh sửa</value>
   </data>
   <data name="EMAIL_ALREADY_EXISTS" xml:space="preserve">
     <value>Email đã tồn tại</value>
@@ -1062,9 +1062,6 @@
   </data>
   <data name="CONTRACT" xml:space="preserve">
     <value>Hợp đồng</value>
-  </data>
-  <data name="CONTRACT_LIST" xml:space="preserve">
-    <value>Danh sách hợp đồng</value>
   </data>
   <data name="CONTRACT_DOCUMENT" xml:space="preserve">
     <value>Hồ sơ hợp đồng</value>
@@ -2854,6 +2851,9 @@
   <data name="TASK_HAS_NO_ASSIGNEE" xml:space="preserve">
     <value>Cập nhật câu hỏi phần thi Về đích</value>
   </data>
+  <data name="CONTRACT_LIST" xml:space="preserve">
+    <value>Danh sách hợp đồng</value>
+  </data>
   <data name="TIME_PERIOD" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
@@ -2873,7 +2873,7 @@
     <value>Vấn đề phát sinh</value>
   </data>
   <data name="COMPLETED_TASKS_SUMMARY" xml:space="preserve">
-    <value>Tổng hợp Task đã hoàn thành</value>
+    <value>DANH SÁCH CÔNG VIỆC ĐÃ HOÀN THÀNH</value>
   </data>
   <data name="COMPLETION_DATE" xml:space="preserve">
     <value>Ngày hoàn thành</value>
@@ -2904,6 +2904,27 @@
   </data>
   <data name="FROM_TO_FORMAT" xml:space="preserve">
     <value>Từ {0} đến {1}</value>
+  </data>
+  <data name="COST" xml:space="preserve">
+    <value>Chi phí</value>
+  </data>
+  <data name="PAYMENT" xml:space="preserve">
+    <value>Thanh toán</value>
+  </data>
+  <data name="ALLOW_LOGIN" xml:space="preserve">
+    <value>Cho phép đăng nhập</value>
+  </data>
+  <data name="LOGIN_ALLOWED" xml:space="preserve">
+    <value>Cho phép </value>
+  </data>
+  <data name="LOGIN_NOT_ALLOWED" xml:space="preserve">
+    <value>Không cho phép</value>
+  </data>
+  <data name="WORKING_STATUS" xml:space="preserve">
+    <value>Tình trạng công tác</value>
+  </data>
+  <data name="RESIGNED" xml:space="preserve">
+    <value>Nghỉ việc</value>
   </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
@@ -3064,10 +3085,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
-  <data name="COST" xml:space="preserve">
-    <value>Chi phí</value>
-  </data>
-  <data name="PAYMENT" xml:space="preserve">
-    <value>Thanh toán</value>
+  <data name="ERROR_OCCURED" xml:space="preserve">
+    <value>Có lỗi xảy ra </value>
   </data>
 </root>

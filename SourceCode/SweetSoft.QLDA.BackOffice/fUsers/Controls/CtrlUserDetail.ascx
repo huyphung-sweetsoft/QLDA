@@ -143,7 +143,7 @@
                 <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true"
                     OnClientClick="return CheckPreSubmitValid();" OnClick="lbtSubmit_Click">Lưu thông tin</SweetSoft:ExtraButton>
             </ContentTemplate>
-        </asp:UpdatePanel>
+        </asp:UpdatePanel>  
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 

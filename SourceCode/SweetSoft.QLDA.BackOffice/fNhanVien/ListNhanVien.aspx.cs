@@ -23,7 +23,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             CtrlNhanViens1.EditNhanVienHandlerCallback += EditNhanVienAction;
 
             // Hứng tín hiệu lưu thành công từ Popup để báo lưới tải lại
-            CtrlUserDetail1.SavedHandlerCallback += (s, ev) => { CtrlNhanViens1.Rebind(); };
+            CtrlNhanVienPopup1.SavedHandlerCallback += (s, ev) => { CtrlNhanViens1.Rebind(); };
 
             if (!IsPostBack)
             {
@@ -42,11 +42,8 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 }
 
                 // ÉP CHẾ ĐỘ: NHÂN SỰ (Nó sẽ tự động mở thêm Khối C)
-                CtrlUserDetail1.CurrentMode = UserPopupMode.Employee;
-                CtrlUserDetail1.InitControls();
-
+                CtrlNhanVienPopup1.InitControls();
                 CtrlNhanViens1.InitControls();
-
                 string idQuery = CommonHelpers.QueryString("id");
                 if (!string.IsNullOrEmpty(idQuery))
                 {
@@ -62,7 +59,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         private void NewNhanVienAction(object sender, EventArgs e)
         {
             // Ủy quyền hoàn toàn cho Control con tự reset UI và mở Popup
-            CtrlUserDetail1.AddNew();
+            CtrlNhanVienPopup1.AddNew();
         }
 
         private void EditNhanVienAction(object sender, EventArgs e)
@@ -72,7 +69,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             if (userId == Guid.Empty) { ShowInvalidDataError(); return; }
 
             // Truyền ID sang Control con để tự gọi DB và fill dữ liệu
-            CtrlUserDetail1.Edit(userId);
+            CtrlNhanVienPopup1.Edit(userId);
         }
         #endregion
 

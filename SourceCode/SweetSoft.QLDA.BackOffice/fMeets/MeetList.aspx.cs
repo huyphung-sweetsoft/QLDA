@@ -35,8 +35,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
             CtrlMeet1.OpenMeetingDocumentHandlerCallback += OpenMeetingDocumentAction;
 
-            // Xóa BindNhanVienToCheckBoxList cũ ở đây vì đã bind ngầm vào rptNhanVien khi bấm nút
-
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -64,7 +62,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         {
             ddlTrangThai.PlaceHolder = "--";
             dlDetail.CloseText = GetResourceText(BackEndResourceKeys.CLOSE);
-
+            btnXacNhanNhanVien.Text=GetResourceText(BackEndResourceKeys.CONFIRM);
             txtThoiGianKetThuc.PlaceHolder = "--";
 
             txtTenCuocHop.PlaceHolder = txtNoiDungCuocHop.PlaceHolder = txtThoiGianBatDau.PlaceHolder =

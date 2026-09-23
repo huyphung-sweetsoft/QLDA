@@ -493,8 +493,8 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
-            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ACTIVE), "1");
-            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.INACTIVE), "0");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN_ALLOWED), "1");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN_NOT_ALLOWED), "0");
             dropdown.SelectedIndex = -1;
         }
         public void BindLaNhanVien(ExtraDropdown dropdown, bool isAll = false)
