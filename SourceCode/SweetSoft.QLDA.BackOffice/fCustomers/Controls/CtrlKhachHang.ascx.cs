@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
@@ -88,7 +88,12 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers.Controls
             AssignSearchColumns();
 
             ControlHelpers controlHelpers = new ControlHelpers();
-            controlHelpers.BindStatus(ddlSearchStatus);
+            ddlSearchStatus.Items.Clear();
+            ddlSearchStatus.DefaultSearchValue = "null";
+            ddlSearchStatus.AddItem("Đang hợp tác", "1");
+            ddlSearchStatus.AddItem("Ngừng hợp tác", "0");
+            ddlSearchStatus.SelectedIndex = -1;
+            
             controlHelpers.BindLoaiKhachHang(ddlSearchCustomerType);
 
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;

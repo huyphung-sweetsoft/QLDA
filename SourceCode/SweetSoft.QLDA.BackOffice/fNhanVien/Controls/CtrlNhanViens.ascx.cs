@@ -309,13 +309,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
             if (NewNhanVienHandlerCallback != null) NewNhanVienHandlerCallback(Guid.Empty, EventArgs.Empty);
         }
 
-        protected void btnSearch_ServerClick(object sender, EventArgs e)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
-            upSearchTagBox.Update();
-        }
-
         protected void btnSearchAdvanced_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
@@ -338,16 +331,47 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
             {
                 MasterTemplate master = Page.Master as MasterTemplate;
                 GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+
+                // BẮT CHƯỚC NGUYÊN LÝ CTRLDUAN: Phân nhánh xử lý chuẩn xác
+                if (grvData.GridSearchType == GridSearchType.Single)
+                {
+                    // Nếu đang là Single Search -> Gọi hàm 5 tham số để Master giữ lại Tag Keyword
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, grvData, txtSearchSingle, out searchType);
+                }
+                else
+                {
+                    // Nếu đang là Advanced Search -> Gọi hàm 6 tham số
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                    pnlSearch.Update();
+                }
+
+                // Cập nhật giao diện
                 upnlSearchDefault.Update();
-                pnlSearch.Update();
-                string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
-                ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+                upSearchTagBox.Update();
+
+                // Chỉ xóa chữ ở ô input Keyword nếu chính cái Tag Keyword đó bị bấm tắt
+                if (tag != null && tag.Key == txtSearchSingle.ClientID)
+                {
+                    string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
+                    ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+                }
             }
             catch (Exception exc)
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
+        }
+
+        protected void btnSearch_ServerClick(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+
+            // Đã bổ sung pnlSearchDefault y hệt như CtrlDuAn
+            // Giúp giữ lại các tag Phòng Ban/Chức Danh khi gõ tìm kiếm bằng Keyword
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
+
+            upSearchTagBox.Update();
+            upnlSearchDefault.Update(); // Bổ sung UpdatePanel này cho đồng bộ
         }
 
         protected void btnExport_Click(object sender, EventArgs e)

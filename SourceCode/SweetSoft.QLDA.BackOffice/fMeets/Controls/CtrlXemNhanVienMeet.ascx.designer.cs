@@ -7,92 +7,83 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
+namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 {
 
 
-    public partial class CtrlChonNhanVien
+    public partial class CtrlXemNhanVienMeet
     {
 
         /// <summary>
-        /// mdlMemberPicker control.
+        /// mdlViewMeetMember control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlMemberPicker;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlViewMeetMember;
 
         /// <summary>
-        /// ltrInfoNote control.
+        /// ltrTenCuocHop control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrInfoNote;
+        protected global::System.Web.UI.WebControls.Literal ltrTenCuocHop;
 
         /// <summary>
-        /// accGroupProject control.
+        /// ltrMaCuocHop control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl accGroupProject;
+        protected global::System.Web.UI.WebControls.Literal ltrMaCuocHop;
 
         /// <summary>
-        /// ltrCountProj control.
+        /// ltrThoiGian control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountProj;
+        protected global::System.Web.UI.WebControls.Literal ltrThoiGian;
 
         /// <summary>
-        /// rptProjectMembers control.
+        /// ltrDiaDiem control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptProjectMembers;
+        protected global::System.Web.UI.WebControls.Literal ltrDiaDiem;
 
         /// <summary>
-        /// accGroupCompany control.
+        /// ltrTotalMember control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl accGroupCompany;
+        protected global::System.Web.UI.WebControls.Literal ltrTotalMember;
 
         /// <summary>
-        /// ltrCountCompany control.
+        /// rptAssignedMembers control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountCompany;
+        protected global::System.Web.UI.WebControls.Repeater rptAssignedMembers;
 
         /// <summary>
-        /// rptCompanyMembers control.
+        /// divEmpty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCompanyMembers;
-
-        /// <summary>
-        /// btnSave control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton btnSave;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divEmpty;
     }
 }

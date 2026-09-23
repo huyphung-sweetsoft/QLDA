@@ -132,6 +132,8 @@
     <Compile Include="TblLichSuDuAnController.cs" />
     <Compile Include="TblLichSuTaiLieu.cs" />
     <Compile Include="TblLichSuTaiLieuController.cs" />
+    <Compile Include="TblLoai.cs" />
+    <Compile Include="TblLoaiController.cs" />
     <Compile Include="TblLoaiDuAn.cs" />
     <Compile Include="TblLoaiDuAnController.cs" />
     <Compile Include="TblLoaiKhachHang.cs" />

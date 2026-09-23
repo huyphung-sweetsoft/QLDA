@@ -83,6 +83,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             CtrlGiaiDoanDuAn1.IdDuAn = QueryId;
             CtrlLichSuDuAn1.IdDuAn = QueryId;
             pnlContract.Visible = this.IsContractView;
+            CtrlDuAnForm1.SaveCompleted += CtrlDuAnForm1_SaveCompleted;
             if (_auditManager == null)
                 _auditManager = new AuditManager(new Core.SysManager.Models.ClientInfo()
                 {
@@ -226,9 +227,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             txtContractDescription.Text = hopDong.MoTa;
         }
 
-
-        
-
         protected void lbtOpenContractDocument_Click(object sender, EventArgs e)
         {
             if (!IsContractView)
@@ -267,6 +265,19 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             {
                 ShowNotify(exception.Message, MSGType.Error);
             }
+        }
+
+        protected void lbtEditProject_Click(object sender, EventArgs e)
+        {
+            Guid idDuAn = this.QueryId;
+
+            if (idDuAn == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            CtrlDuAnForm1.OpenEdit(idDuAn);
         }
         private string BuildHistoryContent(DataRow row)
         {
@@ -573,6 +584,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             byte trangThai = Convert.ToByte(row["TrangThai"]);
             lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), (DuAnStatus)trangThai));
+            lblTrangThaiHead.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), (DuAnStatus)trangThai));
             CurrentStatusValue = trangThai;
             DuAnStatus statusEnum = (DuAnStatus)trangThai;
             ltrCurrentStatusName.Text = EnumHelpers.GetERenderText(typeof(DuAnStatus), statusEnum);
@@ -779,6 +791,12 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 case DuAnStatus.KetThuc: return "text-dark";
                 default: return "text-primary";
             }
+        }
+
+        private void CtrlDuAnForm1_SaveCompleted(object sender, EventArgs e)
+        {
+            BindData();
+            upProjectDetail.Update();
         }
     }
 }

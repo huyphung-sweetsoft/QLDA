@@ -41,7 +41,7 @@
                 }
     </style>
 </asp:Content>
-<asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
+<asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server"> 
     <asp:UpdatePanel runat="server" ID="pnlValid" UpdateMode="Conditional">
         <ContentTemplate>
             <div class="text-center">

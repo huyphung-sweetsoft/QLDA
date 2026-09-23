@@ -2,7 +2,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fNhanVien/Controls/CtrlNhanViens.ascx" TagPrefix="SweetSoft" TagName="CtrlNhanViens" %>
-<%@ Register Src="~/fUsers/Controls/CtrlUserDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlUserDetail" %>
+<%@ Register Src="~/fNhanVien/Controls/CtrlNhanVienPopup.ascx" TagPrefix="SweetSoft" TagName="CtrlNhanVienPopup" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
@@ -20,7 +20,7 @@
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <!-- Toàn bộ popup đã được thu bé lại bằng 1 dòng này -->
-    <SweetSoft:CtrlUserDetail runat="server" ID="CtrlUserDetail1" />
+   <SweetSoft:CtrlNhanVienPopup runat="server" ID="CtrlNhanVienPopup1" />
 </asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">

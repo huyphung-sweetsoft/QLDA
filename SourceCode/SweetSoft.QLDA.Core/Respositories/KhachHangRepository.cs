@@ -30,11 +30,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                 select * from(
                     select ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.* from(
                         select kh.*,
-                        lkh.TenLoaiKhachHang,
+                        l.TenLoai AS TenLoaiKhachHang,
                         ISNULL(d.SoLuongDuAn,0) AS SoLuongDuAn,
                         COUNT(1) OVER() AS total_records
                         from TblKhachHang as kh
-                        left join TblLoaiKhachHang lkh on lkh.IdLoaiKhachHang = kh.IdLoaiKhachHang
+                        left join TblLoai l on l.IdLoai = kh.IdLoaiKhachHang
                         left join (select 
                                     IdKhachHang,
                                     COUNT(1) AS SoluongDuAn
@@ -116,9 +116,9 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DECLARE @idKhachHang UNIQUEIDENTIFIER = '{InlineQueryHelpers.SQLEncode(id)}';
                 select TOP 1
                     kh.*,
-                    kht.TenLoaiKhachHang
+                    l.TenLoai AS TenLoaiKhachHang
                 from TblKhachHang kh
-                left join TblLoaiKhachHang kht on kht.IdLoaiKhachHang = kh.IdLoaiKhachHang
+                left join TblLoai l on l.IdLoai = kh.IdLoaiKhachHang
                 where kh.IdKhachHang = @idKhachHang
                 and kh.DaXoa = 0;";
             IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);

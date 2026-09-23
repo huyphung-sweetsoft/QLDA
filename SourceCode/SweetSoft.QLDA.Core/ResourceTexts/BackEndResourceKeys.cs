@@ -45,6 +45,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         // These values mirror aspnet_Functions.FunctionName so the common
         // menu renderer can resolve dashboard labels without special mapping.
         public const string DASHBOARD = "Dashboard";
+        public const string COST = "COST";
+        public const string PAYMENT = "PAYMENT";
         public const string CONFIRM_PASSWORD = "CONFIRM_PASSWORD";
         public const string DELETE = "DELETE";
         public const string DISPLAY_NAME = "DISPLAY_NAME";
@@ -409,6 +411,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SCHEDULE_OF_USER = "SCHEDULE_OF_USER";
         public const string MY_PERSONAL_SCHEDULE = "MY_PERSONAL_SCHEDULE";
         public const string EMPLOYEE_SCHEDULE = "EMPLOYEE_SCHEDULE";
+        public const string ERROR_OCCURED = "ERROR_OCCURED";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
@@ -493,6 +496,11 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string INVALID_START_DATE_LIMIT = "INVALID_START_DATE_LIMIT";
         public const string TASK_DURATION_MUST_BE_POSITIVE = "TASK_DURATION_MUST_BE_POSITIVE";
         public const string TASK_HAS_NO_ASSIGNEE = "TASK_HAS_NO_ASSIGNEE";
+        public const string ALLOW_LOGIN = "ALLOW_LOGIN";
+        public const string LOGIN_ALLOWED = "LOGIN_ALLOWED";
+        public const string LOGIN_NOT_ALLOWED = "LOGIN_NOT_ALLOWED";
+        public const string WORKING_STATUS = "WORKING_STATUS";
+        public const string RESIGNED = "RESIGNED";
         //Risk
         public const string RISK_LIST = "RISK_LIST";
         public const string RISK_CODE = "RISK_CODE";

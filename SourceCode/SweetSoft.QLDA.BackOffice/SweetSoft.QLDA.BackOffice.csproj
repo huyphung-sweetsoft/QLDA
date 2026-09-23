@@ -181,6 +181,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
     <Compile Include="fCosts\Controls\CtrlCost.ascx.cs">
       <DependentUpon>CtrlCost.ascx</DependentUpon>
@@ -202,6 +203,13 @@
     </Compile>
     <Compile Include="fCustomers\Controls\CtrlKhachHang.ascx.designer.cs">
       <DependentUpon>CtrlKhachHang.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fCustomers\Controls\CtrlKhachHangForm.ascx.cs">
+      <DependentUpon>CtrlKhachHangForm.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCustomers\Controls\CtrlKhachHangForm.ascx.designer.cs">
+      <DependentUpon>CtrlKhachHangForm.ascx</DependentUpon>
     </Compile>
     <Compile Include="fCustomers\KhachHangDetail.aspx.cs">
       <DependentUpon>KhachHangDetail.aspx</DependentUpon>
@@ -472,6 +480,13 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fNhanVien\LichCaNhan.aspx.cs">
       <DependentUpon>LichCaNhan.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -506,6 +521,13 @@
     </Compile>
     <Compile Include="fProjects\Controls\CtrlDuAn.ascx.designer.cs">
       <DependentUpon>CtrlDuAn.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAnForm.ascx.cs">
+      <DependentUpon>CtrlDuAnForm.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlDuAnForm.ascx.designer.cs">
+      <DependentUpon>CtrlDuAnForm.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\Controls\CtrlGiaiDoanDuAn.ascx.cs">
       <DependentUpon>CtrlGiaiDoanDuAn.ascx</DependentUpon>
@@ -605,6 +627,13 @@
     <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.designer.cs">
       <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.designer.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -625,13 +654,6 @@
     </Compile>
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.cs">
-      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlChonNhanVien.ascx.designer.cs">
-      <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -680,6 +702,7 @@
     <Content Include="Controls\AutoComplete\jquery-ui.min.js" />
     <Content Include="Controls\Breadcrumb\CtrlBreadcrumb.ascx" />
     <Content Include="Controls\Captcha.ascx" />
+    <Content Include="Controls\CtrlQuanLyLoai.ascx" />
     <Content Include="Controls\CtrlAutoCompleteUser.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboard.ascx" />
     <Content Include="Controls\Dashboard\CtrlDashboardCost.ascx" />
@@ -697,6 +720,7 @@
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
     <Content Include="fCosts\CostList.aspx" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
+    <Content Include="fCustomers\Controls\CtrlKhachHangForm.ascx" />
     <Content Include="fCustomers\KhachHangDetail.aspx" />
     <Content Include="fCustomers\KhachHangList.aspx" />
     <Content Include="fDocuments\Controls\CtrlDocumentDetail.ascx" />
@@ -744,16 +768,19 @@
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
+    <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\LichCaNhan.aspx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
-    <Content Include="fUsers\Controls\CtrlChonNhanVien.ascx" />
+    <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />
+    <Content Include="fUsers\Controls\CtrlUserPopup.ascx" />
     <Content Include="fUsers\NhanVienDetail.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="fProjectReports\ProjectReport.aspx" />
@@ -1921,7 +1948,6 @@
     <Compile Include="Common\MessageBox.cs" />
     <Compile Include="Common\RegisterCSSAndJS.cs" />
     <Compile Include="Common\RewriteURLHelper.cs" />
-    <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Controls\AutoComplete\CtrExtraAutoComplete.ascx.cs">
       <DependentUpon>CtrExtraAutoComplete.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1942,6 +1968,13 @@
     </Compile>
     <Compile Include="Controls\Captcha.ascx.designer.cs">
       <DependentUpon>Captcha.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CtrlQuanLyLoai.ascx.cs">
+      <DependentUpon>CtrlQuanLyLoai.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\CtrlQuanLyLoai.ascx.designer.cs">
+      <DependentUpon>CtrlQuanLyLoai.ascx</DependentUpon>
     </Compile>
     <Compile Include="Controls\CtrlAutoCompleteUser.ascx.cs">
       <DependentUpon>CtrlAutoCompleteUser.ascx</DependentUpon>

@@ -1,9 +1,10 @@
-﻿//-----------------------PROGRAMER LOGS---------------------------
+//-----------------------PROGRAMER LOGS---------------------------
 using SubSonic;
 using SweetSoft.QLDA.BackOffice.Controls;
 using SweetSoft.QLDA.BackOffice.Controls.AutoComplete;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Controls.Helpers;
+using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Helpers;
@@ -473,6 +474,71 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 dropdown.Items.Add(new ListItem(i.ToString(), i.ToString()));
             dropdown.SelectedValue = DateTime.UtcNow.Year.ToString();
         }
+        // 1. Dành cho BootstrapDropdown (chuẩn đang dùng)
+        public void BindDynamicYears(BootstrapDropdown dropdown, string tableName, string dateColumn, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các năm --", "");
+            }
+
+            // Truy vấn động moi các năm đang có thực tế trong Database
+            string sql = $"SELECT DISTINCT YEAR({dateColumn}) AS Nam FROM {tableName} WHERE {dateColumn} IS NOT NULL ORDER BY Nam DESC";
+
+            using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["Nam"] != DBNull.Value)
+                        {
+                            string year = reader["Nam"].ToString();
+                            dropdown.AddItem(year, year);
+                        }
+                    }
+                    reader.Close();
+                }
+            }
+            dropdown.ClearSelection();
+        }
+
+        // 2. Cung cấp luôn 1 bản cho ExtraDropdown để dùng khi cần
+        public void BindDynamicYears(ExtraDropdown dropdown, string tableName, string dateColumn, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.PlaceHolder = string.Empty;
+                dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các năm --";
+                dropdown.EmptyItemValue = "";
+            }
+
+            string sql = $"SELECT DISTINCT YEAR({dateColumn}) AS Nam FROM {tableName} WHERE {dateColumn} IS NOT NULL ORDER BY Nam DESC";
+
+            using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["Nam"] != DBNull.Value)
+                        {
+                            string year = reader["Nam"].ToString();
+                            dropdown.Items.Add(new ListItem(year, year));
+                        }
+                    }
+                    reader.Close();
+                }
+            }
+            dropdown.SelectedIndex = -1;
+        }
         public void BindStatus(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();
@@ -492,8 +558,8 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             dropdown.Items.Clear();
             dropdown.DefaultSearchValue = "null";
-            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ACTIVE), "1");
-            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.INACTIVE), "0");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN_ALLOWED), "1");
+            dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.LOGIN_NOT_ALLOWED), "0");
             dropdown.SelectedIndex = -1;
         }
         public void BindLaNhanVien(ExtraDropdown dropdown, bool isAll = false)
@@ -544,44 +610,44 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public void BindChucDanh(ExtraDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblChucDanh> chucDanh = ChucDanhManager.Instance.GetListForDropdown();
+            List<TblLoai> chucDanh = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.ChucDanh);
             if (chucDanh == null)
-                chucDanh = new List<TblChucDanh>();
-            ddl.DataTextField = TblChucDanh.Columns.TenChucDanh;
-            ddl.DataValueField = TblChucDanh.Columns.IdChucDanh;
+                chucDanh = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = chucDanh;
             ddl.DataBind();
         }
         public void BindChucDanh(BootstrapDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblChucDanh> chucDanh = ChucDanhManager.Instance.GetListForDropdown();
+            List<TblLoai> chucDanh = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.ChucDanh);
             if (chucDanh == null)
-                chucDanh = new List<TblChucDanh>();
-            ddl.DataTextField = TblChucDanh.Columns.TenChucDanh;
-            ddl.DataValueField = TblChucDanh.Columns.IdChucDanh;
+                chucDanh = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = chucDanh;
             ddl.DataBind();
         }
         public void BindPhongBan(ExtraDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblPhongBan> phongBan = PhongBanManager.Instance.GetListForDropdown();
+            List<TblLoai> phongBan = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.PhongBan);
             if (phongBan == null)
-                phongBan = new List<TblPhongBan>();
-            ddl.DataTextField = TblPhongBan.Columns.TenPhongBan;
-            ddl.DataValueField = TblPhongBan.Columns.IdPhongBan;
+                phongBan = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = phongBan;
             ddl.DataBind();
         }
         public void BindPhongBan(BootstrapDropdown ddl)
         {
             ddl.Items.Clear();
-            List<TblPhongBan> phongBan = PhongBanManager.Instance.GetListForDropdown();
+            List<TblLoai> phongBan = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.PhongBan);
             if (phongBan == null)
-                phongBan = new List<TblPhongBan>();
-            ddl.DataTextField = TblPhongBan.Columns.TenPhongBan;
-            ddl.DataValueField = TblPhongBan.Columns.IdPhongBan;
+                phongBan = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = phongBan;
             ddl.DataBind();
         }
@@ -702,11 +768,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = "";
-            List<TblLoaiDuAn> tblLoaiDuAns = LoaiDuAnManager.Instance.GetAllLoaiDuAn();
+            List<TblLoai> tblLoaiDuAns = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.DuAn);
             if (tblLoaiDuAns == null)
-                tblLoaiDuAns = new List<TblLoaiDuAn>();
-            ddl.DataTextField = TblLoaiDuAn.Columns.TenLoaiDuAn;
-            ddl.DataValueField = TblLoaiDuAn.Columns.IdLoaiDuAn;
+                tblLoaiDuAns = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = tblLoaiDuAns;
             ddl.DataBind();
         }
@@ -715,11 +781,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = "";
-            List<TblLoaiDuAn> tblLoaiDuAns = LoaiDuAnManager.Instance.GetAllLoaiDuAn();
+            List<TblLoai> tblLoaiDuAns = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.DuAn);
             if (tblLoaiDuAns == null)
-                tblLoaiDuAns = new List<TblLoaiDuAn>();
-            ddl.DataTextField = TblLoaiDuAn.Columns.TenLoaiDuAn;
-            ddl.DataValueField = TblLoaiDuAn.Columns.IdLoaiDuAn;
+                tblLoaiDuAns = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = tblLoaiDuAns;
             ddl.DataBind();
         }
@@ -767,11 +833,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<TblLoaiKhachHang> tblLoaiKhachHangs = LoaiKhachHangManager.Instance.GetAllLoaiKhachHang();
+            List<TblLoai> tblLoaiKhachHangs = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.KhachHang);
             if (tblLoaiKhachHangs == null)
-                tblLoaiKhachHangs = new List<TblLoaiKhachHang>();
-            ddl.DataTextField = TblLoaiKhachHang.Columns.TenLoaiKhachHang;
-            ddl.DataValueField = TblLoaiKhachHang.Columns.IdLoaiKhachHang;
+                tblLoaiKhachHangs = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = tblLoaiKhachHangs;
             ddl.DataBind();
         }
@@ -780,11 +846,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             ddl.Items.Clear();
             ddl.DefaultSearchValue = " ";
-            List<TblLoaiKhachHang> tblLoaiKhachHangs = LoaiKhachHangManager.Instance.GetAllLoaiKhachHang();
+            List<TblLoai> tblLoaiKhachHangs = LoaiManager.Instance.GetByDoiTuong(LoaiManager.LoaiDoiTuong.KhachHang);
             if (tblLoaiKhachHangs == null)
-                tblLoaiKhachHangs = new List<TblLoaiKhachHang>();
-            ddl.DataTextField = TblLoaiKhachHang.Columns.TenLoaiKhachHang;
-            ddl.DataValueField = TblLoaiKhachHang.Columns.IdLoaiKhachHang;
+                tblLoaiKhachHangs = new List<TblLoai>();
+            ddl.DataTextField = TblLoai.Columns.TenLoai;
+            ddl.DataValueField = TblLoai.Columns.IdLoai;
             ddl.DataSource = tblLoaiKhachHangs;
             ddl.DataBind();
         }

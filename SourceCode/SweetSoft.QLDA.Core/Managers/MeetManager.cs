@@ -77,7 +77,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return (byte)TrangThaiCuocHopEnum.Scheduled;
         }
-        public string GetValuForTrangThaiCuoHop(object status)
+        public string GetValueForTrangThaiCuoHop(object status)
         {
             switch (status)
             {

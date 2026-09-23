@@ -40,7 +40,6 @@
         .bar { position: absolute; top: 14px; height: 24px; border-radius: 4px; cursor: pointer; transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s, box-shadow 0.2s, filter 0.2s, opacity 0.35s ease; }
         .bar:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); filter: brightness(1.08); z-index: 10; }
         .bar-fill { position: absolute; top: 0; left: 0; bottom: 0; border-radius: 4px; overflow: hidden; }
-        .bar-outline { position: absolute; top: 0; bottom: 0; border-radius: 4px; border: 1.5px dashed #bbb; background: #fafafa; }
         
         @keyframes progress-stripes {
             from { background-position: 0 0; }
@@ -53,6 +52,8 @@
             animation: progress-stripes 1.5s linear infinite; 
         }
 
+        .bar.status-todo .bar-fill { background-color: #cbd5e1; }
+        .bar.status-todo .static-text { color: #334155; }
         .bar.status-done .bar-fill { background-color: #34a853; }
         .bar.status-doing .bar-fill { background-color: #4285f4; }
         .bar.status-warning .bar-fill { background-color: #f4b400; }
@@ -61,21 +62,11 @@
         @keyframes pulseOverdue { 0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(234, 67, 53, 0); } 100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); } }
         .bar.status-overdue { animation: pulseOverdue 2s infinite; }
         
-        @keyframes slideTextAnim { 0% { left: -60px; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
-        
-        .sliding-text { 
-            position: absolute; top: 0; color: rgba(255, 255, 255, 0.9); font-size: 11px; font-weight: bold; 
-            line-height: 24px; white-space: nowrap; letter-spacing: 0.5px; 
-            animation: slideTextAnim 4s linear infinite; 
-            z-index: 10; pointer-events: none; 
+        .static-text { 
+            position: absolute; top: 0; left: 8px; color: rgba(255, 255, 255, 0.95); font-size: 11px; font-weight: bold; 
+            line-height: 24px; white-space: nowrap; letter-spacing: 0.5px; z-index: 10; pointer-events: none; 
         }
 
-        @keyframes popIn { 0% { transform: translateY(-50%) scale(0); opacity: 0; } 60% { transform: translateY(-50%) scale(1.3); opacity: 1; } 100% { transform: translateY(-50%) scale(1); opacity: 1; } }
-        .checkmark { position: absolute; right: -22px; top: 50%; width: 16px; height: 16px; border-radius: 50%; background: #34a853; color: #fff; font-size: 11px; line-height: 16px; text-align: center; font-weight: bold; opacity: 0; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.8s; }
-        
-        .issue-alert { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; background-color: #fff; color: #ea4335; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); z-index: 15; cursor: pointer; transition: all 0.2s; }
-        .issue-alert:hover { background-color: #ea4335; color: #fff; transform: translateY(-50%) scale(1.15); }
-        
         .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #ea4335; z-index: 2; }
         .today-label { position: absolute; top: -22px; transform: translateX(-50%); font-size: 11px; color: #ea4335; font-weight: bold; white-space: nowrap; }
 
@@ -90,6 +81,11 @@
         .gantt::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 6px; border: 3px solid #f8f9fa; }
         .gantt::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
         .gantt::-webkit-scrollbar-corner { background: #f8f9fa; }
+
+        .gantt-badge-done { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #bbf7d0 !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
+        .gantt-badge-doing { background-color: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
+        .gantt-badge-todo { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
+        .gantt-badge-danger { background-color: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fca5a5 !important; font-weight: 600; padding: 5px 10px; border-radius: 4px; }
     </style>
 </asp:Content>
 
@@ -106,7 +102,7 @@
                     <div class="legend-item"><span class="legend-swatch" style="background-color:#4285f4; background-image:linear-gradient(-45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); background-size: 20px 20px; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.DOING) %></div>
                     <div class="legend-item"><span class="legend-swatch" style="background-color:#f4b400; background-image:linear-gradient(-45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); background-size: 20px 20px; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.DUE_SOON) %></div>
                     <div class="legend-item"><span class="legend-swatch" style="background-color:#ea4335; background-image:linear-gradient(-45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); background-size: 20px 20px; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.OVERDUE) %></div>
-                    <div class="legend-item"><span class="legend-swatch" style="background:#fafafa;border:1.5px dashed #bbb; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.NOT_YET_STARTED) %></div>
+                    <div class="legend-item"><span class="legend-swatch" style="background-color:#cbd5e1; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.NOT_YET_STARTED) %></div>
                     <div class="legend-item"><span class="legend-swatch" style="background:#ea4335;border-radius:0;width:2px;height:14px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.TODAY) %></div>
                     <div class="legend-item"><i class="fas fa-long-arrow-alt-right" style="color:#ff9800;"></i> <%= GetResourceText(BackEndResourceKeys.DEPENDENT_LINK) %></div>
                 </div>
@@ -114,17 +110,15 @@
                 <div class="gantt">
                     <div class="gantt-body">
                         
-                        <!-- REPEATER TÊN CÔNG VIỆC CỘT TRÁI -->
                         <div class="task-col">
                             <div class="task-col-header"><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %></div>
                             <asp:Repeater ID="rptTaskNames" runat="server">
                                 <ItemTemplate>
-                                    <div class='task-row-wrap <%# GetRowClass((int)Eval("Level")) %>'
+                                    <div class='task-row-wrap <%# GetRowClass((int)Eval("Level"), (bool)Eval("HasChild")) %>'
                                          data-id='<%# Eval("MaCongViec") %>'
                                          <%# GetClickEvents((bool)Eval("HasChild"), Eval("MaCongViec").ToString()) %>
                                          title='Người thực hiện: <%# Eval("NhanVienThucHien") %>'>
 
-                                        <!-- Trạng thái Level 1 -->
                                         <asp:PlaceHolder runat="server" Visible='<%# (int)Eval("Level") == 1 %>'>
                                             <div class='task-level-1'>
                                                 <i class='fas fa-list-ul toggle-icon' style='margin-right: 8px; font-size: 14px;' runat="server" Visible='<%# (bool)Eval("HasChild") %>'></i>
@@ -132,10 +126,11 @@
                                             </div>
                                         </asp:PlaceHolder>
 
-                                        <!-- Trạng thái Task con -->
                                         <asp:PlaceHolder runat="server" Visible='<%# (int)Eval("Level") > 1 %>'>
                                             <div class='tree-branch'></div>
-                                            <i class='fas fa-chevron-down toggle-icon' style='margin-right: 6px; font-size: 12px;' runat="server" Visible='<%# (bool)Eval("HasChild") %>'></i>
+                                            <i class='fas fa-chevron-down toggle-icon' 
+                                               style='margin-right: 6px; font-size: 12px; <%# (int)Eval("Level") >= 2 && (bool)Eval("HasChild") ? "transform: rotate(-90deg);" : "" %>' 
+                                               runat="server" Visible='<%# (bool)Eval("HasChild") %>'></i>
                                             <div><strong><%# Eval("MaCongViec") %>.</strong> <%# Eval("TenCongViec") %></div>
                                         </asp:PlaceHolder>
                                         
@@ -144,7 +139,6 @@
                             </asp:Repeater>
                         </div>
                         
-                        <!-- REPEATER THANH CHART BÊN PHẢI -->
                         <div class="chart-col">
                             <div class="chart-header" id="chartHeader"></div>
                             
@@ -167,8 +161,6 @@
                                              data-start='<%# Eval("StartDay") %>' 
                                              data-end='<%# Eval("EndDay") %>' 
                                              data-status='<%# Eval("StatusClass") %>' 
-                                             data-alertcount='<%# Eval("AlertCount") %>' 
-                                             data-issuecount='<%# Eval("IssueCount") %>' 
                                              data-haschild='<%# Eval("HasChild").ToString().ToLower() %>'>
                                         </div>
                                     </ItemTemplate>
@@ -190,37 +182,48 @@
             <asp:HiddenField ID="hdfSelectedTaskCode" runat="server" />
             <asp:Button ID="btnLoadIssues" runat="server" OnClick="btnLoadIssues_Click" CssClass="d-none" />
 
-            <SweetSoft:ExtraModal runat="server" ID="modalIssues" Type="Primary" Title="Cảnh báo Tiến độ & Vấn đề">
+            <SweetSoft:ExtraModal runat="server" ID="modalIssues" Type="Primary" Title="Thông tin công việc">
                 <ContentTemplate>
                     
-                    <h6 class="fw-bold text-danger mt-2 ms-2"><i class="fas fa-clock me-1"></i> <%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %></h6>
+                    <h6 class="fw-bold text-primary mt-2 ms-2" id="h6TaskTitle" runat="server">
+                        <i class="fas fa-info-circle me-1"></i> Thông tin công việc
+                    </h6>
                     <div class="table-responsive mb-4">
                         <table class="table table-hover table-bordered mb-0 align-middle" style="font-size: 13px;">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="text-center" style="width: 90px;"><%= GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
+                                    <th style="width: 150px;"><%= GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
                                     <th><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
                                     <th class="text-center" style="width: 140px;"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></th>
                                     <th class="text-center" style="width: 130px;"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <asp:Repeater ID="rptOverdueTasks" runat="server">
+                                <asp:Repeater ID="rptTaskInfo" runat="server">
                                     <ItemTemplate>
                                         <tr>
-                                            <td class="text-center fw-bold"><%# Eval("MaCongViec") %></td>
+                                            <td class="fw-bold">
+                                                <div style='<%# "padding-left: " + ((Convert.ToInt32(Eval("RelativeLevel")) - 1) * 16) + "px;" %>'>
+                                                    <asp:PlaceHolder runat="server" Visible='<%# Convert.ToInt32(Eval("RelativeLevel")) > 1 %>'>
+                                                        <div class="tree-branch"></div>
+                                                    </asp:PlaceHolder>
+                                                    <%# Eval("MaCongViec") %>
+                                                </div>
+                                            </td>
+                                            
                                             <td><%# Eval("TenCongViec") %></td>
-                                            <td class="text-center text-danger fw-bold"><%# Convert.ToDateTime(Eval("NgayKetThuc")).ToString("dd/MM/yyyy") %></td>
+                                            <td class="text-center fw-bold"><%# Convert.ToDateTime(Eval("NgayKetThuc")).ToString("dd/MM/yyyy") %></td>
                                             <td class="text-center">
                                                 <span class="badge <%# GetTaskStatusBadge(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>">
                                                     <%# GetTaskStatusText(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>
                                                 </span>
+                                                <%# GetTaskWarningHtml(Eval("TrangThai"), Eval("NgayKetThuc")) %>
                                             </td>
                                         </tr>
                                     </ItemTemplate>
                                     <FooterTemplate>
-                                        <asp:PlaceHolder ID="phEmptyTask" runat="server" Visible='<%# rptOverdueTasks.Items.Count == 0 %>'>
-                                            <tr><td colspan="4" class="text-center text-muted py-2"><%= GetResourceText(BackEndResourceKeys.NO_OVERDUE_TASKS) %></td></tr>
+                                        <asp:PlaceHolder ID="phEmptyTask" runat="server" Visible='<%# rptTaskInfo.Items.Count == 0 %>'>
+                                            <tr><td colspan="4" class="text-center text-muted py-2">Không có dữ liệu công việc.</td></tr>
                                         </asp:PlaceHolder>
                                     </FooterTemplate>
                                 </asp:Repeater>
@@ -228,38 +231,40 @@
                         </table>
                     </div>
 
-                    <h6 class="fw-bold text-warning ms-2"><i class="fas fa-exclamation-triangle me-1"></i> <%= GetResourceText(BackEndResourceKeys.ISSUE) %></h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered mb-0 align-middle" style="font-size: 13px;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-center" style="width: 90px;"><%= GetResourceText(BackEndResourceKeys.ISSUE_CODE) %></th>
-                                    <th><%= GetResourceText(BackEndResourceKeys.ISSUE_NAME) %></th>
-                                    <th class="text-center" style="width: 130px;"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <asp:Repeater ID="rptIssues" runat="server">
-                                    <ItemTemplate>
-                                        <tr>
-                                            <td class="text-center fw-bold"><%# Eval("MaVanDe") %></td>
-                                            <td><%# Eval("TenVanDe") %></td>
-                                            <td class="text-center">
-                                                <span class="badge <%# GetIssueStatusBadge(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>">
-                                                    <%# GetIssueStatusText(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </ItemTemplate>
-                                    <FooterTemplate>
-                                        <asp:PlaceHolder ID="phEmptyIssue" runat="server" Visible='<%# rptIssues.Items.Count == 0 %>'>
-                                            <tr><td colspan="3" class="text-center text-muted py-2"><%= GetResourceText(BackEndResourceKeys.NO_ISSUES) %></td></tr>
-                                        </asp:PlaceHolder>
-                                    </FooterTemplate>
-                                </asp:Repeater>
-                            </tbody>
-                        </table>
-                    </div>
+                    <h6 class="fw-bold text-danger ms-2"><i class="fas fa-exclamation-triangle me-1"></i> <%= GetResourceText(BackEndResourceKeys.ISSUE) %></h6>
+                    
+                    <asp:PlaceHolder ID="phHasIssues" runat="server">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered mb-0 align-middle" style="font-size: 13px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" style="width: 100px;"><%= GetResourceText(BackEndResourceKeys.ISSUE_CODE) %></th>
+                                        <th><%= GetResourceText(BackEndResourceKeys.ISSUE_NAME) %></th>
+                                        <th class="text-center" style="width: 130px;"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <asp:Repeater ID="rptIssues" runat="server">
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td class="text-center fw-bold"><%# Eval("MaVanDe") %></td>
+                                                <td><%# Eval("TenVanDe") %></td>
+                                                <td class="text-center">
+                                                    <span class="badge <%# GetIssueStatusBadge(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>">
+                                                        <%# GetIssueStatusText(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </tbody>
+                            </table>
+                        </div>
+                    </asp:PlaceHolder>
+
+                    <asp:PlaceHolder ID="phNoIssues" runat="server" Visible="false">
+                        <div class="ms-2 mb-3 text-muted fst-italic">Không có vấn đề!</div>
+                    </asp:PlaceHolder>
 
                 </ContentTemplate>
             </SweetSoft:ExtraModal>
@@ -336,7 +341,7 @@
             if (!svgGroup) return;
             svgGroup.innerHTML = ''; 
 
-            const tracks = document.querySelectorAll(".task-track:not(.hidden-task)");
+            const tracks = document.querySelectorAll(".task-track:not(.hidden-task):not(.hide-bar)");
             tracks.forEach(curTrack => {
                 const depId = curTrack.dataset.dependson;
                 if (!depId || depId === "") return;
@@ -348,7 +353,6 @@
                 const preBar = preTrack.querySelector(".bar");
                 if (!curBar || !preBar || curBar.style.width === '0%' || preBar.style.width === '0%') return;
 
-                // Tọa độ vẽ đường móc (Đáy giữa -> Trái giữa)
                 const startX = preBar.offsetLeft + (preBar.offsetWidth / 2);
                 const startY = preTrack.offsetTop + preBar.offsetTop + preBar.offsetHeight;
                 
@@ -406,10 +410,6 @@
                 const taskId = track.dataset.taskid;
                 const taskCode = track.dataset.id; 
                 
-                const hasChild = track.dataset.haschild === 'true';
-                const alertCount = parseInt(track.dataset.alertcount) || 0; 
-                const issueCount = parseInt(track.dataset.issuecount) || 0;
-
                 GANTT_DATE_LABELS.forEach((label, i) => {
                     const gl = document.createElement("div"); gl.className = "grid-line"; gl.style.left = pct(i) + "%";
                     track.appendChild(gl);
@@ -435,69 +435,42 @@
                 const bar = document.createElement("div");
                 bar.className = "bar status-" + effectiveClass;
                 bar.style.left = pct(start) + "%";
-                bar.style.width = "0%"; 
+                bar.style.width = "0%";
                 bar.title = tooltipStatus + tooltipSuffix;
-                bar.dataset.targetwidth = targetWidth; 
+                bar.dataset.targetwidth = targetWidth;
 
                 const fill = document.createElement("div");
-                if (effectiveClass === "todo") {
-                    fill.className = "bar-outline"; fill.style.left = "0"; fill.style.right = "0";
-                } else {
-                    fill.className = "bar-fill animated-stripes"; 
-                    fill.style.left = "0"; fill.style.width = "100%"; 
-                    
-                    const slideTxt = document.createElement("div");
-                    slideTxt.className = "sliding-text";
-                    if (effectiveClass === "doing") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.DOING) %>";
-                    else if (effectiveClass === "done") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.COMPLETED) %>";
-                    else if (effectiveClass === "overdue") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.OVERDUE) %>";
-                    
-                    fill.appendChild(slideTxt);
-                }
+                fill.className = "bar-fill animated-stripes";
+                fill.style.left = "0"; fill.style.width = "100%";
+
+                const slideTxt = document.createElement("div");
+                slideTxt.className = "static-text";
+                if (effectiveClass === "doing") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.DOING) %>";
+                else if (effectiveClass === "done") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.COMPLETED) %>";
+                else if (effectiveClass === "overdue") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.OVERDUE) %>";
+                else if (effectiveClass === "todo") slideTxt.innerHTML = "<%= GetResourceText(BackEndResourceKeys.NOT_YET_STARTED) %>";
+                else if (effectiveClass === "warning") slideTxt.innerHTML = "Sắp đến hạn";
+
+                fill.appendChild(slideTxt);
                 bar.appendChild(fill);
 
-                let showAlert = false;
-                let alertText = "";
-
-                if (hasChild && alertCount > 0) {
-                    showAlert = true;
-                    alertText = `Có ${alertCount} cảnh báo (trễ hạn / vấn đề)! Bấm vào để xem.`;
-                } else if (!hasChild && issueCount > 0) {
-                    showAlert = true;
-                    alertText = `Có ${issueCount} vấn đề! Bấm vào để xem.`;
-                }
-
-                if (showAlert) {
-                    const alertIcon = document.createElement("div");
-                    alertIcon.className = "issue-alert";
-                    alertIcon.innerHTML = "<i class='fas fa-exclamation'></i>";
-                    alertIcon.title = alertText;
-                    
-                    alertIcon.onclick = function(e) {
-                        e.stopPropagation(); 
-                        document.getElementById('<%= hdfSelectedTaskId.ClientID %>').value = taskId;
-                        document.getElementById('<%= hdfSelectedTaskCode.ClientID %>').value = taskCode;
-                        document.getElementById('<%= btnLoadIssues.ClientID %>').click();
-                    };
-                    bar.appendChild(alertIcon);
-                }
-
-                if (status === "done") {
-                    const check = document.createElement("div"); check.className = "checkmark"; check.textContent = "✓";
-                    bar.appendChild(check);
-                }
+                bar.onclick = function (e) {
+                    e.stopPropagation();
+                    document.getElementById('<%= hdfSelectedTaskId.ClientID %>').value = taskId;
+                    document.getElementById('<%= hdfSelectedTaskCode.ClientID %>').value = taskCode;
+                    document.getElementById('<%= btnLoadIssues.ClientID %>').click();
+                };
 
                 track.appendChild(bar);
-
                 setTimeout(() => { bar.style.width = targetWidth; }, 100);
             });
 
-            const todayLine = document.createElement("div"); 
-            todayLine.className = "today-line"; 
-            todayLine.style.left = pct(GANTT_TODAY_INDEX + 0.5) + "%"; 
-            
-            const todayLabel = document.createElement("div"); 
-            todayLabel.className = "today-label"; 
+            const todayLine = document.createElement("div");
+            todayLine.className = "today-line";
+            todayLine.style.left = pct(GANTT_TODAY_INDEX + 0.5) + "%";
+
+            const todayLabel = document.createElement("div");
+            todayLabel.className = "today-label";
             todayLabel.textContent = "<%= GetResourceText(BackEndResourceKeys.TODAY) %>";
             todayLabel.style.left = pct(GANTT_TODAY_INDEX + 0.5) + "%";
 

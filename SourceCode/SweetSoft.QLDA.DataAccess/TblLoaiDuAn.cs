@@ -354,37 +354,6 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
-		#region PrimaryKey Methods		
-		
-        protected override void SetPrimaryKey(object oValue)
-        {
-            base.SetPrimaryKey(oValue);
-            
-            SetPKValues();
-        }
-        
-		
-		private SweetSoft.QLDA.DataAccess.TblDuAnCollection colTblDuAnRecords;
-		public SweetSoft.QLDA.DataAccess.TblDuAnCollection TblDuAnRecords()
-		{
-			if(colTblDuAnRecords == null)
-			{
-				colTblDuAnRecords = new SweetSoft.QLDA.DataAccess.TblDuAnCollection().Where(TblDuAn.Columns.IdLoaiDuAn, IdLoaiDuAn).Load();
-				colTblDuAnRecords.ListChanged += new ListChangedEventHandler(colTblDuAnRecords_ListChanged);
-			}
-			return colTblDuAnRecords;
-		}
-				
-		void colTblDuAnRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblDuAnRecords[e.NewIndex].IdLoaiDuAn = IdLoaiDuAn;
-            }
-		}
-		#endregion
-		
 			
 		
 		//no foreign key tables defined (0)
@@ -562,32 +531,10 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
-        public void SetPKValues()
-        {
-                if (colTblDuAnRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblDuAn item in colTblDuAnRecords)
-                    {
-                        if (item.IdLoaiDuAn == null ||item.IdLoaiDuAn != IdLoaiDuAn)
-                        {
-                            item.IdLoaiDuAn = IdLoaiDuAn;
-                        }
-                    }
-               }
-		}
         #endregion
     
         #region Deep Save
 		
-        public void DeepSave()
-        {
-            Save();
-            
-                if (colTblDuAnRecords != null)
-                {
-                    colTblDuAnRecords.SaveAll();
-               }
-		}
         #endregion
 	}
 }

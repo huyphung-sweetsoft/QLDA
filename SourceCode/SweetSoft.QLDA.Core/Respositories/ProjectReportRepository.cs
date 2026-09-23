@@ -47,7 +47,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         public int GetTotalTasks(Guid projectId, DateTime? fromDate, DateTime? toDate)
         {
             string dateFilter = GetTaskDateFilter(fromDate, toDate);
-            string sql = $"SELECT COUNT(1) FROM TblCongViec WHERE IdDuAn = '{projectId}' AND (DaXoa = 0 OR DaXoa IS NULL) {dateFilter}";
+            string sql = $"SELECT COUNT(1) FROM TblCongViec WHERE IdDuAn = '{projectId}' AND (DaXoa = 0) {dateFilter}";
 
             return new InlineQuery().ExecuteScalar<int>(sql);
         }

@@ -457,7 +457,10 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repository.IsEmailExist(id, email);
         }
-
+        public bool IsEmailExistInAdminGroup(Guid id, string email)
+        {
+            return _repository.IsEmailExistInAdminGroup(id, email);
+        }
         public bool IsUserNameExist(Guid id, string userName)
         {
             return _repository.IsUserNameExist(id, userName);
