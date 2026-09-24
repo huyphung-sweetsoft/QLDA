@@ -3,6 +3,7 @@ using SubSonic.Sugar;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
+using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -33,7 +34,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
-            CtrlMeet1.OpenMeetingDocumentHandlerCallback += OpenMeetingDocumentAction;
+            CtrlMeet1.OpenMeetingFilesHandlerCallback += OpenMeetingFilesAction;
+            fbMeetingFiles.CurrentFileIdResolver = (recordId, refType) =>
+                ProjectRecordFileAccess.GetLinkedFileId(recordId, refType.ToString());
+            fbMeetingFiles.FileMutationValidator = (recordId, refType, fileId) =>
+                ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId,
+                    recordId, refType.ToString(), true)
+                && ProjectRecordFileAccess.BelongsToRecord(recordId,
+                    refType.ToString(), fileId);
 
             if (!IsPostBack)
             {
@@ -65,12 +73,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             btnXacNhanNhanVien.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
             txtThoiGianKetThuc.PlaceHolder = "--";
 
-            txtTenCuocHop.PlaceHolder = txtNoiDungCuocHop.PlaceHolder = txtThoiGianBatDau.PlaceHolder =
+            txtTenCuocHop.PlaceHolder = txtThoiGianBatDau.PlaceHolder =
             txtDiaDiemHop.PlaceHolder = txtThoiLuong.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
             dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
         }
 
-        private void OpenMeetingDocumentAction(object sender, EventArgs e)
+        private void OpenMeetingFilesAction(object sender, EventArgs e)
         {
             Guid idLichHop = sender is Guid
                 ? (Guid)sender
@@ -81,29 +89,26 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 return;
             }
 
-            try
+            TblLichHop meeting = TblLichHop.FetchByID(idLichHop);
+            if (meeting == null || meeting.DaXoa == true || meeting.IdDuAn != CurrentProjectId)
             {
-                MeetingDocumentLinkResult result = MeetManager.Instance
-                    .GetOrCreateProjectDocument(idLichHop);
-
-                string url = RewriteURLHelper.ProjectDocumentDetail(
-                    result.ProjectId,
-                    result.DocumentId) + "?tab=versions";
-                Response.Redirect(GetRelativeClientPath(url), false);
-                Context.ApplicationInstance.CompleteRequest();
+                ShowInvalidDataError();
+                return;
             }
-            catch (UnauthorizedAccessException)
+            if (!ProjectRecordFileAccess.CanAccess(
+                SweetContext.Current.UserId, idLichHop,
+                FileUploadTypes.MeetingAttachment.ToString(), false))
             {
                 ShowAccessDeniedNotify();
+                return;
             }
-            catch (InvalidOperationException exception)
-            {
-                ShowNotify(exception.Message, MSGType.Warning);
-            }
-            catch (Exception exception)
-            {
-                ShowNotify(exception.Message, MSGType.Error);
-            }
+
+            fbMeetingFiles.IsMultiple = false;
+            fbMeetingFiles.IsEnabled = ProjectRecordFileAccess.CanAccess(
+                SweetContext.Current.UserId, idLichHop,
+                FileUploadTypes.MeetingAttachment.ToString(), true);
+            fbMeetingFiles.LoadFile(idLichHop, FileUploadTypes.MeetingAttachment);
+            dlMeetingFiles.OpenModal(true);
         }
 
         private void NewMeetingAction(object sender, EventArgs e)
@@ -246,6 +251,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
+                if (isNew && this.IsEdit)
+                    OpenMeetingFilesAction(savedMeet.IdLichHop, EventArgs.Empty);
             }
             catch (Exception exc)
             {

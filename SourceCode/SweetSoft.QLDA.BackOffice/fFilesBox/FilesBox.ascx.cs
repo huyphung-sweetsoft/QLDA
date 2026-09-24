@@ -51,6 +51,14 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
         public event EventHandler<FileDeletionRequestedEventArgs>
             FileDeletionRequested;
 
+        // Optional generic filter supplied by the owning page. Null keeps the
+        // existing FilesBox behavior; a null result shows no current file.
+        public Func<Guid, FileUploadTypes, Guid?> CurrentFileIdResolver { get; set; }
+
+        // Optional ownership check for pages that require stricter file
+        // mutations. Other FilesBox consumers keep their existing behavior.
+        public Func<Guid, FileUploadTypes, Guid, bool> FileMutationValidator { get; set; }
+
         #region Script + Styles
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -193,6 +201,11 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 ViewState["AcceptType"] = value;
             }
         }
+        public int MaxFileSizeBytes
+        {
+            get { return (int?)ViewState["MaxFileSizeBytes"] ?? 1048576; }
+            set { ViewState["MaxFileSizeBytes"] = value; }
+        }
         public bool IsFirstUpload
         {
             get
@@ -315,6 +328,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 #region delete file
                 List<Guid> listFileRemoveId =
                     GetPendingRemovedFileIds();
+                foreach (Guid fileId in listFileRemoveId)
+                    EnsureFileMutationAllowed(fileId);
                 bool deletionHandled = false;
                 string deletionWarningMessage = null;
                 bool hasDeletionOverride = FileDeletionRequested != null;
@@ -508,6 +523,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     if (listFileRemoveId.Contains(gFileId))
                         continue;
 
+                    EnsureFileMutationAllowed(gFileId);
+
                     var (title, order, path) = kvp.Value;
 
                     var uploadFile = new UploadManager(appContext, gFileId);
@@ -603,7 +620,6 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 throw new Exception("FilesBox", exc);
             }
         }
-
         private void RestorePendingFileChanges()
         {
             if (!this.RefId.HasValue || !this._refType.HasValue)
@@ -702,6 +718,21 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             ltrCurrentFiles.Text = "";
 
             UploadManager fileManager = new UploadManager(SweetContext.Current, refId, refType);
+
+            if (CurrentFileIdResolver != null)
+            {
+                Guid? linkedFileId = CurrentFileIdResolver(refId, refType);
+                if (!linkedFileId.HasValue)
+                {
+                    SingleFilePath = null;
+                    SingleFilePathType = null;
+                }
+                fileManager.TblUploadFiles = (fileManager.TblUploadFiles
+                    ?? new List<TblUploadFile>())
+                    .Where(file => linkedFileId.HasValue
+                        && file.Id == linkedFileId.Value)
+                    .ToList();
+            }
 
             if (UseDocumentFileSets)
             {
@@ -806,8 +837,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     fileSrc = file.FileUrl;
 
                 listCurrentFile += string.Format(itemTemplate
-                    , fileSrc
-                    , fileTitle
+                    , HttpUtility.HtmlAttributeEncode(fileSrc)
+                    , HttpUtility.HtmlAttributeEncode(fileTitle)
                     , string.Empty
                     , string.Format("{0}fileTitle${1}", this.ClientID, file.Id)
                     , file.DisplayOrder
@@ -818,15 +849,54 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     , SecurityUtilities.ProtectUrlParameter(string.Format("/Upload/{0}/{1}"
                         , this._refType, this.RefId))
                     , string.Format("{0}filePath_{1}", this.ClientID, file.Id)
-                    , file.FileUrl
+                    , HttpUtility.HtmlAttributeEncode(file.FileUrl)
                     , IsEnabled ? string.Empty : "d-none hidden"
                     , file.IsHost ? "checked" : ""
                     , file.IsSecretary ? "checked" : ""
-                    , file.IsParticipant ? "checked" : "");
+                    , file.IsParticipant ? "checked" : ""
+                    , file.Id == Guid.Empty ? "d-none" : ""
+                    , HttpUtility.HtmlAttributeEncode(GetFileOpenUrl(file.FileUrl)));
             }
 
             ltrCurrentFiles.Text = listCurrentFile;
             upListFile.Update();
+        }
+        private string GetFileOpenUrl(string fileUrl)
+        {
+            if (string.IsNullOrWhiteSpace(fileUrl))
+                return "javascript:;";
+
+            fileUrl = fileUrl.Trim();
+            if (fileUrl.StartsWith("//", StringComparison.Ordinal)
+                || fileUrl.StartsWith("\\\\", StringComparison.Ordinal)
+                || fileUrl.IndexOf('\\') >= 0)
+            {
+                return "javascript:;";
+            }
+
+            Uri absoluteUri;
+            if (Uri.TryCreate(fileUrl, UriKind.Absolute, out absoluteUri)
+                && (absoluteUri.Scheme == Uri.UriSchemeHttp
+                    || absoluteUri.Scheme == Uri.UriSchemeHttps))
+            {
+                return fileUrl;
+            }
+
+            if (fileUrl.StartsWith("~/", StringComparison.Ordinal))
+                return this.CURRENT_PAGE.ResolveUrl(fileUrl);
+
+            string virtualPath = fileUrl.StartsWith("/", StringComparison.Ordinal)
+                ? fileUrl
+                : "/" + fileUrl;
+            return this.CURRENT_PAGE.GetRelativeClientPath(virtualPath);
+        }
+        private void EnsureFileMutationAllowed(Guid fileId)
+        {
+            if (FileMutationValidator == null)
+                return;
+            if (!RefId.HasValue || !_refType.HasValue
+                || !FileMutationValidator(RefId.Value, _refType.Value, fileId))
+                throw new UnauthorizedAccessException("File không thuộc mục đang chỉnh sửa.");
         }
         public void ClearData()
         {

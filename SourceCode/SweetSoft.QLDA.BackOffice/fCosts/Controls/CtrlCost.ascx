@@ -103,13 +103,13 @@
                                 </asp:LinkButton>
 
                                 <asp:LinkButton runat="server"
-                                    ID="lbtCostDocument"
+                                    ID="lbtCostFiles"
                                     Visible='<%# this.IsView %>'
-                                    CommandName="COST_DOCUMENT"
+                                    CommandName="COST_FILES"
                                     CommandArgument='<%# Eval("IdChiPhi") %>'
                                     CausesValidation="false"
                                     CssClass="btn btn-outline-primary btn-sm text-center btn-smart-link"
-                                    ToolTip='<%# GetResourceText(BackEndResourceKeys.COST_DOCUMENT) %>'>
+                                    ToolTip="File đính kèm chi phí">
                                     <i class="fas fa-folder-open"></i>
                                 </asp:LinkButton>
 
