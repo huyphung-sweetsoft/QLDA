@@ -208,12 +208,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     while (current <= end)
                     {
                         string status = "";
-                        string dayName = current.DayOfWeek == DayOfWeek.Sunday ? "CN" : current.DayOfWeek == DayOfWeek.Saturday ? "T7" : $"T{(int)current.DayOfWeek + 1}";
-                        bool isWorkingDay = LichBieuChungManager.Instance.CheckIsWorkingDay(current);
                         var activeTasks = new List<object>();
                         string displayText = "";
 
-                        if (isWorkingDay)
+                        // 1. KIỂM TRA LỄ / NGOẠI LỆ TRƯỚC TIÊN (ƯU TIÊN SỐ 1)
+                        TblLichNgoaiLe exceptionDay = LichBieuChungManager.Instance.GetExceptionByDate(current);
+                        bool isWeekend = (current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday);
+
+                        if (exceptionDay != null)
+                        {
+                            status = "holiday";
+                            displayText = exceptionDay.TenNgoaiLe; // Hiển thị tên ngày lễ trực tiếp lên lịch mini
+                        }
+                        else if (isWeekend)
+                        {
+                            status = "weekend";
+                            displayText = txtWeekend;
+                        }
+                        else
                         {
                             var tasksToday = leafTasks.Where(t => t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
                             if (tasksToday.Count > 0)
@@ -223,27 +235,22 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                                 {
                                     activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
                                 }
-                                displayText = tasksToday.Count == 1 ? $"🔴 [{tasksToday[0].MaCongViec}]" : $"🔥 {tasksToday.Count} {txtTask}";
+                                displayText = tasksToday.Count == 1 ? $"[{tasksToday[0].MaCongViec}]" : $"{tasksToday.Count} {txtTask}";
                             }
                             else
                             {
                                 status = "free";
-                                displayText = $"🟢 {txtFree}";
+                                displayText = txtFree;
                             }
-                        }
-                        else
-                        {
-                            status = (current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday) ? "weekend" : "holiday";
-                            displayText = status == "holiday" ? $"🎉 {txtHoliday}" : $"⬜ {txtWeekend}";
                         }
 
                         dict.Add(current.ToString("yyyy-MM-dd"), new
                         {
                             status = status,
-                            dayName = dayName,
-                            displayText = displayText,
+                            text = displayText,
                             tasks = activeTasks
                         });
+
                         current = current.AddDays(1);
                     }
 

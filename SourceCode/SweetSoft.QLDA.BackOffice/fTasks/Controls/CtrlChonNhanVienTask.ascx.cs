@@ -193,6 +193,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             BindList(company);
 
             mdlTaskMemberPicker.Title = GetResourceText(BackEndResourceKeys.ASSIGN_TASK);
+            btnConfirmTaskAssign.ToolTip = btnConfirmTaskAssign.Text = GetResourceText(BackEndResourceKeys.SAVE);
             string thoiGian = $"<strong>{startDate:dd/MM/yyyy}</strong> - <strong>{endDate:dd/MM/yyyy}</strong>";
 
             string safeTaskName = HttpUtility.HtmlEncode(taskName);

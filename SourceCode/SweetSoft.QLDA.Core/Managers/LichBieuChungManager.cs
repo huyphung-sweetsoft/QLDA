@@ -188,7 +188,15 @@ namespace SweetSoft.QLDA.Core.Managers
         #endregion
 
         #region NHÓM 3: ĐỘNG CƠ TÍNH TOÁN THỜI GIAN (CORE ENGINE)
-
+        public TblLichNgoaiLe GetExceptionByDate(DateTime date)
+        {
+            RefreshCacheIfNeeded();
+            if (_exceptionsCache != null)
+            {
+                return _exceptionsCache.Find(x => x.NgayBatDau.Date <= date.Date && x.NgayKetThuc.Date >= date.Date);
+            }
+            return null;
+        }
         public bool CheckIsWorkingDay(DateTime date)
         {
             RefreshCacheIfNeeded();

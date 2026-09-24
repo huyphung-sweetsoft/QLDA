@@ -342,12 +342,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                 return false;
             }
         }
-        public bool IsEmailExist(Guid ID, string email)
+        public bool IsEmailExist(Guid id, string email)
         {
             Select select = new Select();
-            select.From(AspnetMembership.Schema);
+            select.From(AspnetUser.Schema);
+            select.InnerJoin(
+                AspnetMembership.UserIdColumn,
+                AspnetUser.UserIdColumn
+            );
+
             select.Where(AspnetMembership.EmailColumn).IsEqualTo(email);
-            select.And(AspnetMembership.UserIdColumn).IsNotEqualTo(ID);
+            select.And(AspnetUser.UserIdColumn).IsNotEqualTo(id);
+            select.And(AspnetUser.IsDeletedColumn).IsEqualTo(false);
+
             return select.GetRecordCount() > 0;
         }
         public bool IsEmailExistInAdminGroup(Guid ID, string email)

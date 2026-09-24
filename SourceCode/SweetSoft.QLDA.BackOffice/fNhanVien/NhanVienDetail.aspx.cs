@@ -1,6 +1,7 @@
 ﻿using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
+using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Security;
@@ -15,6 +16,7 @@ using System.Data;
 using System.Linq;
 using System.Web.UI;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
+
 namespace SweetSoft.QLDA.BackOffice.fNhanVien
 {
     public partial class NhanVienDetail : BaseAdminPage
@@ -34,19 +36,22 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             }
             set { ViewState["IdNhanVien"] = value; }
         }
+
         public override bool IsLogin
         {
             get { return true; }
         }
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Bắt cờ "isFromProfile" truyền vào Callback để lúc Save vẫn giữ đúng luồng UI
+            // Kích hoạt Event đăng ký AJAX PostBack
+            PrepareSearchControls();
+
             bool isFromProfile = CommonHelpers.QueryString("from") == "profile";
             CtrlUserDetail1.SavedHandlerCallback += (s, ev) => { LoadDataDetail(CurrentIdNhanVien, isFromProfile); upnlMainDetail.Update(); };
 
             if (!IsPostBack)
             {
-                // 1. LẤY ID TỪ URL
                 string idQuery = CommonHelpers.QueryString("id");
                 Guid tempId = Guid.Empty;
                 if (!string.IsNullOrEmpty(idQuery))
@@ -54,10 +59,8 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                     Guid.TryParse(SecurityUtilities.UnprotectUrlParameter(idQuery), out tempId);
                 }
 
-                // [FIX LỖI 403]: TỰ CHECK QUYỀN BẰNG TAY (THAY CHO BASEADMINPAGE)
                 bool hasViewRight = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien);
 
-                // Nếu KHÔNG có quyền View VÀ KHÔNG phải đang tự xem chính mình -> Văng 403
                 if (!hasViewRight && tempId != SweetContext.Current.UserId)
                 {
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
@@ -74,20 +77,20 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                     navLinks.Add(GetRelativeClientPath(RewriteURLHelper.NhanVien), GetResourceText(BackEndResourceKeys.EMPLOYEE_LIST));
                 }
 
-                // Chèn thêm chính nó vào cuối Breadcrumb (dùng javascript:void(0) để vô hiệu hóa click)
                 navLinks.Add("javascript:void(0);", GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL));
 
                 Navigation1.keyValuePairUrls = navLinks;
                 Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL);
 
                 ApplyControlsText();
+                InitFilterControls();
 
                 CtrlUserDetail1.CurrentMode = UserPopupMode.Employee;
                 CtrlUserDetail1.InitControls();
 
                 if (tempId != Guid.Empty)
-                    {
-                        CurrentIdNhanVien = tempId;
+                {
+                    CurrentIdNhanVien = tempId;
                     LoadDataDetail(tempId, isFromProfile);
                 }
                 else
@@ -97,11 +100,32 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             }
         }
 
+        private void PrepareSearchControls()
+        {
+            ScriptManager script = ScriptManager.GetCurrent(this.Page);
+            if (script != null)
+            {
+                script.RegisterAsyncPostBackControl(btnSearchDuAn);
+                script.RegisterAsyncPostBackControl(ddlSearchTrangThaiDuAn);
+            }
+            txtSearchDuAn.EnterSubmitClientID = btnSearchDuAn.ClientID;
+        }
+
         private void ApplyControlsText()
         {
             Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL);
             btnEditProfile.Text = btnEditProfile.ToolTip = GetResourceText(BackEndResourceKeys.EDIT_INFORMATION);
+
+            ddlSearchTrangThaiDuAn.SearchTagItemText = "Trạng thái dự án";
+            txtSearchDuAn.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
+
             SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL));
+        }
+
+        private void InitFilterControls()
+        {
+            new ControlHelpers().BindDuAnStatus(ddlSearchTrangThaiDuAn);
+            ddlSearchTrangThaiDuAn.ClearSelection();
         }
 
         private void LoadDataDetail(Guid idNhanVien, bool isFromProfile)
@@ -131,6 +155,23 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             ltrEmail.Text = !string.IsNullOrEmpty(row["Email"].ToString()) && !row["Email"].ToString().Contains("no-email.com") ? row["Email"].ToString() : notUpdatedText;
             ltrPhone.Text = !string.IsNullOrEmpty(row["MobileAlias"].ToString()) ? row["MobileAlias"].ToString() : notUpdatedText;
 
+            bool isActivated = true;
+            if (row.Table.Columns.Contains("IsActivated") && row["IsActivated"] != DBNull.Value)
+                isActivated = Convert.ToBoolean(row["IsActivated"]);
+            else if (row.Table.Columns.Contains("IsLockedOut") && row["IsLockedOut"] != DBNull.Value)
+                isActivated = !Convert.ToBoolean(row["IsLockedOut"]);
+            else if (row.Table.Columns.Contains("DaXoa") && row["DaXoa"] != DBNull.Value)
+                isActivated = !Convert.ToBoolean(row["DaXoa"]);
+
+            if (isActivated)
+            {
+                ltrTinhTrangCongTac.Text = $"<span class=\"fw-bold text-success fs-6\">{GetResourceText(BackEndResourceKeys.WORKING)}</span>";
+            }
+            else
+            {
+                ltrTinhTrangCongTac.Text = $"<span class=\"fw-bold text-secondary fs-6\">{GetResourceText(BackEndResourceKeys.INACTIVE) ?? "Đã nghỉ"}</span>";
+            }
+
             if (row["NgayGiaNhap"] != DBNull.Value)
             {
                 DateTime joinDate = Convert.ToDateTime(row["NgayGiaNhap"]);
@@ -147,68 +188,142 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             if (!string.IsNullOrEmpty(avatar))
                 imgAvatar.Src = avatar;
 
-            // [NÚT SỬA]: Chỉ hiện khi có quyền Edit VÀ không đi từ trang Profile
             btnEditProfile.Visible = this.IsEdit && !isFromProfile;
             string lichUrl = GetRelativeClientPath(RewriteURLHelper.ViewLichCaNhan(idNhanVien));
             lnkSchedule.HRef = isFromProfile ? lichUrl + "?from=profile" : lichUrl;
             lnkSchedule.Visible = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien) || idNhanVien == SweetContext.Current.UserId;
 
-            BindProjectData(idNhanVien);
+            BindProjectData(true);
         }
 
-        private void BindProjectData(Guid idNhanVien)
+        private void BindProjectData(bool isInitialLoad = false)
         {
-            var allProjects = ThanhVienDuAnManager.Instance.GetChiTietDuAnCuaNhanVien(idNhanVien);
+            // =========================================================
+            // TẦNG 1:
+            // Không còn load toàn bộ Project rồi mới lọc bằng LINQ.
+            // Keyword + Status được truyền xuống Manager để SQL xử lý.
+            // =========================================================
 
-            section_active_projects.Visible = true;
-            section_done_projects.Visible = true;
+            string keyword = (txtSearchDuAn.Text ?? string.Empty).Trim();
 
+            byte? statusId = null;
+
+            string statusFilter = ddlSearchTrangThaiDuAn.SelectedValue;
+
+            if (!string.IsNullOrEmpty(statusFilter) &&
+                byte.TryParse(statusFilter, out byte parsedStatusId))
+            {
+                statusId = parsedStatusId;
+            }
+
+            // Lấy dữ liệu đã được SQL filter sẵn.
+            List<NhanVienProjectDTO> allProjects =
+                ThanhVienDuAnManager.Instance.GetChiTietDuAnCuaNhanVien(
+                    CurrentIdNhanVien,
+                    keyword,
+                    statusId
+                );
+
+            // =========================================================
+            // Count tổng Project:
+            // Chỉ lấy ở lần load đầu tiên.
+            // Không dùng allProjects.Count nữa vì allProjects lúc này
+            // có thể đã bị filter bởi keyword/status.
+            // =========================================================
+            if (isInitialLoad)
+            {
+                int totalProjectCount =
+                    ThanhVienDuAnManager.Instance.CountDuAnCuaNhanVien(
+                        CurrentIdNhanVien
+                    );
+
+                ltrCountAllProj.Text = totalProjectCount.ToString();
+            }
+
+            // =========================================================
+            // Bind dữ liệu kết quả
+            // =========================================================
             if (allProjects != null && allProjects.Count > 0)
             {
-                // [CHUẨN HÓA ENUM]: Các dự án Đang thực hiện hoặc Chờ thực hiện
-                var activeStatuses = new List<byte> {
-                    (byte)DuAnStatus.DangThucHien,
-                    (byte)DuAnStatus.ChoThucHien
-                };
-                var activeProjects = allProjects.Where(p => activeStatuses.Contains(p.TrangThai)).ToList();
+                rptAllProjects.DataSource = allProjects;
+                rptAllProjects.DataBind();
 
-                // [CHUẨN HÓA ENUM]: Các dự án thuộc Lịch sử (Hoàn thành, Tạm dừng, Kết thúc)
-                var historyStatuses = new List<byte> {
-                    (byte)DuAnStatus.HoanThanh,
-                    (byte)DuAnStatus.TamDung,
-                    (byte)DuAnStatus.KetThuc
-                };
-                var doneProjects = allProjects.Where(p => historyStatuses.Contains(p.TrangThai)).ToList();
-
-                rptActiveProjects.DataSource = activeProjects;
-                rptActiveProjects.DataBind();
-                emptyActive.Visible = (activeProjects.Count == 0);
-
-                rptDoneProjects.DataSource = doneProjects;
-                rptDoneProjects.DataBind();
-                emptyDone.Visible = (doneProjects.Count == 0);
-
-                ltrActiveCount.Text = activeProjects.Count.ToString();
-                ltrDoneCount.Text = doneProjects.Count.ToString();
-                ltrCountActiveProj.Text = activeProjects.Count.ToString();
-                ltrCountDoneProj.Text = doneProjects.Count.ToString();
+                emptyAll.Visible = false;
             }
             else
             {
-                rptActiveProjects.DataSource = null;
-                rptActiveProjects.DataBind();
-                emptyActive.Visible = true;
+                rptAllProjects.DataSource = null;
+                rptAllProjects.DataBind();
 
-                rptDoneProjects.DataSource = null;
-                rptDoneProjects.DataBind();
-                emptyDone.Visible = true;
+                emptyAll.Visible = true;
+            }
 
-                ltrActiveCount.Text = "0";
-                ltrDoneCount.Text = "0";
-                ltrCountActiveProj.Text = "0";
-                ltrCountDoneProj.Text = "0";
+            // Ép UpdatePanel của danh sách Project cập nhật UI.
+            upListDuAn.Update();
+        }
+
+        #region Xử lý Sự kiện Tìm kiếm
+
+        protected void btnSearchDuAn_Click(object sender, EventArgs e)
+        {
+            UpdateSearchTags();
+            BindProjectData(false);
+        }
+
+        protected void ddlSearchTrangThaiDuAn_SelectedValueChanged(object sender, EventArgs e)
+        {
+            UpdateSearchTags();
+            BindProjectData(false);
+        }
+
+        private void UpdateSearchTags()
+        {
+            searchTagBoxDuAn.TagItems.Clear();
+
+            string statusValue = ddlSearchTrangThaiDuAn.SelectedValue;
+            if (!string.IsNullOrEmpty(statusValue) && ddlSearchTrangThaiDuAn.SearchTagItem != null)
+            {
+                searchTagBoxDuAn.TagItems.Add(ddlSearchTrangThaiDuAn.SearchTagItem);
+            }
+
+            string keyword = txtSearchDuAn.Text.Trim();
+            if (!string.IsNullOrEmpty(keyword) && txtSearchDuAn.SearchTagItem != null)
+            {
+                searchTagBoxDuAn.TagItems.Add(txtSearchDuAn.SearchTagItem);
+            }
+
+            searchTagBoxDuAn.Update();
+            upSearchTagDuAn.Update(); // Bắt UpdatePanel của TagBox cập nhật lại UI
+        }
+
+        protected void searchTagBoxDuAn_TagClosed(object sender, SearchTagItem tag)
+        {
+            try
+            {
+                if (tag.Key == ddlSearchTrangThaiDuAn.ClientID)
+                {
+                    ddlSearchTrangThaiDuAn.ClearSelection();
+                    upnlSearchDuAn.Update(); // Ép UpdatePanel Dropdown xóa giao diện cũ
+                }
+                else if (tag.Key == txtSearchDuAn.ClientID)
+                {
+                    txtSearchDuAn.Text = string.Empty;
+                    // Ép JS xóa mặt UI đề phòng Textbox không reset kịp
+                    ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "ClearTxtSearchDuAn",
+                        string.Format("$('#{0}').val('');", txtSearchDuAn.ClientID), true);
+                    upnlSearchDuAn.Update();
+                }
+
+                UpdateSearchTags();
+                BindProjectData(false);
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(GetResourceText(BackEndResourceKeys.ERROR_OCCURED) ?? "Có lỗi xảy ra.", MSGType.Error);
             }
         }
+
+        #endregion
 
         private string CalculateSeniority(DateTime joinDate)
         {
