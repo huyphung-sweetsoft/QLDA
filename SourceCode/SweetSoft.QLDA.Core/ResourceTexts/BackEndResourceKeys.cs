@@ -599,6 +599,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SAVE_TEMPLATE_BEFORE_UPLOAD = "SAVE_TEMPLATE_BEFORE_UPLOAD";
         public const string DOCUMENT = "DOCUMENT";
         public const string DOCUMENT_LIST = "DOCUMENT_LIST";
+        public const string DOCUMENT_ADMINISTRATION = "DOCUMENT_ADMINISTRATION";
         public const string DOCUMENT_CODE = "DOCUMENT_CODE";
         public const string DOCUMENT_NAME = "DOCUMENT_NAME";
         public const string DOCUMENT_STATUS = "DOCUMENT_STATUS";

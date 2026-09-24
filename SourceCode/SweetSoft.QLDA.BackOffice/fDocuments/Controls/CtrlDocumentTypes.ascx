@@ -36,7 +36,7 @@
 
                                             <SweetSoft:BootstrapDropdown
                                                 runat="server"
-                                                ID="ddlSearchNhom"
+                                                ID="ddlSearchNhom" Visible="false"
                                                 Text="Nhóm tài liệu"
                                                 AllowClear="true"
                                                 AutoPostBack="true"
@@ -128,7 +128,7 @@
                                             SortExpression="TenLoai" />
 
                                         <asp:BoundField
-                                            DataField="TenNhom"
+                                            DataField="TenNhom" Visible="false"
                                             HeaderText="Nhóm tài liệu"
                                             SortExpression="TenNhom" />
 
@@ -244,15 +244,15 @@
                     ID="hdfIdLoaiTaiLieu" />
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-6 mb-3" runat="server" visible="false">
                         <label class="form-label label-valid">
                             <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %>
                         </label>
 
                         <SweetSoft:ExtraDropdown
                             runat="server"
-                            ID="ddlNhomTaiLieu"
-                            Required="true"
+                            ID="ddlNhomTaiLieu" Visible="false"
+                            Required="false"
                             ValueIsOfTypeGUID="true"
                             SimpleInit="true"
                             PlaceHolder="Chọn nhóm tài liệu">
@@ -261,7 +261,7 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label label-valid">
-                            <%= GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE_NAME) %>
+                            <%= "Tên loại hồ sơ" %>
                         </label>
 
                         <SweetSoft:ExtraTextBox
@@ -272,6 +272,10 @@
                         </SweetSoft:ExtraTextBox>
                     </div>
 
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Nơi lưu trữ mặc định (không bắt buộc)</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlDefaultStorage" SimpleInit="true" />
+                    </div>
                     <div class="col-md-8 mb-3">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
@@ -462,7 +466,7 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">
-                                        <%= GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE_NAME) %>
+                                        <%= "Tên loại hồ sơ" %>
                                     </label>
 
                                     <SweetSoft:ExtraTextBox

@@ -22,7 +22,6 @@ namespace SweetSoft.QLDA.Core.Managers
                 () => new DocumentTypeManager());
 
         private readonly DocumentTypeRepository _repository;
-        private readonly DocumentGroupRepository _groupRepository;
 
         public static DocumentTypeManager Instance
         {
@@ -39,8 +38,6 @@ namespace SweetSoft.QLDA.Core.Managers
             _repository =
                 new DocumentTypeRepository(auditManager);
 
-            _groupRepository =
-                new DocumentGroupRepository(auditManager);
         }
 
         /// <summary>
@@ -103,7 +100,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         /// <summary>
-        /// Kiểm tra tên loại tài liệu đã tồn tại trong cùng nhóm chưa.
+        /// Kiểm tra tên loại hồ sơ đã tồn tại. Tham số nhóm giữ để tương thích caller cũ.
         /// excludeId dùng để bỏ qua chính bản ghi đang cập nhật.
         /// </summary>
         public bool IsNameExisted(
@@ -132,18 +129,13 @@ namespace SweetSoft.QLDA.Core.Managers
             bool canGuiKhachHang,
             bool canLuuVatLy,
             int thuTuHienThi,
-            bool kichHoat)
+            bool kichHoat,
+            Guid? defaultStorageLocation = null)
         {
             tenLoai = (tenLoai ?? string.Empty).Trim();
             moTa = (moTa ?? string.Empty).Trim();
             hinhThucKyMacDinh =
                 (hinhThucKyMacDinh ?? string.Empty).Trim();
-
-            if (idNhomTaiLieu == Guid.Empty)
-            {
-                throw new ArgumentException(
-                    "Vui lòng chọn nhóm tài liệu.");
-            }
 
             if (string.IsNullOrEmpty(tenLoai))
             {
@@ -182,35 +174,6 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
             }
 
-            TblNhomTaiLieu group =
-                _groupRepository.GetById(idNhomTaiLieu);
-
-            if (group == null)
-            {
-                throw new InvalidOperationException(
-                    "Nhóm tài liệu không tồn tại hoặc đã bị xóa.");
-            }
-
-            bool isChangingToInactiveGroup =
-                !group.KichHoat
-                && (item == null
-                    || item.IdNhomTaiLieu != group.IdNhomTaiLieu);
-
-            if (isChangingToInactiveGroup)
-            {
-                throw new InvalidOperationException(
-                    "Không thể chọn nhóm tài liệu đang bị khóa.");
-            }
-
-            if (_repository.IsNameExisted(
-                    tenLoai,
-                    idNhomTaiLieu,
-                    idLoaiTaiLieu))
-            {
-                throw new InvalidOperationException(
-                    "Tên loại tài liệu đã tồn tại trong nhóm đã chọn.");
-            }
-
             if (canTrinhKy
                 && !IsValidSigningMethod(hinhThucKyMacDinh))
             {
@@ -237,7 +200,6 @@ namespace SweetSoft.QLDA.Core.Managers
                 item.NgayCapNhat = currentDate;
             }
 
-            item.IdNhomTaiLieu = idNhomTaiLieu;
             item.TenLoai = tenLoai;
             item.MoTa = moTa;
             item.CanTrinhKy = canTrinhKy;
@@ -249,10 +211,12 @@ namespace SweetSoft.QLDA.Core.Managers
             item.ThuTuHienThi = thuTuHienThi;
             item.KichHoat = kichHoat;
 
-            if (idLoaiTaiLieu == Guid.Empty)
-                return _repository.Insert(item);
+            return _repository.SaveIndependentType(item, idLoaiTaiLieu == Guid.Empty, defaultStorageLocation);
+        }
 
-            return _repository.Update(item);
+        public Guid? GetDefaultStorageLocation(Guid idLoaiTaiLieu)
+        {
+            return _repository.GetDefaultStorageLocation(idLoaiTaiLieu);
         }
 
         public bool Delete(Guid idLoaiTaiLieu)

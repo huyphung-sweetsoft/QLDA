@@ -19,6 +19,27 @@ using System.Web.Hosting;
 
 namespace SweetSoft.QLDA.Core.Respositories
 {
+    public sealed class DocumentGrant
+    {
+        public Guid UserId { get; set; }
+        public bool CanView { get; set; }
+        public bool CanUpdateInfo { get; set; }
+        public bool CanManageFiles { get; set; }
+        public bool CanSigning { get; set; }
+        public bool CanCustomerDelivery { get; set; }
+        public bool CanPhysicalStorage { get; set; }
+        // Kept for backwards-compatible audit payloads and old callers. New
+        // UI/code writes the granular flags instead of this broad flag.
+        public bool CanUpdate { get; set; }
+        public bool CanDelete { get; set; }
+    }
+    public sealed class DocumentFileSet
+    {
+        public Guid? VersionId { get; set; }
+        public List<Guid> FileIds { get; set; } = new List<Guid>();
+        public bool Created { get; set; }
+    }
+
     public sealed class DocumentVersionFileDeletionResult
     {
         public List<TblUploadFile> DeletedFiles { get; set; } =
@@ -104,6 +125,261 @@ namespace SweetSoft.QLDA.Core.Respositories
         public DocumentRepository(AuditManager auditManager)
             : base(auditManager)
         {
+        }
+
+        public bool HasGroupRight(Guid userId, string key)
+        {
+            return Convert.ToBoolean(ExecuteScalarObject("SELECT dbo.fn_HoSo_GroupRight(@User,@Key)",
+                new Dictionary<string, object> { { "@User", userId }, { "@Key", key } }));
+        }
+
+        public Guid? ResolveUploadDocument(Guid refId, string refType)
+        {
+            if(refType=="DocumentVersion") return GetById(refId)==null ? (Guid?)null : refId;
+            if(refType!="DocumentSigningResult") return null;
+            object value=ExecuteScalarObject("SELECT IdTaiLieu FROM dbo.TblTrinhKyTaiLieu WHERE IdTrinhKyTaiLieu=@Id AND DaXoa=0",
+                new Dictionary<string,object>{{"@Id",refId}});
+            return value==null||value==DBNull.Value ? (Guid?)null : (Guid)value;
+        }
+
+        public bool CanAccess(Guid userId, Guid documentId, string action)
+        {
+            return Convert.ToBoolean(ExecuteScalarObject("SELECT dbo.fn_HoSo_CanAccess(@User,@Id,@Action)",
+                new Dictionary<string, object> { { "@User", userId }, { "@Id", documentId }, { "@Action", action } }));
+        }
+
+        public bool CanAccessProject(Guid userId, Guid projectId, string action)
+        {
+            return Convert.ToBoolean(ExecuteScalarObject("SELECT dbo.fn_HoSo_ProjectRight(@User,@Id,@Action)",
+                new Dictionary<string, object> { { "@User", userId }, { "@Id", projectId }, { "@Action", action } }));
+        }
+
+        /// <summary>
+        /// Checks a permission against both the project and the concrete
+        /// document.  This is intentionally different from CanAccessProject:
+        /// a user outside the project may still open a dossier when the
+        /// project PM has granted that specific dossier to them.
+        /// </summary>
+        public bool CanAccessProjectDocument(
+            Guid userId,
+            Guid documentId,
+            Guid projectId,
+            string action)
+        {
+            return Convert.ToBoolean(ExecuteScalarObject(
+                @"SELECT CASE WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM dbo.TblTaiLieu
+                        WHERE IdTaiLieu=@DocumentId
+                          AND IdDuAn=@ProjectId
+                          AND DaXoa=0
+                    )
+                    AND dbo.fn_HoSo_CanAccess(@User,@DocumentId,@Action)=1
+                    THEN 1 ELSE 0 END",
+                new Dictionary<string, object>
+                {
+                    { "@User", userId },
+                    { "@DocumentId", documentId },
+                    { "@ProjectId", projectId },
+                    { "@Action", action }
+                }));
+        }
+
+        /// <summary>
+        /// Quyền mở khu vực Hồ sơ dự án dành cho PM/thành viên, hoặc người
+        /// ngoài dự án đã được cấp ít nhất một hồ sơ cụ thể. Quyền trên từng
+        /// hồ sơ vẫn được kiểm tra riêng bằng fn_HoSo_CanAccess.
+        /// </summary>
+        public bool CanEnterProjectDocumentArea(Guid userId, Guid projectId)
+        {
+            return Convert.ToBoolean(ExecuteScalarObject(
+                "SELECT dbo.fn_HoSo_ProjectAreaAccess(@User,@Id)",
+                new Dictionary<string, object>
+                {
+                    { "@User", userId },
+                    { "@Id", projectId }
+                }));
+        }
+
+        public bool HasAnyProjectAccess(Guid userId, string action)
+        {
+            return ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblDuAn WHERE DaXoa=0 AND dbo.fn_HoSo_ProjectRight(@User,IdDuAn,@Action)=1",
+                new Dictionary<string, object> { { "@User", userId }, { "@Action", action } }) > 0;
+        }
+
+        public DataTable GetGrantMembers(Guid documentId)
+        {
+            return GetGrantMembers(documentId, false);
+        }
+
+        public DataTable GetGrantMembers(Guid documentId, bool includeExternalUsers)
+        {
+            return GetGrantMembers(documentId, includeExternalUsers, false);
+        }
+
+        /// <summary>
+        /// Returns the employees that can be selected in the dossier ACL.
+        /// When onlyExternalUsers is true, project members are deliberately
+        /// excluded so the popup can switch between two clear audiences.
+        /// </summary>
+        public DataTable GetGrantMembers(
+            Guid documentId,
+            bool includeExternalUsers,
+            bool onlyExternalUsers)
+        {
+            return ExecuteDataTable(@"SELECT DISTINCT
+                    u.UserId,
+                    ISNULL(u.DisplayName,u.UserName) AS DisplayName,
+                    CASE WHEN m.IdNhanVien IS NULL THEN 0 ELSE 1 END AS IsProjectMember,
+                    CASE WHEN t.IdNhanVienPhuTrach=u.UserId THEN 1 ELSE 0 END AS IsResponsibleDefault,
+                    CASE
+                        WHEN t.IdNhanVienPhuTrach=u.UserId
+                         AND dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.View')=1
+                        THEN 1
+                        ELSE ISNULL(g.CanView,0)
+                    END AS CanView,
+                    CASE
+                        WHEN t.IdNhanVienPhuTrach=u.UserId
+                         AND (dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.UpdateInfo')=1
+                              OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1)
+                        THEN 1
+                        ELSE ISNULL(g.CanUpdateInfo,0)
+                    END AS CanUpdateInfo,
+                    ISNULL(g.CanManageFiles,0) AS CanManageFiles,
+                    ISNULL(g.CanSigning,0) AS CanSigning,
+                    ISNULL(g.CanCustomerDelivery,0) AS CanCustomerDelivery,
+                    ISNULL(g.CanPhysicalStorage,0) AS CanPhysicalStorage,
+                    ISNULL(g.CanUpdate,0) AS CanUpdate,
+                    ISNULL(g.CanDelete,0) AS CanDelete,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.View') AS MaxView,
+                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.UpdateInfo')=1
+                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
+                         THEN 1 ELSE 0 END AS MaxUpdateInfo,
+                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.ManageFiles')=1
+                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
+                         THEN 1 ELSE 0 END AS MaxManageFiles,
+                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Signing')=1
+                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
+                         THEN 1 ELSE 0 END AS MaxSigning,
+                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.CustomerDelivery')=1
+                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
+                         THEN 1 ELSE 0 END AS MaxCustomerDelivery,
+                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.PhysicalStorage')=1
+                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
+                         THEN 1 ELSE 0 END AS MaxPhysicalStorage,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Delete') AS MaxDelete
+                FROM dbo.TblTaiLieu t
+                JOIN dbo.TblDuAn d
+                    ON d.IdDuAn=t.IdDuAn
+                   AND d.DaXoa=0
+                JOIN dbo.aspnet_Users u
+                    ON u.IsDeleted=0
+                   AND u.IsActivated=1
+                   AND u.IsAnonymous=0
+                   AND u.LaNhanVien=1
+                LEFT JOIN dbo.TblThanhVienDuAn m
+                    ON m.IdDuAn=t.IdDuAn
+                   AND m.IdNhanVien=u.UserId
+                   AND m.DaXoa=0
+                LEFT JOIN dbo.TblTaiLieuQuyen g
+                    ON g.IdTaiLieu=t.IdTaiLieu
+                   AND g.UserId=u.UserId
+                WHERE t.IdTaiLieu=@Id
+                  AND t.DaXoa=0
+                  AND (d.IdNhanVienQuanLy IS NULL OR u.UserId<>d.IdNhanVienQuanLy)
+                  AND
+                  (
+                      (
+                          @OnlyExternal=1
+                          AND m.IdNhanVien IS NULL
+                          AND
+                          (
+                              t.IdNhanVienPhuTrach IS NULL
+                              OR t.IdNhanVienPhuTrach<>u.UserId
+                          )
+                      )
+                      OR
+                      (
+                          @OnlyExternal=0
+                          AND
+                          (
+                              m.IdNhanVien IS NOT NULL
+                              OR t.IdNhanVienPhuTrach=u.UserId
+                              OR @IncludeExternal=1
+                          )
+                      )
+                  )
+                ORDER BY DisplayName", new Dictionary<string, object>
+                {
+                    { "@Id", documentId },
+                    { "@IncludeExternal", includeExternalUsers ? 1 : 0 },
+                    { "@OnlyExternal", onlyExternalUsers ? 1 : 0 }
+                });
+        }
+
+        public string GetGrantStamp(Guid documentId)
+        {
+            var rows = ExecuteDataTable("SELECT UserId,CanView,CanUpdateInfo,CanManageFiles,CanSigning,CanCustomerDelivery,CanPhysicalStorage,CanUpdate,CanDelete,UpdatedAt FROM dbo.TblTaiLieuQuyen WHERE IdTaiLieu=@Id ORDER BY UserId",
+                new Dictionary<string, object> { { "@Id", documentId } });
+            string values = string.Join("|", rows.AsEnumerable().Select(r => string.Join(",",r.ItemArray.Select(v => v is DateTime ? ((DateTime)v).ToString("O") : Convert.ToString(v)))));
+            using(var hash=System.Security.Cryptography.SHA256.Create())
+                return Convert.ToBase64String(hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(values)));
+        }
+
+        public void SaveGrants(Guid actor, Guid documentId, IEnumerable<DocumentGrant> grants, string expectedStamp)
+        {
+            var items=grants.ToList();
+            if(items.Select(x=>x.UserId).Distinct().Count()!=items.Count) throw new InvalidOperationException("Nhân viên bị trùng.");
+            using(var scope=new TransactionScope(TransactionScopeOption.Required,TimeSpan.FromMinutes(2))) {
+                ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblTaiLieu WITH(UPDLOCK,HOLDLOCK) WHERE IdTaiLieu=@Id",new Dictionary<string,object>{{"@Id",documentId}});
+                if(!CanAccess(actor,documentId,"Manage")) throw new UnauthorizedAccessException("Bạn không được cấp quyền hồ sơ này.");
+                if(GetGrantStamp(documentId)!=expectedStamp) throw new InvalidOperationException("Quyền đã thay đổi. Hãy đóng và mở lại popup.");
+                bool canGrantOutsideProject = HasGroupRight(actor, "DocumentAdministration.View");
+                var members=GetGrantMembers(documentId, canGrantOutsideProject)
+                    .AsEnumerable()
+                    .ToDictionary(r=>(Guid)r["UserId"]);
+                foreach(var item in items) {
+                    DataRow member;
+                    if(!members.TryGetValue(item.UserId,out member)) throw new InvalidOperationException("Nhân viên không còn thuộc dự án hoặc không nằm trong danh sách được cấp quyền.");
+                    if (!canGrantOutsideProject
+                        && !Convert.ToBoolean(member["IsProjectMember"]))
+                    {
+                        /* Người phụ trách ngoài dự án vẫn có quyền mặc định
+                           theo hồ sơ, nhưng PM dự án không được tạo/sửa ACL
+                           riêng cho một người ngoài. */
+                        continue;
+                    }
+                    bool hasGranularUpdate = item.CanUpdateInfo
+                        || item.CanManageFiles
+                        || item.CanSigning
+                        || item.CanCustomerDelivery
+                        || item.CanPhysicalStorage;
+                    if((hasGranularUpdate||item.CanDelete)&&!item.CanView) throw new InvalidOperationException("Quyền thao tác/xóa phải kèm quyền xem.");
+                    if((item.CanView&&!Convert.ToBoolean(member["MaxView"]))
+                        || (item.CanUpdateInfo&&!Convert.ToBoolean(member["MaxUpdateInfo"]))
+                        || (item.CanManageFiles&&!Convert.ToBoolean(member["MaxManageFiles"]))
+                        || (item.CanSigning&&!Convert.ToBoolean(member["MaxSigning"]))
+                        || (item.CanCustomerDelivery&&!Convert.ToBoolean(member["MaxCustomerDelivery"]))
+                        || (item.CanPhysicalStorage&&!Convert.ToBoolean(member["MaxPhysicalStorage"]))
+                        || (item.CanDelete&&!Convert.ToBoolean(member["MaxDelete"])))
+                        throw new InvalidOperationException("Quyền cấp vượt quyền nhóm hiện tại. Hãy mở lại popup.");
+                    ExecuteNonQuery(@"UPDATE dbo.TblTaiLieuQuyen
+                        SET CanView=@V,CanUpdateInfo=@I,CanManageFiles=@F,CanSigning=@S,
+                            CanCustomerDelivery=@C,CanPhysicalStorage=@P,CanUpdate=0,
+                            CanDelete=@D,UpdatedBy=@Actor,UpdatedAt=SYSUTCDATETIME()
+                        WHERE IdTaiLieu=@Id AND UserId=@User;
+                        IF @@ROWCOUNT=0 INSERT dbo.TblTaiLieuQuyen
+                            (IdTaiLieu,UserId,CanView,CanUpdateInfo,CanManageFiles,CanSigning,
+                             CanCustomerDelivery,CanPhysicalStorage,CanUpdate,CanDelete,UpdatedBy,UpdatedAt)
+                            VALUES(@Id,@User,@V,@I,@F,@S,@C,@P,0,@D,@Actor,SYSUTCDATETIME());",
+                        new Dictionary<string,object>{{"@Id",documentId},{"@User",item.UserId},{"@Actor",actor},
+                            {"@V",item.CanView},{"@I",item.CanUpdateInfo},{"@F",item.CanManageFiles},
+                            {"@S",item.CanSigning},{"@C",item.CanCustomerDelivery},
+                            {"@P",item.CanPhysicalStorage},{"@D",item.CanDelete}});
+                }
+                scope.Complete();
+            }
         }
 
         public DataTable SearchDocuments(
@@ -257,6 +533,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                         ON u.Id = t.IdFileBanChinhThuc
                        AND u.IsDeleted = 0
                     WHERE t.DaXoa = 0
+                      AND dbo.fn_HoSo_CanAccess('{SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId:D}',t.IdTaiLieu,'View')=1
                       AND
                       (
                           @documentScope = 'ALL'
@@ -569,7 +846,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         /// that points at them in one database transaction. Physical files are
         /// deliberately left for the manager after the transaction commits.
         /// </summary>
-        public DocumentVersionFileDeletionResult DeleteDocumentVersionFiles(
+        private DocumentVersionFileDeletionResult LegacyDeleteDocumentVersionFiles(
             Guid idTaiLieu,
             IEnumerable<Guid> fileIds,
             string currentUserName,
@@ -963,6 +1240,173 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .GetRecordCount() > 0;
         }
 
+        public DocumentFileSet GetCurrentDocumentFileSet(Guid documentId)
+        {
+            DataTable rows = ExecuteDataTable(@"
+                SELECT IdPhienBanTaiLieu, IdFileNoiDung, DanhSachFileJson
+                FROM dbo.TblPhienBanTaiLieu
+                WHERE IdTaiLieu=@DocumentId AND DaXoa=0 AND LaPhienBanHienTai=1;",
+                new Dictionary<string, object> { { "@DocumentId", documentId } });
+            if (rows.Rows.Count > 1)
+                throw new InvalidOperationException("Hồ sơ có nhiều phiên bản hiện tại; cần kiểm tra dữ liệu.");
+            return rows.Rows.Count == 0 ? new DocumentFileSet() : new DocumentFileSet
+            {
+                VersionId = (Guid)rows.Rows[0]["IdPhienBanTaiLieu"],
+                FileIds = ReadDocumentFileIds(rows.Rows[0])
+            };
+        }
+
+        public List<Guid> GetDocumentVersionFileIds(
+            Guid documentId,
+            Guid versionId)
+        {
+            if (documentId == Guid.Empty || versionId == Guid.Empty)
+                return new List<Guid>();
+
+            DataTable rows = ExecuteDataTable(@"
+                SELECT TOP 1 IdFileNoiDung, DanhSachFileJson
+                FROM dbo.TblPhienBanTaiLieu
+                WHERE IdTaiLieu=@DocumentId
+                  AND IdPhienBanTaiLieu=@VersionId
+                  AND DaXoa=0;",
+                new Dictionary<string, object>
+                {
+                    { "@DocumentId", documentId },
+                    { "@VersionId", versionId }
+                });
+
+            return rows.Rows.Count == 0
+                ? new List<Guid>()
+                : ReadDocumentFileIds(rows.Rows[0]);
+        }
+
+        private static List<Guid> ReadDocumentFileIds(DataRow row)
+        {
+            if (row["DanhSachFileJson"] == DBNull.Value)
+                return row["IdFileNoiDung"] == DBNull.Value ? new List<Guid>()
+                    : new List<Guid> { (Guid)row["IdFileNoiDung"] };
+            JArray items;
+            try { items = JArray.Parse(Convert.ToString(row["DanhSachFileJson"])); }
+            catch (Newtonsoft.Json.JsonException)
+            { throw new InvalidOperationException("Danh sách file của phiên bản không hợp lệ."); }
+            var result = new List<Guid>();
+            foreach (JToken item in items)
+            {
+                Guid id;
+                if (item.Type != JTokenType.String || !Guid.TryParse((string)item, out id)
+                    || id == Guid.Empty || result.Contains(id))
+                    throw new InvalidOperationException("Danh sách file chứa ID không hợp lệ hoặc bị trùng.");
+                result.Add(id);
+            }
+            return result;
+        }
+
+        public DocumentFileSet SaveDocumentFileSet(
+            Guid documentId,
+            Guid? expectedVersionId,
+            IEnumerable<Guid> fileIds,
+            string userName,
+            DateTime now)
+        {
+            return SaveDocumentFileSet(
+                documentId,
+                expectedVersionId,
+                fileIds,
+                userName,
+                now,
+                null);
+        }
+
+        public DocumentFileSet SaveDocumentFileSet(
+            Guid documentId,
+            Guid? expectedVersionId,
+            IEnumerable<Guid> fileIds,
+            string userName,
+            DateTime now,
+            string description)
+        {
+            return SaveDocumentFileSet(
+                documentId,
+                expectedVersionId,
+                fileIds,
+                userName,
+                now,
+                description,
+                null);
+        }
+
+        public DocumentFileSet SaveDocumentFileSet(
+            Guid documentId,
+            Guid? expectedVersionId,
+            IEnumerable<Guid> fileIds,
+            string userName,
+            DateTime now,
+            string description,
+            string source)
+        {
+            var ids = (fileIds ?? Enumerable.Empty<Guid>()).ToList();
+            if (ids.Any(id => id == Guid.Empty) || ids.Distinct().Count() != ids.Count)
+                throw new InvalidOperationException("Danh sách file không hợp lệ hoặc bị trùng.");
+            using (var scope = new TransactionScope(TransactionScopeOption.Required,
+                new TimeSpan(0, 2, 0)))
+            {
+                var parameters = new Dictionary<string, object> { { "@DocumentId", documentId } };
+                if (ExecuteScalarInt(@"SELECT COUNT(*) FROM dbo.TblTaiLieu WITH (UPDLOCK,HOLDLOCK)
+                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0;", parameters) != 1)
+                    throw new InvalidOperationException("Không tìm thấy hồ sơ.");
+                DocumentFileSet current = GetCurrentDocumentFileSet(documentId);
+                // The dossier lock serializes writers; equal content also makes request retries harmless.
+                if (new HashSet<Guid>(current.FileIds).SetEquals(ids))
+                {
+                    scope.Complete();
+                    return current;
+                }
+                if (current.VersionId != expectedVersionId)
+                    throw new InvalidOperationException("Hồ sơ đã có phiên bản mới. Vui lòng tải lại trang trước khi lưu.");
+
+                var ownedIds = new HashSet<Guid>(GetDocumentVersionFiles(documentId).Select(f => f.Id));
+                if (ids.Any(id => !ownedIds.Contains(id)))
+                    throw new InvalidOperationException("File không tồn tại hoặc không thuộc hồ sơ này.");
+
+                decimal maximum = 0;
+                foreach (var version in GetDocumentVersions(documentId, true))
+                {
+                    decimal number;
+                    if (decimal.TryParse(version.SoPhienBan, NumberStyles.Number,
+                        CultureInfo.InvariantCulture, out number)) maximum = Math.Max(maximum, number);
+                }
+                string nextNumber = (Math.Floor(maximum) + 1).ToString("0.0", CultureInfo.InvariantCulture);
+                if (nextNumber.Length > 20) throw new InvalidOperationException("Số phiên bản vượt giới hạn.");
+                Guid newId = Guid.NewGuid();
+                parameters["@VersionId"] = newId;
+                parameters["@PreviousId"] = (object)current.VersionId ?? DBNull.Value;
+                parameters["@Number"] = nextNumber;
+                parameters["@Json"] = new JArray(ids.Select(id => id.ToString("D"))).ToString(Newtonsoft.Json.Formatting.None);
+                // Legacy single-file workflows remain valid only for a singleton snapshot.
+                parameters["@SingleFileId"] = ids.Count == 1 ? (object)ids[0] : DBNull.Value;
+                parameters["@User"] = string.IsNullOrWhiteSpace(userName) ? "[System]"
+                    : userName.Substring(0, Math.Min(userName.Length, 150));
+                parameters["@Now"] = now;
+                parameters["@Description"] = string.IsNullOrWhiteSpace(description)
+                    ? "Lưu bộ hồ sơ gồm " + ids.Count + " file."
+                    : description.Substring(0, Math.Min(description.Length, 500));
+                parameters["@Source"] = string.IsNullOrWhiteSpace(source)
+                    ? "UPLOAD"
+                    : source.Substring(0, Math.Min(source.Length, 50));
+                ExecuteNonQuery(@"
+                    UPDATE dbo.TblPhienBanTaiLieu SET LaPhienBanHienTai=0,
+                        NguoiCapNhat=@User, NgayCapNhat=@Now
+                    WHERE IdTaiLieu=@DocumentId AND LaPhienBanHienTai=1;
+                    INSERT dbo.TblPhienBanTaiLieu
+                        (IdPhienBanTaiLieu,IdTaiLieu,SoPhienBan,NguonTao,IdPhienBanNguon,
+                         MoTaPhienBan,LaPhienBanHienTai,DaXoa,NguoiTao,NgayTao,IdFileNoiDung,DanhSachFileJson)
+                    VALUES (@VersionId,@DocumentId,@Number,@Source,@PreviousId,
+                        @Description,1,0,@User,@Now,@SingleFileId,@Json);", parameters);
+                scope.Complete();
+                return new DocumentFileSet { VersionId = newId, FileIds = ids, Created = true };
+            }
+        }
+
         public DataTable GetDocumentVersionsWithFiles(Guid idTaiLieu)
         {
             if (idTaiLieu == Guid.Empty)
@@ -977,6 +1421,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     p.LaPhienBanHienTai,
                     p.NguoiTao,
                     p.NgayTao,
+                    fileCount.FileCount,
                     u.Id AS IdFile,
                     u.Name AS TenFile,
                     u.OriginalFileName AS TenFileGoc,
@@ -986,8 +1431,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                     ISNULL(NULLIF(creator.DisplayName, N''), p.NguoiTao)
                         AS TenNguoiTao
                 FROM TblPhienBanTaiLieu p
-                INNER JOIN TblUploadFile u
-                    ON u.Id = p.IdFileNoiDung
+                CROSS APPLY (SELECT COALESCE(p.DanhSachFileJson,
+                    CASE WHEN p.IdFileNoiDung IS NULL THEN N'[]'
+                    ELSE N'[""' + CONVERT(nvarchar(36),p.IdFileNoiDung) + N'""]' END) AS FileJson) snapshot
+                CROSS APPLY (SELECT COUNT(*) AS FileCount FROM OPENJSON(snapshot.FileJson)) fileCount
+                OUTER APPLY OPENJSON(snapshot.FileJson) member
+                LEFT JOIN TblUploadFile u
+                    ON u.Id = TRY_CONVERT(uniqueidentifier, member.value)
+                   AND u.RefId = p.IdTaiLieu AND u.RefType = 'DocumentVersion'
                    AND u.IsDeleted = 0
                 OUTER APPLY
                 (
@@ -3113,6 +3564,12 @@ namespace SweetSoft.QLDA.Core.Respositories
             if (string.Equals(oldValue, newValue, StringComparison.Ordinal))
                 return;
 
+            if (propertyName == "NoiDungHtml")
+            {
+                changes.Add("Nội dung hồ sơ đã thay đổi.");
+                return;
+            }
+
             if (string.Equals(
                     propertyName,
                     "NguoiCapNhat",
@@ -3740,6 +4197,41 @@ namespace SweetSoft.QLDA.Core.Respositories
                 && row[columnName] != DBNull.Value
                 ? Convert.ToDateTime(row[columnName])
                 : DateTime.UtcNow;
+        }
+
+        public string GetDocumentContent(Guid documentId)
+        {
+            var rows = ExecuteDataTable(
+                "SELECT NoiDungHtml,MoTa FROM dbo.TblTaiLieu WHERE IdTaiLieu=@Id AND DaXoa=0;",
+                new Dictionary<string, object> { { "@Id", documentId } });
+            if (rows.Rows.Count == 0) return string.Empty;
+            var row = rows.Rows[0];
+            // Only NULL falls back to legacy description. An explicitly cleared editor stays empty.
+            if (row["NoiDungHtml"] != DBNull.Value) return Convert.ToString(row["NoiDungHtml"]);
+            return System.Web.HttpUtility.HtmlEncode(Convert.ToString(row["MoTa"]))
+                .Replace("\r\n", "\n").Replace("\n", "<br />");
+        }
+
+        // null means an old caller did not edit content; empty string explicitly clears it.
+        public TblTaiLieu SaveWithContent(TblTaiLieu item, bool isNew, string content)
+        {
+            var old = isNew ? null : GetById(item.IdTaiLieu);
+            string before = content == null ? null : GetDocumentContent(item.IdTaiLieu);
+            using (var scope = new TransactionScope(TransactionScopeOption.Required, new TimeSpan(0, 2, 0))) {
+                item.Save();
+                if (content != null)
+                    ExecuteNonQuery("UPDATE dbo.TblTaiLieu SET NoiDungHtml=@Content WHERE IdTaiLieu=@Id;",
+                        new Dictionary<string, object> { { "@Id", item.IdTaiLieu }, { "@Content", content } });
+                scope.Complete();
+            }
+            if (isNew) LogCreate(item); else LogUpdate(old, item);
+            if (content != null && before != content)
+                ExecuteAuditSafely(() => _auditManager.LogChangesAsync(
+                    new { NoiDungHtml = System.Web.HttpUtility.HtmlEncode(before) },
+                    new { NoiDungHtml = System.Web.HttpUtility.HtmlEncode(content) }, _tableName,
+                    item.IdTaiLieu, item.NguoiCapNhat ?? item.NguoiTao ?? string.Empty),
+                    "Failed to log document content change");
+            return item;
         }
 
         public override TblTaiLieu Insert(TblTaiLieu item)

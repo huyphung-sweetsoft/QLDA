@@ -62,7 +62,7 @@ namespace SweetSoft.QLDA.Core.Functions
 
                 CacheManager.SetCacheData($"ModuleByUserId_{userId}", modules);
             }
-            return modules;
+            return WithoutRetiredDocumentCatalogues(modules);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace SweetSoft.QLDA.Core.Functions
             // Đây là một danh mục cấu hình rất nhỏ và chỉ được đọc một lần khi
             // render thanh tab. Không cache để thay đổi OfProject/PageUrl/Thứ tự
             // hiển thị trong database có hiệu lực ngay, không phải chờ cache hết hạn.
-            return _repository.GetProjectTabFunctions();
+            return WithoutRetiredDocumentCatalogues(_repository.GetProjectTabFunctions());
         }
         public List<string> GetAllModules(Guid userId, bool isDev)
         {
@@ -92,11 +92,19 @@ namespace SweetSoft.QLDA.Core.Functions
                 modules = _repository.GetAllAspnetFunctions();
                 CacheManager.SetCacheData("AllModules", modules);
             }
-            return modules;
+            return WithoutRetiredDocumentCatalogues(modules);
         }
         public List<AspnetFunction> GetAspnetFunctionWithPermissionKey()
         {
             return _repository.GetAspnetFunctionWithPermissionKey();
+        }
+
+        private static List<AspnetFunction> WithoutRetiredDocumentCatalogues(List<AspnetFunction> modules)
+        {
+            return (modules ?? new List<AspnetFunction>()).Where(module =>
+                !string.Equals(module.FunctionCode, ModuleKeys.DocumentGroup.ToString(), StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(module.FunctionCode, ModuleKeys.DocumentTemplate.ToString(), StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(module.FunctionCode, ModuleKeys.DocumentAdministration.ToString(), StringComparison.OrdinalIgnoreCase)).ToList();
         }
         public List<AspnetPermission> GetAspnetPermissions()
         {

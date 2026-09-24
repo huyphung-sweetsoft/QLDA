@@ -8,6 +8,9 @@
     TagName="FilesBox" %>
 
 <style>
+    .document-file-set .sorting-control,
+    .document-file-set .sort-item,
+    .document-file-set .file-actions { display: none !important; }
     .document-detail {
         --document-purple: #4d0f91;
         --document-purple-soft: #f6f1fb;
@@ -218,6 +221,47 @@
             width: 100%;
         }
     }
+
+    .document-content-view { overflow-wrap: anywhere; overflow-x: auto; max-height: 420px; }
+    .document-content-view table { border-collapse: collapse; max-width: 100%; }
+    .document-content-view td, .document-content-view th { border: 1px solid #d9dee3; padding: .4rem; }
+    .document-content-view pre { white-space: pre-wrap; }
+
+    .document-file-history { position: relative; padding: .25rem 0 .25rem 1.5rem; }
+    .document-file-history::before {
+        content: ""; position: absolute; top: .5rem; bottom: .5rem; left: .45rem;
+        width: 2px; background: #e5d8f4;
+    }
+    .document-file-history__item { position: relative; padding: 0 0 1rem 1rem; }
+    .document-file-history__dot {
+        position: absolute; z-index: 1; top: .85rem; left: -.02rem;
+        width: .8rem; height: .8rem; border-radius: 50%;
+        background: #4d0f91; box-shadow: 0 0 0 4px #f6f1fb;
+    }
+    .document-file-history__card {
+        border: 1px solid #e4d9f0; border-radius: .55rem; background: #fff;
+        padding: .85rem 1rem; box-shadow: 0 2px 6px rgba(35, 18, 56, .04);
+    }
+    .document-file-history__head {
+        display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .document-file-history__version { color: #4d0f91; font-weight: 600; }
+    .document-file-history__meta { color: #667085; font-size: .82rem; margin-top: .2rem; }
+    .document-file-history__summary { color: #344054; font-weight: 500; margin-top: .7rem; }
+    .document-file-history__description { color: #667085; font-size: .9rem; margin-top: .25rem; }
+    .document-file-history__actions { display: flex; flex-wrap: wrap; gap: .35rem; justify-content: flex-end; }
+    .document-version-file-list { display: grid; gap: .6rem; }
+    .document-version-file {
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        border: 1px solid #e4e7ec; border-radius: .45rem; padding: .7rem .8rem;
+    }
+    .document-version-file__name { font-weight: 500; overflow-wrap: anywhere; }
+    .document-version-file__meta { color: #667085; font-size: .8rem; margin-top: .15rem; }
+    @media (max-width: 575.98px) {
+        .document-file-history__head, .document-version-file { display: block; }
+        .document-file-history__actions { justify-content: flex-start; margin-top: .65rem; }
+        .document-version-file .btn { margin-top: .55rem; }
+    }
 </style>
 
 <asp:UpdatePanel
@@ -228,6 +272,10 @@
     <ContentTemplate>
 <div class="document-detail">
     <asp:HiddenField runat="server" ID="hdfIdTaiLieu" />
+    <div class="d-flex justify-content-end mb-2">
+        <asp:Button runat="server" ID="btnDocumentPermissions" Text="Cấp quyền" Visible="false"
+            CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="btnDocumentPermissions_Click" />
+    </div>
 
     <div class="document-detail__header">
         <div class="document-detail__identity">
@@ -336,19 +384,65 @@
         </div>
     </div>
 
+            <div class="document-detail__section">
+                <div class="document-detail__section-title">
+                    <%= GetResourceText(BackEndResourceKeys.BASIC_INFORMATION) %>
+                </div>
+                <div class="row g-0 gx-lg-4">
+                    <div class="col-lg-4 col-md-6" runat="server" visible="false">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %></span>
+                            <asp:Label runat="server" ID="lblDocumentGroup" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label"><%= "Loại hồ sơ" %></span>
+                            <asp:Label runat="server" ID="lblDocumentType" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.RESPONSIBLE_EMPLOYEE) %></span>
+                            <asp:Label runat="server" ID="lblResponsibleEmployee" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.CREATED_BY) %></span>
+                            <asp:Label runat="server" ID="lblCreatedBy" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.CREATED_DATE) %></span>
+                            <asp:Label runat="server" ID="lblCreatedDate" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.UPDATED_DATE) %></span>
+                            <asp:Label runat="server" ID="lblUpdatedDate" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                    <div class="col-12" runat="server" visible="false">
+                        <div class="document-detail__field border-0">
+                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></span>
+                            <asp:Label runat="server" ID="lblDescription" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+    <div class="document-detail__section mb-3">
+        <div class="document-detail__section-title">Nội dung hồ sơ</div>
+        <div class="document-content-view"><asp:Literal runat="server" ID="litDocumentContent" /></div>
+    </div>
     <ul class="nav nav-pills document-detail__tabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" data-bs-toggle="tab"
-                data-bs-target="#document-overview" type="button" role="tab">
-                <i class="fas fa-info-circle me-1"></i>
-                <%= GetResourceText(BackEndResourceKeys.OVERVIEW) %>
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab"
                 data-bs-target="#document-versions" type="button" role="tab">
                 <i class="fas fa-layer-group me-1"></i>
-                <%= GetResourceText(BackEndResourceKeys.DOCUMENT_VERSIONS) %>
+                Các file hồ sơ
                 <asp:Label runat="server" ID="lblVersionCount"
                     CssClass="badge bg-light text-dark ms-1" />
             </button>
@@ -390,71 +484,22 @@
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="document-overview" role="tabpanel">
+        <div class="tab-pane fade show active" id="document-versions" role="tabpanel">
             <div class="document-detail__section">
-                <div class="document-detail__section-title">
-                    <%= GetResourceText(BackEndResourceKeys.BASIC_INFORMATION) %>
-                </div>
-                <div class="row g-0 gx-lg-4">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="document-detail__field">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %></span>
-                            <asp:Label runat="server" ID="lblDocumentGroup" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="document-detail__field">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE) %></span>
-                            <asp:Label runat="server" ID="lblDocumentType" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="document-detail__field">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.RESPONSIBLE_EMPLOYEE) %></span>
-                            <asp:Label runat="server" ID="lblResponsibleEmployee" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="document-detail__field">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.CREATED_BY) %></span>
-                            <asp:Label runat="server" ID="lblCreatedBy" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="document-detail__field">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.CREATED_DATE) %></span>
-                            <asp:Label runat="server" ID="lblCreatedDate" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="document-detail__field">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.UPDATED_DATE) %></span>
-                            <asp:Label runat="server" ID="lblUpdatedDate" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="document-detail__field border-0">
-                            <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></span>
-                            <asp:Label runat="server" ID="lblDescription" CssClass="document-detail__field-value" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="document-versions" role="tabpanel">
-            <div class="document-detail__section">
-                <div class="document-detail__section-title"><%= GetResourceText(BackEndResourceKeys.DOCUMENT_VERSIONS) %></div>
+                <div class="document-detail__section-title">Các file hồ sơ</div>
                 <asp:Panel
                     runat="server"
                     ID="pnlVersionUploader"
-                    CssClass="border rounded bg-light p-3 mb-3">
+                    CssClass="border rounded bg-light p-3 mb-3 document-file-box">
                     <h6 class="text-primary mb-2">
                         <i class="fas fa-cloud-upload-alt me-1"></i>
-                        <%= GetResourceText(BackEndResourceKeys.UPLOAD_NEW_VERSION) %>
+                        Cập nhật bộ file hồ sơ
                     </h6>
                     <div class="alert alert-info py-2 mb-3">
-                        <%= GetResourceText(BackEndResourceKeys.VERSION_MANAGEMENT_NOTICE) %>
+                        Thêm hoặc gỡ file rồi bấm Lưu thay đổi để tạo một phiên bản chứa cả bộ file.
+                        File đã gỡ vẫn được giữ trong phiên bản cũ. Hủy bỏ không tạo phiên bản mới.
+                        Hiện trình ký và gửi khách chỉ hỗ trợ phiên bản có một file;
+                        xử lý nhiều file sẽ được bổ sung ở chặng tiếp theo.
                     </div>
                     <SweetSoft:FilesBox
                         runat="server"
@@ -465,76 +510,71 @@
                     <i class="fas fa-file-medical"></i>
                     <%= GetResourceText(BackEndResourceKeys.NO_DOCUMENT_VERSIONS) %>
                 </asp:Panel>
-                <asp:Panel runat="server" ID="pnlVersions" CssClass="table-responsive">
-                    <table class="table table-bordered table-hover document-detail__table">
-                        <thead><tr>
-                            <th><%= GetResourceText(BackEndResourceKeys.VERSION_NUMBER) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.FILE_NAME) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.FILE_SIZE) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.SOURCE) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.CREATED_BY) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.CREATED_DATE) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
-                        </tr></thead>
-                        <tbody>
-                            <asp:Repeater
-                                runat="server"
-                                ID="rptVersions"
-                                OnItemCommand="rptVersions_ItemCommand">
-                                <ItemTemplate><tr>
-                                    <td>
-                                        v<%#: Eval("SoPhienBan") %>
-                                        <asp:Label runat="server"
-                                            Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
-                                            Text='<%# GetResourceText(BackEndResourceKeys.CURRENT_VERSION) %>'
-                                            CssClass="badge bg-success ms-1" />
-                                        <asp:Label
-                                            runat="server"
-                                            Visible='<%# IsOfficialVersion(Eval("IdFile")) %>'
-                                            Text='<%# GetResourceText(BackEndResourceKeys.OFFICIAL_FILE) %>'
-                                            CssClass="badge bg-primary ms-1" />
-                                    </td>
-                                    <td><%#: GetFileName(Eval("TenFileGoc"), Eval("TenFile")) %></td>
-                                    <td><%#: FormatFileSize(Eval("FileSize")) %></td>
-                                    <td><%#: GetVersionSourceText(Eval("NguonTao")) %></td>
-                                    <td><%#: GetValueText(Eval("MoTaPhienBan")) %></td>
-                                    <td><%#: GetValueText(Eval("TenNguoiTao")) %></td>
-                                    <td><%#: FormatDate(Eval("NgayTao")) %></td>
-                                    <td>
-                                        <div class="d-flex flex-wrap gap-1">
-                                            <asp:HyperLink runat="server"
-                                                Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
-                                                NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
-                                                Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
-                                                Target="_blank"
+                <asp:Panel runat="server" ID="pnlVersions" CssClass="document-file-history">
+                    <asp:Repeater
+                        runat="server"
+                        ID="rptVersions"
+                        OnItemCommand="rptVersions_ItemCommand">
+                        <ItemTemplate>
+                            <article class="document-file-history__item">
+                                <div class="document-file-history__dot"></div>
+                                <div class="document-file-history__card">
+                                    <div class="document-file-history__head">
+                                        <div>
+                                            <div class="document-file-history__version">
+                                                Mốc v<%#: Eval("SoPhienBan") %>
+                                                <asp:Label runat="server"
+                                                    Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
+                                                    Text="Hiện tại"
+                                                    CssClass="badge bg-success ms-1" />
+                                            </div>
+                                            <div class="document-file-history__meta">
+                                                <%#: FormatDate(Eval("NgayTao")) %>
+                                                · <%#: GetValueText(Eval("TenNguoiTao")) %>
+                                                · <%#: GetVersionSourceText(Eval("NguonTao")) %>
+                                            </div>
+                                        </div>
+                                        <div class="document-file-history__actions">
+                                            <asp:LinkButton runat="server"
+                                                CommandName="VIEW_VERSION_FILES"
+                                                CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
+                                                Text="Xem file"
+                                                CausesValidation="false"
                                                 CssClass="btn btn-sm btn-outline-primary" />
-                                            <asp:LinkButton
-                                                runat="server"
-                                                Visible='<%# CanSetOfficialFile(Eval("IdFile"), Eval("FileUrl")) %>'
+                                            <asp:LinkButton runat="server"
+                                                Visible='<%# CanRestoreVersion(Eval("LaPhienBanHienTai")) %>'
+                                                CommandName="RESTORE_VERSION"
+                                                CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
+                                                Text="Khôi phục mốc này"
+                                                CausesValidation="false"
+                                                CssClass="btn btn-sm btn-outline-warning" />
+                                            <asp:LinkButton runat="server"
+                                                Visible='<%# Convert.ToInt32(Eval("FileCount")) == 1 && CanSetOfficialFile(Eval("IdFile"), Eval("FileUrl")) %>'
                                                 CommandName="SET_OFFICIAL_FILE"
                                                 CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
                                                 Text='<%# GetResourceText(BackEndResourceKeys.SET_AS_OFFICIAL_FILE) %>'
                                                 CausesValidation="false"
                                                 CssClass="btn btn-sm btn-outline-success" />
-                                            <asp:LinkButton
-                                                runat="server"
-                                                Visible='<%# CanClearOfficialFile(Eval("IdFile")) %>'
+                                            <asp:LinkButton runat="server"
+                                                Visible='<%# Convert.ToInt32(Eval("FileCount")) == 1 && CanClearOfficialFile(Eval("IdFile")) %>'
                                                 CommandName="CLEAR_OFFICIAL_FILE"
                                                 CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
                                                 Text='<%# GetResourceText(BackEndResourceKeys.CLEAR_OFFICIAL_FILE) %>'
                                                 CausesValidation="false"
                                                 CssClass="btn btn-sm btn-outline-danger" />
-                                            <asp:Label runat="server"
-                                                Visible='<%# !CanOpenFile(Eval("FileUrl")) %>'
-                                                Text='<%# GetResourceText(BackEndResourceKeys.FILE_NOT_AVAILABLE) %>'
-                                                CssClass="badge bg-warning text-dark" />
                                         </div>
-                                    </td>
-                                </tr></ItemTemplate>
-                            </asp:Repeater>
-                        </tbody>
-                    </table>
+                                    </div>
+                                    <div class="document-file-history__summary">
+                                        <i class="fas fa-layer-group me-1"></i>
+                                        <%#: GetVersionFileSummary(Eval("FileCount")) %>
+                                    </div>
+                                    <div class="document-file-history__description">
+                                        <%#: GetValueText(Eval("MoTaPhienBan")) %>
+                                    </div>
+                                </div>
+                            </article>
+                        </ItemTemplate>
+                    </asp:Repeater>
                 </asp:Panel>
             </div>
         </div>
@@ -658,7 +698,7 @@
                                 <td><div class="d-flex flex-wrap gap-1">
                                     <asp:LinkButton
                                         runat="server"
-                                        Visible='<%# CURRENT_PAGE.IsEdit %>'
+                                        Visible='<%# CanManageCustomerDelivery() %>'
                                         CommandName="UPDATE_CUSTOMER_DELIVERY"
                                         CommandArgument='<%# Eval("IdGuiNhanKhachHang") %>'
                                         Text='<%# GetResourceText(BackEndResourceKeys.UPDATE) %>'
@@ -814,6 +854,189 @@
                 CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
         </div>
     </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal runat="server" ID="mdlDocumentPermissions" Title="Cấp quyền hồ sơ" Size="Large"
+    Position="modal-dialog-scrollable" FooterButtonClose="true"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <style type="text/css">
+            .document-permission-intro { background: linear-gradient(135deg,#f6f3ff,#f5fbff); border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; color: #475467; }
+            .document-permission-intro strong { color: #4c1d95; }
+            .document-permission-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin: 14px 0 10px; }
+            .document-permission-toolbar__title { font-weight: 700; color:#344054; }
+            .document-permission-toolbar__hint { color:#667085; font-size:.82rem; }
+            .document-permission-list { max-height:55vh; overflow:auto; display:grid; gap:10px; padding-right:4px; }
+            .document-permission-card { border:1px solid #e4e7ec; border-radius:12px; background:#fff; overflow:hidden; box-shadow:0 2px 7px rgba(16,24,40,.04); }
+            .document-permission-card[open] { border-color:#b692f6; box-shadow:0 4px 14px rgba(105,56,239,.12); }
+            .document-permission-card__summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:12px; padding:12px 14px; }
+            .document-permission-card__summary::-webkit-details-marker { display:none; }
+            .document-permission-card__avatar { width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; background:#ede9fe; color:#5b21b6; font-weight:700; flex:0 0 auto; }
+            .document-permission-card__name { font-weight:600; color:#344054; flex:1 1 auto; min-width:0; }
+            .document-permission-card__badges { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px; }
+            .document-permission-card__chevron { color:#98a2b3; transition:transform .15s ease; }
+            .document-permission-card[open] .document-permission-card__chevron { transform:rotate(180deg); }
+            .document-permission-card__body { padding:0 14px 14px; border-top:1px solid #f0f2f5; }
+            .document-permission-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:8px; padding-top:12px; }
+            .document-permission-item { border:1px solid #eaecf0; border-radius:9px; padding:9px 10px; background:#fcfcfd; }
+            .document-permission-item .form-check { margin:0; }
+            .document-permission-item small { display:block; color:#667085; margin-left:24px; margin-top:2px; line-height:1.25; }
+            .document-permission-item.is-view { background:#f5f3ff; border-color:#ddd6fe; }
+            .document-permission-item.is-danger { background:#fff7f7; border-color:#fecaca; }
+            .document-permission-locked { color:#98a2b3; font-size:.78rem; margin-top:10px; }
+            .document-permission-scope { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:11px 13px; margin-top:14px; border:1px solid #d0d5dd; border-radius:11px; background:linear-gradient(180deg,#fff 0%,#fbfaff 100%); box-shadow:0 2px 8px rgba(16,24,40,.04); }
+            .document-permission-scope__copy { min-width:0; }
+            .document-permission-scope__eyebrow { display:block; color:#667085; font-size:.72rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+            .document-permission-scope__hint { display:block; color:#667085; font-size:.8rem; margin-top:2px; }
+            .document-permission-scope__switch { display:flex; align-items:center; gap:8px; flex:0 0 auto; padding:4px 6px; border:1px solid #eaecf0; border-radius:999px; background:#f8fafc; color:#475467; font-size:.82rem; font-weight:600; }
+            .document-permission-scope__switch > span { white-space:nowrap; padding:4px 2px; }
+            .document-permission-scope__switch > span:first-child { color:#475467; }
+            .document-permission-scope__switch > span:last-child { color:#98a2b3; }
+            .document-permission-scope__switch .document-permission-scope__input { display:inline-flex; align-items:center; margin:0; line-height:0; }
+            .document-permission-scope__switch input[type=checkbox] { appearance:none !important; -webkit-appearance:none !important; -moz-appearance:none !important; box-sizing:border-box; flex:0 0 46px; width:46px !important; min-width:46px; height:26px !important; min-height:26px; padding:0 !important; margin:0 !important; cursor:pointer; border:1px solid #cbd5e1 !important; border-radius:999px !important; background-color:#d0d5dd !important; background-image:radial-gradient(circle at 13px 13px,#fff 0 9px,rgba(255,255,255,.98) 9px 9.5px,transparent 10px) !important; background-repeat:no-repeat !important; background-position:0 0 !important; box-shadow:inset 0 1px 2px rgba(16,24,40,.12); outline:none; transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,background-image .18s ease; }
+            .document-permission-scope__switch input[type=checkbox]:checked { border-color:#4c1d95 !important; background-color:#5b21b6 !important; background-image:radial-gradient(circle at 33px 13px,#fff 0 9px,rgba(255,255,255,.98) 9px 9.5px,transparent 10px) !important; box-shadow:0 2px 6px rgba(91,33,182,.28); }
+            .document-permission-scope__switch input[type=checkbox]:not(:disabled):hover { border-color:#7c3aed !important; box-shadow:0 0 0 4px rgba(124,58,237,.12); }
+            .document-permission-scope__switch input[type=checkbox]:focus-visible { box-shadow:0 0 0 4px rgba(124,58,237,.2); }
+            .document-permission-scope__switch input[type=checkbox]:disabled { opacity:.6; cursor:not-allowed; }
+            .document-permission-scope__empty { padding:24px 14px; border:1px dashed #d0d5dd; border-radius:10px; color:#667085; text-align:center; background:#fcfcfd; }
+            @media (max-width:575.98px) { .document-permission-toolbar { display:block; } .document-permission-toolbar__hint { margin-top:4px; } .document-permission-card__badges { justify-content:flex-start; } }
+            @media (max-width:575.98px) { .document-permission-scope { display:block; } .document-permission-scope__switch { margin-top:9px; justify-content:flex-end; } }
+        </style>
+        <div class="document-permission-intro">
+            <div class="mb-1"><strong>Phân quyền theo từng hồ sơ</strong></div>
+            Chọn một nhân viên rồi bấm mở rộng để cấp đúng thao tác cần thiết.
+            <strong>Xem</strong> bao gồm mở hồ sơ và tải file hiện có xuống;
+            các quyền còn lại được tách riêng. Ô bị khóa nghĩa là nhóm người dùng chưa cho phép quyền đó.
+        </div>
+        <asp:Panel runat="server" ID="pnlGrantExternalUsers" CssClass="document-permission-scope">
+            <div class="document-permission-scope__copy">
+                <span class="document-permission-scope__eyebrow">Đối tượng cấp quyền</span>
+                <span class="document-permission-scope__hint">Chuyển danh sách giữa thành viên dự án và nhân viên chưa tham gia dự án.</span>
+            </div>
+            <div class="document-permission-scope__switch" title="Chỉ PM hệ thống được chọn nhân viên ngoài dự án">
+                <span>Trong dự án</span>
+                <asp:CheckBox runat="server" ID="chkGrantExternalUsers"
+                    CssClass="document-permission-scope__input"
+                    Text=""
+                    AutoPostBack="true"
+                    OnCheckedChanged="chkGrantExternalUsers_CheckedChanged" />
+                <span>Ngoài dự án</span>
+            </div>
+        </asp:Panel>
+        <div class="document-permission-toolbar">
+            <div class="document-permission-toolbar__title"><i class="fas fa-users me-1"></i> Nhân viên được cấp quyền</div>
+            <div class="document-permission-toolbar__hint">Bấm vào từng tên để mở danh sách quyền</div>
+        </div>
+        <div class="document-permission-list">
+            <asp:Repeater runat="server" ID="rptDocumentPermissions">
+                <ItemTemplate>
+                    <details class="document-permission-card">
+                        <summary class="document-permission-card__summary">
+                            <span class="document-permission-card__avatar"><%#: GetPermissionInitial(Eval("DisplayName")) %></span>
+                            <span class="document-permission-card__name"><%#: Eval("DisplayName") %></span>
+                            <span class="document-permission-card__badges">
+                                <asp:Label runat="server" Visible='<%# Convert.ToBoolean(Eval("IsResponsibleDefault")) %>' CssClass="badge bg-light text-dark" Text="Người phụ trách" />
+                                <asp:Label runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsProjectMember")) %>' CssClass="badge bg-info text-dark" Text="Ngoài dự án" />
+                            </span>
+                            <i class="fas fa-chevron-down document-permission-card__chevron"></i>
+                            <asp:HiddenField runat="server" ID="grantUserId" Value='<%# Eval("UserId") %>' />
+                        </summary>
+                        <div class="document-permission-card__body">
+                            <div class="document-permission-grid">
+                                <div class="document-permission-item is-view">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantView"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; !Convert.ToBoolean(Eval("IsResponsibleDefault")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanView")) &amp;&amp; Convert.ToBoolean(Eval("MaxView")) %>' Text="Xem hồ sơ" /></div>
+                                    <small>Mở hồ sơ và tải file hiện có</small>
+                                </div>
+                                <div class="document-permission-item">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantUpdateInfo"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxUpdateInfo")) &amp;&amp; !Convert.ToBoolean(Eval("IsResponsibleDefault")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanUpdateInfo")) &amp;&amp; Convert.ToBoolean(Eval("MaxUpdateInfo")) %>' Text="Thông tin chung" /></div>
+                                    <small>Sửa tên, mã, loại và nội dung hồ sơ</small>
+                                </div>
+                                <div class="document-permission-item">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantManageFiles"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxManageFiles")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanManageFiles")) &amp;&amp; Convert.ToBoolean(Eval("MaxManageFiles")) %>' Text="Quản lý file" /></div>
+                                    <small>Thêm, thay, gỡ file và khôi phục mốc</small>
+                                </div>
+                                <div class="document-permission-item">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantSigning"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxSigning")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanSigning")) &amp;&amp; Convert.ToBoolean(Eval("MaxSigning")) %>' Text="Trình ký" /></div>
+                                    <small>Gửi trình ký, nhận kết quả và yêu cầu chỉnh</small>
+                                </div>
+                                <div class="document-permission-item">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantCustomerDelivery"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxCustomerDelivery")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanCustomerDelivery")) &amp;&amp; Convert.ToBoolean(Eval("MaxCustomerDelivery")) %>' Text="Gửi khách hàng" /></div>
+                                    <small>Gửi hồ sơ và cập nhật phản hồi</small>
+                                </div>
+                                <div class="document-permission-item">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantPhysicalStorage"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxPhysicalStorage")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanPhysicalStorage")) &amp;&amp; Convert.ToBoolean(Eval("MaxPhysicalStorage")) %>' Text="Lưu bản cứng" /></div>
+                                    <small>Ghi nhận nơi lưu trữ và mã lưu trữ</small>
+                                </div>
+                                <div class="document-permission-item is-danger">
+                                    <div class="form-check"><asp:CheckBox runat="server" ID="grantDelete"
+                                        Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxDelete")) %>'
+                                        Checked='<%# Convert.ToBoolean(Eval("CanDelete")) &amp;&amp; Convert.ToBoolean(Eval("MaxDelete")) %>' Text="Xóa hồ sơ" /></div>
+                                    <small>Xóa mềm hồ sơ theo chính sách hệ thống</small>
+                                </div>
+                            </div>
+                            <asp:Label runat="server" Visible='<%# Convert.ToBoolean(Eval("IsResponsibleDefault")) %>' CssClass="document-permission-locked" Text="Người phụ trách được mặc định xem và sửa thông tin chung nếu nhóm còn quyền tương ứng. Các thao tác khác vẫn cần tích riêng." />
+                        </div>
+                    </details>
+                </ItemTemplate>
+            </asp:Repeater>
+        </div>
+        <p class="text-muted small mt-3 mb-0">Quyền nhóm là mức trần. Khi chọn một quyền thao tác, hệ thống tự yêu cầu quyền xem; bỏ toàn bộ quyền sẽ thu hồi cấp riêng trên hồ sơ.</p>
+    </ContentTemplate>
+    <FooterTemplate>
+        <asp:Button runat="server" ID="btnSaveDocumentPermissions" Text="Lưu quyền" CssClass="btn btn-primary"
+            CausesValidation="false" OnClick="btnSaveDocumentPermissions_Click" />
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal runat="server" ID="mdlVersionFiles" Title="Các file trong mốc lịch sử" Size="Large"
+    Position="modal-dialog-scrollable" FooterButtonClose="true"
+    EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:Label runat="server" ID="lblVersionFilesSummary" CssClass="text-muted d-block mb-3" />
+        <asp:Panel runat="server" ID="pnlVersionFiles" CssClass="document-version-file-list">
+            <asp:Repeater runat="server" ID="rptVersionFiles">
+                <ItemTemplate>
+                    <div class="document-version-file">
+                        <div>
+                            <div class="document-version-file__name">
+                                <i class="fas fa-file-alt text-primary me-1"></i>
+                                <%#: GetFileName(Eval("TenFileGoc"), Eval("TenFile")) %>
+                            </div>
+                            <div class="document-version-file__meta">
+                                <%#: FormatFileSize(Eval("FileSize")) %>
+                            </div>
+                        </div>
+                        <asp:HyperLink runat="server"
+                            Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
+                            NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
+                            Text="Xem file"
+                            Target="_blank"
+                            CssClass="btn btn-sm btn-outline-primary" />
+                        <asp:Label runat="server"
+                            Visible='<%# HasValue(Eval("IdFile")) && !CanOpenFile(Eval("FileUrl")) %>'
+                            Text="Không còn tệp vật lý"
+                            CssClass="badge bg-warning text-dark" />
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+        </asp:Panel>
+        <asp:Panel runat="server" ID="pnlNoVersionFiles" CssClass="document-detail__empty">
+            <i class="fas fa-file-circle-xmark"></i>
+            Mốc lịch sử này không có file.
+        </asp:Panel>
+    </ContentTemplate>
 </SweetSoft:ExtraModal>
 
 <SweetSoft:ExtraModal
@@ -1097,10 +1320,12 @@
     <ContentTemplate>
         <asp:HiddenField runat="server" ID="hdfSigningResultId" />
         <div class="small text-muted mb-2"><%= GetResourceText(BackEndResourceKeys.SIGNING_RESULT_FILE_HINT) %></div>
-        <SweetSoft:FilesBox
-            runat="server"
-            ID="fbSigningResult"
-            IsMultiple="false" />
+        <div class="document-file-box">
+            <SweetSoft:FilesBox
+                runat="server"
+                ID="fbSigningResult"
+                IsMultiple="false" />
+        </div>
         <div class="mt-3">
             <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGNING_NOTE) %></label>
             <SweetSoft:ExtraTextBox

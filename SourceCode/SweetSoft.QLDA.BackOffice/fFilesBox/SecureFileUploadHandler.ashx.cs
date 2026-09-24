@@ -17,6 +17,51 @@ using System.Web.SessionState;
 
 namespace SweetSoft.QLDA.BackOffice.fFilesBox
 {
+    // Registered on the original upload folders: knowing the physical URL never bypasses dossier ACLs.
+    public sealed class DocumentFileHandler : IHttpHandler, IReadOnlySessionState
+    {
+        public bool IsReusable { get { return false; } }
+        public void ProcessRequest(HttpContext context)
+        {
+            context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            context.Response.Cache.SetNoStore();
+            context.Response.Headers["X-Content-Type-Options"]="nosniff";
+            try {
+                if(context.Request.HttpMethod!="GET" && context.Request.HttpMethod!="HEAD") {
+                    context.Response.StatusCode=405; return;
+                }
+                string relative=VirtualPathUtility.ToAppRelative(context.Request.Path);
+                string url="/"+relative.Substring(2);
+                if(!url.StartsWith("/Uploads/DocumentVersion/",StringComparison.OrdinalIgnoreCase)
+                    && !url.StartsWith("/Uploads/DocumentSigningResult/",StringComparison.OrdinalIgnoreCase)) {
+                    context.Response.StatusCode=404; return;
+                }
+                var files=new SubSonic.Select().From(TblUploadFile.Schema)
+                    .Where(TblUploadFile.FileUrlColumn).IsEqualTo(url)
+                    .And(TblUploadFile.IsDeletedColumn).IsEqualTo(false).ExecuteTypedList<TblUploadFile>();
+                var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);
+                var file=files.FirstOrDefault(f=> {
+                    var id=repository.ResolveUploadDocument(f.RefId,f.RefType);
+                    return id.HasValue && repository.CanAccess(SweetContext.Current.UserId,id.Value,"View");
+                });
+                if(file==null) { context.Response.StatusCode=403; return; }
+                string uploads=Path.GetFullPath(context.Server.MapPath("~/Uploads/"));
+                string physical=Path.GetFullPath(context.Server.MapPath("~"+url));
+                if(!physical.StartsWith(uploads.TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)
+                    || !File.Exists(physical)) { context.Response.StatusCode=404; return; }
+                string extension=Path.GetExtension(physical).ToLowerInvariant();
+                bool preview=new[]{".pdf",".png",".jpg",".jpeg",".gif",".webp"}.Contains(extension);
+                context.Response.ContentType=preview?MimeMapping.GetMimeMapping(physical):"application/octet-stream";
+                context.Response.AddHeader("Content-Disposition",(preview?"inline":"attachment")+"; filename*=UTF-8''"+Uri.EscapeDataString(Path.GetFileName(file.OriginalFileName??file.Name)));
+                if(context.Request.HttpMethod=="GET") context.Response.TransmitFile(physical);
+            } catch(Exception ex) {
+                SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,"Protected document download failed");
+                context.Response.StatusCode=403;
+            }
+            finally { context.Response.TrySkipIisCustomErrors=true; }
+        }
+    }
+
     public class SecureFileUploadHandler : IHttpHandler, IRequiresSessionState
     {
         #region Configuration
@@ -98,6 +143,32 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 context.Response.Write(SerializeResult(errorResult));
                 context.Response.StatusCode = 500;
             }
+        }
+
+        public UploadResult ValidateDocumentVersionFile(HttpPostedFile file)
+        {
+            UploadResult authentication = ValidateAuthentication();
+            return authentication.Success ? ValidateFile(file) : authentication;
+        }
+
+        public UploadResult UploadDocumentVersionFile(Guid documentId, HttpPostedFile file)
+        {
+            if (documentId == Guid.Empty)
+                return new UploadResult { Success = false, Message = "Hồ sơ chưa được tạo." };
+
+            UploadResult validation = ValidateDocumentVersionFile(file);
+            if (!validation.Success)
+                return validation;
+
+            var request = new UploadRequest
+            {
+                RefId = documentId,
+                RefType = FileUploadTypes.DocumentVersion.ToString(),
+                FileTitle = Path.GetFileName(file.FileName),
+                File = file
+            };
+            UploadResult permission = ValidateBusinessRules(request);
+            return permission.Success ? ProcessFileUpload(request) : permission;
         }
 
         private UploadResult ProcessUploadRequest(HttpContext context)
@@ -574,8 +645,15 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
         private bool HasPermissionForRefType(AspnetUser user, string refType, Guid refId)
         {
-            // Implement your permission logic here
-            // This is a placeholder - implement based on your business rules
+            if(refType=="DocumentVersion" || refType=="DocumentSigningResult") {
+                if(user==null) return false;
+                var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);
+                Guid? document=repository.ResolveUploadDocument(refId,refType);
+                string action = refType == "DocumentSigningResult"
+                    ? SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.Signing
+                    : SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.ManageFiles;
+                return document.HasValue && repository.CanAccess(SweetContext.Current.UserId,document.Value,action);
+            }
             return user != null;
         }
 

@@ -51,6 +51,7 @@ namespace SweetSoft.QLDA.Core.Functions
         ProjectDocument,
         Contract,
         GanttChart,
-        ProjectReport
+        ProjectReport,
+        DocumentAdministration
     }
 }
