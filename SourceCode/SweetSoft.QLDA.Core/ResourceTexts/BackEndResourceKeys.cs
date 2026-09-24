@@ -468,6 +468,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
         //Task
         public const string TASK_MANAGEMENT = "TASK_MANAGEMENT";
+        public const string NO_TASK_FOR_YOU = "NO_TASK_FOR_YOU";
+        public const string ADD_NEW_CHILD_TASK = "ADD_NEW_CHILD_TASK";
         public const string TASK_LIST = "TASK_LIST";
         public const string TASK_CODE = "TASK_CODE";
         public const string TASK_NAME = "TASK_NAME";

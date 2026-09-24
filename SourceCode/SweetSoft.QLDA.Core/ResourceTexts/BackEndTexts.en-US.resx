@@ -3067,4 +3067,16 @@
   <data name="ERROR_OCCURED" xml:space="preserve">
     <value>Error occured</value>
   </data>
+  <data name="NO_TASK_FOR_YOU" xml:space="preserve">
+    <value>You haven't been assigned any work yet.</value>
+  </data>
+  <data name="ADD_NEW_CHILD_TASK" xml:space="preserve">
+    <value>Add new child task</value>
+  </data>
+  <data name="EXPECTED_COMPLETION_DATE" xml:space="preserve">
+    <value>Expected completion date</value>
+  </data>
+  <data name="ACTUAL_COMPLETION_DATE" xml:space="preserve">
+    <value>Actual completion date</value>
+  </data>
 </root>

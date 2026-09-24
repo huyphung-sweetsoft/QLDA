@@ -859,10 +859,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public void BindPriorities(DropDownList ddl, Guid? selectedId = null, bool isAll = false)
         {
             ddl.Items.Clear();
-            if (isAll)
-                ddl.Items.Add(new ListItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL), ""));
-            else
-                ddl.Items.Add(new ListItem("-- Chọn độ ưu tiên --", ""));
             try
             {
                 DataTable dt = TaskManager.Instance.GetPrioritiesTable();
@@ -941,20 +937,26 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 }
             }
         }
-        public void BindDependentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedDepId = null, string currentOrNewCode = null)
+        public void BindDependentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedDepId = null, string currentOrNewCode = null, bool chiLayGiaiDoan = false)
         {
             ddl.Items.Clear();
             ddl.Items.Add(new ListItem("-- Không có --", ""));
-            DataTable dt = TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+
+            DataTable dt = chiLayGiaiDoan
+                ? TaskManager.Instance.FetchPhasesByProjectId(projectId)
+                : TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+
             if (dt != null)
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    if (Guid.TryParse(row[ColIdCongViec]?.ToString(), out Guid id))
+                    if (Guid.TryParse(row["IdCongViec"]?.ToString(), out Guid id))
                     {
                         if (excludeTaskId.HasValue && id == excludeTaskId.Value) continue;
-                        string maCv = row[ColMaCv]?.ToString() ?? "";
-                        string tenCv = row[ColTenCv]?.ToString() ?? "";
+
+                        string maCv = row["MaCongViec"]?.ToString() ?? "";
+                        string tenCv = row["TenCongViec"]?.ToString() ?? "";
+
                         if (!string.IsNullOrEmpty(currentOrNewCode) && TaskManager.Instance.IsAfterOrEqual(maCv, currentOrNewCode))
                             continue;
 
@@ -981,7 +983,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             if (level == 1)
             {
                 return $"<div class=\"task-phase-box d-flex align-items-center\">" +
-                       $"<i class=\"far fa-folder-open me-2\" style=\"color: #6f42c1;\"></i>" +
+                       $"<i class=\"fas fa-flag me-2\" style=\"color: #6f42c1;\"></i>" +
                        $"<span class=\"task-phase-text\">{maCv}. {tenCv}</span>" +
                        $"</div>";
             }

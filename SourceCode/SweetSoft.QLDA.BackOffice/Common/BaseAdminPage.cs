@@ -497,6 +497,20 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 }
             }
         }
+        public bool IsAdministrator
+        {
+            get
+            {
+                try
+                {
+                    return UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
         public bool IsView
         {
             get
