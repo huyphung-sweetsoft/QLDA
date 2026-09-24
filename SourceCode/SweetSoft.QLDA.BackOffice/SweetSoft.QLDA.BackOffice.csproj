@@ -400,6 +400,12 @@
     <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.designer.cs">
       <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienDetail.aspx.cs">
+      <DependentUpon>HopDongThucHienDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fExecuteContracts\HopDongThucHienDetail.aspx.designer.cs">
+      <DependentUpon>HopDongThucHienDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fExecuteContracts\HopDongThucHienList.aspx.cs">
       <DependentUpon>HopDongThucHienList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -743,6 +749,7 @@
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
     <Content Include="fEmailTemplate\EmailTemplates.aspx" />
     <Content Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx" />
+    <Content Include="fExecuteContracts\HopDongThucHienDetail.aspx" />
     <Content Include="fExecuteContracts\HopDongThucHienList.aspx" />
     <Content Include="fFiles\Controls\CtrlFiles.ascx" />
     <Content Include="fFiles\FileListing.aspx" />
