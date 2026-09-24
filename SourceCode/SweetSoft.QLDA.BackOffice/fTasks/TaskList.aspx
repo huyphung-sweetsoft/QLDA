@@ -7,6 +7,38 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
 <style>
+    input.form-control:disabled, 
+    input.form-control[disabled],
+    input.form-control[readonly],
+    select.form-select:disabled, 
+    select.form-select[disabled],
+    select.form-select[readonly],
+    textarea.form-control:disabled,
+    textarea.form-control[readonly] {
+        background-color: #ffffff !important; 
+        color: #334155 !important; 
+        border-color: black !important;
+        cursor: not-allowed !important;
+        background-image: none !important; 
+        opacity: 1 !important;
+    }
+    select.form-select:not(:disabled):not([readonly]),
+    input.form-control:not(:disabled):not([readonly]),
+    textarea.form-control:not(:disabled):not([readonly]) {
+        background-color: #ffffff !important; /* Nền trắng tinh */
+        color: #0f172a !important; /* Chữ màu đen/xám cực đậm cho dễ đọc */
+        border: 1px solid #475569 !important; /* Viền xám đen sắc nét, hết mờ mờ */
+        opacity: 1 !important; /* Chống trình duyệt tự làm mờ */
+        font-weight: 500 !important; /* Tăng độ dày nét chữ lên một xíu */
+    }
+
+    select.form-select:not(:disabled):not([readonly]):focus,
+    input.form-control:not(:disabled):not([readonly]):focus,
+    textarea.form-control:not(:disabled):not([readonly]):focus {
+        border-color: #2563eb !important; /* Viền đổi sang xanh dương đậm */
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15) !important; /* Hiệu ứng sáng nhẹ quanh viền */
+        color: #000000 !important;
+    }
     .btn-filter-overdue {
         border: 1px solid #f87171 !important;
         color: #ef4444 !important;
@@ -133,14 +165,14 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     }
     .task-phase-text {
-        font-size: 15px !important;
+        font-size: 15.5px !important;
         font-weight: 800 !important;
         color: #4c1d95 !important;
     }
     .task-sub-box {
-        font-size: 13.5px !important;
+        font-size: 14.5px !important;
         font-weight: 600 !important;
-        color: #1e293b !important;
+        color: black !important;
     }
     .task-sub-code {
         font-weight: 700 !important;
@@ -156,7 +188,7 @@
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
         <div class="col-xl-12">
-            <div class="card p-2 min-h-sreen">
+            <div class="card p-2">
                 <SweetSoft:Navigation runat="server" ID="Navigation1" />
                 <SweetSoft:CtrlProjectTabs runat="server" ID="CtrlProjectTabs1" />
                 <SweetSoft:CtrlTask runat="server" ID="CtrlTask1" />
@@ -216,12 +248,12 @@
 
                         <div class="row g-2 mb-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger">*</span></label>
-                                <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control" TextMode="Number" min="1"></asp:TextBox>
-                            </div>
-                            <div class="col-md-4">
                                 <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.START_DATE) %><span class="text-danger">*</span></label>
                                 <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control" TextMode="Number" min="1"></asp:TextBox>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
@@ -256,7 +288,6 @@
         var isOverdueFiltered = false;
         var isTreeCollapsed = false;
 
-        // Hàm chính để xử lý ẩn/hiện các dòng dựa trên state
         function applyTaskFilters() {
             var gridRows = document.querySelectorAll('.table-task-grid tbody tr');
 
@@ -268,12 +299,10 @@
 
                 var showRow = true;
 
-                // Lọc trễ hạn
                 if (isOverdueFiltered && !isOverdue) {
                     showRow = false;
                 }
 
-                // Thu gọn tree (chỉ hiện level 1)
                 if (isTreeCollapsed && level > 1) {
                     showRow = false;
                 }
@@ -282,11 +311,9 @@
             });
         }
 
-        // Bật/tắt lọc trễ hạn
         window.toggleOverdueFilter = function () {
             isOverdueFiltered = !isOverdueFiltered;
 
-            // Nếu đang bật lọc trễ hạn mà tree đang thu gọn -> Mở rộng tree ra
             if (isOverdueFiltered && isTreeCollapsed) {
                 isTreeCollapsed = false;
                 var btnTree = document.getElementById('btnToggleTree');
@@ -302,11 +329,10 @@
                 }
             }
 
-            // Đổi style button lọc trễ hạn
             var btnOverdue = document.getElementById('btnFilterOverdue');
             if (btnOverdue) {
                 if (isOverdueFiltered) {
-                    btnOverdue.classList.add('active'); // Sửa lại thành 'active' cho khớp với CSS
+                    btnOverdue.classList.add('active'); 
                 } else {
                     btnOverdue.classList.remove('active');
                 }
@@ -315,11 +341,9 @@
             applyTaskFilters();
         };
 
-        // Bật/tắt thu gọn công việc
         window.toggleTaskTree = function () {
             isTreeCollapsed = !isTreeCollapsed;
 
-            // Nếu đang thu gọn mà đang lọc trễ hạn -> Tắt lọc trễ hạn đi
             if (isTreeCollapsed && isOverdueFiltered) {
                 isOverdueFiltered = false;
                 var btnOverdue = document.getElementById('btnFilterOverdue');
@@ -335,14 +359,12 @@
                 var collapseText = btn.getAttribute('data-collapse-text') || 'Thu gọn';
 
                 if (isTreeCollapsed) {
-                    // Trạng thái bị thu gọn -> Hiện text "Mở rộng" để người dùng click
                     if (lbl) lbl.innerText = expandText;
                     if (icon) {
                         icon.classList.remove('fa-folder-open');
                         icon.classList.add('fa-folder');
                     }
                 } else {
-                    // Trạng thái đang mở rộng -> Hiện text "Thu gọn"
                     if (lbl) lbl.innerText = collapseText;
                     if (icon) {
                         icon.classList.remove('fa-folder');
@@ -351,11 +373,9 @@
                 }
             }
 
-            // Gọi hàm apply để thực sự ẩn/hiện các dòng
             applyTaskFilters();
         };
 
-        // Bắt sự kiện thay đổi LocalStorage từ các Tab khác cùng trình duyệt
         window.addEventListener("storage", function (e) {
             if (e.key === "ScheduleChanged") {
                 window.location.reload();

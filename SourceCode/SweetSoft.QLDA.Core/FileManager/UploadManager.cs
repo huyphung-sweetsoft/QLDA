@@ -29,6 +29,20 @@ namespace SweetSoft.QLDA.Core.FileManager
         {
             if(file==null) return;
             var old=_repository.GetById(file.Id);
+            if (old != null && ProjectRecordFileAccess.IsRecordAttachment(old.RefType)
+                && (file.RefId != old.RefId || file.RefType != old.RefType
+                    || file.FileUrl != old.FileUrl || file.IsDeleted != old.IsDeleted))
+                throw new InvalidOperationException("Không được thay liên kết của file chi phí/lịch họp.");
+            if (ProjectRecordFileAccess.IsRecordAttachment(file.RefType))
+            {
+                if (!ProjectRecordFileAccess.CanAccess(
+                    SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId,
+                    file.RefId, file.RefType, true))
+                    throw new UnauthorizedAccessException("Bạn không có quyền cập nhật file chi phí/lịch họp.");
+                return;
+            }
+            if (old != null && ProjectRecordFileAccess.IsRecordAttachment(old.RefType))
+                throw new UnauthorizedAccessException("Không được đổi loại file chi phí/lịch họp.");
             if(IsDocumentFile(old) && (file.RefId!=old.RefId || file.RefType!=old.RefType || file.FileUrl!=old.FileUrl || file.IsDeleted!=old.IsDeleted))
                 throw new InvalidOperationException("Không được thay liên kết hoặc xóa file lịch sử hồ sơ.");
             if(!IsDocumentFile(file)) return;
@@ -42,6 +56,14 @@ namespace SweetSoft.QLDA.Core.FileManager
         }
         private void EnsureDocumentFileDelete(TblUploadFile file)
         {
+            if (file != null && ProjectRecordFileAccess.IsRecordAttachment(file.RefType))
+            {
+                if (!ProjectRecordFileAccess.CanAccess(
+                    SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId,
+                    file.RefId, file.RefType, true))
+                    throw new UnauthorizedAccessException("Bạn không có quyền xóa file chi phí/lịch họp.");
+                return;
+            }
             if (!IsDocumentFile(file))
                 return;
 
@@ -271,7 +293,15 @@ namespace SweetSoft.QLDA.Core.FileManager
         public string RemoveFiles(List<Guid> fileIDs, FileUploadTypes uploadTypes)
         {
             foreach(Guid id in fileIDs)
-                EnsureDocumentFileDelete(_repository.GetById(id));
+            {
+                // Deletion may complete after a replacement has already
+                // marked the previous upload inactive. Validate its original
+                // type even when it is no longer shown in active file lists.
+                TblUploadFile file = TblUploadFile.FetchByID(id);
+                if (file == null || file.RefType != uploadTypes.ToString())
+                    throw new InvalidOperationException("File không thuộc mục đang chỉnh sửa.");
+                EnsureDocumentFileDelete(file);
+            }
             string filePaths = _repository.GetFilePaths(fileIDs, uploadTypes);
             if(!string.IsNullOrEmpty(filePaths))
             {

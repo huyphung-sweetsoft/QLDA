@@ -358,14 +358,33 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         public bool CanAccessDocumentArea(ActionKeys action)
         {
-            Guid user=SweetContext.Current.UserId;
-            return _repository.HasGroupRight(user,"DocumentAdministration.View")
-                || _repository.HasGroupRight(user,"Document."+action);
+            Guid user = SweetContext.Current.UserId;
+            bool localView = _repository.HasGroupRight(user, "ProjectDocument.View");
+            bool globalView = _repository.HasGroupRight(user, "Document.View");
+            if (action == ActionKeys.View)
+                return localView || globalView;
+            if (action == ActionKeys.Create)
+                return (localView && _repository.HasGroupRight(user, "ProjectDocument.Create"))
+                    || (globalView && _repository.HasGroupRight(user, "Document.Create"));
+            if (action == ActionKeys.Update || action == ActionKeys.Delete)
+                return (localView && _repository.HasGroupRight(user,
+                            "ProjectDocument." + action))
+                    || (globalView && _repository.HasGroupRight(user,
+                            "Document." + action));
+            return globalView && _repository.HasGroupRight(user,
+                "Document." + action);
         }
         public bool CanCreateCompanyDocument()
         {
-            return _repository.HasGroupRight(SweetContext.Current.UserId,"DocumentAdministration.View")
-                || _repository.HasGroupRight(SweetContext.Current.UserId,"Document.Create");
+            Guid user = SweetContext.Current.UserId;
+            return _repository.HasGroupRight(user, "Document.View")
+                && _repository.HasGroupRight(user, "Document.Create");
+        }
+        public bool CanUpdateCompanyDocument()
+        {
+            Guid user = SweetContext.Current.UserId;
+            return _repository.HasGroupRight(user, "Document.View")
+                && _repository.HasGroupRight(user, "Document.Update");
         }
         public DataTable GetDocumentGrantMembers(Guid id)
         {
@@ -397,7 +416,10 @@ namespace SweetSoft.QLDA.Core.Managers
             return CanManageDocument(id)
                 && _repository.HasGroupRight(
                     SweetContext.Current.UserId,
-                    "DocumentAdministration.View");
+                    "Document.View")
+                && _repository.HasGroupRight(
+                    SweetContext.Current.UserId,
+                    "Document.Update");
         }
         public string GetDocumentGrantStamp(Guid id)
         {

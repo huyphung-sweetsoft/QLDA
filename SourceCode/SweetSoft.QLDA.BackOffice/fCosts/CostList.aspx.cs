@@ -2,6 +2,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
+using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -29,7 +30,14 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlCost1.NewCostHandlerCallback += NewCostAction;
             CtrlCost1.EditCostHandlerCallback += EditCostAction;
-            CtrlCost1.OpenCostDocumentHandlerCallback += OpenCostDocumentAction;
+            CtrlCost1.OpenCostFilesHandlerCallback += OpenCostFilesAction;
+            fbCostFiles.CurrentFileIdResolver = (recordId, refType) =>
+                ProjectRecordFileAccess.GetLinkedFileId(recordId, refType.ToString());
+            fbCostFiles.FileMutationValidator = (recordId, refType, fileId) =>
+                ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId,
+                    recordId, refType.ToString(), true)
+                && ProjectRecordFileAccess.BelongsToRecord(recordId,
+                    refType.ToString(), fileId);
 
             if (!IsPostBack)
             {
@@ -111,7 +119,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             }
         }
 
-        private void OpenCostDocumentAction(object sender, EventArgs e)
+        private void OpenCostFilesAction(object sender, EventArgs e)
         {
             Guid idChiPhi = sender is Guid ? (Guid)sender : Guid.Empty;
             if (idChiPhi == Guid.Empty)
@@ -120,25 +128,26 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 return;
             }
 
-            try
+            TblChiPhi cost = TblChiPhi.FetchByID(idChiPhi);
+            if (cost == null || cost.DaXoa == true || cost.IdDuAn != CurrentProjectId)
             {
-                CostDocumentLinkResult result = CostManager.Instance.GetOrCreateProjectDocument(idChiPhi);
-                string url = RewriteURLHelper.ProjectDocumentDetail(result.ProjectId, result.DocumentId) + "?tab=versions";
-                Response.Redirect(GetRelativeClientPath(url), false);
-                Context.ApplicationInstance.CompleteRequest();
+                ShowInvalidDataError();
+                return;
             }
-            catch (UnauthorizedAccessException)
+            if (!ProjectRecordFileAccess.CanAccess(
+                SweetContext.Current.UserId, idChiPhi,
+                FileUploadTypes.CostAttachment.ToString(), false))
             {
                 ShowAccessDeniedNotify();
+                return;
             }
-            catch (InvalidOperationException exception)
-            {
-                ShowNotify(exception.Message, MSGType.Warning);
-            }
-            catch (Exception exception)
-            {
-                ShowNotify(exception.Message, MSGType.Error);
-            }
+
+            fbCostFiles.IsMultiple = false;
+            fbCostFiles.IsEnabled = ProjectRecordFileAccess.CanAccess(
+                SweetContext.Current.UserId, idChiPhi,
+                FileUploadTypes.CostAttachment.ToString(), true);
+            fbCostFiles.LoadFile(idChiPhi, FileUploadTypes.CostAttachment);
+            dlCostFiles.OpenModal(true);
         }
 
         private void NewCostAction(object sender, EventArgs e)
@@ -308,6 +317,8 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlCost1.Rebind();
+                if (isNew && this.IsEdit)
+                    OpenCostFilesAction(savedCost.IdChiPhi, EventArgs.Empty);
             }
             catch (Exception exc)
             {

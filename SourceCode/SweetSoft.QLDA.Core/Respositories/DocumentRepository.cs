@@ -241,8 +241,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     END AS CanView,
                     CASE
                         WHEN t.IdNhanVienPhuTrach=u.UserId
-                         AND (dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.UpdateInfo')=1
-                              OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1)
+                         AND dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
                         THEN 1
                         ELSE ISNULL(g.CanUpdateInfo,0)
                     END AS CanUpdateInfo,
@@ -253,21 +252,11 @@ namespace SweetSoft.QLDA.Core.Respositories
                     ISNULL(g.CanUpdate,0) AS CanUpdate,
                     ISNULL(g.CanDelete,0) AS CanDelete,
                     dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.View') AS MaxView,
-                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.UpdateInfo')=1
-                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
-                         THEN 1 ELSE 0 END AS MaxUpdateInfo,
-                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.ManageFiles')=1
-                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
-                         THEN 1 ELSE 0 END AS MaxManageFiles,
-                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Signing')=1
-                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
-                         THEN 1 ELSE 0 END AS MaxSigning,
-                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.CustomerDelivery')=1
-                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
-                         THEN 1 ELSE 0 END AS MaxCustomerDelivery,
-                    CASE WHEN dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.PhysicalStorage')=1
-                               OR dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update')=1
-                         THEN 1 ELSE 0 END AS MaxPhysicalStorage,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update') AS MaxUpdateInfo,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update') AS MaxManageFiles,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update') AS MaxSigning,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update') AS MaxCustomerDelivery,
+                    dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Update') AS MaxPhysicalStorage,
                     dbo.fn_HoSo_GroupRight(u.UserId,'ProjectDocument.Delete') AS MaxDelete
                 FROM dbo.TblTaiLieu t
                 JOIN dbo.TblDuAn d
@@ -335,7 +324,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                 ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblTaiLieu WITH(UPDLOCK,HOLDLOCK) WHERE IdTaiLieu=@Id",new Dictionary<string,object>{{"@Id",documentId}});
                 if(!CanAccess(actor,documentId,"Manage")) throw new UnauthorizedAccessException("Bạn không được cấp quyền hồ sơ này.");
                 if(GetGrantStamp(documentId)!=expectedStamp) throw new InvalidOperationException("Quyền đã thay đổi. Hãy đóng và mở lại popup.");
-                bool canGrantOutsideProject = HasGroupRight(actor, "DocumentAdministration.View");
+                bool canGrantOutsideProject = HasGroupRight(actor, "Document.View")
+                    && HasGroupRight(actor, "Document.Update");
                 var members=GetGrantMembers(documentId, canGrantOutsideProject)
                     .AsEnumerable()
                     .ToDictionary(r=>(Guid)r["UserId"]);

@@ -571,6 +571,13 @@
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fTasks\Controls\CtrlSwapPhase.ascx.cs">
+      <DependentUpon>CtrlSwapPhase.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlSwapPhase.ascx.designer.cs">
+      <DependentUpon>CtrlSwapPhase.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fThanhToan\ThanhToanList.aspx.cs">
       <DependentUpon>ThanhToanList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -792,6 +799,7 @@
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlSwapPhase.ascx" />
     <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />

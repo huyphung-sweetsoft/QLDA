@@ -33,7 +33,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 string relative=VirtualPathUtility.ToAppRelative(context.Request.Path);
                 string url="/"+relative.Substring(2);
                 if(!url.StartsWith("/Uploads/DocumentVersion/",StringComparison.OrdinalIgnoreCase)
-                    && !url.StartsWith("/Uploads/DocumentSigningResult/",StringComparison.OrdinalIgnoreCase)) {
+                    && !url.StartsWith("/Uploads/DocumentSigningResult/",StringComparison.OrdinalIgnoreCase)
+                    && !url.StartsWith("/Uploads/CostAttachment/",StringComparison.OrdinalIgnoreCase)
+                    && !url.StartsWith("/Uploads/MeetingAttachment/",StringComparison.OrdinalIgnoreCase)) {
                     context.Response.StatusCode=404; return;
                 }
                 var files=new SubSonic.Select().From(TblUploadFile.Schema)
@@ -41,6 +43,10 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     .And(TblUploadFile.IsDeletedColumn).IsEqualTo(false).ExecuteTypedList<TblUploadFile>();
                 var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);
                 var file=files.FirstOrDefault(f=> {
+                    if (ProjectRecordFileAccess.IsRecordAttachment(f.RefType))
+                        return ProjectRecordFileAccess.IsLinkedFile(f.RefId, f.RefType, f.Id)
+                            && ProjectRecordFileAccess.CanAccess(
+                                SweetContext.Current.UserId, f.RefId, f.RefType, false);
                     var id=repository.ResolveUploadDocument(f.RefId,f.RefType);
                     return id.HasValue && repository.CanAccess(SweetContext.Current.UserId,id.Value,"View");
                 });
@@ -50,7 +56,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 if(!physical.StartsWith(uploads.TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)
                     || !File.Exists(physical)) { context.Response.StatusCode=404; return; }
                 string extension=Path.GetExtension(physical).ToLowerInvariant();
-                bool preview=new[]{".pdf",".png",".jpg",".jpeg",".gif",".webp"}.Contains(extension);
+                bool preview=new[]{".pdf",".png",".jpg",".jpeg",".gif",".webp",".bmp",".mp4",".webm",".m4v",".mp3",".wav",".ogg"}.Contains(extension);
                 context.Response.ContentType=preview?MimeMapping.GetMimeMapping(physical):"application/octet-stream";
                 context.Response.AddHeader("Content-Disposition",(preview?"inline":"attachment")+"; filename*=UTF-8''"+Uri.EscapeDataString(Path.GetFileName(file.OriginalFileName??file.Name)));
                 if(context.Request.HttpMethod=="GET") context.Response.TransmitFile(physical);
@@ -503,6 +509,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
         #region File Processing
         private UploadResult ProcessFileUpload(UploadRequest request)
         {
+            string fullPath = null;
+            TblUploadFile savedFile = null;
             try
             {
                 // Create upload directory
@@ -513,12 +521,18 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 string filePath = CreateSecureFilePath(request.RefType, secureFileName);
 
                 // Save file
-                string fullPath = HttpContext.Current.Server.MapPath(filePath);
+                fullPath = HttpContext.Current.Server.MapPath(filePath);
                 request.File.SaveAs(fullPath);
 
                 // Create database record
                 var fileUpload = CreateFileRecord(request, filePath);
-                var savedFile = UploadManager.Instance.Create(fileUpload);
+                savedFile = UploadManager.Instance.Create(fileUpload);
+                if (ProjectRecordFileAccess.IsRecordAttachment(request.RefType))
+                {
+                    ProjectRecordFileAccess.LinkFile(
+                        SweetContext.Current.UserId, request.RefId,
+                        request.RefType, savedFile.Id);
+                }
 
                 return new UploadResult
                 {
@@ -530,6 +544,26 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             catch (Exception ex)
             {
                 LogError(ex);
+                if (ProjectRecordFileAccess.IsRecordAttachment(request.RefType))
+                {
+                    try
+                    {
+                        if (savedFile != null)
+                        {
+                            UploadManager.Instance.RemoveFiles(
+                                new List<Guid> { savedFile.Id },
+                                (FileUploadTypes)Enum.Parse(typeof(FileUploadTypes), request.RefType));
+                        }
+                        else if (!string.IsNullOrEmpty(fullPath) && File.Exists(fullPath))
+                        {
+                            File.Delete(fullPath);
+                        }
+                    }
+                    catch (Exception cleanupError)
+                    {
+                        LogError(cleanupError);
+                    }
+                }
                 return new UploadResult
                 {
                     Success = false,
@@ -645,6 +679,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
         private bool HasPermissionForRefType(AspnetUser user, string refType, Guid refId)
         {
+            if (ProjectRecordFileAccess.IsRecordAttachment(refType))
+                return user != null && ProjectRecordFileAccess.CanAccess(
+                    SweetContext.Current.UserId, refId, refType, true);
             if(refType=="DocumentVersion" || refType=="DocumentSigningResult") {
                 if(user==null) return false;
                 var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);

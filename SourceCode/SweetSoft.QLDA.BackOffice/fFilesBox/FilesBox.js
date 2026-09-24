@@ -136,46 +136,66 @@ FilesBox.ReorderFile = function () {
     });
 };
 FilesBox.LayoutFilePopUp = function (el) {
-    var fileName = $(el).attr("data-path");
+    var fileUrl = $(el).attr("data-path");
+    if (!fileUrl)
+        return;
 
-    var isVideo = FilesBox.IsVideo(fileName);
-    var isDoc = FilesBox.IsDoc(fileName);
-    var isExcel = FilesBox.IsExcel(fileName);
-    var isPDF = FilesBox.IsPDF(fileName);
-
-    $(".body-preview").empty();
-    if (isVideo) {
-        const html = String.format("<video style='max-width: 100vw; max-height: 100vh;' controls>\
-                    <source src=\"{0}\" type =\"video/mp4\" >\
-        </video>", $(el).attr("data-path"));
-        $(".body-preview").append(html);
-        $('#file-box-viewer').show();
+    var resolvedUrl;
+    try {
+        resolvedUrl = new URL(fileUrl, window.location.href);
+    } catch (e) {
+        return;
     }
-    else if (isPDF) {
-        var reviewUrl = String.format('https://docs.google.com/gview?url={0}&embedded=true'
-            , CMSMasterJs.HostPath + $(el).attr("data-path"));
+    if (resolvedUrl.protocol !== 'http:' && resolvedUrl.protocol !== 'https:')
+        return;
+    fileUrl = resolvedUrl.href;
 
-        var html = '<iframe style="height: 100vh; width: calc(100vw - 200px);" src=""></iframe>';
-        $(".body-preview").append(html);
-        $(".body-preview iframe").attr('src', reviewUrl);
-        $('#file-box-viewer').show();
-    }
-    else if (isDoc || isExcel) {
-        var reviewUrl = String.format('https://docs.google.com/gview?url={0}&embedded=true'
-            , CMSMasterJs.HostPath + $(el).attr("data-path"));
+    var preview = $('#file-box-viewer .body-preview');
+    preview.empty();
 
-        var html = '<iframe style="height: 100vh; width: calc(100vw - 200px);" src=""></iframe>';
-        $(".body-preview").append(html);
-        $(".body-preview iframe").attr('src', reviewUrl);
-        $('#file-box-viewer').show();
+    var cleanUrl = fileUrl.split('?')[0].split('#')[0].toLowerCase();
+    var extension = cleanUrl.substring(cleanUrl.lastIndexOf('.') + 1);
+    var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+    var videoExtensions = ['mp4', 'webm', 'm4v'];
+    var audioExtensions = ['mp3', 'wav', 'ogg'];
+
+    if (extension === 'pdf') {
+        $('<iframe>', {
+            title: 'Xem tệp PDF',
+            src: fileUrl
+        }).css({ width: '92vw', height: '92vh', border: '0', background: '#fff' })
+            .appendTo(preview);
+    } else if (imageExtensions.indexOf(extension) >= 0) {
+        $('<img>', {
+            'class': 'modal-content full-image',
+            src: fileUrl,
+            alt: 'Tệp đính kèm'
+        }).css({ maxWidth: '92vw', maxHeight: '92vh', width: 'auto', height: 'auto' })
+            .appendTo(preview);
+    } else if (videoExtensions.indexOf(extension) >= 0) {
+        $('<video>', {
+            controls: true,
+            autoplay: false,
+            src: fileUrl
+        }).css({ maxWidth: '92vw', maxHeight: '92vh' }).appendTo(preview);
+    } else if (audioExtensions.indexOf(extension) >= 0) {
+        $('<audio>', {
+            controls: true,
+            src: fileUrl
+        }).css({ width: 'min(600px, 90vw)' }).appendTo(preview);
+    } else {
+        $('<div>', { 'class': 'text-center text-white p-4' })
+            .append($('<p>').text('Định dạng này không xem trực tiếp trong trình duyệt.'))
+            .append($('<a>', {
+                'class': 'btn btn-light',
+                href: fileUrl,
+                target: '_blank',
+                rel: 'noopener'
+            }).text('Tải file để mở'))
+            .appendTo(preview);
     }
 
-    else {
-        var img = $(el).closest('.img-container').find('img');
-        var imageTag = $('<img class="modal-content full-image" src="' + img.attr("src") + '">');
-        $(".body-preview").append(imageTag);
-        $('#file-box-viewer').show();
-    }
+    $('#file-box-viewer').show();
 }
 FilesBox.ClosePopUp = function () {
     $('#file-pop').modal("hide");

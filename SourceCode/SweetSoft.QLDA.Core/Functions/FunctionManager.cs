@@ -62,7 +62,40 @@ namespace SweetSoft.QLDA.Core.Functions
 
                 CacheManager.SetCacheData($"ModuleByUserId_{userId}", modules);
             }
-            return WithoutRetiredDocumentCatalogues(modules);
+            List<AspnetFunction> visible = WithoutRetiredDocumentCatalogues(modules);
+            bool canViewDocuments = DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View);
+            visible.RemoveAll(module => string.Equals(module.FunctionCode,
+                ModuleKeys.Document.ToString(), StringComparison.OrdinalIgnoreCase));
+            if (canViewDocuments)
+            {
+                List<AspnetFunction> configured = _repository.GetAllAspnetFunctions();
+                AspnetFunction document = configured.FirstOrDefault(module =>
+                    string.Equals(module.FunctionCode, ModuleKeys.Document.ToString(),
+                        StringComparison.OrdinalIgnoreCase));
+                if (document != null)
+                {
+                    visible.Add(document);
+                    if (!string.IsNullOrEmpty(document.ParentCode)
+                        && !visible.Any(module => string.Equals(module.FunctionCode,
+                            document.ParentCode, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        AspnetFunction parent = configured.FirstOrDefault(module =>
+                            string.Equals(module.FunctionCode, document.ParentCode,
+                                StringComparison.OrdinalIgnoreCase));
+                        if (parent != null) visible.Add(parent);
+                    }
+                }
+            }
+            // A project-only permission may bring back the fDocument parent
+            // through the legacy menu query. Do not render an empty menu.
+            if (!visible.Any(module => module.OfProject != true
+                && string.Equals(module.ParentCode, "fDocument",
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                visible.RemoveAll(module => string.Equals(module.FunctionCode,
+                    "fDocument", StringComparison.OrdinalIgnoreCase));
+            }
+            return visible;
         }
 
         /// <summary>

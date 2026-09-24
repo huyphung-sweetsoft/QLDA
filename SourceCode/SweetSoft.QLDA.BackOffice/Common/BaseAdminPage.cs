@@ -438,6 +438,21 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         public void CheckFunctionPermission(Guid userId)
         {
+            if (PAGE_FUNCTION_CODE == ModuleKeys.Document)
+            {
+                if (DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View))
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
+            if (PAGE_FUNCTION_CODE == ModuleKeys.ProjectDocument)
+            {
+                if (CurrentProjectId != Guid.Empty
+                    && DocumentManager.Instance.CanEnterProjectDocumentArea(CurrentProjectId))
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
             if (!SweetContext.Current.CheckFunctionPermission(userId, PAGE_FUNCTION_CODE) && !IsLogin)
                 Response.Redirect(GetRelativeClientPath("/403"), true);
         }
@@ -490,6 +505,20 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.CurrentProjectId);
 
                     return pmId.HasValue && pmId.Value == SweetContext.Current.UserId;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+        public bool IsAdministrator
+        {
+            get
+            {
+                try
+                {
+                    return UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
                 }
                 catch
                 {
