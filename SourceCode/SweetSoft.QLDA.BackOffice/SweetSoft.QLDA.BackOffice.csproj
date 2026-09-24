@@ -71,6 +71,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\ImageResizer.dll</HintPath>
     </Reference>
+    <Reference Include="Mammoth, Version=1.12.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mammoth.1.12.2\lib\netstandard2.0\Mammoth.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.9\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -110,6 +113,11 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=9.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Diagnostics.DiagnosticSource.9.0.9\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.Pipelines, Version=9.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Pipelines.9.0.9\lib\net462\System.IO.Pipelines.dll</HintPath>
@@ -1849,6 +1857,12 @@
     <Content Include="Web.config" />
     <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
     <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
+    <Content Include="Uploads\ProjectContract\2026\09\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng__1__20260924_073456_O046R1.docx" />
+    <Content Include="Uploads\ProjectContract\2026\09\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng__1__20260924_074129_GKNG9B.docx" />
+    <Content Include="Uploads\ProjectContract\2026\09\BanCamKet_HoangDuyAn_20260924_104912_R1XA2M.docx" />
+    <Content Include="Uploads\ProjectContract\2026\09\CamKetDuLieu_20260924_100508_NOBB18.pdf" />
+    <Content Include="Uploads\ProjectContract\2026\09\Lab_4_20260924_100728_YD9MWR.pdf" />
+    <Content Include="Uploads\ProjectContract\2026\09\TB_07_chuyen_xe_Xuan_YT_20260924_102219_ZLRIZ1.pdf" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -412,6 +412,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string MY_PERSONAL_SCHEDULE = "MY_PERSONAL_SCHEDULE";
         public const string EMPLOYEE_SCHEDULE = "EMPLOYEE_SCHEDULE";
         public const string ERROR_OCCURED = "ERROR_OCCURED";
+        public const string CONTRACT_DETAIL = "CONTRACT_DETAIL";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

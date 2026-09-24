@@ -2929,6 +2929,9 @@
   <data name="RESIGNED" xml:space="preserve">
     <value>Nghỉ việc</value>
   </data>
+  <data name="ERROR_OCCURED" xml:space="preserve">
+    <value>Có lỗi xảy ra </value>
+  </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
@@ -3088,7 +3091,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
-  <data name="ERROR_OCCURED" xml:space="preserve">
-    <value>Có lỗi xảy ra </value>
+  <data name="CONTRACT_DETAIL" xml:space="preserve">
+    <value>Chi tiết hợp đồng</value>
   </data>
 </root>
