@@ -3082,4 +3082,7 @@
   <data name="ACTUAL_COMPLETION_DATE" xml:space="preserve">
     <value>Actual completion date</value>
   </data>
+  <data name="CONTRACT_DETAIL" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
 </root>

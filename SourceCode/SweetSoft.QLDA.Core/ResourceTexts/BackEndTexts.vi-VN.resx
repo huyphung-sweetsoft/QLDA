@@ -3103,4 +3103,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
+  <data name="CONTRACT_DETAIL" xml:space="preserve">
+    <value>Chi tiết hợp đồng</value>
+  </data>
 </root>

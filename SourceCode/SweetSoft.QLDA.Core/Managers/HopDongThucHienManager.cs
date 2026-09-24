@@ -88,6 +88,8 @@ namespace SweetSoft.QLDA.Core.Managers
             item.NgayTao = DateTime.UtcNow;
             item.NguoiCapNhat = null;
             item.NgayCapNhat = null;
+            item.LoaiNoiDungHopDong = dto.LoaiNoiDungHopDong;
+            item.NoiDungHopDong = dto.NoiDungHopDong;
 
             item = _repository.Insert(item);
 

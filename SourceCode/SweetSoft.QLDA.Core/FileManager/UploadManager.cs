@@ -372,5 +372,7 @@ namespace SweetSoft.QLDA.Core.FileManager
         {
             return _repository.SearchPaging(ownerId, searchTerm, orderBy, pageNumber, pageSize, out totalRecord);
         }
+
+
     }
 }

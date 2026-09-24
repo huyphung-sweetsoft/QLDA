@@ -326,6 +326,32 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdTaiLieu.ForeignKeyTableName = "TblTaiLieu";
 				schema.Columns.Add(colvarIdTaiLieu);
 				
+				TableSchema.TableColumn colvarLoaiNoiDungHopDong = new TableSchema.TableColumn(schema);
+				colvarLoaiNoiDungHopDong.ColumnName = "LoaiNoiDungHopDong";
+				colvarLoaiNoiDungHopDong.DataType = DbType.String;
+				colvarLoaiNoiDungHopDong.MaxLength = 20;
+				colvarLoaiNoiDungHopDong.AutoIncrement = false;
+				colvarLoaiNoiDungHopDong.IsNullable = true;
+				colvarLoaiNoiDungHopDong.IsPrimaryKey = false;
+				colvarLoaiNoiDungHopDong.IsForeignKey = false;
+				colvarLoaiNoiDungHopDong.IsReadOnly = false;
+				colvarLoaiNoiDungHopDong.DefaultSetting = @"";
+				colvarLoaiNoiDungHopDong.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarLoaiNoiDungHopDong);
+				
+				TableSchema.TableColumn colvarNoiDungHopDong = new TableSchema.TableColumn(schema);
+				colvarNoiDungHopDong.ColumnName = "NoiDungHopDong";
+				colvarNoiDungHopDong.DataType = DbType.String;
+				colvarNoiDungHopDong.MaxLength = -1;
+				colvarNoiDungHopDong.AutoIncrement = false;
+				colvarNoiDungHopDong.IsNullable = true;
+				colvarNoiDungHopDong.IsPrimaryKey = false;
+				colvarNoiDungHopDong.IsForeignKey = false;
+				colvarNoiDungHopDong.IsReadOnly = false;
+				colvarNoiDungHopDong.DefaultSetting = @"";
+				colvarNoiDungHopDong.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNoiDungHopDong);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -455,6 +481,22 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<Guid?>(Columns.IdTaiLieu); }
 			set { SetColumnValue(Columns.IdTaiLieu, value); }
 		}
+		  
+		[XmlAttribute("LoaiNoiDungHopDong")]
+		[Bindable(true)]
+		public string LoaiNoiDungHopDong 
+		{
+			get { return GetColumnValue<string>(Columns.LoaiNoiDungHopDong); }
+			set { SetColumnValue(Columns.LoaiNoiDungHopDong, value); }
+		}
+		  
+		[XmlAttribute("NoiDungHopDong")]
+		[Bindable(true)]
+		public string NoiDungHopDong 
+		{
+			get { return GetColumnValue<string>(Columns.NoiDungHopDong); }
+			set { SetColumnValue(Columns.NoiDungHopDong, value); }
+		}
 		
 		#endregion
 		
@@ -530,7 +572,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu)
+		public static void Insert(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,string varLoaiNoiDungHopDong,string varNoiDungHopDong)
 		{
 			TblHopDongThucHien item = new TblHopDongThucHien();
 			
@@ -564,6 +606,10 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdTaiLieu = varIdTaiLieu;
 			
+			item.LoaiNoiDungHopDong = varLoaiNoiDungHopDong;
+			
+			item.NoiDungHopDong = varNoiDungHopDong;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -574,7 +620,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu)
+		public static void Update(Guid varIdHopDongThucHien,string varSoHopDong,string varTenHopDong,Guid varIdKhachHang,decimal? varGiaTriHopDong,DateTime? varNgayKy,DateTime? varNgayHieuLuc,DateTime? varNgayHetHan,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,string varLoaiNoiDungHopDong,string varNoiDungHopDong)
 		{
 			TblHopDongThucHien item = new TblHopDongThucHien();
 			
@@ -607,6 +653,10 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NgayCapNhat = varNgayCapNhat;
 			
 				item.IdTaiLieu = varIdTaiLieu;
+			
+				item.LoaiNoiDungHopDong = varLoaiNoiDungHopDong;
+			
+				item.NoiDungHopDong = varNoiDungHopDong;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -726,6 +776,20 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn LoaiNoiDungHopDongColumn
+        {
+            get { return Schema.Columns[15]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn NoiDungHopDongColumn
+        {
+            get { return Schema.Columns[16]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -745,6 +809,8 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
 			 public static string IdTaiLieu = @"IdTaiLieu";
+			 public static string LoaiNoiDungHopDong = @"LoaiNoiDungHopDong";
+			 public static string NoiDungHopDong = @"NoiDungHopDong";
 						
 		}
 		#endregion
