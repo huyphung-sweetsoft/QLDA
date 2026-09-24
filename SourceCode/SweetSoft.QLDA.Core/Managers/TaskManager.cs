@@ -26,6 +26,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         #region 1. Lấy dữ liệu & Danh mục
         public DataTable FetchByIdAndOrderASCMaCV(Guid projectId, string searchValue = null) => _repository.FetchByIdAndOrderASCMaCV(projectId, searchValue);
+        public DataTable FetchByEmployeeIdAndOrderASCMaCV(Guid projectId, Guid idNhanVien, string searchValue = null) => _repository.FetchByEmployeeIdAndOrderASCMaCV(projectId, idNhanVien, searchValue);
         public TblCongViec FetchById(Guid taskId) => _repository.FetchById(taskId);
         public DataTable GetChildTasks(Guid projectId, Guid taskId) => _repository.GetChildTasks(projectId, taskId);
         public DataTable GetDependentTasks(Guid projectId, Guid taskId) => _repository.GetDependentTasks(projectId, taskId);
@@ -43,6 +44,10 @@ namespace SweetSoft.QLDA.Core.Managers
                     throw new SweetSoft.QLDA.Core.ExceptionHelpers.BusinessException("Không thể hoàn thành dự án do vẫn còn Công việc chưa hoàn thành hoặc chưa bị hủy.", null, SweetSoft.QLDA.Core.ExceptionHelpers.ErrorCodes.Conflict);
                 }
             }
+        }
+        public DataTable FetchPhasesByProjectId(Guid projectId)
+        {
+            return _repository.FetchPhasesByProjectId(projectId);
         }
         public DataTable GetPrioritiesTable() => _repository.FetchAllPrioritiesTable();
         public DataTable GetProjectMembers(Guid projectId) => _repository.FetchProjectMembers(projectId);
@@ -467,9 +472,17 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return (minStartLimit, alert);
         }
-        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue = null)
+        public (DataTable Dt, Dictionary<Guid, string> DictCodes, int OverdueCount) GetDictTasksAndCountOverdue(Guid projectId, string searchValue = null, bool IsPM = false)
         {
-            DataTable dt = FetchByIdAndOrderASCMaCV(projectId, searchValue);
+            DataTable dt = new DataTable();
+            if (IsPM)
+            {
+                dt = FetchByIdAndOrderASCMaCV(projectId, searchValue);
+            }
+            else
+            {
+                dt = FetchByEmployeeIdAndOrderASCMaCV(projectId, SweetContext.Current.UserId, searchValue);
+            }
             var dictCodes = new Dictionary<Guid, string>();
             int overdueCount = 0;
 
@@ -903,12 +916,28 @@ namespace SweetSoft.QLDA.Core.Managers
             if (dtChildTasks != null && dtChildTasks.Rows.Count > 0)
             {
                 DateTime? maxEnd = null;
+                DateTime? maxActualEnd = null;
+                bool allChildrenHaveActualEndDate = true;
+
                 foreach (DataRow row in dtChildTasks.Rows)
                 {
+                    // 1. Tìm ngày kết thúc dự kiến lớn nhất
                     if (row[ColNgayKetThuc] != DBNull.Value && DateTime.TryParse(row[ColNgayKetThuc].ToString(), out DateTime ngayKt))
                     {
                         if (!maxEnd.HasValue || ngayKt > maxEnd.Value)
                             maxEnd = ngayKt;
+                    }
+
+                    // 2. Tìm ngày hoàn thành thực tế lớn nhất + Kiểm tra xem có task con nào chưa xong không
+                    if (row["NgayHoanThanhThucTe"] != DBNull.Value && DateTime.TryParse(row["NgayHoanThanhThucTe"].ToString(), out DateTime actualEnd))
+                    {
+                        if (!maxActualEnd.HasValue || actualEnd > maxActualEnd.Value)
+                            maxActualEnd = actualEnd;
+                    }
+                    else
+                    {
+                        // Nếu có bất kỳ 1 task con nào bị rỗng ngày thực tế -> Cha chưa thể hoàn thành
+                        allChildrenHaveActualEndDate = false;
                     }
                 }
 
@@ -916,11 +945,19 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     int newThoiHan = LichBieuChungManager.Instance.CountWorkingDaysInRange(parentTask.NgayBatDau.Value, maxEnd.Value);
 
+                    // Xác định giá trị mới cho ngày hoàn thành thực tế của Cha
+                    DateTime? newActualEnd = allChildrenHaveActualEndDate ? maxActualEnd : null;
+
                     // [CHỐT CHẶN CHỐNG TREO]: Chỉ Lưu và chạy dây chuyền nếu THỰC SỰ có thay đổi dữ liệu
-                    if (!parentTask.NgayKetThuc.HasValue || parentTask.NgayKetThuc.Value.Date != maxEnd.Value.Date || parentTask.ThoiHanNgay != newThoiHan)
+                    if (!parentTask.NgayKetThuc.HasValue ||
+                        parentTask.NgayKetThuc.Value.Date != maxEnd.Value.Date ||
+                        parentTask.ThoiHanNgay != newThoiHan ||
+                        parentTask.NgayHoanThanhThucTe != newActualEnd) // Bổ sung điều kiện kiểm tra thay đổi ngày thực tế
                     {
                         parentTask.NgayKetThuc = maxEnd.Value;
                         parentTask.ThoiHanNgay = newThoiHan;
+                        parentTask.NgayHoanThanhThucTe = newActualEnd; // Cập nhật ngày hoàn thành thực tế
+
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
 
