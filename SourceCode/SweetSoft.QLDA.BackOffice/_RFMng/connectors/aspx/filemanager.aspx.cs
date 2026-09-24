@@ -517,7 +517,11 @@ namespace SweetSoft.QLDA.BackOffice._RFMng.connectors
         private static bool IsProtectedDocumentPath(string path)
         {
             string resolved=Path.GetFullPath(path).TrimEnd('\\','/');
-            foreach(string folder in new[]{"~/Uploads/DocumentVersion/","~/Uploads/DocumentSigningResult/"}) {
+            foreach(string folder in new[]{
+                "~/Uploads/DocumentVersion/",
+                "~/Uploads/DocumentSigningResult/",
+                "~/Uploads/CostAttachment/",
+                "~/Uploads/MeetingAttachment/"}) {
                 string root=Path.GetFullPath(HttpContext.Current.Server.MapPath(folder)).TrimEnd('\\','/');
                 if(resolved.Equals(root,StringComparison.OrdinalIgnoreCase) || resolved.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)) return true;
             }

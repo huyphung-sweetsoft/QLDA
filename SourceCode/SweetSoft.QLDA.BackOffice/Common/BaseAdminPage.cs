@@ -438,6 +438,21 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         public void CheckFunctionPermission(Guid userId)
         {
+            if (PAGE_FUNCTION_CODE == ModuleKeys.Document)
+            {
+                if (DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View))
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
+            if (PAGE_FUNCTION_CODE == ModuleKeys.ProjectDocument)
+            {
+                if (CurrentProjectId != Guid.Empty
+                    && DocumentManager.Instance.CanEnterProjectDocumentArea(CurrentProjectId))
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
             if (!SweetContext.Current.CheckFunctionPermission(userId, PAGE_FUNCTION_CODE) && !IsLogin)
                 Response.Redirect(GetRelativeClientPath("/403"), true);
         }

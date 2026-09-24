@@ -113,13 +113,13 @@
                         <ItemTemplate>
                             <div class="d-flex justify-content-center align-items-center gap-1">
                                 <asp:LinkButton runat="server"
-                                    ID="lbtMeetingDocument"
+                                    ID="lbtMeetingFiles"
                                     Visible='<%# this.IsView %>'
-                                    CommandName="MEETING_DOCUMENT"
+                                    CommandName="MEETING_FILES"
                                     CommandArgument='<%# Eval("IdLichHop") %>'
                                     CausesValidation="false"
                                     CssClass="btn btn-outline-primary btn-sm text-center btn-smart-link"
-                                    ToolTip='<%# GetResourceText(BackEndResourceKeys.MEETING_DOCUMENT) %>'>
+                                    ToolTip="File đính kèm lịch họp">
                                     <i class="fas fa-folder-open"></i>
                                 </asp:LinkButton>
 

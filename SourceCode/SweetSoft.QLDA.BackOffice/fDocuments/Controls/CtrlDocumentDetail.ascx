@@ -906,7 +906,8 @@
             <div class="mb-1"><strong>Phân quyền theo từng hồ sơ</strong></div>
             Chọn một nhân viên rồi bấm mở rộng để cấp đúng thao tác cần thiết.
             <strong>Xem</strong> bao gồm mở hồ sơ và tải file hiện có xuống;
-            các quyền còn lại được tách riêng. Ô bị khóa nghĩa là nhóm người dùng chưa cho phép quyền đó.
+            các quyền sửa còn lại được tách riêng. Nhóm người dùng cần có quyền
+            <strong>Xem</strong> và <strong>Cập nhật</strong> thì mới nhận được quyền thao tác trên từng hồ sơ.
         </div>
         <asp:Panel runat="server" ID="pnlGrantExternalUsers" CssClass="document-permission-scope">
             <div class="document-permission-scope__copy">
@@ -986,7 +987,7 @@
                                     <small>Xóa mềm hồ sơ theo chính sách hệ thống</small>
                                 </div>
                             </div>
-                            <asp:Label runat="server" Visible='<%# Convert.ToBoolean(Eval("IsResponsibleDefault")) %>' CssClass="document-permission-locked" Text="Người phụ trách được mặc định xem và sửa thông tin chung nếu nhóm còn quyền tương ứng. Các thao tác khác vẫn cần tích riêng." />
+                            <asp:Label runat="server" Visible='<%# Convert.ToBoolean(Eval("IsResponsibleDefault")) %>' CssClass="document-permission-locked" Text="Người phụ trách mặc định được xem và sửa thông tin chung nếu nhóm có quyền Xem và Cập nhật. Các thao tác khác vẫn cần tích riêng." />
                         </div>
                     </details>
                 </ItemTemplate>
