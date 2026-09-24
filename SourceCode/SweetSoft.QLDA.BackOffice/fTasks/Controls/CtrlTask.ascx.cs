@@ -1,6 +1,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
@@ -16,6 +17,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
     public partial class CtrlTask : BaseAdminUserControl
     {
         public EventHandler NewTaskHandlerCallback;
+        public EventHandler<Guid> NewSubTaskHandlerCallback;
         public EventHandler EditTaskHandlerCallback;
         public Guid ProjectId
         {
@@ -35,7 +37,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
+        protected bool IsAdd => this.CURRENT_PAGE.IsAdd;
         protected bool IsDelete => this.CURRENT_PAGE.IsDelete;
+        protected bool IsPM => this.CURRENT_PAGE.IsPM;
+        protected bool IsAdministrator => this.CURRENT_PAGE.IsAdministrator;
 
         protected Dictionary<Guid, string> _dictTaskCodes = new Dictionary<Guid, string>();
         private static Dictionary<Guid, TblDoUuTien> _dictPriorities = new Dictionary<Guid, TblDoUuTien>();
@@ -48,6 +53,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 InitControls();
             }
+            CtrlSwapPhase1.SwapSuccessCallback = () =>
+            {
+                this.Rebind();       
+                upMain.Update();    
+            };
         }
 
         public void InitControls()
@@ -73,9 +83,18 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             _dictTaskCodes.Clear();
             int overdueCount = 0;
             string searchValue=txtSearchSingle.Text.Trim();
-            (dtTasks, _dictTaskCodes, overdueCount) = TaskManager.Instance.GetDictTasksAndCountOverdue(this.ProjectId, searchValue);
-
+            (dtTasks, _dictTaskCodes, overdueCount) = TaskManager.Instance.GetDictTasksAndCountOverdue(this.ProjectId, searchValue, IsPM || IsAdministrator);
             lblOverdueCount.InnerText = overdueCount.ToString();
+            if (dtTasks == null || dtTasks.Rows.Count == 0)
+            {
+                grvData.Visible = false;
+                pnlNoTask.Visible = true;  
+            }
+            else
+            {
+                grvData.Visible = true;
+                pnlNoTask.Visible = false; 
+            }
             grvData.DataSource = dtTasks;
             grvData.DataBind();
             upMain.Update();
@@ -97,8 +116,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 GetResourceText(BackEndResourceKeys.ASSIGNEE),
                 GetResourceText(BackEndResourceKeys.DURATION),
                 GetResourceText(BackEndResourceKeys.START_DATE),
-                GetResourceText(BackEndResourceKeys.END_DATE),
-                GetResourceText(BackEndResourceKeys.PRIORITY),
+                GetResourceText(BackEndResourceKeys.EXPECTED_COMPLETION_DATE),
+                GetResourceText(BackEndResourceKeys.ACTUAL_COMPLETION_DATE),
                 GetResourceText(BackEndResourceKeys.STATUS),
                 GetResourceText(BackEndResourceKeys.DEPENDENT),
                 GetResourceText(BackEndResourceKeys.ACTION)
@@ -269,7 +288,26 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "RenderTaskScheduleJS",
                         "setTimeout(function() { CMSMasterJs.RenderSingleTaskSchedule(); }, 200);", true);
                     break;
+                case "ITEM_ADD_CHILD": 
+                    if (!this.CURRENT_PAGE.IsAdd)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    int rowIndexAdd = (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        ? ((GridViewRow)((WebControl)(e.CommandSource)).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
 
+                    Guid parentTaskId = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexAdd].Value.ToString(), out parentTaskId))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (NewSubTaskHandlerCallback != null)
+                        NewSubTaskHandlerCallback(this, parentTaskId);
+                    break;
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
                     {
@@ -335,41 +373,19 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 string maCv = rowView["MaCongViec"]?.ToString() ?? "";
                 int level = maCv.TrimEnd('.').Split('.').Length;
 
-                DataTable dtAllTasks = rowView.Row.Table;
-
-                int GetSeverity(DataRow currentRow)
+                int finalSeverity = 0;
+                if (rowView["NgayKetThuc"] != DBNull.Value && rowView["TrangThai"] != DBNull.Value)
                 {
-                    int severity = 0;
-                    if (currentRow["NgayKetThuc"] != DBNull.Value && currentRow["TrangThai"] != DBNull.Value)
-                    {
-                        DateTime ngayKt = Convert.ToDateTime(currentRow["NgayKetThuc"]);
-                        byte tThai = Convert.ToByte(currentRow["TrangThai"]);
-                        if (tThai != 2)
-                        {
-                            double daysLeft = (ngayKt.Date - DateTime.Now.Date).TotalDays;
-                            if (daysLeft < 0) severity = 2;
-                            else if (daysLeft >= 0 && daysLeft <= 2) severity = 1;
-                        }
-                    }
-                    if (severity == 2) return 2;
-                    if (currentRow["IdCongViec"] != DBNull.Value)
-                    {
-                        string idCv = currentRow["IdCongViec"].ToString();
-                        DataRow[] childRows = dtAllTasks.Select($"IdCongViecCha = '{idCv}'");
-                        foreach (DataRow child in childRows)
-                        {
-                            int childSeverity = GetSeverity(child);
-                            if (childSeverity > severity)
-                            {
-                                severity = childSeverity;
-                            }
-                            if (severity == 2) break;
-                        }
-                    }
-                    return severity;
-                }
+                    DateTime ngayKt = Convert.ToDateTime(rowView["NgayKetThuc"]);
+                    byte tThai = Convert.ToByte(rowView["TrangThai"]);
 
-                int finalSeverity = GetSeverity(rowView.Row);
+                    if (tThai != 2) 
+                    {
+                        double daysLeft = (ngayKt.Date - DateTime.Now.Date).TotalDays;
+                        if (daysLeft < 0) finalSeverity = 2;
+                        else if (daysLeft >= 0 && daysLeft <= 2) finalSeverity = 1; 
+                    }
+                }
 
                 e.Row.Attributes["data-code"] = maCv;
                 e.Row.Attributes["data-level"] = level.ToString();
@@ -397,7 +413,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         public override void ConfirmRequest(ConfirmResult e)
         {
-            if (e != null && e.Submit)
+            CtrlSwapPhase1.ConfirmRequest(e);
+
+            if (e != null && e.Submit && e.CommandName != "CONFIRM_SWAP_PHASES")
             {
                 Guid taskId = Guid.Empty;
                 if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
@@ -405,12 +423,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     ShowInvalidDataError();
                     return;
                 }
+
                 TblCongViec task = TaskManager.Instance.FetchById(taskId);
                 if (task == null)
                 {
                     ShowInvalidNotFoundData();
                     return;
                 }
+
                 try
                 {
                     TaskManager.Instance.DeleteTask(task);
@@ -423,6 +443,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
                         TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
                     }
+
                     hfDeletingTaskId.Value = string.Empty;
                     ShowSuccessDeleteData();
                     grvData.CurrentPageIndex = 1;
@@ -526,9 +547,30 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
 
-        public string GetTaskStatusBadge(object status)
+        public string GetTaskStatusBadge(object status, object ngayKetThucObj, object ngayHoanThanhThucTeObj)
         {
-            return _controlHelpers.GetTaskStatusBadge(status);
+            string html = _controlHelpers.GetTaskStatusBadge(status);
+
+            if (status != null && status.ToString() == "2")
+            {
+                if (ngayKetThucObj != null && ngayKetThucObj != DBNull.Value &&
+                    ngayHoanThanhThucTeObj != null && ngayHoanThanhThucTeObj != DBNull.Value)
+                {
+                    DateTime ngayDuKien = Convert.ToDateTime(ngayKetThucObj);
+                    DateTime ngayThucTe = Convert.ToDateTime(ngayHoanThanhThucTeObj);
+
+                    if (ngayThucTe.Date > ngayDuKien.Date)
+                    {
+                        html += "<span style='display:block; font-size:11px; color:#dc2626; font-weight:bold; margin-top:2px;'>(trễ hạn)</span>";
+                    }
+                }
+            }
+
+            return html;
+        }
+        protected void lbtSwapPhase_Click(object sender, EventArgs e)
+        {
+            CtrlSwapPhase1.OpenModal(this.ProjectId);
         }
         #endregion
     }

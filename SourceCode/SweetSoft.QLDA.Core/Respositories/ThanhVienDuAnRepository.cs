@@ -162,5 +162,31 @@ namespace SweetSoft.QLDA.Core.Respositories
 
             return new InlineQuery().ExecuteScalar<string>(sql);
         }
+        public DataTable GetThanhVienDuAnDetail(Guid idDuAn)
+        {
+            string sql = $@"
+                DECLARE @idDuAn VARCHAR(36) = '{idDuAn}';
+
+                SELECT 
+                    u.UserId, 
+                    u.DisplayName, 
+                    u.Avatar, 
+                    m.Email 
+                FROM TblThanhVienDuAn tv
+                INNER JOIN [dbo].[aspnet_Users] u ON tv.IdNhanVien = u.UserId
+                INNER JOIN [dbo].[aspnet_Membership] m ON u.UserId = m.UserId
+                WHERE tv.IdDuAn = @idDuAn 
+                  AND tv.DaXoa = 0 
+                  AND u.IsDeleted = 0 
+                  AND u.IsActivated = 1
+                ORDER BY u.DisplayName ASC;";
+
+            IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
+            if (iDataReader == null)
+                return null;
+            DataTable dt = new DataTable();
+            dt.Load(iDataReader);
+            return dt;
+        }
     }
 }

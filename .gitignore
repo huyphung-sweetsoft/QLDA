@@ -12,6 +12,11 @@
 *.userosscache
 *.sln.docstates
 *.suo
+*.dll
+*.exe
+*.json
+*.config
+*.bak
 
 # Thư viện NuGet
 packages/

@@ -468,6 +468,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
         //Task
         public const string TASK_MANAGEMENT = "TASK_MANAGEMENT";
+        public const string NO_TASK_FOR_YOU = "NO_TASK_FOR_YOU";
+        public const string ADD_NEW_CHILD_TASK = "ADD_NEW_CHILD_TASK";
         public const string TASK_LIST = "TASK_LIST";
         public const string TASK_CODE = "TASK_CODE";
         public const string TASK_NAME = "TASK_NAME";
@@ -599,6 +601,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string SAVE_TEMPLATE_BEFORE_UPLOAD = "SAVE_TEMPLATE_BEFORE_UPLOAD";
         public const string DOCUMENT = "DOCUMENT";
         public const string DOCUMENT_LIST = "DOCUMENT_LIST";
+        public const string DOCUMENT_ADMINISTRATION = "DOCUMENT_ADMINISTRATION";
         public const string DOCUMENT_CODE = "DOCUMENT_CODE";
         public const string DOCUMENT_NAME = "DOCUMENT_NAME";
         public const string DOCUMENT_STATUS = "DOCUMENT_STATUS";

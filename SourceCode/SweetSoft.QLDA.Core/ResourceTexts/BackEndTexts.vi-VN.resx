@@ -1324,6 +1324,9 @@
   <data name="DOCUMENT_LIST" xml:space="preserve">
     <value>Danh sách hồ sơ</value>
   </data>
+  <data name="DOCUMENT_ADMINISTRATION" xml:space="preserve">
+    <value>Quản trị hồ sơ toàn hệ thống</value>
+  </data>
   <data name="DOCUMENT_CODE" xml:space="preserve">
     <value>Mã hồ sơ</value>
   </data>
@@ -2926,6 +2929,21 @@
   <data name="RESIGNED" xml:space="preserve">
     <value>Nghỉ việc</value>
   </data>
+  <data name="ERROR_OCCURED" xml:space="preserve">
+    <value>Có lỗi xảy ra </value>
+  </data>
+  <data name="NO_TASK_FOR_YOU" xml:space="preserve">
+    <value>Bạn chưa được giao công việc!</value>
+  </data>
+  <data name="ADD_NEW_CHILD_TASK" xml:space="preserve">
+    <value>Thêm công việc con</value>
+  </data>
+  <data name="EXPECTED_COMPLETION_DATE" xml:space="preserve">
+    <value>Hoàn thành dự kiến</value>
+  </data>
+  <data name="ACTUAL_COMPLETION_DATE" xml:space="preserve">
+    <value>Hoàn thành thực tế</value>
+  </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
@@ -3084,8 +3102,5 @@
   </data>
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
-  </data>
-  <data name="ERROR_OCCURED" xml:space="preserve">
-    <value>Có lỗi xảy ra </value>
   </data>
 </root>

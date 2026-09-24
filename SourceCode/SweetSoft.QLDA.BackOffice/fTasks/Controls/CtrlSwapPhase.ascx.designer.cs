@@ -7,47 +7,56 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fCustomers
+namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
 
 
-    public partial class KhachHangList
+    public partial class CtrlSwapPhase
     {
 
         /// <summary>
-        /// Navigation1 control.
+        /// mdlSwapPhase control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlSwapPhase;
 
         /// <summary>
-        /// CtrlKhachHang control.
+        /// upSwap control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHang CtrlKhachHang;
+        protected global::System.Web.UI.UpdatePanel upSwap;
 
         /// <summary>
-        /// CtrlKhachHangForm1 control.
+        /// ddlPhase1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fCustomers.Controls.CtrlKhachHangForm CtrlKhachHangForm1;
+        protected global::System.Web.UI.WebControls.DropDownList ddlPhase1;
 
         /// <summary>
-        /// CtrlQuanLyLoai1 control.
+        /// btnConfirmSwap control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.CtrlQuanLyLoai CtrlQuanLyLoai1;
+        protected global::System.Web.UI.WebControls.LinkButton btnConfirmSwap;
+
+        /// <summary>
+        /// ddlPhase2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlPhase2;
     }
 }

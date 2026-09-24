@@ -3,30 +3,35 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fMeets/Controls/CtrlMeet.ascx" TagPrefix="SweetSoft" TagName="CtrlMeet" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
+<%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
-        .single-avatar-circle {
-            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            font-size: 12px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-        }
-        
-        .member-item-label {
-            display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; 
-            border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s ease; background-color: #fff;
-        }
-        .member-item-label:last-child { border-bottom: none; }
-        .member-item-label:hover { background-color: #f8fafc; }
-        .member-item-label input[type="checkbox"] { 
-            width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; margin: 0; border-radius: 4px;
-        }
-        
+        /* SCROLL BAR CHUẨN */
         .employee-scroll-container::-webkit-scrollbar { width: 6px; }
         .employee-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
         .employee-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
         .employee-scroll-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ĐỊNH DẠNG TỪNG DÒNG NHÂN VIÊN (GIỐNG CTRLCHONNHANVIEN.ASCX) */
+        .member-item-row { position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; transition: border-color 0.2s, box-shadow 0.2s; cursor: pointer; }
+        .member-item-row:hover { border-color: #93c5fd; background-color: #f8fafc; }
+        .member-item-row:last-child { margin-bottom: 0; }
+        
+        .row-default-view { display: flex; align-items: center; padding: 8px 12px; width: 100%; min-height: 52px; box-sizing: border-box; }
+        .member-info-group { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
+        
+        .member-info-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; margin: 0; border-radius: 4px; border: 1px solid #cbd5e1; }
+        
+        .single-avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .member-name-block { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+        .member-name-block .fw-bold { font-size: 14px; font-weight: 600 !important; color: #1e293b; }
+        .member-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+        .member-email:empty { display: none; }
+        .record-attachments .file-actions { display: none !important; }
     </style>
 </asp:Content>
 
@@ -65,7 +70,7 @@
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.DURATION) %>(Minutes)</label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtThoiLuong" Required="true" 
-                            TextMode="Number" min="1" PlaceHolder="Ví dụ: 60">
+                            TextMode="Number" min="1">
                         </SweetSoft:ExtraTextBox>
                     </div>
                 </div>
@@ -106,7 +111,10 @@
                 <div class="col-lg-12">
                     <div class="mb-3">
                         <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTENT) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtNoiDungCuocHop" TextMode="MultiLine" Rows="4"></SweetSoft:ExtraTextBox>
+                        <CKEditor:CKEditorControl runat="server" ID="txtNoiDungCuocHop" Width="100%"
+                            CssClass="ck-editor" Toolbar="Full" Language="vi-VN"
+                            AutoParagraph="false" BasePath="~/Styles/plugins/ckeditor/" Height="200" />
+                        <div class="form-text">File đính kèm được tải bằng nút thư mục của cuộc họp trong danh sách.</div>
                     </div>
                 </div>
 
@@ -118,14 +126,23 @@
         </FooterTemplate>
     </SweetSoft:ExtraModal>
 
-    <SweetSoft:ExtraModal runat="server" ID="dlChonNhanVien" Type="Info" DefaultButton="btnXacNhanNhanVien" Title="Chọn nhân viên tham gia">
+    <SweetSoft:ExtraModal runat="server" ID="dlMeetingFiles" Type="Primary" Size="Small" Title="File đính kèm lịch họp">
+        <ContentTemplate>
+            <div class="record-attachments">
+                <SweetSoft:FilesBox runat="server" ID="fbMeetingFiles" IsMultiple="false" MaxFileSizeBytes="10485760" />
+            </div>
+        </ContentTemplate>
+    </SweetSoft:ExtraModal>
+
+    <!-- POPUP CHỌN NHÂN VIÊN -->
+    <SweetSoft:ExtraModal runat="server" ID="dlChonNhanVien" Type="Primary" DefaultButton="btnXacNhanNhanVien" Title="Chọn nhân viên">
         <ContentTemplate>
             <div class="p-1">
                 <div class="row align-items-center mb-3 g-2">
                     <div class="col-md-7">
-                        <div class="input-group shadow-sm rounded-pill overflow-hidden border">
-                            <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="fas fa-search"></i></span>
-                            <input type="text" id="txtSearchEmployee" class="form-control border-0 shadow-none ps-2" placeholder="Tìm kiếm theo tên nhân viên..." autocomplete="off" />
+                        <div class="input-group">
+                            <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" CssClass="border-primary input-search-filter" PlaceHolder="Tìm kiếm theo tên nhân viên..."></SweetSoft:ExtraTextBox>
+                            <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClientClick="return false;"></SweetSoft:ExtraButton>
                         </div>
                     </div>
                     <div class="col-md-5 d-flex justify-content-md-end align-items-center pe-2">
@@ -138,17 +155,24 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="employee-scroll-container" style="max-height: 380px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #fff; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);">
+                        <div class="employee-scroll-container" style="max-height: 380px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #f8fafc; padding: 10px;">
                             <asp:Repeater ID="rptNhanVien" runat="server" OnItemDataBound="rptNhanVien_ItemDataBound">
                                 <ItemTemplate>
-                                    <label class="member-item-label m-0 w-100">
-                                        <asp:CheckBox runat="server" ID="chkSelect" />
-                                        <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
-                                        <asp:HiddenField runat="server" ID="hdfDisplayName" Value='<%# Eval("DisplayName") %>' />
-                                        
-                                        <%# Eval("AvatarHtml") %>
-                                        
-                                        <span class="fw-semibold text-dark"><%# Eval("DisplayName") %></span>
+                                    <label class="member-item-row m-0 w-100" id='mem-row-<%# Eval("UserId") %>'>
+                                        <div class="row-default-view">
+                                            <div class="member-info-group">
+                                                <asp:CheckBox runat="server" ID="chkSelect" />
+                                                <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
+                                                <asp:HiddenField runat="server" ID="hdfDisplayName" Value='<%# Eval("DisplayName") %>' />
+                                                
+                                                <%# Eval("AvatarHtml") %>
+                                                
+                                                <div class="member-name-block">
+                                                    <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
+                                                    <span class="member-email"><%# Eval("Email") %></span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </label>
                                 </ItemTemplate>
                             </asp:Repeater>
@@ -216,11 +240,11 @@
             $(document).off('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>')
                      .on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
                     calcMeetingTime();
-                });
+                 });
 
-            var $searchBox = $('#txtSearchEmployee');
+            var $searchBox = $('#<%= txtSearchSingle.ClientID %>');
             var $selectAll = $('#chkSelectAllEmployees');
-            var $chkListRows = $('.member-item-label');
+            var $chkListRows = $('.member-item-row');
 
             $searchBox.val('');
             $selectAll.prop('checked', false);

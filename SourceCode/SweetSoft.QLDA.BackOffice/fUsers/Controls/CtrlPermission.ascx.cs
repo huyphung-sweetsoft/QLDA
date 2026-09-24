@@ -26,6 +26,14 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
           .Concat(Enum.GetNames(typeof(ActionKeys))
               .Where(x => x != nameof(ActionKeys.None) && x != nameof(ActionKeys.All)))
           .ToArray();
+
+        private static bool IsDocumentPermissionFunction(string functionCode)
+        {
+            return string.Equals(functionCode, ModuleKeys.Document.ToString(),
+                       StringComparison.OrdinalIgnoreCase)
+                || string.Equals(functionCode, ModuleKeys.ProjectDocument.ToString(),
+                       StringComparison.OrdinalIgnoreCase);
+        }
         public Guid RoleId
         {
             get
@@ -90,11 +98,17 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                         break;
                 }
             }
+
             ltrHeader.Text = html;
         }
         private void RenderPermission()
         {
             List<AspnetFunction> aspnetFunctions = FunctionManager.Instance.GetAspnetFunctionWithPermissionKey();
+            // The old all-or-nothing administrator grant is replaced by the
+            // four independent rights on the Document row.
+            aspnetFunctions = aspnetFunctions.Where(t => !string.Equals(
+                t.FunctionCode, ModuleKeys.DocumentAdministration.ToString(),
+                StringComparison.OrdinalIgnoreCase)).ToList();
             bool isDev = AppSettingHelpers.GetSetting<bool>("IsDevelopment");
             if (!isDev)
             {
@@ -131,6 +145,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 foreach (var child in children)
                 {
                     string childHtml = buildFunc(child.FunctionCode);
+                    string displayName = string.Equals(child.FunctionCode,
+                        ModuleKeys.Document.ToString(), StringComparison.OrdinalIgnoreCase)
+                            ? "Quản trị hồ sơ toàn hệ thống"
+                            : string.Equals(child.FunctionCode,
+                                ModuleKeys.ProjectDocument.ToString(), StringComparison.OrdinalIgnoreCase)
+                                ? "Danh sách hồ sơ"
+                                : GetResourceText(child.FunctionName);
 
                     var hasUrl = !string.IsNullOrEmpty(child.PageUrl);
                     var hasPermissions = permissionDict.TryGetValue(child.Id, out var perms);
@@ -139,18 +160,18 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     {
                         if (!hasUrl)
                         {
-                            html += string.Format(itemTemplateParentHtml, child.Id, maxCol, GetResourceText(child.FunctionName));
+                            html += string.Format(itemTemplateParentHtml, child.Id, maxCol, displayName);
                         }
                         else
                         {
                             // Tạo checkbox disabled nếu quyền không tồn tại
                             var checkboxHtml = BuildCheckboxes(child.FunctionCode, perms);
-                            html += string.Format(itemTemplateHtml, child.Id, GetResourceText(child.FunctionName), checkboxHtml);
+                            html += string.Format(itemTemplateHtml, child.Id, displayName, checkboxHtml);
                         }
                     }
                     else
                     {
-                        html += string.Format(itemTemplateParentHtml, child.Id, maxCol, GetResourceText(child.FunctionName)) + childHtml;
+                        html += string.Format(itemTemplateParentHtml, child.Id, maxCol, displayName) + childHtml;
                     }
                 }
 
@@ -179,6 +200,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 
             foreach (var perm in AllPermissions)
             {
+                // Neither dossier scope has an Excel export action.
+                if (perm == "Export" && IsDocumentPermissionFunction(functionCode))
+                {
+                    html += "<td class=\"text-center permission-detail-empty\"></td>";
+                    continue;
+                }
+
                 bool isAvailable = (permissions?.Any(p => p.EndsWith(perm, StringComparison.OrdinalIgnoreCase)) ?? false)
                     || perm == "All"; // "All" luôn enable nếu bạn muốn
                 string disabled = isAvailable && !this.IsDisabled ? "" : "disabled";
@@ -412,6 +440,18 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     aspnetAssignRole.Save();
                 }
             });
+            foreach (AspnetUsersInRole member in new AspnetUsersInRoleCollection()
+                .Where(AspnetUsersInRole.Columns.RoleId, roleId).Load())
+            {
+                Guid userId = member.UserId;
+                AppCache.Remove($"ModuleByUserId_{userId}");
+                AppCache.Remove($"PermissionByUserId_{userId}");
+                AppCache.Remove($"USER_HAS_RIGHTS_{userId}");
+                AppCache.Remove($"MENU_LEFT_CMS_{userId}_1");
+                AppCache.Remove($"MENU_LEFT_CMS_{userId}_2");
+                if (userId == SweetContext.Current.UserId)
+                    SweetContext.Current.CurrentUserFunctions = null;
+            }
             return true;
         }
     }

@@ -1,6 +1,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers.Security;
+using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
@@ -173,6 +174,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             try
             {
+                // Tab Hồ sơ dự án là cửa vào danh sách. Thành viên/PM vẫn
+                // được thấy tab ngay cả khi chưa được cấp hồ sơ nào; người
+                // ngoài dự án chỉ thấy tab khi có ít nhất một hồ sơ được cấp.
+                // Từng dòng hồ sơ vẫn được ACL lọc riêng tại tầng truy vấn.
+                if (moduleKey == ModuleKeys.ProjectDocument)
+                {
+                    return DocumentManager.Instance
+                        .CanEnterProjectDocumentArea(ProjectId);
+                }
+
                 return CURRENT_PAGE != null
                     && CURRENT_PAGE.IsUserRight(
                         ActionKeys.View

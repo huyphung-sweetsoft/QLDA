@@ -20,6 +20,10 @@ namespace SweetSoft.QLDA.Core.FileManager
         [ERender("Phiên bản tài liệu")]
         DocumentVersion,
         [ERender("Tệp kết quả ký tài liệu")]
-        DocumentSigningResult
+        DocumentSigningResult,
+        [ERender("Tệp đính kèm chi phí")]
+        CostAttachment,
+        [ERender("Tệp đính kèm lịch họp")]
+        MeetingAttachment
     }
 }

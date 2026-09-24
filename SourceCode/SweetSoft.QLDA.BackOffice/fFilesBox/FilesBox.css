@@ -226,7 +226,8 @@
 .file-box.file-box-single .control {
     position: absolute;
     height: 100%;
-    z-index: 999;
+    /* Keep the transparent upload hit-area below file actions. */
+    z-index: 1;
     background: transparent;
 }
 
@@ -239,15 +240,28 @@
         position: absolute;
         width: 100%;
         height: calc(100% - 35px) !important;
-        z-index: 9;
+        z-index: 1;
         opacity: 0;
     }
 
 .file-box.file-box-single .uploaded-content .item {
     width: 100%;
+    max-width: 220px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 0;
     position: relative !important;
+    z-index: 2;
+    /* Let clicks on the preview area reach the upload overlay underneath. */
+    pointer-events: none;
 }
+
+    .file-box.file-box-single .uploaded-content .item .file-actions,
+    .file-box.file-box-single .uploaded-content .item .remove-item,
+    .file-box.file-box-single .uploaded-content .item .img-control {
+        /* Keep real file actions clickable while the tile itself passes clicks through. */
+        pointer-events: auto;
+    }
 
     .file-box.file-box-single .uploaded-content .item .title {
         display: none;
@@ -263,6 +277,7 @@
 
     .file-box.file-box-single .uploaded-content .img-container .img-control.right {
         width: 100%;
+        z-index: 3;
     }
 
 .file-box.file-box-single .remove-item {
@@ -284,7 +299,12 @@
 }
 .file-box.file-box-single .uploaded-content .img-container {
     background: transparent;
-    max-width: 250px;
+    width: 180px;
+    max-width: 100%;
+}
+
+.file-box.file-box-single .uploaded-content .img-container > img {
+    max-height: 180px;
 }
 
 .file-box.file-box-single .uploaded-content .item img[src="/images/pdf-thumbnail.png"] {
