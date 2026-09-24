@@ -291,7 +291,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ddlNguoiPhuTrach.PlaceHolder =
                 GetResourceText(
                     BackEndResourceKeys.SELECT_RESPONSIBLE_EMPLOYEE);
-            ddlCreateProject.PlaceHolder = "Hồ sơ công ty (không chọn dự án)";
+            ddlCreateProject.PlaceHolder = "Chọn dự án";
             ddlHinhThucKy.PlaceHolder =
                 GetResourceText(BackEndResourceKeys.SIGNING_METHOD);
             ddlInitialTemplate.PlaceHolder =
@@ -435,8 +435,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void BindCreateProjects()
         {
             ddlCreateProject.Items.Clear();
-            ddlCreateProject.Items.Add(new ListItem(
-                "Hồ sơ công ty (không chọn dự án)", string.Empty));
+            if (DocumentManager.Instance.CanCreateCompanyDocument())
+            {
+                ddlCreateProject.Items.Add(new ListItem(
+                    "Hồ sơ công ty (không chọn dự án)", string.Empty));
+            }
 
             if (IsProjectContext)
                 return;
@@ -716,6 +719,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             hdfIdTaiLieu.Value = string.Empty;
             pnlCreateProject.Visible = !IsProjectContext;
+            pnlCreateUnavailable.Visible = false;
+            btnSave.Enabled = true;
             pnlInitialFileUpload.Visible = true;
             SelectDropdownValue(ddlCreateProject, string.Empty);
             txtMaTaiLieu.Text = string.Empty;
@@ -740,7 +745,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private void ShowAddForm()
         {
+            BindCreateProjects();
             ResetForm();
+            pnlCreateUnavailable.Visible = !IsProjectContext
+                && ddlCreateProject.Items.Count == 0;
+            btnSave.Enabled = !pnlCreateUnavailable.Visible;
             dlDetail.Title = GetAddDocumentText();
             dlDetail.OpenModal(true);
         }
@@ -1190,6 +1199,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 selectedProjectId = projectId;
             }
 
+            if (isNew && !selectedProjectId.HasValue
+                && !DocumentManager.Instance.CanCreateCompanyDocument())
+            {
+                ShowSaveWarning("Bạn chưa có quyền tạo hồ sơ công ty. Vui lòng chọn dự án mà bạn làm PM.");
+                return;
+            }
+
             var initialFiles = new List<HttpPostedFile>();
             SecureFileUploadHandler uploader = null;
             if (isNew)
@@ -1207,6 +1223,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
                 if (initialFiles.Count > 0)
                 {
+                    bool canUploadInitialFiles = selectedProjectId.HasValue
+                        ? DocumentManager.Instance.CanAccessProjectDocument(
+                            selectedProjectId.Value,
+                            SweetSoft.QLDA.Core.Functions.ActionKeys.Update)
+                        : DocumentManager.Instance.CanUpdateCompanyDocument();
+                    if (!canUploadInitialFiles)
+                    {
+                        ShowSaveWarning("Bạn cần quyền Cập nhật ở phạm vi đã chọn để gắn file khi tạo hồ sơ.");
+                        return;
+                    }
                     uploader = new SecureFileUploadHandler();
                     foreach (HttpPostedFile file in initialFiles)
                     {

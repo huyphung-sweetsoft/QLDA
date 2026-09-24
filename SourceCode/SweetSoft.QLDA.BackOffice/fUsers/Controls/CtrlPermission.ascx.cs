@@ -27,59 +27,12 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
               .Where(x => x != nameof(ActionKeys.None) && x != nameof(ActionKeys.All)))
           .ToArray();
 
-        /*
-         * ProjectDocument.Update used to be one broad checkbox.  The dossier
-         * ACL now has separate ceilings for each business operation.  Keep
-         * these columns local to the ProjectDocument row instead of adding
-         * them to every module in the permission table.
-         */
-        private sealed class DocumentPermissionColumn
+        private static bool IsDocumentPermissionFunction(string functionCode)
         {
-            public string Key { get; set; }
-            public string Label { get; set; }
-            public string Description { get; set; }
-        }
-
-        private static readonly DocumentPermissionColumn[] DocumentPermissionColumns =
-        {
-            new DocumentPermissionColumn
-            {
-                Key = "UpdateInfo",
-                Label = "Sửa thông tin",
-                Description = "Sửa thông tin chung của hồ sơ"
-            },
-            new DocumentPermissionColumn
-            {
-                Key = "ManageFiles",
-                Label = "Quản lý file",
-                Description = "Thêm, thay, gỡ và khôi phục file hồ sơ"
-            },
-            new DocumentPermissionColumn
-            {
-                Key = "Signing",
-                Label = "Trình ký",
-                Description = "Thực hiện các bước trình ký"
-            },
-            new DocumentPermissionColumn
-            {
-                Key = "CustomerDelivery",
-                Label = "Gửi khách",
-                Description = "Gửi hồ sơ và cập nhật phản hồi khách hàng"
-            },
-            new DocumentPermissionColumn
-            {
-                Key = "PhysicalStorage",
-                Label = "Lưu bản cứng",
-                Description = "Ghi nhận nơi và mã lưu trữ bản cứng"
-            }
-        };
-
-        private static bool IsProjectDocumentFunction(string functionCode)
-        {
-            return string.Equals(
-                functionCode,
-                ModuleKeys.ProjectDocument.ToString(),
-                StringComparison.OrdinalIgnoreCase);
+            return string.Equals(functionCode, ModuleKeys.Document.ToString(),
+                       StringComparison.OrdinalIgnoreCase)
+                || string.Equals(functionCode, ModuleKeys.ProjectDocument.ToString(),
+                       StringComparison.OrdinalIgnoreCase);
         }
         public Guid RoleId
         {
@@ -146,21 +99,16 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 }
             }
 
-            foreach (var column in DocumentPermissionColumns)
-            {
-                html += string.Format(
-                    template,
-                    "text-info",
-                    string.Format(
-                        "<span title=\"{0}\">{1}</span>",
-                        HttpUtility.HtmlAttributeEncode(column.Description),
-                        HttpUtility.HtmlEncode(column.Label)));
-            }
             ltrHeader.Text = html;
         }
         private void RenderPermission()
         {
             List<AspnetFunction> aspnetFunctions = FunctionManager.Instance.GetAspnetFunctionWithPermissionKey();
+            // The old all-or-nothing administrator grant is replaced by the
+            // four independent rights on the Document row.
+            aspnetFunctions = aspnetFunctions.Where(t => !string.Equals(
+                t.FunctionCode, ModuleKeys.DocumentAdministration.ToString(),
+                StringComparison.OrdinalIgnoreCase)).ToList();
             bool isDev = AppSettingHelpers.GetSetting<bool>("IsDevelopment");
             if (!isDev)
             {
@@ -183,7 +131,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             var permissionDict = aspnetPermissions
      .GroupBy(p => p.FunctionId)
      .ToDictionary(g => g.Key, g => g.Select(p => p.PermissionKey).ToHashSet());
-            int maxCol = AllPermissions.Length + 1 + DocumentPermissionColumns.Length;
+            int maxCol = AllPermissions.Length + 1;
             buildFunc = (parentCode) =>
             {
                 string html = string.Empty;
@@ -197,6 +145,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 foreach (var child in children)
                 {
                     string childHtml = buildFunc(child.FunctionCode);
+                    string displayName = string.Equals(child.FunctionCode,
+                        ModuleKeys.Document.ToString(), StringComparison.OrdinalIgnoreCase)
+                            ? "Quản trị hồ sơ toàn hệ thống"
+                            : string.Equals(child.FunctionCode,
+                                ModuleKeys.ProjectDocument.ToString(), StringComparison.OrdinalIgnoreCase)
+                                ? "Danh sách hồ sơ"
+                                : GetResourceText(child.FunctionName);
 
                     var hasUrl = !string.IsNullOrEmpty(child.PageUrl);
                     var hasPermissions = permissionDict.TryGetValue(child.Id, out var perms);
@@ -205,18 +160,18 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     {
                         if (!hasUrl)
                         {
-                            html += string.Format(itemTemplateParentHtml, child.Id, maxCol, GetResourceText(child.FunctionName));
+                            html += string.Format(itemTemplateParentHtml, child.Id, maxCol, displayName);
                         }
                         else
                         {
                             // Tạo checkbox disabled nếu quyền không tồn tại
                             var checkboxHtml = BuildCheckboxes(child.FunctionCode, perms);
-                            html += string.Format(itemTemplateHtml, child.Id, GetResourceText(child.FunctionName), checkboxHtml);
+                            html += string.Format(itemTemplateHtml, child.Id, displayName, checkboxHtml);
                         }
                     }
                     else
                     {
-                        html += string.Format(itemTemplateParentHtml, child.Id, maxCol, GetResourceText(child.FunctionName)) + childHtml;
+                        html += string.Format(itemTemplateParentHtml, child.Id, maxCol, displayName) + childHtml;
                     }
                 }
 
@@ -245,6 +200,13 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
 
             foreach (var perm in AllPermissions)
             {
+                // Neither dossier scope has an Excel export action.
+                if (perm == "Export" && IsDocumentPermissionFunction(functionCode))
+                {
+                    html += "<td class=\"text-center permission-detail-empty\"></td>";
+                    continue;
+                }
+
                 bool isAvailable = (permissions?.Any(p => p.EndsWith(perm, StringComparison.OrdinalIgnoreCase)) ?? false)
                     || perm == "All"; // "All" luôn enable nếu bạn muốn
                 string disabled = isAvailable && !this.IsDisabled ? "" : "disabled";
@@ -253,39 +215,6 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                 html += $"<td class=\"text-center\">" +
                             $"<input type=\"checkbox\" class=\"form-check-input {(!isAvailable ? "ignore-checkbox" : "")}\" name=\"{checkboxName}\" {disabled}>" +
                         $"</td>";
-            }
-
-            /*
-             * The detailed dossier rights are available only for the
-             * ProjectDocument function.  Other modules still receive empty
-             * cells so that the permission table remains aligned with the
-             * shared header.
-             */
-            foreach (var column in DocumentPermissionColumns)
-            {
-                if (!IsProjectDocumentFunction(functionCode))
-                {
-                    html += "<td class=\"text-center permission-detail-empty\"><span class=\"text-muted\">—</span></td>";
-                    continue;
-                }
-
-                string checkboxName = functionCode + "." + column.Key;
-                bool isAvailable = permissions != null
-                    && permissions.Any(p => string.Equals(
-                        p,
-                        checkboxName,
-                        StringComparison.OrdinalIgnoreCase));
-                string disabled = isAvailable && !this.IsDisabled ? "" : "disabled";
-                string ignored = !isAvailable ? " ignore-checkbox" : "";
-
-                html += "<td class=\"text-center\">" +
-                    string.Format(
-                        "<input type=\"checkbox\" class=\"form-check-input{0}\" name=\"{1}\" title=\"{2}\" {3}>",
-                        ignored,
-                        HttpUtility.HtmlAttributeEncode(checkboxName),
-                        HttpUtility.HtmlAttributeEncode(column.Description),
-                        disabled) +
-                    "</td>";
             }
 
             return html;
@@ -511,6 +440,18 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                     aspnetAssignRole.Save();
                 }
             });
+            foreach (AspnetUsersInRole member in new AspnetUsersInRoleCollection()
+                .Where(AspnetUsersInRole.Columns.RoleId, roleId).Load())
+            {
+                Guid userId = member.UserId;
+                AppCache.Remove($"ModuleByUserId_{userId}");
+                AppCache.Remove($"PermissionByUserId_{userId}");
+                AppCache.Remove($"USER_HAS_RIGHTS_{userId}");
+                AppCache.Remove($"MENU_LEFT_CMS_{userId}_1");
+                AppCache.Remove($"MENU_LEFT_CMS_{userId}_2");
+                if (userId == SweetContext.Current.UserId)
+                    SweetContext.Current.CurrentUserFunctions = null;
+            }
             return true;
         }
     }

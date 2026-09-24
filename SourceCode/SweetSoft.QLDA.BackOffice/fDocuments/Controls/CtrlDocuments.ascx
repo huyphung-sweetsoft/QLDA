@@ -394,7 +394,13 @@
                         <label class="form-label">Dự án</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlCreateProject"
                             ValueIsOfTypeGUID="true" SimpleInit="true" AlowClear="true" />
-                        <div class="form-text">Không chọn dự án thì hồ sơ thuộc công ty.</div>
+                        <div class="form-text">Hồ sơ công ty chỉ dành cho tài khoản có quyền tạo trên toàn hệ thống.</div>
+                        <asp:Panel runat="server" ID="pnlCreateUnavailable"
+                            CssClass="alert alert-info mt-2 mb-0" Visible="false">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Bạn chưa được phân làm PM của dự án nào nên chưa thể tạo hồ sơ.
+                            Hãy liên hệ người quản lý để được phân công dự án.
+                        </asp:Panel>
                     </asp:Panel>
 
                     <div class="col-md-4 mb-3">

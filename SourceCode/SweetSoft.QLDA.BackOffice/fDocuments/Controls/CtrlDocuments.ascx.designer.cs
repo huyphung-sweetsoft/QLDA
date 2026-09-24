@@ -189,6 +189,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCreateProject;
 
+        protected global::System.Web.UI.WebControls.Panel pnlCreateUnavailable;
+
         /// <summary>
         /// txtMaTaiLieu control.
         /// </summary>
