@@ -156,7 +156,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTaChiTiet;
+        protected global::CKEditor.NET.CKEditorControl txtMoTaChiTiet;
 
         /// <summary>
         /// lbtSubmit control.
@@ -166,5 +166,11 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+
+        /// <summary>dlCostFiles control.</summary>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlCostFiles;
+
+        /// <summary>fbCostFiles control.</summary>
+        protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbCostFiles;
     }
 }

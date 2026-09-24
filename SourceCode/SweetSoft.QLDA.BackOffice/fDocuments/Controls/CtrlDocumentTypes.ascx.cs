@@ -63,7 +63,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtSearch.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
             ddlSearchNhom.SearchTagItemText = GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP);
-            txtSearchTenLoai.SearchTagItemText = GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE_NAME);
+            txtSearchTenLoai.SearchTagItemText = "Tên loại hồ sơ";
             txtSearchMoTa.SearchTagItemText = GetResourceText(BackEndResourceKeys.DESCRIPTION);
             ddlSearchCanTrinhKy.SearchTagItemText = GetResourceText(BackEndResourceKeys.ALLOW_SIGNING);
             ddlSearchHinhThucKy.SearchTagItemText = GetResourceText(BackEndResourceKeys.DEFAULT_SIGNING_METHOD);
@@ -89,7 +89,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             List<string> tableHeaders = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE_NAME),
+                "Tên loại hồ sơ",
                 GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP),
                 GetResourceText(BackEndResourceKeys.ALLOW_SIGNING),
                 GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER),
@@ -108,9 +108,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ControlHelpers controlHelpers = new ControlHelpers();
             // Bộ lọc nhanh: BootstrapDropdown.
             controlHelpers.BindStatus(ddlSearchStatus);
-            controlHelpers.BindDocumentGroups(ddlSearchNhom);
+            ddlSearchNhom.Items.Clear();
             // Dropdown trong form: ExtraDropdown.
-            controlHelpers.BindDocumentGroups(ddlNhomTaiLieu);
+            ddlNhomTaiLieu.Items.Clear();
             controlHelpers.BindDocumentSigningMethods(ddlHinhThucKy);
             controlHelpers.BindStatusYesNo(ddlSearchCanTrinhKy, true);
             controlHelpers.BindDocumentSigningMethods(ddlSearchHinhThucKy, true);
@@ -204,7 +204,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ResetForm()
         {
             hdfIdLoaiTaiLieu.Value = string.Empty;
-            SelectDropdownValue(ddlNhomTaiLieu, string.Empty);
+            BindDefaultStorageLocations();
+            SelectDropdownValue(ddlDefaultStorage, string.Empty);
             txtTenLoai.Text = string.Empty;
             txtMoTa.Text = string.Empty;
             txtThuTuHienThi.Text = "0";
@@ -221,14 +222,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             dlDetail.Title =
                 GetResourceText(BackEndResourceKeys.ADD_NEW)
                 + " "
-                + GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE);
+                + "Loại hồ sơ";
             dlDetail.OpenModal(true);
         }
 
         private void ShowEditForm(TblLoaiTaiLieu item)
         {
             hdfIdLoaiTaiLieu.Value = item.IdLoaiTaiLieu.ToString();
-            SelectDropdownValue(ddlNhomTaiLieu, item.IdNhomTaiLieu.ToString());
+            BindDefaultStorageLocations();
+            SelectDropdownValue(ddlDefaultStorage, DocumentTypeManager.Instance.GetDefaultStorageLocation(item.IdLoaiTaiLieu)?.ToString() ?? string.Empty);
             txtTenLoai.Text = item.TenLoai;
             txtMoTa.Text = item.MoTa;
             txtThuTuHienThi.Text = item.ThuTuHienThi.ToString();
@@ -240,8 +242,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             dlDetail.Title =
                 GetResourceText(BackEndResourceKeys.EDIT)
                 + " "
-                + GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE);
+                + "Loại hồ sơ";
             dlDetail.OpenModal(true);
+        }
+
+        private void BindDefaultStorageLocations()
+        {
+            ddlDefaultStorage.Items.Clear();
+            ddlDefaultStorage.Items.Add(new ListItem("Không đặt mặc định", ""));
+            foreach (var location in DocumentStorageLocationManager.Instance.GetAll())
+                if (!location.DaXoa && location.KichHoat)
+                    ddlDefaultStorage.Items.Add(new ListItem(location.TenNoiLuuTru, location.IdNoiLuuTru.ToString()));
         }
 
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -358,12 +369,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            Guid idNhomTaiLieu;
-            if (!Guid.TryParse(ddlNhomTaiLieu.SelectedValue, out idNhomTaiLieu) || idNhomTaiLieu == Guid.Empty)
-            {
-                ShowNotify("Vui lòng chọn nhóm tài liệu.", MSGType.Warning);
-                return;
-            }
+            Guid idNhomTaiLieu = Guid.Empty;
 
             int thuTuHienThi;
             if (!int.TryParse(txtThuTuHienThi.Text, out thuTuHienThi))
@@ -374,7 +380,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                DocumentTypeManager.Instance.Save(idLoaiTaiLieu, idNhomTaiLieu, txtTenLoai.Text, txtMoTa.Text, chkCanTrinhKy.Checked, ddlHinhThucKy.SelectedValue, chkCanGuiKhachHang.Checked, chkCanLuuVatLy.Checked, thuTuHienThi, chkKichHoat.Checked);
+                DocumentTypeManager.Instance.Save(idLoaiTaiLieu, idNhomTaiLieu, txtTenLoai.Text, txtMoTa.Text, chkCanTrinhKy.Checked, ddlHinhThucKy.SelectedValue, chkCanGuiKhachHang.Checked, chkCanLuuVatLy.Checked, thuTuHienThi, chkKichHoat.Checked, string.IsNullOrWhiteSpace(ddlDefaultStorage.SelectedValue) ? (Guid?)null : Guid.Parse(ddlDefaultStorage.SelectedValue));
                 if (isNew)
                     CURRENT_PAGE.ShowSuccessAddNewData();
                 else

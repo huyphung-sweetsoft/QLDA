@@ -51,6 +51,14 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
         public event EventHandler<FileDeletionRequestedEventArgs>
             FileDeletionRequested;
 
+        // Optional generic filter supplied by the owning page. Null keeps the
+        // existing FilesBox behavior; a null result shows no current file.
+        public Func<Guid, FileUploadTypes, Guid?> CurrentFileIdResolver { get; set; }
+
+        // Optional ownership check for pages that require stricter file
+        // mutations. Other FilesBox consumers keep their existing behavior.
+        public Func<Guid, FileUploadTypes, Guid, bool> FileMutationValidator { get; set; }
+
         #region Script + Styles
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -193,6 +201,11 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 ViewState["AcceptType"] = value;
             }
         }
+        public int MaxFileSizeBytes
+        {
+            get { return (int?)ViewState["MaxFileSizeBytes"] ?? 1048576; }
+            set { ViewState["MaxFileSizeBytes"] = value; }
+        }
         public bool IsFirstUpload
         {
             get
@@ -289,10 +302,34 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     return;
                 }
 
+                // Opt-in dossier snapshot path: the owner saves one complete set atomically.
+                // Do not run shared deletion/metadata mutation on immutable historical uploads.
+                if (UseDocumentFileSets)
+                {
+                    try
+                    {
+                        if (string.IsNullOrEmpty(SaveDataCallbackKey))
+                            throw new InvalidOperationException("Chưa cấu hình xử lý lưu bộ file.");
+                        DataCallback(SaveDataCallbackKey, null, null);
+                        txtArFileRemove.Value = string.Empty;
+                        LoadFile(this.RefId.Value, this._refType.Value);
+                        ScriptManager.RegisterClientScriptBlock(this.Page, GetType(),
+                            "FilesBox.DiscardFile", "FilesBox.DiscardFile();", true);
+                        this.CURRENT_PAGE.ShowSuccessSaveData();
+                    }
+                    catch (InvalidOperationException exc)
+                    {
+                        this.CURRENT_PAGE.ShowNotify(exc.Message, MSGType.Warning);
+                    }
+                    return;
+                }
+
                 //---------------------------------------------
                 #region delete file
                 List<Guid> listFileRemoveId =
                     GetPendingRemovedFileIds();
+                foreach (Guid fileId in listFileRemoveId)
+                    EnsureFileMutationAllowed(fileId);
                 bool deletionHandled = false;
                 string deletionWarningMessage = null;
                 bool hasDeletionOverride = FileDeletionRequested != null;
@@ -486,6 +523,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     if (listFileRemoveId.Contains(gFileId))
                         continue;
 
+                    EnsureFileMutationAllowed(gFileId);
+
                     var (title, order, path) = kvp.Value;
 
                     var uploadFile = new UploadManager(appContext, gFileId);
@@ -581,7 +620,6 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 throw new Exception("FilesBox", exc);
             }
         }
-
         private void RestorePendingFileChanges()
         {
             if (!this.RefId.HasValue || !this._refType.HasValue)
@@ -638,6 +676,38 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             return fileIds;
         }
 
+        public bool UseDocumentFileSets
+        {
+            get { return (bool?)ViewState["UseDocumentFileSets"] ?? false; }
+            set { ViewState["UseDocumentFileSets"] = value; }
+        }
+
+        public Guid? ExpectedDocumentVersionId
+        {
+            get { return (Guid?)ViewState["ExpectedDocumentVersionId"]; }
+        }
+
+        public List<Guid> GetSubmittedDocumentFileIds()
+        {
+            var ids = new HashSet<Guid>();
+            var removed = new HashSet<Guid>(GetPendingRemovedFileIds());
+            string prefix = ClientID + "filePath$";
+            foreach (string key in Request.Form.AllKeys)
+            {
+                if (string.IsNullOrEmpty(key) || !key.StartsWith(prefix, StringComparison.Ordinal)) continue;
+                string suffix = key.Substring(prefix.Length);
+                if (suffix.EndsWith("|New", StringComparison.Ordinal)) suffix = suffix.Substring(0, suffix.Length - 4);
+                Guid id;
+                if (!Guid.TryParse(suffix, out id) || id == Guid.Empty)
+                    throw new InvalidOperationException("File chưa tải lên hoàn tất. Vui lòng thử lại.");
+                if (!removed.Contains(id)) ids.Add(id);
+            }
+            var loaded = (Guid[])ViewState["LoadedDocumentFileIds"] ?? new Guid[0];
+            if (loaded.Any(id => !removed.Contains(id) && !ids.Contains(id)))
+                throw new InvalidOperationException("Danh sách file gửi lên chưa đầy đủ. Vui lòng tải lại trang.");
+            return ids.OrderBy(id => id).ToList();
+        }
+
         public void LoadFile(Guid refId, FileUploadTypes refType)
         {
             this.RefId = refId;
@@ -648,6 +718,32 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             ltrCurrentFiles.Text = "";
 
             UploadManager fileManager = new UploadManager(SweetContext.Current, refId, refType);
+
+            if (CurrentFileIdResolver != null)
+            {
+                Guid? linkedFileId = CurrentFileIdResolver(refId, refType);
+                if (!linkedFileId.HasValue)
+                {
+                    SingleFilePath = null;
+                    SingleFilePathType = null;
+                }
+                fileManager.TblUploadFiles = (fileManager.TblUploadFiles
+                    ?? new List<TblUploadFile>())
+                    .Where(file => linkedFileId.HasValue
+                        && file.Id == linkedFileId.Value)
+                    .ToList();
+            }
+
+            if (UseDocumentFileSets)
+            {
+                if (refType != FileUploadTypes.DocumentVersion)
+                    throw new InvalidOperationException("Chế độ bộ file chỉ dùng cho phiên bản hồ sơ.");
+                var snapshot = new DocumentManager(SweetContext.Current).GetCurrentDocumentFileSet(refId);
+                ViewState["ExpectedDocumentVersionId"] = snapshot.VersionId;
+                ViewState["LoadedDocumentFileIds"] = snapshot.FileIds.ToArray();
+                fileManager.TblUploadFiles = (fileManager.TblUploadFiles ?? new List<TblUploadFile>())
+                    .Where(file => snapshot.FileIds.Contains(file.Id)).ToList();
+            }
 
             divControls.Visible = IsEnabled;
             if (fileManager.TblUploadFiles == null || fileManager.TblUploadFiles.Count == 0)
@@ -692,6 +788,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             }
 
             string listCurrentFile = string.Empty;
+            string itemTemplate = htmlFormatFile.InnerHtml;
+            if (UseDocumentFileSets)
+                itemTemplate = itemTemplate.Replace("class=\"title\"", "class=\"title\" readonly=\"readonly\"");
             int index = 0;
             foreach (TblUploadFile file in fileManager.TblUploadFiles)
             {
@@ -737,9 +836,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 else
                     fileSrc = file.FileUrl;
 
-                listCurrentFile += string.Format(htmlFormatFile.InnerHtml
-                    , fileSrc
-                    , fileTitle
+                listCurrentFile += string.Format(itemTemplate
+                    , HttpUtility.HtmlAttributeEncode(fileSrc)
+                    , HttpUtility.HtmlAttributeEncode(fileTitle)
                     , string.Empty
                     , string.Format("{0}fileTitle${1}", this.ClientID, file.Id)
                     , file.DisplayOrder
@@ -750,15 +849,54 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                     , SecurityUtilities.ProtectUrlParameter(string.Format("/Upload/{0}/{1}"
                         , this._refType, this.RefId))
                     , string.Format("{0}filePath_{1}", this.ClientID, file.Id)
-                    , file.FileUrl
+                    , HttpUtility.HtmlAttributeEncode(file.FileUrl)
                     , IsEnabled ? string.Empty : "d-none hidden"
                     , file.IsHost ? "checked" : ""
                     , file.IsSecretary ? "checked" : ""
-                    , file.IsParticipant ? "checked" : "");
+                    , file.IsParticipant ? "checked" : ""
+                    , file.Id == Guid.Empty ? "d-none" : ""
+                    , HttpUtility.HtmlAttributeEncode(GetFileOpenUrl(file.FileUrl)));
             }
 
             ltrCurrentFiles.Text = listCurrentFile;
             upListFile.Update();
+        }
+        private string GetFileOpenUrl(string fileUrl)
+        {
+            if (string.IsNullOrWhiteSpace(fileUrl))
+                return "javascript:;";
+
+            fileUrl = fileUrl.Trim();
+            if (fileUrl.StartsWith("//", StringComparison.Ordinal)
+                || fileUrl.StartsWith("\\\\", StringComparison.Ordinal)
+                || fileUrl.IndexOf('\\') >= 0)
+            {
+                return "javascript:;";
+            }
+
+            Uri absoluteUri;
+            if (Uri.TryCreate(fileUrl, UriKind.Absolute, out absoluteUri)
+                && (absoluteUri.Scheme == Uri.UriSchemeHttp
+                    || absoluteUri.Scheme == Uri.UriSchemeHttps))
+            {
+                return fileUrl;
+            }
+
+            if (fileUrl.StartsWith("~/", StringComparison.Ordinal))
+                return this.CURRENT_PAGE.ResolveUrl(fileUrl);
+
+            string virtualPath = fileUrl.StartsWith("/", StringComparison.Ordinal)
+                ? fileUrl
+                : "/" + fileUrl;
+            return this.CURRENT_PAGE.GetRelativeClientPath(virtualPath);
+        }
+        private void EnsureFileMutationAllowed(Guid fileId)
+        {
+            if (FileMutationValidator == null)
+                return;
+            if (!RefId.HasValue || !_refType.HasValue
+                || !FileMutationValidator(RefId.Value, _refType.Value, fileId))
+                throw new UnauthorizedAccessException("File không thuộc mục đang chỉnh sửa.");
         }
         public void ClearData()
         {

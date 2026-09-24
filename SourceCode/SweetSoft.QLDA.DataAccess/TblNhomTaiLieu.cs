@@ -568,7 +568,7 @@ namespace SweetSoft.QLDA.DataAccess
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu item in colTblLoaiTaiLieuRecords)
                     {
-                        if (item.IdNhomTaiLieu != IdNhomTaiLieu)
+                        if (item.IdNhomTaiLieu == null ||item.IdNhomTaiLieu != IdNhomTaiLieu)
                         {
                             item.IdNhomTaiLieu = IdNhomTaiLieu;
                         }

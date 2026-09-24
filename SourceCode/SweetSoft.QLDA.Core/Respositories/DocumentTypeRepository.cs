@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SweetSoft.QLDA.Core.Utils;
 using System.Data;
+using System.Transactions;
 
 namespace SweetSoft.QLDA.Core.Respositories
 {
@@ -17,22 +18,90 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
         }
 
+        public Guid? GetDefaultStorageLocation(Guid typeId)
+        {
+            var command = new QueryCommand("SELECT IdNoiLuuTruMacDinh FROM dbo.TblLoaiTaiLieu WHERE IdLoaiTaiLieu=@Id AND DaXoa=0", TblLoaiTaiLieu.Schema.Provider.Name);
+            command.Parameters.Add("@Id", typeId, DbType.Guid);
+            object value = DataService.ExecuteScalar(command);
+            return value == null || value == DBNull.Value ? (Guid?)null : (Guid)value;
+        }
+
+        // Parameterized SQL handles nullable legacy group and the additive default-location
+        // column without hand-editing generated SubSonic classes.
+        public TblLoaiTaiLieu SaveIndependentType(TblLoaiTaiLieu item, bool isNew, Guid? defaultLocation)
+        {
+            using (var scope = new TransactionScope())
+            {
+                var command = new QueryCommand(@"
+                    DECLARE @PreviousName nvarchar(150);
+                    SELECT @PreviousName=TenLoai FROM dbo.TblLoaiTaiLieu WITH(UPDLOCK,HOLDLOCK)
+                      WHERE IdLoaiTaiLieu=@Id AND DaXoa=0;
+                    IF @IsNew=0 AND @PreviousName IS NULL
+                        THROW 51000,N'Loại hồ sơ không còn tồn tại.',1;
+                    IF (@IsNew=1 OR @PreviousName<>@Name) AND EXISTS
+                      (SELECT 1 FROM dbo.TblLoaiTaiLieu WITH(UPDLOCK,HOLDLOCK)
+                       WHERE TenLoai=@Name AND DaXoa=0 AND IdLoaiTaiLieu<>@Id)
+                        THROW 51000,N'Tên loại hồ sơ đã tồn tại.',1;
+                    IF @Location IS NOT NULL AND NOT EXISTS
+                      (SELECT 1 FROM dbo.TblNoiLuuTru WITH(UPDLOCK,HOLDLOCK)
+                       WHERE IdNoiLuuTru=@Location AND DaXoa=0 AND KichHoat=1)
+                        THROW 51000,N'Nơi lưu mặc định không tồn tại hoặc đã khóa.',1;
+                    IF @IsNew=1
+                      INSERT dbo.TblLoaiTaiLieu
+                       (IdLoaiTaiLieu,IdNhomTaiLieu,TenLoai,MoTa,CanTrinhKy,HinhThucKyMacDinh,
+                        CanGuiKhachHang,CanLuuVatLy,ThuTuHienThi,KichHoat,DaXoa,NguoiTao,NgayTao,IdNoiLuuTruMacDinh)
+                      VALUES(@Id,NULL,@Name,@Description,@Signing,@Method,@Customer,@Physical,
+                        @Order,@Active,0,@User,@Now,@Location);
+                    ELSE UPDATE dbo.TblLoaiTaiLieu SET TenLoai=@Name,MoTa=@Description,
+                        CanTrinhKy=@Signing,HinhThucKyMacDinh=@Method,CanGuiKhachHang=@Customer,
+                        CanLuuVatLy=@Physical,ThuTuHienThi=@Order,KichHoat=@Active,
+                        NguoiCapNhat=@User,NgayCapNhat=@Now,IdNoiLuuTruMacDinh=@Location
+                      WHERE IdLoaiTaiLieu=@Id AND DaXoa=0;", TblLoaiTaiLieu.Schema.Provider.Name);
+                command.Parameters.Add("@Id", item.IdLoaiTaiLieu, DbType.Guid);
+                command.Parameters.Add("@IsNew", isNew, DbType.Boolean);
+                command.Parameters.Add("@Name", item.TenLoai, DbType.String);
+                command.Parameters.Add("@Description", item.MoTa, DbType.String);
+                command.Parameters.Add("@Signing", item.CanTrinhKy, DbType.Boolean);
+                command.Parameters.Add("@Method", (object)item.HinhThucKyMacDinh ?? DBNull.Value, DbType.String);
+                command.Parameters.Add("@Customer", item.CanGuiKhachHang, DbType.Boolean);
+                command.Parameters.Add("@Physical", item.CanLuuVatLy, DbType.Boolean);
+                command.Parameters.Add("@Order", item.ThuTuHienThi, DbType.Int32);
+                command.Parameters.Add("@Active", item.KichHoat, DbType.Boolean);
+                command.Parameters.Add("@User", isNew ? item.NguoiTao : item.NguoiCapNhat, DbType.String);
+                command.Parameters.Add("@Now", DateTime.UtcNow, DbType.DateTime);
+                command.Parameters.Add("@Location", (object)defaultLocation ?? DBNull.Value, DbType.Guid);
+                DataService.ExecuteQuery(command);
+                scope.Complete();
+            }
+            // Avoid serializing the old non-nullable generated group property for NULL rows.
+            if (_auditManager != null)
+                Task.Run(async () => {
+                    try {
+                        await _auditManager.LogActionAsync(isNew ? LogActions.Actions.CREATE : LogActions.Actions.UPDATE,
+                            new { item.IdLoaiTaiLieu, item.TenLoai, item.MoTa, item.CanTrinhKy,
+                                item.HinhThucKyMacDinh, item.CanGuiKhachHang, item.CanLuuVatLy,
+                                item.ThuTuHienThi, item.KichHoat, IdNoiLuuTruMacDinh = defaultLocation },
+                            "TblLoaiTaiLieu", item.IdLoaiTaiLieu).ConfigureAwait(false);
+                    } catch(Exception ex) { SysLogger.LogError(ex,"Failed to audit independent document type"); }
+                });
+            return GetById(item.IdLoaiTaiLieu);
+        }
+
         public List<TblLoaiTaiLieu> GetAll(
             string keyword = null,
             Guid? idNhomTaiLieu = null)
         {
-            List<TblLoaiTaiLieu> items = new Select()
+            SqlQuery query = new Select()
                 .From(TblLoaiTaiLieu.Schema)
-                .Where(TblLoaiTaiLieu.DaXoaColumn).IsEqualTo(false)
-                .ExecuteTypedList<TblLoaiTaiLieu>();
+                .Where(TblLoaiTaiLieu.DaXoaColumn).IsEqualTo(false);
 
             if (idNhomTaiLieu.HasValue
                 && idNhomTaiLieu.Value != Guid.Empty)
             {
-                items = items.Where(item =>
-                        item.IdNhomTaiLieu == idNhomTaiLieu.Value)
-                    .ToList();
+                query.And(TblLoaiTaiLieu.IdNhomTaiLieuColumn).IsEqualTo(idNhomTaiLieu.Value);
             }
+
+            List<TblLoaiTaiLieu> items = query.ExecuteTypedList<TblLoaiTaiLieu>();
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -100,10 +169,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     20);
 
             // Điều kiện GUID.
-            Guid idNhomTaiLieu =
-                GetGuidParameter(
-                    parameters,
-                    TblLoaiTaiLieu.Columns.IdNhomTaiLieu);
+            Guid idNhomTaiLieu = Guid.Empty; // Retired group filters must not hide independent types.
 
             string idNhomTaiLieuSql =
                 idNhomTaiLieu == Guid.Empty
@@ -213,8 +279,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                     @keyword = N'%%'
                     OR f.TenLoai LIKE @keyword
                     OR ISNULL(f.MoTa, N'')
-                        LIKE @keyword
-                    OR ISNULL(n.TenNhom, N'')
                         LIKE @keyword
                 )
 
@@ -333,17 +397,14 @@ namespace SweetSoft.QLDA.Core.Respositories
             Guid idNhomTaiLieu,
             Guid excludeId)
         {
-            if (string.IsNullOrWhiteSpace(name)
-                || idNhomTaiLieu == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(name))
             {
                 return false;
             }
 
             Select select = new Select();
             select.From(TblLoaiTaiLieu.Schema);
-            select.Where(TblLoaiTaiLieu.IdNhomTaiLieuColumn)
-                .IsEqualTo(idNhomTaiLieu);
-            select.And(TblLoaiTaiLieu.TenLoaiColumn)
+            select.Where(TblLoaiTaiLieu.TenLoaiColumn)
                 .IsEqualTo(name.Trim());
             select.And(TblLoaiTaiLieu.DaXoaColumn)
                 .IsEqualTo(false);
@@ -405,8 +466,12 @@ namespace SweetSoft.QLDA.Core.Respositories
             if (item == null)
                 return false;
 
+            var command = new QueryCommand("UPDATE dbo.TblLoaiTaiLieu SET DaXoa=1, NguoiCapNhat=@User, NgayCapNhat=@Now WHERE IdLoaiTaiLieu=@Id AND DaXoa=0", TblLoaiTaiLieu.Schema.Provider.Name);
+            command.Parameters.Add("@Id",item.IdLoaiTaiLieu,DbType.Guid);
+            command.Parameters.Add("@User",item.NguoiCapNhat,DbType.String);
+            command.Parameters.Add("@Now",DateTime.UtcNow,DbType.DateTime);
+            DataService.ExecuteQuery(command);
             item.DaXoa = true;
-            item.Save();
             LogDelete(item);
             return true;
         }
@@ -466,7 +531,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 {
                     await _auditManager.LogActionAsync(
                             LogActions.Actions.DELETE,
-                            item,
+                            new { item.IdLoaiTaiLieu, item.TenLoai, item.DaXoa, item.NguoiCapNhat },
                             _tableName,
                             item.IdLoaiTaiLieu)
                         .ConfigureAwait(false);

@@ -1342,40 +1342,25 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     idNhomTaiLieu)
                 ?? new List<TblLoaiTaiLieu>();
 
-            Dictionary<Guid, string> groupNames =
-                (DocumentGroupManager.Instance.GetAll()
-                    ?? new List<TblNhomTaiLieu>())
-                .ToDictionary(
-                    group => group.IdNhomTaiLieu,
-                    group => group.TenNhom);
 
             if (isAll)
             {
                 dropdown.AlowClear = true;
                 dropdown.DefaultSearchValue = string.Empty;
                 dropdown.Items.Add(new ListItem(
-                    "Tất cả loại tài liệu",
+                    "Tất cả loại hồ sơ",
                     string.Empty));
             }
             else
             {
                 dropdown.Items.Add(new ListItem(
-                    "Chọn loại tài liệu",
+                    "Chọn loại hồ sơ",
                     string.Empty));
             }
 
             foreach (TblLoaiTaiLieu documentType in documentTypes)
             {
-                string groupName;
-                groupNames.TryGetValue(
-                    documentType.IdNhomTaiLieu,
-                    out groupName);
-
-                string text = idNhomTaiLieu.HasValue
-                    ? documentType.TenLoai
-                    : string.IsNullOrEmpty(groupName)
-                    ? documentType.TenLoai
-                    : groupName + " / " + documentType.TenLoai;
+                string text = documentType.TenLoai;
 
                 if (!documentType.KichHoat)
                     text += " (Đã khóa)";
@@ -1444,25 +1429,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     idNhomTaiLieu)
                 ?? new List<TblLoaiTaiLieu>();
 
-            Dictionary<Guid, string> groupNames =
-                (DocumentGroupManager.Instance.GetAll()
-                    ?? new List<TblNhomTaiLieu>())
-                .ToDictionary(
-                    group => group.IdNhomTaiLieu,
-                    group => group.TenNhom);
 
             foreach (TblLoaiTaiLieu documentType in documentTypes)
             {
-                string groupName;
-                groupNames.TryGetValue(
-                    documentType.IdNhomTaiLieu,
-                    out groupName);
-
-                string text = idNhomTaiLieu.HasValue
-                    ? documentType.TenLoai
-                    : string.IsNullOrEmpty(groupName)
-                    ? documentType.TenLoai
-                    : groupName + " / " + documentType.TenLoai;
+                string text = documentType.TenLoai;
 
                 if (!documentType.KichHoat)
                     text += " (Đã khóa)";

@@ -1324,6 +1324,9 @@
   <data name="DOCUMENT_LIST" xml:space="preserve">
     <value>Danh sách hồ sơ</value>
   </data>
+  <data name="DOCUMENT_ADMINISTRATION" xml:space="preserve">
+    <value>Quản trị hồ sơ toàn hệ thống</value>
+  </data>
   <data name="DOCUMENT_CODE" xml:space="preserve">
     <value>Mã hồ sơ</value>
   </data>

@@ -163,6 +163,8 @@
     <Compile Include="TblSettingController.cs" />
     <Compile Include="TblTaiLieu.cs" />
     <Compile Include="TblTaiLieuController.cs" />
+    <Compile Include="TblTaiLieuQuyen.cs" />
+    <Compile Include="TblTaiLieuQuyenController.cs" />
     <Compile Include="TblThanhToan.cs" />
     <Compile Include="TblThanhToanController.cs" />
     <Compile Include="TblThanhVienDuAn.cs" />

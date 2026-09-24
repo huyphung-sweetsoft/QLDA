@@ -6180,3 +6180,10 @@ input[switch]:checked + label {
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
+
+/* Meeting-role file permissions do not apply to document files. Keep the
+   shared FilesBox implementation intact, but hide this legacy menu only in
+   document upload contexts. */
+.document-file-box .file-actions {
+    display: none !important;
+}

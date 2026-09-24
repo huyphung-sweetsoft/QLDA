@@ -438,6 +438,21 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         public void CheckFunctionPermission(Guid userId)
         {
+            if (PAGE_FUNCTION_CODE == ModuleKeys.Document)
+            {
+                if (DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View))
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
+            if (PAGE_FUNCTION_CODE == ModuleKeys.ProjectDocument)
+            {
+                if (CurrentProjectId != Guid.Empty
+                    && DocumentManager.Instance.CanEnterProjectDocumentArea(CurrentProjectId))
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
             if (!SweetContext.Current.CheckFunctionPermission(userId, PAGE_FUNCTION_CODE) && !IsLogin)
                 Response.Redirect(GetRelativeClientPath("/403"), true);
         }
@@ -606,6 +621,75 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             try
             {
+                ModuleKeys requestedModule = module ?? this.PAGE_FUNCTION_CODE;
+                if (requestedModule == ModuleKeys.Document || requestedModule == ModuleKeys.ProjectDocument)
+                {
+                    Guid documentId = Guid.Empty;
+                    bool isDocumentPage = PAGE_FUNCTION_CODE == requestedModule;
+                    bool hasDocument = false;
+                    if (isDocumentPage)
+                    {
+                        string rawDocumentId = Request.QueryString["Id"];
+                        if (!string.IsNullOrWhiteSpace(rawDocumentId))
+                        {
+                            // Detail links use a protected URL parameter.  A
+                            // plain Guid is retained as a compatibility
+                            // fallback for older links and internal callbacks.
+                            string unprotected = null;
+                            try
+                            {
+                                unprotected = SecurityUtilities
+                                    .UnprotectUrlParameter(rawDocumentId);
+                            }
+                            catch
+                            {
+                                unprotected = rawDocumentId;
+                            }
+
+                            hasDocument = Guid.TryParse(
+                                unprotected,
+                                out documentId);
+                        }
+                    }
+                    if (!hasDocument) documentId = Guid.Empty;
+                    if (permissionKeys.HasFlag(ActionKeys.Export))
+                    {
+                        bool exportAllowed = hasDocument
+                            ? DocumentManager.Instance.CanAccessDocument(
+                                documentId,
+                                ActionKeys.Export)
+                            : requestedModule == ModuleKeys.ProjectDocument
+                                ? DocumentManager.Instance.CanAccessProjectDocument(
+                                    CurrentProjectId,
+                                    ActionKeys.Export)
+                                : DocumentManager.Instance.CanAccessDocumentArea(
+                                    ActionKeys.Export);
+                        if (exportAllowed) return true;
+                    }
+                    foreach (ActionKeys action in new[] { ActionKeys.View, ActionKeys.Create, ActionKeys.Update, ActionKeys.Delete })
+                    {
+                        if (!permissionKeys.HasFlag(action)) continue;
+                        bool allowed = hasDocument
+                            ? DocumentManager.Instance.CanAccessDocument(documentId, action)
+                            : requestedModule == ModuleKeys.ProjectDocument
+                                ? DocumentManager.Instance.CanAccessProjectDocument(CurrentProjectId, action)
+                                : DocumentManager.Instance.CanAccessDocumentArea(action);
+                        // Older WebForms pages use IsEdit as a generic gate.
+                        // A document user may now receive only one detailed
+                        // operation (for example ManageFiles or Signing), so
+                        // let that page load in edit-capable mode while the
+                        // individual operation still checks its exact ACL.
+                        if (!allowed
+                            && hasDocument
+                            && action == ActionKeys.Update)
+                        {
+                            allowed = DocumentManager.Instance
+                                .CanAccessDocumentAnyUpdateAction(documentId);
+                        }
+                        if (allowed) return true;
+                    }
+                    return false;
+                }
                 if (module == null)
                     module = this.PAGE_FUNCTION_CODE;
                 Guid userId = SweetContext.Current.UserId;

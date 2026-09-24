@@ -1,5 +1,6 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fCustomers.Controls;
+using SweetSoft.QLDA.BackOffice.fProjects.Controls;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
@@ -29,6 +30,7 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         {
             CtrlKhachHang.NewCustomerHandlerCallBack += NewCustomerAction;
             CtrlKhachHang.EditCustomerHandlerCallBack += EditCustomerAction;
+            CtrlKhachHang.ManageCustomerTypeHandlerCallBack += ManageCustomerTypeAction;
             CtrlKhachHangForm1.SaveCompleted += CtrlKhachHangForm1_SaveCompleted;
             if (!IsPostBack)
             {
@@ -68,6 +70,11 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers
         private void CtrlKhachHangForm1_SaveCompleted(object sender, EventArgs e)
         {
             CtrlKhachHang.Rebind();
+        }
+
+        protected void ManageCustomerTypeAction(object sender, EventArgs e)
+        {
+            CtrlQuanLyLoai1.ShowModal(LoaiManager.LoaiDoiTuong.KhachHang);
         }
     }
 }

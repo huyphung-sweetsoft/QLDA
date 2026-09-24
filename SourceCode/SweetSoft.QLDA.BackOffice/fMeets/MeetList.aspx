@@ -3,6 +3,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fMeets/Controls/CtrlMeet.ascx" TagPrefix="SweetSoft" TagName="CtrlMeet" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
+<%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
@@ -30,6 +31,7 @@
         .member-name-block .fw-bold { font-size: 14px; font-weight: 600 !important; color: #1e293b; }
         .member-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
         .member-email:empty { display: none; }
+        .record-attachments .file-actions { display: none !important; }
     </style>
 </asp:Content>
 
@@ -109,7 +111,10 @@
                 <div class="col-lg-12">
                     <div class="mb-3">
                         <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTENT) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtNoiDungCuocHop" TextMode="MultiLine" Rows="4"></SweetSoft:ExtraTextBox>
+                        <CKEditor:CKEditorControl runat="server" ID="txtNoiDungCuocHop" Width="100%"
+                            CssClass="ck-editor" Toolbar="Full" Language="vi-VN"
+                            AutoParagraph="false" BasePath="~/Styles/plugins/ckeditor/" Height="200" />
+                        <div class="form-text">File đính kèm được tải bằng nút thư mục của cuộc họp trong danh sách.</div>
                     </div>
                 </div>
 
@@ -119,6 +124,14 @@
             <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true"
                 OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false">Lưu</SweetSoft:ExtraButton>
         </FooterTemplate>
+    </SweetSoft:ExtraModal>
+
+    <SweetSoft:ExtraModal runat="server" ID="dlMeetingFiles" Type="Primary" Size="Small" Title="File đính kèm lịch họp">
+        <ContentTemplate>
+            <div class="record-attachments">
+                <SweetSoft:FilesBox runat="server" ID="fbMeetingFiles" IsMultiple="false" MaxFileSizeBytes="10485760" />
+            </div>
+        </ContentTemplate>
     </SweetSoft:ExtraModal>
 
     <!-- POPUP CHỌN NHÂN VIÊN -->

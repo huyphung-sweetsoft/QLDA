@@ -315,6 +315,19 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdFileNoiDung.ForeignKeyTableName = "TblUploadFile";
 				schema.Columns.Add(colvarIdFileNoiDung);
 				
+				TableSchema.TableColumn colvarDanhSachFileJson = new TableSchema.TableColumn(schema);
+				colvarDanhSachFileJson.ColumnName = "DanhSachFileJson";
+				colvarDanhSachFileJson.DataType = DbType.String;
+				colvarDanhSachFileJson.MaxLength = -1;
+				colvarDanhSachFileJson.AutoIncrement = false;
+				colvarDanhSachFileJson.IsNullable = true;
+				colvarDanhSachFileJson.IsPrimaryKey = false;
+				colvarDanhSachFileJson.IsForeignKey = false;
+				colvarDanhSachFileJson.IsReadOnly = false;
+				colvarDanhSachFileJson.DefaultSetting = @"";
+				colvarDanhSachFileJson.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDanhSachFileJson);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -435,6 +448,14 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return GetColumnValue<Guid?>(Columns.IdFileNoiDung); }
 			set { SetColumnValue(Columns.IdFileNoiDung, value); }
+		}
+		  
+		[XmlAttribute("DanhSachFileJson")]
+		[Bindable(true)]
+		public string DanhSachFileJson 
+		{
+			get { return GetColumnValue<string>(Columns.DanhSachFileJson); }
+			set { SetColumnValue(Columns.DanhSachFileJson, value); }
 		}
 		
 		#endregion
@@ -579,7 +600,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung)
+		public static void Insert(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung,string varDanhSachFileJson)
 		{
 			TblPhienBanTaiLieu item = new TblPhienBanTaiLieu();
 			
@@ -611,6 +632,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdFileNoiDung = varIdFileNoiDung;
 			
+			item.DanhSachFileJson = varDanhSachFileJson;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -621,7 +644,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung)
+		public static void Update(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung,string varDanhSachFileJson)
 		{
 			TblPhienBanTaiLieu item = new TblPhienBanTaiLieu();
 			
@@ -652,6 +675,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NgayCapNhat = varNgayCapNhat;
 			
 				item.IdFileNoiDung = varIdFileNoiDung;
+			
+				item.DanhSachFileJson = varDanhSachFileJson;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -764,6 +789,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn DanhSachFileJsonColumn
+        {
+            get { return Schema.Columns[14]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -782,6 +814,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
 			 public static string IdFileNoiDung = @"IdFileNoiDung";
+			 public static string DanhSachFileJson = @"DanhSachFileJson";
 						
 		}
 		#endregion
