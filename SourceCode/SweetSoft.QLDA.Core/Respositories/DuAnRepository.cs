@@ -172,11 +172,33 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .ExecuteSingle<TblDuAn>();
         }
 
-        public string GenerateMaDuAn()
+        public string GenerateMaDuAn(string prefix, int startNumber)
         {
-            string sql = @"SELECT NEXT VALUE FOR dbo.SeqMaDuAn;";
-            int nextNumber = new InlineQuery().ExecuteScalar<int>(sql);
-            return string.Format("PRJ-{0:D3}", nextNumber);
+            prefix = (prefix ?? string.Empty).Trim();
+            if (string.IsNullOrEmpty(prefix))
+                prefix = "PRJ";
+            if (startNumber < 1)
+                startNumber = 1;
+
+            List<TblDuAn> projects = new Select()
+                .From(TblDuAn.Schema)
+                .ExecuteTypedList<TblDuAn>();
+
+            string prefixPattern = prefix + "-";
+            int maxNumber = 0;
+
+            foreach (TblDuAn project in projects)
+            {
+                if (string.IsNullOrWhiteSpace(project.MaDuAn) || !project.MaDuAn.StartsWith(prefixPattern, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string numberPart = project.MaDuAn.Substring(prefixPattern.Length);
+                if (int.TryParse(numberPart, out int number) && number > maxNumber)
+                    maxNumber = number;
+            }
+
+            int nextNumber = Math.Max(startNumber, maxNumber + 1);
+            return string.Format("{0}-{1:D3}", prefix, nextNumber);
         }
 
         public bool IsContractUsed(Guid idHopDongThucHien, Guid idDuAn)

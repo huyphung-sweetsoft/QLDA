@@ -159,6 +159,7 @@ namespace SweetSoft.QLDA.BackOffice
                 setting = settingManager.GetSettingByName(SettingKeys.SaveLog);
                 if (setting != null)
                     chkSaveLog.Checked = setting.SettingValue.ToUpper() == "TRUE";
+
                 #endregion
 
                 #region TimeZone
@@ -191,6 +192,16 @@ namespace SweetSoft.QLDA.BackOffice
                 setting = settingManager.GetSettingByName(SettingKeys.SmtpUsingSSL);
                 if (setting != null)
                     chkUsingSLL.Checked = setting.SettingValue.ToUpper() == "TRUE";
+                #endregion
+
+                #region Project
+                setting = settingManager.GetSettingByName(SettingKeys.ProjectCodePrefix);
+                if (setting != null)
+                    txtProjectCodePrefix.Text = setting.SettingValue;
+                //--------------------------------------------------------------
+                setting = settingManager.GetSettingByName(SettingKeys.ProjectCodeStartNumber);
+                if (setting != null)
+                    txtProjectCodeStartNumber.Text = setting.SettingValue;
                 #endregion
 
                 #region Contacts
@@ -293,6 +304,12 @@ namespace SweetSoft.QLDA.BackOffice
                 //----------------------------------------------------------
                 settingManager.SaveSetting(SettingKeys.SmtpUsingSSL, chkUsingSLL.Checked.ToString());
                 //----------------------------------------------------------
+                #endregion
+
+                #region Project
+                settingManager.SaveSetting(SettingKeys.ProjectCodePrefix, txtProjectCodePrefix.Text);
+                //--------------------------------------------------------------
+                settingManager.SaveSetting(SettingKeys.ProjectCodeStartNumber, txtProjectCodeStartNumber.Text);
                 #endregion
 
                 #region Contacts

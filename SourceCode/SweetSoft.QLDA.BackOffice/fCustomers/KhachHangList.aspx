@@ -4,6 +4,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.EnumHelper.Defines" %>
 <%@ Register Src="~/fCustomers/Controls/CtrlKhachHang.ascx" TagPrefix="SweetSoft" TagName="CtrlKhachHang" %>
 <%@ Register Src="~/fCustomers/Controls/CtrlKhachHangForm.ascx" TagPrefix="SweetSoft" TagName="CtrlKhachHangForm" %>
+<%@ Register Src="~/Controls/CtrlQuanLyLoai.ascx" TagPrefix="SweetSoft" TagName="CtrlQuanLyLoai" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
@@ -37,7 +38,8 @@
     </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
-    <SweetSoft:CtrlKhachHangForm runat="server" ID="CtrlKhachHangForm1" />     
+    <SweetSoft:CtrlKhachHangForm runat="server" ID="CtrlKhachHangForm1" /> 
+    <SweetSoft:CtrlQuanLyLoai runat="server" ID="CtrlQuanLyLoai1" OnDataChanged="CtrlQuanLyLoai1_OnDataChanged" />
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>
