@@ -78,7 +78,7 @@
             <div class="img-container {2}">
                 <img src="{0}" alt="{1}" class="img-responsive" />
                 <a title="Replace" href="javascript:void(0);" class="img-control left {12} hidden" onclick="FilesBox.ReplaceFile(this);" data-key="{9}" data-hdf="{10}"><i class="fas fa-cloud-upload-alt"></i></a>
-                <a title="Xem tệp" aria-label="Xem tệp" href="{17}" target="_blank" rel="noopener noreferrer" class="img-control right {16}"><i class="fa fa-eye"></i></a>
+                <a title="Xem tệp" aria-label="Xem tệp" href="javascript:void(0);" data-path="{17}" onclick="FilesBox.LayoutFilePopUp(this); return false;" class="img-control right {16}"><i class="fa fa-eye"></i></a>
             </div>
             <input name="{3}" data-selector="{3}" data-default="{5}" title="{1}" class="title" value="{1}">
             <input name="{6}" data-selector="{6}" value="{4}" type="number" title="Display order" class="order" />
