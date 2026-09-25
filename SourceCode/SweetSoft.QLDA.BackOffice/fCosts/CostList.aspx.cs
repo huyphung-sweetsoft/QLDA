@@ -317,8 +317,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlCost1.Rebind();
-                if (isNew && this.IsEdit)
-                    OpenCostFilesAction(savedCost.IdChiPhi, EventArgs.Empty);
             }
             catch (Exception exc)
             {

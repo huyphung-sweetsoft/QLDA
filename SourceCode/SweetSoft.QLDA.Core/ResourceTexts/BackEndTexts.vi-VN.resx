@@ -1327,6 +1327,9 @@
   <data name="DOCUMENT_ADMINISTRATION" xml:space="preserve">
     <value>Quản trị hồ sơ toàn hệ thống</value>
   </data>
+  <data name="SIGNING_INBOX" xml:space="preserve">
+    <value>Việc cần ký</value>
+  </data>
   <data name="DOCUMENT_CODE" xml:space="preserve">
     <value>Mã hồ sơ</value>
   </data>

@@ -257,8 +257,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
-                if (isNew && this.IsEdit)
-                    OpenMeetingFilesAction(savedMeet.IdLichHop, EventArgs.Empty);
             }
             catch (Exception exc)
             {
