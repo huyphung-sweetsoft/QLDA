@@ -603,6 +603,7 @@
                         <table class="table table-bordered table-hover document-detail__table">
                             <thead><tr>
                                 <th><%= GetResourceText(BackEndResourceKeys.VERSION_NUMBER) %></th>
+                                <th>File trình ký</th>
                                 <th><%= GetResourceText(BackEndResourceKeys.SENT_BY) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.SIGNER) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.SIGNING_METHOD) %></th>
@@ -616,6 +617,15 @@
                                 ID="rptSigning"
                                 OnItemCommand="rptSigning_ItemCommand"><ItemTemplate><tr>
                                 <td>v<%#: Eval("SoPhienBan") %></td>
+                                <td><asp:HyperLink runat="server"
+                                    Visible='<%# HasValue(Eval("IdFileNguon")) && CanOpenFile(Eval("FileNguonUrl")) %>'
+                                    NavigateUrl='<%# GetFileUrl(Eval("FileNguonUrl")) %>'
+                                    Text='<%# GetValueText(Eval("TenFileNguonGoc")) %>'
+                                    Target="_blank" CssClass="text-decoration-none" />
+                                    <asp:Label runat="server"
+                                        Visible='<%# !HasValue(Eval("IdFileNguon")) %>'
+                                        Text="File nguồn không còn khả dụng" CssClass="text-muted" />
+                                </td>
                                 <td><%#: GetValueText(Eval("TenNguoiGui")) %></td>
                                 <td><%#: GetValueText(Eval("TenNguoiKyHienThi")) %></td>
                                 <td><%#: GetSigningMethodText(Eval("HinhThucKy")) %></td>
@@ -631,16 +641,16 @@
                                         Text='<%# GetResourceText(BackEndResourceKeys.OPEN_FILE) %>'
                                         Target="_blank" CssClass="btn btn-sm btn-outline-primary" />
                                     <asp:LinkButton runat="server"
-                                        Visible='<%# CanManagePendingSigning(Eval("TrangThaiTrinhKy")) %>'
+                                        Visible='<%# CanManagePendingSigning(Eval("TrangThaiTrinhKy"), Eval("IdNguoiKy"), Eval("IdTrinhKyTaiLieuFile")) %>'
                                         CommandName="CONFIRM_SIGNED"
-                                        CommandArgument='<%# Eval("IdTrinhKyTaiLieu") %>'
+                                        CommandArgument='<%# Eval("IdTrinhKyTaiLieuFile") %>'
                                         Text='<%# GetResourceText(BackEndResourceKeys.CONFIRM_SIGNED) %>'
                                         CausesValidation="false"
                                         CssClass="btn btn-sm btn-outline-success" />
                                     <asp:LinkButton runat="server"
-                                        Visible='<%# CanManagePendingSigning(Eval("TrangThaiTrinhKy")) %>'
+                                        Visible='<%# CanManagePendingSigning(Eval("TrangThaiTrinhKy"), Eval("IdNguoiKy"), Eval("IdTrinhKyTaiLieuFile")) %>'
                                         CommandName="REQUEST_CHANGES"
-                                        CommandArgument='<%# Eval("IdTrinhKyTaiLieu") %>'
+                                        CommandArgument='<%# Eval("IdTrinhKyTaiLieuFile") %>'
                                         Text='<%# GetResourceText(BackEndResourceKeys.REQUEST_CHANGES) %>'
                                         CausesValidation="false"
                                         CssClass="btn btn-sm btn-outline-warning" />
@@ -815,6 +825,15 @@
                 <asp:Label runat="server" ID="lblSubmitSigningMethod" CssClass="fw-semibold" />
             </div>
             <div class="mb-3">
+                <label class="form-label label-valid">Chọn file cần trình ký</label>
+                <asp:CheckBoxList
+                    runat="server"
+                    ID="cblSubmitSigningFiles"
+                    RepeatDirection="Vertical"
+                    RepeatLayout="Flow"
+                    CssClass="document-signing-file-list" />
+            </div>
+            <div class="mb-3">
                 <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.SIGNER) %></label>
                 <SweetSoft:ExtraDropdown
                     runat="server"
@@ -966,7 +985,7 @@
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantSigning"
                                         Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxSigning")) %>'
                                         Checked='<%# Convert.ToBoolean(Eval("CanSigning")) &amp;&amp; Convert.ToBoolean(Eval("MaxSigning")) %>' Text="Trình ký" /></div>
-                                    <small>Gửi trình ký, nhận kết quả và yêu cầu chỉnh</small>
+                                    <small>Gửi yêu cầu ký cho các file đã chọn</small>
                                 </div>
                                 <div class="document-permission-item">
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantCustomerDelivery"
@@ -1039,6 +1058,11 @@
         </asp:Panel>
     </ContentTemplate>
 </SweetSoft:ExtraModal>
+
+<style type="text/css">
+    .document-signing-file-list { display: grid; gap: .45rem; }
+    .document-signing-file-list label { margin-left: .35rem; margin-bottom: 0; }
+</style>
 
 <SweetSoft:ExtraModal
     runat="server"

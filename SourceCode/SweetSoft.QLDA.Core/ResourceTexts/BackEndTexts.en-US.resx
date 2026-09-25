@@ -1453,6 +1453,9 @@
   <data name="DOCUMENT_ADMINISTRATION" xml:space="preserve">
     <value>System-wide document administration</value>
   </data>
+  <data name="SIGNING_INBOX" xml:space="preserve">
+    <value>Signing tasks</value>
+  </data>
   <data name="DOCUMENT_CODE" xml:space="preserve">
     <value>Document code</value>
   </data>

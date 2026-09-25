@@ -274,6 +274,13 @@
     <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
       <DependentUpon>DocumentDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\SigningInbox.aspx.cs">
+      <DependentUpon>SigningInbox.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\SigningInbox.aspx.designer.cs">
+      <DependentUpon>SigningInbox.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fDocuments\ProjectDocumentDetail.aspx.cs">
       <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -730,6 +737,7 @@
     <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
     <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
     <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\SigningInbox.aspx" />
     <Content Include="fDocuments\ProjectDocumentDetail.aspx" />
     <Content Include="fDocuments\DocumentGroups.aspx" />
     <Content Include="fDocuments\Documents.aspx" />
@@ -753,6 +761,10 @@
     <Content Include="fFilesBox\FilesBox.js" />
     <Content Include="fFilesBox\isotope.pkgd.min.js" />
     <Content Include="fFilesBox\Sortable.js" />
+    <Content Include="fFilesBox\vendor\docx-preview-0.4.1.min.js" />
+    <Content Include="fFilesBox\vendor\docx-preview-LICENSE.txt" />
+    <Content Include="fFilesBox\vendor\jszip-3.10.1.min.js" />
+    <Content Include="fFilesBox\vendor\jszip-LICENSE.md" />
     <Content Include="Controls\GridviewPaging.ascx" />
     <Content Include="Controls\Notifications\CtrlNotifications.ascx" />
     <Content Include="Controls\TwoFA\CtrlTwoFactorAuthenticator.ascx" />
