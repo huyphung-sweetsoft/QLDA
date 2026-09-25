@@ -137,9 +137,140 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             if(refType=="DocumentVersion") return GetById(refId)==null ? (Guid?)null : refId;
             if(refType!="DocumentSigningResult") return null;
-            object value=ExecuteScalarObject("SELECT IdTaiLieu FROM dbo.TblTrinhKyTaiLieu WHERE IdTrinhKyTaiLieu=@Id AND DaXoa=0",
+            object value=ExecuteScalarObject(@"
+                SELECT TOP 1 p.IdTaiLieu
+                FROM dbo.TblTrinhKyTaiLieuFile item
+                INNER JOIN dbo.TblTrinhKyTaiLieu s
+                    ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                   AND s.DaXoa=0
+                INNER JOIN dbo.TblPhienBanTaiLieu p
+                    ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                   AND p.DaXoa=0
+                WHERE item.IdTrinhKyTaiLieuFile=@Id
+                  AND item.DaXoa=0
+                UNION ALL
+                SELECT TOP 1 p.IdTaiLieu
+                FROM dbo.TblTrinhKyTaiLieu s
+                INNER JOIN dbo.TblPhienBanTaiLieu p
+                    ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                   AND p.DaXoa=0
+                WHERE s.IdTrinhKyTaiLieu=@Id
+                  AND s.DaXoa=0",
                 new Dictionary<string,object>{{"@Id",refId}});
             return value==null||value==DBNull.Value ? (Guid?)null : (Guid)value;
+        }
+
+        public bool CanProcessSigningResult(Guid userId, Guid refId)
+        {
+            if (userId == Guid.Empty || refId == Guid.Empty)
+                return false;
+
+            return Convert.ToBoolean(ExecuteScalarObject(@"
+                SELECT CASE WHEN EXISTS
+                (
+                    SELECT 1
+                    FROM dbo.TblTrinhKyTaiLieu s
+                    INNER JOIN dbo.aspnet_Users u
+                        ON u.UserId=s.IdNguoiKy
+                       AND u.IsDeleted=0 AND u.IsActivated=1
+                    INNER JOIN dbo.TblPhienBanTaiLieu p
+                        ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                       AND p.DaXoa=0
+                    INNER JOIN dbo.TblTaiLieu d
+                        ON d.IdTaiLieu=p.IdTaiLieu AND d.DaXoa=0
+                    LEFT JOIN dbo.TblTrinhKyTaiLieuFile item
+                        ON item.IdTrinhKyTaiLieu=s.IdTrinhKyTaiLieu
+                       AND item.IdTrinhKyTaiLieuFile=@RefId
+                       AND item.DaXoa=0
+                    WHERE s.DaXoa=0
+                      AND s.IdNguoiKy=@UserId
+                      AND s.TrangThaiTrinhKy IN ('DANG_TRINH','DANG_TRINH_KY')
+                      AND (item.IdTrinhKyTaiLieuFile IS NOT NULL
+                           OR s.IdTrinhKyTaiLieu=@RefId)
+                      AND (item.IdTrinhKyTaiLieuFile IS NULL
+                           OR item.TrangThai='DANG_TRINH')
+                ) THEN 1 ELSE 0 END",
+                new Dictionary<string, object>
+                {
+                    { "@UserId", userId },
+                    { "@RefId", refId }
+                }));
+        }
+
+        public bool CanProcessAssignedSigningFile(
+            Guid userId, Guid documentId, Guid signingFileId)
+        {
+            if (userId == Guid.Empty || documentId == Guid.Empty
+                || signingFileId == Guid.Empty)
+                return false;
+
+            return Convert.ToBoolean(ExecuteScalarObject(@"
+                SELECT CASE WHEN EXISTS (
+                    SELECT 1
+                    FROM dbo.TblTrinhKyTaiLieuFile item
+                    INNER JOIN dbo.TblTrinhKyTaiLieu s
+                        ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                       AND s.DaXoa=0
+                    INNER JOIN dbo.TblPhienBanTaiLieu p
+                        ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                       AND p.DaXoa=0
+                    INNER JOIN dbo.TblTaiLieu d
+                        ON d.IdTaiLieu=p.IdTaiLieu AND d.DaXoa=0
+                    INNER JOIN dbo.aspnet_Users u
+                        ON u.UserId=s.IdNguoiKy
+                       AND u.IsDeleted=0 AND u.IsActivated=1
+                    WHERE item.IdTrinhKyTaiLieuFile=@SigningFileId
+                      AND item.DaXoa=0
+                      AND item.TrangThai='DANG_TRINH'
+                      AND s.TrangThaiTrinhKy IN ('DANG_TRINH','DANG_TRINH_KY')
+                      AND s.IdNguoiKy=@UserId
+                      AND d.IdTaiLieu=@DocumentId
+                ) THEN 1 ELSE 0 END",
+                new Dictionary<string, object>
+                {
+                    { "@UserId", userId },
+                    { "@DocumentId", documentId },
+                    { "@SigningFileId", signingFileId }
+                }));
+        }
+
+        // Access is to a concrete upload assigned in a signing request, never
+        // to the dossier or its other files.
+        public bool CanReadAssignedSigningFile(Guid userId, Guid uploadFileId)
+        {
+            if (userId == Guid.Empty || uploadFileId == Guid.Empty)
+                return false;
+
+            return Convert.ToBoolean(ExecuteScalarObject(@"
+                SELECT CASE WHEN EXISTS (
+                    SELECT 1
+                    FROM dbo.TblUploadFile f
+                    INNER JOIN dbo.TblTrinhKyTaiLieuFile item
+                        ON item.DaXoa=0 AND (
+                            (f.RefType='DocumentVersion'
+                             AND item.IdFileNguon=f.Id)
+                            OR (f.RefType='DocumentSigningResult'
+                                AND (f.RefId=item.IdTrinhKyTaiLieuFile
+                                     OR item.IdFileSauKy=f.Id)))
+                    INNER JOIN dbo.TblTrinhKyTaiLieu s
+                        ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                       AND s.DaXoa=0
+                    INNER JOIN dbo.TblPhienBanTaiLieu p
+                        ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                       AND p.DaXoa=0
+                    INNER JOIN dbo.TblTaiLieu d
+                        ON d.IdTaiLieu=p.IdTaiLieu AND d.DaXoa=0
+                    INNER JOIN dbo.aspnet_Users u
+                        ON u.UserId=s.IdNguoiKy
+                       AND u.IsDeleted=0 AND u.IsActivated=1
+                    WHERE f.Id=@UploadFileId AND f.IsDeleted=0
+                      AND s.IdNguoiKy=@UserId
+                ) THEN 1 ELSE 0 END",
+                new Dictionary<string, object>
+                {
+                    { "@UserId", userId },
+                    { "@UploadFileId", uploadFileId }
+                }));
         }
 
         public bool CanAccess(Guid userId, Guid documentId, string action)
@@ -1538,24 +1669,34 @@ namespace SweetSoft.QLDA.Core.Respositories
             string sql = @"
                 SELECT
                     s.IdTrinhKyTaiLieu,
+                    item.IdTrinhKyTaiLieuFile,
                     s.IdPhienBanTaiLieu,
                     s.IdNguoiGui,
                     s.IdNguoiKy,
                     s.TenNguoiKy,
                     p.SoPhienBan,
                     s.HinhThucKy,
-                    s.TrangThaiTrinhKy,
+                    COALESCE(item.TrangThai, s.TrangThaiTrinhKy)
+                        AS TrangThaiTrinhKy,
                     s.NgayGui,
-                    s.NgayNhanLai,
-                    s.GhiChu,
+                    COALESCE(item.NgayNhanLai, s.NgayNhanLai)
+                        AS NgayNhanLai,
+                    COALESCE(NULLIF(item.GhiChu, N''), s.GhiChu)
+                        AS GhiChu,
                     ISNULL(sender.DisplayName, N'') AS TenNguoiGui,
                     COALESCE(NULLIF(s.TenNguoiKy, N''),
                              NULLIF(signer.DisplayName, N''), N'')
                         AS TenNguoiKyHienThi,
-                    f.Id AS IdFileSauKy,
-                    ISNULL(f.Name, N'') AS TenFileSauKy,
-                    ISNULL(f.OriginalFileName, N'') AS TenFileSauKyGoc,
-                    ISNULL(f.FileUrl, N'') AS FileSauKyUrl
+                    sourceFile.Id AS IdFileNguon,
+                    ISNULL(sourceFile.Name, N'') AS TenFileNguon,
+                    ISNULL(sourceFile.OriginalFileName, N'') AS TenFileNguonGoc,
+                    ISNULL(sourceFile.FileUrl, N'') AS FileNguonUrl,
+                    CASE WHEN item.IdTrinhKyTaiLieuFile IS NULL
+                         THEN s.IdFileSauKy ELSE item.IdFileSauKy END
+                        AS IdFileSauKy,
+                    ISNULL(resultFile.Name, N'') AS TenFileSauKy,
+                    ISNULL(resultFile.OriginalFileName, N'') AS TenFileSauKyGoc,
+                    ISNULL(resultFile.FileUrl, N'') AS FileSauKyUrl
                 FROM TblTrinhKyTaiLieu s
                 INNER JOIN TblPhienBanTaiLieu p
                     ON p.IdPhienBanTaiLieu = s.IdPhienBanTaiLieu
@@ -1569,12 +1710,21 @@ namespace SweetSoft.QLDA.Core.Respositories
                 LEFT JOIN aspnet_Users signer
                     ON signer.UserId = s.IdNguoiKy
                    AND signer.IsDeleted = 0
-                LEFT JOIN TblUploadFile f
-                    ON f.Id = s.IdFileSauKy
-                   AND f.IsDeleted = 0
+                LEFT JOIN dbo.TblTrinhKyTaiLieuFile item
+                    ON item.IdTrinhKyTaiLieu = s.IdTrinhKyTaiLieu
+                   AND item.DaXoa = 0
+                LEFT JOIN TblUploadFile sourceFile
+                    ON sourceFile.Id = item.IdFileNguon
+                   AND sourceFile.IsDeleted = 0
+                LEFT JOIN TblUploadFile resultFile
+                    ON resultFile.Id = CASE
+                        WHEN item.IdTrinhKyTaiLieuFile IS NULL
+                        THEN s.IdFileSauKy ELSE item.IdFileSauKy END
+                   AND resultFile.IsDeleted = 0
                 WHERE p.IdTaiLieu = @DocumentId
                   AND s.DaXoa = 0
-                ORDER BY s.NgayGui DESC, s.IdTrinhKyTaiLieu DESC;";
+                ORDER BY s.NgayGui DESC, s.IdTrinhKyTaiLieu DESC,
+                         sourceFile.OriginalFileName, item.IdTrinhKyTaiLieuFile;";
 
             return ExecuteDataTable(
                 sql,
@@ -1641,6 +1791,30 @@ namespace SweetSoft.QLDA.Core.Respositories
             string currentUserName,
             DateTime currentDate)
         {
+            DocumentFileSet currentFileSet = GetCurrentDocumentFileSet(idTaiLieu);
+            return SubmitDocumentSigning(
+                idTaiLieu,
+                idNguoiKy,
+                tenNguoiKy,
+                hinhThucKy,
+                ghiChu,
+                currentFileSet.FileIds,
+                currentUserId,
+                currentUserName,
+                currentDate);
+        }
+
+        public DocumentSigningOperationResult SubmitDocumentSigning(
+            Guid idTaiLieu,
+            Guid idNguoiKy,
+            string tenNguoiKy,
+            string hinhThucKy,
+            string ghiChu,
+            IEnumerable<Guid> selectedFileIds,
+            Guid currentUserId,
+            string currentUserName,
+            DateTime currentDate)
+        {
             if (idTaiLieu == Guid.Empty)
                 throw new InvalidOperationException(
                     "Không xác định được hồ sơ cần trình ký.");
@@ -1667,6 +1841,17 @@ namespace SweetSoft.QLDA.Core.Respositories
             if (safeNote.Length > 500)
                 throw new InvalidOperationException(
                     "Ghi chú không được vượt quá 500 ký tự.");
+
+            List<Guid> requestedFileIds = (selectedFileIds
+                    ?? Enumerable.Empty<Guid>())
+                .ToList();
+            if (requestedFileIds.Count == 0
+                || requestedFileIds.Any(id => id == Guid.Empty)
+                || requestedFileIds.Distinct().Count() != requestedFileIds.Count)
+            {
+                throw new InvalidOperationException(
+                    "Vui lòng chọn ít nhất một file hợp lệ để trình ký.");
+            }
 
             string safeUserName = NormalizeUserName(currentUserName);
             Guid signingId = Guid.NewGuid();
@@ -1795,9 +1980,20 @@ namespace SweetSoft.QLDA.Core.Respositories
                     throw new InvalidOperationException(
                         "Hồ sơ đang có một lần trình ký chờ ký.");
 
+                string fileParameterList = string.Join(",", requestedFileIds
+                    .Select((fileId, index) => "@SelectedFile" + index));
+                Dictionary<string, object> fileParameters =
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@VersionRefType", FileUploadTypes.DocumentVersion.ToString() }
+                    };
+                for (int index = 0; index < requestedFileIds.Count; index++)
+                    fileParameters["@SelectedFile" + index] = requestedFileIds[index];
+
                 DataTable currentVersionRows = ExecuteDataTable(
                     @"
-                        SELECT TOP 1
+                        SELECT
                             p.IdPhienBanTaiLieu,
                             p.SoPhienBan,
                             u.Id AS IdFile,
@@ -1805,36 +2001,42 @@ namespace SweetSoft.QLDA.Core.Respositories
                             u.OriginalFileName,
                             u.Name AS FileName
                         FROM TblPhienBanTaiLieu p WITH (UPDLOCK, HOLDLOCK)
+                        CROSS APPLY OPENJSON(COALESCE
+                        (
+                            p.DanhSachFileJson,
+                            CASE WHEN p.IdFileNoiDung IS NULL THEN N'[]'
+                                 ELSE N'[""' + CONVERT(nvarchar(36),p.IdFileNoiDung) + N'""]' END
+                        )) member
                         INNER JOIN TblUploadFile u WITH (UPDLOCK, HOLDLOCK)
-                            ON u.Id = p.IdFileNoiDung
+                            ON u.Id = TRY_CONVERT(uniqueidentifier, member.value)
                            AND u.RefId = @DocumentId
                            AND u.RefType = @VersionRefType
                            AND u.IsDeleted = 0
                         WHERE p.IdTaiLieu = @DocumentId
                           AND p.DaXoa = 0
                           AND p.LaPhienBanHienTai = 1
-                          AND p.IdFileNoiDung IS NOT NULL
-                        ORDER BY p.NgayTao DESC, p.IdPhienBanTaiLieu DESC;",
-                    new Dictionary<string, object>
-                    {
-                        { "@DocumentId", idTaiLieu },
-                        { "@VersionRefType", FileUploadTypes.DocumentVersion.ToString() }
-                    });
-                if (currentVersionRows.Rows.Count == 0)
+                          AND u.Id IN (" + fileParameterList + @")
+                        ORDER BY p.NgayTao DESC, p.IdPhienBanTaiLieu DESC,
+                                 u.OriginalFileName, u.Id;",
+                    fileParameters);
+                if (currentVersionRows.Rows.Count != requestedFileIds.Count)
                     throw new InvalidOperationException(
-                        "Hồ sơ chưa có phiên bản hiện tại và tệp nội dung hợp lệ.");
+                        "Có file không thuộc phiên bản hiện tại của hồ sơ hoặc đã bị gỡ. Vui lòng tải lại trang và chọn lại file.");
 
                 DataRow currentVersion = currentVersionRows.Rows[0];
-                Guid versionId = GetGuid(
-                    currentVersion,
-                    "IdPhienBanTaiLieu");
-                Guid fileId = GetGuid(currentVersion, "IdFile");
-                if (versionId == Guid.Empty || fileId == Guid.Empty)
+                Guid versionId = GetGuid(currentVersion, "IdPhienBanTaiLieu");
+                if (versionId == Guid.Empty)
                     throw new InvalidOperationException(
-                        "Phiên bản hiện tại không có tệp nội dung hợp lệ.");
-                if (!IsFileAvailable(currentVersion["FileUrl"]))
-                    throw new InvalidOperationException(
-                        "Không tìm thấy tệp vật lý của phiên bản hiện tại.");
+                        "Không xác định được phiên bản hiện tại.");
+                foreach (DataRow selectedFile in currentVersionRows.Rows)
+                {
+                    if (GetGuid(selectedFile, "IdPhienBanTaiLieu") != versionId)
+                        throw new InvalidOperationException(
+                            "Các file được chọn không cùng thuộc một phiên bản hiện tại.");
+                    if (!IsFileAvailable(selectedFile["FileUrl"]))
+                        throw new InvalidOperationException(
+                            "Không tìm thấy tệp vật lý của file được chọn.");
+                }
 
                 DataTable previousAttemptRows = ExecuteDataTable(
                     @"
@@ -1930,6 +2132,51 @@ namespace SweetSoft.QLDA.Core.Respositories
                         { "@CurrentDate", currentDate }
                     });
 
+                foreach (Guid sourceFileId in requestedFileIds)
+                {
+                    ExecuteNonQuery(
+                        @"
+                            INSERT INTO dbo.TblTrinhKyTaiLieuFile
+                            (
+                                IdTrinhKyTaiLieuFile,
+                                IdTrinhKyTaiLieu,
+                                IdFileNguon,
+                                IdFileSauKy,
+                                TrangThai,
+                                NgayNhanLai,
+                                GhiChu,
+                                DaXoa,
+                                NguoiTao,
+                                NgayTao,
+                                NguoiCapNhat,
+                                NgayCapNhat
+                            )
+                            VALUES
+                            (
+                                @SigningFileId,
+                                @SigningId,
+                                @SourceFileId,
+                                NULL,
+                                @PendingStatus,
+                                NULL,
+                                NULL,
+                                0,
+                                @CurrentUserName,
+                                @CurrentDate,
+                                NULL,
+                                NULL
+                            );",
+                        new Dictionary<string, object>
+                        {
+                            { "@SigningFileId", Guid.NewGuid() },
+                            { "@SigningId", signingId },
+                            { "@SourceFileId", sourceFileId },
+                            { "@PendingStatus", DocumentSigningStatusKeys.Pending },
+                            { "@CurrentUserName", safeUserName },
+                            { "@CurrentDate", currentDate }
+                        });
+                }
+
                 int updatedDocument = ExecuteNonQuery(
                     @"
                         UPDATE TblTaiLieu
@@ -1954,8 +2201,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                 result.AuditReferenceType =
                     DocumentActivityReferenceKeys.Signing;
                 result.AuditReferenceId = signingId;
+                string selectedFileNames = string.Join(
+                    ", ",
+                    currentVersionRows.AsEnumerable()
+                        .Select(GetFileDisplayName)
+                        .Where(name => !string.IsNullOrWhiteSpace(name))
+                        .ToArray());
+                if (selectedFileNames.Length > 400)
+                    selectedFileNames = selectedFileNames.Substring(0, 397) + "...";
                 result.AuditChanges = "Phiên bản: v"
                     + Convert.ToString(currentVersion["SoPhienBan"])
+                    + "; Số file: "
+                    + requestedFileIds.Count.ToString(CultureInfo.InvariantCulture)
+                    + "; File: " + selectedFileNames
                     + "; Người ký: "
                     + (string.IsNullOrWhiteSpace(safeSignerName)
                         ? idNguoiKy.ToString()
@@ -1965,7 +2223,9 @@ namespace SweetSoft.QLDA.Core.Respositories
 
                 scope.Complete();
                 result.IdPhienBanTaiLieu = versionId;
-                result.IdFile = fileId;
+                result.IdFile = requestedFileIds.Count == 1
+                    ? requestedFileIds[0]
+                    : Guid.Empty;
             }
 
             return result;
@@ -1995,6 +2255,29 @@ namespace SweetSoft.QLDA.Core.Respositories
                     "Lý do yêu cầu điều chỉnh không được vượt quá 500 ký tự.");
 
             string safeUserName = NormalizeUserName(currentUserName);
+            DataTable childItems = ExecuteDataTable(@"
+                SELECT TOP 2 IdTrinhKyTaiLieuFile
+                FROM dbo.TblTrinhKyTaiLieuFile
+                WHERE IdTrinhKyTaiLieu=@SigningId AND DaXoa=0
+                ORDER BY IdTrinhKyTaiLieuFile;",
+                new Dictionary<string, object>
+                {
+                    { "@SigningId", idTrinhKyTaiLieu }
+                });
+            if (childItems.Rows.Count > 1)
+                throw new InvalidOperationException(
+                    "Yêu cầu này có nhiều file. Hãy xử lý từng file riêng trong danh sách.");
+            if (childItems.Rows.Count == 1)
+            {
+                return RequestDocumentSigningFileChanges(
+                    idTaiLieu,
+                    GetGuid(childItems.Rows[0], "IdTrinhKyTaiLieuFile"),
+                    safeReason,
+                    currentUserId,
+                    safeUserName,
+                    currentDate);
+            }
+
             DocumentSigningOperationResult result =
                 new DocumentSigningOperationResult
                 {
@@ -2032,12 +2315,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                            AND p.DaXoa = 0
                         WHERE s.IdTrinhKyTaiLieu = @SigningId
                           AND s.DaXoa = 0
+                          AND s.IdNguoiKy = @CurrentUserId
                           AND s.TrangThaiTrinhKy = @PendingStatus
                           AND p.IdTaiLieu = @DocumentId;",
                     new Dictionary<string, object>
                     {
                         { "@SigningId", idTrinhKyTaiLieu },
                         { "@DocumentId", idTaiLieu },
+                        { "@CurrentUserId", currentUserId },
                         { "@PendingStatus", DocumentSigningStatusKeys.Pending }
                     });
                 if (signingRows.Rows.Count == 0)
@@ -2133,6 +2418,29 @@ namespace SweetSoft.QLDA.Core.Respositories
                     "Ghi chú không được vượt quá 500 ký tự.");
 
             string safeUserName = NormalizeUserName(currentUserName);
+            DataTable childItems = ExecuteDataTable(@"
+                SELECT TOP 2 IdTrinhKyTaiLieuFile
+                FROM dbo.TblTrinhKyTaiLieuFile
+                WHERE IdTrinhKyTaiLieu=@SigningId AND DaXoa=0
+                ORDER BY IdTrinhKyTaiLieuFile;",
+                new Dictionary<string, object>
+                {
+                    { "@SigningId", idTrinhKyTaiLieu }
+                });
+            if (childItems.Rows.Count > 1)
+                throw new InvalidOperationException(
+                    "Yêu cầu này có nhiều file. Hãy xử lý từng file riêng trong danh sách.");
+            if (childItems.Rows.Count == 1)
+            {
+                return CompleteDocumentSigningFile(
+                    idTaiLieu,
+                    GetGuid(childItems.Rows[0], "IdTrinhKyTaiLieuFile"),
+                    safeNote,
+                    currentUserId,
+                    safeUserName,
+                    currentDate);
+            }
+
             DocumentSigningOperationResult result =
                 new DocumentSigningOperationResult
                 {
@@ -2172,12 +2480,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                            AND p.DaXoa = 0
                         WHERE s.IdTrinhKyTaiLieu = @SigningId
                           AND s.DaXoa = 0
+                          AND s.IdNguoiKy = @CurrentUserId
                           AND s.TrangThaiTrinhKy = @PendingStatus
                           AND p.IdTaiLieu = @DocumentId;",
                     new Dictionary<string, object>
                     {
                         { "@SigningId", idTrinhKyTaiLieu },
                         { "@DocumentId", idTaiLieu },
+                        { "@CurrentUserId", currentUserId },
                         { "@PendingStatus", DocumentSigningStatusKeys.Pending }
                     });
                 if (signingRows.Rows.Count == 0)
@@ -2284,6 +2594,385 @@ namespace SweetSoft.QLDA.Core.Respositories
             return result;
         }
 
+        public DocumentSigningOperationResult RequestDocumentSigningFileChanges(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieuFile,
+            string reason,
+            Guid currentUserId,
+            string currentUserName,
+            DateTime currentDate)
+        {
+            if (idTaiLieu == Guid.Empty
+                || idTrinhKyTaiLieuFile == Guid.Empty
+                || currentUserId == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Không xác định được hồ sơ, file hoặc tài khoản xử lý.");
+            }
+
+            string safeReason = (reason ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(safeReason) || safeReason.Length > 500)
+                throw new InvalidOperationException(
+                    "Lý do yêu cầu điều chỉnh phải có nội dung và không vượt quá 500 ký tự.");
+
+            string safeUserName = NormalizeUserName(currentUserName);
+            DocumentSigningOperationResult result =
+                new DocumentSigningOperationResult();
+
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TimeSpan(0, 10, 0)))
+            {
+                DataTable documentRows = ExecuteDataTable(@"
+                    SELECT TOP 1 IdTaiLieu
+                    FROM dbo.TblTaiLieu WITH (UPDLOCK, HOLDLOCK)
+                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0 AND CanTrinhKy=1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu }
+                    });
+                if (documentRows.Rows.Count == 0)
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hồ sơ cần trình ký.");
+
+                EnsureActiveUser(currentUserId);
+                DataTable itemRows = ExecuteDataTable(@"
+                    SELECT TOP 1
+                        item.IdTrinhKyTaiLieuFile,
+                        s.IdTrinhKyTaiLieu,
+                        s.IdPhienBanTaiLieu,
+                        s.IdNguoiGui,
+                        s.IdNguoiKy,
+                        p.SoPhienBan,
+                        sourceFile.OriginalFileName,
+                        sourceFile.Name
+                    FROM dbo.TblTrinhKyTaiLieuFile item WITH (UPDLOCK, HOLDLOCK)
+                    INNER JOIN dbo.TblTrinhKyTaiLieu s WITH (UPDLOCK, HOLDLOCK)
+                        ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                       AND s.DaXoa=0
+                    INNER JOIN dbo.TblPhienBanTaiLieu p
+                        ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                       AND p.DaXoa=0 AND p.IdTaiLieu=@DocumentId
+                    INNER JOIN dbo.TblUploadFile sourceFile
+                        ON sourceFile.Id=item.IdFileNguon
+                       AND sourceFile.IsDeleted=0
+                    WHERE item.IdTrinhKyTaiLieuFile=@SigningFileId
+                      AND item.DaXoa=0
+                      AND item.TrangThai=@PendingStatus
+                      AND s.IdNguoiKy=@CurrentUserId
+                      AND s.TrangThaiTrinhKy IN (@PendingStatus,@LegacyPendingStatus);",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@SigningFileId", idTrinhKyTaiLieuFile },
+                        { "@CurrentUserId", currentUserId },
+                        { "@PendingStatus", DocumentSigningStatusKeys.Pending },
+                        { "@LegacyPendingStatus", DocumentStatusKeys.PendingSignature }
+                    });
+                if (itemRows.Rows.Count == 0)
+                    throw new UnauthorizedAccessException(
+                        "Chỉ người ký được chỉ định mới được xử lý file đang chờ ký này.");
+
+                DataTable uploadedResults = ExecuteDataTable(@"
+                    SELECT TOP 1 Id
+                    FROM dbo.TblUploadFile WITH (UPDLOCK, HOLDLOCK)
+                    WHERE RefId=@SigningFileId
+                      AND RefType=@ResultRefType
+                      AND IsDeleted=0;",
+                    new Dictionary<string, object>
+                    {
+                        { "@SigningFileId", idTrinhKyTaiLieuFile },
+                        { "@ResultRefType", FileUploadTypes.DocumentSigningResult.ToString() }
+                    });
+                if (uploadedResults.Rows.Count > 0)
+                    throw new InvalidOperationException(
+                        "Hãy xóa file kết quả ký đang tải dở trước khi yêu cầu điều chỉnh.");
+
+                DataRow item = itemRows.Rows[0];
+                Guid signingId = GetGuid(item, "IdTrinhKyTaiLieu");
+                ExecuteNonQuery(@"
+                    UPDATE dbo.TblTrinhKyTaiLieuFile
+                    SET TrangThai=@ChangesStatus,
+                        NgayNhanLai=@CurrentDate,
+                        GhiChu=@Reason,
+                        NguoiCapNhat=@CurrentUserName,
+                        NgayCapNhat=@CurrentDate
+                    WHERE IdTrinhKyTaiLieuFile=@SigningFileId
+                      AND DaXoa=0 AND TrangThai=@PendingStatus;",
+                    new Dictionary<string, object>
+                    {
+                        { "@SigningFileId", idTrinhKyTaiLieuFile },
+                        { "@ChangesStatus", DocumentSigningStatusKeys.ChangesRequested },
+                        { "@CurrentDate", currentDate },
+                        { "@Reason", safeReason },
+                        { "@CurrentUserName", safeUserName },
+                        { "@PendingStatus", DocumentSigningStatusKeys.Pending }
+                    });
+
+                string aggregateStatus = RefreshSigningAggregateStatus(
+                    idTaiLieu, signingId, safeUserName, currentDate);
+                result.IdTrinhKyTaiLieu = signingId;
+                result.AuditActivityType =
+                    DocumentActivityTypeKeys.RequestSigningChanges;
+                result.AuditReferenceType =
+                    DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = idTrinhKyTaiLieuFile;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(item["SoPhienBan"])
+                    + "; File: " + GetFileDisplayName(item)
+                    + "; Trạng thái tổng hợp: " + aggregateStatus
+                    + "; Lý do: " + safeReason;
+                result.AuditDescription =
+                    "Đã yêu cầu điều chỉnh một file trong yêu cầu trình ký.";
+                scope.Complete();
+            }
+
+            return result;
+        }
+
+        public DocumentSigningOperationResult CompleteDocumentSigningFile(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieuFile,
+            string note,
+            Guid currentUserId,
+            string currentUserName,
+            DateTime currentDate)
+        {
+            if (idTaiLieu == Guid.Empty
+                || idTrinhKyTaiLieuFile == Guid.Empty
+                || currentUserId == Guid.Empty)
+            {
+                throw new InvalidOperationException(
+                    "Không xác định được hồ sơ, file hoặc tài khoản xử lý.");
+            }
+
+            string safeNote = (note ?? string.Empty).Trim();
+            if (safeNote.Length > 500)
+                throw new InvalidOperationException(
+                    "Ghi chú không được vượt quá 500 ký tự.");
+
+            string safeUserName = NormalizeUserName(currentUserName);
+            DocumentSigningOperationResult result =
+                new DocumentSigningOperationResult();
+
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TimeSpan(0, 10, 0)))
+            {
+                DataTable documentRows = ExecuteDataTable(@"
+                    SELECT TOP 1 IdTaiLieu
+                    FROM dbo.TblTaiLieu WITH (UPDLOCK, HOLDLOCK)
+                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0 AND CanTrinhKy=1;",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu }
+                    });
+                if (documentRows.Rows.Count == 0)
+                    throw new InvalidOperationException(
+                        "Không tìm thấy hồ sơ cần trình ký.");
+
+                EnsureActiveUser(currentUserId);
+                DataTable itemRows = ExecuteDataTable(@"
+                    SELECT TOP 1
+                        item.IdTrinhKyTaiLieuFile,
+                        s.IdTrinhKyTaiLieu,
+                        s.IdPhienBanTaiLieu,
+                        s.IdNguoiGui,
+                        s.IdNguoiKy,
+                        p.SoPhienBan,
+                        sourceFile.OriginalFileName,
+                        sourceFile.Name
+                    FROM dbo.TblTrinhKyTaiLieuFile item WITH (UPDLOCK, HOLDLOCK)
+                    INNER JOIN dbo.TblTrinhKyTaiLieu s WITH (UPDLOCK, HOLDLOCK)
+                        ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                       AND s.DaXoa=0
+                    INNER JOIN dbo.TblPhienBanTaiLieu p
+                        ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                       AND p.DaXoa=0 AND p.IdTaiLieu=@DocumentId
+                    INNER JOIN dbo.TblUploadFile sourceFile
+                        ON sourceFile.Id=item.IdFileNguon
+                       AND sourceFile.IsDeleted=0
+                    WHERE item.IdTrinhKyTaiLieuFile=@SigningFileId
+                      AND item.DaXoa=0
+                      AND item.TrangThai=@PendingStatus
+                      AND s.IdNguoiKy=@CurrentUserId
+                      AND s.TrangThaiTrinhKy IN (@PendingStatus,@LegacyPendingStatus);",
+                    new Dictionary<string, object>
+                    {
+                        { "@DocumentId", idTaiLieu },
+                        { "@SigningFileId", idTrinhKyTaiLieuFile },
+                        { "@CurrentUserId", currentUserId },
+                        { "@PendingStatus", DocumentSigningStatusKeys.Pending },
+                        { "@LegacyPendingStatus", DocumentStatusKeys.PendingSignature }
+                    });
+                if (itemRows.Rows.Count == 0)
+                    throw new UnauthorizedAccessException(
+                        "Chỉ người ký được chỉ định mới được xử lý file đang chờ ký này.");
+
+                DataTable resultFiles = ExecuteDataTable(@"
+                    SELECT Id, FileUrl, Ext, Name, OriginalFileName
+                    FROM dbo.TblUploadFile WITH (UPDLOCK, HOLDLOCK)
+                    WHERE RefId=@SigningFileId
+                      AND RefType=@ResultRefType
+                      AND IsDeleted=0
+                    ORDER BY CreatedDate, Id;",
+                    new Dictionary<string, object>
+                    {
+                        { "@SigningFileId", idTrinhKyTaiLieuFile },
+                        { "@ResultRefType", FileUploadTypes.DocumentSigningResult.ToString() }
+                    });
+                if (resultFiles.Rows.Count == 0)
+                    throw new InvalidOperationException(
+                        "Chưa có file kết quả ký cho file này.");
+                if (resultFiles.Rows.Count != 1)
+                    throw new InvalidOperationException(
+                        "Mỗi file trình ký chỉ được có một file kết quả đang hoạt động.");
+
+                DataRow resultFile = resultFiles.Rows[0];
+                Guid resultFileId = GetGuid(resultFile, "Id");
+                if (!IsAllowedSigningResultExtension(resultFile))
+                    throw new InvalidOperationException(
+                        "File kết quả ký chỉ được phép có định dạng PDF, JPG, JPEG hoặc PNG.");
+                if (resultFileId == Guid.Empty
+                    || !IsFileAvailable(resultFile["FileUrl"]))
+                {
+                    throw new InvalidOperationException(
+                        "Không tìm thấy file vật lý của kết quả ký.");
+                }
+
+                DataRow item = itemRows.Rows[0];
+                Guid signingId = GetGuid(item, "IdTrinhKyTaiLieu");
+                int updated = ExecuteNonQuery(@"
+                    UPDATE dbo.TblTrinhKyTaiLieuFile
+                    SET TrangThai=@SignedStatus,
+                        IdFileSauKy=@ResultFileId,
+                        NgayNhanLai=@CurrentDate,
+                        GhiChu=CASE WHEN NULLIF(@Note,N'') IS NULL THEN GhiChu ELSE @Note END,
+                        NguoiCapNhat=@CurrentUserName,
+                        NgayCapNhat=@CurrentDate
+                    WHERE IdTrinhKyTaiLieuFile=@SigningFileId
+                      AND DaXoa=0 AND TrangThai=@PendingStatus;",
+                    new Dictionary<string, object>
+                    {
+                        { "@SigningFileId", idTrinhKyTaiLieuFile },
+                        { "@SignedStatus", DocumentSigningStatusKeys.Signed },
+                        { "@ResultFileId", resultFileId },
+                        { "@CurrentDate", currentDate },
+                        { "@Note", safeNote },
+                        { "@CurrentUserName", safeUserName },
+                        { "@PendingStatus", DocumentSigningStatusKeys.Pending }
+                    });
+                if (updated != 1)
+                    throw new InvalidOperationException(
+                        "File đã được xử lý bởi tài khoản khác. Hãy tải lại trang.");
+
+                string aggregateStatus = RefreshSigningAggregateStatus(
+                    idTaiLieu, signingId, safeUserName, currentDate);
+                result.IdTrinhKyTaiLieu = signingId;
+                result.IdPhienBanTaiLieu = GetGuid(item, "IdPhienBanTaiLieu");
+                result.IdFile = resultFileId;
+                result.AuditActivityType = DocumentActivityTypeKeys.CompleteSigning;
+                result.AuditReferenceType = DocumentActivityReferenceKeys.Signing;
+                result.AuditReferenceId = idTrinhKyTaiLieuFile;
+                result.AuditChanges = "Phiên bản: v"
+                    + Convert.ToString(item["SoPhienBan"])
+                    + "; File: " + GetFileDisplayName(item)
+                    + "; Tệp sau ký: " + GetFileDisplayName(resultFile)
+                    + "; Trạng thái tổng hợp: " + aggregateStatus;
+                result.AuditDescription =
+                    "Đã hoàn tất ký một file trong yêu cầu trình ký.";
+                scope.Complete();
+            }
+
+            return result;
+        }
+
+        private string RefreshSigningAggregateStatus(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieu,
+            string currentUserName,
+            DateTime currentDate)
+        {
+            DataTable items = ExecuteDataTable(@"
+                SELECT TrangThai, IdFileSauKy
+                FROM dbo.TblTrinhKyTaiLieuFile WITH (UPDLOCK, HOLDLOCK)
+                WHERE IdTrinhKyTaiLieu=@SigningId AND DaXoa=0;",
+                new Dictionary<string, object>
+                {
+                    { "@SigningId", idTrinhKyTaiLieu }
+                });
+            if (items.Rows.Count == 0)
+                throw new InvalidOperationException(
+                    "Yêu cầu trình ký không còn file nào để tổng hợp.");
+
+            bool hasPending = items.AsEnumerable().Any(row =>
+            {
+                string status = Convert.ToString(row["TrangThai"]);
+                return string.Equals(status, DocumentSigningStatusKeys.Pending,
+                           StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(status, DocumentStatusKeys.PendingSignature,
+                           StringComparison.OrdinalIgnoreCase)
+                    || (status != DocumentSigningStatusKeys.Signed
+                        && status != DocumentSigningStatusKeys.ChangesRequested);
+            });
+            bool hasChanges = items.AsEnumerable().Any(row =>
+                string.Equals(
+                    Convert.ToString(row["TrangThai"]),
+                    DocumentSigningStatusKeys.ChangesRequested,
+                    StringComparison.OrdinalIgnoreCase));
+            string aggregateStatus = hasPending
+                ? DocumentSigningStatusKeys.Pending
+                : hasChanges
+                    ? DocumentSigningStatusKeys.ChangesRequested
+                    : DocumentSigningStatusKeys.Signed;
+
+            object singleResultFileId = items.Rows.Count == 1
+                && aggregateStatus == DocumentSigningStatusKeys.Signed
+                && items.Rows[0]["IdFileSauKy"] != DBNull.Value
+                    ? items.Rows[0]["IdFileSauKy"]
+                    : DBNull.Value;
+            ExecuteNonQuery(@"
+                UPDATE dbo.TblTrinhKyTaiLieu
+                SET TrangThaiTrinhKy=@AggregateStatus,
+                    NgayNhanLai=CASE WHEN @AggregateStatus=@PendingStatus
+                                     THEN NgayNhanLai ELSE @CurrentDate END,
+                    IdFileSauKy=CASE WHEN @FileCount=1
+                                           AND @AggregateStatus=@SignedStatus
+                                     THEN @SingleResultFileId ELSE NULL END,
+                    NguoiCapNhat=@CurrentUserName,
+                    NgayCapNhat=@CurrentDate
+                WHERE IdTrinhKyTaiLieu=@SigningId AND DaXoa=0;
+
+                UPDATE dbo.TblTaiLieu
+                SET TrangThaiTaiLieu=@DocumentStatus,
+                    IdFileBanChinhThuc=CASE
+                        WHEN @FileCount=1 AND @AggregateStatus=@SignedStatus
+                             AND @SingleResultFileId IS NOT NULL
+                        THEN @SingleResultFileId ELSE IdFileBanChinhThuc END,
+                    NguoiCapNhat=@CurrentUserName,
+                    NgayCapNhat=@CurrentDate
+                WHERE IdTaiLieu=@DocumentId AND DaXoa=0;",
+                new Dictionary<string, object>
+                {
+                    { "@AggregateStatus", aggregateStatus },
+                    { "@PendingStatus", DocumentSigningStatusKeys.Pending },
+                    { "@SignedStatus", DocumentSigningStatusKeys.Signed },
+                    { "@CurrentDate", currentDate },
+                    { "@FileCount", items.Rows.Count },
+                    { "@SingleResultFileId", singleResultFileId },
+                    { "@SigningId", idTrinhKyTaiLieu },
+                    { "@DocumentStatus", aggregateStatus == DocumentSigningStatusKeys.Pending
+                        ? DocumentStatusKeys.PendingSignature
+                        : aggregateStatus == DocumentSigningStatusKeys.ChangesRequested
+                            ? DocumentStatusKeys.ChangesRequested
+                            : DocumentStatusKeys.Signed },
+                    { "@CurrentUserName", currentUserName },
+                    { "@DocumentId", idTaiLieu }
+                });
+
+            return aggregateStatus;
+        }
+
         public DataTable GetCustomerDeliveryDetail(
             Guid idTaiLieu,
             Guid idGuiNhanKhachHang)
@@ -2322,6 +3011,115 @@ namespace SweetSoft.QLDA.Core.Respositories
                 {
                     { "@DeliveryId", idGuiNhanKhachHang },
                     { "@DocumentId", idTaiLieu }
+                });
+        }
+
+        public DataTable GetAssignedSigningFiles(
+            Guid userId, Guid? signingId)
+        {
+            if (userId == Guid.Empty)
+                return new DataTable();
+
+            return ExecuteDataTable(@"
+                SELECT item.IdTrinhKyTaiLieuFile,
+                       s.IdTrinhKyTaiLieu,
+                       d.IdTaiLieu, d.TenTaiLieu, d.MaTaiLieu,
+                       s.IdNguoiGui, s.GhiChu AS GhiChuYeuCau,
+                       s.NgayGui, item.TrangThai, item.GhiChu,
+                       sourceFile.Name AS TenFileNguon,
+                       sourceFile.OriginalFileName AS TenFileNguonGoc,
+                       sourceFile.FileUrl AS FileNguonUrl,
+                       resultFile.Name AS TenFileSauKy,
+                       resultFile.OriginalFileName AS TenFileSauKyGoc,
+                       resultFile.FileUrl AS FileSauKyUrl
+                FROM dbo.TblTrinhKyTaiLieuFile item
+                INNER JOIN dbo.TblTrinhKyTaiLieu s
+                    ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                   AND s.DaXoa=0
+                INNER JOIN dbo.TblPhienBanTaiLieu p
+                    ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                   AND p.DaXoa=0
+                INNER JOIN dbo.TblTaiLieu d
+                    ON d.IdTaiLieu=p.IdTaiLieu AND d.DaXoa=0
+                INNER JOIN dbo.aspnet_Users u
+                    ON u.UserId=s.IdNguoiKy
+                   AND u.IsDeleted=0 AND u.IsActivated=1
+                INNER JOIN dbo.TblUploadFile sourceFile
+                    ON sourceFile.Id=item.IdFileNguon
+                   AND sourceFile.IsDeleted=0
+                LEFT JOIN dbo.TblUploadFile resultFile
+                    ON resultFile.Id=item.IdFileSauKy
+                   AND resultFile.IsDeleted=0
+                WHERE item.DaXoa=0 AND s.IdNguoiKy=@UserId
+                  AND (@SigningId IS NULL
+                       OR s.IdTrinhKyTaiLieu=@SigningId)
+                ORDER BY CASE WHEN item.TrangThai='DANG_TRINH'
+                              THEN 0 ELSE 1 END,
+                         s.NgayGui DESC, item.IdTrinhKyTaiLieuFile;",
+                new Dictionary<string, object>
+                {
+                    { "@UserId", userId },
+                    { "@SigningId", signingId.HasValue
+                        ? (object)signingId.Value : DBNull.Value }
+                });
+        }
+
+        public DataTable GetSigningFileDetail(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieuFile)
+        {
+            if (idTaiLieu == Guid.Empty
+                || idTrinhKyTaiLieuFile == Guid.Empty)
+            {
+                return new DataTable();
+            }
+
+            return ExecuteDataTable(@"
+                SELECT TOP 1
+                    item.IdTrinhKyTaiLieuFile,
+                    s.IdTrinhKyTaiLieu,
+                    s.IdPhienBanTaiLieu,
+                    p.SoPhienBan,
+                    s.IdNguoiGui,
+                    s.IdNguoiKy,
+                    s.TenNguoiKy,
+                    s.HinhThucKy,
+                    item.TrangThai AS TrangThaiTrinhKy,
+                    s.TrangThaiTrinhKy AS TrangThaiYeuCau,
+                    s.NgayGui,
+                    item.NgayNhanLai,
+                    item.GhiChu,
+                    sourceFile.Id AS IdFileNguon,
+                    sourceFile.Name AS TenFileNguon,
+                    sourceFile.OriginalFileName AS TenFileNguonGoc,
+                    sourceFile.FileUrl AS FileNguonUrl,
+                    resultFile.Id AS IdFileSauKy,
+                    resultFile.FileUrl AS FileSauKyUrl,
+                    resultFile.Name AS TenFileSauKy,
+                    resultFile.OriginalFileName AS TenFileSauKyGoc
+                FROM dbo.TblTrinhKyTaiLieuFile item
+                INNER JOIN dbo.TblTrinhKyTaiLieu s
+                    ON s.IdTrinhKyTaiLieu=item.IdTrinhKyTaiLieu
+                   AND s.DaXoa=0
+                INNER JOIN dbo.TblPhienBanTaiLieu p
+                    ON p.IdPhienBanTaiLieu=s.IdPhienBanTaiLieu
+                   AND p.DaXoa=0
+                INNER JOIN dbo.TblTaiLieu d
+                    ON d.IdTaiLieu=p.IdTaiLieu
+                   AND d.DaXoa=0
+                LEFT JOIN dbo.TblUploadFile sourceFile
+                    ON sourceFile.Id=item.IdFileNguon
+                   AND sourceFile.IsDeleted=0
+                LEFT JOIN dbo.TblUploadFile resultFile
+                    ON resultFile.Id=item.IdFileSauKy
+                   AND resultFile.IsDeleted=0
+                WHERE d.IdTaiLieu=@DocumentId
+                  AND item.IdTrinhKyTaiLieuFile=@SigningFileId
+                  AND item.DaXoa=0;",
+                new Dictionary<string, object>
+                {
+                    { "@DocumentId", idTaiLieu },
+                    { "@SigningFileId", idTrinhKyTaiLieuFile }
                 });
         }
 

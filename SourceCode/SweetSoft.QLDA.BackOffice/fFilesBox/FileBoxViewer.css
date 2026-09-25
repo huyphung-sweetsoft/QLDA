@@ -44,6 +44,19 @@
             margin: auto;
         }
 
+    #file-box-viewer .file-box-word-preview {
+        width: 92vw;
+        height: 92vh;
+        overflow: auto;
+        background: #f2f2f2;
+    }
+
+    #file-box-viewer .file-box-word-loading {
+        padding: 2rem;
+        text-align: center;
+        color: #333;
+    }
+
 @keyframes zoom {
     from {
         transform: scale(0);

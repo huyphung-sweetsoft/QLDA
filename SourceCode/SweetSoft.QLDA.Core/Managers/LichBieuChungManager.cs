@@ -89,12 +89,52 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblCauHinhTuanLamViec UpdateCauHinhTuan(TblCauHinhTuanLamViec item)
         {
             if (item == null) return null;
+
+            // 1. TỰ TRUY VẤN ITEM CŨ BẰNG HÀM SELECT ĐỂ NÉ LỖI ÉP KIỂU GUID CỦA SUBSONIC
+            TblCauHinhTuanLamViec oldItem = new SubSonic.Select()
+                .From(TblCauHinhTuanLamViec.Schema)
+                .Where(TblCauHinhTuanLamViec.Columns.IdCauHinh).IsEqualTo(item.IdCauHinh)
+                .ExecuteSingle<TblCauHinhTuanLamViec>();
+
+            // 2. SO SÁNH: CHỈ KÍCH HOẠT NẾU TRẠNG THÁI LÀM VIỆC/NGHỈ THỰC SỰ THAY ĐỔI
+            bool isChanged = false;
+            string oldStatus = "Không rõ";
+
+            if (oldItem != null)
+            {
+                if (oldItem.LaNgayLamViec != item.LaNgayLamViec)
+                {
+                    isChanged = true;
+                    oldStatus = oldItem.LaNgayLamViec ? "Làm việc" : "Nghỉ";
+                }
+            }
+            else
+            {
+                // Nếu chưa có trong DB thì mặc định là có thay đổi (Thêm mới)
+                isChanged = true;
+            }
+
             Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
             item.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";
+
+            // 3. VẪN CẬP NHẬT DATABASE CHO TOÀN BỘ 7 NGÀY NHƯ BÌNH THƯỜNG
             var result = _tuanRepository.Update(item);
 
-            // [FIX KIẾN TRÚC]: Chỉ update DB và Cache, KHÔNG gọi Sync ở đây để tránh lặp 7 lần!
-            if (result != null) ForceRefreshCache();
+            // 4. [QUAN TRỌNG] CHỈ GỬI THÔNG BÁO CHO ĐÚNG CÁI NGÀY BỊ ĐỔI TRẠNG THÁI
+            if (result != null && isChanged)
+            {
+                ForceRefreshCache();
+
+                string newStatus = item.LaNgayLamViec ? "Làm việc" : "Nghỉ";
+                string[] days = { "Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7" };
+                string dayName = days[item.NgayTrongTuan];
+
+                string detailReason = $"Thay đổi cấu hình tuần: Chuyển {dayName} từ '{oldStatus}' thành '{newStatus}'.";
+
+                System.Threading.Tasks.Task.Run(() => {
+                    TaskManager.Instance.NotifyPMsOnScheduleChange(DateTime.Today, null, detailReason);
+                });
+            }
             return result;
         }
 
@@ -153,11 +193,26 @@ namespace SweetSoft.QLDA.Core.Managers
                 scope.Complete(); // Commit lịch thành công
             }
 
-            // 2. SAU KHI LỊCH ĐÃ COMMIT THÌ MỚI REFRESH CACHE VÀ SYNC TASK
+            // 2. SAU KHI LỊCH ĐÃ COMMIT THÌ MỚI REFRESH CACHE VÀ BẮN THÔNG BÁO
             if (resultItem != null)
             {
                 ForceRefreshCache();
-                //TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
+
+                DateTime tTuNgay = resultItem.NgayBatDau;
+                DateTime tDenNgay = resultItem.NgayKetThuc; // ĐÃ SỬA: Bỏ dấu ? vì cột DB không cho phép null
+
+                // ĐÃ SỬA: Bỏ .HasValue và .Value do DateTime luôn có giá trị
+                string timeRange = (resultItem.NgayKetThuc.Date != resultItem.NgayBatDau.Date)
+                    ? $"từ {resultItem.NgayBatDau:dd/MM/yyyy} đến {resultItem.NgayKetThuc:dd/MM/yyyy}"
+                    : $"vào ngày {resultItem.NgayBatDau:dd/MM/yyyy}";
+
+                string action = isInsert ? "Thêm mới" : "Cập nhật";
+                string detailReason = $"{action} lịch nghỉ: {resultItem.TenNgoaiLe} ({timeRange}).";
+
+                System.Threading.Tasks.Task.Run(() => {
+                    // Truyền tDenNgay vào hàm nhận DateTime? vẫn hoàn toàn hợp lệ (implicit conversion)
+                    TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, detailReason);
+                });
             }
             return resultItem;
         }
@@ -179,7 +234,16 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (isDeleted)
                 {
                     ForceRefreshCache();
-                    //TaskManager.Instance.SyncPendingTasksAfterScheduleChange(affectedDate);
+
+                    // Lấy thông tin để đẩy vào Email
+                    DateTime tTuNgay = item.NgayBatDau;
+                    DateTime? tDenNgay = item.NgayKetThuc;
+                    string reason = $"Hủy lịch nghỉ lệ: {item.TenNgoaiLe}";
+
+                    // [THAY THẾ HÀM CŨ]: Bắn thông báo ngầm
+                    System.Threading.Tasks.Task.Run(() => {
+                        TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, reason);
+                    });
                 }
                 return isDeleted;
             }
@@ -188,7 +252,15 @@ namespace SweetSoft.QLDA.Core.Managers
         #endregion
 
         #region NHÓM 3: ĐỘNG CƠ TÍNH TOÁN THỜI GIAN (CORE ENGINE)
-
+        public TblLichNgoaiLe GetExceptionByDate(DateTime date)
+        {
+            RefreshCacheIfNeeded();
+            if (_exceptionsCache != null)
+            {
+                return _exceptionsCache.Find(x => x.NgayBatDau.Date <= date.Date && x.NgayKetThuc.Date >= date.Date);
+            }
+            return null;
+        }
         public bool CheckIsWorkingDay(DateTime date)
         {
             RefreshCacheIfNeeded();

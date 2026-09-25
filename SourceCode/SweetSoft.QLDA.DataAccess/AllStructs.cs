@@ -18,6 +18,8 @@ namespace SweetSoft.QLDA.DataAccess
 	public partial struct Tables
 	{
 		
+		public static readonly string AggregatedCounter = @"AggregatedCounter";
+        
 		public static readonly string AspnetApplication = @"aspnet_Applications";
         
 		public static readonly string AspnetAssignRole = @"aspnet_AssignRoles";
@@ -46,6 +48,26 @@ namespace SweetSoft.QLDA.DataAccess
         
 		public static readonly string AspnetWebEventEvent = @"aspnet_WebEvent_Events";
         
+		public static readonly string Counter = @"Counter";
+        
+		public static readonly string Hash = @"Hash";
+        
+		public static readonly string Job = @"Job";
+        
+		public static readonly string JobParameter = @"JobParameter";
+        
+		public static readonly string JobQueue = @"JobQueue";
+        
+		public static readonly string List = @"List";
+        
+		public static readonly string SchemaX = @"Schema";
+        
+		public static readonly string Server = @"Server";
+        
+		public static readonly string SetX = @"Set";
+        
+		public static readonly string State = @"State";
+        
 		public static readonly string TblAuditLog2026 = @"TblAuditLog_2026";
         
 		public static readonly string TblCauHinhTuanLamViec = @"TblCauHinhTuanLamViec";
@@ -69,6 +91,8 @@ namespace SweetSoft.QLDA.DataAccess
 		public static readonly string TblGiaiDoanDuAn = @"TblGiaiDoanDuAn";
         
 		public static readonly string TblGuiNhanKhachHang = @"TblGuiNhanKhachHang";
+        
+		public static readonly string TblHeSoDongGop = @"TblHeSoDongGop";
         
 		public static readonly string TblHopDongThucHien = @"TblHopDongThucHien";
         
@@ -131,6 +155,11 @@ namespace SweetSoft.QLDA.DataAccess
     #region Schemas
     public partial class Schemas {
 		
+		public static TableSchema.Table AggregatedCounter
+		{
+            get { return DataService.GetSchema("AggregatedCounter", "DataAccessProvider"); }
+		}
+        
 		public static TableSchema.Table AspnetApplication
 		{
             get { return DataService.GetSchema("aspnet_Applications", "DataAccessProvider"); }
@@ -201,6 +230,56 @@ namespace SweetSoft.QLDA.DataAccess
             get { return DataService.GetSchema("aspnet_WebEvent_Events", "DataAccessProvider"); }
 		}
         
+		public static TableSchema.Table Counter
+		{
+            get { return DataService.GetSchema("Counter", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table Hash
+		{
+            get { return DataService.GetSchema("Hash", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table Job
+		{
+            get { return DataService.GetSchema("Job", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table JobParameter
+		{
+            get { return DataService.GetSchema("JobParameter", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table JobQueue
+		{
+            get { return DataService.GetSchema("JobQueue", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table List
+		{
+            get { return DataService.GetSchema("List", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table SchemaX
+		{
+            get { return DataService.GetSchema("Schema", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table Server
+		{
+            get { return DataService.GetSchema("Server", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table SetX
+		{
+            get { return DataService.GetSchema("Set", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table State
+		{
+            get { return DataService.GetSchema("State", "DataAccessProvider"); }
+		}
+        
 		public static TableSchema.Table TblAuditLog2026
 		{
             get { return DataService.GetSchema("TblAuditLog_2026", "DataAccessProvider"); }
@@ -259,6 +338,11 @@ namespace SweetSoft.QLDA.DataAccess
 		public static TableSchema.Table TblGuiNhanKhachHang
 		{
             get { return DataService.GetSchema("TblGuiNhanKhachHang", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblHeSoDongGop
+		{
+            get { return DataService.GetSchema("TblHeSoDongGop", "DataAccessProvider"); }
 		}
         
 		public static TableSchema.Table TblHopDongThucHien

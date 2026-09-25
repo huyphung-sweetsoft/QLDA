@@ -881,8 +881,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 // ---- Polling 30s ----
                 pollNotifications();
                 setInterval(pollNotifications, 30000);
-
-            })();
+            })();          
         </script>
     </form>
 </body>

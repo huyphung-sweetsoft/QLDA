@@ -97,7 +97,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             // Validate the document on every postback, but only rebuild the
             // navigation and child control on the initial request.
             if (IsPostBack)
+            {
                 return;
+            }
 
             string listTitle = GetResourceText(
                 BackEndResourceKeys.PROJECT_DOCUMENTS);
@@ -147,6 +149,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             }
         }
 
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+            Page.InitComplete += Page_InitComplete;
+        }
+
+        private void Page_InitComplete(object sender, EventArgs e)
+        {
+            if (!IsPostBack || !IsSigningHistoryCommandPostBack())
+                return;
+
+            // Page_Load has not run yet, so the child control must receive
+            // its project scope before its signing Repeater is rebuilt.
+            CtrlProjectDocumentDetail1.ProjectId = CurrentProjectId;
+            Guid idTaiLieu = QueryId;
+            if (CurrentProjectId == Guid.Empty
+                || idTaiLieu == Guid.Empty
+                || !CtrlProjectDocumentDetail1.InitControls(idTaiLieu))
+            {
+                Response.Redirect(
+                    GetRelativeClientPath(RewriteURLHelper.Error404),
+                    true);
+            }
+        }
+
         private void DisableBrowserCache()
         {
             Response.Cache.SetCacheability(
@@ -156,6 +183,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             Response.Cache.SetRevalidation(
                 System.Web.HttpCacheRevalidation.AllCaches);
             Response.Cache.SetAllowResponseInBrowserHistory(false);
+        }
+
+        private bool IsSigningHistoryCommandPostBack()
+        {
+            string eventTarget = Request.Form["__EVENTTARGET"];
+            return !string.IsNullOrWhiteSpace(eventTarget)
+                && eventTarget.IndexOf(
+                    "rptSigning",
+                    StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public override void DataCallback(

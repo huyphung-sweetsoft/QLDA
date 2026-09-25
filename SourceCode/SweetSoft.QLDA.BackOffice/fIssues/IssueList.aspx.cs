@@ -113,8 +113,8 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             txtMoTaChiTiet.Text = issue.MoTaChiTiet;
             txtKeHoachXuLy.Text = issue.KeHoachXuLy;
 
-            if (issue.IdCongViecBiAnhHuong != null)
-                ddlCongViecBiAnhHuong.SelectedValue = issue.IdCongViecBiAnhHuong.ToString();
+            if (issue.IdCongViecPhatSinh != null)
+                ddlCongViecPhatSinh.SelectedValue = issue.IdCongViecPhatSinh.ToString();
 
             if (issue.MucDoAnhHuong != null)
                 ddlMucDoAnhHuong.SelectedValue = issue.MucDoAnhHuong.ToString();
@@ -122,10 +122,10 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
             if (issue.NguonGocVanDe != null)
                 ddlNguonGocVanDe.SelectedValue = issue.NguonGocVanDe.ToString();
 
-            if (issue.IdCongViecPhatSinh != null)
+            if (issue.IdCongViecBiAnhHuong != null)
             {
-                ddlCongViecPhatSinh.SelectedValue = issue.IdCongViecPhatSinh.ToString();
-                txtNhanVien.Text = TaskManager.Instance.GetNhanVienByCongViec(issue.IdCongViecPhatSinh.Value);
+                ddlCongViecBiAnhHuong.SelectedValue = issue.IdCongViecBiAnhHuong.ToString();
+                txtNhanVien.Text = TaskManager.Instance.GetNhanVienByCongViec(issue.IdCongViecBiAnhHuong.Value);
             }
             else
             {
@@ -224,9 +224,9 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         {
             CtrlIssue1.ConfirmRequest(e);
         }
-        protected void ddlCongViecPhatSinh_SelectedIndexChanged(object sender, EventArgs e)
+        protected void ddlCongViecBiAnhHuong_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string idCongViec = ddlCongViecPhatSinh.SelectedValue;
+            string idCongViec = ddlCongViecBiAnhHuong.SelectedValue;
             if (!string.IsNullOrEmpty(idCongViec) && idCongViec != "null")
             {
                 Guid taskId = Guid.Parse(idCongViec);

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Transactions;
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -118,6 +119,94 @@ namespace SweetSoft.QLDA.Core.Managers
                         t.Save();
                     }
                 }
+            }
+        }
+        public void NotifyPMsOnScheduleChange(DateTime fromDate, DateTime? toDate, string detailReason)
+        {
+            try
+            {
+                string sql = @"
+                    SELECT 
+                        c.IdDuAn,
+                        d.TenDuAn,
+                        d.IdNhanVienQuanLy,
+                        c.MaCongViec,
+                        c.TenCongViec,
+                        c.TrangThai
+                    FROM TblCongViec c
+                    INNER JOIN TblDuAn d ON c.IdDuAn = d.IdDuAn
+                    WHERE (c.DaXoa = 0 OR c.DaXoa IS NULL)
+                      AND c.TrangThai IN (0, 1)
+                      AND c.NgayBatDau IS NOT NULL 
+                      AND c.NgayKetThuc IS NOT NULL
+                      AND c.NgayKetThuc >= @fromDate
+                      AND (@toDate IS NULL OR c.NgayBatDau <= @toDate)
+                      AND (d.DaXoa = 0 OR d.DaXoa IS NULL)";
+
+                QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
+                cmd.AddParameter("@fromDate", fromDate.Date, DbType.DateTime);
+                cmd.AddParameter("@toDate", toDate.HasValue ? (object)toDate.Value.Date : DBNull.Value, DbType.DateTime);
+                DataSet ds = DataService.GetDataSet(cmd);
+
+                if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                    return;
+
+                var groupedProjects = ds.Tables[0].AsEnumerable()
+                    .GroupBy(row => new
+                    {
+                        IdDuAn = row.Field<Guid>("IdDuAn"),
+                        TenDuAn = row.Field<string>("TenDuAn"),
+                        NguoiQuanLy = row.Field<Guid?>("IdNhanVienQuanLy")
+                    });
+
+                foreach (var projectGroup in groupedProjects)
+                {
+                    Guid? pmId = projectGroup.Key.NguoiQuanLy;
+                    if (pmId == null || pmId == Guid.Empty) continue;
+
+                    StringBuilder taskListHtml = new StringBuilder("<ul style='padding-left: 20px; margin-top: 10px;'>");
+                    int count = 0;
+
+                    foreach (var task in projectGroup)
+                    {
+                        if (count < 10)
+                        {
+                            string maCV = task.Field<string>("MaCongViec");
+                            string tenCV = task.Field<string>("TenCongViec");
+
+                            // Lấy trạng thái (do câu SQL chỉ lọc 0 và 1)
+                            int trangThai = task["TrangThai"] != DBNull.Value ? Convert.ToInt32(task["TrangThai"]) : 0;
+                            string strTrangThai = trangThai == 1 ? "Đang làm" : "Chưa bắt đầu";
+
+                            // Phục hồi lại format in đậm [Mã] và in nghiêng (Trạng thái)
+                            taskListHtml.AppendFormat("<li><b>[{0}]</b> {1} <i>({2})</i></li>", maCV, tenCV, strTrangThai);
+                        }
+                        count++;
+                    }
+
+                    if (count > 10)
+                    {
+                        taskListHtml.AppendFormat("<li><i>... và {0} công việc khác.</i></li>", count - 10);
+                    }
+                    taskListHtml.Append("</ul>");
+
+                    string bellTitle = $"Tiến độ dự án [{projectGroup.Key.TenDuAn}]";
+                    string bellContent = $"Có {count} công việc bị ảnh hưởng do {detailReason.ToLower()} Kiểm tra Email để xem chi tiết.";
+
+                    ThongBaoManager.Instance.CreateScheduleChangeNotification(
+                        pmId.Value,
+                        bellTitle,
+                        bellContent,
+                        projectGroup.Key.IdDuAn,
+                        projectGroup.Key.TenDuAn,
+                        detailReason,
+                        taskListHtml.ToString()
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                SysLogger.LogError(ex, "Lỗi ngầm khi quét dự án bị ảnh hưởng do đổi lịch biểu");
             }
         }
         public string GetNhanVienByCongViec(Guid idCongViec)

@@ -203,6 +203,40 @@ namespace SweetSoft.QLDA.BackOffice
                 if (setting != null)
                     txtProjectCodeStartNumber.Text = setting.SettingValue;
                 #endregion
+                #region Contribution Coefficient
+                DataTable dtHeSoDongGop = HeSoDongGopManager.Instance.GetHeSoMacDinh();
+
+                if (dtHeSoDongGop != null && dtHeSoDongGop.Rows.Count > 0)
+                {
+                    foreach (DataRow row in dtHeSoDongGop.Rows)
+                    {
+                        if (row["DiemUuTien"] == DBNull.Value)
+                            continue;
+
+                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
+
+                        if (row["HeSoDongGop"] == DBNull.Value)
+                            continue;
+
+                        string heSo = Convert.ToDecimal(row["HeSoDongGop"]).ToString("0.####");
+
+                        switch (diemUuTien)
+                        {
+                            case 1:
+                                txtHeSoThap.Text = heSo;
+                                break;
+
+                            case 2:
+                                txtHeSoTrungBinh.Text = heSo;
+                                break;
+
+                            case 3:
+                                txtHeSoCao.Text = heSo;
+                                break;
+                        }
+                    }
+                }
+                #endregion
 
                 #region Contacts
                 setting = settingManager.GetSettingByName(SettingKeys.CompanyName);
@@ -310,6 +344,79 @@ namespace SweetSoft.QLDA.BackOffice
                 settingManager.SaveSetting(SettingKeys.ProjectCodePrefix, txtProjectCodePrefix.Text);
                 //--------------------------------------------------------------
                 settingManager.SaveSetting(SettingKeys.ProjectCodeStartNumber, txtProjectCodeStartNumber.Text);
+                #endregion
+                #region Contribution Coefficient
+
+                List<TblHeSoDongGop> heSoDongGopList = new List<TblHeSoDongGop>();
+
+                DataTable dtHeSoDongGop = HeSoDongGopManager.Instance.GetHeSoMacDinh();
+
+                if (dtHeSoDongGop != null)
+                {
+                    foreach (DataRow row in dtHeSoDongGop.Rows)
+                    {
+                        if (row["IdDoUuTien"] == DBNull.Value || row["DiemUuTien"] == DBNull.Value)
+                            continue;
+
+                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
+
+                        string value = string.Empty;
+
+                        switch (diemUuTien)
+                        {
+                            case 1:
+                                value = txtHeSoThap.Text.Trim();
+                                break;
+
+                            case 2:
+                                value = txtHeSoTrungBinh.Text.Trim();
+                                break;
+
+                            case 3:
+                                value = txtHeSoCao.Text.Trim();
+                                break;
+                        }
+
+                        if (string.IsNullOrEmpty(value))
+                            continue;
+
+                        value = value.Replace(",", ".");
+
+                        if (!decimal.TryParse(
+                            value,
+                            System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out decimal heSo))
+                        {
+                            ShowNotify("Hệ số đóng góp không hợp lệ.", MSGType.Error);
+                            return;
+                        }
+
+                        if (heSo < 0)
+                        {
+                            ShowNotify("Hệ số đóng góp không được nhỏ hơn 0.", MSGType.Error);
+                            return;
+                        }
+
+                        heSoDongGopList.Add(new TblHeSoDongGop
+                        {
+                            IdDoUuTien = (Guid)row["IdDoUuTien"],
+                            IdDuAn = null,
+                            HeSoDongGop = heSo,
+                            DaXoa = false
+                        });
+                    }
+                }
+
+                if (heSoDongGopList.Count > 0)
+                {
+                    if (!HeSoDongGopManager.Instance.SaveHeSoMacDinh(heSoDongGopList))
+                    {
+                        ShowNotify("Không thể lưu cấu hình hệ số đóng góp.", MSGType.Error);
+                        return;
+                    }
+                }
+
                 #endregion
 
                 #region Contacts

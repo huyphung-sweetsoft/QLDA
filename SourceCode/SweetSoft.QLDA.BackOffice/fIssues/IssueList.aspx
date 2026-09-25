@@ -39,26 +39,26 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.ORIGIN) %></label>
+                        <label class="form-label label-valid"><%=GetResourceText(BackEndResourceKeys.ORIGIN) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlNguonGocVanDe" Required="true" SimpleInit="true"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
 
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.TASK_ISSUE) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlCongViecPhatSinh" 
+                        <label class="form-label">Nguyên nhân từ công việc</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlCongViecBiAnhHuong" 
                             SimpleInit="true"
                             AutoPostBack="true" 
-                            OnSelectedIndexChanged="ddlCongViecPhatSinh_SelectedIndexChanged">
+                            OnSelectedIndexChanged="ddlCongViecBiAnhHuong_SelectedIndexChanged">
                         </SweetSoft:ExtraDropdown>
                     </div>
                 </div>
 
                 <div class="col-lg-12">
                     <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.WORK_AFFECTED) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlCongViecBiAnhHuong" SimpleInit="true"></SweetSoft:ExtraDropdown>
+                        <label class="form-label">Ảnh hưởng đến công việc</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlCongViecPhatSinh" SimpleInit="true"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
 
