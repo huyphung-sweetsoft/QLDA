@@ -3088,4 +3088,7 @@
   <data name="WORK_SCHEDULE_THIS_MONTH" xml:space="preserve">
     <value>Work Schedule this month</value>
   </data>
+  <data name="CONTRACT_DETAIL" xml:space="preserve">
+    <value>&#x8;</value>
+  </data>
 </root>

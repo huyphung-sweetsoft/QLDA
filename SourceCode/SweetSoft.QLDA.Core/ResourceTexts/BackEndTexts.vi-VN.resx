@@ -3110,3 +3110,7 @@
     <value>Lịch làm việc tháng này</value>
   </data>
 </root>
+  <data name="CONTRACT_DETAIL" xml:space="preserve">
+    <value>Chi tiết hợp đồng</value>
+  </data>
+</root>
