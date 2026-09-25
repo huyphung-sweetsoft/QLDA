@@ -78,8 +78,10 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
             ControlHelpers controlHelpers =
                 new ControlHelpers();
 
-            controlHelpers.BindKhachHang(
-                ddlSearchKhachHang);
+            controlHelpers.BindKhachHang(ddlSearchKhachHang);
+            controlHelpers.BindKhoangGiaTriHopDong(ddlSearchKhoangGiaTri);
+            controlHelpers.BindDynamicYears(ddlSearchNam, "TblHopDongThucHien", "NgayKy");
+            controlHelpers.BindMonths(ddlSearchThang);
 
             txtSearchSingle.EnterSubmitClientID =
                 lbtSearchSingle.ClientID;
@@ -428,17 +430,14 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
             ddlSearchKhachHang.SearchTagItemText =
                 "Khách hàng";
 
-            txtGiaTriHopDongTu.SearchTagItemText =
-                "Giá trị từ";
+            ddlSearchKhoangGiaTri.SearchTagItemText =
+                "Khoảng giá trị";
 
-            txtGiaTriHopDongDen.SearchTagItemText =
-                "Giá trị đến";
+            ddlSearchNam.SearchTagItemText =
+                "Năm";
 
-            txtNgayKyTu.SearchTagItemText =
-                "Ngày ký từ";
-
-            txtNgayKyDen.SearchTagItemText =
-                "Ngày ký đến";
+            ddlSearchThang.SearchTagItemText =
+                "Tháng";
 
             lbtAdd.ToolTip =
                 lbtAdd.Text =
@@ -472,10 +471,9 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts.Controls
         private void AssignSearchColumns()
         {
             ddlSearchKhachHang.SearchColumn = TblHopDongThucHien.Columns.IdKhachHang;
-            txtGiaTriHopDongTu.SearchColumn = "GiaTriHopDongTu";
-            txtGiaTriHopDongDen.SearchColumn = "GiaTriHopDongDen";
-            txtNgayKyTu.SearchColumn = "NgayKyTu";
-            txtNgayKyDen.SearchColumn = "NgayKyDen";
+            ddlSearchKhoangGiaTri.SearchColumn = "KhoangGiaTri";
+            ddlSearchNam.SearchColumn = "Nam";
+            ddlSearchThang.SearchColumn = "Thang";
         }
 
         public override void ConfirmRequest(ConfirmResult e)
