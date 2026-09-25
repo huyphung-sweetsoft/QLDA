@@ -1,4 +1,6 @@
-﻿using SweetSoft.QLDA.Core.MailManager;
+﻿using SweetSoft.QLDA.Core.Infrastructure;
+using SweetSoft.QLDA.Core.MailManager;
+using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,9 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             DateTime currentTime = DateTime.Now;
 
+            // ========================================================
+            // 1. QUÉT VÀ GỬI THÔNG BÁO LỊCH HỌP SẮP DIỄN RA
+            // ========================================================
             DateTime thoiGian15PhutToi = currentTime.AddMinutes(15);
 
             var lichHops = new SubSonic.Select().From(TblLichHop.Schema)
@@ -38,14 +43,25 @@ namespace SweetSoft.QLDA.Core.Managers
                     {
                         if (nguoiThamGia.IdNhanVien != Guid.Empty)
                         {
-                            ThongBaoManager.Instance.Create(
-                                userId: nguoiThamGia.IdNhanVien,
-                                tieuDe: tieuDe,
-                                noiDung: noiDung,
-                                loaiThongBao: ThongBaoTypes.LichHop,
-                                idCongViec: null,
-                                idDuAn: hop.IdDuAn
-                            );
+                            try
+                            {
+                                if (System.Web.Security.Membership.GetUser(nguoiThamGia.IdNhanVien) == null) continue;
+
+                                // [ĐÃ SỬA] Gọi thẳng vào luồng riêng biệt, truyền đầy đủ Data để build Email
+                                ThongBaoManager.Instance.CreateMeetingReminderNotification(
+                                    userId: nguoiThamGia.IdNhanVien,
+                                    tieuDe: tieuDe,
+                                    noiDung: noiDung,
+                                    idDuAn: hop.IdDuAn,
+                                    meetingName: hop.TenCuocHop,
+                                    startTime: hop.ThoiGianBatDau,
+                                    room: hop.DiaDiemHop
+                                );
+                            }
+                            catch (Exception ex)
+                            {
+                                SysLogger.LogError(ex, $"Lỗi ngầm khi tạo TB lịch họp cho UserId: {nguoiThamGia.IdNhanVien}");
+                            }
                         }
                     }
                 }
@@ -54,6 +70,9 @@ namespace SweetSoft.QLDA.Core.Managers
                 hop.Save();
             }
 
+            // ========================================================
+            // 2. QUÉT VÀ GỬI THÔNG BÁO CÔNG VIỆC SẮP ĐẾN HẠN
+            // ========================================================
             DateTime thoiGian2NgayToi = currentTime.AddDays(2);
 
             var congViecs = new SubSonic.Select().From(TblCongViec.Schema)
@@ -79,14 +98,26 @@ namespace SweetSoft.QLDA.Core.Managers
                     {
                         if (phanCong.IdNhanVien != Guid.Empty)
                         {
-                            ThongBaoManager.Instance.Create(
-                                userId: phanCong.IdNhanVien,
-                                tieuDe: tieuDe,
-                                noiDung: noiDung,
-                                loaiThongBao: ThongBaoTypes.CongViec,
-                                idCongViec: task.IdCongViec,
-                                idDuAn: task.IdDuAn
-                            );
+                            try
+                            {
+                                if (System.Web.Security.Membership.GetUser(phanCong.IdNhanVien) == null) continue;
+
+                                // [ĐÃ SỬA] Gọi thẳng vào luồng riêng biệt, truyền đầy đủ Data để build Email
+                                ThongBaoManager.Instance.CreateTaskReminderNotification(
+                                    userId: phanCong.IdNhanVien,
+                                    tieuDe: tieuDe,
+                                    noiDung: noiDung,
+                                    idCongViec: task.IdCongViec,
+                                    idDuAn: task.IdDuAn,
+                                    taskCode: task.MaCongViec,
+                                    taskName: task.TenCongViec,
+                                    deadline: task.NgayKetThuc.Value
+                                );
+                            }
+                            catch (Exception ex)
+                            {
+                                SysLogger.LogError(ex, $"Lỗi ngầm khi tạo TB công việc cho UserId: {phanCong.IdNhanVien}");
+                            }
                         }
                     }
                 }

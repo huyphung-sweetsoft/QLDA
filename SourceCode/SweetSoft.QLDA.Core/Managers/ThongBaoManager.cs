@@ -370,5 +370,160 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         #endregion
+        // =========================================================================
+        // LUỒNG 1: GỬI THÔNG BÁO & EMAIL NHẮC LỊCH HỌP (DÙNG CHO HANGFIRE)
+        // =========================================================================
+        public TblThongBao CreateMeetingReminderNotification(
+            Guid userId, string tieuDe, string noiDung, Guid? idDuAn,
+            string meetingName, DateTime startTime, string room)
+        {
+            if (userId == Guid.Empty) return null;
+            string currentUser = _applicationContext?.UserName ?? "System";
+
+            TblThongBao item = new TblThongBao
+            {
+                IdThongBao = Guid.NewGuid(),
+                UserId = userId,
+                IdCongViec = null,
+                IdDuAn = idDuAn,
+                TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
+                NoiDung = noiDung,
+                LoaiThongBao = ThongBaoTypes.LichHop,
+                DuongDanLienKet = null,
+                DaDoc = false,
+                NgayDoc = null,
+                DaXoa = false,
+                NguoiTao = currentUser,
+                NgayTao = DateTime.Now,
+                NguoiCapNhat = currentUser,
+                NgayCapNhat = DateTime.Now
+            };
+
+            var result = _repository.Insert(item);
+            if (result != null)
+            {
+                SendMeetingReminderEmail(result, meetingName, startTime, room);
+            }
+            return result;
+        }
+
+        private void SendMeetingReminderEmail(TblThongBao notification, string meetingName, DateTime startTime, string room)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var recipient = UserManager.Instance.GetUserById(notification.UserId);
+                    var memUser = System.Web.Security.Membership.GetUser(recipient.UserName);
+                    string email = memUser != null ? memUser.Email : null;
+
+                    if (recipient == null || string.IsNullOrWhiteSpace(email)) return;
+
+                    var placeholdersBody = new Dictionary<string, string>
+                    {
+                        { "[[COMPANY_NAME]]", "SweetSoft QLDA" },
+                        { "[[FULL_NAME]]", recipient.DisplayName },
+                        { "[[MEETING_NAME]]", meetingName },
+                        { "[[START_TIME]]", startTime.ToString("HH:mm dd/MM/yyyy") },
+                        { "[[ROOM]]", string.IsNullOrEmpty(room) ? "Phòng họp" : room }
+                    };
+
+                    var emailManager = new EmailManager(SweetContext.CreateBackgroundContext());
+                    await emailManager.SendEmailWithTemplateAsync(
+                        refId: notification.UserId,
+                        refType: EmailType.Notification,
+                        customerId: notification.UserId,
+                        toEmail: email,
+                        templateKey: "TemplateMeetingReminder", // Cần cấu hình template này
+                        formatType: EmailFormatTypes.Admin,
+                        placeholdersBody: placeholdersBody,
+                        attachments: null,
+                        useBackgroundThread: false
+                    );
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Lỗi gửi Mail nhắc Lịch Họp IdThongBao: " + notification.IdThongBao);
+                }
+            });
+        }
+
+        // =========================================================================
+        // LUỒNG 2: GỬI THÔNG BÁO & EMAIL NHẮC HẠN CHÓT CÔNG VIỆC (DÙNG CHO HANGFIRE)
+        // =========================================================================
+        public TblThongBao CreateTaskReminderNotification(
+            Guid userId, string tieuDe, string noiDung, Guid? idCongViec, Guid? idDuAn,
+            string taskCode, string taskName, DateTime deadline)
+        {
+            if (userId == Guid.Empty) return null;
+            string currentUser = _applicationContext?.UserName ?? "System";
+
+            TblThongBao item = new TblThongBao
+            {
+                IdThongBao = Guid.NewGuid(),
+                UserId = userId,
+                IdCongViec = idCongViec,
+                IdDuAn = idDuAn,
+                TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
+                NoiDung = noiDung,
+                LoaiThongBao = ThongBaoTypes.CongViec,
+                DuongDanLienKet = null,
+                DaDoc = false,
+                NgayDoc = null,
+                DaXoa = false,
+                NguoiTao = currentUser,
+                NgayTao = DateTime.Now,
+                NguoiCapNhat = currentUser,
+                NgayCapNhat = DateTime.Now
+            };
+
+            var result = _repository.Insert(item);
+            if (result != null)
+            {
+                SendTaskReminderEmail(result, taskCode, taskName, deadline);
+            }
+            return result;
+        }
+
+        private void SendTaskReminderEmail(TblThongBao notification, string taskCode, string taskName, DateTime deadline)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var recipient = UserManager.Instance.GetUserById(notification.UserId);
+                    var memUser = System.Web.Security.Membership.GetUser(recipient.UserName);
+                    string email = memUser != null ? memUser.Email : null;
+
+                    if (recipient == null || string.IsNullOrWhiteSpace(email)) return;
+
+                    var placeholdersBody = new Dictionary<string, string>
+                    {
+                        { "[[COMPANY_NAME]]", "SweetSoft QLDA" },
+                        { "[[FULL_NAME]]", recipient.DisplayName },
+                        { "[[TASK_CODE]]", taskCode },
+                        { "[[TASK_NAME]]", taskName },
+                        { "[[DEADLINE]]", deadline.ToString("dd/MM/yyyy") }
+                    };
+
+                    var emailManager = new EmailManager(SweetContext.CreateBackgroundContext());
+                    await emailManager.SendEmailWithTemplateAsync(
+                        refId: notification.UserId,
+                        refType: EmailType.Notification,
+                        customerId: notification.UserId,
+                        toEmail: email,
+                        templateKey: "TemplateTaskReminder", // Cần cấu hình template này
+                        formatType: EmailFormatTypes.Admin,
+                        placeholdersBody: placeholdersBody,
+                        attachments: null,
+                        useBackgroundThread: false
+                    );
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Lỗi gửi Mail nhắc Công Việc IdThongBao: " + notification.IdThongBao);
+                }
+            });
+        }
     }
 }
