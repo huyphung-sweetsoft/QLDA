@@ -28,463 +28,99 @@ namespace SweetSoft.QLDA.Core.Managers
             _auditManager = new AuditManager(GetClientInfo());
             _repository = new ThanhVienDuAnRepository(_auditManager);
         }
-        public List<NhanVienProjectDTO> GetChiTietDuAnCuaNhanVien(
-    Guid idNhanVien,
-    string keyword = null,
-    byte? statusId = null)
+        public List<NhanVienProjectSummaryDTO> GetDanhSachDuAnCuaNhanVien(Guid idNhanVien, string keyword = null, byte? statusId = null)
         {
-            string normalizedKeyword = (keyword ?? string.Empty).Trim();
+            DataTable dt = _repository.GetDanhSachDuAnCuaNhanVienData(idNhanVien, keyword, statusId);
+            var result = new List<NhanVienProjectSummaryDTO>();
 
-            string sql = @"
-DECLARE @IdNhanVien UNIQUEIDENTIFIER = @EmpId;
-DECLARE @Keyword NVARCHAR(500) = @SearchKeyword;
-DECLARE @StatusId TINYINT = @SearchStatusId;
+            if (dt.Rows.Count == 0) return result;
 
-;WITH MyProjects AS
-(
-    SELECT
-        da.IdDuAn,
-        da.MaDuAn,
-        da.TenDuAn,
-        da.TrangThai AS TrangThaiDuAn,
-        da.NgayBatDau AS ProjectStartDate,
-        ISNULL(
-            da.NgayHoanThanhThucTe,
-            da.NgayDuKienHoanThanh
-        ) AS ProjectEndDate,
-        vt.TenVaiTro AS VaiTro
-    FROM TblDuAn da
-    INNER JOIN TblThanhVienDuAn tv
-        ON da.IdDuAn = tv.IdDuAn
-    INNER JOIN TblVaiTroDuAn vt
-        ON tv.IdVaiTroDuAn = vt.IdVaiTroDuAn
-    WHERE
-        tv.IdNhanVien = @IdNhanVien
-        AND tv.DaXoa = 0
-        AND da.DaXoa = 0
-
-        -- ==============================================
-        -- TẦNG 2:
-        -- Filter trạng thái ngay tại SQL
-        -- ==============================================
-        AND
-        (
-            @StatusId IS NULL
-            OR da.TrangThai = @StatusId
-        )
-
-        -- ==============================================
-        -- TẦNG 2:
-        -- Filter keyword ngay tại SQL
-        --
-        -- Tìm theo:
-        -- 1. Mã dự án
-        -- 2. Tên dự án
-        -- 3. Mã Task
-        -- 4. Tên Task
-        -- ==============================================
-        AND
-        (
-            @Keyword = N''
-            OR da.MaDuAn LIKE N'%' + @Keyword + N'%'
-            OR da.TenDuAn LIKE N'%' + @Keyword + N'%'
-            OR EXISTS
-            (
-                SELECT 1
-                FROM TblCongViec cvSearch
-                WHERE
-                    cvSearch.IdDuAn = da.IdDuAn
-                    AND cvSearch.DaXoa = 0
-                    AND cvSearch.IdCongViecCha IS NOT NULL
-
-                    -- Chỉ xem Leaf Task, giữ đúng logic tìm kiếm cũ
-                    AND NOT EXISTS
-                    (
-                        SELECT 1
-                        FROM TblCongViec childSearch
-                        WHERE
-                            childSearch.IdCongViecCha = cvSearch.IdCongViec
-                            AND childSearch.DaXoa = 0
-                    )
-
-                    AND
-                    (
-                        cvSearch.MaCongViec LIKE N'%' + @Keyword + N'%'
-                        OR cvSearch.TenCongViec LIKE N'%' + @Keyword + N'%'
-                    )
-            )
-        )
-),
-
--- ==========================================================
--- TẦNG 3:
--- Recursive TaskTree chỉ chạy trên các Project của nhân viên
--- đã vượt qua filter ở MyProjects.
--- Không còn quét toàn bộ TblCongViec của hệ thống.
--- ==========================================================
-TaskTree AS
-(
-    -- Anchor: Root Task / Phase
-    SELECT
-        c.IdDuAn,
-        c.IdCongViec,
-        c.IdCongViecCha,
-        c.TenCongViec,
-
-        c.IdCongViec AS IdPhase,
-        c.MaCongViec AS MaPhase,
-        c.TenCongViec AS TenPhase
-    FROM TblCongViec c
-    INNER JOIN MyProjects mp
-        ON c.IdDuAn = mp.IdDuAn
-    WHERE
-        c.IdCongViecCha IS NULL
-        AND c.DaXoa = 0
-
-    UNION ALL
-
-    -- Recursive
-    SELECT
-        c.IdDuAn,
-        c.IdCongViec,
-        c.IdCongViecCha,
-        c.TenCongViec,
-
-        t.IdPhase,
-        t.MaPhase,
-        t.TenPhase
-    FROM TblCongViec c
-    INNER JOIN TaskTree t
-        ON c.IdCongViecCha = t.IdCongViec
-    WHERE
-        c.DaXoa = 0
-),
-
--- ==========================================================
--- Leaf Task
--- Chỉ lấy task cuối cùng trong cây.
--- ==========================================================
-AllLeafTasks AS
-(
-    SELECT
-        cv.IdDuAn,
-
-        tree.IdPhase,
-        tree.MaPhase,
-        tree.TenPhase,
-
-        parent.MaCongViec AS MaTaskCha,
-        parent.TenCongViec AS TenTaskCha,
-
-        cv.IdCongViec AS IdTask,
-        cv.MaCongViec AS MaTask,
-        cv.TenCongViec AS TenTask,
-
-        cv.NgayBatDau,
-        cv.NgayKetThuc,
-        cv.ThoiHanNgay,
-        cv.TrangThai AS TrangThaiTask,
-
-        ISNULL(ut.DiemUuTien, 1) AS DiemUuTien,
-        ISNULL(ut.TenDoUuTien, N'Thấp') AS TenDoUuTien
-
-    FROM TblCongViec cv
-
-    INNER JOIN MyProjects mp
-        ON cv.IdDuAn = mp.IdDuAn
-
-    INNER JOIN TaskTree tree
-        ON cv.IdCongViec = tree.IdCongViec
-
-    LEFT JOIN TblCongViec parent
-        ON cv.IdCongViecCha = parent.IdCongViec
-
-    LEFT JOIN TblDoUuTien ut
-        ON cv.IdDoUuTien = ut.IdDoUuTien
-
-    WHERE
-        cv.DaXoa = 0
-        AND cv.IdCongViecCha IS NOT NULL
-
-        -- Leaf Task
-        AND NOT EXISTS
-        (
-            SELECT 1
-            FROM TblCongViec child
-            WHERE
-                child.IdCongViecCha = cv.IdCongViec
-                AND child.DaXoa = 0
-        )
-),
-
--- ==========================================================
--- TẦNG 3:
--- Chỉ aggregate assignment của các Leaf Task liên quan.
---
--- Không còn GROUP BY toàn bộ TblCongViec_NhanVien.
--- ==========================================================
-TaskAssignees AS
-(
-    SELECT
-        a.IdCongViec,
-
-        COUNT(a.IdNhanVien) AS AssigneeCount,
-
-        MAX(
-            CASE
-                WHEN a.IdNhanVien = @IdNhanVien
-                THEN 1
-                ELSE 0
-            END
-        ) AS IsMyTask
-
-    FROM TblCongViec_NhanVien a
-
-    INNER JOIN AllLeafTasks t
-        ON a.IdCongViec = t.IdTask
-
-    GROUP BY
-        a.IdCongViec
-),
-
--- ==========================================================
--- TẦNG 3:
--- Lấy danh sách Phase có ít nhất 1 Task của nhân viên này.
---
--- Dùng CTE riêng để tránh correlated EXISTS lặp lại
--- cho từng row task trong SELECT cuối.
--- ==========================================================
-MyAssignedPhases AS
-(
-    SELECT DISTINCT
-        t.IdPhase
-    FROM AllLeafTasks t
-    INNER JOIN TaskAssignees ta
-        ON t.IdTask = ta.IdCongViec
-    WHERE
-        ta.IsMyTask = 1
-)
-
--- ==========================================================
--- FINAL RESULT
--- ==========================================================
-SELECT
-    mp.IdDuAn,
-    mp.MaDuAn,
-    mp.TenDuAn,
-    mp.VaiTro,
-    mp.TrangThaiDuAn,
-    mp.ProjectStartDate,
-    mp.ProjectEndDate,
-
-    t.IdPhase,
-    t.MaPhase,
-    t.TenPhase,
-
-    t.MaTaskCha,
-    t.TenTaskCha,
-
-    t.IdTask,
-    t.MaTask,
-    t.TenTask,
-
-    t.NgayBatDau,
-    t.NgayKetThuc,
-    t.ThoiHanNgay,
-
-    t.DiemUuTien,
-    t.TenDoUuTien,
-    t.TrangThaiTask,
-
-    ISNULL(ta.AssigneeCount, 0) AS AssigneeCount,
-    ISNULL(ta.IsMyTask, 0) AS IsMyTask
-
-FROM MyProjects mp
-
-INNER JOIN AllLeafTasks t
-    ON mp.IdDuAn = t.IdDuAn
-
-INNER JOIN MyAssignedPhases map
-    ON t.IdPhase = map.IdPhase
-
-LEFT JOIN TaskAssignees ta
-    ON t.IdTask = ta.IdCongViec
-
-ORDER BY
-    mp.ProjectStartDate DESC,
-    t.MaTask ASC;
-";
-
-            QueryCommand cmd =
-                new QueryCommand(
-                    sql,
-                    DataService.Provider.Name
-                );
-
-            cmd.AddParameter(
-                "@EmpId",
-                idNhanVien,
-                DbType.Guid
-            );
-
-            cmd.AddParameter(
-                "@SearchKeyword",
-                normalizedKeyword,
-                DbType.String
-            );
-
-            cmd.AddParameter(
-                "@SearchStatusId",
-                statusId.HasValue
-                    ? (object)statusId.Value
-                    : DBNull.Value,
-                DbType.Byte
-            );
-
-            DataSet ds = DataService.GetDataSet(cmd);
-
-            DataTable dt =
-                (ds != null && ds.Tables.Count > 0)
-                    ? ds.Tables[0]
-                    : new DataTable();
-
-            if (dt == null || dt.Rows.Count == 0)
-                return new List<NhanVienProjectDTO>();
-
-            var projects = new List<NhanVienProjectDTO>();
-
-            // ==========================================================
-            // BUILD PROJECT DTO
-            // ==========================================================
-            var groupProjects =
-                dt.AsEnumerable()
-                  .GroupBy(r => r.Field<Guid>("IdDuAn"));
-
-            foreach (var pGroup in groupProjects)
+            foreach (DataRow row in dt.Rows)
             {
-                DataRow rowProj = pGroup.First();
-
-                var projDTO = new NhanVienProjectDTO
+                result.Add(new NhanVienProjectSummaryDTO
                 {
-                    IdDuAn = pGroup.Key,
-                    MaDuAn = rowProj.Field<string>("MaDuAn"),
-                    TenDuAn = rowProj.Field<string>("TenDuAn"),
-                    VaiTro = rowProj.Field<string>("VaiTro"),
-                    TrangThai = rowProj.Field<byte>("TrangThaiDuAn"),
-                    ProjectStartDate = rowProj.Field<DateTime?>("ProjectStartDate"),
-                    ProjectEndDate = rowProj.Field<DateTime?>("ProjectEndDate")
-                };
-
-                // ======================================================
-                // BUILD PHASE DTO
-                // ======================================================
-                var groupPhases =
-                    pGroup.GroupBy(r => r.Field<Guid>("IdPhase"));
-
-                foreach (var phGroup in groupPhases)
-                {
-                    DataRow rowPhase = phGroup.First();
-
-                    var phaseDTO = new NhanVienPhaseDTO
-                    {
-                        IdPhase = phGroup.Key,
-                        MaPhase = rowPhase.Field<string>("MaPhase"),
-                        TenPhase = rowPhase.Field<string>("TenPhase")
-                    };
-
-                    // ==================================================
-                    // BUILD TASK DTO
-                    // ==================================================
-                    foreach (DataRow rowTask in phGroup)
-                    {
-                        phaseDTO.Tasks.Add(
-                            new NhanVienTaskDTO
-                            {
-                                IdTask =
-                                    rowTask.Field<Guid>("IdTask"),
-
-                                MaTask =
-                                    rowTask.Field<string>("MaTask"),
-
-                                TenTask =
-                                    rowTask.Field<string>("TenTask"),
-
-                                NgayBatDau =
-                                    rowTask.Field<DateTime?>("NgayBatDau"),
-
-                                NgayKetThuc =
-                                    rowTask.Field<DateTime?>("NgayKetThuc"),
-
-                                ThoiHanNgay =
-                                    rowTask.Field<int>("ThoiHanNgay"),
-
-                                DiemUuTien =
-                                    rowTask.Field<int>("DiemUuTien"),
-
-                                TenDoUuTien =
-                                    rowTask.Field<string>("TenDoUuTien"),
-
-                                MaTaskCha =
-                                    rowTask.Field<string>("MaTaskCha"),
-
-                                TenTaskCha =
-                                    rowTask.Field<string>("TenTaskCha"),
-
-                                TenPhaseGoc =
-                                    rowPhase.Field<string>("TenPhase"),
-
-                                TrangThaiTask =
-                                    rowTask.Field<byte>("TrangThaiTask"),
-
-                                AssigneeCount =
-                                    rowTask.Field<int>("AssigneeCount"),
-
-                                IsMyTask =
-                                    rowTask.Field<int>("IsMyTask") == 1
-                            }
-                        );
-                    }
-
-                    projDTO.Phases.Add(phaseDTO);
-                }
-
-                projects.Add(projDTO);
+                    IdDuAn = row.Field<Guid>("IdDuAn"),
+                    MaDuAn = row.Field<string>("MaDuAn"),
+                    TenDuAn = row.Field<string>("TenDuAn"),
+                    VaiTro = row.Field<string>("VaiTro"),
+                    TrangThai = row.Field<byte>("TrangThaiDuAn"),
+                    ProjectStartDate = row.Field<DateTime?>("ProjectStartDate"),
+                    ProjectEndDate = row.Field<DateTime?>("ProjectEndDate"),
+                    Total_E_All_Employees = Convert.ToDouble(row["Total_E_All_Employees"]),
+                    Total_E_My_Employee = Convert.ToDouble(row["Total_E_My_Employee"])
+                });
             }
 
-            return projects;
+            return result;
         }
+
+        public NhanVienProjectDTO GetChiTietDuAnCuaNhanVien(Guid idNhanVien, Guid idDuAn)
+        {
+            DataTable dt = _repository.GetChiTietDuAnCuaNhanVienData(idNhanVien, idDuAn);
+
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow projectRow = dt.Rows[0];
+            var project = new NhanVienProjectDTO
+            {
+                IdDuAn = projectRow.Field<Guid>("IdDuAn"),
+                MaDuAn = projectRow.Field<string>("MaDuAn"),
+                TenDuAn = projectRow.Field<string>("TenDuAn"),
+                VaiTro = projectRow.Field<string>("VaiTro"),
+                TrangThai = projectRow.Field<byte>("TrangThaiDuAn"),
+                ProjectStartDate = projectRow.Field<DateTime?>("ProjectStartDate"),
+                ProjectEndDate = projectRow.Field<DateTime?>("ProjectEndDate")
+            };
+
+            // Project có thể hoàn toàn không có task của nhân viên.
+            // Khi đó LEFT JOIN trả về 1 row Project, nhưng IdTask = DBNull.
+            var taskRows = dt.AsEnumerable().Where(row => row["IdTask"] != DBNull.Value).ToList();
+            if (taskRows.Count == 0) return project;
+
+            var phaseGroups = taskRows.GroupBy(row => row.Field<Guid>("IdPhase"));
+
+            foreach (var phaseGroup in phaseGroups)
+            {
+                DataRow phaseRow = phaseGroup.First();
+                var phase = new NhanVienPhaseDTO
+                {
+                    IdPhase = phaseGroup.Key,
+                    MaPhase = phaseRow.Field<string>("MaPhase"),
+                    TenPhase = phaseRow.Field<string>("TenPhase")
+                };
+
+                foreach (DataRow taskRow in phaseGroup)
+                {
+                    var task = new NhanVienTaskDTO
+                    {
+                        IdTask = taskRow.Field<Guid>("IdTask"),
+                        MaTask = taskRow.Field<string>("MaTask"),
+                        TenTask = taskRow.Field<string>("TenTask"),
+                        NgayBatDau = taskRow.Field<DateTime?>("NgayBatDau"),
+                        NgayKetThuc = taskRow.Field<DateTime?>("NgayKetThuc"),
+                        NgayHoanThanhThucTe = taskRow.Field<DateTime?>("NgayHoanThanhThucTe"),
+                        ThoiHanNgay = taskRow.Field<int>("ThoiHanNgay"),
+                        DiemUuTien = taskRow.Field<int>("DiemUuTien"),
+                        HeSoDongGop = Convert.ToDouble(taskRow["HeSoDongGop"]),
+                        TenDoUuTien = taskRow.Field<string>("TenDoUuTien"),
+                        MaTaskCha = taskRow.Field<string>("MaTaskCha"),
+                        TenTaskCha = taskRow.Field<string>("TenTaskCha"),
+                        TenPhaseGoc = phaseRow.Field<string>("TenPhase"),
+                        TrangThaiTask = taskRow.Field<byte>("TrangThaiTask"),
+                        AssigneeCount = taskRow.Field<int>("AssigneeCount"),
+                        IsMyTask = taskRow.Field<int>("IsMyTask") == 1
+                    };
+                    phase.Tasks.Add(task);
+                }
+                project.Phases.Add(phase);
+            }
+
+            return project;
+        }
+
         public int CountDuAnCuaNhanVien(Guid idNhanVien)
         {
-            const string sql = @"
-SELECT
-    COUNT(DISTINCT da.IdDuAn)
-FROM TblDuAn da
-INNER JOIN TblThanhVienDuAn tv
-    ON da.IdDuAn = tv.IdDuAn
-WHERE
-    tv.IdNhanVien = @EmpId
-    AND tv.DaXoa = 0
-    AND da.DaXoa = 0;
-";
-
-            QueryCommand cmd =
-                new QueryCommand(
-                    sql,
-                    DataService.Provider.Name
-                );
-
-            cmd.AddParameter(
-                "@EmpId",
-                idNhanVien,
-                DbType.Guid
-            );
-
-            object result = DataService.ExecuteScalar(cmd);
-
-            if (result == null || result == DBNull.Value)
-                return 0;
-
-            return Convert.ToInt32(result);
+            return _repository.CountDuAnCuaNhanVien(idNhanVien);
         }
         public TblThanhVienDuAn AddOrUpdate(TblThanhVienDuAn dto)
         {

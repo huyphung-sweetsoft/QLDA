@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -218,7 +219,94 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
             });
         }
+        /// <summary>
+        /// Tạo thông báo và gửi Email chuyên biệt cho sự kiện thay đổi Lịch Biểu Chung
+        /// </summary>
+        public TblThongBao CreateScheduleChangeNotification(
+            Guid userId,
+            string tieuDe,
+            string noiDung,
+            Guid idDuAn,
+            string projectName,
+            string reason,
+            string affectedTasksHtml)
+        {
+            if (userId == Guid.Empty || string.IsNullOrWhiteSpace(tieuDe))
+                return null;
 
+            string currentUser = _applicationContext?.UserName ?? "System";
+
+            TblThongBao item = new TblThongBao
+            {
+                IdThongBao = Guid.NewGuid(),
+                UserId = userId,
+                IdCongViec = null,
+                IdDuAn = idDuAn,
+                TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
+                NoiDung = noiDung,
+                LoaiThongBao = ThongBaoTypes.DuAn, // Dùng cờ Dự án để hiện icon cái cặp
+                DuongDanLienKet = null,
+                DaDoc = false,
+                NgayDoc = null,
+                DaXoa = false,
+                NguoiTao = currentUser,
+                NgayTao = DateTime.Now,
+                NguoiCapNhat = currentUser,
+                NgayCapNhat = DateTime.Now
+            };
+
+            var result = _repository.Insert(item);
+
+            if (result != null)
+            {
+                SendScheduleChangeEmail(result, projectName, reason, affectedTasksHtml);
+            }
+
+            return result;
+        }
+
+        private void SendScheduleChangeEmail(TblThongBao notification, string projectName, string reason, string affectedTasksHtml)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    var recipient = UserManager.Instance.GetUserById(notification.UserId);
+                    var memUser = System.Web.Security.Membership.GetUser(recipient.UserName);
+                    string email = memUser != null ? memUser.Email : null;
+
+                    if (recipient == null || string.IsNullOrWhiteSpace(email)) return;
+
+                    // Chỉ gửi nội dung thuần, không cần xử lý Domain hay URL chuyển hướng
+                    var placeholdersBody = new Dictionary<string, string>
+                    {
+                        { "[[COMPANY_NAME]]", "SweetSoft QLDA" },
+                        { "[[FULL_NAME]]", recipient.DisplayName },
+                        { "[[PROJECT_NAME]]", projectName },
+                        { "[[REASON]]", reason },
+                        { "[[AFFECTED_TASKS_HTML]]", affectedTasksHtml }
+                    };
+
+                    var emailManager = new EmailManager(SweetContext.CreateBackgroundContext());
+
+                    await emailManager.SendEmailWithTemplateAsync(
+                        refId: notification.UserId,
+                        refType: EmailType.Notification,
+                        customerId: notification.UserId,
+                        toEmail: email,
+                        templateKey: "TemplateScheduleChange",
+                        formatType: EmailFormatTypes.Admin,
+                        placeholdersBody: placeholdersBody,
+                        attachments: null,
+                        useBackgroundThread: false
+                    );
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to send schedule change email for IdThongBao: " + notification.IdThongBao);
+                }
+            });
+        }
 
         #endregion
 

@@ -70,6 +70,8 @@ namespace SweetSoft.QLDA.DataAccess
         
 		public static readonly string TblGuiNhanKhachHang = @"TblGuiNhanKhachHang";
         
+		public static readonly string TblHeSoDongGop = @"TblHeSoDongGop";
+        
 		public static readonly string TblHopDongThucHien = @"TblHopDongThucHien";
         
 		public static readonly string TblKhachHang = @"TblKhachHang";
@@ -259,6 +261,11 @@ namespace SweetSoft.QLDA.DataAccess
 		public static TableSchema.Table TblGuiNhanKhachHang
 		{
             get { return DataService.GetSchema("TblGuiNhanKhachHang", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblHeSoDongGop
+		{
+            get { return DataService.GetSchema("TblHeSoDongGop", "DataAccessProvider"); }
 		}
         
 		public static TableSchema.Table TblHopDongThucHien
