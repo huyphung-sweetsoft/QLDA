@@ -3103,4 +3103,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
+  <data name="WORK_SCHEDULE_THIS_MONTH" xml:space="preserve">
+    <value>Lịch làm việc tháng này</value>
+  </data>
 </root>

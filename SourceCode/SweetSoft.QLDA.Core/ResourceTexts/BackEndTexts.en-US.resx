@@ -3082,4 +3082,7 @@
   <data name="ACTUAL_COMPLETION_DATE" xml:space="preserve">
     <value>Actual completion date</value>
   </data>
+  <data name="WORK_SCHEDULE_THIS_MONTH" xml:space="preserve">
+    <value>Work Schedule this month</value>
+  </data>
 </root>
