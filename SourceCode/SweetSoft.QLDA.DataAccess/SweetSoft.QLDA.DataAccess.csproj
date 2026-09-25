@@ -116,6 +116,8 @@
     <Compile Include="TblGiaiDoanDuAnController.cs" />
     <Compile Include="TblGuiNhanKhachHang.cs" />
     <Compile Include="TblGuiNhanKhachHangController.cs" />
+    <Compile Include="TblHeSoDongGop.cs" />
+    <Compile Include="TblHeSoDongGopController.cs" />
     <Compile Include="TblHopDongThucHien.cs" />
     <Compile Include="TblHopDongThucHienController.cs" />
     <Compile Include="TblKhachHang.cs" />
