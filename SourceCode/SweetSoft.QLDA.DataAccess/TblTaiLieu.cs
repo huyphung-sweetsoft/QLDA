@@ -603,25 +603,6 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
-		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
-		{
-			if(colTblChiPhiRecords == null)
-			{
-				colTblChiPhiRecords = new SweetSoft.QLDA.DataAccess.TblChiPhiCollection().Where(TblChiPhi.Columns.IdTaiLieu, IdTaiLieu).Load();
-				colTblChiPhiRecords.ListChanged += new ListChangedEventHandler(colTblChiPhiRecords_ListChanged);
-			}
-			return colTblChiPhiRecords;
-		}
-				
-		void colTblChiPhiRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblChiPhiRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection colTblHopDongThucHienRecords;
 		public SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection TblHopDongThucHienRecords()
 		{
@@ -639,25 +620,6 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblHopDongThucHienRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblLichHopCollection colTblLichHopRecords;
-		public SweetSoft.QLDA.DataAccess.TblLichHopCollection TblLichHopRecords()
-		{
-			if(colTblLichHopRecords == null)
-			{
-				colTblLichHopRecords = new SweetSoft.QLDA.DataAccess.TblLichHopCollection().Where(TblLichHop.Columns.IdTaiLieu, IdTaiLieu).Load();
-				colTblLichHopRecords.ListChanged += new ListChangedEventHandler(colTblLichHopRecords_ListChanged);
-			}
-			return colTblLichHopRecords;
-		}
-				
-		void colTblLichHopRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblLichHopRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection colTblLichSuTaiLieuRecords;
@@ -1168,31 +1130,9 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
-                if (colTblChiPhiRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
-                    {
-                        if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
-                        {
-                            item.IdTaiLieu = IdTaiLieu;
-                        }
-                    }
-               }
-		
                 if (colTblHopDongThucHienRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblHopDongThucHien item in colTblHopDongThucHienRecords)
-                    {
-                        if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
-                        {
-                            item.IdTaiLieu = IdTaiLieu;
-                        }
-                    }
-               }
-		
-                if (colTblLichHopRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblLichHop item in colTblLichHopRecords)
                     {
                         if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
                         {
@@ -1253,19 +1193,9 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
-                if (colTblChiPhiRecords != null)
-                {
-                    colTblChiPhiRecords.SaveAll();
-               }
-		
                 if (colTblHopDongThucHienRecords != null)
                 {
                     colTblHopDongThucHienRecords.SaveAll();
-               }
-		
-                if (colTblLichHopRecords != null)
-                {
-                    colTblLichHopRecords.SaveAll();
                }
 		
                 if (colTblLichSuTaiLieuRecords != null)

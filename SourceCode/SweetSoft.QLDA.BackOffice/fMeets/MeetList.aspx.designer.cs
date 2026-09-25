@@ -149,10 +149,22 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
 
-        /// <summary>dlMeetingFiles control.</summary>
+        /// <summary>
+        /// dlMeetingFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraModal dlMeetingFiles;
 
-        /// <summary>fbMeetingFiles control.</summary>
+        /// <summary>
+        /// fbMeetingFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbMeetingFiles;
 
         /// <summary>

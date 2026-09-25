@@ -276,6 +276,7 @@
     <Compile Include="Managers\MeetManager.cs" />
     <Compile Include="Managers\LichBieuChungManager.cs" />
     <Compile Include="Managers\NhanVienManager.cs" />
+    <Compile Include="Managers\NotificationJob.cs" />
     <Compile Include="Managers\PhongBanManager.cs" />
     <Compile Include="Managers\ProjectReportManager.cs" />
     <Compile Include="Managers\RiskManager.cs" />
