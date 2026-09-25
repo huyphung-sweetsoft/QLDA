@@ -854,6 +854,42 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataSource = tblLoaiKhachHangs;
             ddl.DataBind();
         }
+
+        public void BindMonths(ExtraDropdown dropdown, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.PlaceHolder = string.Empty;
+                dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các tháng --";
+                dropdown.EmptyItemValue = "";
+            }
+
+            for (int i = 1; i <= 12; i++)
+                dropdown.Items.Add(new ListItem("Tháng " + i, i.ToString()));
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindKhoangGiaTriHopDong(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.AlowClear = true;
+            dropdown.PlaceHolder = string.Empty;
+            dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả giá trị --";
+            dropdown.EmptyItemValue = "";
+
+            dropdown.Items.Add(new ListItem("Dưới 10 triệu", "DUOI_10"));
+            dropdown.Items.Add(new ListItem("10 - 100 triệu", "10_100"));
+            dropdown.Items.Add(new ListItem("100 - 500 triệu", "100_500"));
+            dropdown.Items.Add(new ListItem("Trên 500 triệu", "TREN_500"));
+
+            dropdown.SelectedIndex = -1;
+        }
         #endregion
         #region Binding Task Controls
         public void BindPriorities(DropDownList ddl, Guid? selectedId = null, bool isAll = false)

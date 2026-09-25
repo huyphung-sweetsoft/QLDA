@@ -60,5 +60,55 @@ namespace SweetSoft.QLDA.Core.Managers
                 throw new Exception("Lỗi khi tạo file PDF: " + ex.Message);
             }
         }
+
+        public byte[] GeneratePdf(string htmlContent)
+        {
+            try
+            {
+                var htmlToPdf = new HtmlToPdfConverter();
+                htmlToPdf.Size = PageSize.A4;
+                htmlToPdf.Margins = new PageMargins { Top = 15, Bottom = 15, Left = 15, Right = 15 };
+
+                string finalHtml = $@"<!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset='UTF-8'>
+                        <style>
+                            @page {{
+                                size: A4;
+                            }}
+
+                            html, body {{
+                                margin: 0;
+                                padding: 0;
+                                font-family: Arial, sans-serif;
+                                font-size: 13px;
+                                line-height: 1.5;
+                            }}
+
+                            body {{
+                                word-wrap: break-word;
+                            }}
+
+                            img {{
+                                max-width: 100%;
+                                height: auto;
+                            }}
+
+                            table {{
+                                max-width: 100%;
+                                border-collapse: collapse;
+                            }}
+                        </style>
+                    </head>
+                    <body>{htmlContent}</body>
+                    </html>";
+                return htmlToPdf.GeneratePdf(finalHtml);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi tạo file PDF: " + ex.Message);
+            }
+        }
     }
 }

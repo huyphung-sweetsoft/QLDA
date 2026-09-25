@@ -185,5 +185,9 @@ namespace SweetSoft.QLDA.BackOffice.Common
         }
 
         public static string Contracts => "/Contracts";
+        public static string ContractDetail(Guid idContract)
+        {
+            return $"/Contracts/{SecurityUtilities.ProtectUrlParameter(idContract.ToString())}";
+        }
     }
 }

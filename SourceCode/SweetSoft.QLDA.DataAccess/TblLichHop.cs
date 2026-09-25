@@ -340,6 +340,20 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdUploadFile.ForeignKeyTableName = "TblUploadFile";
 				schema.Columns.Add(colvarIdUploadFile);
 				
+				TableSchema.TableColumn colvarDaGuiNhacNho = new TableSchema.TableColumn(schema);
+				colvarDaGuiNhacNho.ColumnName = "DaGuiNhacNho";
+				colvarDaGuiNhacNho.DataType = DbType.Boolean;
+				colvarDaGuiNhacNho.MaxLength = 0;
+				colvarDaGuiNhacNho.AutoIncrement = false;
+				colvarDaGuiNhacNho.IsNullable = true;
+				colvarDaGuiNhacNho.IsPrimaryKey = false;
+				colvarDaGuiNhacNho.IsForeignKey = false;
+				colvarDaGuiNhacNho.IsReadOnly = false;
+				
+						colvarDaGuiNhacNho.DefaultSetting = @"((0))";
+				colvarDaGuiNhacNho.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDaGuiNhacNho);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -477,6 +491,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<Guid?>(Columns.IdUploadFile); }
 			set { SetColumnValue(Columns.IdUploadFile, value); }
 		}
+		  
+		[XmlAttribute("DaGuiNhacNho")]
+		[Bindable(true)]
+		public bool? DaGuiNhacNho 
+		{
+			get { return GetColumnValue<bool?>(Columns.DaGuiNhacNho); }
+			set { SetColumnValue(Columns.DaGuiNhacNho, value); }
+		}
 		
 		#endregion
 		
@@ -521,7 +543,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile)
+		public static void Insert(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile,bool? varDaGuiNhacNho)
 		{
 			TblLichHop item = new TblLichHop();
 			
@@ -557,6 +579,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdUploadFile = varIdUploadFile;
 			
+			item.DaGuiNhacNho = varDaGuiNhacNho;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -567,7 +591,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile)
+		public static void Update(Guid varIdLichHop,Guid varIdDuAn,string varMaCuocHop,string varTenCuocHop,string varNoiDungCuocHop,DateTime varThoiGianBatDau,DateTime varThoiGianKetThuc,string varDiaDiemHop,byte varTrangThai,bool varDaXoa,Guid varIdNguoiTao,DateTime varNgayTao,Guid? varIdNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdTaiLieu,Guid? varIdUploadFile,bool? varDaGuiNhacNho)
 		{
 			TblLichHop item = new TblLichHop();
 			
@@ -602,6 +626,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.IdTaiLieu = varIdTaiLieu;
 			
 				item.IdUploadFile = varIdUploadFile;
+			
+				item.DaGuiNhacNho = varDaGuiNhacNho;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -728,6 +754,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn DaGuiNhacNhoColumn
+        {
+            get { return Schema.Columns[16]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -748,6 +781,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NgayCapNhat = @"NgayCapNhat";
 			 public static string IdTaiLieu = @"IdTaiLieu";
 			 public static string IdUploadFile = @"IdUploadFile";
+			 public static string DaGuiNhacNho = @"DaGuiNhacNho";
 						
 		}
 		#endregion

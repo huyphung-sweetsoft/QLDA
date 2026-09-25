@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdHopDongThucHien,string SoHopDong,string TenHopDong,Guid IdKhachHang,decimal? GiaTriHopDong,DateTime? NgayKy,DateTime? NgayHieuLuc,DateTime? NgayHetHan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu)
+	    public void Insert(Guid IdHopDongThucHien,string SoHopDong,string TenHopDong,Guid IdKhachHang,decimal? GiaTriHopDong,DateTime? NgayKy,DateTime? NgayHieuLuc,DateTime? NgayHetHan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu,string LoaiNoiDungHopDong,string NoiDungHopDong)
 	    {
 		    TblHopDongThucHien item = new TblHopDongThucHien();
 		    
@@ -114,6 +114,10 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.IdTaiLieu = IdTaiLieu;
             
+            item.LoaiNoiDungHopDong = LoaiNoiDungHopDong;
+            
+            item.NoiDungHopDong = NoiDungHopDong;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -122,7 +126,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdHopDongThucHien,string SoHopDong,string TenHopDong,Guid IdKhachHang,decimal? GiaTriHopDong,DateTime? NgayKy,DateTime? NgayHieuLuc,DateTime? NgayHetHan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu)
+	    public void Update(Guid IdHopDongThucHien,string SoHopDong,string TenHopDong,Guid IdKhachHang,decimal? GiaTriHopDong,DateTime? NgayKy,DateTime? NgayHieuLuc,DateTime? NgayHetHan,string MoTa,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu,string LoaiNoiDungHopDong,string NoiDungHopDong)
 	    {
 		    TblHopDongThucHien item = new TblHopDongThucHien();
 	        item.MarkOld();
@@ -157,6 +161,10 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NgayCapNhat = NgayCapNhat;
 				
 			item.IdTaiLieu = IdTaiLieu;
+				
+			item.LoaiNoiDungHopDong = LoaiNoiDungHopDong;
+				
+			item.NoiDungHopDong = NoiDungHopDong;
 				
 	        item.Save(UserName);
 	    }

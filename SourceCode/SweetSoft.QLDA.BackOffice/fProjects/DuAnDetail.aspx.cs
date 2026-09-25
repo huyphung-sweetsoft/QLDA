@@ -181,11 +181,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 return;
             }
 
-            TblHopDongThucHien hopDong =
-                HopDongThucHienManager
-                    .Instance
-                    .GetHopDongById(
-                        this.IdHopDongThucHien);
+            TblHopDongThucHien hopDong = HopDongThucHienManager.Instance.GetHopDongById(this.IdHopDongThucHien);
 
             if (hopDong == null)
             {
@@ -195,14 +191,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             BindContractInformation(hopDong);
 
-            dlContractDetail.Title =
-                "Thông tin hợp đồng thực hiện";
-
-            dlContractDetail.CloseText =
-                GetResourceText(
-                    BackEndResourceKeys.CLOSE);
-
-            dlContractDetail.OpenModal(true);
+            Response.Redirect(RewriteURLHelper.ContractDetail(this.IdHopDongThucHien));
         }
 
 

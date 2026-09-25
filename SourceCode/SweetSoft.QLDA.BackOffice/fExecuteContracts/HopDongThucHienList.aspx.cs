@@ -115,67 +115,23 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
         private void EditHopDongAction(object sender, EventArgs e)
         {
-            if (sender == null)
+            if (!(sender is Guid idHopDongThucHien) || idHopDongThucHien == Guid.Empty)
             {
                 ShowInvalidDataError();
                 return;
             }
 
-            Guid idHopDongThucHien = (Guid)sender;
-
-            if (idHopDongThucHien == Guid.Empty)
+            if (!this.IsEdit)
             {
-                ShowInvalidDataError();
+                ShowAccessDeniedNotify();
                 return;
             }
 
-            RefreshHopDongInfo();
+            string idQuery = SecurityUtilities.ProtectUrlParameter(idHopDongThucHien.ToString());
 
-            lbtSubmit.Visible = this.IsEdit;
+            Response.Redirect(RewriteURLHelper.ContractDetail(idHopDongThucHien));
 
-            TblHopDongThucHien hopDong = HopDongThucHienManager.Instance.GetHopDongById(idHopDongThucHien);
-
-            if (hopDong == null || hopDong.DaXoa)
-            {
-                Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), false);
-                return;
-            }
-
-            this.IdHopDongThucHien = hopDong.IdHopDongThucHien;
-
-            txtSoHopDong.Text = hopDong.SoHopDong;
-            txtTenHopDong.Text = hopDong.TenHopDong;
-            ddlKhachHang.SelectedValue = hopDong.IdKhachHang.ToString();
-
-            txtGiaTriHopDong.Text =
-                hopDong.GiaTriHopDong.HasValue
-                ? hopDong.GiaTriHopDong.Value.ToString()
-                : string.Empty;
-
-
-            txtNgayKy.Text = hopDong.NgayKy.HasValue ? hopDong.NgayKy.Value.ToString("yyyy-MM-dd") : string.Empty;
-            txtNgayHieuLuc.Text = hopDong.NgayHieuLuc.HasValue ? hopDong.NgayHieuLuc.Value.ToString("yyyy-MM-dd") : string.Empty;
-            txtNgayHetHan.Text = hopDong.NgayHetHan.HasValue ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd") : string.Empty;
-
-            txtMoTa.Text = hopDong.MoTa;
-
-            bool hasLinkedDocument = HopDongThucHienManager.Instance
-                .HasLinkedDocument(hopDong.IdHopDongThucHien);
-            txtSoHopDong.Enabled = !hasLinkedDocument;
-            txtTenHopDong.Enabled = !hasLinkedDocument;
-            pnlContractDocumentIdentityLocked.Visible = hasLinkedDocument;
-
-            lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
-            dlDetail.Title = "Thông tin hợp đồng";
-
-            if (!IsPostBack)
-            {
-                dlDetail.OpenModal(true, 1000);
-            }
-            else
-            {
-                dlDetail.OpenModal(true);
-            }
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
@@ -329,13 +285,14 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
         private void NewHopDongAction(object sender, EventArgs e)
         {
-            RefreshHopDongInfo();
+            if (!this.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
 
-            lbtSubmit.Visible = this.IsAdd;
-            lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.SAVE);
-            dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
-
-            dlDetail.OpenModal(true);
+            Response.Redirect(RewriteURLHelper.ContractDetail(Guid.Empty));
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         private void OpenContractDocumentAction(object sender, EventArgs e)

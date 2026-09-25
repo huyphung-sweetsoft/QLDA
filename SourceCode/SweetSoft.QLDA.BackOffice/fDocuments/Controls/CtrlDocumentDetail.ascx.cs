@@ -1,5 +1,6 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fFilesBox;
+using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -267,10 +268,34 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected override void OnPreRender(EventArgs e)
         {
+            RegisterVersionHistoryPostBackControls();
             RegisterSigningPostBackControls();
             RegisterCustomerDeliveryPostBackControls();
             RegisterPhysicalStoragePostBackControls();
             base.OnPreRender(e);
+        }
+
+        private void RegisterVersionHistoryPostBackControls()
+        {
+            ScriptManager script = ScriptManager.GetCurrent(Page);
+            if (script == null || rptVersions == null)
+                return;
+
+            foreach (RepeaterItem item in rptVersions.Items)
+            {
+                foreach (Control control in item.Controls)
+                {
+                    LinkButton button = control as LinkButton;
+                    if (button != null
+                        && string.Equals(
+                            button.CommandName,
+                            RestoreVersionCommand,
+                            StringComparison.Ordinal))
+                    {
+                        script.RegisterAsyncPostBackControl(button);
+                    }
+                }
+            }
         }
 
         private void RegisterSigningPostBackControls()
@@ -572,18 +597,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             Guid idTaiLieu,
             string action)
         {
+            DocumentManager manager = CreateRequestDocumentManager();
             // Always enforce the document-level ACL first.  The old company
             // branch only checked that the row existed, which meant a user
             // could keep an asynchronous postback open and call update
             // handlers without the new Document.* permission.
-            DocumentManager.Instance.EnsureDocumentAccess(idTaiLieu, action);
+            manager.EnsureDocumentAccess(idTaiLieu, action);
 
             if (!IsProjectContext)
             {
                 // Keep the company page from being used with a forged
                 // project-document id during an asynchronous postback.
                 TblTaiLieu companyDocument =
-                    DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
+                    manager.GetCompanyDocumentById(idTaiLieu);
                 if (companyDocument == null || companyDocument.IdDuAn.HasValue)
                 {
                     throw new InvalidOperationException(
@@ -592,7 +618,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            CreateRequestDocumentManager().EnsureProjectDocumentAccess(
+            manager.EnsureProjectDocumentAccess(
                 idTaiLieu,
                 ProjectId,
                 action);
@@ -775,19 +801,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     "Không xác định được hồ sơ cần cập nhật.");
             }
 
-            if (!CURRENT_PAGE.IsEdit)
-            {
-                throw new InvalidOperationException(
-                    GetResourceText(
-                        BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
-            }
-
-            EnsureDocumentActionAccess(
-                idTaiLieu,
-                isSigningResultSaved
-                    ? DocumentPermissionKeys.Signing
-                    : DocumentPermissionKeys.ManageFiles);
-
             if (isSigningResultSaved)
             {
                 Guid signingId;
@@ -800,13 +813,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         "Không xác định được lần trình ký cần cập nhật.");
                 }
 
+                if (!CreateRequestDocumentManager()
+                    .CanProcessAssignedSigningFile(idTaiLieu, signingId))
+                {
+                    throw new UnauthorizedAccessException(
+                        "Bạn không được giao xử lý file trình ký này.");
+                }
+
                 fbSigningResult.LoadFile(
                     signingId,
                     FileUploadTypes.DocumentSigningResult);
-                mdlSigningResult.UpdateContentModal();
+                OpenSigningModal(mdlSigningResult, "ReopenSigningResultAfterUpload");
                 KeepSigningTabOpen();
                 return;
             }
+
+            if (!CURRENT_PAGE.IsEdit)
+            {
+                throw new InvalidOperationException(
+                    GetResourceText(
+                        BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
+            }
+
+            EnsureDocumentActionAccess(
+                idTaiLieu,
+                DocumentPermissionKeys.ManageFiles);
 
             if (isBeforeSave)
             {
@@ -1130,6 +1161,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
+                BindSigningFileSelection(versions, currentVersion);
+                if (cblSubmitSigningFiles.Items.Count == 0)
+                {
+                    ShowNotify(
+                        "Phiên bản hiện tại chưa có file hợp lệ để trình ký.",
+                        MSGType.Warning);
+                    return;
+                }
+
                 hdfSubmitSigningDocumentId.Value = idTaiLieu.ToString();
                 lblSubmitSigningVersion.Text = "v"
                     + GetValueText(currentVersion["SoPhienBan"]);
@@ -1150,6 +1190,45 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             catch (Exception exc)
             {
                 ShowNotify(exc.Message, MSGType.Warning);
+            }
+        }
+
+        private void BindSigningFileSelection(
+            DataTable versions,
+            DataRow currentVersion)
+        {
+            cblSubmitSigningFiles.Items.Clear();
+            if (versions == null || currentVersion == null)
+                return;
+
+            Guid? currentVersionId = GetGuid(
+                currentVersion,
+                "IdPhienBanTaiLieu");
+            if (!currentVersionId.HasValue)
+                return;
+
+            foreach (DataRow row in versions.Rows)
+            {
+                Guid? rowVersionId = GetGuid(row, "IdPhienBanTaiLieu");
+                Guid? fileId = GetGuid(row, "IdFile");
+                if (rowVersionId != currentVersionId
+                    || !fileId.HasValue
+                    || fileId.Value == Guid.Empty)
+                {
+                    continue;
+                }
+
+                string fileName = Convert.ToString(row["TenFileGoc"]);
+                if (string.IsNullOrWhiteSpace(fileName))
+                    fileName = Convert.ToString(row["TenFile"]);
+                if (string.IsNullOrWhiteSpace(fileName))
+                    fileName = fileId.Value.ToString("D");
+
+                cblSubmitSigningFiles.Items.Add(
+                    new ListItem(fileName, fileId.Value.ToString("D"))
+                    {
+                        Selected = true
+                    });
             }
         }
 
@@ -1183,9 +1262,31 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             try
             {
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.Signing);
+                List<Guid> selectedFileIds = cblSubmitSigningFiles.Items
+                    .Cast<ListItem>()
+                    .Where(item => item.Selected)
+                    .Select(item =>
+                    {
+                        Guid fileId;
+                        return Guid.TryParse(item.Value, out fileId)
+                            ? (Guid?)fileId
+                            : null;
+                    })
+                    .Where(fileId => fileId.HasValue)
+                    .Select(fileId => fileId.Value)
+                    .ToList();
+                if (selectedFileIds.Count == 0)
+                {
+                    ShowNotify(
+                        "Vui lòng chọn ít nhất một file để trình ký.",
+                        MSGType.Warning);
+                    return;
+                }
+
                 CreateRequestDocumentManager().SubmitDocumentSigning(
                     idTaiLieu,
                     idNguoiKy,
+                    selectedFileIds,
                     txtSubmitSigningNote.Text);
                 mdlSubmitSigning.CloseModal(true);
                 RefreshSigningDetail(idTaiLieu);
@@ -1243,12 +1344,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            if (!CURRENT_PAGE.IsEdit)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
             Guid idTaiLieu;
             Guid idTrinhKyTaiLieu;
             if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
@@ -1264,9 +1359,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.Signing);
+                if (!CreateRequestDocumentManager()
+                    .CanProcessAssignedSigningFile(idTaiLieu, idTrinhKyTaiLieu))
+                {
+                    ShowAccessDeniedNotify();
+                    return;
+                }
                 DataTable detail = CreateRequestDocumentManager()
-                    .GetSigningDetail(idTaiLieu, idTrinhKyTaiLieu);
+                    .GetSigningFileDetail(idTaiLieu, idTrinhKyTaiLieu);
                 if (detail.Rows.Count == 0
                     || !IsPendingSigningStatus(
                         detail.Rows[0]["TrangThaiTrinhKy"]))
@@ -1274,6 +1374,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     ShowNotify(
                         "Lần trình ký đã thay đổi hoặc không còn chờ xử lý.",
                         MSGType.Warning);
+                    return;
+                }
+
+                if (!CanManagePendingSigning(
+                    detail.Rows[0]["TrangThaiTrinhKy"],
+                    detail.Rows[0]["IdNguoiKy"],
+                    detail.Rows[0]["IdTrinhKyTaiLieuFile"]))
+                {
+                    ShowAccessDeniedNotify();
                     return;
                 }
 
@@ -1315,7 +1424,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 BackEndResourceKeys.CONFIRM_SIGNED)
                 + " / "
                 + GetResourceText(BackEndResourceKeys.SIGNING_RESULT_FILE);
-            mdlSigningResult.OpenModal(true);
+            OpenSigningModal(mdlSigningResult, "OpenSigningResult");
             KeepSigningTabOpen();
         }
 
@@ -1327,18 +1436,29 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtSigningChangeReason.Text = string.Empty;
             mdlSigningChanges.Title = GetResourceText(
                 BackEndResourceKeys.REQUEST_CHANGES);
-            mdlSigningChanges.OpenModal(true);
+            OpenSigningModal(mdlSigningChanges, "OpenSigningChanges");
             KeepSigningTabOpen();
+        }
+
+        private void OpenSigningModal(ExtraModal modal, string scriptKey)
+        {
+            modal.UpdateContentModal();
+            string title = HttpUtility.JavaScriptStringEncode(
+                modal.Title ?? string.Empty);
+            string script = string.Format(
+                "CMSMasterJs.OpenDialog('#{0}', '{1}');",
+                modal.ClientID,
+                title);
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                GetType(),
+                scriptKey + modal.ClientID,
+                script,
+                true);
         }
 
         protected void btnCompleteSigning_Click(object sender, EventArgs e)
         {
-            if (!CURRENT_PAGE.IsEdit)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
             Guid idTaiLieu;
             Guid idTrinhKyTaiLieu;
             if (!Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
@@ -1354,8 +1474,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.Signing);
-                CreateRequestDocumentManager().CompleteDocumentSigning(
+                CreateRequestDocumentManager().CompleteDocumentSigningFile(
                     idTaiLieu,
                     idTrinhKyTaiLieu,
                     txtSigningResultNote.Text);
@@ -1366,6 +1485,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             catch (InvalidOperationException exc)
             {
                 ShowNotify(exc.Message, MSGType.Warning);
+                OpenSigningModal(mdlSigningResult, "RetrySigningResult");
             }
             catch (Exception exc)
             {
@@ -1385,12 +1505,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected void btnRequestSigningChanges_Click(object sender, EventArgs e)
         {
-            if (!CURRENT_PAGE.IsEdit)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
             Guid idTaiLieu;
             Guid idTrinhKyTaiLieu;
             string reason = (txtSigningChangeReason.Text ?? string.Empty).Trim();
@@ -1410,14 +1524,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     GetResourceText(
                         BackEndResourceKeys.SIGNING_CHANGE_REASON_REQUIRED),
                     MSGType.Warning);
+                OpenSigningModal(mdlSigningChanges, "RetrySigningChanges");
                 return;
             }
 
             try
             {
-                EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.Signing);
                 CreateRequestDocumentManager()
-                    .RequestDocumentSigningChanges(
+                    .RequestDocumentSigningFileChanges(
                         idTaiLieu,
                         idTrinhKyTaiLieu,
                         reason);
@@ -1428,6 +1542,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             catch (InvalidOperationException exc)
             {
                 ShowNotify(exc.Message, MSGType.Warning);
+                OpenSigningModal(mdlSigningChanges, "RetrySigningChanges");
             }
             catch (Exception exc)
             {
@@ -2127,16 +2242,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
                 if (restoreVersion)
                 {
-                    DocumentFileSet restored = DocumentManager.Instance
+                    DocumentFileSet restored = CreateRequestDocumentManager()
                         .RestoreDocumentFileSet(idTaiLieu, idPhienBanTaiLieu);
                     InitControls(idTaiLieu);
                     upDetail.Update();
                     KeepVersionsTabOpen();
-                    ShowNotify(
+                    ShowVersionHistoryNotify(
                         restored.Created
                             ? "Đã khôi phục mốc lịch sử thành phiên bản hiện tại."
                             : "Bộ file hiện tại đã giống mốc lịch sử này.",
-                        MSGType.Success);
+                        restored.Created ? MSGType.Success : MSGType.Info);
                     return;
                 }
 
@@ -2160,12 +2275,34 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
             catch (InvalidOperationException exc)
             {
-                ShowNotify(exc.Message, MSGType.Warning);
+                ShowVersionHistoryNotify(exc.Message, MSGType.Warning);
+            }
+            catch (UnauthorizedAccessException exc)
+            {
+                ShowVersionHistoryNotify(exc.Message, MSGType.Warning);
             }
             catch (Exception exc)
             {
-                ShowNotify(exc.Message, MSGType.Error);
+                SysLogger.LogError(exc,
+                    "Document version command {Command} failed for document {DocumentId}, version {VersionId}.",
+                    e.CommandName, idTaiLieu, idPhienBanTaiLieu);
+                ShowVersionHistoryNotify(
+                    "Không thể xử lý mốc lịch sử. Vui lòng tải lại trang và thử lại.",
+                    MSGType.Error);
             }
+        }
+
+        private void ShowVersionHistoryNotify(string message, string type)
+        {
+            KeepVersionsTabOpen();
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "DocumentVersionHistoryNotify",
+                "CMSMasterJs.ShowNotify("
+                    + HttpUtility.JavaScriptStringEncode(HttpUtility.HtmlEncode(message), true)
+                    + "," + HttpUtility.JavaScriptStringEncode(type, true) + ");",
+                true);
         }
 
         private void BindVersionFileModal(
@@ -2451,16 +2588,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             return "badge bg-secondary";
         }
 
-        protected bool CanManagePendingSigning(object value)
+        protected bool CanManagePendingSigning(
+            object value,
+            object signerValue,
+            object signingFileValue)
         {
             Guid idTaiLieu;
-            return CURRENT_PAGE.IsEdit
-                && IsPendingSigningStatus(value)
+            Guid signerId;
+            Guid signingFileId;
+            return IsPendingSigningStatus(value)
+                && Guid.TryParse(Convert.ToString(signerValue), out signerId)
+                && signerId != Guid.Empty
+                && SweetContext.Current != null
+                && SweetContext.Current.UserId == signerId
+                && Guid.TryParse(Convert.ToString(signingFileValue), out signingFileId)
+                && signingFileId != Guid.Empty
                 && Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
                 && idTaiLieu != Guid.Empty
-                && DocumentManager.Instance.CanAccessDocument(
+                && CreateRequestDocumentManager().CanProcessAssignedSigningFile(
                     idTaiLieu,
-                    DocumentPermissionKeys.Signing);
+                    signingFileId);
         }
 
         private static bool IsPendingSigningStatus(object value)
@@ -2526,7 +2673,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             {
                 if (GetBoolean(row, "LaPhienBanHienTai"))
                 {
-                    if (Convert.ToInt32(row["FileCount"]) != 1) return null;
+                    if (Convert.ToInt32(row["FileCount"]) <= 0) return null;
                     Guid? versionId = GetGuid(
                         row,
                         "IdPhienBanTaiLieu");
@@ -2662,6 +2809,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             if (string.Equals(
                     source,
+                    "KHOI_PHUC",
+                    StringComparison.OrdinalIgnoreCase)
+                || string.Equals(
+                    source,
                     "RESTORE",
                     StringComparison.OrdinalIgnoreCase))
             {
@@ -2682,11 +2833,21 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected bool CanRestoreVersion(object isCurrentValue)
         {
             Guid idTaiLieu;
-            return CURRENT_PAGE.IsEdit
-                && !Convert.ToBoolean(isCurrentValue)
-                && Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
-                && idTaiLieu != Guid.Empty
-                && DocumentManager.Instance.CanAccessDocument(
+            if (!CURRENT_PAGE.IsEdit
+                || Convert.ToBoolean(isCurrentValue)
+                || !Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
+                || idTaiLieu == Guid.Empty)
+            {
+                return false;
+            }
+
+            DocumentManager manager = CreateRequestDocumentManager();
+            return IsProjectContext
+                ? manager.CanOpenProjectDocument(
+                    idTaiLieu,
+                    ProjectId,
+                    DocumentPermissionKeys.ManageFiles)
+                : manager.CanAccessDocument(
                     idTaiLieu,
                     DocumentPermissionKeys.ManageFiles);
         }

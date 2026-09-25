@@ -1,6 +1,7 @@
 using SubSonic;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
@@ -649,9 +650,48 @@ namespace SweetSoft.QLDA.Core.Managers
                 idTrinhKyTaiLieu);
         }
 
+        public DataTable GetSigningFileDetail(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieuFile)
+        {
+            EnsureDocumentAccess(idTaiLieu, ActionKeys.View);
+            return _repository.GetSigningFileDetail(
+                idTaiLieu,
+                idTrinhKyTaiLieuFile);
+        }
+
+        public DataTable GetAssignedSigningFiles(Guid? signingId = null)
+        {
+            return _repository.GetAssignedSigningFiles(
+                GetCurrentUserId(), signingId);
+        }
+
+        public bool CanProcessAssignedSigningFile(
+            Guid documentId, Guid signingFileId)
+        {
+            return _repository.CanProcessAssignedSigningFile(
+                GetCurrentUserId(), documentId, signingFileId);
+        }
+
         public DocumentSigningOperationResult SubmitDocumentSigning(
             Guid idTaiLieu,
             Guid idNguoiKy,
+            string ghiChu)
+        {
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.Signing);
+            DocumentFileSet currentFileSet =
+                _repository.GetCurrentDocumentFileSet(idTaiLieu);
+            return SubmitDocumentSigning(
+                idTaiLieu,
+                idNguoiKy,
+                currentFileSet.FileIds,
+                ghiChu);
+        }
+
+        public DocumentSigningOperationResult SubmitDocumentSigning(
+            Guid idTaiLieu,
+            Guid idNguoiKy,
+            IEnumerable<Guid> selectedFileIds,
             string ghiChu)
         {
             EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.Signing);
@@ -670,10 +710,90 @@ namespace SweetSoft.QLDA.Core.Managers
                     string.Empty,
                     document.HinhThucKy,
                     ghiChu,
+                    selectedFileIds,
                     GetCurrentUserId(),
                     GetCurrentUserName(),
                     DateTime.UtcNow);
             WriteSigningAudit(idTaiLieu, result);
+            NotifyDocumentSigningUser(
+                document,
+                idNguoiKy,
+                "Hồ sơ cần trình ký",
+                "Bạn được giao ký một hoặc nhiều file. Vui lòng mở danh sách file được giao để xử lý.",
+                result.IdTrinhKyTaiLieu);
+            return result;
+        }
+
+        public void RequestDocumentSigningFileChanges(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieuFile,
+            string reason)
+        {
+            if (!_repository.CanProcessAssignedSigningFile(
+                GetCurrentUserId(), idTaiLieu, idTrinhKyTaiLieuFile))
+                throw new UnauthorizedAccessException(
+                    "Bạn không được giao xử lý file trình ký này.");
+            DataTable detail = _repository.GetSigningFileDetail(
+                idTaiLieu,
+                idTrinhKyTaiLieuFile);
+            if (detail.Rows.Count == 0)
+                throw new InvalidOperationException(
+                    "Không tìm thấy file trong yêu cầu trình ký.");
+
+            Guid senderId = detail.Rows[0]["IdNguoiGui"] == DBNull.Value
+                ? Guid.Empty
+                : (Guid)detail.Rows[0]["IdNguoiGui"];
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            DocumentSigningOperationResult result =
+                _repository.RequestDocumentSigningFileChanges(
+                    idTaiLieu,
+                    idTrinhKyTaiLieuFile,
+                    reason,
+                    GetCurrentUserId(),
+                    GetCurrentUserName(),
+                    DateTime.UtcNow);
+            WriteSigningAudit(idTaiLieu, result);
+            NotifyDocumentSigningUser(
+                document,
+                senderId,
+                "File hồ sơ cần được điều chỉnh",
+                "Người ký đã yêu cầu điều chỉnh một file trong hồ sơ. Vui lòng mở hồ sơ để xem ghi chú.");
+        }
+
+        public DocumentSigningOperationResult CompleteDocumentSigningFile(
+            Guid idTaiLieu,
+            Guid idTrinhKyTaiLieuFile,
+            string note)
+        {
+            if (!_repository.CanProcessAssignedSigningFile(
+                GetCurrentUserId(), idTaiLieu, idTrinhKyTaiLieuFile))
+                throw new UnauthorizedAccessException(
+                    "Bạn không được giao xử lý file trình ký này.");
+            DataTable detail = _repository.GetSigningFileDetail(
+                idTaiLieu,
+                idTrinhKyTaiLieuFile);
+            if (detail.Rows.Count == 0)
+                throw new InvalidOperationException(
+                    "Không tìm thấy file trong yêu cầu trình ký.");
+
+            Guid senderId = detail.Rows[0]["IdNguoiGui"] == DBNull.Value
+                ? Guid.Empty
+                : (Guid)detail.Rows[0]["IdNguoiGui"];
+            TblTaiLieu document = _repository.GetById(idTaiLieu);
+            DocumentSigningOperationResult result =
+                _repository.CompleteDocumentSigningFile(
+                    idTaiLieu,
+                    idTrinhKyTaiLieuFile,
+                    note,
+                    GetCurrentUserId(),
+                    GetCurrentUserName(),
+                    DateTime.UtcNow);
+            WriteSigningAudit(idTaiLieu, result);
+            NotifyDocumentSigningUser(
+                document,
+                senderId,
+                "File hồ sơ đã ký xong",
+                "Người ký đã hoàn tất xử lý một file trong hồ sơ.");
             return result;
         }
 
@@ -1317,7 +1437,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 GetCurrentUserName(),
                 DateTime.UtcNow,
                 description,
-                "RESTORE");
+                "KHOI_PHUC");
             if (saved.Created)
             {
                 WriteDocumentAudit(
@@ -1592,6 +1712,56 @@ namespace SweetSoft.QLDA.Core.Managers
                 result.AuditReferenceId,
                 result.AuditChanges,
                 result.AuditDescription);
+        }
+
+        private void NotifyDocumentSigningUser(
+            TblTaiLieu document,
+            Guid recipientUserId,
+            string title,
+            string message,
+            Guid? signingId = null)
+        {
+            if (document == null
+                || recipientUserId == Guid.Empty
+                || recipientUserId == GetCurrentUserId())
+                return;
+
+            try
+            {
+                string documentToken = SecurityUtilities.ProtectUrlParameter(
+                    document.IdTaiLieu.ToString());
+                string link = signingId.HasValue
+                    ? "/fDocuments/SigningInbox.aspx?Id="
+                        + SecurityUtilities.ProtectUrlParameter(
+                            signingId.Value.ToString())
+                    : document.IdDuAn.HasValue
+                    ? "/Project/"
+                        + SecurityUtilities.ProtectUrlParameter(
+                            document.IdDuAn.Value.ToString())
+                        + "/Document/" + documentToken
+                    : "/Document/" + documentToken;
+
+                TblThongBao notification = ThongBaoManager.Instance.Create(
+                    recipientUserId,
+                    title,
+                    message,
+                    ThongBaoTypes.TaiLieu,
+                    null,
+                    document.IdDuAn);
+                if (notification != null)
+                {
+                    notification.DuongDanLienKet = link;
+                    notification.Save();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Notification delivery is secondary; a notification failure
+                // must not undo a saved signing decision.
+                SysLogger.LogError(
+                    ex,
+                    "Could not notify a user about a document signing change.");
+            }
         }
 
         private void WriteCustomerDeliveryAudit(

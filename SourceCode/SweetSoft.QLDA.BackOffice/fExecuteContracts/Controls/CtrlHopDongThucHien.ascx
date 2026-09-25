@@ -6,37 +6,25 @@
         <ContentTemplate>
             <asp:Panel runat="server" ID="pnlSearchDefault">
                 <div class="row g-2 align-items-end">
-
-                    <%-- Khách hàng --%>
                     <div class="col-md-6 col-xl-3">
                         <label class="form-label">Khách hàng</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchKhachHang" SimpleInit="true" ValueIsOfTypeGUID="true" PlaceHolder="Chọn khách hàng"></SweetSoft:ExtraDropdown>
                     </div>
 
-                    <%-- Giá trị từ --%>
-                    <div class="col-md-6 col-xl-2">
-                        <label class="form-label">Giá trị từ</label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDongTu" TextMode="Number" PlaceHolder="0"></SweetSoft:ExtraTextBox>
+                    <div class="col-md-6 col-xl-3">
+                        <label class="form-label">Giá trị hợp đồng</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchKhoangGiaTri" SimpleInit="true" PlaceHolder="Chọn khoảng giá trị"></SweetSoft:ExtraDropdown>
                     </div>
 
-                    <%-- Giá trị đến --%>
                     <div class="col-md-6 col-xl-2">
-                        <label class="form-label">Giá trị đến</label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDongDen" TextMode="Number" PlaceHolder="0"></SweetSoft:ExtraTextBox>
+                        <label class="form-label">Năm ký</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchNam" SimpleInit="true" PlaceHolder="Chọn năm"></SweetSoft:ExtraDropdown>
                     </div>
 
-                    <%-- Ngày ký từ --%>
                     <div class="col-md-6 col-xl-2">
-                        <label class="form-label">Ngày ký từ</label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="txtNgayKyTu" SingleDatePicker="true" AutoUpdateInput="false" AutoApply="true"></SweetSoft:ExtraDateTime>
+                        <label class="form-label">Tháng ký</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchThang" SimpleInit="true" PlaceHolder="Chọn tháng"></SweetSoft:ExtraDropdown>
                     </div>
-
-                    <%-- Ngày ký đến --%>
-                    <div class="col-md-6 col-xl-2">
-                        <label class="form-label">Ngày ký đến</label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="txtNgayKyDen" SingleDatePicker="true" AutoUpdateInput="false" AutoApply="true"></SweetSoft:ExtraDateTime>
-                    </div>
-
                 </div>
             </asp:Panel>
         </ContentTemplate>
