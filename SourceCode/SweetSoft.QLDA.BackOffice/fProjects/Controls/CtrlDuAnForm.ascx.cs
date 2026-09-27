@@ -371,9 +371,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             }
 
             IdHopDongThucHien = hopDong.IdHopDongThucHien;
+            if (hopDong.NgayHieuLuc.HasValue)
+                dtNgayBatDau.DateValue = hopDong.NgayHieuLuc;
+
+            if (hopDong.NgayHetHan.HasValue)
+                dtNgayKetThuc.DateValue = hopDong.NgayHetHan;
             btnChonHopDong.ButtonIcon = ExtraButton.ButtonsIcon.Close;
             btnChonHopDong.ToolTip = "Bỏ chọn hợp đồng";
-
+            upNgayDuAn.Update();
             upHopDong.Update();
         }
 

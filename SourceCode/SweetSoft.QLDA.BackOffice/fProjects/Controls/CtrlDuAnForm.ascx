@@ -88,18 +88,27 @@
                         </asp:Panel>
                     </ContentTemplate>
                 </asp:UpdatePanel>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayBatDau" SingleDatePicker="true" PlaceHolder="Select start date" />
-                    </div>
+                <div class="col-lg-8">
+                    <asp:UpdatePanel runat="server" ID="upNgayDuAn" UpdateMode="Conditional">
+                        <ContentTemplate>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
+                                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayBatDau" SingleDatePicker="true" PlaceHolder="Select start date" />
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
+                                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayKetThuc" SingleDatePicker="true" PlaceHolder="Select end date" />
+                                    </div>
+                                </div>
+                            </div>
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
                 </div>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayKetThuc" SingleDatePicker="true" PlaceHolder="Select end date" />
-                    </div>
-                </div>
+
                 <div class="col-lg-4">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
