@@ -32,27 +32,13 @@
                 </div>
                 <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
                     <ContentTemplate>
-                        <div class="row">
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false"/>
-                                     <asp:Button runat="server" ID="btnSearchHopDong" OnClick="txtSoHopDong_TextChanged" style="display:none;" CausesValidation="false" UseSubmitBehavior="false" />
-                                 </div>
-                             </div>
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDong" Enabled="false" Required="false"/>
-                                 </div>
-                             </div>
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtNgayKy" Enabled="false" Required="false"/>
-                                 </div>
-                             </div>
+                    <div class="col-lg-4">
+                        <div class="mb-3">
+                            <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
+                            <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false"/>
+                            <asp:Button runat="server" ID="btnSearchHopDong" OnClick="txtSoHopDong_TextChanged" style="display:none;" CausesValidation="false" UseSubmitBehavior="false" />
                         </div>
+                    </div>
                     </ContentTemplate>
                 </asp:UpdatePanel>
                 <div class="col-lg-4">

@@ -294,8 +294,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected void txtSoHopDong_TextChanged(object sender, EventArgs e)
         {
             IdHopDongThucHien = Guid.Empty;
-            txtGiaTriHopDong.Text = "";
-            txtNgayKy.Text = "";
 
             string soHopDong = txtSoHopDong.Text.Trim();
             if (string.IsNullOrEmpty(soHopDong))
@@ -305,8 +303,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             if (hopDong != null)
             {
                 IdHopDongThucHien = hopDong.IdHopDongThucHien;
-                txtGiaTriHopDong.Text = hopDong.GiaTriHopDong.ToString();
-                txtNgayKy.Text = hopDong.NgayKy.ToString();
             }
             else
                 return;
@@ -365,10 +361,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             lbtSubmit.Visible = false;
             //---------------------------------------------------
             txtMaDuAn.Enabled = true;
-            txtMaDuAn.Text = txtTenDuAn.Text
-                = txtGiaTriHopDong.Text
-                = txtSoHopDong.Text
-                = txtNgayKy.Text = "";
+            txtMaDuAn.Text = txtTenDuAn.Text = "";
             this.IdHopDongThucHien = Guid.Empty;
             dtNgayBatDau.DateValue = null;
             dtNgayKetThuc.DateValue = null;
@@ -388,9 +381,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             ddlLoaiDuAn.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
             ddlNhanVienQuanLy.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
 
-            txtTenDuAn.PlaceHolder = txtGiaTriHopDong.PlaceHolder
+            txtTenDuAn.PlaceHolder 
                 = txtSoHopDong.PlaceHolder
-                = txtNgayKy.PlaceHolder
                 = txtMaDuAn.PlaceHolder = "";
         }
 
@@ -405,8 +397,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             this.IdHopDongThucHien = Guid.Empty;
 
             txtSoHopDong.Text = "";
-            txtGiaTriHopDong.Text = "";
-            txtNgayKy.Text = "";
 
             if (!duAn.IdHopDongThucHien.HasValue || duAn.IdHopDongThucHien.Value == Guid.Empty)
             {
@@ -420,8 +410,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             this.IdHopDongThucHien = hd.IdHopDongThucHien;
             txtSoHopDong.Text = hd.SoHopDong;
-            txtGiaTriHopDong.Text = hd.GiaTriHopDong.ToString();
-            txtNgayKy.Text = hd.NgayKy.ToString();
         }
 
         private bool GetDropdownValue(ExtraDropdown input, out Guid result)
