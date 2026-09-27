@@ -1,3 +1,4 @@
+using SubSonic;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -509,6 +510,21 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblHopDongThucHien GetBySoHopDong(string soHopDong)
         {
             return _repository.GetBySoHopDong(soHopDong);
+        }
+
+        public DataTable GetSortInforBySoHopDong(string soHopDong)
+        {
+            return _repository.GetSortInfoBySoHopDong(soHopDong);
+        }
+
+        public bool IsUsedByAnotherProject(Guid idHopDongThucHien, Guid idDuAn)
+        {
+            return _repository.IsUsedByAnotherProject(idHopDongThucHien, idDuAn);
+        }
+
+        public bool IsUsedByAnotherProject(Guid idHopDongThucHien)
+        {
+            return _repository.IsUsedByAnotherProject(idHopDongThucHien);
         }
 
         #endregion

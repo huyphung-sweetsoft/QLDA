@@ -1,4 +1,5 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+﻿using SweetCMS.Controls.Helpers;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -8,6 +9,7 @@ using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -85,7 +87,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             //Đăng ký lắng nghe cái popup chọn nhân viên
             CtrlChonNhanVien1.OnConfirmSelection += CtrlChonNhanVien1_OnConfirmSelection;
-
             txtSoHopDong.EnterSubmitClientID = btnSearchHopDong.ClientID;
             ApplyControlsText();
         }
@@ -124,10 +125,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 if (!byte.TryParse(ddlTrangThai.SelectedValue, out trangThai) || !Enum.IsDefined(typeof(DuAnStatus), trangThai))
                 {
                     validationEngine.AddErrorPrompt(ddlTrangThai.ClientID, GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE));
-                }
-                if (!string.IsNullOrWhiteSpace(txtSoHopDong.Text) && IdHopDongThucHien == Guid.Empty)
-                {
-                    validationEngine.AddErrorPrompt(txtSoHopDong.ClientID, "Số hợp đồng không tồn tại.");
                 }
                 if (!dtNgayBatDau.DateValue.HasValue)
                 {
@@ -291,21 +288,92 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             dlDetail.OpenModal(true);
         }
 
-        protected void txtSoHopDong_TextChanged(object sender, EventArgs e)
+        protected void btnSearchHopDong_Click(object sender, EventArgs e)
         {
             IdHopDongThucHien = Guid.Empty;
+            pnlHopDongInfo.Visible = false;
 
             string soHopDong = txtSoHopDong.Text.Trim();
             if (string.IsNullOrEmpty(soHopDong))
+            {
+                upHopDongInfo.Update();
                 return;
+            }
+
+            DataTable dt = HopDongThucHienManager.Instance.GetSortInforBySoHopDong(txtSoHopDong.Text.Trim());
+
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                ShowNotify("Không tìm thấy hợp đồng.", MSGType.Warning);
+                pnlHopDongInfo.Visible = false;
+                upHopDongInfo.Update();
+                return;
+            }
+
+            DataRow row = dt.Rows[0];
+
+            Guid idHopDong = Guid.Parse(row["IdHopDongThucHien"].ToString());
+
+            if (IdDuAn == Guid.Empty
+                ? HopDongThucHienManager.Instance.IsUsedByAnotherProject(idHopDong)
+                : HopDongThucHienManager.Instance.IsUsedByAnotherProject(idHopDong, IdDuAn))
+            {
+                ShowNotify("Hợp đồng này đã được sử dụng bởi dự án khác.", MSGType.Warning);
+                pnlHopDongInfo.Visible = false;
+                upHopDongInfo.Update();
+                return;
+            }
+
+            lblTenHopDong.Text = row["TenHopDong"].ToString();
+            lblGiaTriHopDong.Text = Convert.ToDecimal(row["GiaTriHopDong"]).ToString("N0");
+            lblNgayKyHopDong.Text = Convert.ToDateTime(row["NgayKy"]).ToString("dd/MM/yyyy");
+            lblKhachHangHopDong.Text = row["TenKhachHang"].ToString();
+
+            pnlHopDongInfo.Visible = true;
+            upHopDongInfo.Update();
+        }
+
+        protected void btnChonHopDong_Click(object sender, EventArgs e)
+        {
+            if (IdHopDongThucHien != Guid.Empty)
+            {
+                IdHopDongThucHien = Guid.Empty;
+                btnChonHopDong.ButtonIcon = ExtraButton.ButtonsIcon.Check;
+                btnChonHopDong.ToolTip = "Chọn hợp đồng";
+                ShowNotify("Đã bỏ chọn hợp đồng.", MSGType.Info);
+                upHopDong.Update();
+                return;
+            }
+
+            string soHopDong = txtSoHopDong.Text.Trim();
+            if (string.IsNullOrEmpty(soHopDong))
+            {
+                ShowNotify("Vui lòng nhập số hợp đồng.", MSGType.Warning);
+                return;
+            }
+
             TblHopDongThucHien hopDong = HopDongThucHienManager.Instance.GetBySoHopDong(soHopDong);
 
-            if (hopDong != null)
+            if (hopDong == null)
             {
-                IdHopDongThucHien = hopDong.IdHopDongThucHien;
-            }
-            else
+                ShowNotify("Không tìm thấy hợp đồng.", MSGType.Warning);
                 return;
+            }
+
+            bool isUsed = IdDuAn == Guid.Empty
+                        ? HopDongThucHienManager.Instance.IsUsedByAnotherProject(hopDong.IdHopDongThucHien)
+                        : HopDongThucHienManager.Instance.IsUsedByAnotherProject(hopDong.IdHopDongThucHien, IdDuAn);
+
+            if (isUsed)
+            {
+                ShowNotify("Hợp đồng này đã được sử dụng bởi dự án khác.", MSGType.Warning);
+                return;
+            }
+
+            IdHopDongThucHien = hopDong.IdHopDongThucHien;
+            btnChonHopDong.ButtonIcon = ExtraButton.ButtonsIcon.Close;
+            btnChonHopDong.ToolTip = "Bỏ chọn hợp đồng";
+
             upHopDong.Update();
         }
 
@@ -369,6 +437,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             ddlKhachHang.SelectedIndex = -1;
             ddlLoaiDuAn.SelectedIndex = -1;
             ddlNhanVienQuanLy.SelectedIndex = -1;
+            this.IdHopDongThucHien = Guid.Empty;
+            txtSoHopDong.Text = "";
+            pnlHopDongInfo.Visible = false;
+            btnChonHopDong.ButtonIcon = ExtraButton.ButtonsIcon.Check;
+            btnChonHopDong.ToolTip = "Chọn hợp đồng";
             this.IdDuAn = Guid.Empty;
             //Dọn sạch data rác của list nv trước khi nhấn nút thêm dự án
             this.SelectedMemberIds = new List<Guid>();
@@ -410,8 +483,12 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             this.IdHopDongThucHien = hd.IdHopDongThucHien;
             txtSoHopDong.Text = hd.SoHopDong;
-        }
 
+            btnChonHopDong.ButtonIcon = ExtraButton.ButtonsIcon.Close;
+            btnChonHopDong.ToolTip = "Bỏ chọn hợp đồng";
+
+            pnlHopDongInfo.Visible = true;
+        }
         private bool GetDropdownValue(ExtraDropdown input, out Guid result)
         {
             result = Guid.Empty;

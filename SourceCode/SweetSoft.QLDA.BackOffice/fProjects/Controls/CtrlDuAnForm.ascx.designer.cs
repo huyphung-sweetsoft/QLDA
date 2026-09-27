@@ -87,6 +87,69 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.WebControls.Button btnSearchHopDong;
 
         /// <summary>
+        /// btnChonHopDong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnChonHopDong;
+
+        /// <summary>
+        /// upHopDongInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upHopDongInfo;
+
+        /// <summary>
+        /// pnlHopDongInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlHopDongInfo;
+
+        /// <summary>
+        /// lblTenHopDong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTenHopDong;
+
+        /// <summary>
+        /// lblGiaTriHopDong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblGiaTriHopDong;
+
+        /// <summary>
+        /// lblNgayKyHopDong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNgayKyHopDong;
+
+        /// <summary>
+        /// lblKhachHangHopDong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblKhachHangHopDong;
+
+        /// <summary>
         /// dtNgayBatDau control.
         /// </summary>
         /// <remarks>

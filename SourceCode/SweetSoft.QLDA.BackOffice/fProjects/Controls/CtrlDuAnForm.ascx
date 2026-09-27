@@ -30,15 +30,62 @@
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
-                <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
+               <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
                     <ContentTemplate>
-                    <div class="col-lg-4">
-                        <div class="mb-3">
-                            <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
-                            <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false"/>
-                            <asp:Button runat="server" ID="btnSearchHopDong" OnClick="txtSoHopDong_TextChanged" style="display:none;" CausesValidation="false" UseSubmitBehavior="false" />
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
+                                <div class="input-group">
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false" />
+                                    <asp:Button runat="server" ID="btnSearchHopDong"
+                                        OnClick="btnSearchHopDong_Click"
+                                        style="display:none;"
+                                        CausesValidation="false"
+                                        UseSubmitBehavior="false" />
+                                    <SweetSoft:ExtraButton runat="server" ID="btnChonHopDong"
+                                        ButtonStyle="Secondary"
+                                        ButtonIcon="Check"
+                                        CausesValidation="false"
+                                        OnClick="btnChonHopDong_Click"
+                                        ToolTip="Chọn hợp đồng">
+                                    </SweetSoft:ExtraButton>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <asp:UpdatePanel runat="server" ID="upHopDongInfo" UpdateMode="Conditional">
+                    <ContentTemplate>
+                        <asp:Panel runat="server" ID="pnlHopDongInfo" Visible="false" CssClass="col-lg-12">
+                            <div class="border rounded p-3 mb-3">
+                                <div class="row">
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Tên hợp đồng</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblTenHopDong" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Giá trị</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblGiaTriHopDong" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Ngày ký</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblNgayKyHopDong" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Khách hàng</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblKhachHangHopDong" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
                     </ContentTemplate>
                 </asp:UpdatePanel>
                 <div class="col-lg-4">
