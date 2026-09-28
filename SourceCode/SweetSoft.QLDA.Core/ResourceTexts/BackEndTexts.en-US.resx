@@ -1463,7 +1463,7 @@
     <value>Document name</value>
   </data>
   <data name="DOING" xml:space="preserve">
-    <value>Document name</value>
+    <value>Doing</value>
   </data>
   <data name="DOCUMENT_STATUS" xml:space="preserve">
     <value>Document status</value>
@@ -3090,5 +3090,8 @@
   </data>
   <data name="CONTRACT_DETAIL" xml:space="preserve">
     <value>&#x8;</value>
+  </data>
+  <data name="COMPLETED_LATE" xml:space="preserve">
+    <value>Hoàn thành trễ</value>
   </data>
 </root>

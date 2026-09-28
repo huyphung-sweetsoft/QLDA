@@ -2947,6 +2947,12 @@
   <data name="ACTUAL_COMPLETION_DATE" xml:space="preserve">
     <value>Hoàn thành thực tế</value>
   </data>
+  <data name="WORK_SCHEDULE_THIS_MONTH" xml:space="preserve">
+    <value>Lịch làm việc tháng này</value>
+  </data>
+  <data name="CONTRACT_DETAIL" xml:space="preserve">
+    <value>Chi tiết hợp đồng</value>
+  </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
@@ -3106,10 +3112,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
-  <data name="WORK_SCHEDULE_THIS_MONTH" xml:space="preserve">
-    <value>Lịch làm việc tháng này</value>
-  </data>
-  <data name="CONTRACT_DETAIL" xml:space="preserve">
-    <value>Chi tiết hợp đồng</value>
+  <data name="COMPLETED_LATE" xml:space="preserve">
+    <value>Hoàn thành trễ</value>
   </data>
 </root>

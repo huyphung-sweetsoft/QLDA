@@ -73,16 +73,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             btnXacNhanNhanVien.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
             txtThoiGianKetThuc.PlaceHolder = "--";
 
-            txtTenCuocHop.PlaceHolder = txtThoiGianBatDau.PlaceHolder =
+            txtTenCuocHop.PlaceHolder = txtNgayBatDau.PlaceHolder =
             txtDiaDiemHop.PlaceHolder = txtThoiLuong.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
             dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
         }
 
         private void OpenMeetingFilesAction(object sender, EventArgs e)
         {
-            Guid idLichHop = sender is Guid
-                ? (Guid)sender
-                : Guid.Empty;
+            Guid idLichHop = sender is Guid ? (Guid)sender : Guid.Empty;
             if (idLichHop == Guid.Empty)
             {
                 ShowInvalidDataError();
@@ -146,10 +144,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
             _control.BindNhanVienThamGiaLichHop(meet.IdLichHop, hdfNhanVienIds, txtNhanVienThamGia);
 
+            // TÁCH DỮ LIỆU ĐỔ RA 2 Ô NGÀY VÀ GIỜ TỪ DATABASE
             if (meet.ThoiGianBatDau != DateTime.MinValue)
             {
                 TimeSpan offset = TimeZoneInfo.Local.GetUtcOffset(meet.ThoiGianBatDau);
-                txtThoiGianBatDau.DateValue = meet.ThoiGianBatDau.Subtract(offset);
+                DateTime localStart = meet.ThoiGianBatDau.Subtract(offset);
+
+                txtNgayBatDau.DateValue = localStart.Date;
+                txtGioBatDau.Text = localStart.ToString("HH:mm");
             }
 
             if (meet.ThoiGianKetThuc != DateTime.MinValue)
@@ -179,7 +181,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
             txtTenCuocHop.Text = txtNoiDungCuocHop.Text = txtDiaDiemHop.Text = "";
 
-            txtThoiGianBatDau.DateValue = null;
+            txtNgayBatDau.DateValue = null;
+            txtGioBatDau.Text = "";
             txtThoiLuong.Text = "";
             txtThoiGianKetThuc.Text = "";
             txtNhanVienThamGia.Text = "";
@@ -217,6 +220,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 meetDto.NoiDungCuocHop = !string.IsNullOrEmpty(txtNoiDungCuocHop.Text.Trim()) ? txtNoiDungCuocHop.Text.Trim() : null;
                 meetDto.DiaDiemHop = txtDiaDiemHop.Text.Trim();
 
+                // ĐỌC THỜI GIAN KẾT THÚC VÀ TRỪ ĐI THỜI LƯỢNG (GIỮ NGUYÊN LOGIC AN TOÀN NHẤT CỦA BÁC)
                 string strEnd = txtThoiGianKetThuc.Text.Trim();
                 if (string.IsNullOrEmpty(strEnd))
                 {
@@ -242,7 +246,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 }
                 else
                 {
-                    ShowNotify($"Vui lòng chọn thời gian bắt đầu hợp lệ! (Lỗi đọc chuỗi: {strEnd})", MSGType.Error);
+                    ShowNotify($"Vui lòng chọn thời gian hợp lệ! (Lỗi: {strEnd})", MSGType.Error);
                     return;
                 }
 
@@ -257,6 +261,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
+                if (isNew && this.IsEdit)
+                    OpenMeetingFilesAction(savedMeet.IdLichHop, EventArgs.Empty);
             }
             catch (Exception exc)
             {
