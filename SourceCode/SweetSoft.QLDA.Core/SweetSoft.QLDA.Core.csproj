@@ -195,8 +195,10 @@
     <Compile Include="EnumHelper\Defines\NguonGocVanDe.cs" />
     <Compile Include="EnumHelper\Defines\ThanhToanStatus.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiChiPhi.cs" />
+    <Compile Include="EnumHelper\Defines\TrangThaiCongViec.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiCuocHop.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiVanDe.cs" />
+    <Compile Include="EnumHelper\Defines\VaiTroNhanVien.cs" />
     <Compile Include="EnumHelper\Defines\XacSuatRuiRo.cs" />
     <Compile Include="EnumHelper\ProjectStatus.cs" />
     <Compile Include="ExcelManager\ColumnDisplayInfo.cs" />
