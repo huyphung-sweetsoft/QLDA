@@ -342,25 +342,6 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colTblCongViecRecords;
-		public SweetSoft.QLDA.DataAccess.TblCongViecCollection TblCongViecRecords()
-		{
-			if(colTblCongViecRecords == null)
-			{
-				colTblCongViecRecords = new SweetSoft.QLDA.DataAccess.TblCongViecCollection().Where(TblCongViec.Columns.IdGiaiDoan, IdGiaiDoan).Load();
-				colTblCongViecRecords.ListChanged += new ListChangedEventHandler(colTblCongViecRecords_ListChanged);
-			}
-			return colTblCongViecRecords;
-		}
-				
-		void colTblCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblCongViecRecords[e.NewIndex].IdGiaiDoan = IdGiaiDoan;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblGiaiDoanDuAnCollection colTblGiaiDoanDuAnRecords;
 		public SweetSoft.QLDA.DataAccess.TblGiaiDoanDuAnCollection TblGiaiDoanDuAnRecords()
 		{
@@ -549,17 +530,6 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
-                if (colTblCongViecRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colTblCongViecRecords)
-                    {
-                        if (item.IdGiaiDoan == null ||item.IdGiaiDoan != IdGiaiDoan)
-                        {
-                            item.IdGiaiDoan = IdGiaiDoan;
-                        }
-                    }
-               }
-		
                 if (colTblGiaiDoanDuAnRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblGiaiDoanDuAn item in colTblGiaiDoanDuAnRecords)
@@ -579,11 +549,6 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
-                if (colTblCongViecRecords != null)
-                {
-                    colTblCongViecRecords.SaveAll();
-               }
-		
                 if (colTblGiaiDoanDuAnRecords != null)
                 {
                     colTblGiaiDoanDuAnRecords.SaveAll();
