@@ -3114,6 +3114,7 @@
   </data>
   <data name="WARNING_REMOVE_ACTIVE_MEMBERS_MSG" xml:space="preserve">
     <value>Những nhân viên sau hiện đang đảm nhiệm công việc trong dự án:{0}Việc loại bỏ họ sẽ khiến các công việc trên bị trống người thực hiện. Bạn có chắc chắn muốn tiếp tục xóa?</value>
+	 </data> 
   <data name="COMPLETED_LATE" xml:space="preserve">
     <value>Hoàn thành trễ</value>
   </data>
