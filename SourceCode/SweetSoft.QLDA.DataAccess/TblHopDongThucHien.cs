@@ -319,11 +319,10 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdTaiLieu.AutoIncrement = false;
 				colvarIdTaiLieu.IsNullable = true;
 				colvarIdTaiLieu.IsPrimaryKey = false;
-				colvarIdTaiLieu.IsForeignKey = true;
+				colvarIdTaiLieu.IsForeignKey = false;
 				colvarIdTaiLieu.IsReadOnly = false;
 				colvarIdTaiLieu.DefaultSetting = @"";
-				
-					colvarIdTaiLieu.ForeignKeyTableName = "TblTaiLieu";
+				colvarIdTaiLieu.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdTaiLieu);
 				
 				TableSchema.TableColumn colvarLoaiNoiDungHopDong = new TableSchema.TableColumn(schema);
@@ -544,17 +543,6 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.TblKhachHang.FetchByID(this.IdKhachHang); }
 			set { SetColumnValue("IdKhachHang", value.IdKhachHang); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a TblTaiLieu ActiveRecord object related to this TblHopDongThucHien
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblTaiLieu TblTaiLieu
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblTaiLieu.FetchByID(this.IdTaiLieu); }
-			set { SetColumnValue("IdTaiLieu", value.IdTaiLieu); }
 		}
 		
 		
