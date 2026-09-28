@@ -101,6 +101,39 @@
             min-width: 1px !important;
         }
 
+        .contract-file-list {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: #fff;
+            margin-bottom: 16px;
+        }
+
+        .contract-file-list table {
+            margin-bottom: 0;
+        }
+
+        .contract-file-list .file-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .contract-file-list .file-name span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .contract-file-actions {
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .contract-file-actions .btn {
+            margin-left: 4px;
+        }
+
         @media (max-width: 1200px) {
             .contract-layout {
                 grid-template-columns: 1fr;
@@ -143,13 +176,6 @@
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtTenHopDong" Required="true" MaxLength="250" PlaceHolder="Nhập tên hợp đồng"></SweetSoft:ExtraTextBox>
                                 </div>
 
-                                <asp:Panel runat="server" ID="pnlContractDocumentIdentityLocked" CssClass="mb-3" Visible="false">
-                                    <div class="alert alert-info py-2 mb-0" role="alert">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT_IDENTITY_LOCKED) %>
-                                    </div>
-                                </asp:Panel>
-
                                 <div class="mb-3">
                                     <label class="form-label label-valid">Khách hàng</label>
                                     <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" SimpleInit="true" ValueIsOfTypeGUID="true" PlaceHolder="Chọn khách hàng"></SweetSoft:ExtraDropdown>
@@ -181,6 +207,9 @@
                                 </div>
                             </div>
 
+                            <%-- File đã tải lên --%>
+
+
                             <%-- Bên phải: Nội dung hợp đồng --%>
                             <div class="contract-content-panel">
                                 <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
@@ -191,27 +220,85 @@
                                         Tải file
                                     </button>
                                 </div>
+                                <%-- Danh sách file hợp đồng --%>
+                                <div class="contract-file-list">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Tên file</th>
+                                                <th style="width: 140px;">Kích thước</th>
+                                                <th style="width: 180px;">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater runat="server" ID="rptContractFiles" OnItemCommand="rptContractFiles_ItemCommand">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="file-name">
+                                                                <i class='<%# GetContractFileIcon(Eval("Ext")) %>'></i>
+                                                                <span title='<%# Eval("OriginalFileName") %>'>
+                                                                    <%# Eval("OriginalFileName") %>
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <%# FormatFileSize(Eval("FileSize")) %>
+                                                        </td>
+                                                        <td class="contract-file-actions">
+                                                            <asp:LinkButton
+                                                                runat="server"
+                                                                ID="btnDownload"
+                                                                CommandName="Download"
+                                                                CommandArgument='<%# Eval("Id") %>'
+                                                                CssClass="btn btn-sm btn-light"
+                                                                CausesValidation="false"
+                                                                ToolTip="Tải về">
+                                                                <i class="fas fa-download"></i>
+                                                            </asp:LinkButton>
 
-                                <%-- File đã tải lên --%>
-                                <div id="contractFileInfo" class="contract-file-info d-none mb-3">
-                                    <div class="contract-file-name">
-                                        <i id="contractFileIcon" class="fas fa-file-alt text-primary me-2"></i>
-                                        <span id="contractFileName"></span>
-                                    </div>
+                                                            <asp:LinkButton
+                                                                runat="server"
+                                                                ID="btnEdit"
+                                                                CommandName="Edit"
+                                                                CommandArgument='<%# Eval("Id") %>'
+                                                                CssClass="btn btn-sm btn-light"
+                                                                CausesValidation="false"
+                                                                Visible='<%# IsContractFileEditable(Eval("Ext")) %>'
+                                                                ToolTip="Chỉnh sửa">
+                                                                <i class="fas fa-edit"></i>
+                                                            </asp:LinkButton>
 
-                                    <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="RemoveContractFile();" title="Xóa file">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                                            <asp:LinkButton
+                                                                runat="server"
+                                                                ID="btnDelete"
+                                                                CommandName="Delete"
+                                                                CommandArgument='<%# Eval("Id") %>'
+                                                                CssClass="btn btn-sm btn-light text-danger"
+                                                                CausesValidation="false"
+                                                                OnClientClick="return confirm('Bạn có chắc muốn xóa file này không?');"
+                                                                ToolTip="Xóa">
+                                                                <i class="fas fa-trash"></i>
+                                                            </asp:LinkButton>
+                                                        </td>
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </tbody>
+                                    </table>
                                 </div>
 
-                                <%-- FilesBox được giữ lại để sử dụng cơ chế upload hiện tại nhưng không hiển thị UI --%>
-                                <div id="contractFileBox" class="contract-file-box-hidden">
-                                    <SweetSoft:FilesBox
-                                        runat="server"
-                                        ID="fbHopDong"
-                                        IsMultiple="false" />
-                                </div>
+                                <asp:Panel runat="server" ID="pnlNoContractFiles" CssClass="text-center text-muted py-3">
+                                    Không có file nào.
+                                </asp:Panel>
 
+                            <%-- FilesBox được giữ lại để sử dụng cơ chế upload hiện tại nhưng không hiển thị UI --%>
+                            <div id="contractFileBox" class="contract-file-box-hidden">
+                                <SweetSoft:FilesBox
+                                    runat="server"
+                                    ID="fbHopDong"
+                                    IsMultiple="false" />
+                            </div>
                                 <%-- CKEditor --%>
                                 <asp:Panel runat="server" ID="pnlSoanThao" ClientIDMode="Static">
                                     <div class="contract-editor-wrapper">

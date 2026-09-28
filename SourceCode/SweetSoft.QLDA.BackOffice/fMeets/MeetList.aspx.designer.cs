@@ -60,13 +60,22 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenCuocHop;
 
         /// <summary>
-        /// txtThoiGianBatDau control.
+        /// txtNgayBatDau control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDateTime txtThoiGianBatDau;
+        protected global::SweetSoft.QLDA.Controls.ExtraDateTime txtNgayBatDau;
+
+        /// <summary>
+        /// txtGioBatDau control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtGioBatDau;
 
         /// <summary>
         /// txtThoiLuong control.

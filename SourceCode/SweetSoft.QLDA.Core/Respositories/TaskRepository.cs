@@ -289,6 +289,12 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .IsEqualTo(false)
                 .ExecuteSingle<TblCongViec>();
         }
+        public TblDoUuTien GetPriorityById(Guid idDoUuTien)
+        {
+            return new Select().From(TblDoUuTien.Schema)
+                               .Where(TblDoUuTien.Columns.IdDoUuTien).IsEqualTo(idDoUuTien)
+                               .ExecuteSingle<TblDoUuTien>();
+        }
         #endregion
         #region 2. Truy vấn Danh mục & Thành viên
         public DataTable FetchAllPrioritiesTable()

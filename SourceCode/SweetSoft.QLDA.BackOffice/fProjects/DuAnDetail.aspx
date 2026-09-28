@@ -89,36 +89,7 @@
                                     </ContentTemplate>
                                 </asp:UpdatePanel>
 
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </button>
-
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="javascript:;">
-                                                <i class="fas fa-history me-2 text-muted"></i>
-                                                Lịch sử hoạt động
-                                            </a>
-                                        </li>
-
-                                        <li>
-                                            <a class="dropdown-item" href="javascript:;">
-                                                <i class="fas fa-project-diagram me-2 text-muted"></i>
-                                                Quản lý giai đoạn
-                                            </a>
-                                        </li>
-
-                                        <li><hr class="dropdown-divider" /></li>
-
-                                        <li>
-                                            <a class="dropdown-item text-danger" href="javascript:;">
-                                                <i class="fas fa-trash me-2"></i>
-                                                Xóa dự án
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+                               
                             </div>
                         </div>
 
@@ -333,17 +304,6 @@
                                                         </asp:Label>
 
                                                         <i class="fas fa-external-link-alt ms-1 small"></i>
-                                                    </asp:LinkButton>
-
-                                                    <asp:LinkButton
-                                                        runat="server"
-                                                        ID="lbtOpenContractDocument"
-                                                        CausesValidation="false"
-                                                        CssClass="btn btn-outline-primary btn-sm mt-2"
-                                                        OnClick="lbtOpenContractDocument_Click"
-                                                        Visible="false">
-                                                        <i class="fas fa-folder-open me-1"></i>
-                                                        <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT) %>
                                                     </asp:LinkButton>
 
                                                     <asp:Label

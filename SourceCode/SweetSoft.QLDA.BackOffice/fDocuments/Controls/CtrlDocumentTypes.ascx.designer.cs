@@ -13,6 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
     public partial class CtrlDocumentTypes
     {
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTypeScope;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlDefaultStorage;
 
         /// <summary>

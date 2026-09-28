@@ -198,10 +198,6 @@ namespace SweetSoft.QLDA.BackOffice
                 setting = settingManager.GetSettingByName(SettingKeys.ProjectCodePrefix);
                 if (setting != null)
                     txtProjectCodePrefix.Text = setting.SettingValue;
-                //--------------------------------------------------------------
-                setting = settingManager.GetSettingByName(SettingKeys.ProjectCodeStartNumber);
-                if (setting != null)
-                    txtProjectCodeStartNumber.Text = setting.SettingValue;
                 #endregion
                 #region Contribution Coefficient
                 DataTable dtHeSoDongGop = HeSoDongGopManager.Instance.GetHeSoMacDinh();
@@ -342,8 +338,6 @@ namespace SweetSoft.QLDA.BackOffice
 
                 #region Project
                 settingManager.SaveSetting(SettingKeys.ProjectCodePrefix, txtProjectCodePrefix.Text);
-                //--------------------------------------------------------------
-                settingManager.SaveSetting(SettingKeys.ProjectCodeStartNumber, txtProjectCodeStartNumber.Text);
                 #endregion
                 #region Contribution Coefficient
 

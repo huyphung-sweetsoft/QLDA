@@ -39,14 +39,14 @@
                             <SweetSoft:BootstrapDropdown
                                 runat="server"
                                 ID="ddlSearchLoaiTaiLieu"
-                                Text="Loại tài liệu"
+                                Text="Loại hồ sơ"
                                 AllowClear="true"
                                 AutoPostBack="true"
                                 EnableSearch="true"
                                 ValueIsOfTypeGUID="true"
                                 SearchColumn="IdLoaiTaiLieu"
-                                SearchPlaceholder="Tìm kiếm loại tài liệu..."
-                                NoResultsText="Không tìm thấy loại tài liệu"
+                                SearchPlaceholder="Tìm kiếm loại hồ sơ..."
+                                NoResultsText="Không tìm thấy loại hồ sơ"
                                 CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
                                 OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                             </SweetSoft:BootstrapDropdown>
@@ -129,7 +129,7 @@
                             SortExpression="TenMau" />
 
                         <asp:TemplateField
-                            HeaderText="Loại tài liệu"
+                            HeaderText="Loại hồ sơ"
                             SortExpression="TenLoai">
                             <ItemTemplate>
                                 <%# GetDocumentTypeText(Eval("TenNhom"), Eval("TenLoai")) %>
@@ -261,7 +261,7 @@
                         Required="true"
                         ValueIsOfTypeGUID="true"
                         SimpleInit="true"
-                        PlaceHolder="Chọn loại tài liệu">
+                        PlaceHolder="Chọn loại hồ sơ">
                     </SweetSoft:ExtraDropdown>
                 </div>
 
