@@ -1409,7 +1409,7 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
-        public void AutoSetDependentTime(Guid projectId, Guid taskId)
+        public void AutoSetDependentTime(Guid projectId, Guid taskId, bool forceUpdateStartedTask = false)
         {
             TblCongViec task = FetchById(taskId);
             if (task == null || !task.NgayKetThuc.HasValue) return;
@@ -1423,35 +1423,39 @@ namespace SweetSoft.QLDA.Core.Managers
                     {
                         TblCongViec depTask = FetchById(depTaskId);
 
-                        // [CHỐT CHẶN]: Chỉ tự động dời (cả tiến lẫn lùi) nếu Task phụ thuộc CHƯA BẮT ĐẦU
-                        if (depTask != null && depTask.DaXoa != true && depTask.TrangThai == 0)
+                        // Mặc định chỉ tự động dời task chưa bắt đầu.
+                        // Riêng flow Edit có thể truyền true để cascade cả task đã bắt đầu.
+                        if (depTask == null || depTask.DaXoa == true || (!forceUpdateStartedTask && depTask.TrangThai != 0))
+                            continue;
+
+                        // Dependency hiện tại của hệ thống là nối tiếp tuyệt đối:
+                        // Start của task phụ thuộc = End của task trước + 1 ngày.
+                        DateTime newStartDate = task.NgayKetThuc.Value.Date.AddDays(1);
+                        int thoiHan = depTask.ThoiHanNgay ?? 1;
+                        bool hasChildren = CheckHasChildTasks(projectId, depTask);
+
+                        depTask.NgayBatDau = newStartDate;
+                        depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(newStartDate, thoiHan);
+                        depTask.NgayCapNhat = DateTime.Now;
+                        depTask.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
+                        depTask.Save();
+
+                        if (hasChildren)
                         {
-                            // [FIX NGHIỆP VỤ]: Ngày bắt đầu = Ngày kết thúc của task trước + 1 ngày.
-                            // Không dùng GetNextWorkingDay() ở đây nữa để tránh việc đẩy qua T7/CN/Lễ.
-                            DateTime minStart = task.NgayKetThuc.Value.AddDays(1);
+                            // Nếu dependency trỏ vào Parent/Phase:
+                            // 1. Đẩy ngày xuống FULL cây con.
+                            // 2. Roll-up lại thời gian của Parent/Phase.
+                            // 3. Từ Parent/Phase đó tiếp tục đi dependency kế tiếp.
+                            AutoSetFirstChildStartTime(projectId, depTask.IdCongViec, newStartDate, forceUpdateStartedTask);
+                        }
+                        else
+                        {
+                            // Task lá: tiếp tục domino sang dependency của chính nó.
+                            AutoSetDependentTime(projectId, depTask.IdCongViec, forceUpdateStartedTask);
 
-                            // KIỂM TRA KHÁC NHAU LÀ DỜI (Không quan tâm tiến hay lùi)
-                            if (!depTask.NgayBatDau.HasValue || depTask.NgayBatDau.Value.Date != minStart.Date)
+                            if (depTask.IdCongViecCha.HasValue)
                             {
-                                int thoiHan = depTask.ThoiHanNgay ?? 1;
-
-                                depTask.NgayBatDau = minStart;
-
-                                // Lưu ý: Ngày kết thúc vẫn đưa vào Engine để rải ngày công bỏ qua lễ/tết cho chuẩn
-                                depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(minStart, thoiHan);
-
-                                depTask.NgayCapNhat = DateTime.Now;
-                                depTask.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
-                                depTask.Save();
-
-                                // Lan truyền domino tiếp cho các task phụ thuộc của thằng này
-                                AutoSetDependentTime(projectId, depTask.IdCongViec);
-
-                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Cha
-                                if (depTask.IdCongViecCha.HasValue)
-                                {
-                                    AutoSetParentTime(projectId, depTask.IdCongViecCha.Value);
-                                }
+                                AutoSetParentTime(projectId, depTask.IdCongViecCha.Value, forceUpdateStartedTask);
                             }
                         }
                     }
@@ -1459,13 +1463,27 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
-        public void AutoSetFirstChildStartTime(Guid projectId, Guid parentId, DateTime newStartDate)
+        public void AutoSetFirstChildStartTime(Guid projectId, Guid parentId, DateTime newStartDate, bool forceUpdateStartedTask = false)
+        {
+            AutoSetFirstChildStartTimeInternal(projectId, parentId, newStartDate, forceUpdateStartedTask);
+
+            // Sau khi toàn bộ chuỗi con đã được dời xong, chốt lại thời gian Parent/Phase.
+            AutoSetParentTime(projectId, parentId, forceUpdateStartedTask);
+
+            // Quan trọng: dù AutoSetParentTime có lúc không phát hiện thay đổi End/Duration,
+            // Parent/Phase vừa là node hiện tại của domino nên vẫn phải kiểm tra dependency tiếp theo.
+            AutoSetDependentTime(projectId, parentId, forceUpdateStartedTask);
+        }
+
+        private void AutoSetFirstChildStartTimeInternal(Guid projectId, Guid parentId, DateTime newStartDate, bool forceUpdateStartedTask)
         {
             TblCongViec firstChild = _repository.GetFirstChildTask(projectId, parentId);
             if (firstChild == null || firstChild.DaXoa == true) return;
+
             firstChild.NgayBatDau = newStartDate;
             int firstChildDuration = firstChild.ThoiHanNgay ?? 1;
             TblCongViec grandChild = _repository.GetFirstChildTask(projectId, firstChild.IdCongViec);
+
             if (grandChild != null)
             {
                 // Khi đẩy start vượt qua end cũ, phải cập nhật end tạm trước khi Save
@@ -1476,9 +1494,11 @@ namespace SweetSoft.QLDA.Core.Managers
                         newStartDate,
                         firstChildDuration);
                 }
+
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
-                AutoSetFirstChildStartTime(projectId, firstChild.IdCongViec, newStartDate);
+
+                AutoSetFirstChildStartTimeInternal(projectId, firstChild.IdCongViec, newStartDate, forceUpdateStartedTask);
             }
             else
             {
@@ -1488,11 +1508,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
 
-                AutoSetDependentTime(projectId, firstChild.IdCongViec);
-                if (firstChild.IdCongViecCha.HasValue)
-                {
-                    AutoSetParentTime(projectId, firstChild.IdCongViecCha.Value);
-                }
+                // Dependency nội bộ của task lá vẫn phải được xử lý ngay.
+                AutoSetDependentTime(projectId, firstChild.IdCongViec, forceUpdateStartedTask);
             }
         }
         public void AutoSetParentStatus(Guid projectId, Guid parentTaskId)
@@ -1567,7 +1584,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
             }
         }
-        public void AutoSetParentTime(Guid projectId, Guid parentId)
+        public void AutoSetParentTime(Guid projectId, Guid parentId, bool forceUpdateStartedTask = false)
         {
             TblCongViec parentTask = FetchById(parentId);
             if (parentTask == null || parentTask.DaXoa == true) return;
@@ -1621,11 +1638,11 @@ namespace SweetSoft.QLDA.Core.Managers
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
 
-                        AutoSetDependentTime(projectId, parentTask.IdCongViec);
+                        AutoSetDependentTime(projectId, parentTask.IdCongViec, forceUpdateStartedTask);
 
                         if (parentTask.IdCongViecCha.HasValue)
                         {
-                            AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value);
+                            AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value, forceUpdateStartedTask);
                         }
                         else
                         {
