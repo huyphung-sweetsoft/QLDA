@@ -372,7 +372,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             IdHopDongThucHien = hopDong.IdHopDongThucHien;
             if (hopDong.NgayHieuLuc.HasValue)
+            {
                 dtNgayBatDau.DateValue = hopDong.NgayHieuLuc;
+                ddlTrangThai.SelectedValue = hopDong.NgayHieuLuc.Value.Date > DateTime.Today ? "0" : "1";
+            }              
 
             if (hopDong.NgayHetHan.HasValue)
                 dtNgayKetThuc.DateValue = hopDong.NgayHetHan;
