@@ -26,8 +26,6 @@ namespace SweetSoft.QLDA.Core.FileManager
         [ERender("Tệp đính kèm lịch họp")]
         MeetingAttachment,
         [ERender("Tệp hợp đồng thực hiện")]
-        ProjectContract,
-        [ERender("Tệp PDF hợp đồng thực hiện")]
-        ProjectContractPdf
+        ProjectContract
     }
 }

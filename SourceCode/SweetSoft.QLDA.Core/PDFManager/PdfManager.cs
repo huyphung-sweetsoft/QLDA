@@ -1,6 +1,10 @@
-﻿using NReco.PdfGenerator;
+﻿using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
+using NReco.PdfGenerator;
 using System;
 using System.IO;
+using System.Net;
+using System.Text;
 using System.Web;
 
 namespace SweetSoft.QLDA.Core.Managers
@@ -109,6 +113,46 @@ namespace SweetSoft.QLDA.Core.Managers
             {
                 throw new Exception("Lỗi khi tạo file PDF: " + ex.Message);
             }
+        }
+
+        public string ConvertPdfToHtml(string physicalPath)
+        {
+            if (string.IsNullOrWhiteSpace(physicalPath) || !File.Exists(physicalPath))
+                throw new FileNotFoundException("Không tìm thấy file PDF.", physicalPath);
+
+            StringBuilder html = new StringBuilder();
+
+            using (PdfReader reader = new PdfReader(physicalPath))
+            {
+                for (int pageNumber = 1; pageNumber <= reader.NumberOfPages; pageNumber++)
+                {
+                    string pageText = PdfTextExtractor.GetTextFromPage(
+                        reader,
+                        pageNumber,
+                        new LocationTextExtractionStrategy());
+
+                    if (string.IsNullOrWhiteSpace(pageText))
+                        continue;
+
+                    string encodedText = WebUtility.HtmlEncode(pageText);
+                    string[] lines = encodedText.Split(
+                        new[] { "\r\n", "\n", "\r" },
+                        StringSplitOptions.None);
+
+                    foreach (string line in lines)
+                    {
+                        string content = line.Trim();
+
+                        if (!string.IsNullOrWhiteSpace(content))
+                            html.Append("<p>").Append(content).Append("</p>");
+                    }
+
+                    if (pageNumber < reader.NumberOfPages)
+                        html.Append("<p>&nbsp;</p>");
+                }
+            }
+
+            return html.ToString();
         }
     }
 }

@@ -90,7 +90,6 @@ namespace SweetSoft.QLDA.Core.Managers
 
         #region Project Settings
         public static string ProjectCodePrefix = string.Format(SettingKeyPrefix, "ProjectCodePrefix");
-        public static string ProjectCodeStartNumber = string.Format(SettingKeyPrefix, "ProjectCodeStartNumber");
         #endregion
     }
     public class SettingManager : ISettingManager
