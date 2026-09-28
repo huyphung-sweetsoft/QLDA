@@ -114,6 +114,24 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTa;
 
         /// <summary>
+        /// rptContractFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptContractFiles;
+
+        /// <summary>
+        /// pnlNoContractFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoContractFiles;
+
+        /// <summary>
         /// fbHopDong control.
         /// </summary>
         /// <remarks>
