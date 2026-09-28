@@ -288,6 +288,7 @@
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="Managers\DocumentGroupManager.cs" />
     <Compile Include="Managers\DocumentManager.cs" />
+    <Compile Include="Managers\DocumentWorkspaceManager.cs" />
     <Compile Include="Managers\DocumentStorageLocationManager.cs" />
     <Compile Include="Managers\DocumentTemplateManager.cs" />
     <Compile Include="Managers\DocumentTypeManager.cs" />
@@ -389,6 +390,7 @@
     <Compile Include="Respositories\FileRepository.cs" />
     <Compile Include="Respositories\DocumentGroupRepository.cs" />
     <Compile Include="Respositories\DocumentRepository.cs" />
+    <Compile Include="Respositories\DocumentWorkspaceRepository.cs" />
     <Compile Include="Respositories\DocumentTemplateRepository.cs" />
     <Compile Include="Respositories\DocumentTypeRepository.cs" />
     <Compile Include="Respositories\RoleRepository.cs" />

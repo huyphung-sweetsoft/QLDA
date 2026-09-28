@@ -41,7 +41,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         /// <summary>
-        /// Lấy danh sách loại tài liệu chưa bị xóa.
+        /// Lấy danh sách loại hồ sơ chưa bị xóa.
         /// Có thể tìm theo tên, mô tả và lọc theo nhóm tài liệu.
         /// </summary>
         public List<TblLoaiTaiLieu> GetAll(
@@ -53,7 +53,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 idNhomTaiLieu);
         }
         /// <summary>
-        /// Tìm kiếm nhanh loại tài liệu,
+        /// Tìm kiếm nhanh loại hồ sơ,
         /// có hỗ trợ bộ lọc và phân trang.
         /// </summary>
         public DataTable SearchDocumentTypes(
@@ -73,7 +73,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 out totalRecord);
         }
         /// <summary>
-        /// Tìm kiếm nâng cao loại tài liệu,
+        /// Tìm kiếm nâng cao loại hồ sơ,
         /// có hỗ trợ phân trang.
         /// </summary>
         public DataTable SearchDocumentTypes(
@@ -92,7 +92,7 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         /// <summary>
-        /// Lấy một loại tài liệu chưa bị xóa theo khóa chính.
+        /// Lấy một loại hồ sơ chưa bị xóa theo khóa chính.
         /// </summary>
         public TblLoaiTaiLieu GetById(Guid idLoaiTaiLieu)
         {
@@ -130,8 +130,12 @@ namespace SweetSoft.QLDA.Core.Managers
             bool canLuuVatLy,
             int thuTuHienThi,
             bool kichHoat,
-            Guid? defaultStorageLocation = null)
+            Guid? defaultStorageLocation = null, string documentScope = "DU_AN")
         {
+            if (documentScope != "DU_AN" && documentScope != "CHUNG")
+                throw new ArgumentException("Vui lòng chọn phạm vi hồ sơ.");
+            canTrinhKy = canGuiKhachHang = canLuuVatLy = true;
+            if (string.IsNullOrWhiteSpace(hinhThucKyMacDinh)) hinhThucKyMacDinh = DocumentSigningMethodKeys.Paper;
             tenLoai = (tenLoai ?? string.Empty).Trim();
             moTa = (moTa ?? string.Empty).Trim();
             hinhThucKyMacDinh =
@@ -140,13 +144,13 @@ namespace SweetSoft.QLDA.Core.Managers
             if (string.IsNullOrEmpty(tenLoai))
             {
                 throw new ArgumentException(
-                    "Tên loại tài liệu không được để trống.");
+                    "Tên loại hồ sơ không được để trống.");
             }
 
             if (tenLoai.Length > 150)
             {
                 throw new ArgumentException(
-                    "Tên loại tài liệu không được vượt quá 150 ký tự.");
+                    "Tên loại hồ sơ không được vượt quá 150 ký tự.");
             }
 
             if (moTa.Length > 500)
@@ -170,7 +174,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (item == null)
                 {
                     throw new InvalidOperationException(
-                        "Không tìm thấy loại tài liệu.");
+                        "Không tìm thấy loại hồ sơ.");
                 }
             }
 
@@ -211,8 +215,11 @@ namespace SweetSoft.QLDA.Core.Managers
             item.ThuTuHienThi = thuTuHienThi;
             item.KichHoat = kichHoat;
 
-            return _repository.SaveIndependentType(item, idLoaiTaiLieu == Guid.Empty, defaultStorageLocation);
+            return _repository.SaveIndependentType(item, idLoaiTaiLieu == Guid.Empty, defaultStorageLocation, documentScope);
         }
+
+        public string GetScope(Guid id) { return _repository.GetScope(id); }
+        public DataTable GetScopedTypes(string scope) { return _repository.GetScopedTypes(scope); }
 
         public Guid? GetDefaultStorageLocation(Guid idLoaiTaiLieu)
         {
@@ -230,7 +237,7 @@ namespace SweetSoft.QLDA.Core.Managers
             if (_repository.IsInUse(idLoaiTaiLieu))
             {
                 throw new InvalidOperationException(
-                    "Loại tài liệu đang được tài liệu hoặc mẫu tài liệu sử dụng.");
+                    "Loại hồ sơ đang được tài liệu hoặc mẫu tài liệu sử dụng.");
             }
 
             item.NguoiCapNhat = GetCurrentUserName();

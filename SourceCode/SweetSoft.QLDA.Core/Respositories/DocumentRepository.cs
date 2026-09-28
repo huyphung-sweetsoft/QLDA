@@ -113,7 +113,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         public string AuditDescription { get; set; }
     }
 
-    public class DocumentRepository : BaseRepository<TblTaiLieu>
+    public partial class DocumentRepository : BaseRepository<TblTaiLieu>
     {
         public const string DocumentGroupParameter = "IdNhomTaiLieu";
         public const string HasOfficialFileParameter = "HasOfficialFile";
@@ -1485,6 +1485,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                 if (current.VersionId != expectedVersionId)
                     throw new InvalidOperationException("Hồ sơ đã có phiên bản mới. Vui lòng tải lại trang trước khi lưu.");
 
+                foreach (Guid removed in current.FileIds.Except(ids))
+                    ValidateFileRemoval(documentId, removed, false, userName, now);
                 var ownedIds = new HashSet<Guid>(GetDocumentVersionFiles(documentId).Select(f => f.Id));
                 if (ids.Any(id => !ownedIds.Contains(id)))
                     throw new InvalidOperationException("File không tồn tại hoặc không thuộc hồ sơ này.");
@@ -1884,11 +1886,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                         "Không tìm thấy hồ sơ.");
 
                 DataRow document = documentRows.Rows[0];
-                if (!GetBoolean(document, "CanTrinhKy"))
-                    throw new InvalidOperationException(
-                        "Hồ sơ này không được cấu hình trình ký.");
-
-                string configuredMethod = Convert.ToString(
+string configuredMethod = Convert.ToString(
                     document["HinhThucKy"]);
                 if (!string.Equals(
                         configuredMethod,
@@ -1959,26 +1957,15 @@ namespace SweetSoft.QLDA.Core.Respositories
                         "Vui lòng chọn người ký.");
                 }
 
-                DataTable pendingRows = ExecuteDataTable(
-                    @"
-                        SELECT TOP 1 s.IdTrinhKyTaiLieu
-                        FROM TblTrinhKyTaiLieu s WITH (UPDLOCK, HOLDLOCK)
-                        INNER JOIN TblPhienBanTaiLieu p WITH (UPDLOCK, HOLDLOCK)
-                            ON p.IdPhienBanTaiLieu = s.IdPhienBanTaiLieu
-                           AND p.DaXoa = 0
-                        WHERE p.IdTaiLieu = @DocumentId
-                          AND s.DaXoa = 0
-                          AND s.TrangThaiTrinhKy IN
-                              (@PendingStatus, @LegacyPendingStatus);",
-                    new Dictionary<string, object>
-                    {
-                        { "@DocumentId", idTaiLieu },
-                        { "@PendingStatus", DocumentSigningStatusKeys.Pending },
-                        { "@LegacyPendingStatus", DocumentStatusKeys.PendingSignature }
-                    });
-                if (pendingRows.Rows.Count > 0)
-                    throw new InvalidOperationException(
-                        "Hồ sơ đang có một lần trình ký chờ ký.");
+                var fileState = GetWorkspaceFiles(idTaiLieu);
+                foreach (Guid selectedId in requestedFileIds)
+                {
+                    var selected = fileState.AsEnumerable().FirstOrDefault(r => (Guid)r["IdFile"] == selectedId);
+                    if (selected == null || Convert.ToBoolean(selected["DaKhoa"]))
+                        throw new InvalidOperationException("File đã ký hoặc không còn trong hồ sơ.");
+                    if (Convert.ToString(selected["TrangThai"]) == DocumentSigningStatusKeys.Pending)
+                        throw new InvalidOperationException("File đã có yêu cầu ký đang chờ xử lý.");
+                }
 
                 string fileParameterList = string.Join(",", requestedFileIds
                     .Select((fileId, index) => "@SelectedFile" + index));
@@ -2036,46 +2023,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                     if (!IsFileAvailable(selectedFile["FileUrl"]))
                         throw new InvalidOperationException(
                             "Không tìm thấy tệp vật lý của file được chọn.");
-                }
-
-                DataTable previousAttemptRows = ExecuteDataTable(
-                    @"
-                        SELECT TOP 1
-                            s.IdTrinhKyTaiLieu,
-                            s.TrangThaiTrinhKy
-                        FROM TblTrinhKyTaiLieu s WITH (UPDLOCK, HOLDLOCK)
-                        WHERE s.IdPhienBanTaiLieu = @VersionId
-                          AND s.DaXoa = 0
-                          AND s.TrangThaiTrinhKy IN
-                              (@ChangesStatus, @SignedStatus)
-                        ORDER BY
-                            CASE
-                                WHEN s.TrangThaiTrinhKy = @SignedStatus
-                                THEN 0 ELSE 1
-                            END,
-                            s.NgayGui DESC,
-                            s.IdTrinhKyTaiLieu DESC;",
-                    new Dictionary<string, object>
-                    {
-                        { "@VersionId", versionId },
-                        { "@ChangesStatus", DocumentSigningStatusKeys.ChangesRequested },
-                        { "@SignedStatus", DocumentSigningStatusKeys.Signed }
-                    });
-                if (previousAttemptRows.Rows.Count > 0)
-                {
-                    string previousStatus = Convert.ToString(
-                        previousAttemptRows.Rows[0]["TrangThaiTrinhKy"]);
-                    if (string.Equals(
-                            previousStatus,
-                            DocumentSigningStatusKeys.Signed,
-                            StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new InvalidOperationException(
-                            "Phiên bản hiện tại đã được ký; không thể trình ký lại.");
-                    }
-
-                    throw new InvalidOperationException(
-                        "Phiên bản hiện tại đã bị yêu cầu điều chỉnh; vui lòng tải lên phiên bản mới trước khi trình ký lại.");
                 }
 
                 ExecuteNonQuery(
@@ -2626,7 +2573,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DataTable documentRows = ExecuteDataTable(@"
                     SELECT TOP 1 IdTaiLieu
                     FROM dbo.TblTaiLieu WITH (UPDLOCK, HOLDLOCK)
-                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0 AND CanTrinhKy=1;",
+                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0;",
                     new Dictionary<string, object>
                     {
                         { "@DocumentId", idTaiLieu }
@@ -2762,7 +2709,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 DataTable documentRows = ExecuteDataTable(@"
                     SELECT TOP 1 IdTaiLieu
                     FROM dbo.TblTaiLieu WITH (UPDLOCK, HOLDLOCK)
-                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0 AND CanTrinhKy=1;",
+                    WHERE IdTaiLieu=@DocumentId AND DaXoa=0;",
                     new Dictionary<string, object>
                     {
                         { "@DocumentId", idTaiLieu }
@@ -2913,8 +2860,10 @@ namespace SweetSoft.QLDA.Core.Respositories
                     || string.Equals(status, DocumentStatusKeys.PendingSignature,
                            StringComparison.OrdinalIgnoreCase)
                     || (status != DocumentSigningStatusKeys.Signed
-                        && status != DocumentSigningStatusKeys.ChangesRequested);
+                        && status != DocumentSigningStatusKeys.ChangesRequested
+                        && status != "THU_HOI");
             });
+            bool hasRecalled = items.AsEnumerable().Any(row => Convert.ToString(row["TrangThai"]) == "THU_HOI");
             bool hasChanges = items.AsEnumerable().Any(row =>
                 string.Equals(
                     Convert.ToString(row["TrangThai"]),
@@ -2922,7 +2871,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     StringComparison.OrdinalIgnoreCase));
             string aggregateStatus = hasPending
                 ? DocumentSigningStatusKeys.Pending
-                : hasChanges
+                : hasChanges || hasRecalled
                     ? DocumentSigningStatusKeys.ChangesRequested
                     : DocumentSigningStatusKeys.Signed;
 
@@ -3024,8 +2973,10 @@ namespace SweetSoft.QLDA.Core.Respositories
                 SELECT item.IdTrinhKyTaiLieuFile,
                        s.IdTrinhKyTaiLieu,
                        d.IdTaiLieu, d.TenTaiLieu, d.MaTaiLieu,
+                       d.IdDuAn, project.TenDuAn,
+                       COALESCE(NULLIF(sender.DisplayName,N''),sender.UserName) AS TenNguoiGui,
                        s.IdNguoiGui, s.GhiChu AS GhiChuYeuCau,
-                       s.NgayGui, item.TrangThai, item.GhiChu,
+                       s.NgayGui, item.TrangThai, item.GhiChu, item.NgayNhanLai,
                        sourceFile.Name AS TenFileNguon,
                        sourceFile.OriginalFileName AS TenFileNguonGoc,
                        sourceFile.FileUrl AS FileNguonUrl,
@@ -3041,6 +2992,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                    AND p.DaXoa=0
                 INNER JOIN dbo.TblTaiLieu d
                     ON d.IdTaiLieu=p.IdTaiLieu AND d.DaXoa=0
+                LEFT JOIN dbo.TblDuAn project ON project.IdDuAn=d.IdDuAn
+                LEFT JOIN dbo.aspnet_Users sender ON sender.UserId=s.IdNguoiGui
                 INNER JOIN dbo.aspnet_Users u
                     ON u.UserId=s.IdNguoiKy
                    AND u.IsDeleted=0 AND u.IsActivated=1
@@ -3136,7 +3089,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                 string ghiChu,
                 Guid currentUserId,
                 string currentUserName,
-                DateTime currentDate)
+                DateTime currentDate,
+                IDictionary<Guid, Guid> selectedFiles = null)
         {
             // This is the business delivery record. SMTP delivery is intentionally
             // handled separately, so this operation never implies an email was
@@ -3252,78 +3206,36 @@ namespace SweetSoft.QLDA.Core.Respositories
                         "Khách hàng không tồn tại hoặc đã ngừng hoạt động.");
                 }
 
-                DataTable versionRows = ExecuteDataTable(
-                    @"
-                        SELECT TOP 1
-                            p.IdPhienBanTaiLieu,
-                            p.SoPhienBan,
-                            p.IdFileNoiDung,
-                            f.Id AS IdFile,
-                            f.FileUrl
-                        FROM TblPhienBanTaiLieu p WITH (UPDLOCK, HOLDLOCK)
-                        INNER JOIN TblUploadFile f WITH (UPDLOCK, HOLDLOCK)
-                            ON f.Id = p.IdFileNoiDung
-                           AND f.RefId = @DocumentId
-                           AND f.RefType = @VersionRefType
-                           AND f.IsDeleted = 0
-                        WHERE p.IdPhienBanTaiLieu = @VersionId
-                          AND p.IdTaiLieu = @DocumentId
-                          AND p.DaXoa = 0;",
-                    new Dictionary<string, object>
-                    {
-                        { "@DocumentId", idTaiLieu },
-                        { "@VersionId", idPhienBanTaiLieu },
-                        {
-                            "@VersionRefType",
-                            FileUploadTypes.DocumentVersion.ToString()
-                        }
-                    });
-                if (versionRows.Rows.Count == 0)
+                var workspace = GetWorkspaceFiles(idTaiLieu);
+                var current = GetCurrentDocumentFileSet(idTaiLieu);
+                if (current.VersionId != idPhienBanTaiLieu)
+                    throw new InvalidOperationException("Bộ file đã thay đổi. Mở lại biểu mẫu gửi khách.");
+                var selected = selectedFiles ?? new Dictionary<Guid,Guid>();
+                if (selected.Count == 0)
+                    throw new InvalidOperationException("Chọn file trong bảng trước khi gửi khách.");
+                var sentFiles = new JArray();
+                bool isPreSigningDelivery = false;
+                foreach (var pair in selected)
                 {
-                    throw new InvalidOperationException(
-                        "Phiên bản được chọn không tồn tại hoặc không thuộc hồ sơ này.");
-                }
-
-                DataRow document = documentRows.Rows[0];
-                DataRow version = versionRows.Rows[0];
-                Guid versionFileId = GetGuid(version, "IdFile");
-                if (versionFileId == Guid.Empty
-                    || !IsFileAvailable(version["FileUrl"]))
-                {
-                    throw new InvalidOperationException(
-                        "Không tìm thấy tệp vật lý của phiên bản được chọn.");
-                }
-
-                DataTable signedRows = ExecuteDataTable(
-                    @"
-                        SELECT TOP 1 s.IdTrinhKyTaiLieu
-                        FROM TblTrinhKyTaiLieu s WITH (UPDLOCK, HOLDLOCK)
-                        WHERE s.IdPhienBanTaiLieu = @VersionId
-                          AND s.DaXoa = 0
-                          AND s.TrangThaiTrinhKy = @SignedStatus;",
-                    new Dictionary<string, object>
-                    {
-                        { "@VersionId", idPhienBanTaiLieu },
-                        { "@SignedStatus", DocumentSigningStatusKeys.Signed }
+                    var row = workspace.AsEnumerable().FirstOrDefault(r => (Guid)r["IdFile"] == pair.Key);
+                    if (row == null) throw new InvalidOperationException("File đã thay đổi hoặc bị gỡ.");
+                    bool signed = Convert.ToString(row["TrangThai"]) == DocumentSigningStatusKeys.Signed && row["IdFileSauKy"] != DBNull.Value;
+                    Guid output = signed ? (Guid)row["IdFileSauKy"] : pair.Key;
+                    if (output != pair.Value)
+                        throw new InvalidOperationException("Bản gửi đã thay đổi trạng thái ký. Mở lại biểu mẫu để kiểm tra.");
+                    if (!IsFileAvailable(signed ? row["SignedFileUrl"] : row["FileUrl"]))
+                        throw new InvalidOperationException("Không tìm thấy file cần gửi.");
+                    if (!signed) isPreSigningDelivery = true;
+                    sentFiles.Add(new JObject {
+                        ["IdFileNguon"] = pair.Key.ToString("D"), ["IdFileGui"] = output.ToString("D"),
+                        ["TenFile"] = Convert.ToString(row["TenFile"]), ["FileVersion"] = Convert.ToInt32(row["FileVersion"]),
+                        ["DaKy"] = signed
                     });
-                bool isSignedVersion = signedRows.Rows.Count > 0;
-                bool isPreSigningDelivery = GetBoolean(
-                    document,
-                    "CanTrinhKy") && !isSignedVersion;
+                }
                 if (isPreSigningDelivery && !choPhepGuiTruocKhiKy)
-                {
-                    throw new InvalidOperationException(
-                        "Hồ sơ yêu cầu trình ký; vui lòng chọn phiên bản đã ký hoặc bật tùy chọn gửi trước khi ký.");
-                }
-
-                Guid officialFileId = GetGuid(document, "IdFileBanChinhThuc");
-                // A version explicitly sent before it is signed must never be
-                // recorded as an official customer delivery, even when it was
-                // temporarily selected as the document's official file.
-                bool isOfficialVersion = !isPreSigningDelivery
-                    && (isSignedVersion
-                    || (officialFileId != Guid.Empty
-                        && officialFileId == versionFileId));
+                    throw new InvalidOperationException("Có file chưa ký. Xác nhận cho phép gửi bản chưa ký để tiếp tục.");
+                bool isOfficialVersion = !isPreSigningDelivery;
+                DataRow version = GetDocumentVersionsWithFiles(idTaiLieu).AsEnumerable().First(r => (Guid)r["IdPhienBanTaiLieu"] == idPhienBanTaiLieu);
 
                 ExecuteNonQuery(
                     @"
@@ -3346,7 +3258,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                             NguoiTao,
                             NguoiCapNhat,
                             NgayCapNhat,
-                            IdFileNhanLai
+                            IdFileNhanLai,
+                            DanhSachFileGuiJson
                         )
                         VALUES
                         (
@@ -3367,10 +3280,12 @@ namespace SweetSoft.QLDA.Core.Respositories
                             @CurrentUserName,
                             @CurrentUserName,
                             @CurrentDate,
-                            NULL
+                            NULL,
+                            @SentFiles
                         );",
                     new Dictionary<string, object>
                     {
+                        { "@SentFiles", sentFiles.ToString(Newtonsoft.Json.Formatting.None) },
                         { "@DeliveryId", deliveryId },
                         { "@VersionId", idPhienBanTaiLieu },
                         { "@CustomerId", idKhachHang },
@@ -3614,6 +3529,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             string sql = $@"
                 SELECT
                     g.IdGuiNhanKhachHang,
+                    g.DanhSachFileGuiJson,
                     p.SoPhienBan,
                     ISNULL(k.TenKhachHang, N'') AS TenKhachHang,
                     ISNULL(actor.DisplayName, N'') AS TenNguoiThucHien,
