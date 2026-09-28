@@ -7,182 +7,137 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
+namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
 
 
-    public partial class HopDongThucHienDetail
+    public partial class CtrlViewTaskDetail
     {
 
         /// <summary>
-        /// Navigation1 control.
+        /// mdlViewTask control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlViewTask;
 
         /// <summary>
-        /// pnlContract control.
+        /// upViewTask control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlContract;
+        protected global::System.Web.UI.UpdatePanel upViewTask;
 
         /// <summary>
-        /// txtSoHopDong control.
+        /// ltrMaCV control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSoHopDong;
+        protected global::System.Web.UI.WebControls.Literal ltrMaCV;
 
         /// <summary>
-        /// txtTenHopDong control.
+        /// ltrDoUuTien control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenHopDong;
+        protected global::System.Web.UI.WebControls.Literal ltrDoUuTien;
 
         /// <summary>
-        /// pnlContractDocumentIdentityLocked control.
+        /// ltrTenCV control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlContractDocumentIdentityLocked;
+        protected global::System.Web.UI.WebControls.Literal ltrTenCV;
 
         /// <summary>
-        /// ddlKhachHang control.
+        /// ltrGiaiDoan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlKhachHang;
+        protected global::System.Web.UI.WebControls.Literal ltrGiaiDoan;
 
         /// <summary>
-        /// txtGiaTriHopDong control.
+        /// ltrNgayBatDau control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtGiaTriHopDong;
+        protected global::System.Web.UI.WebControls.Literal ltrNgayBatDau;
 
         /// <summary>
-        /// txtNgayKy control.
+        /// ltrCongViecCha control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNgayKy;
+        protected global::System.Web.UI.WebControls.Literal ltrCongViecCha;
 
         /// <summary>
-        /// txtNgayHieuLuc control.
+        /// ltrThoiHan control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNgayHieuLuc;
+        protected global::System.Web.UI.WebControls.Literal ltrThoiHan;
 
         /// <summary>
-        /// txtNgayHetHan control.
+        /// ltrPhuThuoc control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtNgayHetHan;
+        protected global::System.Web.UI.WebControls.Literal ltrPhuThuoc;
 
         /// <summary>
-        /// txtMoTa control.
+        /// ltrNgayKetThuc control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTa;
+        protected global::System.Web.UI.WebControls.Literal ltrNgayKetThuc;
 
         /// <summary>
-        /// rptContractFiles control.
+        /// ltrNgayHoanThanhThucTe control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptContractFiles;
+        protected global::System.Web.UI.WebControls.Literal ltrNgayHoanThanhThucTe;
 
         /// <summary>
-        /// pnlNoContractFiles control.
+        /// ltrTrangThai control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoContractFiles;
+        protected global::System.Web.UI.WebControls.Literal ltrTrangThai;
 
         /// <summary>
-        /// fbHopDong control.
+        /// ltrMoTa control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbHopDong;
-
-        /// <summary>
-        /// pnlSoanThao control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSoanThao;
-
-        /// <summary>
-        /// txtNoiDungHopDong control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::CKEditor.NET.CKEditorControl txtNoiDungHopDong;
-
-        /// <summary>
-        /// lbtCancel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtCancel;
-
-        /// <summary>
-        /// lbtExportPdf control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtExportPdf;
-
-        /// <summary>
-        /// lbtSubmit control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+        protected global::System.Web.UI.WebControls.Literal ltrMoTa;
     }
 }

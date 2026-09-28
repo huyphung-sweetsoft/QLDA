@@ -172,33 +172,33 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .ExecuteSingle<TblDuAn>();
         }
 
-        public string GenerateMaDuAn(string prefix, int startNumber)
+        public string GenerateMaDuAn(string prefix)
         {
             prefix = (prefix ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(prefix))
                 prefix = "PRJ";
-            if (startNumber < 1)
-                startNumber = 1;
+
+            string dateCode = DateTime.Now.ToString("ddMMyy");
+            string codePrefix = $"{prefix}-{dateCode}-";
 
             List<TblDuAn> projects = new Select()
                 .From(TblDuAn.Schema)
                 .ExecuteTypedList<TblDuAn>();
 
-            string prefixPattern = prefix + "-";
             int maxNumber = 0;
 
             foreach (TblDuAn project in projects)
             {
-                if (string.IsNullOrWhiteSpace(project.MaDuAn) || !project.MaDuAn.StartsWith(prefixPattern, StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(project.MaDuAn) ||
+                    !project.MaDuAn.StartsWith(codePrefix, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                string numberPart = project.MaDuAn.Substring(prefixPattern.Length);
+                string numberPart = project.MaDuAn.Substring(codePrefix.Length);
                 if (int.TryParse(numberPart, out int number) && number > maxNumber)
                     maxNumber = number;
             }
 
-            int nextNumber = Math.Max(startNumber, maxNumber + 1);
-            return string.Format("{0}-{1:D3}", prefix, nextNumber);
+            return $"{codePrefix}{maxNumber + 1:D3}";
         }
 
         public bool IsContractUsed(Guid idHopDongThucHien, Guid idDuAn)

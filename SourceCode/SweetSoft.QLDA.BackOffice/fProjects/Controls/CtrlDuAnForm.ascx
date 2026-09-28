@@ -30,48 +30,91 @@
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
-                <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
+               <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
                     <ContentTemplate>
-                        <div class="row">
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false"/>
-                                     <asp:Button runat="server" ID="btnSearchHopDong" OnClick="txtSoHopDong_TextChanged" style="display:none;" CausesValidation="false" UseSubmitBehavior="false" />
-                                 </div>
-                             </div>
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtGiaTriHopDong" Enabled="false" Required="false"/>
-                                 </div>
-                             </div>
-                             <div class="col-lg-4">
-                                 <div class="mb-3">
-                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %></label>
-                                     <SweetSoft:ExtraTextBox runat="server" ID="txtNgayKy" Enabled="false" Required="false"/>
-                                 </div>
-                             </div>
+                        <div class="col-lg-12">
+                            <div class="mb-3">
+                                <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
+                                <div class="input-group">
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtSoHopDong" Required="false" />
+                                    <asp:Button runat="server" ID="btnSearchHopDong"
+                                        OnClick="btnSearchHopDong_Click"
+                                        style="display:none;"
+                                        CausesValidation="false"
+                                        UseSubmitBehavior="false" />
+                                    <SweetSoft:ExtraButton runat="server" ID="btnChonHopDong"
+                                        ButtonStyle="Secondary"
+                                        ButtonIcon="Check"
+                                        CausesValidation="false"
+                                        OnClick="btnChonHopDong_Click"
+                                        ToolTip="Chọn hợp đồng">
+                                    </SweetSoft:ExtraButton>
+                                </div>
+                            </div>
                         </div>
                     </ContentTemplate>
                 </asp:UpdatePanel>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayBatDau" SingleDatePicker="true" PlaceHolder="Select start date" />
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayKetThuc" SingleDatePicker="true" PlaceHolder="Select end date" />
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" PlaceHolder="Select status" />
-                    </div>
+                <asp:UpdatePanel runat="server" ID="upHopDongInfo" UpdateMode="Conditional">
+                    <ContentTemplate>
+                        <asp:Panel runat="server" ID="pnlHopDongInfo" Visible="false" CssClass="col-lg-12">
+                            <div class="border rounded p-3 mb-3">
+                                <div class="row">
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Tên hợp đồng</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblTenHopDong" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Giá trị</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblGiaTriHopDong" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Ngày ký</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblNgayKyHopDong" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <small class="text-muted">Khách hàng</small>
+                                        <div class="fw-semibold">
+                                            <asp:Label runat="server" ID="lblKhachHangHopDong" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </asp:Panel>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <div class="col-lg-12">
+                    <asp:UpdatePanel runat="server" ID="upNgayDuAn" UpdateMode="Conditional">
+                        <ContentTemplate>
+                            <div class="row">
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
+                                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayBatDau" SingleDatePicker="true" PlaceHolder="Select start date" />
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.END_DATE) %></label>
+                                        <SweetSoft:ExtraDateTime runat="server" ID="dtNgayKetThuc" SingleDatePicker="true" PlaceHolder="Select end date" />
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <div class="mb-3">
+                                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
+                                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" PlaceHolder="Select status" />
+                                    </div>
+                                </div>
+                            </div>
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
                 </div>
                 <div class="col-lg-6">
                     <div class="mb-3">
@@ -133,23 +176,36 @@
     function initProjectDateSync() {
         var $startDate = $('#<%= dtNgayBatDau.ClientID %>');
         var $endDate = $('#<%= dtNgayKetThuc.ClientID %>');
-        
+        var $status = $('#<%= ddlTrangThai.ClientID %>');
+
         if ($startDate.length && $endDate.length) {
             // Remove previously attached handlers to avoid duplicates after UpdatePanel refresh
             $startDate.off('apply.daterangepicker.syncDates');
-            
-            $startDate.on('apply.daterangepicker.syncDates', function(ev, picker) {
+
+            $startDate.on('apply.daterangepicker.syncDates', function (ev, picker) {
                 var pickerEnd = $endDate.data('daterangepicker');
-                if (pickerEnd && picker.startDate) {
-                    pickerEnd.minDate = picker.startDate.clone();
-                    
-                    // If current end date is before new start date, update it
-                    if (pickerEnd.startDate && pickerEnd.startDate.isBefore(picker.startDate, 'day')) {
-                        pickerEnd.setStartDate(picker.startDate.clone());
-                        pickerEnd.setEndDate(picker.startDate.clone());
-                        
-                        // Trigger apply manually since setStartDate doesn't fire it automatically
-                        $endDate.trigger('apply.daterangepicker', pickerEnd);
+
+                if (picker.startDate) {
+                    var today = moment().startOf('day');
+                    var startDate = picker.startDate.clone().startOf('day');
+
+                    // Ngày bắt đầu > ngày hiện tại: Chưa bắt đầu (0)
+                    // Ngày bắt đầu <= ngày hiện tại: Đang thực hiện (1)
+                    if ($status.length) {
+                        $status.val(startDate.isAfter(today, 'day') ? '0' : '1').trigger('change');
+                    }
+
+                    if (pickerEnd) {
+                        pickerEnd.minDate = picker.startDate.clone();
+
+                        // If current end date is before new start date, update it
+                        if (pickerEnd.startDate && pickerEnd.startDate.isBefore(picker.startDate, 'day')) {
+                            pickerEnd.setStartDate(picker.startDate.clone());
+                            pickerEnd.setEndDate(picker.startDate.clone());
+
+                            // Trigger apply manually since setStartDate doesn't fire it automatically
+                            $endDate.trigger('apply.daterangepicker', pickerEnd);
+                        }
                     }
                 }
             });

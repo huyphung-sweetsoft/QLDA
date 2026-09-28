@@ -1,4 +1,6 @@
 using SubSonic;
+using SweetSoft.QLDA.Core.EnumHelper;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Respositories;
@@ -78,6 +80,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return task;
         }
+        public TblDoUuTien GetPriorityById(Guid idDoUuTien) => _repository.GetPriorityById(idDoUuTien);
         private void ReindexTaskCodesAfterDelete(Guid projectId, string deletedCode)
         {
             if (string.IsNullOrEmpty(deletedCode)) return;
@@ -121,6 +124,524 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
             }
         }
+        /// <summary>
+        /// Sắp xếp lại thứ tự các Phase (root task) bằng cách kéo thả.
+        /// Đổi mã WBS của Phase và toàn bộ descendants nhưng không đổi Id.
+        /// Quan hệ phụ thuộc nội bộ của task con được giữ nguyên; chỉ nối lại dependency giữa các Phase trong vùng bị ảnh hưởng.
+        /// </summary>
+        public void ReorderPhase(Guid projectId, Guid draggedPhaseId, Guid targetPhaseId, string dropPosition)
+        {
+            ReorderPhase(projectId, draggedPhaseId, targetPhaseId, dropPosition, false, true);
+        }
+        public void ReorderPhase(Guid projectId, Guid draggedPhaseId, Guid targetPhaseId, string dropPosition, bool autoUpdateDates, bool keepStatus)
+        {
+            if (projectId == Guid.Empty)
+                throw new InvalidOperationException("Không xác định được dự án.");
+            if (draggedPhaseId == Guid.Empty || targetPhaseId == Guid.Empty)
+                throw new InvalidOperationException("Dữ liệu giai đoạn không hợp lệ.");
+            if (draggedPhaseId == targetPhaseId)
+                return;
+            DuAnManager.Instance.EnsureCanModifyStructure(projectId);
+            TblCongViec draggedPhase = FetchById(draggedPhaseId);
+            TblCongViec targetPhase = FetchById(targetPhaseId);
+            if (draggedPhase == null || targetPhase == null)
+                throw new InvalidOperationException("Không tìm thấy giai đoạn cần sắp xếp.");
+            if (draggedPhase.IdDuAn != projectId || targetPhase.IdDuAn != projectId)
+                throw new InvalidOperationException("Giai đoạn không thuộc dự án hiện tại.");
+            if (draggedPhase.IdCongViecCha.HasValue || targetPhase.IdCongViecCha.HasValue ||
+                string.IsNullOrWhiteSpace(draggedPhase.MaCongViec) || string.IsNullOrWhiteSpace(targetPhase.MaCongViec))
+                throw new InvalidOperationException("Chỉ có thể kéo thả các giai đoạn cấp cao nhất.");
+            if (!string.Equals(dropPosition, "before", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(dropPosition, "after", StringComparison.OrdinalIgnoreCase))
+                dropPosition = "before";
+            DataTable phaseTable = FetchPhasesByProjectId(projectId);
+            if (phaseTable == null || phaseTable.Rows.Count == 0)
+                throw new InvalidOperationException("Dự án chưa có giai đoạn để sắp xếp.");
+            var phases = new List<TblCongViec>();
+            foreach (DataRow row in phaseTable.Rows)
+            {
+                if (row[ColIdCongViec] == DBNull.Value ||
+                    !Guid.TryParse(row[ColIdCongViec].ToString(), out Guid phaseId))
+                    continue;
+                TblCongViec phase = FetchById(phaseId);
+                if (phase == null || phase.IdDuAn != projectId || phase.IdCongViecCha.HasValue)
+                    continue;
+                phases.Add(phase);
+            }
+            phases = phases
+                .OrderBy(p => ParseRootPhaseNumber(p.MaCongViec))
+                .ThenBy(p => p.MaCongViec)
+                .ToList();
+            if (phases.Count < 2)
+                return;
+            int draggedIndex = phases.FindIndex(p => p.IdCongViec == draggedPhaseId);
+            int targetIndex = phases.FindIndex(p => p.IdCongViec == targetPhaseId);
+            if (draggedIndex < 0 || targetIndex < 0)
+                throw new InvalidOperationException("Không xác định được vị trí giai đoạn.");
+            var originalPhaseOrder = phases.Select(p => p.IdCongViec).ToList();
+            int affectedStartIndex = Math.Min(draggedIndex, targetIndex);
+            int affectedEndIndex = phases.Count - 1;
+            DateTime? affectedAnchorStart = phases[affectedStartIndex].NgayBatDau;
+            TblCongViec movedPhase = phases[draggedIndex];
+            phases.RemoveAt(draggedIndex);
+            if (draggedIndex < targetIndex)
+                targetIndex--;
+            if (string.Equals(dropPosition, "after", StringComparison.OrdinalIgnoreCase))
+                targetIndex++;
+            if (targetIndex < 0) targetIndex = 0;
+            if (targetIndex > phases.Count) targetIndex = phases.Count;
+            phases.Insert(targetIndex, movedPhase);
+
+            if (phases.Select(p => p.IdCongViec).SequenceEqual(originalPhaseOrder))
+                return;
+
+            DataTable dtAllTasks = FetchByIdAndOrderASCMaCV(projectId, null);
+            if (dtAllTasks == null || dtAllTasks.Rows.Count == 0)
+                return;
+            var taskMap = new Dictionary<Guid, TblCongViec>();
+            foreach (DataRow row in dtAllTasks.Rows)
+            {
+                if (row[ColIdCongViec] == DBNull.Value ||
+                    !Guid.TryParse(row[ColIdCongViec].ToString(), out Guid id))
+                    continue;
+                TblCongViec task = FetchById(id);
+                if (task != null)
+                    taskMap[id] = task;
+            }
+            var originalPhases = phases
+                .OrderBy(p => ParseRootPhaseNumber(p.MaCongViec))
+                .ThenBy(p => p.MaCongViec)
+                .ToList();
+            var phaseOldCodes = new Dictionary<Guid, string>();
+            var phaseGroups = new Dictionary<Guid, List<TblCongViec>>();
+            foreach (TblCongViec phase in originalPhases)
+            {
+                string oldCode = phase.MaCongViec;
+                phaseOldCodes[phase.IdCongViec] = oldCode;
+                phaseGroups[phase.IdCongViec] = taskMap.Values
+                    .Where(t => !string.IsNullOrEmpty(t.MaCongViec) &&
+                                (t.MaCongViec == oldCode || t.MaCongViec.StartsWith(oldCode + ".", StringComparison.Ordinal)))
+                    .ToList();
+            }
+            using (var scope = new TransactionScope())
+            {
+                int tempIndex = 1;
+                var tempRoots = new Dictionary<Guid, string>();
+                foreach (TblCongViec phase in originalPhases)
+                {
+                    string tempRoot = "TMPP" + tempIndex++;
+                    tempRoots[phase.IdCongViec] = tempRoot;
+                    string oldCode = phaseOldCodes[phase.IdCongViec];
+                    foreach (TblCongViec task in phaseGroups[phase.IdCongViec])
+                    {
+                        string suffix = task.MaCongViec.Length > oldCode.Length
+                            ? task.MaCongViec.Substring(oldCode.Length)
+                            : "";
+                        task.MaCongViec = tempRoot + suffix;
+                        task.NgayCapNhat = DateTime.Now;
+                        task.Save();
+                    }
+                }
+                for (int i = 0; i < phases.Count; i++)
+                {
+                    TblCongViec phase = phases[i];
+                    string newRoot = (i + 1).ToString();
+                    string tempRoot = tempRoots[phase.IdCongViec];
+                    foreach (TblCongViec task in phaseGroups[phase.IdCongViec])
+                    {
+                        string suffix = task.MaCongViec.StartsWith(tempRoot, StringComparison.Ordinal)
+                            ? task.MaCongViec.Substring(tempRoot.Length)
+                            : "";
+                        task.MaCongViec = newRoot + suffix;
+                        task.NgayCapNhat = DateTime.Now;
+                        task.Save();
+                    }
+                }
+                // Nối lại dependency cho toàn bộ chuỗi từ Phase đầu vùng ảnh hưởng đến hết dự án.
+                // Phase đầu tiên của toàn dự án không phụ thuộc ai; các Phase sau phụ thuộc Phase ngay trước.
+                // Task con bên trong từng Phase giữ nguyên quan hệ nội bộ.
+                for (int i = affectedStartIndex; i <= affectedEndIndex && i < phases.Count; i++)
+                {
+                    TblCongViec currentPhase = phases[i];
+                    Guid? expectedDependency = i > 0 ? phases[i - 1].IdCongViec : (Guid?)null;
+                    if (currentPhase.IdCongViecPhuThuoc != expectedDependency)
+                    {
+                        currentPhase.IdCongViecPhuThuoc = expectedDependency;
+                        currentPhase.NgayCapNhat = DateTime.Now;
+                        currentPhase.Save();
+                    }
+                }
+                if (!keepStatus)
+                {
+                    var affectedTaskIds = new HashSet<Guid>();
+                    for (int i = affectedStartIndex; i <= affectedEndIndex && i < phases.Count; i++)
+                    {
+                        foreach (TblCongViec task in phaseGroups[phases[i].IdCongViec])
+                            affectedTaskIds.Add(task.IdCongViec);
+                    }
+                    foreach (Guid taskId in affectedTaskIds)
+                    {
+                        TblCongViec task = taskMap[taskId];
+                        if (task.TrangThai != 0)
+                        {
+                            task.TrangThai = 0;
+                            task.NgayHoanThanhThucTe = null;
+                            task.NgayCapNhat = DateTime.Now;
+                            task.Save();
+                        }
+                    }
+                }
+                if (autoUpdateDates)
+                    RecalculateReorderedPhaseDates(projectId, phases, affectedStartIndex, affectedEndIndex, affectedAnchorStart);
+                scope.Complete();
+            }
+        }
+        /// <summary>
+        /// Chạy thử chính xác luồng ReorderPhase trong một TransactionScope bên ngoài
+        /// nhưng cố ý không Complete để toàn bộ thay đổi được rollback.
+        /// Mục đích là lấy dữ liệu review sau reorder mà không ghi thay đổi thật xuống DB.
+        /// </summary>
+        public List<TblCongViec> PreviewReorderPhase(
+            Guid projectId,
+            Guid draggedPhaseId,
+            Guid targetPhaseId,
+            string dropPosition,
+            bool autoUpdateDates,
+            bool keepStatus,
+            IEnumerable<Guid> affectedPhaseIds,
+            DateTime? anchorStart = null)
+        {
+            var affectedSet = new HashSet<Guid>(
+                affectedPhaseIds ?? Enumerable.Empty<Guid>());
+
+            if (affectedSet.Count == 0)
+                return new List<TblCongViec>();
+
+            using (var previewScope = new TransactionScope())
+            {
+                // Preview chỉ mô phỏng việc đổi mã WBS/dependency/status trước.
+                // Khi bật cập nhật lịch, chạy đúng một lần thuật toán tính lịch
+                // với anchor lấy từ trạng thái trước khi đổi.
+                ReorderPhase(
+                    projectId,
+                    draggedPhaseId,
+                    targetPhaseId,
+                    dropPosition,
+                    false,
+                    keepStatus);
+
+                if (autoUpdateDates && anchorStart.HasValue)
+                {
+                    DataTable previewPhaseTable = FetchPhasesByProjectId(projectId);
+                    var previewPhases = new List<TblCongViec>();
+                    if (previewPhaseTable != null)
+                    {
+                        foreach (DataRow row in previewPhaseTable.Rows)
+                        {
+                            if (row[ColIdCongViec] == DBNull.Value ||
+                                !Guid.TryParse(row[ColIdCongViec].ToString(), out Guid phaseId))
+                                continue;
+
+                            TblCongViec phase = FetchById(phaseId);
+                            if (phase != null && phase.IdDuAn == projectId && !phase.IdCongViecCha.HasValue)
+                                previewPhases.Add(phase);
+                        }
+                    }
+
+                    previewPhases = previewPhases
+                        .OrderBy(p => ParseRootPhaseNumber(p.MaCongViec))
+                        .ThenBy(p => p.MaCongViec)
+                        .ToList();
+
+                    int previewStartIndex = previewPhases.FindIndex(p => affectedSet.Contains(p.IdCongViec));
+                    int previewEndIndex = -1;
+                    for (int i = previewPhases.Count - 1; i >= 0; i--)
+                    {
+                        if (affectedSet.Contains(previewPhases[i].IdCongViec))
+                        {
+                            previewEndIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (previewStartIndex >= 0 && previewEndIndex >= previewStartIndex)
+                    {
+                        // Đây là điểm neo duy nhất của vùng bị ảnh hưởng:
+                        // ngày cũ + IdCongViec của phase đầu vùng -> AutoSetFirstChildStartTime.
+                        RecalculateReorderedPhaseDates(
+                            projectId,
+                            previewPhases,
+                            previewStartIndex,
+                            previewEndIndex,
+                            anchorStart.Value.Date);
+                    }
+                }
+
+                DataTable dt = FetchByIdAndOrderASCMaCV(projectId, null);
+                var allTasks = new Dictionary<Guid, TblCongViec>();
+
+                if (dt != null)
+                {
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        if (!Guid.TryParse(Convert.ToString(row[ColIdCongViec]), out Guid id))
+                            continue;
+
+                        TblCongViec task = FetchById(id);
+                        if (task != null && task.IdDuAn == projectId)
+                            allTasks[id] = task;
+                    }
+                }
+
+                var previewTasks = new List<TblCongViec>();
+                foreach (TblCongViec task in allTasks.Values)
+                {
+                    TblCongViec root = GetRootTaskFromMap(task, allTasks);
+                    if (root == null || !affectedSet.Contains(root.IdCongViec))
+                        continue;
+
+                    TblCongViec snapshot = CloneReorderPreviewTask(task);
+                    previewTasks.Add(snapshot);
+                }
+
+                previewTasks = previewTasks
+                    .OrderBy(t => string.IsNullOrWhiteSpace(t.MaCongViec)
+                        ? 0
+                        : t.MaCongViec.Split('.').Length)
+                    .ThenBy(t => t.MaCongViec, Comparer<string>.Create(CompareWbsCodes))
+                    .ToList();
+
+                // Không Complete => rollback toàn bộ reorder sau khi lấy snapshot.
+                return previewTasks;
+            }
+        }
+
+        private int CompareWbsCodes(string codeA, string codeB)
+        {
+            if (string.Equals(codeA, codeB, StringComparison.OrdinalIgnoreCase))
+                return 0;
+
+            string[] a = (codeA ?? "").Split('.');
+            string[] b = (codeB ?? "").Split('.');
+            int len = Math.Min(a.Length, b.Length);
+
+            for (int i = 0; i < len; i++)
+            {
+                int va = int.TryParse(a[i], out int parsedA) ? parsedA : int.MaxValue;
+                int vb = int.TryParse(b[i], out int parsedB) ? parsedB : int.MaxValue;
+                int cmp = va.CompareTo(vb);
+
+                if (cmp != 0)
+                    return cmp;
+            }
+
+            int lengthCompare = a.Length.CompareTo(b.Length);
+            return lengthCompare != 0
+                ? lengthCompare
+                : StringComparer.OrdinalIgnoreCase.Compare(codeA, codeB);
+        }
+
+        private TblCongViec GetRootTaskFromMap(
+            TblCongViec task,
+            Dictionary<Guid, TblCongViec> allTasks)
+        {
+            if (task == null)
+                return null;
+
+            TblCongViec current = task;
+            var visited = new HashSet<Guid>();
+
+            while (current.IdCongViecCha.HasValue && current.IdCongViecCha.Value != Guid.Empty)
+            {
+                if (!visited.Add(current.IdCongViec))
+                    return null;
+
+                if (!allTasks.TryGetValue(current.IdCongViecCha.Value, out TblCongViec parent))
+                    return null;
+
+                current = parent;
+            }
+
+            return current;
+        }
+
+        private TblCongViec CloneReorderPreviewTask(TblCongViec task)
+        {
+            if (task == null)
+                return null;
+
+            var snapshot = new TblCongViec();
+            snapshot.IdCongViec = task.IdCongViec;
+            snapshot.IdDuAn = task.IdDuAn;
+            snapshot.IdCongViecCha = task.IdCongViecCha;
+            snapshot.IdCongViecPhuThuoc = task.IdCongViecPhuThuoc;
+            snapshot.MaCongViec = task.MaCongViec;
+            snapshot.TenCongViec = task.TenCongViec;
+            snapshot.ThoiHanNgay = task.ThoiHanNgay;
+            snapshot.NgayBatDau = task.NgayBatDau;
+            snapshot.NgayKetThuc = task.NgayKetThuc;
+            snapshot.TrangThai = task.TrangThai;
+            snapshot.NgayHoanThanhThucTe = task.NgayHoanThanhThucTe;
+            return snapshot;
+        }
+
+        private void RecalculateReorderedPhaseDates(Guid projectId, List<TblCongViec> phases, int affectedStartIndex, int affectedEndIndex, DateTime? affectedAnchorStart)
+        {
+            if (phases == null || phases.Count == 0 || !affectedAnchorStart.HasValue)
+                return;
+
+            int startIndex = Math.Max(0, affectedStartIndex);
+            int endIndex = Math.Min(phases.Count - 1, affectedEndIndex);
+            DateTime currentStart = affectedAnchorStart.Value.Date;
+
+            // Chỉ cần lấy ngày bắt đầu cũ của Phase nhỏ nhất trong vùng bị ảnh hưởng làm mốc.
+            // Ví dụ 1-2-3-4 -> kéo 4 lên trước 2:
+            // Phase 4 (mã mới 2) bắt đầu bằng ngày bắt đầu cũ của Phase 2.
+            // Sau đó AutoSetFirstChildStartTime sẽ kéo chuỗi task con theo.
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                TblCongViec phase = FetchById(phases[i].IdCongViec);
+                if (phase == null || phase.DaXoa == true)
+                    continue;
+
+                DateTime newStart = currentStart.Date;
+                int phaseDuration = GetTaskDuration(phase);
+                bool hasChildren = CheckHasChildTasks(projectId, phase);
+
+                // Đổi Start trước nhưng luôn giữ End hợp lệ để không vi phạm CHECK của TblCongViec.
+                phase.NgayBatDau = newStart;
+                if (!phase.NgayKetThuc.HasValue || phase.NgayKetThuc.Value.Date < newStart.Date)
+                {
+                    phase.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(newStart, phaseDuration);
+                }
+                phase.NgayCapNhat = DateTime.Now;
+                phase.Save();
+
+                if (hasChildren)
+                {
+                    // Đây là luồng chính: chỉ cần đẩy Start vào Phase hiện tại,
+                    // AutoSetFirstChildStartTime sẽ kéo chuỗi task con theo.
+                    AutoSetFirstChildStartTime(projectId, phase.IdCongViec, newStart);
+                    AutoSetParentTime(projectId, phase.IdCongViec);
+                }
+                else
+                {
+                    phase.NgayBatDau = newStart;
+                    phase.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(newStart, phaseDuration);
+                    phase.ThoiHanNgay = phaseDuration;
+                    phase.NgayCapNhat = DateTime.Now;
+                    phase.Save();
+                }
+
+                // Đọc lại sau khi AutoSetFirstChildStartTime/AutoSetParentTime đã chạy.
+                // End của Phase trước chính là mốc để tính Start của Phase kế tiếp.
+                phase = FetchById(phase.IdCongViec);
+                if (phase == null || !phase.NgayKetThuc.HasValue)
+                    continue;
+
+                currentStart = phase.NgayKetThuc.Value.Date.AddDays(1);
+            }
+
+            // Sửa tiếp các dependency bên trong vùng reorder.
+            // Hàm này đặc biệt cho reorder nên không phụ thuộc trạng thái 0 của Task.
+            // Nhờ vậy cả Task đang "Đang thực hiện" cũng được kéo đúng theo dependency mới.
+            HashSet<Guid> affectedPhaseIds = new HashSet<Guid>(
+                phases.Skip(startIndex)
+                    .Take(endIndex - startIndex + 1)
+                    .Select(x => x.IdCongViec));
+            RecalculateAffectedTaskDependencies(projectId, affectedPhaseIds);
+
+            // Roll-up lần cuối để End của từng Phase và Giai đoạn dự án khớp với task con.
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                TblCongViec phase = FetchById(phases[i].IdCongViec);
+                if (phase == null)
+                    continue;
+
+                AutoSetParentTime(projectId, phase.IdCongViec);
+                if (phase.IdCongViecCha.HasValue)
+                    AutoSetParentTime(projectId, phase.IdCongViecCha.Value);
+            }
+        }
+
+        private void RecalculateAffectedTaskDependencies(Guid projectId, HashSet<Guid> affectedPhaseIds)
+        {
+            if (affectedPhaseIds == null || affectedPhaseIds.Count == 0)
+                return;
+
+            DataTable dtAllTasks = FetchByIdAndOrderASCMaCV(projectId, null);
+            if (dtAllTasks == null || dtAllTasks.Rows.Count == 0)
+                return;
+
+            var taskMap = new Dictionary<Guid, TblCongViec>();
+            foreach (DataRow row in dtAllTasks.Rows)
+            {
+                if (row[ColIdCongViec] == DBNull.Value ||
+                    !Guid.TryParse(row[ColIdCongViec].ToString(), out Guid id))
+                    continue;
+
+                TblCongViec task = FetchById(id);
+                if (task != null && task.IdDuAn == projectId && task.DaXoa != true)
+                    taskMap[id] = task;
+            }
+
+            var affectedTasks = taskMap.Values
+                .Where(task => affectedPhaseIds.Contains(GetRootTaskFromMap(task, taskMap)?.IdCongViec ?? Guid.Empty))
+                .Where(task => !affectedPhaseIds.Contains(task.IdCongViec))
+                .ToList();
+
+            const int maxPasses = 100;
+            for (int pass = 0; pass < maxPasses; pass++)
+            {
+                bool changed = false;
+
+                foreach (TblCongViec task in affectedTasks)
+                {
+                    if (!task.IdCongViecPhuThuoc.HasValue || task.IdCongViecPhuThuoc.Value == Guid.Empty)
+                        continue;
+
+                    TblCongViec dependency;
+                    if (!taskMap.TryGetValue(task.IdCongViecPhuThuoc.Value, out dependency) ||
+                        !dependency.NgayKetThuc.HasValue)
+                        continue;
+
+                    DateTime expectedStart = dependency.NgayKetThuc.Value.Date.AddDays(1);
+                    if (!task.NgayBatDau.HasValue || task.NgayBatDau.Value.Date != expectedStart.Date)
+                    {
+                        int duration = GetTaskDuration(task);
+                        task.NgayBatDau = expectedStart;
+                        task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(expectedStart, duration);
+                        task.NgayCapNhat = DateTime.Now;
+                        task.Save();
+                        changed = true;
+                    }
+                }
+
+                foreach (TblCongViec task in affectedTasks)
+                {
+                    if (task.IdCongViecCha.HasValue)
+                        AutoSetParentTime(projectId, task.IdCongViecCha.Value);
+                }
+
+                if (!changed)
+                    break;
+
+                foreach (TblCongViec task in affectedTasks)
+                {
+                    TblCongViec refreshed = FetchById(task.IdCongViec);
+                    if (refreshed != null)
+                        task.NgayKetThuc = refreshed.NgayKetThuc;
+                }
+            }
+        }
+        private int ParseRootPhaseNumber(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return int.MaxValue;
+            string root = code.Split('.')[0];
+            return int.TryParse(root, out int result) ? result : int.MaxValue;
+        }
+
         public void NotifyPMsOnScheduleChange(DateTime fromDate, DateTime? toDate, string detailReason)
         {
             try
@@ -286,7 +807,7 @@ namespace SweetSoft.QLDA.Core.Managers
             if (task.TrangThai == 2)
                 throw new InvalidOperationException(
                     "Không thể thay đổi nhân sự của công việc đã hoàn thành.");
-            
+
             // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
             newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
 
@@ -380,7 +901,21 @@ namespace SweetSoft.QLDA.Core.Managers
                 scope.Complete();
             }
         }
-
+        public string GetValueForTrangThaiCongViec(TrangThaiCongViec impact)
+        {
+            switch (impact)
+            {
+                case TrangThaiCongViec.ChuaBatDau:
+                    return "NOT_YET_STARTED";
+                case TrangThaiCongViec.DangThucHien:
+                    return "IN_PROGRESS";
+                case TrangThaiCongViec.HoanThanh:
+                case TrangThaiCongViec.HoanThanhTre:
+                    return "COMPLETED";
+                default:
+                    return "—";
+            }
+        }
         #endregion
 
         #region 2. Nghiệp vụ Cây WBS & Mã Công việc
@@ -874,7 +1409,7 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
-        public void AutoSetDependentTime(Guid projectId, Guid taskId)
+        public void AutoSetDependentTime(Guid projectId, Guid taskId, bool forceUpdateStartedTask = false)
         {
             TblCongViec task = FetchById(taskId);
             if (task == null || !task.NgayKetThuc.HasValue) return;
@@ -888,35 +1423,39 @@ namespace SweetSoft.QLDA.Core.Managers
                     {
                         TblCongViec depTask = FetchById(depTaskId);
 
-                        // [CHỐT CHẶN]: Chỉ tự động dời (cả tiến lẫn lùi) nếu Task phụ thuộc CHƯA BẮT ĐẦU
-                        if (depTask != null && depTask.DaXoa != true && depTask.TrangThai == 0)
+                        // Mặc định chỉ tự động dời task chưa bắt đầu.
+                        // Riêng flow Edit có thể truyền true để cascade cả task đã bắt đầu.
+                        if (depTask == null || depTask.DaXoa == true || (!forceUpdateStartedTask && depTask.TrangThai != 0))
+                            continue;
+
+                        // Dependency hiện tại của hệ thống là nối tiếp tuyệt đối:
+                        // Start của task phụ thuộc = End của task trước + 1 ngày.
+                        DateTime newStartDate = task.NgayKetThuc.Value.Date.AddDays(1);
+                        int thoiHan = depTask.ThoiHanNgay ?? 1;
+                        bool hasChildren = CheckHasChildTasks(projectId, depTask);
+
+                        depTask.NgayBatDau = newStartDate;
+                        depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(newStartDate, thoiHan);
+                        depTask.NgayCapNhat = DateTime.Now;
+                        depTask.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
+                        depTask.Save();
+
+                        if (hasChildren)
                         {
-                            // [FIX NGHIỆP VỤ]: Ngày bắt đầu = Ngày kết thúc của task trước + 1 ngày.
-                            // Không dùng GetNextWorkingDay() ở đây nữa để tránh việc đẩy qua T7/CN/Lễ.
-                            DateTime minStart = task.NgayKetThuc.Value.AddDays(1);
+                            // Nếu dependency trỏ vào Parent/Phase:
+                            // 1. Đẩy ngày xuống FULL cây con.
+                            // 2. Roll-up lại thời gian của Parent/Phase.
+                            // 3. Từ Parent/Phase đó tiếp tục đi dependency kế tiếp.
+                            AutoSetFirstChildStartTime(projectId, depTask.IdCongViec, newStartDate, forceUpdateStartedTask);
+                        }
+                        else
+                        {
+                            // Task lá: tiếp tục domino sang dependency của chính nó.
+                            AutoSetDependentTime(projectId, depTask.IdCongViec, forceUpdateStartedTask);
 
-                            // KIỂM TRA KHÁC NHAU LÀ DỜI (Không quan tâm tiến hay lùi)
-                            if (!depTask.NgayBatDau.HasValue || depTask.NgayBatDau.Value.Date != minStart.Date)
+                            if (depTask.IdCongViecCha.HasValue)
                             {
-                                int thoiHan = depTask.ThoiHanNgay ?? 1;
-
-                                depTask.NgayBatDau = minStart;
-
-                                // Lưu ý: Ngày kết thúc vẫn đưa vào Engine để rải ngày công bỏ qua lễ/tết cho chuẩn
-                                depTask.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(minStart, thoiHan);
-
-                                depTask.NgayCapNhat = DateTime.Now;
-                                depTask.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System_AutoSync";
-                                depTask.Save();
-
-                                // Lan truyền domino tiếp cho các task phụ thuộc của thằng này
-                                AutoSetDependentTime(projectId, depTask.IdCongViec);
-
-                                // Báo cáo lên Giai đoạn/Task cha để kéo lùi ngày kết thúc của Cha
-                                if (depTask.IdCongViecCha.HasValue)
-                                {
-                                    AutoSetParentTime(projectId, depTask.IdCongViecCha.Value);
-                                }
+                                AutoSetParentTime(projectId, depTask.IdCongViecCha.Value, forceUpdateStartedTask);
                             }
                         }
                     }
@@ -924,17 +1463,42 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
-        public void AutoSetFirstChildStartTime(Guid projectId, Guid parentId, DateTime newStartDate)
+        public void AutoSetFirstChildStartTime(Guid projectId, Guid parentId, DateTime newStartDate, bool forceUpdateStartedTask = false)
+        {
+            AutoSetFirstChildStartTimeInternal(projectId, parentId, newStartDate, forceUpdateStartedTask);
+
+            // Sau khi toàn bộ chuỗi con đã được dời xong, chốt lại thời gian Parent/Phase.
+            AutoSetParentTime(projectId, parentId, forceUpdateStartedTask);
+
+            // Quan trọng: dù AutoSetParentTime có lúc không phát hiện thay đổi End/Duration,
+            // Parent/Phase vừa là node hiện tại của domino nên vẫn phải kiểm tra dependency tiếp theo.
+            AutoSetDependentTime(projectId, parentId, forceUpdateStartedTask);
+        }
+
+        private void AutoSetFirstChildStartTimeInternal(Guid projectId, Guid parentId, DateTime newStartDate, bool forceUpdateStartedTask)
         {
             TblCongViec firstChild = _repository.GetFirstChildTask(projectId, parentId);
             if (firstChild == null || firstChild.DaXoa == true) return;
+
             firstChild.NgayBatDau = newStartDate;
+            int firstChildDuration = firstChild.ThoiHanNgay ?? 1;
             TblCongViec grandChild = _repository.GetFirstChildTask(projectId, firstChild.IdCongViec);
+
             if (grandChild != null)
             {
+                // Khi đẩy start vượt qua end cũ, phải cập nhật end tạm trước khi Save
+                // để không vi phạm CK_TblCongViec_NgayKetThuc.
+                if (!firstChild.NgayKetThuc.HasValue || firstChild.NgayKetThuc.Value.Date < newStartDate.Date)
+                {
+                    firstChild.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(
+                        newStartDate,
+                        firstChildDuration);
+                }
+
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
-                AutoSetFirstChildStartTime(projectId, firstChild.IdCongViec, newStartDate);
+
+                AutoSetFirstChildStartTimeInternal(projectId, firstChild.IdCongViec, newStartDate, forceUpdateStartedTask);
             }
             else
             {
@@ -944,11 +1508,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
 
-                AutoSetDependentTime(projectId, firstChild.IdCongViec);
-                if (firstChild.IdCongViecCha.HasValue)
-                {
-                    AutoSetParentTime(projectId, firstChild.IdCongViecCha.Value);
-                }
+                // Dependency nội bộ của task lá vẫn phải được xử lý ngay.
+                AutoSetDependentTime(projectId, firstChild.IdCongViec, forceUpdateStartedTask);
             }
         }
         public void AutoSetParentStatus(Guid projectId, Guid parentTaskId)
@@ -957,7 +1518,8 @@ namespace SweetSoft.QLDA.Core.Managers
             if (dtChildren != null && dtChildren.Rows.Count > 0)
             {
                 int countNotStarted = 0;
-                int countCompleted = 0;
+                int count2 = 0;
+                int count3 = 0;
                 int totalChildren = dtChildren.Rows.Count;
 
                 foreach (DataRow row in dtChildren.Rows)
@@ -965,23 +1527,49 @@ namespace SweetSoft.QLDA.Core.Managers
                     int trangThai = row["TrangThai"] != DBNull.Value ? Convert.ToInt32(row["TrangThai"]) : 0;
 
                     if (trangThai == 0) countNotStarted++;
-                    else if (trangThai == 2) countCompleted++;
+                    else if (trangThai == 2) count2++;
+                    else if (trangThai == 3) count3++;
                 }
 
                 TblCongViec parentTask = FetchById(parentTaskId);
                 if (parentTask != null)
                 {
                     byte newStatus = 1;
-
-                    if (countCompleted == totalChildren)
+                    if ((count2 + count3) == totalChildren)
                     {
-                        newStatus = 2;
+                        if (!parentTask.NgayHoanThanhThucTe.HasValue)
+                        {
+                            parentTask.NgayHoanThanhThucTe = DateTime.Now;
+                        }
+                        if (count2 == totalChildren)
+                        {
+                            newStatus = 2;
+                        }
+                        else if (count3 == totalChildren)
+                        {
+                            newStatus = 3;
+                        }
+                        else
+                        {
+                            newStatus = 2;
+                            if (parentTask.NgayKetThuc.HasValue && parentTask.NgayHoanThanhThucTe.HasValue)
+                            {
+                                if (parentTask.NgayHoanThanhThucTe.Value.Date > parentTask.NgayKetThuc.Value.Date)
+                                {
+                                    newStatus = 3;
+                                }
+                            }
+                        }
                     }
                     else if (countNotStarted == totalChildren)
                     {
-                        newStatus = 0; 
+                        newStatus = 0;
+                        parentTask.NgayHoanThanhThucTe = null;
                     }
-
+                    else
+                    {
+                        parentTask.NgayHoanThanhThucTe = null;
+                    }
                     if (parentTask.TrangThai != newStatus)
                     {
                         parentTask.TrangThai = newStatus;
@@ -996,7 +1584,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
             }
         }
-        public void AutoSetParentTime(Guid projectId, Guid parentId)
+        public void AutoSetParentTime(Guid projectId, Guid parentId, bool forceUpdateStartedTask = false)
         {
             TblCongViec parentTask = FetchById(parentId);
             if (parentTask == null || parentTask.DaXoa == true) return;
@@ -1050,11 +1638,11 @@ namespace SweetSoft.QLDA.Core.Managers
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
 
-                        AutoSetDependentTime(projectId, parentTask.IdCongViec);
+                        AutoSetDependentTime(projectId, parentTask.IdCongViec, forceUpdateStartedTask);
 
                         if (parentTask.IdCongViecCha.HasValue)
                         {
-                            AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value);
+                            AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value, forceUpdateStartedTask);
                         }
                         else
                         {
@@ -1065,12 +1653,42 @@ namespace SweetSoft.QLDA.Core.Managers
                                                 .Where(TblGiaiDoanDuAn.Columns.IdGiaiDoanDuAn).IsEqualTo(parentTask.IdGiaiDoanDuAn.Value)
                                                 .ExecuteSingle<TblGiaiDoanDuAn>();
 
-                                if (phase != null && phase.NgayBatDau != parentTask.NgayBatDau)
+                                if (phase != null)
                                 {
-                                    phase.NgayBatDau = parentTask.NgayBatDau;
-                                    phase.NgayCapNhat = DateTime.Now;
-                                    phase.NguoiCapNhat = "System_AutoSync";
-                                    phase.Save();
+                                    bool phaseChanged = false;
+
+                                    if (phase.NgayBatDau != parentTask.NgayBatDau)
+                                    {
+                                        phase.NgayBatDau = parentTask.NgayBatDau;
+                                        phaseChanged = true;
+                                    }
+
+                                    // CK_TblGiaiDoanDuAn_NgayDuKien yêu cầu
+                                    // NgayDuKienHoanThanh không được nhỏ hơn NgayBatDau.
+                                    // Khi reorder làm Phase dời sang ngày muộn hơn, giá trị
+                                    // NgayDuKienHoanThanh cũ có thể nằm trước ngày bắt đầu mới.
+                                    if (phase.NgayBatDau.HasValue &&
+                                        phase.NgayDuKienHoanThanh.HasValue &&
+                                        phase.NgayDuKienHoanThanh.Value.Date < phase.NgayBatDau.Value.Date)
+                                    {
+                                        DateTime safeExpectedEnd = phase.NgayBatDau.Value.Date;
+
+                                        if (parentTask.NgayKetThuc.HasValue &&
+                                            parentTask.NgayKetThuc.Value.Date >= safeExpectedEnd)
+                                        {
+                                            safeExpectedEnd = parentTask.NgayKetThuc.Value.Date;
+                                        }
+
+                                        phase.NgayDuKienHoanThanh = safeExpectedEnd;
+                                        phaseChanged = true;
+                                    }
+
+                                    if (phaseChanged)
+                                    {
+                                        phase.NgayCapNhat = DateTime.Now;
+                                        phase.NguoiCapNhat = "System_AutoSync";
+                                        phase.Save();
+                                    }
                                 }
                             }
                         }
@@ -1083,7 +1701,6 @@ namespace SweetSoft.QLDA.Core.Managers
         #region 4. Khai báo Tên cột CSDL
         public static readonly string ColIdCongViec = TblCongViec.Columns.IdCongViec;
         public static readonly string ColIdDuAn = TblCongViec.Columns.IdDuAn;
-        public static readonly string ColIdGiaiDoan = TblCongViec.Columns.IdGiaiDoan;
         public static readonly string ColIdCongViecCha = TblCongViec.Columns.IdCongViecCha;
         public static readonly string ColIdCongViecPhuThuoc = TblCongViec.Columns.IdCongViecPhuThuoc;
         public static readonly string ColIdDoUuTien = TblCongViec.Columns.IdDoUuTien;
