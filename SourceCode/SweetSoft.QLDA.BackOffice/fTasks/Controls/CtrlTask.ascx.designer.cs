@@ -60,6 +60,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchSingle;
 
         /// <summary>
+        /// lbtSwapPhase control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtSwapPhase;
+
+        /// <summary>
         /// lbtAdd control.
         /// </summary>
         /// <remarks>
@@ -67,6 +76,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtAdd;
+
+        /// <summary>
+        /// pnlNoTask control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoTask;
 
         /// <summary>
         /// grvData control.
@@ -85,6 +103,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlChonNhanVienTask CtrlChonNhanVienTask1;
+
+        /// <summary>
+        /// CtrlXemNhanVienTask1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlXemNhanVienTask CtrlXemNhanVienTask1;
+
+        /// <summary>
+        /// CtrlSwapPhase1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlSwapPhase CtrlSwapPhase1;
 
         /// <summary>
         /// mdlTaskSchedule control.
@@ -121,14 +157,5 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hdfSingleTaskScheduleJson;
-
-        /// <summary>
-        /// CtrlXemNhanVienTask1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlXemNhanVienTask CtrlXemNhanVienTask1;
     }
 }

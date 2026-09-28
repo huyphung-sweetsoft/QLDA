@@ -20,7 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
     {
         public EventHandler NewCostHandlerCallback;
         public EventHandler EditCostHandlerCallback;
-        public EventHandler OpenCostDocumentHandlerCallback;
+        public EventHandler OpenCostFilesHandlerCallback;
         private ControlHelpers _controlHelpers = new ControlHelpers();
 
         public Guid ProjectId
@@ -227,23 +227,23 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                     }
                     break;
 
-                case "COST_DOCUMENT":
+                case "COST_FILES":
                     if (!this.IsView)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
 
-                    Guid costDocumentId;
-                    if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out costDocumentId) || costDocumentId == Guid.Empty)
+                    Guid costIdForFiles;
+                    if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out costIdForFiles) || costIdForFiles == Guid.Empty)
                     {
                         ShowInvalidDataError();
                         return;
                     }
 
-                    if (OpenCostDocumentHandlerCallback != null)
+                    if (OpenCostFilesHandlerCallback != null)
                     {
-                        OpenCostDocumentHandlerCallback(costDocumentId, EventArgs.Empty);
+                        OpenCostFilesHandlerCallback(costIdForFiles, EventArgs.Empty);
                     }
                     break;
 

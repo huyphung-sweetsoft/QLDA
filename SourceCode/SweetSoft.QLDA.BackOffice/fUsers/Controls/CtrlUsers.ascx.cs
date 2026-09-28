@@ -426,16 +426,21 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         protected void btnSearch_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
-            master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
-            upSearchTagBox.Update();
 
+            // [SỬA LỖI]: Bổ sung pnlSearchDefault để giữ lại các tag Dropdown (Trạng thái, Nhóm người dùng)
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
+
+            upSearchTagBox.Update();
+            upnlSearchDefault.Update(); // [SỬA LỖI]: Cập nhật thêm UpdatePanel này
         }
+
         protected void btnSearchAdvanced_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
             master.btnSearchAdvanced_Click(searchTagBox, pnlSearchDefault, pnlSearchPopup, grvData);
             upSearchTagBox.Update();
         }
+
         protected void btnCancel_Click(object sender, EventArgs e)
         {
             new ControlHelpers().ClearControlValues(pnlSearch.Controls);
@@ -444,18 +449,31 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             master.btnSearchAdvanced_Click(searchTagBox, pnlSearchDefault, pnlSearchPopup, grvData);
             upSearchTagBox.Update();
         }
+
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
             try
             {
                 MasterTemplate master = Page.Master as MasterTemplate;
                 GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+
+                // [SỬA LỖI GIỐNG CTRLNHANVIEN]: Phân nhánh xử lý chuẩn xác để không mất tag Dropdown
+                if (grvData.GridSearchType == GridSearchType.Single)
+                {
+                    // Nếu đang là Single Search -> Gọi hàm để Master giữ lại các Tag khác
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, grvData, txtSearchSingle, out searchType);
+                }
+                else
+                {
+                    // Nếu đang là Advanced Search -> Gọi hàm có pnlSearchPopup
+                    master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, pnlSearchPopup, grvData, txtSearchSingle, out searchType);
+                    pnlSearch.Update();
+                }
+
                 upnlSearchDefault.Update();
-                pnlSearch.Update();
+                upSearchTagBox.Update(); // [SỬA LỖI]: Thay pnlSearch bằng upSearchTagBox cho chuẩn
 
                 // Ô keyword nằm ngoài UpdatePanel nên chỉ cần xóa phía client khi ĐÚNG tag keyword bị đóng
-                // (cùng điều kiện mà MasterTemplate dùng để xóa txtSearchSingle.Text ở server)
                 if (tag != null && tag.Key == txtSearchSingle.ClientID)
                 {
                     string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);

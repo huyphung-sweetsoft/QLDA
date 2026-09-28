@@ -33,6 +33,15 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
         protected global::System.Web.UI.WebControls.Panel pnlSearchDefault;
 
         /// <summary>
+        /// ddlSearchNam control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchNam;
+
+        /// <summary>
         /// txtSearchSingle control.
         /// </summary>
         /// <remarks>

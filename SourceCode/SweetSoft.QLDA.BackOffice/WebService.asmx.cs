@@ -97,7 +97,10 @@ namespace SweetSoft.QLDA.BackOffice
                             tieuDe         = row["TieuDe"],
                             noiDung        = row["NoiDung"] == DBNull.Value ? null : (string)row["NoiDung"],
                             loaiThongBao   = loaiThongBao,
-                            duongDanLienKet= SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(loaiThongBao, idDuAn, idCongViec),
+                            duongDanLienKet= row["DuongDanLienKet"] == DBNull.Value
+                                || string.IsNullOrWhiteSpace(Convert.ToString(row["DuongDanLienKet"]))
+                                    ? SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(loaiThongBao, idDuAn, idCongViec)
+                                    : Convert.ToString(row["DuongDanLienKet"]),
                             daDoc          = (bool)row["DaDoc"],
                             ngayTao        = Convert.ToDateTime(row["NgayTao"]).ToString("dd/MM/yyyy HH:mm")
                         });
@@ -175,7 +178,10 @@ namespace SweetSoft.QLDA.BackOffice
                             tieuDe         = row["TieuDe"],
                             noiDung        = row["NoiDung"] == DBNull.Value ? null : (string)row["NoiDung"],
                             loaiThongBao   = loaiThongBao,
-                            duongDanLienKet= SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(loaiThongBao, idDuAn, idCongViec),
+                            duongDanLienKet= row["DuongDanLienKet"] == DBNull.Value
+                                || string.IsNullOrWhiteSpace(Convert.ToString(row["DuongDanLienKet"]))
+                                    ? SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(loaiThongBao, idDuAn, idCongViec)
+                                    : Convert.ToString(row["DuongDanLienKet"]),
                             daDoc          = (bool)row["DaDoc"],
                             ngayTao        = Convert.ToDateTime(row["NgayTao"]).ToString("dd/MM/yyyy HH:mm")
                         });

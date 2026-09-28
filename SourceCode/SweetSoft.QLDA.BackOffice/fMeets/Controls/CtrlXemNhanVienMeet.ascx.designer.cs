@@ -24,13 +24,49 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraModal mdlViewMeetMember;
 
         /// <summary>
-        /// ltrMeetInfoNote control.
+        /// ltrTenCuocHop control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrMeetInfoNote;
+        protected global::System.Web.UI.WebControls.Literal ltrTenCuocHop;
+
+        /// <summary>
+        /// ltrMaCuocHop control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrMaCuocHop;
+
+        /// <summary>
+        /// ltrThoiGian control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrThoiGian;
+
+        /// <summary>
+        /// ltrDiaDiem control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDiaDiem;
+
+        /// <summary>
+        /// ltrTotalMember control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrTotalMember;
 
         /// <summary>
         /// rptAssignedMembers control.

@@ -349,9 +349,11 @@
                         <%= GetResourceText(BackEndResourceKeys.SAVE_TEMPLATE_BEFORE_UPLOAD) %>
                     </div>
 
-                    <SweetSoft:FilesBox
-                        runat="server"
-                        ID="fbTemplate" />
+                    <div class="document-file-box">
+                        <SweetSoft:FilesBox
+                            runat="server"
+                            ID="fbTemplate" />
+                    </div>
                 </asp:Panel>
             </div>
         </asp:Panel>

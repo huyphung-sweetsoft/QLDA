@@ -151,6 +151,14 @@
                 if (checkbox === allCheckbox) {
                     permissionCheckboxes.forEach(cb => cb.checked = allCheckbox.checked);
                 } else {
+                    const viewCheckbox = row.querySelector('input[name="Document.View"], input[name="ProjectDocument.View"]');
+                    if (viewCheckbox && !viewCheckbox.disabled) {
+                        if (checkbox === viewCheckbox && !viewCheckbox.checked) {
+                            permissionCheckboxes.forEach(cb => cb.checked = false);
+                        } else if (checkbox.checked && checkbox !== viewCheckbox) {
+                            viewCheckbox.checked = true;
+                        }
+                    }
                     const allChecked = permissionCheckboxes.every(cb => cb.checked);
                     allCheckbox.checked = allChecked;
                 }
@@ -164,7 +172,7 @@
         updateSelectedPermissions: function () {
             const allChecked = document.querySelectorAll('.table-permission tbody input[type="checkbox"]:checked:not(:disabled)');
             const values = Array.from(allChecked).map(cb => cb.name);
-            PermissionJs.selectedPermissions = values;
+            PermissionJs.selectedPermissions = Array.from(new Set(values));
         },
         saveJson: function () {
             const json = PermissionJs.selectedPermissions.map(permissionKey => ({
@@ -219,17 +227,17 @@
         },
         exportAllPermissions: function () {
             const checkboxes = document.querySelectorAll('.table-permission input[type="checkbox"]');
-            const result = [];
+            const resultByKey = new Map();
 
             checkboxes.forEach(cb => {
                 if (!cb.name.includes('.')) return;
                 if (cb.classList.contains('ignore-checkbox')) return;
-                result.push({
+                resultByKey.set(cb.name, {
                     PermissionKey: cb.name,
                     IsAllowed: cb.checked ? 1 : 0,
                 });
             });
-            $('[data-selector="hdfPermission"]').val(JSON.stringify(result));
+            $('[data-selector="hdfPermission"]').val(JSON.stringify(Array.from(resultByKey.values())));
         },
         initData: function () {
             const val = $('[data-selector="hdfPermission"]').val();

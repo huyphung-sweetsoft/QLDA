@@ -3,6 +3,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Register Src="~/fCosts/Controls/CtrlCost.ascx" TagPrefix="SweetSoft" TagName="CtrlCost" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
+<%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -33,6 +34,7 @@
         color: #dc2626 !important;
         border: 1px solid #fca5a5 !important;
     }
+    .record-attachments .file-actions { display: none !important; }
 </style>
 </asp:Content>
 
@@ -119,7 +121,10 @@
                 <div class="col-lg-12">
                     <div class="mb-3">
                         <label class="form-label"><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtMoTaChiTiet" TextMode="MultiLine" Rows="3"></SweetSoft:ExtraTextBox>
+                        <CKEditor:CKEditorControl runat="server" ID="txtMoTaChiTiet" Width="100%"
+                            CssClass="ck-editor" Toolbar="Full" Language="vi-VN"
+                            AutoParagraph="false" BasePath="~/Styles/plugins/ckeditor/" Height="200" />
+                        <div class="form-text">File đính kèm được tải bằng nút thư mục của khoản chi phí trong danh sách.</div>
                     </div>
                 </div>
 
@@ -129,6 +134,13 @@
             <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true"
                 OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false"><%= GetResourceText(BackEndResourceKeys.SAVE) %></SweetSoft:ExtraButton>
         </FooterTemplate>
+    </SweetSoft:ExtraModal>
+    <SweetSoft:ExtraModal runat="server" ID="dlCostFiles" Type="Primary" Size="Small" Title="File đính kèm chi phí">
+        <ContentTemplate>
+            <div class="record-attachments">
+                <SweetSoft:FilesBox runat="server" ID="fbCostFiles" IsMultiple="false" MaxFileSizeBytes="10485760" />
+            </div>
+        </ContentTemplate>
     </SweetSoft:ExtraModal>
 </asp:Content>
 

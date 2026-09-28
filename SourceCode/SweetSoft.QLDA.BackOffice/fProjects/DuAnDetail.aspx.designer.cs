@@ -276,6 +276,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Literal ltrThanhVienGroup;
 
         /// <summary>
+        /// lbtThemThanhVien control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtThemThanhVien;
+
+        /// <summary>
         /// pnlContract control.
         /// </summary>
         /// <remarks>
@@ -382,6 +391,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlDuAnForm CtrlDuAnForm1;
+
+        /// <summary>
+        /// CtrlChonNhanVien1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChonNhanVien CtrlChonNhanVien1;
 
         /// <summary>
         /// dlContractDetail control.

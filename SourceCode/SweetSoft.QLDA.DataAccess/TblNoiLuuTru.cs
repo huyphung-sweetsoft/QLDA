@@ -450,6 +450,25 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
+		private SweetSoft.QLDA.DataAccess.TblLoaiTaiLieuCollection colTblLoaiTaiLieuRecords;
+		public SweetSoft.QLDA.DataAccess.TblLoaiTaiLieuCollection TblLoaiTaiLieuRecords()
+		{
+			if(colTblLoaiTaiLieuRecords == null)
+			{
+				colTblLoaiTaiLieuRecords = new SweetSoft.QLDA.DataAccess.TblLoaiTaiLieuCollection().Where(TblLoaiTaiLieu.Columns.IdNoiLuuTruMacDinh, IdNoiLuuTru).Load();
+				colTblLoaiTaiLieuRecords.ListChanged += new ListChangedEventHandler(colTblLoaiTaiLieuRecords_ListChanged);
+			}
+			return colTblLoaiTaiLieuRecords;
+		}
+				
+		void colTblLoaiTaiLieuRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblLoaiTaiLieuRecords[e.NewIndex].IdNoiLuuTruMacDinh = IdNoiLuuTru;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblLuuTruVatLyCollection colTblLuuTruVatLyRecords;
 		public SweetSoft.QLDA.DataAccess.TblLuuTruVatLyCollection TblLuuTruVatLyRecords()
 		{
@@ -741,6 +760,17 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
+                if (colTblLoaiTaiLieuRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblLoaiTaiLieu item in colTblLoaiTaiLieuRecords)
+                    {
+                        if (item.IdNoiLuuTruMacDinh == null ||item.IdNoiLuuTruMacDinh != IdNoiLuuTru)
+                        {
+                            item.IdNoiLuuTruMacDinh = IdNoiLuuTru;
+                        }
+                    }
+               }
+		
                 if (colTblLuuTruVatLyRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblLuuTruVatLy item in colTblLuuTruVatLyRecords)
@@ -771,6 +801,11 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
+                if (colTblLoaiTaiLieuRecords != null)
+                {
+                    colTblLoaiTaiLieuRecords.SaveAll();
+               }
+		
                 if (colTblLuuTruVatLyRecords != null)
                 {
                     colTblLuuTruVatLyRecords.SaveAll();

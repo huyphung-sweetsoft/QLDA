@@ -8,7 +8,10 @@ FilesBox.DisableFocusFileBox = false;
 // State used by simple upload controls that submit through the owning form.
 FilesBox.UploadInProgress = false;
 FilesBox.SimpleUploadComplete = null;
-FilesBox.UploadFailed = false;
+// State for the current asynchronous upload batch. A failed request must
+// finish the batch as well; otherwise the automatic postback never happens
+// and the page looks stuck with files that are not yet in a document version.
+FilesBox.UploadBatch = null;
 
 /**
  * Configuration object - can be overridden
@@ -84,6 +87,38 @@ FilesBox.FindItemByKey = function (key) {
 
     return item;
 };
+
+FilesBox.MarkUploadFailed = function (ar) {
+    var batch = FilesBox.UploadBatch;
+    if (!batch || !ar) {
+        return;
+    }
+
+    var key = FilesBox.NormalizePendingKey(ar);
+    batch.failedKeys[key] = true;
+};
+
+FilesBox.MarkUploadFinished = function (ar, succeeded) {
+    var batch = FilesBox.UploadBatch;
+    if (!batch || !ar) {
+        return;
+    }
+
+    var key = FilesBox.NormalizePendingKey(ar);
+    if (batch.finishedKeys[key]) {
+        return;
+    }
+
+    batch.finishedKeys[key] = true;
+    batch.completed++;
+    if (!succeeded) {
+        batch.failedKeys[key] = true;
+    }
+
+    if (batch.completed >= batch.total) {
+        FilesBox.OnAllUploadsComplete();
+    }
+};
 FilesBox.AddFile = function (isMultiple, type) {
     var ipfFile = $(".file-box.active .ipfFile");
 
@@ -104,46 +139,112 @@ FilesBox.ReorderFile = function () {
     });
 };
 FilesBox.LayoutFilePopUp = function (el) {
-    var fileName = $(el).attr("data-path");
+    var fileUrl = $(el).attr("data-path");
+    if (!fileUrl)
+        return;
 
-    var isVideo = FilesBox.IsVideo(fileName);
-    var isDoc = FilesBox.IsDoc(fileName);
-    var isExcel = FilesBox.IsExcel(fileName);
-    var isPDF = FilesBox.IsPDF(fileName);
-
-    $(".body-preview").empty();
-    if (isVideo) {
-        const html = String.format("<video style='max-width: 100vw; max-height: 100vh;' controls>\
-                    <source src=\"{0}\" type =\"video/mp4\" >\
-        </video>", $(el).attr("data-path"));
-        $(".body-preview").append(html);
-        $('#file-box-viewer').show();
+    var resolvedUrl;
+    try {
+        resolvedUrl = new URL(fileUrl, window.location.href);
+    } catch (e) {
+        return;
     }
-    else if (isPDF) {
-        var reviewUrl = String.format('https://docs.google.com/gview?url={0}&embedded=true'
-            , CMSMasterJs.HostPath + $(el).attr("data-path"));
+    if (resolvedUrl.protocol !== 'http:' && resolvedUrl.protocol !== 'https:')
+        return;
+    fileUrl = resolvedUrl.href;
 
-        var html = '<iframe style="height: 100vh; width: calc(100vw - 200px);" src=""></iframe>';
-        $(".body-preview").append(html);
-        $(".body-preview iframe").attr('src', reviewUrl);
-        $('#file-box-viewer').show();
-    }
-    else if (isDoc || isExcel) {
-        var reviewUrl = String.format('https://docs.google.com/gview?url={0}&embedded=true'
-            , CMSMasterJs.HostPath + $(el).attr("data-path"));
+    var preview = $('#file-box-viewer .body-preview');
+    preview.empty();
 
-        var html = '<iframe style="height: 100vh; width: calc(100vw - 200px);" src=""></iframe>';
-        $(".body-preview").append(html);
-        $(".body-preview iframe").attr('src', reviewUrl);
-        $('#file-box-viewer').show();
+    var cleanUrl = fileUrl.split('?')[0].split('#')[0].toLowerCase();
+    var extension = cleanUrl.substring(cleanUrl.lastIndexOf('.') + 1);
+    var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+    var videoExtensions = ['mp4', 'webm', 'm4v'];
+    var audioExtensions = ['mp3', 'wav', 'ogg'];
+    var isSameOrigin = resolvedUrl.origin === window.location.origin;
+
+    function showDownloadFallback(message) {
+        preview.empty();
+        $('<div>', { 'class': 'text-center text-white p-4' })
+            .append($('<p>').text(message))
+            .append($('<a>', {
+                'class': 'btn btn-light',
+                href: fileUrl,
+                target: '_blank',
+                rel: 'noopener'
+            }).text('Tải file để mở'))
+            .appendTo(preview);
     }
 
-    else {
-        var img = $(el).closest('.img-container').find('img');
-        var imageTag = $('<img class="modal-content full-image" src="' + img.attr("src") + '">');
-        $(".body-preview").append(imageTag);
-        $('#file-box-viewer').show();
+    if (extension === 'pdf') {
+        $('<iframe>', {
+            title: 'Xem tệp PDF',
+            src: fileUrl
+        }).css({ width: '92vw', height: '92vh', border: '0', background: '#fff' })
+            .appendTo(preview);
+    } else if (extension === 'docx' && isSameOrigin) {
+        if (!window.docx || typeof window.docx.renderAsync !== 'function') {
+            showDownloadFallback('Không tải được công cụ xem trước file Word.');
+        } else {
+            var wordContainer = $('<div>', { 'class': 'file-box-word-preview' }).appendTo(preview);
+            var loadingMessage = $('<p>', { 'class': 'file-box-word-loading' })
+                .text('Đang tải bản xem trước...')
+                .appendTo(wordContainer);
+
+            fetch(fileUrl, { credentials: 'same-origin' })
+                .then(function (response) {
+                    if (!response.ok)
+                        throw new Error('Không thể tải file Word.');
+                    return response.blob();
+                })
+                .then(function (file) {
+                    if (!document.documentElement.contains(wordContainer[0]))
+                        return;
+                    return window.docx.renderAsync(file, wordContainer[0], null, {
+                        renderAltChunks: false
+                    });
+                })
+                .then(function () {
+                    loadingMessage.remove();
+                })
+                .catch(function () {
+                    if (document.documentElement.contains(wordContainer[0]))
+                        showDownloadFallback('Không thể xem trước file Word này.');
+                });
+        }
+    } else if (FilesBox.IsExcel(cleanUrl) || (FilesBox.IsDoc(cleanUrl) && !isSameOrigin)) {
+        var reviewUrl = 'https://docs.google.com/gview?url='
+            + encodeURIComponent(fileUrl) + '&embedded=true';
+        $('<iframe>', {
+            title: 'Xem trước tài liệu',
+            src: reviewUrl
+        }).css({ width: '92vw', height: '92vh', border: '0', background: '#fff' })
+            .appendTo(preview);
+    } else if (FilesBox.IsDoc(cleanUrl)) {
+        showDownloadFallback('File .doc cũ chưa xem trực tiếp được trong hệ thống.');
+    } else if (imageExtensions.indexOf(extension) >= 0) {
+        $('<img>', {
+            'class': 'modal-content full-image',
+            src: fileUrl,
+            alt: 'Tệp đính kèm'
+        }).css({ maxWidth: '92vw', maxHeight: '92vh', width: 'auto', height: 'auto' })
+            .appendTo(preview);
+    } else if (videoExtensions.indexOf(extension) >= 0) {
+        $('<video>', {
+            controls: true,
+            autoplay: false,
+            src: fileUrl
+        }).css({ maxWidth: '92vw', maxHeight: '92vh' }).appendTo(preview);
+    } else if (audioExtensions.indexOf(extension) >= 0) {
+        $('<audio>', {
+            controls: true,
+            src: fileUrl
+        }).css({ width: 'min(600px, 90vw)' }).appendTo(preview);
+    } else {
+        showDownloadFallback('Định dạng này không xem trực tiếp trong trình duyệt.');
     }
+
+    $('#file-box-viewer').show();
 }
 FilesBox.ClosePopUp = function () {
     $('#file-pop').modal("hide");
@@ -640,8 +741,12 @@ FilesBox.SaveFile = function (refType, refId) {
         $('#UpdateProgress1').show();
 
     FilesBox.UploadInProgress = true;
-    FilesBox.UploadFailed = false;
-    countUploaddingFile = FilesBox.ValidatedFile.length;
+    FilesBox.UploadBatch = {
+        total: FilesBox.ValidatedFile.length,
+        completed: 0,
+        failedKeys: {},
+        finishedKeys: {}
+    };
     var timing = 0;
     const folder = $('[data-selector="hdfFolderFileBox"]').val();
     FilesBox.ValidatedFile.forEach(function (file, index) {
@@ -650,6 +755,10 @@ FilesBox.SaveFile = function (refType, refId) {
         var tag = FilesBox.FindItemByKey(pendingKey);
         if (tag.length === 0) {
             console.error('Pending upload element not found for', pendingKey);
+            // Keep the batch counter moving even when the client-side item
+            // disappeared before the request was scheduled. Otherwise the
+            // save button remains disabled forever and the user cannot retry.
+            FilesBox.MarkUploadFinished(pendingKey, false);
             return;
         }
         var title = tag.find("input.title").val();
@@ -675,6 +784,7 @@ FilesBox.SaveFile = function (refType, refId) {
 FilesBox.SendFile = function (folder, file, refType, refId, title, order, ar) {
     // Validate input parameters
     if (!FilesBox.ValidateUploadParameters(file, refType, refId, title, ar)) {
+        FilesBox.MarkUploadFinished(ar, false);
         return;
     }
 
@@ -901,6 +1011,7 @@ FilesBox.HandleUploadSuccess = function (response, ar) {
             }
 
             if (!serverFileId) {
+                FilesBox.MarkUploadFailed(ar);
                 FilesBox.ShowError("Server did not return a file identifier", ar);
                 return;
             }
@@ -910,10 +1021,12 @@ FilesBox.HandleUploadSuccess = function (response, ar) {
             // Handle API error response
             var errorMessage = result.message || "Upload failed";
             var errorCode = result.errorCode || "UNKNOWN_ERROR";
+            FilesBox.MarkUploadFailed(ar);
             FilesBox.ShowError(errorMessage + " (" + errorCode + ")", ar);
         } else {
             // Ambiguous result
             console.warn("Ambiguous result:", result);
+            FilesBox.MarkUploadFailed(ar);
             FilesBox.ShowError("Unexpected server response format", ar);
         }
 
@@ -921,6 +1034,7 @@ FilesBox.HandleUploadSuccess = function (response, ar) {
         console.error("Response handling error:", e);
         console.error("Original response:", response);
 
+        FilesBox.MarkUploadFailed(ar);
         FilesBox.ShowError("Failed to parse server response: " + e.message, ar);
     }
 };
@@ -986,6 +1100,7 @@ FilesBox.OnUploadSuccess = function (fileId, ar, message) {
 
     if (item.length === 0) {
         console.error("Could not find item with key:", ar);
+        FilesBox.MarkUploadFailed(ar);
         FilesBox.ShowError("UI synchronization error", ar);
         return;
     }
@@ -1013,16 +1128,6 @@ FilesBox.OnUploadSuccess = function (fileId, ar, message) {
         item.find(".progress-content").hide();
         item.find(".img-container").removeClass("uploading");
     }, 1000);
-
-    // Update global counter
-    if (typeof countUploaddingFile !== 'undefined') {
-        countUploaddingFile--;
-        console.log("Remaining uploads:", countUploaddingFile);
-
-        if (countUploaddingFile <= 0) {
-            FilesBox.OnAllUploadsComplete();
-        }
-    }
 
     // Show success message if provided
     if (message) {
@@ -1079,16 +1184,8 @@ FilesBox.HandleUploadError = function (xhr, status, error, ar) {
         }
     }
 
-    FilesBox.UploadFailed = true;
+    FilesBox.MarkUploadFailed(ar);
     FilesBox.ShowError(errorMessage + errorDetails, ar);
-
-    // A failed request must release the form-save lock. Otherwise the
-    // payment form would keep waiting for an upload that can never finish.
-    if (typeof countUploaddingFile !== 'undefined' && countUploaddingFile > 0) {
-        countUploaddingFile--;
-        if (countUploaddingFile <= 0)
-            FilesBox.OnAllUploadsComplete();
-    }
 };
 
 /**
@@ -1097,7 +1194,12 @@ FilesBox.HandleUploadError = function (xhr, status, error, ar) {
 FilesBox.HandleUploadComplete = function (ar) {
     // Clean up any temporary states
     var item = FilesBox.FindItemByKey(ar);
+    var batch = FilesBox.UploadBatch;
+    var key = FilesBox.NormalizePendingKey(ar);
     if (item.length === 0) {
+        FilesBox.MarkUploadFinished(
+            ar,
+            !batch || !batch.failedKeys[key]);
         return;
     }
     item.find(".img-container").removeClass("uploading");
@@ -1107,6 +1209,10 @@ FilesBox.HandleUploadComplete = function (ar) {
     if (item.attr('data-temp-id') === normalizedTemp) {
         item.removeAttr('data-temp-id');
     }
+
+    FilesBox.MarkUploadFinished(
+        ar,
+        !batch || !batch.failedKeys[key]);
 };
 
 /**
@@ -1160,16 +1266,26 @@ FilesBox.OnAllUploadsComplete = function () {
     // Hide global progress indicator
     $('#UpdateProgress1').hide();
 
+    var batch = FilesBox.UploadBatch;
+    FilesBox.UploadBatch = null;
     FilesBox.UploadInProgress = false;
-
-    if (FilesBox.UploadFailed) {
-        FilesBox.UploadFailed = false;
+    if (batch && Object.keys(batch.failedKeys).length > 0) {
+        // Remove failed temporary items from the submitted form. Successful
+        // files remain visible and can be saved after the user re-selects the
+        // failed files, so a partial batch is never recorded as a version.
+        Object.keys(batch.failedKeys).forEach(function (key) {
+            var item = FilesBox.FindItemByKey(key + '|New');
+            if (item.length > 0 && item.attr('data-ar') !== key) {
+                item.remove();
+            }
+        });
         FilesBox.SimpleUploadComplete = null;
+        FilesBox.ShowError(
+            "Có tệp tải lên không thành công. Vui lòng chọn lại tệp lỗi rồi bấm Lưu.");
         return;
     }
 
-    // Simple upload controls do not expose the FilesBox "Save changes"
-    // button. Let the owning form continue its normal save postback instead.
+    // Simple upload controls submit through their owning form after uploads succeed.
     if (typeof FilesBox.SimpleUploadComplete === 'function') {
         var complete = FilesBox.SimpleUploadComplete;
         FilesBox.SimpleUploadComplete = null;
@@ -1182,7 +1298,7 @@ FilesBox.OnAllUploadsComplete = function () {
     if (saveButton) {
         saveButton.click();
     }
-    if (FilesBox.ValidatedFile.length > 1)
+    if (batch && batch.total > 1)
         FilesBox.ShowNotification("success", "Tất cả các tập tin đã được tải lên thành công");
 };
 

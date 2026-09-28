@@ -355,6 +355,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
+				TableSchema.TableColumn colvarSuDungHeSoDongGopMacDinh = new TableSchema.TableColumn(schema);
+				colvarSuDungHeSoDongGopMacDinh.ColumnName = "SuDungHeSoDongGopMacDinh";
+				colvarSuDungHeSoDongGopMacDinh.DataType = DbType.Boolean;
+				colvarSuDungHeSoDongGopMacDinh.MaxLength = 0;
+				colvarSuDungHeSoDongGopMacDinh.AutoIncrement = false;
+				colvarSuDungHeSoDongGopMacDinh.IsNullable = false;
+				colvarSuDungHeSoDongGopMacDinh.IsPrimaryKey = false;
+				colvarSuDungHeSoDongGopMacDinh.IsForeignKey = false;
+				colvarSuDungHeSoDongGopMacDinh.IsReadOnly = false;
+				
+						colvarSuDungHeSoDongGopMacDinh.DefaultSetting = @"((1))";
+				colvarSuDungHeSoDongGopMacDinh.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarSuDungHeSoDongGopMacDinh);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -500,6 +514,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
 		}
+		  
+		[XmlAttribute("SuDungHeSoDongGopMacDinh")]
+		[Bindable(true)]
+		public bool SuDungHeSoDongGopMacDinh 
+		{
+			get { return GetColumnValue<bool>(Columns.SuDungHeSoDongGopMacDinh); }
+			set { SetColumnValue(Columns.SuDungHeSoDongGopMacDinh, value); }
+		}
 		
 		#endregion
 		
@@ -569,6 +591,25 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblGiaiDoanDuAnRecords[e.NewIndex].IdDuAn = IdDuAn;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblHeSoDongGopCollection colTblHeSoDongGopRecords;
+		public SweetSoft.QLDA.DataAccess.TblHeSoDongGopCollection TblHeSoDongGopRecords()
+		{
+			if(colTblHeSoDongGopRecords == null)
+			{
+				colTblHeSoDongGopRecords = new SweetSoft.QLDA.DataAccess.TblHeSoDongGopCollection().Where(TblHeSoDongGop.Columns.IdDuAn, IdDuAn).Load();
+				colTblHeSoDongGopRecords.ListChanged += new ListChangedEventHandler(colTblHeSoDongGopRecords_ListChanged);
+			}
+			return colTblHeSoDongGopRecords;
+		}
+				
+		void colTblHeSoDongGopRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblHeSoDongGopRecords[e.NewIndex].IdDuAn = IdDuAn;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblLichHopCollection colTblLichHopRecords;
@@ -787,7 +828,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid? varIdLoaiDuAn,Guid? varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid? varIdLoaiDuAn,Guid? varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,bool varSuDungHeSoDongGopMacDinh)
 		{
 			TblDuAn item = new TblDuAn();
 			
@@ -825,6 +866,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
+			item.SuDungHeSoDongGopMacDinh = varSuDungHeSoDongGopMacDinh;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -835,7 +878,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid? varIdLoaiDuAn,Guid? varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varIdDuAn,string varMaDuAn,string varTenDuAn,Guid? varIdLoaiDuAn,Guid? varIdKhachHang,Guid? varIdHopDongThucHien,Guid? varIdNhanVienQuanLy,DateTime varNgayBatDau,DateTime varNgayDuKienHoanThanh,DateTime? varNgayHoanThanhThucTe,byte varTrangThai,string varMoTa,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,bool varSuDungHeSoDongGopMacDinh)
 		{
 			TblDuAn item = new TblDuAn();
 			
@@ -872,6 +915,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NguoiCapNhat = varNguoiCapNhat;
 			
 				item.NgayCapNhat = varNgayCapNhat;
+			
+				item.SuDungHeSoDongGopMacDinh = varSuDungHeSoDongGopMacDinh;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -1005,6 +1050,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn SuDungHeSoDongGopMacDinhColumn
+        {
+            get { return Schema.Columns[17]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -1026,6 +1078,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NgayTao = @"NgayTao";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
+			 public static string SuDungHeSoDongGopMacDinh = @"SuDungHeSoDongGopMacDinh";
 						
 		}
 		#endregion
@@ -1061,6 +1114,17 @@ namespace SweetSoft.QLDA.DataAccess
                     foreach (SweetSoft.QLDA.DataAccess.TblGiaiDoanDuAn item in colTblGiaiDoanDuAnRecords)
                     {
                         if (item.IdDuAn != IdDuAn)
+                        {
+                            item.IdDuAn = IdDuAn;
+                        }
+                    }
+               }
+		
+                if (colTblHeSoDongGopRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblHeSoDongGop item in colTblHeSoDongGopRecords)
+                    {
+                        if (item.IdDuAn == null ||item.IdDuAn != IdDuAn)
                         {
                             item.IdDuAn = IdDuAn;
                         }
@@ -1176,6 +1240,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblGiaiDoanDuAnRecords != null)
                 {
                     colTblGiaiDoanDuAnRecords.SaveAll();
+               }
+		
+                if (colTblHeSoDongGopRecords != null)
+                {
+                    colTblHeSoDongGopRecords.SaveAll();
                }
 		
                 if (colTblLichHopRecords != null)

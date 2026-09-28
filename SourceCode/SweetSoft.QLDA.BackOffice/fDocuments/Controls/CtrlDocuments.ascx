@@ -12,81 +12,36 @@
     <ContentTemplate>
 
         <div class="card-header">
-            <div class="d-flex flex-column flex-xl-row gap-3 justify-content-between">
-                <div class="d-flex flex-column flex-xl-row gap-3">
-                    <asp:Panel
-                        runat="server"
-                        ID="pnlSearchDefault">
-
-                        <div class="d-flex flex-wrap gap-2">
-                            <asp:Panel
-                                runat="server"
-                                ID="pnlSearchScope"
-                                CssClass="d-flex">
-                                <SweetSoft:BootstrapDropdown
-                                    runat="server"
-                                    ID="ddlSearchPhamVi"
-                                    AutoPostBack="true"
-                                    SearchColumn="DocumentScope"
-                                    CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
-                                    OnSelectedValueChanged="ddlSearchPhamVi_SelectedValueChanged">
-                                </SweetSoft:BootstrapDropdown>
-                            </asp:Panel>
-
-                            <asp:Panel
-                                runat="server"
-                                ID="pnlProjectSelector"
-                                CssClass="d-flex">
-                                <SweetSoft:BootstrapDropdown
-                                    runat="server"
-                                    ID="ddlSearchDuAn"
-                                    AllowClear="true"
-                                    AutoPostBack="true"
-                                    EnableSearch="true"
-                                    ValueIsOfTypeGUID="true"
-                                    SearchColumn="IdDuAn"
-                                    CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
-                                    OnSelectedValueChanged="ddlSearchDuAn_SelectedValueChanged">
-                                </SweetSoft:BootstrapDropdown>
-                            </asp:Panel>
-
-                            <SweetSoft:BootstrapDropdown
-                                runat="server"
-                                ID="ddlSearchNhomTaiLieu"
-                                AllowClear="true"
-                                AutoPostBack="true"
-                                EnableSearch="true"
-                                ValueIsOfTypeGUID="true"
-                                SearchColumn="IdNhomTaiLieu"
-                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
-                                OnSelectedValueChanged="ddlSearchNhomTaiLieu_SelectedValueChanged">
-                            </SweetSoft:BootstrapDropdown>
-
-                            <SweetSoft:BootstrapDropdown
-                                runat="server"
-                                ID="ddlSearchLoaiTaiLieu"
-                                AllowClear="true"
-                                AutoPostBack="true"
-                                EnableSearch="true"
-                                ValueIsOfTypeGUID="true"
-                                SearchColumn="IdLoaiTaiLieu"
-                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
-                                OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
-                            </SweetSoft:BootstrapDropdown>
-
-                            <SweetSoft:BootstrapDropdown
-                                runat="server"
-                                ID="ddlSearchTrangThai"
-                                AllowClear="true"
-                                AutoPostBack="true"
-                                SearchColumn="TrangThaiTaiLieu"
-                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
-                                OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
-                            </SweetSoft:BootstrapDropdown>
-                        </div>
-                    </asp:Panel>
-
-                    <div class="input-group max-w-500">
+            <div class="d-flex flex-column flex-xl-row gap-3">
+                <asp:Panel runat="server" ID="pnlSearchDefault">
+                    <div class="d-flex">
+                        <asp:Panel runat="server" ID="pnlSearchScope" CssClass="d-flex">
+                            <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchPhamVi"
+                                AutoPostBack="true" SearchColumn="DocumentScope"
+                                CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                                OnSelectedValueChanged="ddlSearchPhamVi_SelectedValueChanged" />
+                        </asp:Panel>
+                        <asp:Panel runat="server" ID="pnlProjectSelector" CssClass="d-flex">
+                            <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchDuAn"
+                                AllowClear="true" AutoPostBack="true" EnableSearch="true"
+                                ValueIsOfTypeGUID="true" SearchColumn="IdDuAn"
+                                OnSelectedValueChanged="ddlSearchDuAn_SelectedValueChanged" />
+                        </asp:Panel>
+                        <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchNhomTaiLieu"
+                            Visible="false" AllowClear="true" AutoPostBack="true" EnableSearch="true"
+                            ValueIsOfTypeGUID="true" SearchColumn="IdNhomTaiLieu"
+                            OnSelectedValueChanged="ddlSearchNhomTaiLieu_SelectedValueChanged" />
+                        <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchLoaiTaiLieu"
+                            AllowClear="true" AutoPostBack="true" EnableSearch="true"
+                            ValueIsOfTypeGUID="true" SearchColumn="IdLoaiTaiLieu"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged" />
+                        <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchTrangThai"
+                            AllowClear="true" AutoPostBack="true" SearchColumn="TrangThaiTaiLieu"
+                            CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
+                            OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged" />
+                    </div>
+                </asp:Panel>
+                <div class="input-group max-w-500">
                         <a
                             class="btn btn-info font-mobile-small btn-search-filter"
                             onclick="CMSMasterJs.ShowOffcanvasSearch();"
@@ -109,20 +64,21 @@
                             IsCustomClass="false"
                             ButtonIcon="Search">
                         </SweetSoft:ExtraButton>
-                    </div>
                 </div>
 
-                <SweetSoft:ExtraButton
-                    runat="server"
-                    ID="btnAdd"
-                    OnClick="btnAdd_Click"
-                    ButtonStyle="Info"
-                    ButtonIcon="Add"
-                    Visible="false">
-                </SweetSoft:ExtraButton>
+                <div class="d-flex justify-content-end gap-3 w-full flex-wrap">
+                    <SweetSoft:ExtraButton
+                        runat="server"
+                        ID="btnAdd"
+                        OnClick="btnAdd_Click"
+                        ButtonStyle="Info"
+                        ButtonIcon="Add"
+                        Visible="false">
+                    </SweetSoft:ExtraButton>
+                </div>
             </div>
 
-            <div class="listSearchTagBox mt-2">
+            <div class="listSearchTagBox">
                 <SweetSoft:ExtraSearchBox
                     runat="server"
                     ID="searchTagBox"
@@ -131,8 +87,7 @@
             </div>
         </div>
 
-        <div class="card-body">
-
+        <asp:Panel runat="server" ID="pnlDocumentGrid" CssClass="card-body p-0">
             <div class="table-responsive">
                 <SweetSoft:GridviewExtension
                     runat="server"
@@ -143,7 +98,7 @@
                     AutoGenerateColumns="false"
                     DataKeyNames="IdTaiLieu"
                     GridLines="None"
-                    CssClass="table-bordered table-hover align-middle"
+                    CssClass="table-bordered table-hover document-list-grid"
                     IsEnableSelectColumn="false"
                     FocusBtnIcon="fas fa-compress-arrows-alt"
                     OnNeedDataSource="grvData_NeedDataSource"
@@ -151,23 +106,32 @@
 
                     <Columns>
 
-                        <asp:BoundField
-                            DataField="MaTaiLieu"
+                        <asp:TemplateField
                             HeaderText="Mã hồ sơ"
                             SortExpression="MaTaiLieu"
-                            HeaderStyle-Width="150px" />
+                            HeaderStyle-Width="150px"
+                            HeaderStyle-CssClass="document-list-code-column text-center"
+                            ItemStyle-CssClass="document-list-code-column">
+                            <ItemTemplate>
+                                <span class="fw-bold text-primary"><%#: Eval("MaTaiLieu") %></span>
+                            </ItemTemplate>
+                        </asp:TemplateField>
 
                         <asp:BoundField
                             DataField="TenTaiLieu"
                             HeaderText="Tên hồ sơ"
-                            SortExpression="TenTaiLieu" />
+                            SortExpression="TenTaiLieu"
+                            HeaderStyle-CssClass="document-list-name-column text-center"
+                            ItemStyle-CssClass="document-list-name-column" />
 
                         <asp:TemplateField
                             HeaderText="Phạm vi"
                             SortExpression="TenDuAn"
-                            HeaderStyle-Width="180px">
+                            HeaderStyle-Width="180px"
+                            HeaderStyle-CssClass="document-list-scope-column text-center"
+                            ItemStyle-CssClass="document-list-scope-column">
                             <ItemTemplate>
-                                <span class='<%# GetDocumentScopeCss(Eval("IdDuAn")) %>'>
+                                <span class="text-body">
                                     <i class='<%# GetDocumentScopeIcon(Eval("IdDuAn")) %>'></i>
                                     <%#: GetDocumentScopeText(Eval("IdDuAn"), Eval("MaDuAn"), Eval("TenDuAn")) %>
                                 </span>
@@ -176,7 +140,9 @@
 
                         <asp:TemplateField
                             HeaderText="Loại tài liệu"
-                            SortExpression="TenLoai">
+                            SortExpression="TenLoai"
+                            HeaderStyle-CssClass="document-list-type-column text-center"
+                            ItemStyle-CssClass="document-list-type-column">
                             <ItemTemplate>
                                 <%#: GetDocumentTypeText(Eval("TenNhom"), Eval("TenLoai")) %>
                             </ItemTemplate>
@@ -184,7 +150,9 @@
 
                         <asp:TemplateField
                             HeaderText="Người phụ trách"
-                            SortExpression="TenNhanVienPhuTrach">
+                            SortExpression="TenNhanVienPhuTrach"
+                            HeaderStyle-CssClass="document-list-responsible-column text-center"
+                            ItemStyle-CssClass="document-list-responsible-column">
                             <ItemTemplate>
                                 <%#: GetResponsibleEmployeeText(Eval("TenNhanVienPhuTrach")) %>
                             </ItemTemplate>
@@ -193,7 +161,9 @@
                         <asp:TemplateField
                             HeaderText="Trạng thái hồ sơ"
                             SortExpression="TrangThaiTaiLieu"
-                            HeaderStyle-Width="145px">
+                            HeaderStyle-Width="145px"
+                            HeaderStyle-CssClass="document-list-status-column text-center"
+                            ItemStyle-CssClass="document-list-status-column text-center">
                             <ItemTemplate>
                                 <span class='<%# GetDocumentStatusCss(Eval("TrangThaiTaiLieu")) %>'>
                                     <%#: GetDocumentStatusText(Eval("TrangThaiTaiLieu")) %>
@@ -203,7 +173,9 @@
 
                         <asp:TemplateField
                             HeaderText="Trình ký"
-                            HeaderStyle-Width="130px">
+                            HeaderStyle-Width="130px"
+                            HeaderStyle-CssClass="document-list-secondary-column"
+                            ItemStyle-CssClass="document-list-secondary-column">
                             <ItemTemplate>
                                 <%#: GetSigningText(Eval("CanTrinhKy"), Eval("HinhThucKy")) %>
                             </ItemTemplate>
@@ -212,7 +184,9 @@
                         <asp:TemplateField
                             HeaderText="Gửi khách"
                             SortExpression="TrangThaiGuiKhach"
-                            HeaderStyle-Width="125px">
+                            HeaderStyle-Width="125px"
+                            HeaderStyle-CssClass="document-list-secondary-column"
+                            ItemStyle-CssClass="document-list-secondary-column">
                             <ItemTemplate>
                                 <%#: GetCustomerStatusText(Eval("CanGuiKhachHang"), Eval("TrangThaiGuiKhach")) %>
                             </ItemTemplate>
@@ -221,14 +195,18 @@
                         <asp:TemplateField
                             HeaderText="Lưu bản cứng"
                             SortExpression="TrangThaiLuuTru"
-                            HeaderStyle-Width="125px">
+                            HeaderStyle-Width="125px"
+                            HeaderStyle-CssClass="document-list-secondary-column"
+                            ItemStyle-CssClass="document-list-secondary-column">
                             <ItemTemplate>
                                 <%#: GetPhysicalStorageStatusText(Eval("CanLuuVatLy"), Eval("TrangThaiLuuTru")) %>
                             </ItemTemplate>
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="File chính thức">
+                            HeaderText="File chính thức"
+                            HeaderStyle-CssClass="document-list-secondary-column"
+                            ItemStyle-CssClass="document-list-secondary-column">
                             <ItemTemplate>
                                 <asp:HyperLink
                                     runat="server"
@@ -248,25 +226,28 @@
                         <asp:TemplateField
                             HeaderText="Ngày tạo"
                             SortExpression="NgayTao"
-                            HeaderStyle-Width="140px">
+                            HeaderStyle-Width="120px"
+                            HeaderStyle-CssClass="text-center"
+                            ItemStyle-CssClass="text-center">
                             <ItemTemplate>
-                                <%# ConvertDateTimeToString(Eval("NgayTao")) %>
+                                <%# ConvertDateTimeToString(Eval("NgayTao"), false) %>
                             </ItemTemplate>
                         </asp:TemplateField>
 
                         <asp:TemplateField
                             HeaderText="Thao tác"
-                            ItemStyle-CssClass="text-center"
-                            HeaderStyle-Width="220px">
+                            HeaderStyle-CssClass="document-list-actions text-center"
+                            ItemStyle-CssClass="document-list-actions text-center">
 
                             <ItemTemplate>
+                                <div class="document-row-actions">
                                 <SweetSoft:SmartLinkButton
                                     runat="server"
                                     ID="btnViewRow"
                                     CommandName="VIEW_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# this.IsView && IsDocumentInCurrentScope(Eval("IdDuAn")) %>'
+                                    VisibleConditionKey='<%# CanAccessRow(Eval("IdTaiLieu"), "View") %>'
                                     ResourceKey='<%# BackEndResourceKeys.VIEW %>'
                                     ButtonIcon="fas fa-eye">
                                 </SweetSoft:SmartLinkButton>
@@ -277,7 +258,7 @@
                                     CommandName="EDIT_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# this.IsEdit && IsDocumentInCurrentScope(Eval("IdDuAn")) %>'
+                                    VisibleConditionKey='<%# CanAccessRow(Eval("IdTaiLieu"), "Update") %>'
                                     ResourceKey='<%# BackEndResourceKeys.EDIT %>'
                                     ButtonIcon="fas fa-pencil-alt">
                                 </SweetSoft:SmartLinkButton>
@@ -288,10 +269,11 @@
                                     CommandName="DELETE_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# this.IsDelete && IsDocumentInCurrentScope(Eval("IdDuAn")) %>'
+                                    VisibleConditionKey='<%# CanAccessRow(Eval("IdTaiLieu"), "Delete") %>'
                                     ResourceKey='<%# BackEndResourceKeys.DELETE %>'
                                     ButtonIcon="fas fa-trash">
                                 </SweetSoft:SmartLinkButton>
+                                </div>
                             </ItemTemplate>
                         </asp:TemplateField>
 
@@ -311,10 +293,80 @@
                 ID="ctrlGridviewPaging"
                 OnPageChanged="ctrlGridviewPaging_PageChanged" />
 
-        </div>
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
 
+<style>
+    .document-list-grid thead th,
+    .document-list-grid tbody td { white-space: normal !important; overflow-wrap: anywhere; }
+    .document-list-grid .document-list-code-column { width: 150px; }
+    .document-list-grid .document-list-scope-column { width: 180px; }
+    .document-list-grid .document-list-actions { width: 1%; white-space: nowrap !important; }
+    .document-list-grid .document-list-actions .document-row-actions { display: flex; align-items: center; justify-content: center; gap: .25rem; flex-wrap: nowrap; white-space: nowrap; }
+    .document-list-secondary-column { display: none !important; }
+    .document-project-context .document-list-scope-column { display: none !important; }
+    @media (max-width: 1199.98px) {
+        .document-list-grid { min-width: 1100px; }
+    }
+
+    /* ExtraModal inserts an UpdatePanel between dialog and content. Size that wrapper too. */
+    #<%= dlDetail.ClientID %> .modal-dialog {
+        height: calc(100vh - 24px);
+        height: calc(100dvh - 24px);
+        min-height: 0;
+        margin: 12px auto;
+        max-width: min(960px, calc(100vw - 24px));
+    }
+    #<%= dlDetail.ClientID %> .modal-dialog > div {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-height: 100%;
+        min-height: 0;
+    }
+    #<%= dlDetail.ClientID %> .modal-content {
+        display: flex;
+        flex-direction: column;
+        max-height: 100%;
+        min-height: 0;
+        overflow: hidden;
+    }
+    #<%= dlDetail.ClientID %> .modal-header,
+    #<%= dlDetail.ClientID %> .modal-footer { flex: 0 0 auto; }
+    #<%= dlDetail.ClientID %> .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    #<%= dlDetail.ClientID %> .document-content-editor { min-width: 0; }
+    #<%= dlDetail.ClientID %> .cke { max-width: 100%; }
+    #<%= dlDetail.ClientID %> .document-file-picker { min-width: 0; }
+    #<%= dlDetail.ClientID %> .document-file-picker-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    #<%= dlDetail.ClientID %> .document-file-picker-input:focus + .document-file-picker-actions label {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
+    }
+    #<%= dlDetail.ClientID %> .document-file-selected-list:empty { display: none; }
+    #<%= dlDetail.ClientID %> .document-file-selected-row { min-width: 0; }
+    #<%= dlDetail.ClientID %> .document-file-selected-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
 <SweetSoft:ExtraModal
     runat="server"
     ID="dlDetail"
@@ -337,6 +389,19 @@
 
 
                 <div class="row">
+
+                    <asp:Panel runat="server" ID="pnlCreateProject" CssClass="col-12 mb-3">
+                        <label class="form-label">Dự án</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlCreateProject"
+                            ValueIsOfTypeGUID="true" SimpleInit="true" AlowClear="true" />
+                        <div class="form-text">Hồ sơ công ty chỉ dành cho tài khoản có quyền tạo trên toàn hệ thống.</div>
+                        <asp:Panel runat="server" ID="pnlCreateUnavailable"
+                            CssClass="alert alert-info mt-2 mb-0" Visible="false">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Bạn chưa được phân làm PM của dự án nào nên chưa thể tạo hồ sơ.
+                            Hãy liên hệ người quản lý để được phân công dự án.
+                        </asp:Panel>
+                    </asp:Panel>
 
                     <div class="col-md-4 mb-3">
                         <label class="form-label">
@@ -363,15 +428,15 @@
                         </SweetSoft:ExtraTextBox>
                     </div>
 
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-4 mb-3" runat="server" visible="false">
                         <label class="form-label label-valid">
                             <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %>
                         </label>
 
                         <SweetSoft:ExtraDropdown
                             runat="server"
-                            ID="ddlNhomTaiLieu"
-                            Required="true"
+                            ID="ddlNhomTaiLieu" Visible="false"
+                            Required="false"
                             ValueIsOfTypeGUID="true"
                             SimpleInit="true"
                             AutoPostBack="true"
@@ -381,7 +446,7 @@
 
                     <div class="col-md-4 mb-3">
                         <label class="form-label label-valid">
-                            <%= GetResourceText(BackEndResourceKeys.DOCUMENT_TYPE) %>
+                            <%= "Loại hồ sơ" %>
                         </label>
 
                         <SweetSoft:ExtraDropdown
@@ -409,19 +474,32 @@
                         </SweetSoft:ExtraDropdown>
                     </div>
 
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">
-                            <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
-                        </label>
-
-                        <SweetSoft:ExtraTextBox
-                            runat="server"
-                            ID="txtMoTa"
-                            TextMode="MultiLine"
-                            Rows="2"
-                            MaxLength="1000">
-                        </SweetSoft:ExtraTextBox>
+                    <SweetSoft:ExtraTextBox runat="server" ID="txtMoTa" Visible="false" TextMode="MultiLine" MaxLength="1000" />
+                    <div class="col-12 mb-3 document-content-editor">
+                        <label class="form-label">Nội dung hồ sơ</label>
+                        <p class="text-muted small">Có thể soạn nội dung tại đây mà không cần tải file. File đính kèm được quản lý riêng trong bộ hồ sơ.</p>
+                        <asp:HiddenField runat="server" ID="hdfDocumentContent" />
+                        <textarea id="<%= ClientID %>_contentEditor" class="form-control" rows="8" aria-label="Nội dung hồ sơ"></textarea>
+                        <div class="text-muted small mt-1">Có thể định dạng chữ, màu sắc, căn lề, danh sách và bảng. Ảnh/tài liệu đưa vào bộ file đính kèm.</div>
                     </div>
+
+                    <asp:Panel runat="server" ID="pnlInitialFileUpload" CssClass="col-12 mb-3">
+                        <label class="form-label">File hồ sơ</label>
+                        <div class="document-file-picker border rounded p-3">
+                        <asp:FileUpload runat="server" ID="fuInitialFiles" AllowMultiple="true"
+                            CssClass="document-file-picker-input"
+                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp" />
+                        <div class="d-flex flex-wrap align-items-center gap-2 document-file-picker-actions">
+                            <label class="btn btn-outline-primary mb-0" for="<%= fuInitialFiles.ClientID %>">
+                                <i class="fas fa-paperclip me-1" aria-hidden="true"></i>
+                                <span id="<%= ClientID %>_filePickerButtonText">Chọn file</span>
+                            </label>
+                            <span id="<%= ClientID %>_filePickerCount" class="text-muted small">Chưa có file nào được chọn.</span>
+                        </div>
+                        <div id="<%= ClientID %>_initialFileList" class="document-file-selected-list list-group list-group-flush mt-3" aria-live="polite"></div>
+                        <div class="form-text mt-2">Có thể chọn tối đa 10 file, mỗi file 10 MB. Chọn loại hồ sơ trước khi chọn file.</div>
+                        </div>
+                    </asp:Panel>
 
                     <div class="col-12 mb-3">
                         <div class="card border shadow-none mb-0">
@@ -500,6 +578,7 @@
                         </div>
                     </div>
 
+
                     <asp:Panel
                         runat="server"
                         ID="pnlInitialContent"
@@ -572,7 +651,7 @@
                         runat="server"
                         ID="btnSave"
                         OnClick="btnSave_Click"
-                        OnClientClick="return CMSMasterJs.ValidElement(
+                        OnClientClick="syncDocumentContentEditor(); return CMSMasterJs.ValidElement(
                             '.js-document-form');"
                         ButtonStyle="Primary"
                         ButtonIcon="Save">
@@ -588,6 +667,123 @@
         </div>
     </FooterTemplate>
 </SweetSoft:ExtraModal>
+
+<script type="text/javascript">
+    (function () {
+        var inputId = '<%= fuInitialFiles.ClientID %>';
+        var listId = '<%= ClientID %>_initialFileList';
+        var buttonTextId = '<%= ClientID %>_filePickerButtonText';
+        var countId = '<%= ClientID %>_filePickerCount';
+
+        function bindInitialFilePicker() {
+            var input = document.getElementById(inputId);
+            var list = document.getElementById(listId);
+            var buttonText = document.getElementById(buttonTextId);
+            var count = document.getElementById(countId);
+            if (!input || !list || !buttonText || !count
+                || input.getAttribute('data-file-picker-bound') === 'true')
+                return;
+
+            input.setAttribute('data-file-picker-bound', 'true');
+            var previousFiles = [];
+
+            input.addEventListener('click', function () {
+                previousFiles = Array.prototype.slice.call(input.files || []);
+            });
+
+            input.addEventListener('change', function () {
+                var selectedFiles = Array.prototype.slice.call(input.files || []);
+                var mergedFiles = previousFiles.concat(selectedFiles);
+
+                if (mergedFiles.length > 10) {
+                    window.alert('Chỉ được chọn tối đa 10 file cho một hồ sơ.');
+                    mergedFiles = mergedFiles.slice(0, 10);
+                }
+
+                try {
+                    var transfer = new DataTransfer();
+                    mergedFiles.forEach(function (file) { transfer.items.add(file); });
+                    input.files = transfer.files;
+                } catch (error) {
+                    // Keep the browser's current selection if FileList cannot be rebuilt.
+                    mergedFiles = selectedFiles;
+                }
+
+                renderInitialFiles(input, list, buttonText, count);
+            });
+
+            renderInitialFiles(input, list, buttonText, count);
+        }
+
+        function renderInitialFiles(input, list, buttonText, count) {
+            var files = Array.prototype.slice.call(input.files || []);
+            while (list.firstChild)
+                list.removeChild(list.firstChild);
+
+            buttonText.textContent = files.length > 0 ? 'Chọn thêm file' : 'Chọn file';
+            count.textContent = files.length > 0
+                ? files.length + ' / 10 file đã chọn'
+                : 'Chưa có file nào được chọn.';
+
+            files.forEach(function (file, index) {
+                var row = document.createElement('div');
+                row.className = 'list-group-item px-0 py-2 d-flex align-items-center gap-2 document-file-selected-row';
+
+                var icon = document.createElement('i');
+                icon.className = 'fas fa-file-alt text-primary';
+                icon.setAttribute('aria-hidden', 'true');
+
+                var details = document.createElement('div');
+                details.className = 'flex-grow-1 document-file-selected-name';
+                details.title = file.name;
+
+                var name = document.createElement('div');
+                name.className = 'text-body text-truncate';
+                name.textContent = file.name;
+
+                var size = document.createElement('div');
+                size.className = 'text-muted small';
+                size.textContent = formatInitialFileSize(file.size);
+                details.appendChild(name);
+                details.appendChild(size);
+
+                var remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'btn btn-outline-danger btn-sm flex-shrink-0';
+                remove.setAttribute('aria-label', 'Bỏ file ' + file.name);
+                remove.title = 'Bỏ file này';
+                remove.innerHTML = '<i class="fas fa-trash" aria-hidden="true"></i>';
+                remove.addEventListener('click', function () {
+                    var transfer = new DataTransfer();
+                    Array.prototype.slice.call(input.files || []).forEach(function (selected, selectedIndex) {
+                        if (selectedIndex !== index)
+                            transfer.items.add(selected);
+                    });
+                    input.files = transfer.files;
+                    renderInitialFiles(input, list, buttonText, count);
+                });
+
+                row.appendChild(icon);
+                row.appendChild(details);
+                row.appendChild(remove);
+                list.appendChild(row);
+            });
+        }
+
+        function formatInitialFileSize(bytes) {
+            if (bytes < 1024)
+                return bytes + ' B';
+            if (bytes < 1024 * 1024)
+                return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        bindInitialFilePicker();
+        if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(bindInitialFilePicker);
+        }
+    })();
+</script>
 
 <div
     class="offcanvas offcanvas-end offcanvas-form-search"
@@ -809,7 +1005,47 @@
     </div>
 </div>
 
+<script src="<%= ResolveUrl("~/Styles/plugins/ckeditor/ckeditor.js") %>"></script>
 <script type="text/javascript">
+    function syncDocumentContentEditor() {
+        var element = document.getElementById('<%= ClientID %>_contentEditor');
+        var hidden = document.getElementById('<%= hdfDocumentContent.ClientID %>');
+        if (!element || !hidden) return;
+        var editor = window.CKEDITOR && CKEDITOR.instances[element.id];
+        var value = editor ? editor.getData() : element.value;
+        hidden.value = btoa(unescape(encodeURIComponent(value)));
+    }
+
+    function initDocumentContentEditor() {
+        var id = '<%= ClientID %>_contentEditor';
+        var element = document.getElementById(id);
+        var hidden = document.getElementById('<%= hdfDocumentContent.ClientID %>');
+        if (!element || !hidden || element.getAttribute('data-content-ready')) return;
+        if (window.CKEDITOR && CKEDITOR.instances[id]) CKEDITOR.instances[id].destroy(true);
+        element.value = hidden.value ? decodeURIComponent(escape(atob(hidden.value))) : '';
+        element.setAttribute('data-content-ready', 'true');
+        element.addEventListener('input', syncDocumentContentEditor);
+        if (!window.CKEDITOR) return;
+        CKEDITOR.replace(id, {
+            customConfig: '', height: 200, width: '100%', resize_enabled: false,
+            language: 'vi', entities: false, basicEntities: true,
+            allowedContent: 'p div span strong b em i u s sub sup ul ol li blockquote h1 h2 h3 h4 h5 h6 table thead tbody tfoot tr th td br hr pre code{text-align,margin-left,font-family,font-size,color,background-color}; td th[colspan,rowspan]; a[!href]',
+            toolbar: [
+                ['Undo', 'Redo', 'PasteText', 'PasteFromWord'], ['Find', 'Replace', 'SelectAll'],
+                ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat'], '/',
+                ['Format', 'Font', 'FontSize'], ['TextColor', 'BGColor'],
+                ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+                ['NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote'], ['Link', 'Unlink', 'Table', 'HorizontalRule', 'SpecialChar']
+            ],
+            on: {
+                instanceReady: function (event) { event.editor.dataProcessor.writer.selfClosingEnd = ' />'; },
+                change: syncDocumentContentEditor
+            }
+        });
+    }
+    if (window.Sys && Sys.Application) Sys.Application.add_load(initDocumentContentEditor);
+    else document.addEventListener('DOMContentLoaded', initDocumentContentEditor);
+
     function toggleDocumentFormSigningMethod() {
         var checkbox = document.getElementById(
             '<%= chkCanTrinhKy.ClientID %>');

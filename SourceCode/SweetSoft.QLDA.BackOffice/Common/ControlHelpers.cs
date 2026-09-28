@@ -474,6 +474,71 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 dropdown.Items.Add(new ListItem(i.ToString(), i.ToString()));
             dropdown.SelectedValue = DateTime.UtcNow.Year.ToString();
         }
+        // 1. Dành cho BootstrapDropdown (chuẩn đang dùng)
+        public void BindDynamicYears(BootstrapDropdown dropdown, string tableName, string dateColumn, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AddItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các năm --", "");
+            }
+
+            // Truy vấn động moi các năm đang có thực tế trong Database
+            string sql = $"SELECT DISTINCT YEAR({dateColumn}) AS Nam FROM {tableName} WHERE {dateColumn} IS NOT NULL ORDER BY Nam DESC";
+
+            using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["Nam"] != DBNull.Value)
+                        {
+                            string year = reader["Nam"].ToString();
+                            dropdown.AddItem(year, year);
+                        }
+                    }
+                    reader.Close();
+                }
+            }
+            dropdown.ClearSelection();
+        }
+
+        // 2. Cung cấp luôn 1 bản cho ExtraDropdown để dùng khi cần
+        public void BindDynamicYears(ExtraDropdown dropdown, string tableName, string dateColumn, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.PlaceHolder = string.Empty;
+                dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các năm --";
+                dropdown.EmptyItemValue = "";
+            }
+
+            string sql = $"SELECT DISTINCT YEAR({dateColumn}) AS Nam FROM {tableName} WHERE {dateColumn} IS NOT NULL ORDER BY Nam DESC";
+
+            using (System.Data.IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                if (reader != null)
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["Nam"] != DBNull.Value)
+                        {
+                            string year = reader["Nam"].ToString();
+                            dropdown.Items.Add(new ListItem(year, year));
+                        }
+                    }
+                    reader.Close();
+                }
+            }
+            dropdown.SelectedIndex = -1;
+        }
         public void BindStatus(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();
@@ -789,15 +854,47 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataSource = tblLoaiKhachHangs;
             ddl.DataBind();
         }
+
+        public void BindMonths(ExtraDropdown dropdown, bool isAll = true)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+
+            if (isAll)
+            {
+                dropdown.AlowClear = true;
+                dropdown.PlaceHolder = string.Empty;
+                dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả các tháng --";
+                dropdown.EmptyItemValue = "";
+            }
+
+            for (int i = 1; i <= 12; i++)
+                dropdown.Items.Add(new ListItem("Tháng " + i, i.ToString()));
+
+            dropdown.SelectedIndex = -1;
+        }
+
+        public void BindKhoangGiaTriHopDong(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = "null";
+            dropdown.AlowClear = true;
+            dropdown.PlaceHolder = string.Empty;
+            dropdown.EmptyItemText = UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL) ?? "-- Tất cả giá trị --";
+            dropdown.EmptyItemValue = "";
+
+            dropdown.Items.Add(new ListItem("Dưới 10 triệu", "DUOI_10"));
+            dropdown.Items.Add(new ListItem("10 - 100 triệu", "10_100"));
+            dropdown.Items.Add(new ListItem("100 - 500 triệu", "100_500"));
+            dropdown.Items.Add(new ListItem("Trên 500 triệu", "TREN_500"));
+
+            dropdown.SelectedIndex = -1;
+        }
         #endregion
         #region Binding Task Controls
         public void BindPriorities(DropDownList ddl, Guid? selectedId = null, bool isAll = false)
         {
             ddl.Items.Clear();
-            if (isAll)
-                ddl.Items.Add(new ListItem(UITextsReader.GetBackEndResourceText(BackEndResourceKeys.ALL), ""));
-            else
-                ddl.Items.Add(new ListItem("-- Chọn độ ưu tiên --", ""));
             try
             {
                 DataTable dt = TaskManager.Instance.GetPrioritiesTable();
@@ -876,20 +973,26 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 }
             }
         }
-        public void BindDependentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedDepId = null, string currentOrNewCode = null)
+        public void BindDependentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedDepId = null, string currentOrNewCode = null, bool chiLayGiaiDoan = false)
         {
             ddl.Items.Clear();
             ddl.Items.Add(new ListItem("-- Không có --", ""));
-            DataTable dt = TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+
+            DataTable dt = chiLayGiaiDoan
+                ? TaskManager.Instance.FetchPhasesByProjectId(projectId)
+                : TaskManager.Instance.FetchByIdAndOrderASCMaCV(projectId);
+
             if (dt != null)
             {
                 foreach (DataRow row in dt.Rows)
                 {
-                    if (Guid.TryParse(row[ColIdCongViec]?.ToString(), out Guid id))
+                    if (Guid.TryParse(row["IdCongViec"]?.ToString(), out Guid id))
                     {
                         if (excludeTaskId.HasValue && id == excludeTaskId.Value) continue;
-                        string maCv = row[ColMaCv]?.ToString() ?? "";
-                        string tenCv = row[ColTenCv]?.ToString() ?? "";
+
+                        string maCv = row["MaCongViec"]?.ToString() ?? "";
+                        string tenCv = row["TenCongViec"]?.ToString() ?? "";
+
                         if (!string.IsNullOrEmpty(currentOrNewCode) && TaskManager.Instance.IsAfterOrEqual(maCv, currentOrNewCode))
                             continue;
 
@@ -916,7 +1019,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
             if (level == 1)
             {
                 return $"<div class=\"task-phase-box d-flex align-items-center\">" +
-                       $"<i class=\"far fa-folder-open me-2\" style=\"color: #6f42c1;\"></i>" +
+                       $"<i class=\"fas fa-flag me-2\" style=\"color: #6f42c1;\"></i>" +
                        $"<span class=\"task-phase-text\">{maCv}. {tenCv}</span>" +
                        $"</div>";
             }
@@ -1275,40 +1378,25 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     idNhomTaiLieu)
                 ?? new List<TblLoaiTaiLieu>();
 
-            Dictionary<Guid, string> groupNames =
-                (DocumentGroupManager.Instance.GetAll()
-                    ?? new List<TblNhomTaiLieu>())
-                .ToDictionary(
-                    group => group.IdNhomTaiLieu,
-                    group => group.TenNhom);
 
             if (isAll)
             {
                 dropdown.AlowClear = true;
                 dropdown.DefaultSearchValue = string.Empty;
                 dropdown.Items.Add(new ListItem(
-                    "Tất cả loại tài liệu",
+                    "Tất cả loại hồ sơ",
                     string.Empty));
             }
             else
             {
                 dropdown.Items.Add(new ListItem(
-                    "Chọn loại tài liệu",
+                    "Chọn loại hồ sơ",
                     string.Empty));
             }
 
             foreach (TblLoaiTaiLieu documentType in documentTypes)
             {
-                string groupName;
-                groupNames.TryGetValue(
-                    documentType.IdNhomTaiLieu,
-                    out groupName);
-
-                string text = idNhomTaiLieu.HasValue
-                    ? documentType.TenLoai
-                    : string.IsNullOrEmpty(groupName)
-                    ? documentType.TenLoai
-                    : groupName + " / " + documentType.TenLoai;
+                string text = documentType.TenLoai;
 
                 if (!documentType.KichHoat)
                     text += " (Đã khóa)";
@@ -1377,25 +1465,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
                     idNhomTaiLieu)
                 ?? new List<TblLoaiTaiLieu>();
 
-            Dictionary<Guid, string> groupNames =
-                (DocumentGroupManager.Instance.GetAll()
-                    ?? new List<TblNhomTaiLieu>())
-                .ToDictionary(
-                    group => group.IdNhomTaiLieu,
-                    group => group.TenNhom);
 
             foreach (TblLoaiTaiLieu documentType in documentTypes)
             {
-                string groupName;
-                groupNames.TryGetValue(
-                    documentType.IdNhomTaiLieu,
-                    out groupName);
-
-                string text = idNhomTaiLieu.HasValue
-                    ? documentType.TenLoai
-                    : string.IsNullOrEmpty(groupName)
-                    ? documentType.TenLoai
-                    : groupName + " / " + documentType.TenLoai;
+                string text = documentType.TenLoai;
 
                 if (!documentType.KichHoat)
                     text += " (Đã khóa)";

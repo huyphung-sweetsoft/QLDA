@@ -27,7 +27,8 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
         public EventHandler NewNhanVienHandlerCallback;
         public EventHandler EditNhanVienHandlerCallback;
         public EventHandler SendMailHandlerCallback;
-
+        public EventHandler ManagePhongBanHandlerCallback;
+        public EventHandler ManageChucDanhHandlerCallback;
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsUserRight(ActionKeys.Update, ModuleKeys.NhanVien);
         protected bool IsDelete => this.CURRENT_PAGE.IsUserRight(ActionKeys.Delete, ModuleKeys.NhanVien);
@@ -42,7 +43,55 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
             grvData.CurrentPageIndex = 1;
             grvData.Rebind();
         }
+        #region Quản lý Danh mục (Phòng ban & Chức danh)
 
+        protected void btnQuanLyPhongBan_Click(object sender, EventArgs e)
+        {
+            // Bắn sự kiện ra Trang chủ (NhanViens.aspx)
+            ManagePhongBanHandlerCallback?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected void btnQuanLyChucDanh_Click(object sender, EventArgs e)
+        {
+            // Bắn sự kiện ra Trang chủ (NhanViens.aspx)
+            ManageChucDanhHandlerCallback?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void ReloadPhongBanDropdown()
+        {
+            // Lưu lại giá trị đang chọn
+            string selectedValue = ddlSearchPhongBan.SelectedValue;
+
+            // Lấy data mới từ DB
+            new ControlHelpers().BindPhongBan(ddlSearchPhongBan);
+
+            // Phục hồi giá trị đang chọn (nếu nó chưa bị xóa)
+            if (!string.IsNullOrEmpty(selectedValue))
+            {
+                ddlSearchPhongBan.SelectedValue = selectedValue;
+            }
+
+            upnlSearchDefault.Update();
+        }
+
+        public void ReloadChucDanhDropdown()
+        {
+            // Lưu lại giá trị đang chọn
+            string selectedValue = ddlSearchChucDanh.SelectedValue;
+
+            // Lấy data mới từ DB
+            new ControlHelpers().BindChucDanh(ddlSearchChucDanh);
+
+            // Phục hồi giá trị đang chọn
+            if (!string.IsNullOrEmpty(selectedValue))
+            {
+                ddlSearchChucDanh.SelectedValue = selectedValue;
+            }
+
+            upnlSearchDefault.Update();
+        }
+
+        #endregion
         public void InitControls()
         {
             ApplyControlsText();

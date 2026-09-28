@@ -18,63 +18,74 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         #region Search paging
 
-        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> keyValueSearchs, string orderBy, int pageNumber, int pageSize, out int totalRecord)
         {
             totalRecord = 0;
 
-            parameters = parameters ?? new Dictionary<string, object>();
+            string yearParam = "NULL";
+            if (keyValueSearchs.ContainsKey("Nam") && !string.IsNullOrEmpty(keyValueSearchs["Nam"]?.ToString()))
+            {
+                if (int.TryParse(keyValueSearchs["Nam"].ToString(), out int nam))
+                    yearParam = nam.ToString();
+            }
 
-            Guid idKhachHang = GetGuidParameter(parameters, TblHopDongThucHien.Columns.IdKhachHang);
-            string giaTriTu = GetDecimalSqlValue(parameters, "GiaTriHopDongTu");
-            string giaTriDen = GetDecimalSqlValue(parameters, "GiaTriHopDongDen");
-            string ngayKyTu = GetDateSqlValue(parameters, "NgayKyTu");
-            string ngayKyDen = GetDateSqlValue(parameters, "NgayKyDen");
-            string keyword = InlineQueryHelpers.SQLEncode(searchTerm ?? string.Empty);
+            string monthParam = "NULL";
+            if (keyValueSearchs.ContainsKey("Thang") && !string.IsNullOrEmpty(keyValueSearchs["Thang"]?.ToString()))
+            {
+                if (int.TryParse(keyValueSearchs["Thang"].ToString(), out int thang))
+                    monthParam = thang.ToString();
+            }
+
+            string khoangGiaTri = keyValueSearchs.ContainsKey("KhoangGiaTri") ? keyValueSearchs["KhoangGiaTri"]?.ToString() : null;
+            string khoangGiaTriCondition = "1 = 1";
+
+            if (khoangGiaTri == "DUOI_10")
+                khoangGiaTriCondition = "hd.GiaTriHopDong < 10000000";
+            else if (khoangGiaTri == "10_100")
+                khoangGiaTriCondition = "hd.GiaTriHopDong >= 10000000 AND hd.GiaTriHopDong < 100000000";
+            else if (khoangGiaTri == "100_500")
+                khoangGiaTriCondition = "hd.GiaTriHopDong >= 100000000 AND hd.GiaTriHopDong <= 500000000";
+            else if (khoangGiaTri == "TREN_500")
+                khoangGiaTriCondition = "hd.GiaTriHopDong > 500000000";
 
             string sql = $@"
-                DECLARE @startRow INT = {pageNumber};
-                DECLARE @endRow INT = {pageSize};
-                DECLARE @idKhachHang UNIQUEIDENTIFIER = '{idKhachHang}';
-                DECLARE @giaTriTu DECIMAL(18, 2) = {giaTriTu};
-                DECLARE @giaTriDen DECIMAL(18, 2) = {giaTriDen};
-                DECLARE @ngayKyTu DATETIME = {ngayKyTu};
-                DECLARE @ngayKyDen DATETIME = {ngayKyDen};
-                DECLARE @singleKeyWord NVARCHAR(250) = N'%{keyword}%';
+        DECLARE @startRow INT = {pageNumber};
+        DECLARE @endRow INT = {pageSize};
+        DECLARE @idKhachHang VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(keyValueSearchs[TblHopDongThucHien.Columns.IdKhachHang])}';
+        DECLARE @year INT = {yearParam};
+        DECLARE @month INT = {monthParam};
+        DECLARE @singleKeyWord NVARCHAR(150) = N'%{InlineQueryHelpers.SQLEncode(searchTerm ?? "")}%';
 
-                SELECT *
-                FROM
-                (
-                    SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.*
-                    FROM
-                    (
-                        SELECT
-                            hd.*,
-                            kh.TenKhachHang,
-                            COUNT(1) OVER() AS total_records
-                        FROM dbo.TblHopDongThucHien hd
-                        INNER JOIN dbo.TblKhachHang kh ON kh.IdKhachHang = hd.IdKhachHang
-                        WHERE hd.DaXoa = 0
-                          AND (@idKhachHang = '{Guid.Empty}' OR hd.IdKhachHang = @idKhachHang)
-                          AND (@giaTriTu IS NULL OR hd.GiaTriHopDong >= @giaTriTu)
-                          AND (@giaTriDen IS NULL OR hd.GiaTriHopDong <= @giaTriDen)
-                          AND (@ngayKyTu IS NULL OR hd.NgayKy >= @ngayKyTu)
-                          AND (@ngayKyDen IS NULL OR hd.NgayKy < DATEADD(DAY, 1, CAST(@ngayKyDen AS DATE)))
-                          AND (@singleKeyWord = N'%%' OR hd.SoHopDong LIKE @singleKeyWord OR hd.TenHopDong LIKE @singleKeyWord OR kh.TenKhachHang LIKE @singleKeyWord)
-                    ) AS T
-                ) AS T1
-                WHERE RowNum >= @startRow AND RowNum <= @endRow;";
+        SELECT *
+        FROM (
+            SELECT ROW_NUMBER() OVER (ORDER BY {orderBy}) AS RowNum, T.*
+            FROM (
+                SELECT hd.*, kh.TenKhachHang, COUNT(1) OVER() AS total_records
+                FROM TblHopDongThucHien hd
+                INNER JOIN TblKhachHang kh ON kh.IdKhachHang = hd.IdKhachHang
+                WHERE hd.DaXoa = 0
+                AND (@idKhachHang = '{Guid.Empty}' OR hd.IdKhachHang = @idKhachHang)
+                AND (@year IS NULL OR YEAR(hd.NgayKy) = @year)
+                AND (@month IS NULL OR MONTH(hd.NgayKy) = @month)
+                AND ({khoangGiaTriCondition})
+                AND (
+                    @singleKeyWord = N'%%'
+                    OR hd.SoHopDong LIKE @singleKeyWord
+                    OR hd.TenHopDong LIKE @singleKeyWord
+                    OR kh.TenKhachHang LIKE @singleKeyWord
+                )
+            ) AS T
+        ) T1
+        WHERE RowNum >= @startRow AND RowNum <= @endRow";
 
-            IDataReader reader = new InlineQuery().ExecuteReader(sql);
-
-            if (reader == null)
+            IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
+            if (iDataReader == null)
                 return null;
 
-            DataTable table = new DataTable();
-            table.Load(reader);
-
-            InlineQueryHelpers.GetTotal(ref table, out totalRecord);
-
-            return table;
+            DataTable dt = new DataTable();
+            dt.Load(iDataReader);
+            InlineQueryHelpers.GetTotal(ref dt, out totalRecord);
+            return dt;
         }
 
         public override DataTable SearchPaging(Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)

@@ -3,11 +3,11 @@ using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Infrastructure;
-using SweetSoft.QLDA.Core.Managers;        // Chứa UserManager
+using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
-using SweetSoft.QLDA.Core.ScheduleManager; // Đã chép đúng namespace theo folder
-using SweetSoft.QLDA.Core.SysManager;      // Chứa SweetContext, ActionKeys
-using SweetSoft.QLDA.DataAccess;           // Chứa AspnetUser
+using SweetSoft.QLDA.Core.ScheduleManager;
+using SweetSoft.QLDA.Core.SysManager;
+using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 
@@ -79,19 +79,17 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
                         TargetUserId = queryId;
 
-                        // CHUẨN KIẾN TRÚC: Gọi Manager thay vì Query DB
                         AspnetUser targetUser = UserManager.Instance.GetUserById(queryId);
                         litTitle.Text = targetUser != null ?
                             string.Format(GetResourceText(BackEndResourceKeys.SCHEDULE_OF_USER), targetUser.DisplayName) :
                             GetResourceText(BackEndResourceKeys.EMPLOYEE_SCHEDULE);
                     }
 
-                    // [QUAN TRỌNG]: Đã đi qua trang Chi tiết thì Lùi 1 bước PHẢI LÀ trang Chi tiết
+                    // Đã đi qua trang Chi tiết thì Lùi 1 bước PHẢI LÀ trang Chi tiết
                     rollbackUrl = RewriteURLHelper.ViewDetailEmp(queryId);
                 }
                 else
                 {
-                    // Truyền ID nhưng giải mã/parse bị lỗi -> Trang không tồn tại (404)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), true);
                     return;
                 }
@@ -109,7 +107,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
             if (hasParentDetail)
             {
-                // Cấp 1: Nguồn gốc (Hồ sơ hoặc Danh sách)
                 if (isFromProfile)
                 {
                     navLinks.Add(GetRelativeClientPath(RewriteURLHelper.Profile), GetResourceText(BackEndResourceKeys.PROFILE));
@@ -119,7 +116,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                     navLinks.Add(GetRelativeClientPath(RewriteURLHelper.NhanVien), GetResourceText(BackEndResourceKeys.EMPLOYEE_LIST));
                 }
 
-                // Cấp 2: Lùi 1 bước về trang Chi tiết (kèm theo cờ để trang chi tiết biết đường ẩn nút Sửa)
                 if (isFromProfile && !rollbackUrl.Contains("from=profile"))
                 {
                     rollbackUrl += (rollbackUrl.Contains("?") ? "&" : "?") + "from=profile";
@@ -142,19 +138,17 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
 
             if (hfViewMode.Value == "month")
             {
-                // THÁNG: Tính toán cho Grid 6 hàng x 7 cột (Đủ 42 ô để không bị vỡ Layout)
                 DateTime firstDayOfMonth = new DateTime(refDate.Year, refDate.Month, 1);
                 int diffStart = (int)firstDayOfMonth.DayOfWeek - (int)DayOfWeek.Monday;
-                if (diffStart < 0) diffStart += 7; // Nếu ngày 1 là Chủ nhật (0), lùi về T2
+                if (diffStart < 0) diffStart += 7;
                 startDate = firstDayOfMonth.AddDays(-diffStart);
 
-                // Luôn lấy đủ 42 ngày (6 tuần) để lưới Lịch Tháng luôn vuông vắn, không trồi sụt
                 endDate = startDate.AddDays(41);
                 litDateRange.Text = $"{GetResourceText(BackEndResourceKeys.MONTH)} {refDate.Month}/{refDate.Year}";
                 btnViewMonth.CssClass = "btn-cal active";
                 btnViewWeek.CssClass = "btn-cal";
             }
-            else // Chế độ "Tuần"
+            else
             {
                 int diffStart = (int)refDate.DayOfWeek - (int)DayOfWeek.Monday;
                 if (diffStart < 0) diffStart += 7;
@@ -167,10 +161,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 btnViewMonth.CssClass = "btn-cal";
             }
 
-            // Gọi Core Manager
             var data = LichTrinhManager.Instance.LayLichTrinhNhanVien(TargetUserId, startDate, endDate);
-
-            // Ép thành JSON cho Javascript
             hfScheduleDataJSON.Value = JsonConvert.SerializeObject(data);
         }
         #endregion
@@ -206,6 +197,85 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             hfViewMode.Value = "week";
             LoadCalendarData();
+        }
+        #endregion
+
+        #region 4. Xử lý mở Modal Chi tiết bằng C# (Chuẩn ExtraModal)
+        protected void btnOpenModalDay_Click(object sender, EventArgs e)
+        {
+            // 1. Đọc index từ JS gửi lên
+            if (!int.TryParse(hfSelectedDateIndex.Value, out int dataIndex)) return;
+
+            // 2. Phục hồi cục data JSON đang chứa danh sách lịch
+            string jsonStr = hfScheduleDataJSON.Value;
+            if (string.IsNullOrEmpty(jsonStr)) return;
+
+            var scheduleList = JsonConvert.DeserializeObject<List<ThongTinLichNgay>>(jsonStr);
+
+            if (dataIndex < 0 || dataIndex >= scheduleList.Count) return;
+            var dayData = scheduleList[dataIndex];
+
+            // 3. Set Tiêu đề cho Modal
+            string dateStr = dayData.Ngay.ToString("dd/MM/yyyy");
+            mdlDayDetail.Title = $"{GetResourceText(BackEndResourceKeys.SCHEDULE_DETAILS)} - {dateStr}";
+
+            // 4. Render nội dung HTML
+            string htmlContent = "";
+
+            if (dayData.TrangThaiLich == "holiday")
+            {
+                string holidayTitle = GetResourceText(BackEndResourceKeys.HOLIDAY) ?? "NGÀY NGHỈ LỄ";
+                htmlContent = $@"
+                    <div style='background-color: #fef3c7; color: #b45309; padding: 20px; border-radius: 8px; border-left: 5px solid #f59e0b; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>
+                        <h4 style='margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase;'>🎈 {holidayTitle}</h4>
+                        <p style='margin: 0; font-size: 16px; font-weight: 600;'>{dayData.TenNgoaiLe}</p>
+                    </div>";
+            }
+            else if (dayData.TrangThaiLich == "busy" && dayData.DanhSachCongViec != null)
+            {
+                // Gom nhóm Task theo Dự án
+                var projGroups = new Dictionary<string, List<TomTatCongViec>>();
+                string otherProjectText = GetResourceText(BackEndResourceKeys.OTHER_PROJECT_UNIDENTIFIED) ?? "Dự án khác";
+
+                foreach (var task in dayData.DanhSachCongViec)
+                {
+                    string pName = string.IsNullOrEmpty(task.TenDuAn) ? otherProjectText : task.TenDuAn;
+                    if (!projGroups.ContainsKey(pName))
+                        projGroups[pName] = new List<TomTatCongViec>();
+
+                    projGroups[pName].Add(task);
+                }
+
+                // Render HTML cho danh sách công việc
+                foreach (var proj in projGroups)
+                {
+                    htmlContent += $@"
+                        <div style='background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden;'>
+                            <div style='background: linear-gradient(to right, #eff6ff, #ffffff); border-bottom: 1px solid #e2e8f0; padding: 10px 15px; color: #1e3a8a; font-weight: 800; font-size: 14px;'>
+                                <i class='fas fa-folder-open me-2'></i> {proj.Key}
+                            </div>
+                            <div style='padding: 10px 15px;'>";
+
+                    foreach (var task in proj.Value)
+                    {
+                        htmlContent += $@"
+                                <div style='padding: 8px 0; border-bottom: 1px dashed #cbd5e1; font-size: 13px; color: #334155; display: flex; align-items: flex-start; gap: 8px;'>
+                                    <span style='background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; white-space: nowrap;'>
+                                        {task.MaCongViec}
+                                    </span>
+                                    <span style='font-weight: 600; line-height: 1.4;'>{task.TenCongViec}</span>
+                                </div>";
+                    }
+                    htmlContent += "</div></div>";
+                }
+            }
+
+            // Dán HTML vào Literal
+            litModalContent.Text = htmlContent;
+
+            // 5. Cập nhật giao diện và gọi lệnh Mở Modal chuẩn
+            upModal.Update();
+            mdlDayDetail.OpenModal(true);
         }
         #endregion
     }

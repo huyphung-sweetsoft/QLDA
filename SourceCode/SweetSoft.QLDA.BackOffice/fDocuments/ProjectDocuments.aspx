@@ -16,7 +16,7 @@
 
     <div class="row">
         <div class="col-xl-12">
-            <div class="card min-h-sreen">
+            <div class="card p-2 min-h-sreen">
                 <SweetSoft:Navigation
                     runat="server"
                     ID="Navigation1" />

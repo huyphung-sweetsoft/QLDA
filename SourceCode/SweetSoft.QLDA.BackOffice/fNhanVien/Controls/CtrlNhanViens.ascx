@@ -43,10 +43,14 @@
             <SweetSoft:ExtraTextBox runat="server" ID="txtSearchSingle" PlaceHolder="Nhập từ khóa tìm kiếm..." CssClass="border-primary input-search-filter"></SweetSoft:ExtraTextBox>
             <SweetSoft:ExtraButton runat="server" ID="lbtSearchSingle" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearch_ServerClick"></SweetSoft:ExtraButton>
         </div>
-        <div runat="server" id="tagOther" visible="true" class="d-flex justify-content-end gap-3 w-full flex-wrap">
+       <div runat="server" id="tagOther" visible="true" class="d-flex justify-content-end gap-3 w-full flex-wrap">
             <asp:UpdatePanel runat="server" ID="pnlButtons" UpdateMode="Conditional">
                 <ContentTemplate>
                     <div class="d-flex">
+                        <!-- 2 NÚT QUẢN LÝ DANH MỤC ĐƯỢC THÊM VÀO ĐÂY -->
+                        <SweetSoft:ExtraButton runat="server" ID="btnQuanLyPhongBan" OnClick="btnQuanLyPhongBan_Click" CssClass="waves-effect waves-light font-mobile-small me-2" ButtonStyle="Secondary"><i class="fas fa-cogs"></i> Quản lý phòng ban</SweetSoft:ExtraButton>
+                        <SweetSoft:ExtraButton runat="server" ID="btnQuanLyChucDanh" OnClick="btnQuanLyChucDanh_Click" CssClass="waves-effect waves-light font-mobile-small me-2" ButtonStyle="Secondary"><i class="fas fa-cogs"></i> Quản lý chức danh</SweetSoft:ExtraButton>
+                        
                         <SweetSoft:ExtraButton runat="server" ID="btnExport" OnClick="btnExport_Click" ButtonStyle="OutLineInfo"
                             CssClass="waves-effect waves-light flex-btn font-mobile-small me-2" ButtonIcon="Excel" IsSubmit="false" Visible="false">Export Excel</SweetSoft:ExtraButton>
                         <SweetSoft:ExtraButton runat="server" ID="lbtAdd" OnClick="lbtAdd_Click" CssClass="waves-effect waves-light font-mobile-small" ButtonStyle="Info" ButtonIcon="Add" Visible="false">Add new</SweetSoft:ExtraButton>

@@ -87,6 +87,15 @@ namespace SweetSoft.QLDA.BackOffice.fCustomers.Controls
         protected global::System.Web.UI.UpdatePanel pnlButtons;
 
         /// <summary>
+        /// btnQuanLyLoaiDuAn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnQuanLyLoaiDuAn;
+
+        /// <summary>
         /// btnExport control.
         /// </summary>
         /// <remarks>

@@ -63,7 +63,89 @@ namespace SweetSoft.QLDA.Core.Respositories
             dt.Load(iDataReader);
             return dt;
         }
+        public DataTable FetchByEmployeeIdAndOrderASCMaCV(Guid projectId, Guid idNhanVien, string searchValue = null)
+        {
+            string searchCondition = "";
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                string keyword = searchValue.Trim().Replace("'", "''");
+                searchCondition = $" AND (t.MaCongViec LIKE N'%{keyword}%' OR t.TenCongViec LIKE N'%{keyword}%')";
+            }
 
+            string sql = $@"        
+                WITH AssignedTasks AS (            
+                    SELECT t.IdCongViec 
+                    FROM [dbo].[TblCongViec] t            
+                    INNER JOIN [dbo].[TblCongViec_NhanVien] cn ON t.IdCongViec = cn.IdCongViec            
+                    WHERE cn.IdNhanVien = '{idNhanVien}'              
+                      AND t.IdDuAn = '{projectId}'              
+                      AND t.DaXoa = 0        
+                ),        
+                TaskHierarchy AS (            
+                    SELECT IdCongViec, IdCongViecCha 
+                    FROM [dbo].[TblCongViec] 
+                    WHERE IdCongViec IN (SELECT IdCongViec FROM AssignedTasks)
+                    UNION ALL            
+                    SELECT p.IdCongViec, p.IdCongViecCha 
+                    FROM [dbo].[TblCongViec] p            
+                    INNER JOIN TaskHierarchy h ON p.IdCongViec = h.IdCongViecCha
+                    WHERE p.DaXoa = 0 AND p.IdDuAn = '{projectId}'        
+                )        
+                SELECT DISTINCT 
+                    t.*,            
+                    ut.TenDoUuTien,            
+                    ut.DiemUuTien,            
+                    STUFF((                
+                        SELECT ', ' + u.DisplayName                
+                        FROM [dbo].[TblCongViec_NhanVien] cn                
+                        INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId                
+                        WHERE cn.IdCongViec = t.IdCongViec                   
+                          AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)                
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS TenNhanVien,            
+                    STUFF((                
+                        SELECT ',' + CAST(u.UserId AS VARCHAR(50))                
+                        FROM [dbo].[TblCongViec_NhanVien] cn                
+                        INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId                
+                        WHERE cn.IdCongViec = t.IdCongViec                   
+                          AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)                
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS IdNhanVien,            
+                    STUFF((                
+                        SELECT ',' + ISNULL(u.Avatar, '')                
+                        FROM [dbo].[TblCongViec_NhanVien] cn                
+                        INNER JOIN [dbo].[aspnet_Users] u ON cn.IdNhanVien = u.UserId                
+                        WHERE cn.IdCongViec = t.IdCongViec                   
+                          AND (u.IsDeleted = 0 OR u.IsDeleted IS NULL)                
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS Avatars        
+                FROM [dbo].[TblCongViec] t        
+                INNER JOIN TaskHierarchy th ON t.IdCongViec = th.IdCongViec        
+                LEFT JOIN [dbo].[TblDoUuTien] ut ON t.IdDoUuTien = ut.IdDoUuTien        
+                WHERE t.IdDuAn = '{projectId}'           
+                  AND t.DaXoa = 0           
+                  {searchCondition}        
+                ORDER BY t.MaCongViec ASC;    ";
+
+            IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
+            if (iDataReader == null)
+                return null;
+
+            DataTable dt = new DataTable();
+            dt.Load(iDataReader);
+            return dt;
+        }
+        public DataTable FetchPhasesByProjectId(Guid projectId)
+        {
+            return new SubSonic.Select(
+                    TblCongViec.Columns.IdCongViec,
+                    TblCongViec.Columns.MaCongViec,
+                    TblCongViec.Columns.TenCongViec
+                )
+                .From(TblCongViec.Schema)
+                .Where(TblCongViec.Columns.IdDuAn).IsEqualTo(projectId)
+                .And(TblCongViec.Columns.IdCongViecCha).IsNull() // CHỈ LẤY GIAI ĐOẠN (ROOT TASK)
+                .And(TblCongViec.Columns.DaXoa).IsEqualTo(false) // Bỏ qua các task đã xóa
+                .OrderAsc(TblCongViec.Columns.MaCongViec)
+                .ExecuteDataSet().Tables[0];
+        }
         public TblCongViec FetchById(Guid taskId)
         {
             return new Select().From(TblCongViec.Schema)

@@ -12,6 +12,7 @@ namespace SweetSoft.QLDA.Core.Models
         public string TenTask { get; set; }
         public DateTime? NgayBatDau { get; set; }
         public DateTime? NgayKetThuc { get; set; }
+        public DateTime? NgayHoanThanhThucTe { get; set; }
         public byte TrangThaiTask { get; set; }
         public string TrangThaiText { get; set; }
 
@@ -19,7 +20,9 @@ namespace SweetSoft.QLDA.Core.Models
         public int ThoiHanNgay { get; set; }
         public int DiemUuTien { get; set; }
         public string MaTaskCha { get; set; }
-        public string TenDoUuTien { get; set; } // <--- CHÍNH LÀ DÒNG NÀY ĐANG BỊ THIẾU
+        public string TenDoUuTien { get; set; }
+        // Hệ số đóng góp lấy từ TblHeSoDongGop
+        public double HeSoDongGop { get; set; }
         public string TenTaskCha { get; set; } // Hứng tên của Task Group (VD: Cụm Module Đăng nhập)
         public string TenPhaseGoc { get; set; }
 
@@ -29,7 +32,7 @@ namespace SweetSoft.QLDA.Core.Models
         // ==========================================
         // PIPELINE BƯỚC 1 & 2: CẤP ĐỘ TASK
         // ==========================================
-        public double Coefficient => DiemUuTien == 3 ? 2.0 : (DiemUuTien == 2 ? 1.0 : 0.5);
+        public double Coefficient => HeSoDongGop;
 
         public double E_Task => ThoiHanNgay * Coefficient;
 
@@ -105,5 +108,29 @@ namespace SweetSoft.QLDA.Core.Models
         public double ContributionPercent => Total_E_All_Employees > 0
             ? Math.Round((Total_E_My_Employee / Total_E_All_Employees) * 100, 1)
             : 0;
+    }
+    public class NhanVienProjectSummaryDTO
+    {
+        public Guid IdDuAn { get; set; }
+        public string MaDuAn { get; set; }
+        public string TenDuAn { get; set; }
+        public string VaiTro { get; set; }
+        public byte TrangThai { get; set; }
+        public DateTime? ProjectStartDate { get; set; }
+        public DateTime? ProjectEndDate { get; set; }
+        public double Total_E_All_Employees { get; set; }
+        public double Total_E_My_Employee { get; set; }
+        public double ContributionPercent
+        {
+            get
+            {
+                return Total_E_All_Employees > 0
+                    ? Math.Round(
+                        (Total_E_My_Employee / Total_E_All_Employees) * 100,
+                        1
+                      )
+                    : 0;
+            }
+        }
     }
 }

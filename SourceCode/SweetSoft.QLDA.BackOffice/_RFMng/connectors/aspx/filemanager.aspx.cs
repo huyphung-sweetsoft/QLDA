@@ -74,7 +74,7 @@ namespace SweetSoft.QLDA.BackOffice._RFMng.connectors
                 // Check for protected files
                 foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
                 {
-                    if (IsProtectedFile(file.FullName))
+                    if (IsProtectedFile(file.FullName) || IsProtectedDocumentPath(file.FullName))
                     {
                         return false;
                     }
@@ -250,6 +250,7 @@ namespace SweetSoft.QLDA.BackOffice._RFMng.connectors
                 string storagePhysicalPath = HttpContext.Current.Server.MapPath(defaultPath).TrimEnd('\\');
                 foreach (DirectoryInfo dirInfo in RootDirInfo.GetDirectories())
                 {
+                    if (IsProtectedDocumentPath(dirInfo.FullName)) continue;
                     lstData.Add(getInfoDictionary(storagePhysicalPath, dirInfo.FullName, true));
                 }
 
@@ -513,6 +514,20 @@ namespace SweetSoft.QLDA.BackOffice._RFMng.connectors
             return string.Equals(path.TrimEnd('\\', '/'), root.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase);
         }
 
+        private static bool IsProtectedDocumentPath(string path)
+        {
+            string resolved=Path.GetFullPath(path).TrimEnd('\\','/');
+            foreach(string folder in new[]{
+                "~/Uploads/DocumentVersion/",
+                "~/Uploads/DocumentSigningResult/",
+                "~/Uploads/CostAttachment/",
+                "~/Uploads/MeetingAttachment/"}) {
+                string root=Path.GetFullPath(HttpContext.Current.Server.MapPath(folder)).TrimEnd('\\','/');
+                if(resolved.Equals(root,StringComparison.OrdinalIgnoreCase) || resolved.StartsWith(root+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
+        }
+
         private static string SecureCorrectPath(string path)
         {
             string rootFolder = HttpContext.Current.Server.MapPath(defaultPath);
@@ -530,6 +545,9 @@ namespace SweetSoft.QLDA.BackOffice._RFMng.connectors
 
                 // Tạo full path
                 string resolvedPath = Path.GetFullPath(Path.Combine(rootFolder, path.TrimStart('~', '\\', '/')));
+
+                if(IsProtectedDocumentPath(resolvedPath))
+                    throw new UnauthorizedAccessException("File hồ sơ chỉ được quản lý trong chức năng Hồ sơ.");
 
                 // Kiểm tra path traversal
                 if (!resolvedPath.StartsWith(rootFolder, StringComparison.OrdinalIgnoreCase))

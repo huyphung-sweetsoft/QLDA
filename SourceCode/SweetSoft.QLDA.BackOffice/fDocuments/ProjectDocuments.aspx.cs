@@ -41,10 +41,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 return;
             }
 
-            if (!IsView
-                || !DocumentManager.Instance.CanAccessProjectDocument(
-                    CurrentProjectId,
-                    ActionKeys.View))
+            // Vào trang danh sách theo quyền khu vực hoặc theo ít nhất một
+            // hồ sơ được cấp riêng. Quyền xem từng hồ sơ vẫn được lọc riêng
+            // trong SearchProjectDocuments.
+            if (!DocumentManager.Instance.CanEnterProjectDocumentArea(
+                    CurrentProjectId))
             {
                 Response.Redirect(
                     GetRelativeClientPath(RewriteURLHelper.Error403),

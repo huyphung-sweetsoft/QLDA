@@ -78,15 +78,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNguonGocVanDe;
 
         /// <summary>
-        /// ddlCongViecPhatSinh control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecPhatSinh;
-
-        /// <summary>
         /// ddlCongViecBiAnhHuong control.
         /// </summary>
         /// <remarks>
@@ -94,6 +85,15 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecBiAnhHuong;
+
+        /// <summary>
+        /// ddlCongViecPhatSinh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecPhatSinh;
 
         /// <summary>
         /// txtNhanVien control.

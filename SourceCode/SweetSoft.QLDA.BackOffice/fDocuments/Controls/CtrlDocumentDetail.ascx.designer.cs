@@ -11,6 +11,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlDocumentDetail
     {
+        protected global::System.Web.UI.WebControls.Literal litDocumentContent;
+        protected global::System.Web.UI.WebControls.Button btnDocumentPermissions;
+        protected global::System.Web.UI.WebControls.Button btnSaveDocumentPermissions;
+        protected global::System.Web.UI.WebControls.Panel pnlGrantExternalUsers;
+        protected global::System.Web.UI.WebControls.CheckBox chkGrantExternalUsers;
+        protected global::System.Web.UI.WebControls.Repeater rptDocumentPermissions;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlDocumentPermissions;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlVersionFiles;
+        protected global::System.Web.UI.WebControls.Label lblVersionFilesSummary;
+        protected global::System.Web.UI.WebControls.Panel pnlVersionFiles;
+        protected global::System.Web.UI.WebControls.Repeater rptVersionFiles;
+        protected global::System.Web.UI.WebControls.Panel pnlNoVersionFiles;
         protected global::System.Web.UI.UpdatePanel upDetail;
         protected global::System.Web.UI.WebControls.HiddenField hdfIdTaiLieu;
         protected global::System.Web.UI.WebControls.Label lblDocumentName;
@@ -67,6 +79,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.HiddenField hdfSubmitSigningSigner;
         protected global::System.Web.UI.WebControls.Label lblSubmitSigningVersion;
         protected global::System.Web.UI.WebControls.Label lblSubmitSigningMethod;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblSubmitSigningFiles;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSubmitSigningSigner;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSubmitSigningNote;
         protected global::System.Web.UI.WebControls.Button btnSubmitSigning;

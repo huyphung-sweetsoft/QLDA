@@ -114,6 +114,15 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.WebControls.Literal ltrThamNien;
 
         /// <summary>
+        /// ltrTinhTrangCongTac control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrTinhTrangCongTac;
+
+        /// <summary>
         /// ltrCCCD control.
         /// </summary>
         /// <remarks>
@@ -150,22 +159,13 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.WebControls.Literal ltrDiaChi;
 
         /// <summary>
-        /// ltrCountActiveProj control.
+        /// ltrCountAllProj control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountActiveProj;
-
-        /// <summary>
-        /// ltrCountDoneProj control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountDoneProj;
+        protected global::System.Web.UI.WebControls.Literal ltrCountAllProj;
 
         /// <summary>
         /// lnkSchedule control.
@@ -177,84 +177,183 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.HtmlControls.HtmlAnchor lnkSchedule;
 
         /// <summary>
-        /// section_active_projects control.
+        /// hdfScheduleJson control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl section_active_projects;
+        protected global::System.Web.UI.WebControls.HiddenField hdfScheduleJson;
 
         /// <summary>
-        /// ltrActiveCount control.
+        /// upnlSearchDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrActiveCount;
+        protected global::System.Web.UI.UpdatePanel upnlSearchDuAn;
 
         /// <summary>
-        /// emptyActive control.
+        /// ddlSearchTrangThaiDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl emptyActive;
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchTrangThaiDuAn;
 
         /// <summary>
-        /// rptActiveProjects control.
+        /// txtSearchDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptActiveProjects;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchDuAn;
 
         /// <summary>
-        /// section_done_projects control.
+        /// btnSearchDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl section_done_projects;
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnSearchDuAn;
 
         /// <summary>
-        /// ltrDoneCount control.
+        /// upSearchTagDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrDoneCount;
+        protected global::System.Web.UI.UpdatePanel upSearchTagDuAn;
 
         /// <summary>
-        /// emptyDone control.
+        /// searchTagBoxDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl emptyDone;
+        protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBoxDuAn;
 
         /// <summary>
-        /// rptDoneProjects control.
+        /// upListDuAn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptDoneProjects;
+        protected global::System.Web.UI.UpdatePanel upListDuAn;
 
         /// <summary>
-        /// CtrlUserDetail1 control.
+        /// section_all_projects control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fUsers.Controls.CtrlUserDetail CtrlUserDetail1;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl section_all_projects;
+
+        /// <summary>
+        /// emptyAll control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl emptyAll;
+
+        /// <summary>
+        /// rptAllProjects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptAllProjects;
+
+        /// <summary>
+        /// upProjectDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upProjectDetail;
+
+        /// <summary>
+        /// ltrDetailTenDuAn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailTenDuAn;
+
+        /// <summary>
+        /// ltrDetailMaDuAn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailMaDuAn;
+
+        /// <summary>
+        /// ltrDetailVaiTro control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailVaiTro;
+
+        /// <summary>
+        /// ltrDetailProjectTime control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailProjectTime;
+
+        /// <summary>
+        /// ltrDetailContribution control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailContribution;
+
+        /// <summary>
+        /// ltrDetailTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailTrangThai;
+
+        /// <summary>
+        /// rptDetailPhases control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptDetailPhases;
+
+        /// <summary>
+        /// CtrlNhanVienPopup1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fNhanVien.Controls.CtrlNhanVienPopup CtrlNhanVienPopup1;
     }
 }

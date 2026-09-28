@@ -520,6 +520,25 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
+		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
+		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
+		{
+			if(colTblChiPhiRecords == null)
+			{
+				colTblChiPhiRecords = new SweetSoft.QLDA.DataAccess.TblChiPhiCollection().Where(TblChiPhi.Columns.IdUploadFile, Id).Load();
+				colTblChiPhiRecords.ListChanged += new ListChangedEventHandler(colTblChiPhiRecords_ListChanged);
+			}
+			return colTblChiPhiRecords;
+		}
+				
+		void colTblChiPhiRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblChiPhiRecords[e.NewIndex].IdUploadFile = Id;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection colTblGuiNhanKhachHangRecords;
 		public SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHangCollection TblGuiNhanKhachHangRecords()
 		{
@@ -537,6 +556,25 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblGuiNhanKhachHangRecords[e.NewIndex].IdFileNhanLai = Id;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblLichHopCollection colTblLichHopRecords;
+		public SweetSoft.QLDA.DataAccess.TblLichHopCollection TblLichHopRecords()
+		{
+			if(colTblLichHopRecords == null)
+			{
+				colTblLichHopRecords = new SweetSoft.QLDA.DataAccess.TblLichHopCollection().Where(TblLichHop.Columns.IdUploadFile, Id).Load();
+				colTblLichHopRecords.ListChanged += new ListChangedEventHandler(colTblLichHopRecords_ListChanged);
+			}
+			return colTblLichHopRecords;
+		}
+				
+		void colTblLichHopRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblLichHopRecords[e.NewIndex].IdUploadFile = Id;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblMauTaiLieuCollection colTblMauTaiLieuRecords;
@@ -880,6 +918,17 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
+                if (colTblChiPhiRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
+                    {
+                        if (item.IdUploadFile == null ||item.IdUploadFile != Id)
+                        {
+                            item.IdUploadFile = Id;
+                        }
+                    }
+               }
+		
                 if (colTblGuiNhanKhachHangRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblGuiNhanKhachHang item in colTblGuiNhanKhachHangRecords)
@@ -887,6 +936,17 @@ namespace SweetSoft.QLDA.DataAccess
                         if (item.IdFileNhanLai == null ||item.IdFileNhanLai != Id)
                         {
                             item.IdFileNhanLai = Id;
+                        }
+                    }
+               }
+		
+                if (colTblLichHopRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblLichHop item in colTblLichHopRecords)
+                    {
+                        if (item.IdUploadFile == null ||item.IdUploadFile != Id)
+                        {
+                            item.IdUploadFile = Id;
                         }
                     }
                }
@@ -943,9 +1003,19 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
+                if (colTblChiPhiRecords != null)
+                {
+                    colTblChiPhiRecords.SaveAll();
+               }
+		
                 if (colTblGuiNhanKhachHangRecords != null)
                 {
                     colTblGuiNhanKhachHangRecords.SaveAll();
+               }
+		
+                if (colTblLichHopRecords != null)
+                {
+                    colTblLichHopRecords.SaveAll();
                }
 		
                 if (colTblMauTaiLieuRecords != null)

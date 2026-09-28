@@ -953,6 +953,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblTaiLieuRecords[e.NewIndex].IdNhanVienPhuTrach = UserId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblTaiLieuQuyenCollection colTblTaiLieuQuyenRecords;
+		public SweetSoft.QLDA.DataAccess.TblTaiLieuQuyenCollection TblTaiLieuQuyenRecords()
+		{
+			if(colTblTaiLieuQuyenRecords == null)
+			{
+				colTblTaiLieuQuyenRecords = new SweetSoft.QLDA.DataAccess.TblTaiLieuQuyenCollection().Where(TblTaiLieuQuyen.Columns.UserId, UserId).Load();
+				colTblTaiLieuQuyenRecords.ListChanged += new ListChangedEventHandler(colTblTaiLieuQuyenRecords_ListChanged);
+			}
+			return colTblTaiLieuQuyenRecords;
+		}
+				
+		void colTblTaiLieuQuyenRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTaiLieuQuyenRecords[e.NewIndex].UserId = UserId;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblThanhVienDuAnCollection colTblThanhVienDuAnRecords;
 		public SweetSoft.QLDA.DataAccess.TblThanhVienDuAnCollection TblThanhVienDuAnRecords()
 		{
@@ -1073,6 +1092,77 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		#region Many To Many Helpers
+		
+		 
+		public SweetSoft.QLDA.DataAccess.TblTaiLieuCollection GetTblTaiLieuCollection() { return AspnetUser.GetTblTaiLieuCollection(this.UserId); }
+		public static SweetSoft.QLDA.DataAccess.TblTaiLieuCollection GetTblTaiLieuCollection(Guid varUserId)
+		{
+		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[TblTaiLieu] INNER JOIN [TblTaiLieuQuyen] ON [TblTaiLieu].[IdTaiLieu] = [TblTaiLieuQuyen].[IdTaiLieu] WHERE [TblTaiLieuQuyen].[UserId] = @UserId", AspnetUser.Schema.Provider.Name);
+			cmd.AddParameter("@UserId", varUserId, DbType.Guid);
+			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
+			TblTaiLieuCollection coll = new TblTaiLieuCollection();
+			coll.LoadAndCloseReader(rdr);
+			return coll;
+		}
+		
+		public static void SaveTblTaiLieuMap(Guid varUserId, TblTaiLieuCollection items)
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[UserId] = @UserId", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@UserId", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (TblTaiLieu item in items)
+			{
+				TblTaiLieuQuyen varTblTaiLieuQuyen = new TblTaiLieuQuyen();
+				varTblTaiLieuQuyen.SetColumnValue("UserId", varUserId);
+				varTblTaiLieuQuyen.SetColumnValue("IdTaiLieu", item.GetPrimaryKeyValue());
+				varTblTaiLieuQuyen.Save();
+			}
+		}
+		public static void SaveTblTaiLieuMap(Guid varUserId, System.Web.UI.WebControls.ListItemCollection itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[UserId] = @UserId", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@UserId", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
+			{
+				if (l.Selected) 
+				{
+					TblTaiLieuQuyen varTblTaiLieuQuyen = new TblTaiLieuQuyen();
+					varTblTaiLieuQuyen.SetColumnValue("UserId", varUserId);
+					varTblTaiLieuQuyen.SetColumnValue("IdTaiLieu", l.Value);
+					varTblTaiLieuQuyen.Save();
+				}
+			}
+		}
+		public static void SaveTblTaiLieuMap(Guid varUserId , Guid[] itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[UserId] = @UserId", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@UserId", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (Guid item in itemList) 
+			{
+				TblTaiLieuQuyen varTblTaiLieuQuyen = new TblTaiLieuQuyen();
+				varTblTaiLieuQuyen.SetColumnValue("UserId", varUserId);
+				varTblTaiLieuQuyen.SetColumnValue("IdTaiLieu", item);
+				varTblTaiLieuQuyen.Save();
+			}
+		}
+		
+		public static void DeleteTblTaiLieuMap(Guid varUserId) 
+		{
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[UserId] = @UserId", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@UserId", varUserId, DbType.Guid);
+			DataService.ExecuteQuery(cmdDel);
+		}
 		
 		 
 		public SweetSoft.QLDA.DataAccess.AspnetRoleCollection GetAspnetRoleCollection() { return AspnetUser.GetAspnetRoleCollection(this.UserId); }
@@ -1723,6 +1813,17 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colTblTaiLieuQuyenRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTaiLieuQuyen item in colTblTaiLieuQuyenRecords)
+                    {
+                        if (item.UserId != UserId)
+                        {
+                            item.UserId = UserId;
+                        }
+                    }
+               }
+		
                 if (colTblThanhVienDuAnRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblThanhVienDuAn item in colTblThanhVienDuAnRecords)
@@ -1843,6 +1944,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblTaiLieuRecords != null)
                 {
                     colTblTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblTaiLieuQuyenRecords != null)
+                {
+                    colTblTaiLieuQuyenRecords.SaveAll();
                }
 		
                 if (colTblThanhVienDuAnRecords != null)

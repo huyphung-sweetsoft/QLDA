@@ -44,6 +44,7 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
         {
             ScriptManager script = ScriptManager.GetCurrent(this.Page);
             script.RegisterAsyncPostBackControl(lbtSearchSingle);
+            script.RegisterAsyncPostBackControl(ddlSearchNam); // Thêm đăng ký async postback cho Dropdown
         }
 
         // ==========================================
@@ -53,6 +54,9 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+
+            ddlSearchNam.SearchTagItemText = "Năm"; // Đặt tên Tag hiển thị
+            ddlSearchNam.SearchColumn = "Nam"; // Định nghĩa cột để truyền xuống DB
 
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
 
@@ -80,10 +84,14 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
             txtSearchSingle.SearchColumn = "TenNgoaiLe";
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
 
+            // Gọi hàm bind động dựa theo data thực tế
+            ControlHelpers controlHelpers = new ControlHelpers();
+            controlHelpers.BindDynamicYears(ddlSearchNam, TblLichNgoaiLe.Schema.TableName, TblLichNgoaiLe.Columns.NgayBatDau, true);
+
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
 
             MasterTemplate master = Page.Master as MasterTemplate;
-            master.LoadSessionLastSearch(searchTagBox, null, grvData, txtSearchSingle);
+            master.LoadSessionLastSearch(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
 
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = "NgayBatDau"; // Mặc định xếp theo ngày bắt đầu
@@ -91,6 +99,7 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
 
             grvData.Rebind();
             pnlButtons.Update();
+            upnlSearchDefault.Update();
         }
 
         // ==========================================
@@ -113,14 +122,33 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
 
                 DataTable dt = null;
 
-                // Gọi tới Manager để truy vấn dữ liệu (Giả định bạn đã viết hàm Search trong LichBieuChungManager)
+                // Lấy giá trị lọc từ các controls
+                ControlHelpers controlHelpers = new ControlHelpers();
+                Dictionary<string, object> keyValueSearchs = controlHelpers.GetControlValues(pnlSearchDefault) ?? new Dictionary<string, object>();
+
+                // 🔴 LƯU Ý: Phải sửa hàm SearchLichNgoaiLePaging trong LichBieuChungManager 
+                // để có thể nhận Dictionary keyValueSearchs, giống như hàm SearchUsers
+                // Ví dụ: dt = LichBieuChungManager.Instance.SearchLichNgoaiLePaging(txtSearchSingle.Text, keyValueSearchs, ...)
+
+                // Mã giả định chờ ông update hàm Manager:
+                // dt = LichBieuChungManager.Instance.SearchLichNgoaiLePaging(
+                //     txtSearchSingle.Text,
+                //     keyValueSearchs, // <-- Truyền mảng các điều kiện lọc xuống
+                //     false, // isWorkingDay = false (chỉ lấy ngày nghỉ lễ)
+                //     $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
+                //     rowIndex,
+                //     pageSize,
+                //     out totalRows);
+
+                // Dòng này tạm giữ code cũ, sẽ không lọc được năm nếu chưa sửa Backend
                 dt = LichBieuChungManager.Instance.SearchLichNgoaiLePaging(
-                    txtSearchSingle.Text,
-                    false, // isWorkingDay = false (chỉ lấy ngày nghỉ lễ)
-                    $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                    rowIndex,
-                    pageSize,
-                    out totalRows);
+                 txtSearchSingle.Text,
+                 keyValueSearchs, // Truyền Dictionary lấy từ pnlSearchDefault
+                 false,
+                 $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
+                 rowIndex,
+                 pageSize,
+                 out totalRows);
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -240,11 +268,22 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
                 NewNgoaiLeHandlerCallback(Guid.Empty, EventArgs.Empty);
         }
 
+        // Sự kiện khi thay đổi Dropdown
+        protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
+        {
+            MasterTemplate master = Page.Master as MasterTemplate;
+            // Gọi btnSearchSingle_Click truyền vào pnlSearchDefault để nó bóc tách parameter tạo Tag
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
+            upSearchTagBox.Update();
+        }
+
         protected void btnSearch_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
-            master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
+            // Phải truyền pnlSearchDefault vào để giữ lại tag Dropdown Năm khi search bằng Keyword
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearchSingle);
             upSearchTagBox.Update();
+            upnlSearchDefault.Update();
         }
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
@@ -253,11 +292,19 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
             {
                 MasterTemplate master = Page.Master as MasterTemplate;
                 GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, null, null, grvData, txtSearchSingle, out searchType);
 
+                // Gọi searchTagBox_TagClosed truyền pnlSearchDefault để nó clear Dropdown tương ứng
+                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, null, grvData, txtSearchSingle, out searchType);
+
+                upnlSearchDefault.Update();
                 upSearchTagBox.Update();
-                string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
-                ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+
+                // Chỉ xóa chữ ở ô input Keyword nếu chính cái Tag Keyword đó bị bấm tắt
+                if (tag != null && tag.Key == txtSearchSingle.ClientID)
+                {
+                    string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
+                    ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
+                }
             }
             catch (Exception exc)
             {
@@ -304,7 +351,7 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu.Controls
                 }
             }
         }
-        // Thêm hàm này vào bên trong class CtrlLichNgoaiLe
+
         protected string FormatDate(object dateObj)
         {
             // Nếu dữ liệu null hoặc rỗng, trả về chuỗi trống thay vì báo lỗi

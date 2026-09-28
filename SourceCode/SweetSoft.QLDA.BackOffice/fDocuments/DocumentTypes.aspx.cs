@@ -26,9 +26,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 return;
             }
 
-            string pageTitle =
-                GetResourceText(
-                    BackEndResourceKeys.DOCUMENT_TYPE_LIST);
+            string pageTitle = "Loại hồ sơ";
 
             SetMetaTagsOgTags(pageTitle);
             Navigation1.MainTitle = pageTitle;

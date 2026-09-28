@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdPhienBanTaiLieu,Guid IdTaiLieu,string SoPhienBan,string NguonTao,Guid? IdPhienBanNguon,string MoTaPhienBan,string NoiDungTrucTiep,bool LaPhienBanHienTai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNoiDung)
+	    public void Insert(Guid IdPhienBanTaiLieu,Guid IdTaiLieu,string SoPhienBan,string NguonTao,Guid? IdPhienBanNguon,string MoTaPhienBan,string NoiDungTrucTiep,bool LaPhienBanHienTai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNoiDung,string DanhSachFileJson)
 	    {
 		    TblPhienBanTaiLieu item = new TblPhienBanTaiLieu();
 		    
@@ -112,6 +112,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.IdFileNoiDung = IdFileNoiDung;
             
+            item.DanhSachFileJson = DanhSachFileJson;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -120,7 +122,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdPhienBanTaiLieu,Guid IdTaiLieu,string SoPhienBan,string NguonTao,Guid? IdPhienBanNguon,string MoTaPhienBan,string NoiDungTrucTiep,bool LaPhienBanHienTai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNoiDung)
+	    public void Update(Guid IdPhienBanTaiLieu,Guid IdTaiLieu,string SoPhienBan,string NguonTao,Guid? IdPhienBanNguon,string MoTaPhienBan,string NoiDungTrucTiep,bool LaPhienBanHienTai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNoiDung,string DanhSachFileJson)
 	    {
 		    TblPhienBanTaiLieu item = new TblPhienBanTaiLieu();
 	        item.MarkOld();
@@ -153,6 +155,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NgayCapNhat = NgayCapNhat;
 				
 			item.IdFileNoiDung = IdFileNoiDung;
+				
+			item.DanhSachFileJson = DanhSachFileJson;
 				
 	        item.Save(UserName);
 	    }

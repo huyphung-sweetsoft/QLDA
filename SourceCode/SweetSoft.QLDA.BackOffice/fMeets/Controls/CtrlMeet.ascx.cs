@@ -20,7 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
         public EventHandler NewMeetingHandlerCallback;
         public EventHandler EditMeetingHandlerCallback;
-        public EventHandler OpenMeetingDocumentHandlerCallback;
+        public EventHandler OpenMeetingFilesHandlerCallback;
 
         public Guid ProjectId
         {
@@ -197,27 +197,27 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                     ((CtrlXemNhanVienMeet)CtrlXemNhanVienMeet1).OpenModal(idCuocHop, startDate, endDate, meet.TenCuocHop, hostId);
                     break;
 
-                case "MEETING_DOCUMENT":
+                case "MEETING_FILES":
                     if (!this.IsView)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
 
-                    Guid meetingDocumentId;
+                    Guid meetingIdForFiles;
                     if (!Guid.TryParse(
                         Convert.ToString(e.CommandArgument),
-                        out meetingDocumentId)
-                        || meetingDocumentId == Guid.Empty)
+                        out meetingIdForFiles)
+                        || meetingIdForFiles == Guid.Empty)
                     {
                         ShowInvalidDataError();
                         return;
                     }
 
-                    if (OpenMeetingDocumentHandlerCallback != null)
+                    if (OpenMeetingFilesHandlerCallback != null)
                     {
-                        OpenMeetingDocumentHandlerCallback(
-                            meetingDocumentId,
+                        OpenMeetingFilesHandlerCallback(
+                            meetingIdForFiles,
                             EventArgs.Empty);
                     }
 

@@ -495,7 +495,7 @@
     <script type="text/javascript">
         window.dashboardCostProjectData = <%= ProjectComparisonChartData %>;
         window.dashboardCostTrendData = <%= CostTrendChartData %>;
-        window.dashboardCostPaymentData = <%= PaymentChartData %>;
+window.dashboardCostPaymentData = <%= PaymentChartData %>;
         window.dashboardCostTexts = <%= DashboardTextsJson %>;
     </script>
 </div>

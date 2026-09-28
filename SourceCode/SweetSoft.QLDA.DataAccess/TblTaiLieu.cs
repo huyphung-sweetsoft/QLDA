@@ -399,6 +399,19 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdFileBanChinhThuc.ForeignKeyTableName = "TblUploadFile";
 				schema.Columns.Add(colvarIdFileBanChinhThuc);
 				
+				TableSchema.TableColumn colvarNoiDungHtml = new TableSchema.TableColumn(schema);
+				colvarNoiDungHtml.ColumnName = "NoiDungHtml";
+				colvarNoiDungHtml.DataType = DbType.String;
+				colvarNoiDungHtml.MaxLength = -1;
+				colvarNoiDungHtml.AutoIncrement = false;
+				colvarNoiDungHtml.IsNullable = true;
+				colvarNoiDungHtml.IsPrimaryKey = false;
+				colvarNoiDungHtml.IsForeignKey = false;
+				colvarNoiDungHtml.IsReadOnly = false;
+				colvarNoiDungHtml.DefaultSetting = @"";
+				colvarNoiDungHtml.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarNoiDungHtml);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -568,6 +581,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<Guid?>(Columns.IdFileBanChinhThuc); }
 			set { SetColumnValue(Columns.IdFileBanChinhThuc, value); }
 		}
+		  
+		[XmlAttribute("NoiDungHtml")]
+		[Bindable(true)]
+		public string NoiDungHtml 
+		{
+			get { return GetColumnValue<string>(Columns.NoiDungHtml); }
+			set { SetColumnValue(Columns.NoiDungHtml, value); }
+		}
 		
 		#endregion
 		
@@ -582,25 +603,6 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
-		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
-		{
-			if(colTblChiPhiRecords == null)
-			{
-				colTblChiPhiRecords = new SweetSoft.QLDA.DataAccess.TblChiPhiCollection().Where(TblChiPhi.Columns.IdTaiLieu, IdTaiLieu).Load();
-				colTblChiPhiRecords.ListChanged += new ListChangedEventHandler(colTblChiPhiRecords_ListChanged);
-			}
-			return colTblChiPhiRecords;
-		}
-				
-		void colTblChiPhiRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblChiPhiRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection colTblHopDongThucHienRecords;
 		public SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection TblHopDongThucHienRecords()
 		{
@@ -618,25 +620,6 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblHopDongThucHienRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblLichHopCollection colTblLichHopRecords;
-		public SweetSoft.QLDA.DataAccess.TblLichHopCollection TblLichHopRecords()
-		{
-			if(colTblLichHopRecords == null)
-			{
-				colTblLichHopRecords = new SweetSoft.QLDA.DataAccess.TblLichHopCollection().Where(TblLichHop.Columns.IdTaiLieu, IdTaiLieu).Load();
-				colTblLichHopRecords.ListChanged += new ListChangedEventHandler(colTblLichHopRecords_ListChanged);
-			}
-			return colTblLichHopRecords;
-		}
-				
-		void colTblLichHopRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblLichHopRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection colTblLichSuTaiLieuRecords;
@@ -696,6 +679,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblPhienBanTaiLieuRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblTaiLieuQuyenCollection colTblTaiLieuQuyenRecords;
+		public SweetSoft.QLDA.DataAccess.TblTaiLieuQuyenCollection TblTaiLieuQuyenRecords()
+		{
+			if(colTblTaiLieuQuyenRecords == null)
+			{
+				colTblTaiLieuQuyenRecords = new SweetSoft.QLDA.DataAccess.TblTaiLieuQuyenCollection().Where(TblTaiLieuQuyen.Columns.IdTaiLieu, IdTaiLieu).Load();
+				colTblTaiLieuQuyenRecords.ListChanged += new ListChangedEventHandler(colTblTaiLieuQuyenRecords_ListChanged);
+			}
+			return colTblTaiLieuQuyenRecords;
+		}
+				
+		void colTblTaiLieuQuyenRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTaiLieuQuyenRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
+            }
+		}
 		#endregion
 		
 			
@@ -750,7 +752,80 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		
-		//no ManyToMany tables defined (0)
+		#region Many To Many Helpers
+		
+		 
+		public SweetSoft.QLDA.DataAccess.AspnetUserCollection GetAspnetUserCollection() { return TblTaiLieu.GetAspnetUserCollection(this.IdTaiLieu); }
+		public static SweetSoft.QLDA.DataAccess.AspnetUserCollection GetAspnetUserCollection(Guid varIdTaiLieu)
+		{
+		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[aspnet_Users] INNER JOIN [TblTaiLieuQuyen] ON [aspnet_Users].[UserId] = [TblTaiLieuQuyen].[UserId] WHERE [TblTaiLieuQuyen].[IdTaiLieu] = @IdTaiLieu", TblTaiLieu.Schema.Provider.Name);
+			cmd.AddParameter("@IdTaiLieu", varIdTaiLieu, DbType.Guid);
+			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
+			AspnetUserCollection coll = new AspnetUserCollection();
+			coll.LoadAndCloseReader(rdr);
+			return coll;
+		}
+		
+		public static void SaveAspnetUserMap(Guid varIdTaiLieu, AspnetUserCollection items)
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[IdTaiLieu] = @IdTaiLieu", TblTaiLieu.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdTaiLieu", varIdTaiLieu, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (AspnetUser item in items)
+			{
+				TblTaiLieuQuyen varTblTaiLieuQuyen = new TblTaiLieuQuyen();
+				varTblTaiLieuQuyen.SetColumnValue("IdTaiLieu", varIdTaiLieu);
+				varTblTaiLieuQuyen.SetColumnValue("UserId", item.GetPrimaryKeyValue());
+				varTblTaiLieuQuyen.Save();
+			}
+		}
+		public static void SaveAspnetUserMap(Guid varIdTaiLieu, System.Web.UI.WebControls.ListItemCollection itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[IdTaiLieu] = @IdTaiLieu", TblTaiLieu.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdTaiLieu", varIdTaiLieu, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
+			{
+				if (l.Selected) 
+				{
+					TblTaiLieuQuyen varTblTaiLieuQuyen = new TblTaiLieuQuyen();
+					varTblTaiLieuQuyen.SetColumnValue("IdTaiLieu", varIdTaiLieu);
+					varTblTaiLieuQuyen.SetColumnValue("UserId", l.Value);
+					varTblTaiLieuQuyen.Save();
+				}
+			}
+		}
+		public static void SaveAspnetUserMap(Guid varIdTaiLieu , Guid[] itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[IdTaiLieu] = @IdTaiLieu", TblTaiLieu.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdTaiLieu", varIdTaiLieu, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (Guid item in itemList) 
+			{
+				TblTaiLieuQuyen varTblTaiLieuQuyen = new TblTaiLieuQuyen();
+				varTblTaiLieuQuyen.SetColumnValue("IdTaiLieu", varIdTaiLieu);
+				varTblTaiLieuQuyen.SetColumnValue("UserId", item);
+				varTblTaiLieuQuyen.Save();
+			}
+		}
+		
+		public static void DeleteAspnetUserMap(Guid varIdTaiLieu) 
+		{
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblTaiLieuQuyen] WHERE [TblTaiLieuQuyen].[IdTaiLieu] = @IdTaiLieu", TblTaiLieu.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdTaiLieu", varIdTaiLieu, DbType.Guid);
+			DataService.ExecuteQuery(cmdDel);
+		}
+		
+		#endregion
 		
         
         
@@ -760,7 +835,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdTaiLieu,Guid? varIdDuAn,Guid varIdLoaiTaiLieu,string varMaTaiLieu,string varTenTaiLieu,string varMoTa,Guid? varIdNhanVienPhuTrach,bool varCanTrinhKy,string varHinhThucKy,string varTrangThaiTaiLieu,bool varCanGuiKhachHang,string varTrangThaiGuiKhach,bool varCanLuuVatLy,string varTrangThaiLuuTru,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileBanChinhThuc)
+		public static void Insert(Guid varIdTaiLieu,Guid? varIdDuAn,Guid varIdLoaiTaiLieu,string varMaTaiLieu,string varTenTaiLieu,string varMoTa,Guid? varIdNhanVienPhuTrach,bool varCanTrinhKy,string varHinhThucKy,string varTrangThaiTaiLieu,bool varCanGuiKhachHang,string varTrangThaiGuiKhach,bool varCanLuuVatLy,string varTrangThaiLuuTru,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileBanChinhThuc,string varNoiDungHtml)
 		{
 			TblTaiLieu item = new TblTaiLieu();
 			
@@ -804,6 +879,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdFileBanChinhThuc = varIdFileBanChinhThuc;
 			
+			item.NoiDungHtml = varNoiDungHtml;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -814,7 +891,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdTaiLieu,Guid? varIdDuAn,Guid varIdLoaiTaiLieu,string varMaTaiLieu,string varTenTaiLieu,string varMoTa,Guid? varIdNhanVienPhuTrach,bool varCanTrinhKy,string varHinhThucKy,string varTrangThaiTaiLieu,bool varCanGuiKhachHang,string varTrangThaiGuiKhach,bool varCanLuuVatLy,string varTrangThaiLuuTru,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileBanChinhThuc)
+		public static void Update(Guid varIdTaiLieu,Guid? varIdDuAn,Guid varIdLoaiTaiLieu,string varMaTaiLieu,string varTenTaiLieu,string varMoTa,Guid? varIdNhanVienPhuTrach,bool varCanTrinhKy,string varHinhThucKy,string varTrangThaiTaiLieu,bool varCanGuiKhachHang,string varTrangThaiGuiKhach,bool varCanLuuVatLy,string varTrangThaiLuuTru,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileBanChinhThuc,string varNoiDungHtml)
 		{
 			TblTaiLieu item = new TblTaiLieu();
 			
@@ -857,6 +934,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NgayCapNhat = varNgayCapNhat;
 			
 				item.IdFileBanChinhThuc = varIdFileBanChinhThuc;
+			
+				item.NoiDungHtml = varNoiDungHtml;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -1011,6 +1090,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn NoiDungHtmlColumn
+        {
+            get { return Schema.Columns[20]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -1035,6 +1121,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
 			 public static string IdFileBanChinhThuc = @"IdFileBanChinhThuc";
+			 public static string NoiDungHtml = @"NoiDungHtml";
 						
 		}
 		#endregion
@@ -1043,31 +1130,9 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
-                if (colTblChiPhiRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
-                    {
-                        if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
-                        {
-                            item.IdTaiLieu = IdTaiLieu;
-                        }
-                    }
-               }
-		
                 if (colTblHopDongThucHienRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblHopDongThucHien item in colTblHopDongThucHienRecords)
-                    {
-                        if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
-                        {
-                            item.IdTaiLieu = IdTaiLieu;
-                        }
-                    }
-               }
-		
-                if (colTblLichHopRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblLichHop item in colTblLichHopRecords)
                     {
                         if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
                         {
@@ -1108,6 +1173,17 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colTblTaiLieuQuyenRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTaiLieuQuyen item in colTblTaiLieuQuyenRecords)
+                    {
+                        if (item.IdTaiLieu != IdTaiLieu)
+                        {
+                            item.IdTaiLieu = IdTaiLieu;
+                        }
+                    }
+               }
 		}
         #endregion
     
@@ -1117,19 +1193,9 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
-                if (colTblChiPhiRecords != null)
-                {
-                    colTblChiPhiRecords.SaveAll();
-               }
-		
                 if (colTblHopDongThucHienRecords != null)
                 {
                     colTblHopDongThucHienRecords.SaveAll();
-               }
-		
-                if (colTblLichHopRecords != null)
-                {
-                    colTblLichHopRecords.SaveAll();
                }
 		
                 if (colTblLichSuTaiLieuRecords != null)
@@ -1145,6 +1211,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblPhienBanTaiLieuRecords != null)
                 {
                     colTblPhienBanTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblTaiLieuQuyenRecords != null)
+                {
+                    colTblTaiLieuQuyenRecords.SaveAll();
                }
 		}
         #endregion

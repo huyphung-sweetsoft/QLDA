@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdLoaiTaiLieu,Guid IdNhomTaiLieu,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdLoaiTaiLieu,Guid? IdNhomTaiLieu,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdNoiLuuTruMacDinh)
 	    {
 		    TblLoaiTaiLieu item = new TblLoaiTaiLieu();
 		    
@@ -114,6 +114,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.NgayCapNhat = NgayCapNhat;
             
+            item.IdNoiLuuTruMacDinh = IdNoiLuuTruMacDinh;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -122,7 +124,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdLoaiTaiLieu,Guid IdNhomTaiLieu,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdLoaiTaiLieu,Guid? IdNhomTaiLieu,string TenLoai,string MoTa,bool CanTrinhKy,string HinhThucKyMacDinh,bool CanGuiKhachHang,bool CanLuuVatLy,int ThuTuHienThi,bool KichHoat,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdNoiLuuTruMacDinh)
 	    {
 		    TblLoaiTaiLieu item = new TblLoaiTaiLieu();
 	        item.MarkOld();
@@ -157,6 +159,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NguoiCapNhat = NguoiCapNhat;
 				
 			item.NgayCapNhat = NgayCapNhat;
+				
+			item.IdNoiLuuTruMacDinh = IdNoiLuuTruMacDinh;
 				
 	        item.Save(UserName);
 	    }

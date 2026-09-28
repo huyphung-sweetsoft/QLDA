@@ -42,9 +42,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         {
             DisableBrowserCache();
 
-            if (IsPostBack)
-                return;
-
             if (!this.IsView)
             {
                 Response.Redirect(
@@ -54,6 +51,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             }
 
             Guid idTaiLieu = QueryId;
+            if (idTaiLieu == Guid.Empty
+                || !DocumentManager.Instance.CanAccessDocument(
+                    idTaiLieu,
+                    ActionKeys.View))
+            {
+                Response.Redirect(
+                    GetRelativeClientPath(RewriteURLHelper.Error403),
+                    true);
+                return;
+            }
+
             TblTaiLieu document =
                 DocumentManager.Instance.GetCompanyDocumentById(idTaiLieu);
             if (document == null)
@@ -61,6 +69,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 Response.Redirect(
                     GetRelativeClientPath(RewriteURLHelper.Error404),
                     true);
+                return;
+            }
+
+            // Permission validation must also run on asynchronous postbacks;
+            // otherwise a stale page could keep invoking handlers after the
+            // user's group/project access had been revoked.
+            if (IsPostBack)
+            {
                 return;
             }
 
@@ -110,6 +126,36 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             Response.Cache.SetRevalidation(
                 System.Web.HttpCacheRevalidation.AllCaches);
             Response.Cache.SetAllowResponseInBrowserHistory(false);
+        }
+
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+            Page.InitComplete += Page_InitComplete;
+        }
+
+        private void Page_InitComplete(object sender, EventArgs e)
+        {
+            if (!IsPostBack || !IsSigningHistoryCommandPostBack())
+                return;
+
+            Guid idTaiLieu = QueryId;
+            if (idTaiLieu == Guid.Empty
+                || !CtrlDocumentDetail1.InitControls(idTaiLieu))
+            {
+                Response.Redirect(
+                    GetRelativeClientPath(RewriteURLHelper.Error404),
+                    true);
+            }
+        }
+
+        private bool IsSigningHistoryCommandPostBack()
+        {
+            string eventTarget = Request.Form["__EVENTTARGET"];
+            return !string.IsNullOrWhiteSpace(eventTarget)
+                && eventTarget.IndexOf(
+                    "rptSigning",
+                    StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public override void DataCallback(

@@ -275,6 +275,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblCongViecRecords[e.NewIndex].IdDoUuTien = IdDoUuTien;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblHeSoDongGopCollection colTblHeSoDongGopRecords;
+		public SweetSoft.QLDA.DataAccess.TblHeSoDongGopCollection TblHeSoDongGopRecords()
+		{
+			if(colTblHeSoDongGopRecords == null)
+			{
+				colTblHeSoDongGopRecords = new SweetSoft.QLDA.DataAccess.TblHeSoDongGopCollection().Where(TblHeSoDongGop.Columns.IdDoUuTien, IdDoUuTien).Load();
+				colTblHeSoDongGopRecords.ListChanged += new ListChangedEventHandler(colTblHeSoDongGopRecords_ListChanged);
+			}
+			return colTblHeSoDongGopRecords;
+		}
+				
+		void colTblHeSoDongGopRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblHeSoDongGopRecords[e.NewIndex].IdDoUuTien = IdDoUuTien;
+            }
+		}
 		#endregion
 		
 			
@@ -406,6 +425,17 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colTblHeSoDongGopRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblHeSoDongGop item in colTblHeSoDongGopRecords)
+                    {
+                        if (item.IdDoUuTien != IdDoUuTien)
+                        {
+                            item.IdDoUuTien = IdDoUuTien;
+                        }
+                    }
+               }
 		}
         #endregion
     
@@ -418,6 +448,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblCongViecRecords != null)
                 {
                     colTblCongViecRecords.SaveAll();
+               }
+		
+                if (colTblHeSoDongGopRecords != null)
+                {
+                    colTblHeSoDongGopRecords.SaveAll();
                }
 		}
         #endregion

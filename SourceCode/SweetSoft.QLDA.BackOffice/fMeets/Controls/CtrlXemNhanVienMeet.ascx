@@ -2,122 +2,102 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 
 <style>
-    .member-item-row { position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: min-height 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-height: 52px; display: flex; align-items: center; }
-    .member-item-row.show-schedule { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08); }
-    .row-default-view { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; width: 100%; height: 100%; font-size: 13px; }
-    .member-info-group { display: flex; align-items: center; gap: 10px; }
-    
-    .btn-calendar-only { background: #ffffff; border: 1px solid #e2e8f0; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .btn-calendar-only:hover { background: #eff6ff; border-color: #93c5fd; transform: scale(1.1); }
-
-    .single-avatar-circle {
-        width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-        font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    .meet-info-banner {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #3b82f6;
+        border-radius: 8px;
+        padding: 14px;
+        font-size: 13px;
+        color: #334155;
     }
+    .meet-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    @media (max-width: 768px) { .meet-info-grid { grid-template-columns: 1fr; } }
 
-    .row-schedule-overlay { position: absolute; inset: 0; background: #ffffff; z-index: 5; display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); height: 100%; }
-    .member-item-row.show-schedule .row-schedule-overlay { transform: translateX(0); }
-    .btn-back-row-slide { background: #f1f5f9; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #2563eb; flex-shrink: 0; margin-top: 4px; }
-    .btn-back-row-slide:hover { background: #e0f2fe; border-color: #2563eb; transform: translateX(-2px); }
+    .meet-member-scroll {
+        max-height: 50vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 4px;
+    }
+    .meet-member-scroll::-webkit-scrollbar { width: 6px; }
+    .meet-member-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-    .row-sched-timeline-grid-7col { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex: 1; padding: 2px 0; }
-    .sched-day-card { border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; background: white; min-height: 52px; }
-    .sd-header { background: #f1f5f9; padding: 3px 2px; text-align: center; font-weight: 800; font-size: 11px; border-bottom: 1px solid #cbd5e1; color: #1e293b; line-height: 1.1; }
-    .sd-header small { font-size: 9.5px; font-weight: 600; color: #64748b; display: block; }
-    .sd-body { padding: 4px 2px; text-align: center; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 1; min-height: 32px; line-height: 1.25; }
+    .meet-member-row {
+        position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+        margin-bottom: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;
+        transition: all 0.2s ease;
+    }
+    .meet-member-row:hover { border-color: #93c5fd; background: #faf5ff; }
+    .meet-member-row.is-host { background: #fffbeb; border-color: #fde68a; }
 
-    .sd-body.holiday { background-color: #fef3c7; color: #b45309; border-top: 2.5px solid #f59e0b; }
-    .sd-body.weekend { background-color: #f8fafc; color: #64748b; }
-    .sd-body.free { background-color: #e6f4ea; color: #137333; border-top: 2.5px solid #34a853; }
-    .sd-body.busy { background-color: #fee2e2; color: #b91c1c; border-top: 2.5px solid #ef4444; }
+    .member-info-group { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+    .single-avatar-circle {
+        width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        font-size: 12px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .member-name-block { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; flex: 1; }
+    .member-email { font-size: 11.5px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    
+    .section-label {
+        font-size: 11.5px; font-weight: 700; text-transform: uppercase; color: #64748b;
+        letter-spacing: 0.5px; margin: 12px 0 6px 4px; display: flex; align-items: center; gap: 6px;
+    }
 </style>
 
-<SweetSoft:ExtraModal runat="server" ID="mdlViewMeetMember" Type="Primary" HideFooter="true">
+<SweetSoft:ExtraModal runat="server" ID="mdlViewMeetMember" Type="Primary" Title="Hồ sơ điều phối cuộc họp" Size="Large">
     <ContentTemplate>
-        <div class="row p-2">
+        <div class="row p-1">
             <div class="col-12 mb-3">
-                <div style="font-size: 12px; color: #1e40af; background: #eff6ff; padding: 10px 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
-                    <asp:Literal runat="server" ID="ltrMeetInfoNote"></asp:Literal>
+                <div class="meet-info-banner">
+                    <div class="fw-bold text-dark fs-6 mb-1 d-flex align-items-center justify-content-between">
+                        <span><i class="fas fa-handshake text-primary me-2"></i> <asp:Literal runat="server" ID="ltrTenCuocHop"></asp:Literal></span>
+                        <span class="badge bg-secondary" style="font-size: 11px;"><asp:Literal runat="server" ID="ltrMaCuocHop"></asp:Literal></span>
+                    </div>
+                    <div class="meet-info-grid">
+                        <div><i class="far fa-clock text-muted me-1"></i> <strong>Thời gian:</strong> <asp:Literal runat="server" ID="ltrThoiGian"></asp:Literal></div>
+                        <div><i class="fas fa-map-marker-alt text-muted me-1"></i> <strong>Địa điểm:</strong> <asp:Literal runat="server" ID="ltrDiaDiem"></asp:Literal></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12" style="max-height: 60vh; overflow-y: auto; overflow-x: hidden;">
-                <asp:Repeater ID="rptAssignedMembers" runat="server">
-                    <ItemTemplate>
-                        <div class="member-item-row" id='mem-view-<%# Eval("UserId") %>'>
-                            <div class="row-default-view">
+            <div class="col-12">
+                <div class="meet-member-scroll">
+                    <div class="section-label"><i class="fas fa-users"></i> Danh sách thành viên tham gia (<asp:Literal runat="server" ID="ltrTotalMember">0</asp:Literal>)</div>
+                    
+                    <asp:Repeater ID="rptAssignedMembers" runat="server">
+                        <ItemTemplate>
+                            <div class="meet-member-row <%# Convert.ToBoolean(Eval("IsHost")) ? "is-host" : "" %>">
                                 <div class="member-info-group">
                                     <%# Eval("AvatarHtml") %>
-                                    <span class="fw-bold text-dark ms-1"><%# Eval("DisplayName") %></span>
-                                    <%# Convert.ToBoolean(Eval("IsHost")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>Chủ trì</span>" : "" %>
+                                    <div class="member-name-block">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold text-dark" style="font-size: 13.5px;"><%# Eval("DisplayName") %></span>
+                                            <%# Convert.ToBoolean(Eval("IsHost")) ? "<span class='badge bg-warning text-dark' style='font-size: 9.5px; padding: 2px 6px;'><i class='fas fa-crown me-1'></i> Chủ trì</span>" : "" %>
+                                        </div>
+                                        <span class="member-email"><%# Eval("Email") %></span>
+                                    </div>
                                 </div>
-                                <button type="button" class="btn-calendar-only" onclick="CMSMasterJs.ToggleRowScheduleViewMeet(this, '<%# Eval("UserId") %>', true)">📅</button>
                             </div>
-                            
-                            <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# Eval("ScheduleJson") %>' />
-                            <div class="row-schedule-overlay" id='overlay-view-<%# Eval("UserId") %>'>
-                                <button type="button" class="btn-back-row-slide" onclick="CMSMasterJs.ToggleRowScheduleViewMeet(this, '<%# Eval("UserId") %>', false)">←</button>
-                                <div class="pe-2 border-end" style="min-width: 90px; flex-shrink: 0; margin-top: 4px;">
-                                    <strong style="font-size: 11.5px;"><%# Eval("DisplayName") %></strong>
-                                </div>
-                                <div class="row-sched-timeline-grid-7col" id='timeline-view-<%# Eval("UserId") %>'></div>
-                            </div>
-                        </div>
-                    </ItemTemplate>
-                </asp:Repeater>
+                        </ItemTemplate>
+                    </asp:Repeater>
 
-                <div runat="server" id="divEmpty" visible="false" class="text-center p-4 text-muted border rounded bg-light">
-                    <i class="fas fa-user-times fs-3 mb-2"></i><br />
-                    Cuộc họp này chưa có thành viên tham gia.
+                    <div runat="server" id="divEmpty" visible="false" class="text-center p-5 text-muted border rounded bg-white">
+                        <i class="fas fa-user-slash fs-2 mb-2 text-secondary opacity-50"></i><br />
+                        <span>Chưa có thành viên nào được phân công tham gia cuộc họp này.</span>
+                    </div>
                 </div>
             </div> 
         </div>
     </ContentTemplate>
+    <FooterTemplate>
+        <button type="button" class="btn btn-secondary px-4 waves-effect" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Đóng
+        </button>
+    </FooterTemplate>
 </SweetSoft:ExtraModal>
-
-<script type="text/javascript">
-window.CMSMasterJs = window.CMSMasterJs || {};
-$(document).ready(function() {
-    CMSMasterJs.ToggleRowScheduleViewMeet = function(btnElement, userId, isShow) {
-        var rowEl = $(btnElement).closest('.member-item-row');
-
-        if (isShow) {
-            $('.member-item-row.show-schedule').not(rowEl).each(function() {
-                $(this).removeClass('show-schedule').css('min-height', '52px');
-            });
-
-            var jsonString = rowEl.find('input[type="hidden"][id*="hdfScheduleJson"]').val();
-            var timelineGrid = rowEl.find('#timeline-view-' + userId);
-            timelineGrid.empty();
-
-            if (jsonString) {
-                try {
-                    var scheduleData = JSON.parse(jsonString);
-                    var countDays = 0;
-                    for (var dateKey in scheduleData) {
-                        countDays++;
-                        var dayData = scheduleData[dateKey];
-                        var dateParts = dateKey.split('-');
-                        var formattedDate = dateParts[2] + '/' + dateParts[1];
-
-                        var html = '<div class="sched-day-card">' +
-                            '<div class="sd-header">' + formattedDate + '<small>' + dayData.dayName + '</small></div>' +
-                            '<div class="sd-body ' + dayData.status + '">' + dayData.text + '</div>' +
-                            '</div>';
-                        timelineGrid.append(html);
-                    }
-                    var rowCount = Math.ceil(countDays / 7);
-                    var calculatedMinHeight = Math.max(88, rowCount * 62 + 20);
-                    rowEl.css('min-height', calculatedMinHeight + 'px');
-                } catch (e) {
-                    console.error("Lỗi parse JSON lịch biểu: ", e);
-                }
-            }
-            rowEl.addClass('show-schedule');
-        } else {
-            rowEl.removeClass('show-schedule');
-            rowEl.css('min-height', '52px');
-        }
-    };
-    });
-</script>

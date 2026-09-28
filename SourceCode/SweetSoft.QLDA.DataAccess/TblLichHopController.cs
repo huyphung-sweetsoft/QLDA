@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdLichHop,Guid IdDuAn,string MaCuocHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime ThoiGianKetThuc,string DiaDiemHop,byte TrangThai,bool DaXoa,Guid IdNguoiTao,DateTime NgayTao,Guid? IdNguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu)
+	    public void Insert(Guid IdLichHop,Guid IdDuAn,string MaCuocHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime ThoiGianKetThuc,string DiaDiemHop,byte TrangThai,bool DaXoa,Guid IdNguoiTao,DateTime NgayTao,Guid? IdNguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu,Guid? IdUploadFile,bool? DaGuiNhacNho)
 	    {
 		    TblLichHop item = new TblLichHop();
 		    
@@ -114,6 +114,10 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.IdTaiLieu = IdTaiLieu;
             
+            item.IdUploadFile = IdUploadFile;
+            
+            item.DaGuiNhacNho = DaGuiNhacNho;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -122,7 +126,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdLichHop,Guid IdDuAn,string MaCuocHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime ThoiGianKetThuc,string DiaDiemHop,byte TrangThai,bool DaXoa,Guid IdNguoiTao,DateTime NgayTao,Guid? IdNguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu)
+	    public void Update(Guid IdLichHop,Guid IdDuAn,string MaCuocHop,string TenCuocHop,string NoiDungCuocHop,DateTime ThoiGianBatDau,DateTime ThoiGianKetThuc,string DiaDiemHop,byte TrangThai,bool DaXoa,Guid IdNguoiTao,DateTime NgayTao,Guid? IdNguoiCapNhat,DateTime? NgayCapNhat,Guid? IdTaiLieu,Guid? IdUploadFile,bool? DaGuiNhacNho)
 	    {
 		    TblLichHop item = new TblLichHop();
 	        item.MarkOld();
@@ -157,6 +161,10 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NgayCapNhat = NgayCapNhat;
 				
 			item.IdTaiLieu = IdTaiLieu;
+				
+			item.IdUploadFile = IdUploadFile;
+				
+			item.DaGuiNhacNho = DaGuiNhacNho;
 				
 	        item.Save(UserName);
 	    }
