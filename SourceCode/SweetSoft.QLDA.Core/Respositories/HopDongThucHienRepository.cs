@@ -123,6 +123,26 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .ExecuteSingle<TblHopDongThucHien>();
         }
 
+        public DataTable GetSortInfoBySoHopDong(string soHopDong)
+        {
+            string sql = $@"
+                DECLARE @soHopDong NVARCHAR(500) = N'{InlineQueryHelpers.SQLEncode(soHopDong)}';
+                SELECT TOP 1
+                    hd.*,
+                    kh.TenKhachHang
+                FROM TblHopDongThucHien hd
+                LEFT JOIN TblKhachHang kh ON kh.IdKhachHang = hd.IdKhachHang
+                WHERE hd.SoHopDong = @soHopDong;";
+
+            IDataReader iDataReader = new InlineQuery().ExecuteReader(sql);
+            if (iDataReader == null)
+                return null;
+
+            DataTable dt = new DataTable();
+            dt.Load(iDataReader);
+            return dt;
+        }
+
         /// <summary>
         /// Returns active projects using the contract. The manager validates
         /// that exactly one project exists before it creates a contract document.
@@ -381,6 +401,23 @@ namespace SweetSoft.QLDA.Core.Respositories
             });
 
             return true;
+        }
+
+        public bool IsUsedByAnotherProject(Guid idHopDongThucHien, Guid idDuAn)
+        {
+            return new Select()
+                .From(TblDuAn.Schema)
+                .Where(TblDuAn.Columns.IdHopDongThucHien).IsEqualTo(idHopDongThucHien)
+                .And(TblDuAn.Columns.IdDuAn).IsNotEqualTo(idDuAn)
+                .ExecuteSingle<TblDuAn>() != null;
+        }
+
+        public bool IsUsedByAnotherProject(Guid idHopDongThucHien)
+        {
+            return new Select()
+                .From(TblDuAn.Schema)
+                .Where(TblDuAn.Columns.IdHopDongThucHien).IsEqualTo(idHopDongThucHien)
+                .ExecuteSingle<TblDuAn>() != null;
         }
 
         #endregion

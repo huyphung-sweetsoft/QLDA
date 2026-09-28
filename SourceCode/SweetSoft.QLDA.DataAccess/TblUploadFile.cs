@@ -653,6 +653,44 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblTrinhKyTaiLieuRecords[e.NewIndex].IdFileSauKy = Id;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection colTblTrinhKyTaiLieuFileRecords;
+		public SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection TblTrinhKyTaiLieuFileRecords()
+		{
+			if(colTblTrinhKyTaiLieuFileRecords == null)
+			{
+				colTblTrinhKyTaiLieuFileRecords = new SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection().Where(TblTrinhKyTaiLieuFile.Columns.IdFileNguon, Id).Load();
+				colTblTrinhKyTaiLieuFileRecords.ListChanged += new ListChangedEventHandler(colTblTrinhKyTaiLieuFileRecords_ListChanged);
+			}
+			return colTblTrinhKyTaiLieuFileRecords;
+		}
+				
+		void colTblTrinhKyTaiLieuFileRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTrinhKyTaiLieuFileRecords[e.NewIndex].IdFileNguon = Id;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile;
+		public SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection TblTrinhKyTaiLieuFileRecordsFromTblUploadFile()
+		{
+			if(colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile == null)
+			{
+				colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile = new SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection().Where(TblTrinhKyTaiLieuFile.Columns.IdFileSauKy, Id).Load();
+				colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile.ListChanged += new ListChangedEventHandler(colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile_ListChanged);
+			}
+			return colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile;
+		}
+				
+		void colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile[e.NewIndex].IdFileSauKy = Id;
+            }
+		}
 		#endregion
 		
 			
@@ -994,6 +1032,28 @@ namespace SweetSoft.QLDA.DataAccess
                         }
                     }
                }
+		
+                if (colTblTrinhKyTaiLieuFileRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFile item in colTblTrinhKyTaiLieuFileRecords)
+                    {
+                        if (item.IdFileNguon != Id)
+                        {
+                            item.IdFileNguon = Id;
+                        }
+                    }
+               }
+		
+                if (colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFile item in colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile)
+                    {
+                        if (item.IdFileSauKy == null ||item.IdFileSauKy != Id)
+                        {
+                            item.IdFileSauKy = Id;
+                        }
+                    }
+               }
 		}
         #endregion
     
@@ -1036,6 +1096,16 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblTrinhKyTaiLieuRecords != null)
                 {
                     colTblTrinhKyTaiLieuRecords.SaveAll();
+               }
+		
+                if (colTblTrinhKyTaiLieuFileRecords != null)
+                {
+                    colTblTrinhKyTaiLieuFileRecords.SaveAll();
+               }
+		
+                if (colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile != null)
+                {
+                    colTblTrinhKyTaiLieuFileRecordsFromTblUploadFile.SaveAll();
                }
 		}
         #endregion

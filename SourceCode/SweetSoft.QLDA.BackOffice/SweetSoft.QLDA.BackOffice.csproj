@@ -593,12 +593,47 @@
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fTasks\Controls\CtrlAddPhase.ascx.cs">
+      <DependentUpon>CtrlAddPhase.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlAddPhase.ascx.designer.cs">
+      <DependentUpon>CtrlAddPhase.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlAddSubTask.ascx.cs">
+      <DependentUpon>CtrlAddSubTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlAddSubTask.ascx.designer.cs">
+      <DependentUpon>CtrlAddSubTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlFastCompleteTask.ascx.cs">
+      <DependentUpon>CtrlFastCompleteTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlFastCompleteTask.ascx.designer.cs">
+      <DependentUpon>CtrlFastCompleteTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlStartTask.ascx.cs">
+      <DependentUpon>CtrlStartTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlStartTask.ascx.designer.cs">
+      <DependentUpon>CtrlStartTask.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fTasks\Controls\CtrlSwapPhase.ascx.cs">
       <DependentUpon>CtrlSwapPhase.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fTasks\Controls\CtrlSwapPhase.ascx.designer.cs">
       <DependentUpon>CtrlSwapPhase.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlViewTaskDetail.ascx.cs">
+      <DependentUpon>CtrlViewTaskDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlViewTaskDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewTaskDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fThanhToan\ThanhToanList.aspx.cs">
       <DependentUpon>ThanhToanList.aspx</DependentUpon>
@@ -825,8 +860,13 @@
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fTasks\Controls\CtrlAddPhase.ascx" />
+    <Content Include="fTasks\Controls\CtrlAddSubTask.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlFastCompleteTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlStartTask.ascx" />
     <Content Include="fTasks\Controls\CtrlSwapPhase.ascx" />
+    <Content Include="fTasks\Controls\CtrlViewTaskDetail.ascx" />
     <Content Include="fTasks\Controls\CtrlXemNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fUsers\Controls\CtrlUserDetail.ascx" />

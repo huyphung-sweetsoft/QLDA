@@ -209,8 +209,7 @@ namespace SweetSoft.QLDA.Core.Managers
             if (string.IsNullOrWhiteSpace(prefix))
                 prefix = "PRJ";
 
-            int startNumber = SettingManager.Instance.GetSettingValueInt(SettingKeys.ProjectCodeStartNumber, 1);
-            return _repository.GenerateMaDuAn(prefix, startNumber);
+            return _repository.GenerateMaDuAn(prefix);
         }
 
         public Guid? LayIdNhanVienQuanLy(Guid idDuAn)

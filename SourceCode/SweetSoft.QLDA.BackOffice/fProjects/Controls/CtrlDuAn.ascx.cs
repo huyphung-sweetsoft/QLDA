@@ -109,7 +109,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
 
-            lbtAdd.Visible = (this.IdKhachHang != Guid.Empty ? false : this.CURRENT_PAGE.IsAdd) ;
+            lbtAdd.Visible = (this.IdKhachHang != Guid.Empty ? false : this.CURRENT_PAGE.IsAdd);
+            btnQuanLyLoaiDuAn.Visible = (this.IdKhachHang != Guid.Empty ? false : this.CURRENT_PAGE.IsAdd);
+            btnExport.Visible = false;
             tagOther.Visible = true;
 
             MasterTemplate master = Page.Master as MasterTemplate;
@@ -162,10 +164,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     if (dt.Rows.Count > 0)
                     {
                         ctrlGridviewPaging.Visible = true;
-                        btnExport.Visible = this.CURRENT_PAGE.IsExportExcel;
+                        //btnExport.Visible = this.CURRENT_PAGE.IsExportExcel;
                     }
                     else
-                        ctrlGridviewPaging.Visible = btnExport.Visible = true;
+                        ctrlGridviewPaging.Visible = true;
+                        //btnExport.Visible = true;
                     grvData.VirtualItemCount = totalRows;
                     grvData.DataSource = dt;
                     grvData.DataBind();

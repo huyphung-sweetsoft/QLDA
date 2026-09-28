@@ -9,6 +9,9 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
+        /* ==========================================================
+           1. ĐỊNH DẠNG CUỘN VÀ DANH SÁCH NHÂN VIÊN
+           ========================================================== */
         .employee-scroll-container::-webkit-scrollbar { width: 6px; }
         .employee-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
         .employee-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
@@ -28,132 +31,67 @@
         .member-email:empty { display: none; }
         .record-attachments .file-actions { display: none !important; }
 
-        .daterangepicker.wizard-mode { 
-            width: 520px !important; /* Mở rộng tối đa popup để chứa đủ 10 cột */
-            padding: 0; 
-            overflow: hidden; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            border: none; 
+        /* =========================================================================
+           2. SIÊU PHẨM UI: BÁNH XE CHỌN THỜI LƯỢNG (VÒNG TRÒN)
+           ========================================================================= */
+        .wheel-popup {
+            position: absolute;
+            top: calc(100% + 15px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 320px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            z-index: 9999;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
         }
-        
-        .daterangepicker.wizard-mode .calendar-time { display: none !important; }
-        .daterangepicker.wizard-mode .drp-buttons { display: none !important; }
-        
-        /* Ép khung chứa hiển thị full 100% width, không bị rớt sang trái */
-        .daterangepicker.wizard-mode .drp-calendar.left { 
-            max-width: none !important; 
-            width: 100% !important; 
-            padding: 20px !important; 
-            float: none !important; 
-            clear: both !important;
-        }
-
-        /* Căn giữa cái lịch ngày */
-        .daterangepicker.wizard-mode .calendar-table {
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: #f8fafc;
+            border-radius: 50%;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
             display: flex;
+            align-items: center;
             justify-content: center;
-            width: 100%;
+            font-weight: 700;
+            color: #475569;
+            font-size: 13px;
+            text-align: center;
+            pointer-events: none;
+            border: 2px solid #e2e8f0;
         }
-        .daterangepicker.wizard-mode .calendar-table table {
-            min-width: 350px;
+        .wheel-item {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            line-height: 1.2;
         }
-        
-        .wizard-step-hour, .wizard-step-minute { display: none; width: 100%; }
-        
-        .wizard-header { 
-            font-size: 16px; 
-            font-weight: 700; 
-            color: #1e293b; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            text-transform: uppercase; 
-            padding-bottom: 12px; 
-            border-bottom: 1px dashed #cbd5e1; 
-            letter-spacing: 0.5px; 
+        .wheel-item:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
         }
-        
-        /* CẤU TRÚC LƯỚI TRÀN VIỀN */
-        .time-grid-hour { 
-            display: grid; 
-            grid-template-columns: repeat(8, 1fr); /* Đẹp nhất: 8 cột (3 hàng x 8 = 24) */
-            gap: 12px; 
-            width: 100%;
-            max-height: 320px; 
-            overflow-y: auto; 
-            padding: 5px; 
-        }
-        
-        .time-grid-minute { 
-            display: grid; 
-            grid-template-columns: repeat(10, 1fr); /* Đẹp nhất: 10 cột (6 hàng x 10 = 60) */
-            gap: 10px; 
-            width: 100%;
-            max-height: 320px; 
-            overflow-y: auto; 
-            padding: 5px; 
-        }
-        
-        .time-grid-hour::-webkit-scrollbar, .time-grid-minute::-webkit-scrollbar { width: 0px; /* Ẩn luôn scrollbar vì lưới đã đủ chỗ hiển thị toàn bộ */ }
-        
-        /* Nút bấm tinh tế, vừa vặn */
-        .time-btn { 
-            padding: 12px 0; 
-            text-align: center; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 8px; /* Bo góc nhẹ nhìn hiện đại hơn viên thuốc */
-            background: #ffffff; 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: 600; 
-            color: #475569; 
-            transition: all 0.2s ease; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
-            user-select: none; 
-        }
-        .time-btn:hover { 
-            background: #f1f5f9; 
-            border-color: #94a3b8; 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-        }
-        .time-btn.selected { 
-            background: #3b82f6 !important; 
-            color: #ffffff !important; 
-            border-color: #2563eb !important; 
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important; 
-            transform: translateY(-1px); 
-        }
-        
-        .wizard-footer { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px 20px; 
-            background: #f8fafc; 
-            border-top: 1px solid #e2e8f0; 
-            clear: both; 
-        }
-        .wiz-btn { 
-            padding: 10px 20px; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            font-size: 14px; 
-            border: none; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            outline: none; 
-        }
-        .wiz-back { background: #e2e8f0; color: #475569; }
-        .wiz-back:hover { background: #cbd5e1; }
-        .wiz-next { background: #3b82f6; color: white; margin-left: auto; }
-        .wiz-next:hover { background: #2563eb; }
-        .wiz-finish { background: #10b981; color: white; margin-left: auto; }
-        .wiz-finish:hover { background: #059669; }
     </style>
 </asp:Content>
 
@@ -181,19 +119,28 @@
                     </div>
                 </div>
 
-               <div class="col-lg-6">
+                <!-- ĐÃ TÁCH: Ô CHỌN NGÀY -->
+                <div class="col-lg-3">
                     <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.START_TIME) %></label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="txtThoiGianBatDau" Required="true" 
-                            SingleDatePicker="true" TimePicker="true" TimePicker24Hour="true" Format="dd/MM/yyyy HH:mm" PlaceHolder="Chọn ngày giờ bắt đầu..." />
+                        <label class="form-label label-valid">Ngày bắt đầu</label>
+                        <SweetSoft:ExtraDateTime runat="server" ID="txtNgayBatDau" Required="true" 
+                            SingleDatePicker="true" Format="dd/MM/yyyy" PlaceHolder="Ngày..." />
                     </div>
                 </div>
-                <div class="col-lg-6">
+
+                <!-- ĐÃ TÁCH: Ô CHỌN GIỜ (TEXT THUẦN) -->
+                <div class="col-lg-3">
                     <div class="mb-3">
+                        <label class="form-label label-valid">Giờ (HH:mm)</label>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtGioBatDau" Required="true" PlaceHolder="VD: 09:00" MaxLength="5"></SweetSoft:ExtraTextBox>
+                    </div>
+                </div>
+
+                <!-- THỜI LƯỢNG KÈM BÁNH XE -->
+                <div class="col-lg-6">
+                    <div class="mb-3" style="position: relative;">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.DURATION) %>(Minutes)</label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtThoiLuong" Required="true" 
-                            TextMode="Number" min="1">
-                        </SweetSoft:ExtraTextBox>
+                        <SweetSoft:ExtraTextBox runat="server" ID="txtThoiLuong" Required="true" AutoCompleteType="Disabled" PlaceHolder="Bấm vào để chọn..."></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
 
@@ -286,9 +233,7 @@
                                                 <asp:CheckBox runat="server" ID="chkSelect" />
                                                 <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                                 <asp:HiddenField runat="server" ID="hdfDisplayName" Value='<%# Eval("DisplayName") %>' />
-                                                
                                                 <%# Eval("AvatarHtml") %>
-                                                
                                                 <div class="member-name-block">
                                                     <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
                                                     <span class="member-email"><%# Eval("Email") %></span>
@@ -315,16 +260,16 @@
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function () {
-            
+
             // --- HÀM TÍNH THỜI GIAN KẾT THÚC ---
             function calcMeetingTime() {
-                var startText = $('#<%= txtThoiGianBatDau.ClientID %>').val();
+                var dateText = $('#<%= txtNgayBatDau.ClientID %>').val();
+                var timeText = $('#<%= txtGioBatDau.ClientID %>').val();
                 var durationText = $('#<%= txtThoiLuong.ClientID %>').val();
 
-                if (startText && durationText) {
-                    var parts = startText.split(' ');
-                    var dmy = parts[0].split('/');
-                    var hm = parts[1].split(':');
+                if (dateText && timeText && durationText) {
+                    var dmy = dateText.split('/');
+                    var hm = timeText.split(':');
 
                     if (dmy.length === 3 && hm.length === 2) {
                         var startDate = new Date(dmy[2], parseInt(dmy[1]) - 1, dmy[0], hm[0], hm[1]);
@@ -345,15 +290,11 @@
                             var now = new Date();
                             var status = 0;
 
-                            if (now > endDate) {
-                                status = 3; 
-                            } else if (now >= startDate && now <= endDate) {
-                                status = 2; 
-                            } else {
+                            if (now > endDate) { status = 3; } 
+                            else if (now >= startDate && now <= endDate) { status = 2; } 
+                            else {
                                 var diffMinutes = (startDate - now) / 60000;
-                                if (diffMinutes > 0 && diffMinutes <= 15) {
-                                    status = 1;
-                                }
+                                if (diffMinutes > 0 && diffMinutes <= 15) { status = 1; }
                             }
                             $('#<%= ddlTrangThai.ClientID %>').val(status).trigger('change');
                         }
@@ -361,119 +302,97 @@
                 }
             }
 
-            $(document).off('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>')
-                     .on('change blur focusout keyup', '#<%= txtThoiGianBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
+            // Gắn sự kiện thay đổi dữ liệu
+            $(document).off('change blur focusout keyup', '#<%= txtNgayBatDau.ClientID %>, #<%= txtGioBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>')
+                     .on('change blur focusout keyup', '#<%= txtNgayBatDau.ClientID %>, #<%= txtGioBatDau.ClientID %>, #<%= txtThoiLuong.ClientID %>', function () {
                     calcMeetingTime();
                  });
 
             // =================================================================================
-            // SIÊU PHẨM UI: WIZARD STEP-BY-STEP (NGÀY -> GIỜ -> PHÚT)
+            // LOGIC DEFAULT: MẶC ĐỊNH NGÀY HÔM NAY - GIỜ LÀM TRÒN LÊN TỚI ĐỈNH (VD 11:29 -> 12:00)
             // =================================================================================
-            var $timeInput = $('#<%= txtThoiGianBatDau.ClientID %>');
-            
-            $timeInput.off('show.daterangepicker.wizard').on('show.daterangepicker.wizard', function(ev, picker) {
-                var $dp = picker.container;
-                
-                // Chỉ render HTML một lần duy nhất
-                if ($dp.find('.wizard-footer').length === 0) {
-                    $dp.addClass('wizard-mode'); 
-                    
-                    // 1. Tạo Lưới 24 Giờ (8 Cột)
-                    var hourHtml = '<div class="wizard-step-hour"><div class="wizard-header">Chọn Giờ</div><div class="time-grid-hour">';
-                    for(var h = 0; h < 24; h++) {
-                        var txtH = h < 10 ? '0' + h : h;
-                        hourHtml += '<div class="time-btn hour-btn" data-val="'+h+'">' + txtH + '</div>';
-                    }
-                    hourHtml += '</div></div>';
-                    
-                    // 2. Tạo Lưới 60 Phút (10 Cột)
-                    var minHtml = '<div class="wizard-step-minute"><div class="wizard-header">Chọn Phút</div><div class="time-grid-minute">';
-                    for(var m = 0; m < 60; m++) {
-                        var txtM = m < 10 ? '0' + m : m;
-                        minHtml += '<div class="time-btn min-btn" data-val="'+m+'">' + txtM + '</div>';
-                    }
-                    minHtml += '</div></div>';
-                    
-                    // 3. Tạo Footer chứa các nút điều hướng
-                    var footerHtml = '<div class="wizard-footer">' +
-                        '<button type="button" class="wiz-btn wiz-back"><i class="fa fa-arrow-left"></i> Quay lại</button>' +
-                        '<button type="button" class="wiz-btn wiz-next">Chọn giờ <i class="fa fa-arrow-right"></i></button>' +
-                        '<button type="button" class="wiz-btn wiz-finish">Hoàn tất <i class="fa fa-check"></i></button>' +
-                        '</div>';
-                        
-                    // Ép HTML vào đúng vị trí của bộ chọn lịch
-                    $dp.find('.drp-calendar.left').append(hourHtml + minHtml);
-                    $dp.append(footerHtml);
-                    
-                    // Khởi tạo Trạng thái (0: Ngày, 1: Giờ, 2: Phút)
-                    $dp.data('wiz-step', 0);
-                    
-                    // HÀM ĐIỀU CHỈNH GIAO DIỆN DỰA TRÊN BƯỚC (STEP)
-                    function updateWizardUI() {
-                        var step = $dp.data('wiz-step');
-                        
-                        // Ẩn hiện các màn hình
-                        $dp.find('.calendar-table').toggle(step === 0);
-                        $dp.find('.wizard-step-hour').toggle(step === 1);
-                        $dp.find('.wizard-step-minute').toggle(step === 2);
-                        
-                        // Ẩn hiện nút Footer
-                        $dp.find('.wiz-back').toggle(step > 0);
-                        $dp.find('.wiz-next').toggle(step < 2);
-                        $dp.find('.wiz-finish').toggle(step === 2);
-                        
-                        // Đổi Text nút Next
-                        if (step === 0) $dp.find('.wiz-next').html('Chọn giờ <i class="fa fa-arrow-right"></i>');
-                        if (step === 1) $dp.find('.wiz-next').html('Chọn phút <i class="fa fa-arrow-right"></i>');
-                    }
-                    
-                    // XỬ LÝ SỰ KIỆN NÚT FOOTER
-                    $dp.on('click', '.wiz-next', function() {
-                        var s = $dp.data('wiz-step');
-                        if (s < 2) { $dp.data('wiz-step', s + 1); updateWizardUI(); }
-                    });
-                    
-                    $dp.on('click', '.wiz-back', function() {
-                        var s = $dp.data('wiz-step');
-                        if (s > 0) { $dp.data('wiz-step', s - 1); updateWizardUI(); }
-                    });
-                    
-                    $dp.on('click', '.wiz-finish', function() {
-                        $dp.find('.applyBtn').click(); // Bấm nút Apply ngầm để lưu
-                    });
-                    
-                    // SỰ KIỆN KHI BẤM CHỌN MỘT GIỜ
-                    $dp.on('click', '.hour-btn', function() {
-                        $dp.find('.hour-btn').removeClass('selected');
-                        $(this).addClass('selected');
-                        $dp.find('.hourselect').val($(this).data('val')).trigger('change');
-                        
-                        // Tự động lướt sang màn hình chọn Phút
-                        setTimeout(function() { $dp.find('.wiz-next').click(); }, 150);
-                    });
-                    
-                    // SỰ KIỆN KHI BẤM CHỌN MỘT PHÚT
-                    $dp.on('click', '.min-btn', function() {
-                        $dp.find('.min-btn').removeClass('selected');
-                        $(this).addClass('selected');
-                        $dp.find('.minuteselect').val($(this).data('val')).trigger('change');
-                    });
+            if (!$('#<%= txtNgayBatDau.ClientID %>').val()) {
+                var now = new Date();
+                var d = String(now.getDate()).padStart(2, '0');
+                var mo = String(now.getMonth() + 1).padStart(2, '0');
+                var y = now.getFullYear();
+                $('#<%= txtNgayBatDau.ClientID %>').val(d + '/' + mo + '/' + y);
+
+                var h = now.getHours();
+                var m = now.getMinutes();
+                if (m > 0) h++; // Phút > 0 thì nhảy thẳng lên giờ tiếp theo
+                if (h > 23) h = 0; 
+                $('#<%= txtGioBatDau.ClientID %>').val(String(h).padStart(2, '0') + ':00');
+            }
+
+            // =================================================================================
+            // VALIDATE TEXTBOX GIỜ: Chỉ cho nhập số, tự nhảy ":", chặn trên 23h, 59p
+            // =================================================================================
+            $('#<%= txtGioBatDau.ClientID %>').on('input', function() {
+                var val = $(this).val().replace(/[^0-9]/g, ''); // Xóa chữ, chỉ để số
+                if (val.length >= 3) {
+                    val = val.substring(0, 2) + ':' + val.substring(2, 4);
                 }
+                $(this).val(val);
+            }).on('blur', function() {
+                var val = $(this).val();
+                if (val) {
+                    var parts = val.split(':');
+                    var h = parseInt(parts[0]) || 0;
+                    var m = parseInt(parts[1]) || 0;
+                    if (h > 23) h = 23;
+                    if (m > 59) m = 59;
+                    $(this).val(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
+                    calcMeetingTime(); // Buộc tính lại kết thúc
+                }
+            });
+
+            // =================================================================================
+            // SIÊU PHẨM UI: BÁNH XE THỜI LƯỢNG (CIRCLE WHEEL GIỐNG BÁNH XE CUỘC ĐỜI)
+            // =================================================================================
+            var $thoiLuongInput = $('#<%= txtThoiLuong.ClientID %>');
+            
+            if ($('#durationWheel').length === 0) {
+                var durHtml = '<div id="durationWheel" class="wheel-popup"><div class="wheel-center">Thời<br/>Lượng</div>';
+                var steps = [15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180];
                 
-                // MỖI KHI BẬT POPUP LÊN LÀ RESET VỀ BƯỚC 0 (CHỌN NGÀY)
-                $dp.data('wiz-step', 0);
-                
-                // Gán CSS cho nút đang được chọn sẵn
-                var curHour = $dp.find('.hourselect').val() || 0;
-                $dp.find('.hour-btn').removeClass('selected').filter('[data-val="'+parseInt(curHour)+'"]').addClass('selected');
-                
-                var curMin = $dp.find('.minuteselect').val() || 0;
-                $dp.find('.min-btn').removeClass('selected').filter('[data-val="'+parseInt(curMin)+'"]').addClass('selected');
-                
-                // Kích hoạt lại View Bước 0
-                $dp.find('.calendar-table').show();
-                $dp.find('.wizard-step-hour, .wizard-step-minute, .wiz-back, .wiz-finish').hide();
-                $dp.find('.wiz-next').show().html('Chọn giờ <i class="fa fa-arrow-right"></i>');
+                steps.forEach(function(val, index) {
+                    // Logic Format Text (VD: 165p -> 2 tiếng 45p)
+                    var h = Math.floor(val / 60);
+                    var m = val % 60;
+                    var label = "";
+                    if (h === 0) label = m + 'p';
+                    else if (m === 0) label = h + ' tiếng';
+                    else label = h + ' tiếng<br/>' + m + 'p';
+                    
+                    // Toán học tọa độ hình tròn (Bắt đầu từ trên cùng (-90 độ) quay theo chiều kim đồng hồ)
+                    var angle = (index * 30 - 90) * (Math.PI / 180);
+                    var radius = 110; 
+                    var x = radius * Math.cos(angle);
+                    var y = radius * Math.sin(angle);
+                    
+                    durHtml += '<div style="position:absolute; top:125px; left:125px; transform: translate('+x+'px, '+y+'px);">' +
+                               '<div class="wheel-item" data-val="'+val+'">' + label + '</div>' +
+                               '</div>';
+                });
+                durHtml += '</div>';
+                $thoiLuongInput.after(durHtml);
+            }
+
+            $thoiLuongInput.on('focus click', function(e) {
+                $('#durationWheel').fadeIn(150);
+            });
+
+            $(document).on('click', '.wheel-item', function(e) {
+                var selectedValue = $(this).data('val');
+                $thoiLuongInput.val(selectedValue).trigger('change'); 
+                $('#durationWheel').fadeOut(150);
+            });
+
+            $(document).on('click', function(e) {
+                if(!$(e.target).closest('#durationWheel, #<%= txtThoiLuong.ClientID %>').length) {
+                    $('#durationWheel').fadeOut(150);
+                }
             });
 
 
