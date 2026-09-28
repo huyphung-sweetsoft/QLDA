@@ -147,10 +147,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             _control.BindNhanVienThamGiaLichHop(meet.IdLichHop, hdfNhanVienIds, txtNhanVienThamGia);
 
             if (meet.ThoiGianBatDau != DateTime.MinValue)
-                txtThoiGianBatDau.DateValue = DateTime.SpecifyKind(meet.ThoiGianBatDau, DateTimeKind.Unspecified);
+            {
+                TimeSpan offset = TimeZoneInfo.Local.GetUtcOffset(meet.ThoiGianBatDau);
+                txtThoiGianBatDau.DateValue = meet.ThoiGianBatDau.Subtract(offset);
+            }
+
             if (meet.ThoiGianKetThuc != DateTime.MinValue)
             {
                 txtThoiGianKetThuc.Text = meet.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm");
+
                 if (meet.ThoiGianBatDau != DateTime.MinValue)
                 {
                     int thoiLuong = (int)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes;
@@ -225,6 +230,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     DateTime.TryParse(strEnd, new System.Globalization.CultureInfo("en-US"), System.Globalization.DateTimeStyles.None, out dtEnd))
                 {
                     meetDto.ThoiGianKetThuc = dtEnd;
+
                     if (int.TryParse(txtThoiLuong.Text.Trim(), out thoiLuong))
                     {
                         meetDto.ThoiGianBatDau = dtEnd.AddMinutes(-thoiLuong);
@@ -236,7 +242,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 }
                 else
                 {
-                    ShowNotify($"Lỗi đọc giờ! Chuỗi Server nhận được là: '{strEnd}'", MSGType.Error);
+                    ShowNotify($"Vui lòng chọn thời gian bắt đầu hợp lệ! (Lỗi đọc chuỗi: {strEnd})", MSGType.Error);
                     return;
                 }
 
@@ -251,12 +257,10 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
-                if (isNew && this.IsEdit)
-                    OpenMeetingFilesAction(savedMeet.IdLichHop, EventArgs.Empty);
             }
             catch (Exception exc)
             {
-                ShowNotify(exc.Message, MSGType.Error);
+                ShowNotify("Lưu thất bại: " + exc.Message, MSGType.Error);
             }
         }
 

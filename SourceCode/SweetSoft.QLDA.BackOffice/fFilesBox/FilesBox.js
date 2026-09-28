@@ -158,6 +158,20 @@ FilesBox.LayoutFilePopUp = function (el) {
     var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
     var videoExtensions = ['mp4', 'webm', 'm4v'];
     var audioExtensions = ['mp3', 'wav', 'ogg'];
+    var isSameOrigin = resolvedUrl.origin === window.location.origin;
+
+    function showDownloadFallback(message) {
+        preview.empty();
+        $('<div>', { 'class': 'text-center text-white p-4' })
+            .append($('<p>').text(message))
+            .append($('<a>', {
+                'class': 'btn btn-light',
+                href: fileUrl,
+                target: '_blank',
+                rel: 'noopener'
+            }).text('Tải file để mở'))
+            .appendTo(preview);
+    }
 
     if (extension === 'pdf') {
         $('<iframe>', {
@@ -165,6 +179,46 @@ FilesBox.LayoutFilePopUp = function (el) {
             src: fileUrl
         }).css({ width: '92vw', height: '92vh', border: '0', background: '#fff' })
             .appendTo(preview);
+    } else if (extension === 'docx' && isSameOrigin) {
+        if (!window.docx || typeof window.docx.renderAsync !== 'function') {
+            showDownloadFallback('Không tải được công cụ xem trước file Word.');
+        } else {
+            var wordContainer = $('<div>', { 'class': 'file-box-word-preview' }).appendTo(preview);
+            var loadingMessage = $('<p>', { 'class': 'file-box-word-loading' })
+                .text('Đang tải bản xem trước...')
+                .appendTo(wordContainer);
+
+            fetch(fileUrl, { credentials: 'same-origin' })
+                .then(function (response) {
+                    if (!response.ok)
+                        throw new Error('Không thể tải file Word.');
+                    return response.blob();
+                })
+                .then(function (file) {
+                    if (!document.documentElement.contains(wordContainer[0]))
+                        return;
+                    return window.docx.renderAsync(file, wordContainer[0], null, {
+                        renderAltChunks: false
+                    });
+                })
+                .then(function () {
+                    loadingMessage.remove();
+                })
+                .catch(function () {
+                    if (document.documentElement.contains(wordContainer[0]))
+                        showDownloadFallback('Không thể xem trước file Word này.');
+                });
+        }
+    } else if (FilesBox.IsExcel(cleanUrl) || (FilesBox.IsDoc(cleanUrl) && !isSameOrigin)) {
+        var reviewUrl = 'https://docs.google.com/gview?url='
+            + encodeURIComponent(fileUrl) + '&embedded=true';
+        $('<iframe>', {
+            title: 'Xem trước tài liệu',
+            src: reviewUrl
+        }).css({ width: '92vw', height: '92vh', border: '0', background: '#fff' })
+            .appendTo(preview);
+    } else if (FilesBox.IsDoc(cleanUrl)) {
+        showDownloadFallback('File .doc cũ chưa xem trực tiếp được trong hệ thống.');
     } else if (imageExtensions.indexOf(extension) >= 0) {
         $('<img>', {
             'class': 'modal-content full-image',
@@ -184,15 +238,7 @@ FilesBox.LayoutFilePopUp = function (el) {
             src: fileUrl
         }).css({ width: 'min(600px, 90vw)' }).appendTo(preview);
     } else {
-        $('<div>', { 'class': 'text-center text-white p-4' })
-            .append($('<p>').text('Định dạng này không xem trực tiếp trong trình duyệt.'))
-            .append($('<a>', {
-                'class': 'btn btn-light',
-                href: fileUrl,
-                target: '_blank',
-                rel: 'noopener'
-            }).text('Tải file để mở'))
-            .appendTo(preview);
+        showDownloadFallback('Định dạng này không xem trực tiếp trong trình duyệt.');
     }
 
     $('#file-box-viewer').show();

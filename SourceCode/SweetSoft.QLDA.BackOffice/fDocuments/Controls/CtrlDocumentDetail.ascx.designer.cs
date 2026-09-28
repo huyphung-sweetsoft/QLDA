@@ -79,6 +79,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected global::System.Web.UI.WebControls.HiddenField hdfSubmitSigningSigner;
         protected global::System.Web.UI.WebControls.Label lblSubmitSigningVersion;
         protected global::System.Web.UI.WebControls.Label lblSubmitSigningMethod;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblSubmitSigningFiles;
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSubmitSigningSigner;
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSubmitSigningNote;
         protected global::System.Web.UI.WebControls.Button btnSubmitSigning;

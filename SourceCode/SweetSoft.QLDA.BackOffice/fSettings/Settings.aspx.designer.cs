@@ -194,6 +194,34 @@ namespace SweetSoft.QLDA.BackOffice
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtProjectCodePrefix;
 
+
+        /// <summary>
+        /// txtHeSoThap control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtHeSoThap;
+
+        /// <summary>
+        /// txtHeSoTrungBinh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtHeSoTrungBinh;
+
+        /// <summary>
+        /// txtHeSoCao control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtHeSoCao;
+
         /// <summary>
         /// txtInternalAnnouncement control.
         /// </summary>

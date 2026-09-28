@@ -169,7 +169,7 @@
     <FooterTemplate>
         <asp:UpdatePanel runat="server" UpdateMode="Conditional">
             <ContentTemplate>
-                <SweetSoft:ExtraButton runat="server" ID="btnConfirm" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Check" IsPace="true" OnClick="btnConfirm_Click">
+                <SweetSoft:ExtraButton runat="server" ID="btnConfirm" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true" OnClick="btnConfirm_Click">
                     <%= GetResourceText(BackEndResourceKeys.CONFIRM) %>
                 </SweetSoft:ExtraButton>
             </ContentTemplate>

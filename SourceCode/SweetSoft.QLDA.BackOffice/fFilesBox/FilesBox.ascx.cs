@@ -72,6 +72,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/Styles/plugins/lightbox-evolution/js/jquery.lightbox.1.8.min.js"));
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/fFilesBox/isotope.pkgd.min.js"));
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/fFilesBox/Sortable.js"));
+                jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/fFilesBox/vendor/jszip-3.10.1.min.js"));
+                jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/fFilesBox/vendor/docx-preview-0.4.1.min.js"));
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/fFilesBox/FilesBox.js"));
                 jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath("/fFilesBox/FileBoxViewer.js"));
                 return new RegisterCSSAndJS("cpHeadVendor", "cpVendorScript", cssLinks, jsLinks);

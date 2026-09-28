@@ -136,8 +136,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             -- BỔ SUNG ĐIỀU KIỆN LỌC THEO NĂM CỦA NGÀY BẮT ĐẦU
             AND (@year IS NULL OR YEAR(f.NgayBatDau) = @year)
             AND (@singleKeyWord = N'%%' 
-                OR f.TenNgoaiLe LIKE @singleKeyWord 
-                OR f.MoTa LIKE @singleKeyWord)
+                OR ISNULL(f.TenNgoaiLe, '') LIKE @singleKeyWord)
         ) AS T
     ) T1 WHERE RowNum >= @startRow AND RowNum <= @endRow;";
 

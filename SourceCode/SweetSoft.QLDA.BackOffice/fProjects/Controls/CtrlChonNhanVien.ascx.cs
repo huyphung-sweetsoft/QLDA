@@ -84,7 +84,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
             // Tiêu đề form
             mdlMemberPicker.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
-
+            btnConfirm.ToolTip = btnConfirm.Text = GetResourceText(BackEndResourceKeys.SAVE);
             // Format InfoNote: "Hiển thị lịch từ {0} đến {1}"
             ltrInfoNote.Text = string.Format(GetResourceText(BackEndResourceKeys.SCHEDULE_INFO_FORMAT),
                 StartDate.Value.ToString("dd/MM/yyyy"),

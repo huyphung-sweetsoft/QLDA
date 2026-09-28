@@ -95,6 +95,63 @@ namespace SweetSoft.QLDA.Core.Functions
                 visible.RemoveAll(module => string.Equals(module.FunctionCode,
                     "fDocument", StringComparison.OrdinalIgnoreCase));
             }
+
+            // Signing assignments are per-account and independent of the
+            // dossier permissions. Put the inbox under the dossier menu for
+            // every signed-in account; the page only returns/processes files
+            // assigned to that user.
+            visible.RemoveAll(module => string.Equals(
+                module.FunctionCode,
+                ModuleKeys.DocumentSigningInbox.ToString(),
+                StringComparison.OrdinalIgnoreCase));
+            if (userId != Guid.Empty)
+            {
+                AspnetFunction documentMenu = visible.FirstOrDefault(module =>
+                    string.Equals(module.FunctionCode, "fDocument",
+                        StringComparison.OrdinalIgnoreCase));
+                if (documentMenu == null)
+                {
+                    documentMenu = _repository.GetAllAspnetFunctions()
+                        .FirstOrDefault(module => string.Equals(
+                            module.FunctionCode,
+                            "fDocument",
+                            StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (documentMenu == null)
+                {
+                    documentMenu = new AspnetFunction
+                    {
+                        Id = Guid.NewGuid(),
+                        FunctionCode = "fDocument",
+                        FunctionName = "DOCUMENT_MANAGEMENT",
+                        PageUrl = "/Documents",
+                        DisplayOrder = 14,
+                        Icon = "fas fa-folder-open",
+                        IsActivated = true,
+                        OfProject = false
+                    };
+                }
+                documentMenu.ParentCode = string.Empty;
+                visible.RemoveAll(module => string.Equals(
+                    module.FunctionCode,
+                    "fDocument",
+                    StringComparison.OrdinalIgnoreCase));
+                visible.Add(documentMenu);
+
+                visible.Add(new AspnetFunction
+                {
+                    Id = Guid.NewGuid(),
+                    FunctionCode = ModuleKeys.DocumentSigningInbox.ToString(),
+                    ParentCode = "fDocument",
+                    FunctionName = "SIGNING_INBOX",
+                    PageUrl = "/fDocuments/SigningInbox.aspx",
+                    DisplayOrder = 16,
+                    Icon = "fas fa-file-signature",
+                    IsActivated = true,
+                    OfProject = false
+                });
+            }
             return visible;
         }
 

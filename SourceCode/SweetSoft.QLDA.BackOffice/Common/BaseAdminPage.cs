@@ -438,6 +438,16 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         public void CheckFunctionPermission(Guid userId)
         {
+            // This page is scoped by signing assignment, not by dossier/menu
+            // permissions. Its queries and mutations independently verify the
+            // currently logged-in assignee for every file.
+            if (PAGE_FUNCTION_CODE == ModuleKeys.DocumentSigningInbox)
+            {
+                if (userId != Guid.Empty && SweetContext.Current.User != null)
+                    return;
+                Response.Redirect(GetRelativeClientPath("/403"), true);
+                return;
+            }
             if (PAGE_FUNCTION_CODE == ModuleKeys.Document)
             {
                 if (DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View))

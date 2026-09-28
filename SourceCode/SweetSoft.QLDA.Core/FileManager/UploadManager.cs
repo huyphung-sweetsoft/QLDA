@@ -47,11 +47,13 @@ namespace SweetSoft.QLDA.Core.FileManager
                 throw new InvalidOperationException("Không được thay liên kết hoặc xóa file lịch sử hồ sơ.");
             if(!IsDocumentFile(file)) return;
             var repository=new DocumentRepository(null);
-            var document=repository.ResolveUploadDocument(file.RefId,file.RefType);
-            string action = file.RefType == "DocumentSigningResult"
-                ? DocumentPermissionKeys.Signing
-                : DocumentPermissionKeys.ManageFiles;
-            if(!document.HasValue || !repository.CanAccess(SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId,document.Value,action))
+            Guid currentUserId = SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId;
+            bool allowed = file.RefType == "DocumentSigningResult"
+                ? repository.CanProcessSigningResult(currentUserId, file.RefId)
+                : repository.ResolveUploadDocument(file.RefId,file.RefType).HasValue
+                    && repository.CanAccess(currentUserId,file.RefId,
+                        DocumentPermissionKeys.ManageFiles);
+            if (!allowed)
                 throw new UnauthorizedAccessException("Bạn không có quyền cập nhật file hồ sơ.");
         }
         private void EnsureDocumentFileDelete(TblUploadFile file)
@@ -68,17 +70,16 @@ namespace SweetSoft.QLDA.Core.FileManager
                 return;
 
             var repository = new DocumentRepository(null);
+            Guid currentUserId = SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId;
             Guid? documentId = repository.ResolveUploadDocument(
                 file.RefId,
                 file.RefType);
-            string action = file.RefType == "DocumentSigningResult"
-                ? DocumentPermissionKeys.Signing
-                : DocumentPermissionKeys.ManageFiles;
-            if (!documentId.HasValue
-                || !repository.CanAccess(
-                    SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId,
-                    documentId.Value,
-                    action))
+            bool allowed = file.RefType == "DocumentSigningResult"
+                ? repository.CanProcessSigningResult(currentUserId, file.RefId)
+                : documentId.HasValue && repository.CanAccess(
+                    currentUserId, documentId.Value,
+                    DocumentPermissionKeys.ManageFiles);
+            if (!allowed)
             {
                 throw new UnauthorizedAccessException(
                     "Bạn không có quyền cập nhật file hồ sơ.");
@@ -100,6 +101,9 @@ namespace SweetSoft.QLDA.Core.FileManager
                     WHERE IdFileBanChinhThuc = '{fileId}'
                     UNION ALL
                     SELECT 1 FROM dbo.TblTrinhKyTaiLieu
+                    WHERE IdFileSauKy = '{fileId}'
+                    UNION ALL
+                    SELECT 1 FROM dbo.TblTrinhKyTaiLieuFile
                     WHERE IdFileSauKy = '{fileId}'
                     UNION ALL
                     SELECT 1 FROM dbo.TblGuiNhanKhachHang

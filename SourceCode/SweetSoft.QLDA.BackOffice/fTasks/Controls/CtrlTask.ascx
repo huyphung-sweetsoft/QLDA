@@ -124,15 +124,13 @@
         white-space: normal;
         word-break: break-word;
         overflow-wrap: anywhere;
-        height: auto;
-        max-height: none;
-        overflow: visible;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
         font-size: 12px;
         line-height: 1.5;
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
+        transition: opacity 0.2s ease;
     }
     .custom-task-tooltip::after {
         content: '';
@@ -148,7 +146,13 @@
     .sched-day-card.show-tooltip .custom-task-tooltip {
         opacity: 1;
         visibility: visible;
+        pointer-events: auto;
     }
+    .tooltip-task-list { list-style: none; margin: 0; padding: 0; text-align: left; }
+    .tooltip-task-list li { margin: 0; padding: 7px 0; border-bottom: 1px solid #e2e8f0; color: #334155; }
+    .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
+    .tooltip-task-list li:first-child { padding-top: 0; }
+    .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
 
     .tooltip-task-list {
         list-style: none;
@@ -173,12 +177,8 @@
     }
 
     .btn-filter-overdue, .btn-tool-folder { transition: all 0.2s; }
-    .btn-filter-overdue.active-filter {
-        background-color: #fee2e2 !important; color: #ef4444 !important; border-color: #ef4444 !important;
-    }
-    .btn-tool-folder.active-filter {
-        background-color: #e0f2fe !important; color: #0ea5e9 !important; border-color: #0ea5e9 !important;
-    }
+    .btn-filter-overdue.active-filter { background-color: #fee2e2 !important; color: #ef4444 !important; border-color: #ef4444 !important; }
+    .btn-tool-folder.active-filter { background-color: #e0f2fe !important; color: #0ea5e9 !important; border-color: #0ea5e9 !important; }
 
     .row-overdue-bg > td { background-color: #fef2f2 !important; transition: background-color 0.2s ease; }
     .table-hover > tbody > tr.row-overdue-bg:hover > td { background-color: #fee2e2 !important; }

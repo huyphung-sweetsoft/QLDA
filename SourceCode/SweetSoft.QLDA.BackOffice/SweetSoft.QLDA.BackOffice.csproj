@@ -67,6 +67,12 @@
     <Reference Include="Google.Authenticator">
       <HintPath>..\packages\GoogleAuthenticator.3.2.0\lib\net462\Google.Authenticator.dll</HintPath>
     </Reference>
+    <Reference Include="Hangfire.Core, Version=1.8.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.Core.1.8.25\lib\net46\Hangfire.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Hangfire.SqlServer, Version=1.8.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.SqlServer.1.8.25\lib\net451\Hangfire.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\ImageResizer.dll</HintPath>
@@ -84,6 +90,12 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=9.0.0.9, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.9.0.9\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.2.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
@@ -92,6 +104,9 @@
     </Reference>
     <Reference Include="NReco.PdfGenerator, Version=1.2.1.0, Culture=neutral, PublicKeyToken=231663d50a41b451, processorArchitecture=MSIL">
       <HintPath>..\packages\NReco.PdfGenerator.1.2.1\lib\net45\NReco.PdfGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -281,6 +296,13 @@
     </Compile>
     <Compile Include="fDocuments\DocumentDetail.aspx.designer.cs">
       <DependentUpon>DocumentDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fDocuments\SigningInbox.aspx.cs">
+      <DependentUpon>SigningInbox.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fDocuments\SigningInbox.aspx.designer.cs">
+      <DependentUpon>SigningInbox.aspx</DependentUpon>
     </Compile>
     <Compile Include="fDocuments\ProjectDocumentDetail.aspx.cs">
       <DependentUpon>ProjectDocumentDetail.aspx</DependentUpon>
@@ -684,6 +706,7 @@
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
+    <Compile Include="Startup.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
@@ -751,6 +774,7 @@
     <Content Include="fDocuments\Controls\CtrlDocumentTypes.ascx" />
     <Content Include="fDocuments\Controls\CtrlStorageLocations.ascx" />
     <Content Include="fDocuments\DocumentDetail.aspx" />
+    <Content Include="fDocuments\SigningInbox.aspx" />
     <Content Include="fDocuments\ProjectDocumentDetail.aspx" />
     <Content Include="fDocuments\DocumentGroups.aspx" />
     <Content Include="fDocuments\Documents.aspx" />
@@ -775,6 +799,10 @@
     <Content Include="fFilesBox\FilesBox.js" />
     <Content Include="fFilesBox\isotope.pkgd.min.js" />
     <Content Include="fFilesBox\Sortable.js" />
+    <Content Include="fFilesBox\vendor\docx-preview-0.4.1.min.js" />
+    <Content Include="fFilesBox\vendor\docx-preview-LICENSE.txt" />
+    <Content Include="fFilesBox\vendor\jszip-3.10.1.min.js" />
+    <Content Include="fFilesBox\vendor\jszip-LICENSE.md" />
     <Content Include="Controls\GridviewPaging.ascx" />
     <Content Include="Controls\Notifications\CtrlNotifications.ascx" />
     <Content Include="Controls\TwoFA\CtrlTwoFactorAuthenticator.ascx" />

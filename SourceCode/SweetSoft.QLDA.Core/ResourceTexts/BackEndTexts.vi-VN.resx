@@ -1327,6 +1327,9 @@
   <data name="DOCUMENT_ADMINISTRATION" xml:space="preserve">
     <value>Quản trị hồ sơ toàn hệ thống</value>
   </data>
+  <data name="SIGNING_INBOX" xml:space="preserve">
+    <value>Việc cần ký</value>
+  </data>
   <data name="DOCUMENT_CODE" xml:space="preserve">
     <value>Mã hồ sơ</value>
   </data>
@@ -3102,6 +3105,9 @@
   </data>
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
+  </data>
+  <data name="WORK_SCHEDULE_THIS_MONTH" xml:space="preserve">
+    <value>Lịch làm việc tháng này</value>
   </data>
   <data name="CONTRACT_DETAIL" xml:space="preserve">
     <value>Chi tiết hợp đồng</value>

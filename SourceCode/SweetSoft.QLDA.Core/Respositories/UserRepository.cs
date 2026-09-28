@@ -273,11 +273,29 @@ namespace SweetSoft.QLDA.Core.Respositories
             var id = item.UserId;
             AspnetUser itemOld = GetById(id);
 
-            // Chuyển sang Xóa mềm (Soft Delete) giống NhanVienRepository
+            // 1. Chuyển sang Xóa mềm (Soft Delete) trong bảng aspnet_Users
             item.IsDeleted = true;
             item.NgayCapNhat = DateTime.Now;
             item.Save();
 
+            // 2. Giải phóng Email và khóa tài khoản trong lõi ASP.NET Membership
+            try
+            {
+                var memUser = System.Web.Security.Membership.GetUser(item.UserName);
+                if (memUser != null)
+                {
+                    // Gắn cờ 'deleted' vào email để giải phóng email gốc thật sự
+                    memUser.Email = $"deleted_{id.ToString().Substring(0, 8)}@no-email.local";
+                    memUser.IsApproved = false; // Khóa luôn không cho đăng nhập
+                    System.Web.Security.Membership.UpdateUser(memUser);
+                }
+            }
+            catch (Exception ex)
+            {
+                SysLogger.LogError(ex, "Failed to release Membership email on soft delete");
+            }
+
+            // 3. Ghi log thay đổi bất đồng bộ
             Task.Run(async () =>
             {
                 try
@@ -289,6 +307,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                     SysLogger.LogError(ex, "Failed to log delete for AspnetUser");
                 }
             });
+
             return true;
         }
         public AspnetUser GetByUserName(string userName)
@@ -342,12 +361,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                 return false;
             }
         }
-        public bool IsEmailExist(Guid ID, string email)
+        public bool IsEmailExist(Guid id, string email)
         {
             Select select = new Select();
-            select.From(AspnetMembership.Schema);
+            select.From(AspnetUser.Schema);
+            select.InnerJoin(
+                AspnetMembership.UserIdColumn,
+                AspnetUser.UserIdColumn
+            );
+
             select.Where(AspnetMembership.EmailColumn).IsEqualTo(email);
-            select.And(AspnetMembership.UserIdColumn).IsNotEqualTo(ID);
+            select.And(AspnetUser.UserIdColumn).IsNotEqualTo(id);
+            select.And(AspnetUser.IsDeletedColumn).IsEqualTo(false);
+
             return select.GetRecordCount() > 0;
         }
         public bool IsEmailExistInAdminGroup(Guid ID, string email)

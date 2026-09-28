@@ -75,7 +75,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             // Permission validation must also run on asynchronous postbacks;
             // otherwise a stale page could keep invoking handlers after the
             // user's group/project access had been revoked.
-            if (IsPostBack) return;
+            if (IsPostBack)
+            {
+                return;
+            }
 
             string listTitle = GetResourceText(
                 BackEndResourceKeys.DOCUMENT_LIST);
@@ -123,6 +126,36 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             Response.Cache.SetRevalidation(
                 System.Web.HttpCacheRevalidation.AllCaches);
             Response.Cache.SetAllowResponseInBrowserHistory(false);
+        }
+
+        protected override void OnInit(EventArgs e)
+        {
+            base.OnInit(e);
+            Page.InitComplete += Page_InitComplete;
+        }
+
+        private void Page_InitComplete(object sender, EventArgs e)
+        {
+            if (!IsPostBack || !IsSigningHistoryCommandPostBack())
+                return;
+
+            Guid idTaiLieu = QueryId;
+            if (idTaiLieu == Guid.Empty
+                || !CtrlDocumentDetail1.InitControls(idTaiLieu))
+            {
+                Response.Redirect(
+                    GetRelativeClientPath(RewriteURLHelper.Error404),
+                    true);
+            }
+        }
+
+        private bool IsSigningHistoryCommandPostBack()
+        {
+            string eventTarget = Request.Form["__EVENTTARGET"];
+            return !string.IsNullOrWhiteSpace(eventTarget)
+                && eventTarget.IndexOf(
+                    "rptSigning",
+                    StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public override void DataCallback(

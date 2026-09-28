@@ -48,7 +48,10 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                             && ProjectRecordFileAccess.CanAccess(
                                 SweetContext.Current.UserId, f.RefId, f.RefType, false);
                     var id=repository.ResolveUploadDocument(f.RefId,f.RefType);
-                    return id.HasValue && repository.CanAccess(SweetContext.Current.UserId,id.Value,"View");
+                    return (id.HasValue
+                            && repository.CanAccess(SweetContext.Current.UserId,id.Value,"View"))
+                        || repository.CanReadAssignedSigningFile(
+                            SweetContext.Current.UserId, f.Id);
                 });
                 if(file==null) { context.Response.StatusCode=403; return; }
                 string uploads=Path.GetFullPath(context.Server.MapPath("~/Uploads/"));
@@ -685,11 +688,13 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             if(refType=="DocumentVersion" || refType=="DocumentSigningResult") {
                 if(user==null) return false;
                 var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);
+                if (refType == "DocumentSigningResult")
+                    return repository.CanProcessSigningResult(
+                        SweetContext.Current.UserId, refId);
                 Guid? document=repository.ResolveUploadDocument(refId,refType);
-                string action = refType == "DocumentSigningResult"
-                    ? SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.Signing
-                    : SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.ManageFiles;
-                return document.HasValue && repository.CanAccess(SweetContext.Current.UserId,document.Value,action);
+                return document.HasValue
+                    && repository.CanAccess(SweetContext.Current.UserId,document.Value,
+                        SweetSoft.QLDA.Core.Managers.DocumentPermissionKeys.ManageFiles);
             }
             return user != null;
         }
