@@ -204,6 +204,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ResetForm()
         {
             hdfIdLoaiTaiLieu.Value = string.Empty;
+            ddlTypeScope.SelectedValue = "DU_AN";
             BindDefaultStorageLocations();
             SelectDropdownValue(ddlDefaultStorage, string.Empty);
             txtTenLoai.Text = string.Empty;
@@ -229,6 +230,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ShowEditForm(TblLoaiTaiLieu item)
         {
             hdfIdLoaiTaiLieu.Value = item.IdLoaiTaiLieu.ToString();
+            ddlTypeScope.SelectedValue = DocumentTypeManager.Instance.GetScope(item.IdLoaiTaiLieu);
             BindDefaultStorageLocations();
             SelectDropdownValue(ddlDefaultStorage, DocumentTypeManager.Instance.GetDefaultStorageLocation(item.IdLoaiTaiLieu)?.ToString() ?? string.Empty);
             txtTenLoai.Text = item.TenLoai;
@@ -380,7 +382,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                DocumentTypeManager.Instance.Save(idLoaiTaiLieu, idNhomTaiLieu, txtTenLoai.Text, txtMoTa.Text, chkCanTrinhKy.Checked, ddlHinhThucKy.SelectedValue, chkCanGuiKhachHang.Checked, chkCanLuuVatLy.Checked, thuTuHienThi, chkKichHoat.Checked, string.IsNullOrWhiteSpace(ddlDefaultStorage.SelectedValue) ? (Guid?)null : Guid.Parse(ddlDefaultStorage.SelectedValue));
+                DocumentTypeManager.Instance.Save(idLoaiTaiLieu, idNhomTaiLieu, txtTenLoai.Text, txtMoTa.Text, chkCanTrinhKy.Checked, ddlHinhThucKy.SelectedValue, chkCanGuiKhachHang.Checked, chkCanLuuVatLy.Checked, thuTuHienThi, chkKichHoat.Checked, string.IsNullOrWhiteSpace(ddlDefaultStorage.SelectedValue) ? (Guid?)null : Guid.Parse(ddlDefaultStorage.SelectedValue), ddlTypeScope.SelectedValue);
                 if (isNew)
                     CURRENT_PAGE.ShowSuccessAddNewData();
                 else

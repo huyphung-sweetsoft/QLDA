@@ -176,13 +176,6 @@
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtTenHopDong" Required="true" MaxLength="250" PlaceHolder="Nhập tên hợp đồng"></SweetSoft:ExtraTextBox>
                                 </div>
 
-                                <asp:Panel runat="server" ID="pnlContractDocumentIdentityLocked" CssClass="mb-3" Visible="false">
-                                    <div class="alert alert-info py-2 mb-0" role="alert">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        <%= GetResourceText(BackEndResourceKeys.CONTRACT_DOCUMENT_IDENTITY_LOCKED) %>
-                                    </div>
-                                </asp:Panel>
-
                                 <div class="mb-3">
                                     <label class="form-label label-valid">Khách hàng</label>
                                     <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" SimpleInit="true" ValueIsOfTypeGUID="true" PlaceHolder="Chọn khách hàng"></SweetSoft:ExtraDropdown>

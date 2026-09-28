@@ -18,6 +18,22 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
         }
 
+        public string GetScope(Guid id)
+        {
+            var cmd = new QueryCommand("SELECT PhamViHoSo FROM dbo.TblLoaiTaiLieu WHERE IdLoaiTaiLieu=@Id AND DaXoa=0", TblLoaiTaiLieu.Schema.Provider.Name);
+            cmd.Parameters.Add("@Id", id, DbType.Guid);
+            return Convert.ToString(DataService.ExecuteScalar(cmd));
+        }
+
+        public DataTable GetScopedTypes(string scope)
+        {
+            var cmd = new QueryCommand("SELECT IdLoaiTaiLieu,TenLoai FROM dbo.TblLoaiTaiLieu WHERE PhamViHoSo=@Scope AND DaXoa=0 AND KichHoat=1 ORDER BY ThuTuHienThi,TenLoai", TblLoaiTaiLieu.Schema.Provider.Name);
+            cmd.Parameters.Add("@Scope", scope, DbType.String);
+            var result = new DataTable();
+            using (var reader = DataService.GetReader(cmd)) result.Load(reader);
+            return result;
+        }
+
         public Guid? GetDefaultStorageLocation(Guid typeId)
         {
             var command = new QueryCommand("SELECT IdNoiLuuTruMacDinh FROM dbo.TblLoaiTaiLieu WHERE IdLoaiTaiLieu=@Id AND DaXoa=0", TblLoaiTaiLieu.Schema.Provider.Name);
@@ -28,7 +44,7 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         // Parameterized SQL handles nullable legacy group and the additive default-location
         // column without hand-editing generated SubSonic classes.
-        public TblLoaiTaiLieu SaveIndependentType(TblLoaiTaiLieu item, bool isNew, Guid? defaultLocation)
+        public TblLoaiTaiLieu SaveIndependentType(TblLoaiTaiLieu item, bool isNew, Guid? defaultLocation, string documentScope)
         {
             using (var scope = new TransactionScope())
             {
@@ -38,10 +54,13 @@ namespace SweetSoft.QLDA.Core.Respositories
                       WHERE IdLoaiTaiLieu=@Id AND DaXoa=0;
                     IF @IsNew=0 AND @PreviousName IS NULL
                         THROW 51000,N'Loại hồ sơ không còn tồn tại.',1;
-                    IF (@IsNew=1 OR @PreviousName<>@Name) AND EXISTS
+                    IF EXISTS
                       (SELECT 1 FROM dbo.TblLoaiTaiLieu WITH(UPDLOCK,HOLDLOCK)
-                       WHERE TenLoai=@Name AND DaXoa=0 AND IdLoaiTaiLieu<>@Id)
+                       WHERE TenLoai=@Name AND PhamViHoSo=@Scope AND DaXoa=0 AND IdLoaiTaiLieu<>@Id)
                         THROW 51000,N'Tên loại hồ sơ đã tồn tại.',1;
+                    IF EXISTS(SELECT 1 FROM dbo.TblTaiLieu WHERE IdLoaiTaiLieu=@Id
+                      AND ((IdDuAn IS NULL AND @Scope<>'CHUNG') OR (IdDuAn IS NOT NULL AND @Scope<>'DU_AN')))
+                        THROW 51000,N'Loại hồ sơ đã được sử dụng; không thể đổi phạm vi.',1;
                     IF @Location IS NOT NULL AND NOT EXISTS
                       (SELECT 1 FROM dbo.TblNoiLuuTru WITH(UPDLOCK,HOLDLOCK)
                        WHERE IdNoiLuuTru=@Location AND DaXoa=0 AND KichHoat=1)
@@ -49,14 +68,15 @@ namespace SweetSoft.QLDA.Core.Respositories
                     IF @IsNew=1
                       INSERT dbo.TblLoaiTaiLieu
                        (IdLoaiTaiLieu,IdNhomTaiLieu,TenLoai,MoTa,CanTrinhKy,HinhThucKyMacDinh,
-                        CanGuiKhachHang,CanLuuVatLy,ThuTuHienThi,KichHoat,DaXoa,NguoiTao,NgayTao,IdNoiLuuTruMacDinh)
+                        CanGuiKhachHang,CanLuuVatLy,ThuTuHienThi,KichHoat,DaXoa,NguoiTao,NgayTao,IdNoiLuuTruMacDinh,PhamViHoSo)
                       VALUES(@Id,NULL,@Name,@Description,@Signing,@Method,@Customer,@Physical,
-                        @Order,@Active,0,@User,@Now,@Location);
+                        @Order,@Active,0,@User,@Now,@Location,@Scope);
                     ELSE UPDATE dbo.TblLoaiTaiLieu SET TenLoai=@Name,MoTa=@Description,
                         CanTrinhKy=@Signing,HinhThucKyMacDinh=@Method,CanGuiKhachHang=@Customer,
                         CanLuuVatLy=@Physical,ThuTuHienThi=@Order,KichHoat=@Active,
-                        NguoiCapNhat=@User,NgayCapNhat=@Now,IdNoiLuuTruMacDinh=@Location
+                        NguoiCapNhat=@User,NgayCapNhat=@Now,IdNoiLuuTruMacDinh=@Location,PhamViHoSo=@Scope
                       WHERE IdLoaiTaiLieu=@Id AND DaXoa=0;", TblLoaiTaiLieu.Schema.Provider.Name);
+                command.Parameters.Add("@Scope", documentScope, DbType.String);
                 command.Parameters.Add("@Id", item.IdLoaiTaiLieu, DbType.Guid);
                 command.Parameters.Add("@IsNew", isNew, DbType.Boolean);
                 command.Parameters.Add("@Name", item.TenLoai, DbType.String);
@@ -245,6 +265,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 f.IdLoaiTaiLieu,
                 f.IdNhomTaiLieu,
                 f.TenLoai,
+                f.PhamViHoSo,
                 f.MoTa,
                 f.CanTrinhKy,
                 f.HinhThucKyMacDinh,

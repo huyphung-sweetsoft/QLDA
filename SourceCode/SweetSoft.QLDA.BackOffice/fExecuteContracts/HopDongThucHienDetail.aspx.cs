@@ -286,12 +286,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             txtNoiDungHopDong.Text = hopDong.NoiDungHopDong;
 
 
-            bool hasLinkedDocument = HopDongThucHienManager.Instance.HasLinkedDocument(hopDong.IdHopDongThucHien);
-
-            txtSoHopDong.Enabled = !hasLinkedDocument;
-            txtTenHopDong.Enabled = !hasLinkedDocument;
-            pnlContractDocumentIdentityLocked.Visible = hasLinkedDocument;
-
             fbHopDong.LoadFile(hopDong.IdHopDongThucHien, FileUploadTypes.ProjectContract);
             BindContractFiles(hopDong.IdHopDongThucHien);
         }

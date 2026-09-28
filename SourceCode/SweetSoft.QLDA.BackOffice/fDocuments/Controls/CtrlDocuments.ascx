@@ -35,7 +35,7 @@
                             AllowClear="true" AutoPostBack="true" EnableSearch="true"
                             ValueIsOfTypeGUID="true" SearchColumn="IdLoaiTaiLieu"
                             OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged" />
-                        <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchTrangThai"
+                        <SweetSoft:BootstrapDropdown runat="server" ID="ddlSearchTrangThai" Visible="false"
                             AllowClear="true" AutoPostBack="true" SearchColumn="TrangThaiTaiLieu"
                             CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
                             OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged" />
@@ -139,7 +139,7 @@
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="Loại tài liệu"
+                            HeaderText="Loại hồ sơ"
                             SortExpression="TenLoai"
                             HeaderStyle-CssClass="document-list-type-column text-center"
                             ItemStyle-CssClass="document-list-type-column">
@@ -159,7 +159,7 @@
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="Trạng thái hồ sơ"
+                            HeaderText="Trạng thái hồ sơ" Visible="false"
                             SortExpression="TrangThaiTaiLieu"
                             HeaderStyle-Width="145px"
                             HeaderStyle-CssClass="document-list-status-column text-center"
@@ -172,7 +172,7 @@
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="Trình ký"
+                            HeaderText="Trình ký" Visible="false"
                             HeaderStyle-Width="130px"
                             HeaderStyle-CssClass="document-list-secondary-column"
                             ItemStyle-CssClass="document-list-secondary-column">
@@ -182,7 +182,7 @@
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="Gửi khách"
+                            HeaderText="Gửi khách" Visible="false"
                             SortExpression="TrangThaiGuiKhach"
                             HeaderStyle-Width="125px"
                             HeaderStyle-CssClass="document-list-secondary-column"
@@ -193,7 +193,7 @@
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="Lưu bản cứng"
+                            HeaderText="Lưu bản cứng" Visible="false"
                             SortExpression="TrangThaiLuuTru"
                             HeaderStyle-Width="125px"
                             HeaderStyle-CssClass="document-list-secondary-column"
@@ -204,7 +204,7 @@
                         </asp:TemplateField>
 
                         <asp:TemplateField
-                            HeaderText="File chính thức"
+                            HeaderText="File chính thức" Visible="false"
                             HeaderStyle-CssClass="document-list-secondary-column"
                             ItemStyle-CssClass="document-list-secondary-column">
                             <ItemTemplate>
@@ -390,13 +390,21 @@
 
                 <div class="row">
 
+                    <asp:Panel runat="server" ID="pnlCreateScope" CssClass="col-12 mb-3">
+                        <label class="form-label">Phạm vi hồ sơ</label>
+                        <asp:RadioButtonList runat="server" ID="rblCreateScope" RepeatDirection="Horizontal"
+                            CssClass="form-check-inline" AutoPostBack="true" OnSelectedIndexChanged="rblCreateScope_SelectedIndexChanged">
+                            <asp:ListItem Value="CHUNG" Text="Hồ sơ chung (không thuộc dự án)" />
+                            <asp:ListItem Value="DU_AN" Text="Hồ sơ dự án" Selected="true" />
+                        </asp:RadioButtonList>
+                    </asp:Panel>
                     <asp:Panel runat="server" ID="pnlCreateProject" CssClass="col-12 mb-3">
                         <label class="form-label">Dự án</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlCreateProject"
                             ValueIsOfTypeGUID="true" SimpleInit="true" AlowClear="true" />
-                        <div class="form-text">Hồ sơ công ty chỉ dành cho tài khoản có quyền tạo trên toàn hệ thống.</div>
+
                         <asp:Panel runat="server" ID="pnlCreateUnavailable"
-                            CssClass="alert alert-info mt-2 mb-0" Visible="false">
+                            CssClass="border border-info rounded p-2 mt-2 mb-0" Visible="false">
                             <i class="fas fa-info-circle me-1"></i>
                             Bạn chưa được phân làm PM của dự án nào nên chưa thể tạo hồ sơ.
                             Hãy liên hệ người quản lý để được phân công dự án.
@@ -483,6 +491,10 @@
                         <div class="text-muted small mt-1">Có thể định dạng chữ, màu sắc, căn lề, danh sách và bảng. Ảnh/tài liệu đưa vào bộ file đính kèm.</div>
                     </div>
 
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Nơi lưu trữ bản cứng</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlDocumentStorage" SimpleInit="true" Placeholder="Chưa xác định" />
+                    </div>
                     <asp:Panel runat="server" ID="pnlInitialFileUpload" CssClass="col-12 mb-3">
                         <label class="form-label">File hồ sơ</label>
                         <div class="document-file-picker border rounded p-3">
@@ -501,7 +513,7 @@
                         </div>
                     </asp:Panel>
 
-                    <div class="col-12 mb-3">
+                    <div class="col-12 mb-3" runat="server" visible="false">
                         <div class="card border shadow-none mb-0">
                             <div class="card-body pb-2">
                                 <div class="d-flex flex-column flex-lg-row justify-content-between gap-2 mb-3">
@@ -889,6 +901,7 @@
                                 </SweetSoft:ExtraTextBox>
                             </div>
 
+                            <asp:PlaceHolder runat="server" Visible="false">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">
                                     <%= GetResourceText(BackEndResourceKeys.ALLOW_SIGNING) %>
@@ -979,6 +992,7 @@
                                     AlowClear="true">
                                 </SweetSoft:ExtraDropdown>
                             </div>
+                            </asp:PlaceHolder>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">
