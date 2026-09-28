@@ -414,6 +414,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string ERROR_OCCURED = "ERROR_OCCURED";
         public const string WORK_SCHEDULE_THIS_MONTH = "WORK_SCHEDULE_THIS_MONTH";
         public const string CONTRACT_DETAIL = "CONTRACT_DETAIL";
+        public const string PERSONNEL_WARNING = "PERSONNEL_WARNING";
+        public const string DOING_X_TASKS = "DOING_X_TASKS";
+        public const string WARNING_REMOVE_ACTIVE_MEMBERS_MSG = "WARNING_REMOVE_ACTIVE_MEMBERS_MSG";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

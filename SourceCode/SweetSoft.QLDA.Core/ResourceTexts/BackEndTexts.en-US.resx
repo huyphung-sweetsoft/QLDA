@@ -3091,4 +3091,13 @@
   <data name="CONTRACT_DETAIL" xml:space="preserve">
     <value>&#x8;</value>
   </data>
+  <data name="PERSONNEL_WARNING" xml:space="preserve">
+    <value>Personnel warning</value>
+  </data>
+  <data name="DOING_X_TASKS" xml:space="preserve">
+    <value>Doing {0} tasks</value>
+  </data>
+  <data name="WARNING_REMOVE_ACTIVE_MEMBERS_MSG" xml:space="preserve">
+    <value />
+  </data>
 </root>

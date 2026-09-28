@@ -341,6 +341,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             HashSet<Guid> activeIds = new HashSet<Guid>(allUsers.Select(u => u.UserId));
 
             List<Guid> currentAssigned = TaskManager.Instance.GetAssignedNhanVienIds(IdCongViec);
+            HashSet<Guid> originalAssignedIds = new HashSet<Guid>(currentAssigned);
             foreach (Guid aId in currentAssigned)
             {
                 if (!activeIds.Contains(aId))
@@ -385,7 +386,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     .ToList();
             }
 
-            c.Rpt.DataSource = BuildDisplayList(users, StartDate, EndDate, pmId, employeeRows, activeIds);
+            c.Rpt.DataSource = BuildDisplayList(users, StartDate, EndDate, pmId, employeeRows, activeIds, originalAssignedIds);
             c.Rpt.DataBind();
             c.LtrCount.Text = users.Count.ToString();
 
@@ -396,7 +397,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             c.UpCount.Update();
         }
 
-        private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId, Dictionary<Guid, DataRow> employeeRows, HashSet<Guid> activeIds)
+        private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId, Dictionary<Guid, DataRow> employeeRows, HashSet<Guid> activeIds, HashSet<Guid> originalAssignedIds)
         {
             var list = new List<object>();
             for (int i = 0; i < users.Count; i++)
@@ -415,7 +416,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     IsPM = pmId.HasValue && user.UserId == pmId.Value,
                     IsInactive = !activeIds.Contains(user.UserId),
                     AvatarHtml = GetSingleAvatarHtml(user.DisplayName, avatarPath, i),
-                    ScheduleJson = GenerateScheduleJson(user.UserId, start, end)
+                    ScheduleJson = GenerateScheduleJson(user.UserId, start, end),
+                    IsOriginal = originalAssignedIds.Contains(user.UserId)
                 });
             }
             return list;

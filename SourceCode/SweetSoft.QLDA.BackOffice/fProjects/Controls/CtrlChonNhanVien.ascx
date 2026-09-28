@@ -67,9 +67,27 @@
         width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
         font-size: 11px; font-weight: 700; color: #ffffff; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
+    /*HIGHLIGHT NHÂN VIÊN GỐC (ĐÃ THUỘC DỰ ÁN TỪ TRƯỚC)*/
+    .member-item-row.original-member {
+        background-color: #f0f8ff; /* Xanh da trời rất dịu (Alice Blue) */
+        border-color: #bfe0ff;     /* Viền xanh lam nhạt */
+    }
+    .member-item-row.original-member:hover {
+        background-color: #e6f3ff;
+    }
+    /* Đổi màu nút lịch biểu cho hợp tone với nền xanh */
+    .member-item-row.original-member .btn-calendar-only {
+        background-color: #ffffff;
+        border-color: #bfe0ff;
+    }
+    .member-item-row.original-member .btn-calendar-only:hover,
+    .member-item-row.original-member.show-schedule .btn-calendar-only {
+        background-color: #dbeafe;
+        border-color: #3b82f6;
+    }
 </style>
 
-<SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary" DefaultButton="btnConfirm">
+<SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary">
     <ContentTemplate>
         <asp:UpdatePanel ID="upnlMemberPicker" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
@@ -127,14 +145,18 @@
             <div class="member-accordion-content">
                 <asp:Repeater ID="rptCompanyMembers" runat="server" OnItemDataBound="rptCompanyMembers_ItemDataBound">
                     <ItemTemplate>
-                        <div class="member-item-row" id='mem-row-<%# Eval("UserId") %>'>
+                        <div class='member-item-row <%# Convert.ToBoolean(Eval("IsOriginal")) ? "original-member" : "" %>' id='mem-row-<%# Eval("UserId") %>'>
                             <div class="row-default-view">
                                 <div class="member-info-group">
                                     <asp:CheckBox runat="server" ID="chkSelect" />
                                     <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                     <%# Eval("AvatarHtml") %>
                                     <div class="member-name-block">
-                                        <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
+                                        <span>
+                                            <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
+                                            <!-- Render Badge cảnh báo task -->
+                                            <%# Convert.ToInt32(Eval("TaskCount")) > 0 ? string.Format("<span class='badge bg-warning text-dark ms-2' style='font-size:10.5px; padding:3px 6px;'><i class='fas fa-tasks me-1'></i>{0}</span>", string.Format(GetResourceText(BackEndResourceKeys.DOING_X_TASKS) ?? "Đảm nhận {0} công việc", Eval("TaskCount"))) : "" %>
+                                        </span>
                                         <span class="member-email"><%#: Eval("Email") %></span>
                                     </div>
                                 </div>
@@ -348,4 +370,63 @@
             }
         };
     });
+    (function () {
+        var BASE_Z = 106000;
+
+        // Giữ hành vi cũ: 2 popup nghiệp vụ chồng nhau (không tính MessageBox)
+        function stackBusinessModals() {
+            var $modals = $('.modal:visible').not('#modal-notify');
+            if ($modals.length > 1) {
+                $('.modal-backdrop').each(function (i) {
+                    $(this).css('z-index', BASE_Z + (i * 10));
+                });
+                $modals.each(function (i) {
+                    $(this).css('z-index', BASE_Z + (i * 10) + 5);
+                });
+            }
+        }
+
+        // Đẩy MessageBox hệ thống lên trên cùng, chỉ khi đang có popup khác
+        function raiseNotify() {
+            var notify = document.getElementById('modal-notify');
+            if (!notify || !$(notify).is(':visible')) return;
+
+            var $others = $('.modal:visible').not(notify);
+            if ($others.length === 0) return; // MessageBox dùng đơn lẻ -> không đụng
+
+            var maxZ = BASE_Z;
+            $others.each(function () {
+                maxZ = Math.max(maxZ, parseInt(window.getComputedStyle(this).zIndex, 10) || 0);
+            });
+
+            notify.style.setProperty('z-index', String(maxZ + 20), 'important');
+            var bds = document.querySelectorAll('.modal-backdrop');
+            if (bds.length) bds[bds.length - 1].style.setProperty('z-index', String(maxZ + 15), 'important');
+        }
+
+        function raiseNotifyRepeatedly() {
+            [0, 100, 250, 500, 900].forEach(function (ms) {
+                setTimeout(function () { stackBusinessModals(); raiseNotify(); }, ms);
+            });
+        }
+
+        // 1) Bám sự kiện Bootstrap của chính MessageBox (không phụ thuộc mốc thời gian)
+        ['show.bs.modal', 'shown.bs.modal'].forEach(function (evt) {
+            document.addEventListener(evt, function (e) {
+                if (e.target && e.target.id === 'modal-notify') raiseNotifyRepeatedly();
+            });
+        });
+
+        // 2) Trả z-index về mặc định khi MessageBox đóng
+        document.addEventListener('hidden.bs.modal', function (e) {
+            if (e.target && e.target.id === 'modal-notify') {
+                e.target.style.removeProperty('z-index');
+            }
+        });
+
+        // 3) Dự phòng: sau mỗi postback ajax
+        if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(raiseNotifyRepeatedly);
+        }
+    })();
 </script>

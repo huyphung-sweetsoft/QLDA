@@ -353,6 +353,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             CtrlChonNhanVien1.EndDate = dtNgayKetThuc.DateValue;
             CtrlChonNhanVien1.SelectedUserIds = this.SelectedMemberIds;
             CtrlChonNhanVien1.IdNhanVienQuanLy = idPM;
+            CtrlChonNhanVien1.CurrentIdDuAn = this.IdDuAn;
             CtrlChonNhanVien1.OpenPicker();
         }
 

@@ -483,6 +483,37 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
+		private SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection colTblTrinhKyTaiLieuFileRecords;
+		public SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection TblTrinhKyTaiLieuFileRecords()
+		{
+			if(colTblTrinhKyTaiLieuFileRecords == null)
+			{
+				colTblTrinhKyTaiLieuFileRecords = new SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFileCollection().Where(TblTrinhKyTaiLieuFile.Columns.IdTrinhKyTaiLieu, IdTrinhKyTaiLieu).Load();
+				colTblTrinhKyTaiLieuFileRecords.ListChanged += new ListChangedEventHandler(colTblTrinhKyTaiLieuFileRecords_ListChanged);
+			}
+			return colTblTrinhKyTaiLieuFileRecords;
+		}
+				
+		void colTblTrinhKyTaiLieuFileRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblTrinhKyTaiLieuFileRecords[e.NewIndex].IdTrinhKyTaiLieu = IdTrinhKyTaiLieu;
+            }
+		}
+		#endregion
+		
 			
 		
 		#region ForeignKey Properties
@@ -778,10 +809,32 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
+        public void SetPKValues()
+        {
+                if (colTblTrinhKyTaiLieuFileRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblTrinhKyTaiLieuFile item in colTblTrinhKyTaiLieuFileRecords)
+                    {
+                        if (item.IdTrinhKyTaiLieu != IdTrinhKyTaiLieu)
+                        {
+                            item.IdTrinhKyTaiLieu = IdTrinhKyTaiLieu;
+                        }
+                    }
+               }
+		}
         #endregion
     
         #region Deep Save
 		
+        public void DeepSave()
+        {
+            Save();
+            
+                if (colTblTrinhKyTaiLieuFileRecords != null)
+                {
+                    colTblTrinhKyTaiLieuFileRecords.SaveAll();
+               }
+		}
         #endregion
 	}
 }

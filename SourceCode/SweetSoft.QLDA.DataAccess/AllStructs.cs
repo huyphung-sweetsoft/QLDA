@@ -142,6 +142,8 @@ namespace SweetSoft.QLDA.DataAccess
         
 		public static readonly string TblTrinhKyTaiLieu = @"TblTrinhKyTaiLieu";
         
+		public static readonly string TblTrinhKyTaiLieuFile = @"TblTrinhKyTaiLieuFile";
+        
 		public static readonly string TblUploadFile = @"TblUploadFile";
         
 		public static readonly string TblVaiTroDuAn = @"TblVaiTroDuAn";
@@ -463,6 +465,11 @@ namespace SweetSoft.QLDA.DataAccess
 		public static TableSchema.Table TblTrinhKyTaiLieu
 		{
             get { return DataService.GetSchema("TblTrinhKyTaiLieu", "DataAccessProvider"); }
+		}
+        
+		public static TableSchema.Table TblTrinhKyTaiLieuFile
+		{
+            get { return DataService.GetSchema("TblTrinhKyTaiLieuFile", "DataAccessProvider"); }
 		}
         
 		public static TableSchema.Table TblUploadFile

@@ -160,6 +160,25 @@
     .mc-day.today { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
     
     .mc-label { margin-top: 3px; max-width: 100%; padding: 0 3px; box-sizing: border-box; font-size: 9.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* =========================================================
+       HIGHLIGHT NHÂN VIÊN GỐC CỦA CÔNG VIỆC
+       ========================================================= */
+    .member-item-row.original-member {
+        background-color: #f0f8ff; 
+        border-color: #bfe0ff;     
+    }
+    .member-item-row.original-member:hover {
+        background-color: #e6f3ff;
+    }
+    .member-item-row.original-member .btn-calendar-only {
+        background-color: #ffffff;
+        border-color: #bfe0ff;
+    }
+    .member-item-row.original-member .btn-calendar-only:hover,
+    .member-item-row.original-member.show-schedule .btn-calendar-only {
+        background-color: #dbeafe;
+        border-color: #3b82f6;
+    }
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlTaskMemberPicker" Type="Primary" Size="ExtraLarge">
@@ -225,7 +244,7 @@
                                     <ContentTemplate>
                                         <asp:Repeater ID="rptProjectMembers" runat="server" OnItemDataBound="rptMembers_ItemDataBound">
                                             <ItemTemplate>
-                                                <div class="member-item-row" id='mem-row-<%# Eval("UserId") %>'>
+                                                <div class='member-item-row <%# Convert.ToBoolean(Eval("IsOriginal")) ? "original-member" : "" %>' id='mem-row-<%# Eval("UserId") %>'>
                                                     <div class="row-default-view">
                                                         <div class="member-info-group">
                                                             <asp:CheckBox runat="server" ID="chkSelect" />
