@@ -118,9 +118,15 @@ namespace SweetSoft.QLDA.Core.Managers
                 duAn.NgayTao = DateTime.UtcNow;
                 duAn.NguoiCapNhat = null;
                 duAn.NgayCapNhat = null;
+                using (var scope = new TransactionScope())
+                {
+                    duAn = _repository.Insert(duAn);
+                    BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                    bool initialized = HeSoDongGopManager.Instance.InitializeProjectCoefficients(duAn.IdDuAn);
+                    BusinessValidator.ThrowIf(!initialized, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
+                    scope.Complete();
+                }
 
-                duAn = _repository.Insert(duAn);
-                BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(dto), ErrorCodes.ServiceUnavailable);
                 AddNhanVienQuanLy(duAn);
 
                 if (duAn.IdNhanVienQuanLy.HasValue)
@@ -229,16 +235,28 @@ namespace SweetSoft.QLDA.Core.Managers
             List<Guid> canXoa = danhSachCu.Except(memberIds).ToList();
             List<Guid> canThem = memberIds.Except(danhSachCu).ToList();
 
+            // Lấy tên dự án để nhét vào thông báo
+            string tenDuAn = "Dự án";
+            TblDuAn d = _repository.GetById(idDuAn);
+            if (d != null) tenDuAn = d.TenDuAn;
+
             foreach (Guid id in canXoa)
+            {
+                // 1. Xóa mềm khỏi dự án
                 ThanhVienDuAnManager.Instance.DeleteOne(idDuAn, vaiTroThanhVien.IdVaiTroDuAn, id);
 
-            string tenDuAn = "Dự án";
-            if (canThem.Any())
-            {
-                TblDuAn d = _repository.GetById(idDuAn);
-                if (d != null) tenDuAn = d.TenDuAn;
-            }
+                // 2. Gỡ phân công khỏi các task chưa hoàn thành (Todo/Doing)
+                TaskManager.Instance.RemoveUserFromActiveTasks(idDuAn, id);
 
+                // 3. Bắn thông báo bị KICK khỏi dự án
+                ThongBaoManager.Instance.Create(
+                    userId: id,
+                    tieuDe: $"Bạn đã bị gỡ khỏi dự án: {tenDuAn}",
+                    noiDung: $"Dự án: {tenDuAn}",
+                    loaiThongBao: ThongBaoTypes.DuAn,
+                    idDuAn: idDuAn
+                );
+            }
             foreach (Guid id in canThem)
             {
                 ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn

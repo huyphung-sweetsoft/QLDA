@@ -425,6 +425,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             CtrlChonNhanVien1.EndDate = dtNgayKetThuc.DateValue;
             CtrlChonNhanVien1.SelectedUserIds = this.SelectedMemberIds;
             CtrlChonNhanVien1.IdNhanVienQuanLy = idPM;
+            CtrlChonNhanVien1.CurrentIdDuAn = this.IdDuAn;
             CtrlChonNhanVien1.OpenPicker();
         }
 
@@ -514,6 +515,13 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             this.SelectedMemberIds = selectedIds;
             UpdateMemberCountUI();
             upNhanVienThamGia.Update();
+        }
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null && e.CommandName == "CONFIRM_REMOVE_PROJECT_MEMBERS")
+            {
+                CtrlChonNhanVien1.ConfirmRequest(e);
+            }
         }
     }
 }

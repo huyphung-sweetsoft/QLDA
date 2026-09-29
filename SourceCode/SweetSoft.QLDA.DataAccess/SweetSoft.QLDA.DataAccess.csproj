@@ -221,6 +221,7 @@
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
     <None Include="obj\Debug\SweetSoft.QLDA.DataAccess.csproj.AssemblyReference.cache" />
     <None Include="obj\Debug\SweetSoft.QLDA.DataAccess.csproj.CoreCompileInputs.cache" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="obj\Debug\SweetSoft.QLDA.DataAccess.csproj.FileListAbsolute.txt" />
