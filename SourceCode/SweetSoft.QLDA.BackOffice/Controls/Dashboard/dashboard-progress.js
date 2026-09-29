@@ -2,6 +2,7 @@
     "use strict";
 
     var texts = window.dashboardProgressTexts || {};
+    var taskStatusChart = null;
 
     function showEmptyState(element, message) {
         if (!element) {
@@ -14,94 +15,265 @@
             '</div>';
     }
 
+    function escapeTooltipText(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, function (character) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "\"": "&quot;",
+                "'": "&#39;"
+            }[character];
+        });
+    }
+
+    function formatProgressPercent(value) {
+        return (Number(value) || 0).toFixed(1).replace(/\.0$/, "") + "%";
+    }
+
+    function syncSummaryChartCardHeight() {
+        var scheduleCard = document.querySelector(".dashboard-progress .progress-schedule-card");
+        var taskStatusCard = document.querySelector(".dashboard-progress .progress-task-status-card");
+
+        if (!scheduleCard || !taskStatusCard) {
+            return;
+        }
+
+        taskStatusCard.style.minHeight = "";
+
+        if (window.matchMedia && !window.matchMedia("(min-width: 1200px)").matches) {
+            return;
+        }
+
+        var scheduleCardHeight = scheduleCard.getBoundingClientRect().height;
+
+        if (scheduleCardHeight > 0) {
+            taskStatusCard.style.minHeight = Math.ceil(scheduleCardHeight) + "px";
+        }
+    }
+
+    function scheduleSummaryChartCardHeight() {
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(syncSummaryChartCardHeight);
+        });
+    }
+
+    var projectProgressChart = null;
+
+    function openProjectTaskList(item) {
+        var trigger = document.getElementById("progressProjectTaskTrigger");
+        if (!item || !trigger) {
+            return;
+        }
+
+        trigger.setAttribute("data-task-project-id", item.projectId);
+        trigger.setAttribute(
+            "data-task-title",
+            (texts.totalTasks || "") + ": " + item.projectCode
+                + " · " + item.name);
+        trigger.click();
+    }
+
     function renderScheduleChart() {
         var element = document.getElementById("progress-schedule-chart");
-        var data = window.dashboardProgressScheduleData || [];
+        var chartWrapper = document.getElementById("progress-schedule-chart-wrapper");
+        var data = window.dashboardProgressProjectData || [];
+        var chartHeight = 330;
+        var visibleProjectCount = 6;
+        var viewportWidth = chartWrapper ? chartWrapper.clientWidth : 0;
 
         if (!element || typeof ApexCharts === "undefined") {
             return;
         }
+
+        if (projectProgressChart) {
+            projectProgressChart.destroy();
+            projectProgressChart = null;
+        }
+
+        if (viewportWidth <= 0) {
+            viewportWidth = element.parentElement.clientWidth || 900;
+        }
+
+        element.style.height = chartHeight + "px";
+        element.style.width = "100%";
+        element.innerHTML = "";
 
         if (data.length === 0) {
             showEmptyState(element, texts.noProjectProgressData || "");
             return;
         }
 
-        var chartHeight = Math.max(330, data.length * 75);
-        element.style.height = chartHeight + "px";
-        element.style.cursor = data.some(function (item) {
-            return item && item.detailUrl;
-        }) ? "pointer" : "default";
+        var chartWidth = data.length > visibleProjectCount
+            ? Math.ceil(viewportWidth * data.length / visibleProjectCount)
+            : viewportWidth;
+        element.style.width = chartWidth + "px";
+        element.style.cursor = "pointer";
 
-        new ApexCharts(element, {
+        projectProgressChart = new ApexCharts(element, {
             chart: {
                 type: "bar",
                 height: chartHeight,
+                width: chartWidth,
                 toolbar: { show: false },
                 parentHeightOffset: 0,
                 events: {
                     dataPointSelection: function (event, chartContext, config) {
                         var item = data[config.dataPointIndex];
-
-                        if (item && item.detailUrl) {
-                            window.location.assign(item.detailUrl);
-                        }
+                        openProjectTaskList(item);
                     }
                 }
             },
             series: [
                 {
-                    name: texts.actual || "",
+                    name: texts.planned || "",
                     data: data.map(function (item) {
-                        return Number(item.actual) || 0;
+                        return item.planned == null ? null : Number(item.planned);
                     })
                 },
                 {
-                    name: texts.planned || "",
+                    name: texts.actual || "",
                     data: data.map(function (item) {
-                        return Number(item.planned) || 0;
+                        return item.actual == null ? null : Number(item.actual);
                     })
                 }
             ],
-            colors: ["#556ee6", "#f1b44c"],
+            colors: ["#c6ceda", "#4a148c"],
+            grid: {
+                borderColor: "#e9edf3",
+                strokeDashArray: 4,
+                padding: {
+                    top: 20,
+                    right: 18,
+                    bottom: 8,
+                    left: 12
+                }
+            },
             plotOptions: {
                 bar: {
-                    horizontal: true,
-                    barHeight: "65%",
-                    borderRadius: 3
+                    horizontal: false,
+                    columnWidth: "52%",
+                    borderRadius: 4,
+                    borderRadiusApplication: "end",
+                    dataLabels: { position: "top" }
                 }
             },
             xaxis: {
-                min: 0,
-                max: 100,
-                tickAmount: 5,
                 categories: data.map(function (item) {
-                    return item.code;
+                    return item.projectCode || item.name;
                 }),
                 labels: {
-                    formatter: function (value) {
-                        return Math.round(Number(value) || 0) + "%";
+                    rotate: data.length > visibleProjectCount ? -40 : 0,
+                    hideOverlappingLabels: true,
+                    style: {
+                        colors: ["#475467"],
+                        fontSize: "12px",
+                        fontWeight: 500
                     }
                 }
             },
-            dataLabels: { enabled: false },
-            legend: { position: "top", horizontalAlign: "right" },
-            tooltip: {
-                shared: true,
-                intersect: false,
-                x: {
-                    formatter: function (value, options) {
-                        var item = data[options.dataPointIndex];
-                        return item ? item.code + " - " + item.name : value;
+            yaxis: {
+                min: 0,
+                max: 100,
+                tickAmount: 5,
+                labels: {
+                    formatter: function (value) {
+                        return Math.round(Number(value) || 0) + "%";
+                    },
+                    style: {
+                        colors: ["#667085"],
+                        fontSize: "11px"
                     }
                 },
-                y: {
-                    formatter: function (value) {
-                        return Number(value).toFixed(1).replace(".0", "") + "%";
+                title: { text: texts.progressAxis || "" }
+            },
+            dataLabels: {
+                enabled: true,
+                offsetY: -18,
+                formatter: function (value) {
+                    return value == null ? "" : formatProgressPercent(value);
+                },
+                style: {
+                    colors: ["#667085", "#4a148c"],
+                    fontSize: "10px",
+                    fontWeight: 600
+                }
+            },
+            legend: {
+                position: "top",
+                horizontalAlign: "right",
+                labels: { colors: "#475467" },
+                markers: { width: 10, height: 10, radius: 3 },
+                itemMargin: { horizontal: 10 }
+            },
+            tooltip: {
+                shared: false,
+                intersect: true,
+                custom: function (options) {
+                    var item = data[options.dataPointIndex];
+                    if (!item) {
+                        return "";
                     }
+
+                    var taskCountHtml = '<div><strong>'
+                        + escapeTooltipText(texts.completedTasks || "")
+                        + ":</strong> " + Number(item.completedTaskCount || 0)
+                        + "/" + Number(item.taskCount || 0) + "</div>";
+                    var overdueCount = Number(item.overdueTaskCount) || 0;
+                    var overdueHtml = overdueCount > 0
+                        ? '<div class="text-danger"><strong>'
+                            + escapeTooltipText(texts.overdueTasks || "")
+                            + ":</strong> " + overdueCount + "</div>"
+                        : "";
+                    var startHtml = item.startDate
+                        ? '<div><strong>' + escapeTooltipText(texts.start || "")
+                            + ":</strong> " + escapeTooltipText(item.startDate) + "</div>"
+                        : "";
+                    var expectedHtml = item.expectedEndDate
+                        ? '<div><strong>' + escapeTooltipText(texts.expected || "")
+                            + ":</strong> " + escapeTooltipText(item.expectedEndDate) + "</div>"
+                        : "";
+                    var actualCompletionHtml = item.actualCompletionDate
+                        ? '<div><strong>' + escapeTooltipText(
+                            texts.actualCompletion || "") + ":</strong> "
+                            + escapeTooltipText(item.actualCompletionDate) + "</div>"
+                        : "";
+                    var completionDelayHtml = item.completionDelayText
+                        ? '<div class="text-danger">'
+                            + escapeTooltipText(item.completionDelayText) + "</div>"
+                        : "";
+                    var statusHtml = item.status
+                        ? '<div class="mb-2"><span class="badge '
+                            + escapeTooltipText(item.statusCss
+                                || "bg-secondary-subtle text-secondary")
+                            + '">' + escapeTooltipText(item.status) + "</span></div>"
+                        : "";
+                    var statusReasonHtml = item.statusReason
+                        ? '<div class="progress-schedule-tooltip__reason">'
+                            + escapeTooltipText(item.statusReason) + "</div>"
+                        : "";
+
+                    return '<div class="progress-schedule-tooltip">'
+                        + '<div class="progress-schedule-tooltip__title">'
+                        + escapeTooltipText(item.projectCode) + " · "
+                        + escapeTooltipText(item.name) + "</div>"
+                        + statusHtml
+                        + statusReasonHtml
+                        + '<div><strong>' + escapeTooltipText(texts.actual || "")
+                        + ":</strong> " + formatProgressPercent(item.actual) + "</div>"
+                        + '<div><strong>' + escapeTooltipText(texts.planned || "")
+                        + ":</strong> " + formatProgressPercent(item.planned) + "</div>"
+                        + taskCountHtml
+                        + overdueHtml
+                        + startHtml
+                        + expectedHtml
+                        + actualCompletionHtml
+                        + completionDelayHtml
+                        + "</div>";
                 }
             }
-        }).render();
+        });
+        projectProgressChart.render();
     }
 
     function renderTaskStatusChart() {
@@ -118,35 +290,47 @@
             return;
         }
 
+        if (taskStatusChart) {
+            taskStatusChart.destroy();
+            taskStatusChart = null;
+        }
+        element.innerHTML = "";
+
         if (total === 0) {
             showEmptyState(element, texts.noTasksInPeriod || "");
             return;
         }
 
-        element.style.cursor = data.tasksUrl ? "pointer" : "default";
+        element.style.cursor = (data.statusCodes || []).length > 0
+            ? "pointer"
+            : "default";
 
-        new ApexCharts(element, {
+        taskStatusChart = new ApexCharts(element, {
             chart: {
                 type: "donut",
                 height: 330,
                 toolbar: { show: false },
                 events: {
-                    dataPointSelection: function () {
-                        if (data.tasksUrl) {
-                            window.location.assign(data.tasksUrl);
+                    dataPointSelection: function (event, chartContext, config) {
+                        var statusCode = (data.statusCodes || [])[config.dataPointIndex];
+                        var trigger = document.getElementById(
+                            "progressTaskStatusCategoryTrigger");
+
+                        if (statusCode !== undefined && trigger) {
+                            trigger.setAttribute("data-task-filter", "all");
+                            trigger.setAttribute("data-task-status-code", statusCode);
+                            trigger.setAttribute(
+                                "data-task-title",
+                                data.labels[config.dataPointIndex] || texts.totalTasks || "");
+                            trigger.click();
                         }
                     }
                 }
             },
-            labels: data.labels,
-            series: data.values.map(function (value) {
-                return Number(value) || 0;
-            }),
-            colors: ["#34c38f", "#50a5f1", "#74788d", "#f46a6a"],
-            legend: { position: "bottom" },
-            dataLabels: { enabled: true },
             plotOptions: {
                 pie: {
+                    expandOnClick: false,
+                    dataLabels: { minAngleToShowLabel: 8 },
                     donut: {
                         size: "68%",
                         labels: {
@@ -161,134 +345,101 @@
                         }
                     }
                 }
-            }
-        }).render();
-    }
-
-    function renderProjectTaskChart() {
-        var element = document.getElementById("progress-project-task-chart");
-        var data = window.dashboardProgressProjectTaskData || [];
-
-        if (!element || typeof ApexCharts === "undefined") {
-            return;
-        }
-
-        if (data.length === 0) {
-            showEmptyState(element, texts.noProjectTaskData || "");
-            return;
-        }
-
-        var chartHeight = Math.max(320, data.length * 70);
-        element.style.height = chartHeight + "px";
-        element.style.cursor = data.some(function (item) {
-            return item && item.tasksUrl;
-        }) ? "pointer" : "default";
-
-        // Work counts are integers, so expand the axis to a multiple of an
-        // integer step instead of letting ApexCharts create decimal ticks.
-        var maxTaskTotal = data.reduce(function (max, item) {
-            var total = (Number(item.completed) || 0)
-                + (Number(item.inProgress) || 0)
-                + (Number(item.notStarted) || 0)
-                + (Number(item.overdue) || 0);
-            return Math.max(max, total);
-        }, 0);
-        var axisMax = Math.max(1, Math.ceil(maxTaskTotal));
-        var tickStep = Math.max(1, Math.ceil(axisMax / 10));
-        axisMax = Math.ceil(axisMax / tickStep) * tickStep;
-        var tickAmount = axisMax / tickStep;
-
-        // ApexCharts may generate fractional ticks for a numeric stacked axis.
-        // Rounding those ticks (for example 4.5 and 5.4) made both labels
-        // appear as "5". Keep an integer scale for small task totals and use
-        // one decimal place for larger ranges so every tick remains distinct.
-        var maxTaskTotal = data.reduce(function (max, item) {
-            var total = (Number(item.completed) || 0)
-                + (Number(item.inProgress) || 0)
-                + (Number(item.notStarted) || 0)
-                + (Number(item.overdue) || 0);
-            return Math.max(max, total);
-        }, 0);
-        var axisMax = Math.max(1, Math.ceil(maxTaskTotal));
-        var tickAmount = axisMax <= 10 ? axisMax : 10;
-
-        new ApexCharts(element, {
-            chart: {
-                type: "bar",
-                height: chartHeight,
-                stacked: true,
-                toolbar: { show: false },
-                parentHeightOffset: 0,
-                events: {
-                    dataPointSelection: function (event, chartContext, config) {
-                        var item = data[config.dataPointIndex];
-
-                        if (item && item.tasksUrl) {
-                            window.location.assign(item.tasksUrl);
-                        }
-                    }
-                }
             },
-            series: [
-                {
-                    name: texts.completed || "",
-                    data: data.map(function (item) { return item.completed; })
-                },
-                {
-                    name: texts.inProgress || "",
-                    data: data.map(function (item) { return item.inProgress; })
-                },
-                {
-                    name: texts.notStarted || "",
-                    data: data.map(function (item) { return item.notStarted; })
-                },
-                {
-                    name: texts.overdue || "",
-                    data: data.map(function (item) { return item.overdue; })
-                }
-            ],
+            states: {
+                active: { filter: { type: "none" } }
+            },
+            labels: data.labels,
+            series: data.values.map(function (value) {
+                return Number(value) || 0;
+            }),
             colors: ["#34c38f", "#50a5f1", "#74788d", "#f46a6a"],
-            plotOptions: {
-                bar: {
-                    horizontal: true,
-                    barHeight: "55%",
-                    borderRadius: 2
-                }
-            },
-            xaxis: {
-                categories: data.map(function (item) { return item.code; }),
-                min: 0,
-                max: axisMax,
-                tickAmount: tickAmount,
-                decimalsInFloat: 0,
-                labels: {
-                    formatter: function (value) {
-                        return Math.round(Number(value) || 0).toString();
-                    }
-                }
-            },
+            legend: { position: "bottom" },
             dataLabels: {
                 enabled: true,
-                formatter: function (value) {
-                    return Number(value) > 0 ? value : "";
+                formatter: function (percentage, opts) {
+                    return Number(data.values[opts.seriesIndex]) || 0;
+                },
+                style: { fontSize: "12px", fontWeight: 700, colors: ["#18273f"] },
+                dropShadow: { enabled: false }
+            }
+        });
+        taskStatusChart.render();
+    }
+
+    function bindTaskStatusChartReset() {
+        var modal = document.getElementById("progressTaskDetailsModal");
+        if (!modal || modal.__taskStatusChartResetBound) {
+            return;
+        }
+
+        modal.__taskStatusChartResetBound = true;
+        modal.addEventListener("hidden.bs.modal", function () {
+            renderTaskStatusChart();
+        });
+    }
+
+    function bindDashboardListSearch() {
+        var dashboard = document.querySelector(".dashboard-progress");
+        if (!dashboard) {
+            return;
+        }
+
+        dashboard.querySelectorAll("[data-dashboard-list-search]")
+            .forEach(function (input) {
+                var listBody = document.getElementById(
+                    input.getAttribute("data-dashboard-list-search"));
+                if (!listBody) {
+                    return;
                 }
-            },
-            legend: { position: "top", horizontalAlign: "right" },
-            tooltip: {
-                shared: false,
-                x: {
-                    formatter: function (value, options) {
-                        var item = data[options.dataPointIndex];
-                        return item ? item.code + " - " + item.name : value;
+
+                var rows = Array.prototype.slice.call(
+                    listBody.querySelectorAll("[data-search-row]"));
+                var emptyRow = listBody.querySelector("[data-search-empty]");
+
+                function applySearch() {
+                    var query = (input.value || "").trim().toLocaleLowerCase();
+                    var visibleCount = 0;
+
+                    rows.forEach(function (row) {
+                        var matches = !query || row.textContent
+                            .toLocaleLowerCase().indexOf(query) >= 0;
+                        row.classList.toggle("d-none", !matches);
+                        if (matches) {
+                            visibleCount += 1;
+                        }
+                    });
+
+                    if (emptyRow && rows.length > 0) {
+                        emptyRow.classList.toggle("d-none", visibleCount > 0);
                     }
                 }
-            }
-        }).render();
+
+                input.addEventListener("input", applySearch);
+
+                var modal = input.closest(".modal");
+                if (modal) {
+                    modal.addEventListener("show.bs.modal", function () {
+                        input.value = "";
+                        applySearch();
+                    });
+                }
+            });
     }
 
     document.addEventListener("DOMContentLoaded", function () {
+        var chartResizeTimer;
+        window.addEventListener("resize", function () {
+            window.clearTimeout(chartResizeTimer);
+            chartResizeTimer = window.setTimeout(function () {
+                renderScheduleChart();
+            }, 150);
+        });
         renderScheduleChart();
         renderTaskStatusChart();
-        renderProjectTaskChart();
+        bindTaskStatusChartReset();
+        bindDashboardListSearch();
+        scheduleSummaryChartCardHeight();
+        window.addEventListener("resize", scheduleSummaryChartCardHeight);
     });
 })();

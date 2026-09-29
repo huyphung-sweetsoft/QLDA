@@ -54,6 +54,17 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
                 };
                 ApplyControlsText();
                 CtrlRisk1.InitControls();
+
+                Guid riskId;
+                if (Guid.TryParse(Request.QueryString["riskId"], out riskId))
+                {
+                    TblRuiRoDuAn risk = TblRuiRoDuAn.FetchByID(riskId);
+                    if (risk != null && risk.DaXoa != true
+                        && risk.IdDuAn == CurrentProjectId)
+                    {
+                        EditRiskAction(riskId, EventArgs.Empty);
+                    }
+                }
             }
         }
 

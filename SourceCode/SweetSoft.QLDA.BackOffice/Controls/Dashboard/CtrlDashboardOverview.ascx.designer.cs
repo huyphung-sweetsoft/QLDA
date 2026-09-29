@@ -13,6 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
     public partial class CtrlDashboardOverview
     {
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlProjectDashboardTabs CtrlProjectDashboardTabs1;
 
         /// <summary>
         /// ddlProjectFilter control.
@@ -21,24 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlProjectFilter;
+        protected global::System.Web.UI.WebControls.DropDownList ddlProjectFilter;
 
-        /// <summary>
-        /// ddlDateRange control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlDateRange;
-
-        /// <summary>
-        /// btnApplyDashboardFilter control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton btnApplyDashboardFilter;
     }
 }

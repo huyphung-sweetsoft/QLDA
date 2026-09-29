@@ -2,13 +2,14 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
+using SweetSoft.QLDA.Core.ScheduleManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
-using SweetSoft.QLDA.Core.ScheduleManager;
 namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 {
     public partial class CtrlChonNhanVien : BaseAdminUserControl
@@ -32,7 +33,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             set { ViewState["CtrlChonNhanVien_IdNhanVienQuanLy"] = value; }
         }
         public List<Guid> SelectedUserIds { get; set; }//Danh sách id nhân viên đang chọn (chỉ dùng lúc mở popup)
-
+        public Guid? CurrentIdDuAn
+        {
+            get { return ViewState["CtrlChonNhanVien_CurrentIdDuAn"] as Guid?; }
+            set { ViewState["CtrlChonNhanVien_CurrentIdDuAn"] = value; }
+        }
+        public List<Guid> OriginalUserIds
+        {
+            get { return ViewState["CtrlChonNhanVien_OriginalIds"] as List<Guid> ?? new List<Guid>(); }
+            set { ViewState["CtrlChonNhanVien_OriginalIds"] = value; }
+        }
         public delegate void ConfirmSelectionHandler(List<Guid> selectedIds);
         public event ConfirmSelectionHandler OnConfirmSelection;
 
@@ -63,7 +73,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             if (script == null) return;
 
             script.RegisterAsyncPostBackControl(lbtSearchSingle);
-      
+            txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             _searchControlsReady = true;
         }
 
@@ -81,7 +91,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 SelectedUserIds = new List<Guid>();//tạo list rỗng để tránh lỗi 
             }
             SetPickedIds(SelectedUserIds);
-
+            OriginalUserIds = new List<Guid>(SelectedUserIds);
             // Tiêu đề form
             mdlMemberPicker.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
             btnConfirm.ToolTip = btnConfirm.Text = GetResourceText(BackEndResourceKeys.SAVE);
@@ -246,7 +256,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             {
                 allUsers = allUsers.OrderBy(u => u.DisplayName).ToList();
             }
-
+            Dictionary<Guid, int> taskCounts = new Dictionary<Guid, int>();
+            if (CurrentIdDuAn.HasValue && CurrentIdDuAn.Value != Guid.Empty)
+            {
+                taskCounts = TaskManager.Instance.GetTaskCountsByProject(CurrentIdDuAn.Value);
+            }
             var listMembers = new List<object>();
 
             // CHUYỂN TỪ FOREACH SANG FOR ĐỂ LẤY INDEX ĐỔI MÀU AVATAR
@@ -255,7 +269,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 var user = allUsers[i];
                 DataRow info;
                 employeeRows.TryGetValue(user.UserId, out info);
-
+                int tCount = 0;
+                taskCounts.TryGetValue(user.UserId, out tCount);
                 listMembers.Add(new
                 {
                     UserId = user.UserId,
@@ -263,7 +278,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     Email = GetRowString(info, "Email"),
                     // BƠM AVATAR VÀO ĐÂY
                     AvatarHtml = GetSingleAvatarHtml(user.DisplayName, user.Avatar, i),
-                    ScheduleJson = GenerateScheduleJson(user.UserId, StartDate.Value, EndDate.Value)
+                    ScheduleJson = GenerateScheduleJson(user.UserId, StartDate.Value, EndDate.Value),
+                    IsOriginal = OriginalUserIds.Contains(user.UserId),
+                    TaskCount = tCount
                 });
             }
 
@@ -427,15 +444,75 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         protected void btnConfirm_Click(object sender, EventArgs e)
         {
-            // Gộp trạng thái tick hiện tại vào danh sách đã lưu (gồm cả người đang bị ẩn do lọc)
             SyncPickedFromRepeater();
             List<Guid> tempSelectedIds = GetPickedIds();
 
-            mdlMemberPicker.CloseModal();
+            // Lọc ra nhân viên cũ bị kick
+            List<Guid> removedIds = OriginalUserIds.Where(id => !tempSelectedIds.Contains(id)).ToList();
 
+            if (removedIds.Count > 0 && CurrentIdDuAn.HasValue)
+            {
+                Dictionary<Guid, int> taskCounts = TaskManager.Instance.GetTaskCountsByProject(CurrentIdDuAn.Value);
+                List<string> warningDetails = new List<string>();
+
+                foreach (Guid rId in removedIds)
+                {
+                    if (taskCounts.ContainsKey(rId) && taskCounts[rId] > 0)
+                    {
+                        AspnetUser u = UserManager.Instance.GetUserById(rId);
+                        string name = u != null ? u.DisplayName : "Nhân viên";
+
+                        string taskText = string.Format(GetResourceText(BackEndResourceKeys.DOING_X_TASKS) ?? "Đảm nhận {0} công việc", taskCounts[rId]);
+                        warningDetails.Add($"• <b>{name}</b> ({taskText})");
+                    }
+                }
+
+                // Nếu có người vướng Task -> Gọi MessageBox hệ thống
+                if (warningDetails.Count > 0)
+                {
+                    string detailHtml = string.Join("<br/>", warningDetails);
+                    string formattedList = $"<div style='text-align: left; background: #fffbeb; padding: 10px; border: 1px solid #fde68a; border-radius: 6px; font-size: 13px; margin-bottom: 10px;'>{detailHtml}</div>";
+
+                    string rawMessage = GetResourceText(BackEndResourceKeys.WARNING_REMOVE_ACTIVE_MEMBERS_MSG) ??
+                                        "Những nhân viên sau hiện đang đảm nhiệm công việc trong dự án:<br/><br/>{0}<br/>Việc loại bỏ họ sẽ khiến các công việc trên bị trống người thực hiện. Bạn có chắc chắn muốn tiếp tục xóa?";
+                    string finalMessage = string.Format(rawMessage, formattedList);
+
+                    ConfirmResult result = new ConfirmResult();
+                    result.CommandName = "CONFIRM_REMOVE_PROJECT_MEMBERS";
+                    result.Value = tempSelectedIds; // Gói danh sách đã tick vào đây
+                    this.CURRENT_PAGE.CurrentConfirmResult = result;
+
+                    MessageBox msg = new MessageBox(GetResourceText(BackEndResourceKeys.PERSONNEL_WARNING) ?? "Cảnh báo nhân sự", finalMessage, MSGButton.DeleteCancel, MSGIcon.Warning);
+                    OpenMessageBox(msg, result, false, false);
+                  
+                    return; // Đứng lại chờ User xác nhận
+                }
+            }
+
+            // Nếu an toàn, lưu ngay lập tức
+            mdlMemberPicker.CloseModal();
             if (OnConfirmSelection != null)
             {
                 OnConfirmSelection(tempSelectedIds);
+            }
+        }
+        // Bắt tín hiệu "Đồng ý Xóa" từ MessageBox
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null && e.Submit && e.CommandName == "CONFIRM_REMOVE_PROJECT_MEMBERS")
+            {
+                List<Guid> finalIds = e.Value as List<Guid>;
+                if (finalIds != null)
+                {
+                    // 1. Cập nhật trạng thái đóng trên Server
+                    mdlMemberPicker.CloseModal();
+
+                    // 2. Trả danh sách về để update UI Form Dự Án (Nó sẽ tự lo việc hiển thị)
+                    if (OnConfirmSelection != null)
+                    {
+                        OnConfirmSelection(finalIds);
+                    }
+                }
             }
         }
     }

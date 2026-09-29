@@ -1,6 +1,5 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
-using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -40,8 +39,7 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
                 GetResourceText(BackEndResourceKeys.PAYMENT_DUE_DATE),
                 GetResourceText(BackEndResourceKeys.PAYMENT_ACTUAL_DATE),
                 GetResourceText(BackEndResourceKeys.STATUS),
-                GetResourceText(BackEndResourceKeys.ACTION),
-                GetResourceText(BackEndResourceKeys.PAYMENT_QUICK_APPROVE)
+                GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = "MaDotThanhToan";
@@ -123,6 +121,34 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
                         ShowNotify(exc.Message, MSGType.Error);
                     }
                     break;
+                case "ITEM_QUICK_APPROVE":
+                    if (!CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    if (!TryGetPaymentId(e, out id))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+                    try
+                    {
+                        ThanhToanManager.Instance.ApprovePayment(id, CURRENT_PAGE.CurrentProjectId, DateTime.Today);
+                        ShowSuccessSaveData();
+                        Rebind();
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        ShowAccessDeniedNotify();
+                        Rebind();
+                    }
+                    catch (Exception exc)
+                    {
+                        ShowNotify(exc.Message, MSGType.Error);
+                        Rebind();
+                    }
+                    break;
             }
         }
 
@@ -148,46 +174,6 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
             NewPaymentHandlerCallback?.Invoke(Guid.Empty, EventArgs.Empty);
         }
 
-        protected void chkQuickApprove_CheckedChanged(object sender, EventArgs e)
-        {
-            CheckBox checkBox = sender as CheckBox;
-            if (checkBox == null || !checkBox.Checked)
-                return;
-            if (!CURRENT_PAGE.IsEdit)
-            {
-                ShowAccessDeniedNotify();
-                Rebind();
-                return;
-            }
-
-            GridViewRow row = checkBox.NamingContainer as GridViewRow;
-            Guid id;
-            if (row == null || row.RowIndex < 0 || row.RowIndex >= grvData.DataKeys.Count
-                || !Guid.TryParse(Convert.ToString(grvData.DataKeys[row.RowIndex].Value), out id))
-            {
-                ShowInvalidDataError();
-                Rebind();
-                return;
-            }
-
-            try
-            {
-                ThanhToanManager.Instance.ApprovePayment(id, CURRENT_PAGE.CurrentProjectId, DateTime.Today);
-                ShowSuccessSaveData();
-                Rebind();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                ShowAccessDeniedNotify();
-                Rebind();
-            }
-            catch (Exception exc)
-            {
-                ShowNotify(exc.Message, MSGType.Error);
-                Rebind();
-            }
-        }
-
         protected void ctrlGridviewPaging_PageChanged(object sender, GridviewCustomPageChangeArgs e)
         {
             grvData.CurrentPageSize = e.CurrentPageSize;
@@ -206,22 +192,32 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
             return value == null || value == DBNull.Value ? "—" : ((DateTime)value).ToString("dd/MM/yyyy");
         }
 
-        protected string GetStatusText(object value, object dueDate)
+        protected string GetStatusText(object value)
         {
-            byte status = GetEffectiveStatus(value, dueDate);
-            return Enum.IsDefined(typeof(ThanhToanStatus), status)
-                ? GetResourceText(EnumHelpers.GetERenderText(typeof(ThanhToanStatus), (ThanhToanStatus)status))
-                : GetResourceText(BackEndResourceKeys.NOT_ENTERED);
+            return IsPaid(value)
+                ? GetResourceText(BackEndResourceKeys.PAYMENT_PAID)
+                : GetResourceText(BackEndResourceKeys.PAYMENT_UNPAID);
         }
 
-        protected string GetStatusCss(object value, object dueDate)
+        protected string GetStatusCss(object value)
         {
-            switch ((ThanhToanStatus)GetEffectiveStatus(value, dueDate))
-            {
-                case ThanhToanStatus.DaThanhToan: return "badge rounded-pill bg-success";
-                case ThanhToanStatus.TreHan: return "badge rounded-pill bg-danger";
-                default: return "badge rounded-pill bg-secondary";
-            }
+            return IsPaid(value)
+                ? "badge rounded-pill bg-success"
+                : "badge rounded-pill bg-secondary";
+        }
+
+        protected string GetDueDateCss(object value, object dueDate)
+        {
+            return IsOverdue(value, dueDate)
+                ? "text-danger fw-semibold"
+                : string.Empty;
+        }
+
+        protected string GetDueDateTitle(object value, object dueDate)
+        {
+            return IsOverdue(value, dueDate)
+                ? GetResourceText(BackEndResourceKeys.PAYMENT_OVERDUE)
+                : string.Empty;
         }
 
         protected bool IsPaid(object value)
@@ -230,9 +226,17 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
                 && Convert.ToByte(value) == (byte)ThanhToanStatus.DaThanhToan;
         }
 
-        protected bool CanQuickApprove(object value)
+        protected bool IsOverdue(object value, object dueDate)
         {
-            return CURRENT_PAGE.IsEdit && !IsPaid(value);
+            if (IsPaid(value) || dueDate == null || dueDate == DBNull.Value)
+                return false;
+
+            DateTime deadline;
+            if (dueDate is DateTime)
+                deadline = (DateTime)dueDate;
+            else if (!DateTime.TryParse(Convert.ToString(dueDate), out deadline))
+                return false;
+            return deadline.Date < DateTime.Today;
         }
 
         protected string GetQuickApproveConfirmScript(object paymentCode)
@@ -255,17 +259,5 @@ namespace SweetSoft.QLDA.BackOffice.fThanhToan.Controls
                 System.Web.HttpUtility.JavaScriptStringEncode(message));
         }
 
-        private static byte GetEffectiveStatus(object value, object dueDate)
-        {
-            byte status = Convert.ToByte(value);
-            if (status == (byte)ThanhToanStatus.DaThanhToan)
-                return status;
-            DateTime deadline;
-            return dueDate != null && dueDate != DBNull.Value
-                && DateTime.TryParse(Convert.ToString(dueDate), out deadline)
-                && deadline.Date < DateTime.Today
-                    ? (byte)ThanhToanStatus.TreHan
-                    : (byte)ThanhToanStatus.ChuaThanhToan;
-        }
     }
 }

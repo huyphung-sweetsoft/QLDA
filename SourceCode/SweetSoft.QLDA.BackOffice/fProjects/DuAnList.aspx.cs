@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.BackOffice.Common;
+﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.Controls;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -75,7 +75,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
         public override void ConfirmRequest(ConfirmResult e)
         {
+            // 1. Giữ nguyên cái cũ để không hỏng chức năng Xóa dự án ở màn hình ngoài
             CtrlDuAn1.ConfirmRequest(e);
+
+            // 2. THÊM ĐOẠN NÀY: Ném sự kiện xuống cho Form Thêm/Sửa Dự Án
+            if (e != null && e.CommandName == "CONFIRM_REMOVE_PROJECT_MEMBERS")
+            {
+                CtrlDuAnForm1.ConfirmRequest(e);
+            }
         }
 
         protected void ManageProjectTypeAction(object sender, EventArgs e)

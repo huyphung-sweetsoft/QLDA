@@ -33,6 +33,34 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblCongViec FetchById(Guid taskId) => _repository.FetchById(taskId);
         public DataTable GetChildTasks(Guid projectId, Guid taskId) => _repository.GetChildTasks(projectId, taskId);
         public DataTable GetDependentTasks(Guid projectId, Guid taskId) => _repository.GetDependentTasks(projectId, taskId);
+        public Dictionary<Guid, int> GetTaskCountsByProject(Guid idDuAn)
+        {
+            return _repository.GetTaskCountsByProject(idDuAn);
+        }
+        public void RemoveUserFromActiveTasks(Guid idDuAn, Guid idNhanVien)
+        {
+            // 1. Gọi Repo lấy danh sách Task chưa hoàn thành
+            List<Guid> tasksToRemove = _repository.GetActiveTaskIdsOfUserInProject(idDuAn, idNhanVien);
+
+            // 2. Xử lý gỡ phân công và bắn thông báo
+            foreach (Guid taskId in tasksToRemove)
+            {
+                _repository.RemoveAssignment(taskId, idNhanVien);
+
+                TblCongViec task = FetchById(taskId);
+                if (task != null)
+                {
+                    ThongBaoManager.Instance.Create(
+                        userId: idNhanVien,
+                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {task.TenCongViec} do không còn tham gia dự án.",
+                        noiDung: $"Công việc: {task.TenCongViec}",
+                        loaiThongBao: ThongBaoTypes.HeThong,
+                        idCongViec: taskId,
+                        idDuAn: idDuAn
+                    );
+                }
+            }
+        }
         public void ValidateCanCompleteProject(Guid idDuAn)
         {
             DataTable dt = FetchByIdAndOrderASCMaCV(idDuAn, null);
