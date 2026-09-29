@@ -37,40 +37,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 " SELECT" +
                 " TotalContractValue = COALESCE((" +
                 " SELECT SUM(COALESCE(h.GiaTriHopDong, 0))" +
-                " FROM FilteredContracts h), 0)," +
-                " ActualCost = COALESCE((" +
-                " SELECT SUM(c.SoTien)" +
-                " FROM TblChiPhi c" +
-                " INNER JOIN FilteredProjects p ON p.IdDuAn = c.IdDuAn" +
-                " WHERE c.DaXoa = 0");
-
-            AppendApprovedCostStatusFilter(sql, parameters, "c");
-
-            if (HasDateRange(filter))
-            {
-                AddDateRangeParameters(parameters, filter);
-                sql.Append(
-                    " AND c.NgayTao >= @FromDate" +
-                    " AND c.NgayTao < @ToDateExclusive");
-            }
-
-            sql.Append(
-                "), 0)," +
-                " ReceivedPayment = COALESCE((" +
-                " SELECT SUM(pmt.SoTien)" +
-                " FROM TblThanhToan pmt" +
-                " INNER JOIN FilteredProjects p ON p.IdDuAn = pmt.IdDuAn" +
-                " WHERE pmt.DaXoa = 0");
-
-            if (HasDateRange(filter))
-            {
-                sql.Append(
-                    " AND pmt.NgayThanhToanThucTe IS NOT NULL" +
-                    " AND pmt.NgayThanhToanThucTe >= @FromDate" +
-                    " AND pmt.NgayThanhToanThucTe < @ToDateExclusive");
-            }
-
-            sql.Append("), 0)");
+                " FROM FilteredContracts h), 0)");
 
             using (IDataReader reader = ExecuteReader(sql.ToString(), parameters))
             {
@@ -79,10 +46,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     return new DashboardFinancialSummary
                     {
                         TotalContractValue = Convert.ToDecimal(
-                            reader["TotalContractValue"]),
-                        ActualCost = Convert.ToDecimal(reader["ActualCost"]),
-                        ReceivedPayment = Convert.ToDecimal(
-                            reader["ReceivedPayment"])
+                            reader["TotalContractValue"])
                     };
                 }
             }
@@ -179,6 +143,30 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     " AND c.NgayTao < @ToDateExclusive");
             }
 
+            return ExecuteList<TblChiPhi>(sql, parameters);
+        }
+
+        public List<TblChiPhi> GetOverviewCosts(DashboardFilter filter)
+        {
+            StringBuilder sql = new StringBuilder(
+                "SELECT c.* FROM TblChiPhi c" +
+                " INNER JOIN TblDuAn p ON p.IdDuAn = c.IdDuAn" +
+                " WHERE c.DaXoa = 0 AND p.DaXoa = 0");
+            Dictionary<string, object> parameters =
+                new Dictionary<string, object>();
+
+            AppendProjectFilter(sql, parameters, "c.IdDuAn", filter);
+            AppendProjectDateFilter(sql, parameters, "p", filter);
+
+            if (HasDateRange(filter))
+            {
+                AddDateRangeParameters(parameters, filter);
+                sql.Append(
+                    " AND c.NgayTao >= @FromDate" +
+                    " AND c.NgayTao < @ToDateExclusive");
+            }
+
+            sql.Append(" ORDER BY c.NgayTao DESC, c.MaChiPhi");
             return ExecuteList<TblChiPhi>(sql, parameters);
         }
 
@@ -522,6 +510,45 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public List<TblDuAn> GetProjectsForFilter()
         {
             return GetProjects(null, false);
+        }
+
+        public List<DashboardProjectStage> GetProjectStages(Guid projectId)
+        {
+            const string sql =
+                "SELECT g.IdGiaiDoanDuAn, g.ThuTuGiaiDoan," +
+                " COALESCE(s.TenGiaiDoan, g.TenGiaiDoanTuyChinh) AS StageName," +
+                " g.NgayBatDau, g.NgayDuKienHoanThanh, g.NgayHoanThanhThucTe" +
+                " FROM TblGiaiDoanDuAn g" +
+                " LEFT JOIN TblGiaiDoan s ON s.IdGiaiDoan = g.IdGiaiDoan" +
+                " AND s.DaXoa = 0" +
+                " WHERE g.IdDuAn = @ProjectId AND g.DaXoa = 0" +
+                " ORDER BY g.ThuTuGiaiDoan, g.NgayBatDau";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@ProjectId", projectId }
+            };
+            var stages = new List<DashboardProjectStage>();
+            using (IDataReader reader = ExecuteReader(sql, parameters))
+            {
+                while (reader.Read())
+                {
+                    stages.Add(new DashboardProjectStage
+                    {
+                        StageId = (Guid)reader["IdGiaiDoanDuAn"],
+                        ProjectId = projectId,
+                        Order = Convert.ToInt32(reader["ThuTuGiaiDoan"]),
+                        Name = Convert.ToString(reader["StageName"]),
+                        StartDate = reader["NgayBatDau"] == DBNull.Value
+                            ? (DateTime?)null : Convert.ToDateTime(reader["NgayBatDau"]),
+                        ExpectedEndDate = reader["NgayDuKienHoanThanh"] == DBNull.Value
+                            ? (DateTime?)null : Convert.ToDateTime(reader["NgayDuKienHoanThanh"]),
+                        ActualEndDate = reader["NgayHoanThanhThucTe"] == DBNull.Value
+                            ? (DateTime?)null : Convert.ToDateTime(reader["NgayHoanThanhThucTe"])
+                    });
+                }
+            }
+
+            return stages;
         }
 
         public AspnetUser GetEmployeeByUserId(Guid userId)
@@ -949,9 +976,5 @@ namespace SweetSoft.QLDA.Core.Dashboard
     public class DashboardFinancialSummary
     {
         public decimal TotalContractValue { get; set; }
-
-        public decimal ActualCost { get; set; }
-
-        public decimal ReceivedPayment { get; set; }
     }
 }

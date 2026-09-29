@@ -10,6 +10,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public DateTime AnchorWeekStart { get; set; }
 
         public int WeekCount { get; set; }
+
+        public DateTime MonthStart { get; set; }
+
+        public int MonthCount { get; set; }
     }
 
     public class DashboardResourceModel
@@ -37,6 +41,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public int TotalEmployeeCount { get; set; }
 
         public int AssignedEmployeeCount { get; set; }
+
+        public int NoLoadEmployeeCount { get; set; }
 
         public int UnderloadedEmployeeCount { get; set; }
 

@@ -17,7 +17,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlWeekCount;
 
-        protected global::SweetSoft.QLDA.Controls.ExtraButton btnApplyResourceFilter;
 
         protected global::System.Web.UI.WebControls.LinkButton btnPreviousWeek;
 

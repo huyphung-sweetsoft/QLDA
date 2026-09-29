@@ -71,7 +71,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             string iconCssClass,
             string dashboardUrl)
         {
-            if (!CanView(moduleKey))
+            if (!DashboardMenuOptions.ShowAllForTesting && !CanView(moduleKey))
                 return;
 
             bool isActive = CURRENT_PAGE != null

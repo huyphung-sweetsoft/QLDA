@@ -1,711 +1,496 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Web.UI.WebControls;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Dashboard;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Helpers.Security;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.ResourceTexts;
-using System.Web.UI.WebControls;
+
 namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
     public partial class CtrlDashboardOverview : BaseAdminUserControl
     {
         private const string AllProjectsValue = "__all_projects__";
 
-        #region RegisterCSSAndJS
-        protected virtual RegisterCSSAndJS RegisterCSSAndJS
-        {
-            get
-            {
-                List<string> cssLinks = new List<string>();
-                cssLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
-                    "/Controls/Dashboard/dashboard-style.css?v=3"));
-
-                List<string> jsLinks = new List<string>();
-                jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
-                    "/Styles/plugins/apexcharts/apexcharts.min.js"));
-                jsLinks.Add(this.CURRENT_PAGE.GetRelativeClientPath(
-                    "/Controls/Dashboard/dashboard-overview.js"));
-
-                return new RegisterCSSAndJS(
-                    "cpHeadVendor", "cpVendorScript",
-                    cssLinks, jsLinks);
-            }
-        }
-        protected override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-            RegisterCSSAndJS.Register();
-        }
-        #endregion
-
-        protected int TotalProjectCount { get; private set; }
-
-        protected decimal OverallProgress { get; private set; }
-
-        protected int TotalTaskCount { get; private set; }
-
-        protected int OverdueTaskCount { get; private set; }
-
-        protected decimal TotalContractValue { get; private set; }
-
-        protected string ProjectStatusChartData { get; private set; }
-
-        protected string ProjectProgressChartData { get; private set; }
-
-        protected string DashboardTextsJson { get; private set; }
-        protected int ActiveProjectCount { get; private set; }
-        protected decimal AtRiskProjectRate { get; private set; }
-        protected List<ProjectAttentionStatistic> ProjectAttentionStatistics
-        {
-            get;
-            private set;
-        }
-
-        protected CostOverviewModel CostOverview { get; private set; }
-        protected ResourceOverviewModel ResourceOverview { get; private set; }
-        protected int UpcomingMeetingCount { get; private set; }
-
-        protected List<UpcomingMeetingSummary> UpcomingMeetings { get; private set; }
-
-        protected bool IsProjectView { get; private set; }
+        protected DashboardOverviewSummary Summary { get; private set; }
+        protected List<OverviewProjectItem> OverdueProjects { get; private set; }
+        protected List<OverviewProjectItem> ProjectsWithOverdueTasks { get; private set; }
+        protected List<OverviewProjectItem> UpcomingProjects { get; private set; }
+        protected List<OverviewProjectItem> PriorityProjects { get; private set; }
+        protected List<DashboardTaskSummary> ProjectTasks { get; private set; }
+        protected List<DashboardTaskSummary> CompletedProjectTasks { get; private set; }
+        protected List<DashboardTaskSummary> OverdueProjectTasks { get; private set; }
+        protected List<DashboardTaskSummary> DueSoonProjectTasks { get; private set; }
+        protected OverviewProjectItem SelectedProject { get; private set; }
+        protected List<ResourceEmployeeLoad> OverloadedEmployees { get; private set; }
+        protected DateTime ResourceWeekStart { get; private set; }
+        protected bool ShowFinanceSignal { get; private set; }
+        protected bool ShowResourceSignal { get; private set; }
+        protected bool ShowIssueSignal { get; private set; }
+        protected bool ShowRiskSignal { get; private set; }
+        protected bool ShowProjectCostSummary { get; private set; }
+        protected bool ShowProjectResourceSummary { get; private set; }
+        protected DashboardCostModel ProjectCostSummary { get; private set; }
+        protected DashboardResourceModel ProjectResourceSummary { get; private set; }
+        protected DashboardCostModel AllProjectsCostSummary { get; private set; }
+        protected DashboardResourceModel AllProjectsResourceSummary { get; private set; }
+        protected int ProjectTasksNotStartedCount { get; private set; }
+        protected int ProjectTasksInProgressCount { get; private set; }
+        protected int ProjectTasksCompletedCount { get; private set; }
+        protected int ProjectTasksOverdueCount { get; private set; }
+        protected int ProjectResourceNoLoadCount { get; private set; }
+        protected int ProjectResourceUnderloadedCount { get; private set; }
+        protected int ProjectResourceBalancedCount { get; private set; }
+        protected int ProjectResourceOverloadedCount { get; private set; }
+        protected int AllTasksNotStartedCount { get; private set; }
+        protected int AllTasksInProgressCount { get; private set; }
+        protected int AllTasksCompletedCount { get; private set; }
+        protected int AllTasksOverdueCount { get; private set; }
+        protected int AllResourceNoLoadCount { get; private set; }
+        protected int AllResourceUnderloadedCount { get; private set; }
+        protected int AllResourceBalancedCount { get; private set; }
+        protected int AllResourceOverloadedCount { get; private set; }
+        protected int AllFinanceProjectsWithAmountsCount { get; private set; }
 
         protected bool IsProjectDashboard
         {
             get
             {
                 Guid projectId;
-                return Guid.TryParse(
-                    Page.Request.QueryString["project"],
-                    out projectId);
+                return Guid.TryParse(Page.Request.QueryString["project"], out projectId);
             }
         }
 
-        protected Guid SelectedProjectId { get; private set; }
+        protected string ProjectKpiColumnsClass
+        {
+            get
+            {
+                int count = 2;
+                if (ShowProjectCostSummary && ProjectCostSummary != null)
+                    count++;
+                if (ShowProjectResourceSummary && ProjectResourceSummary != null)
+                    count++;
+                return "row-cols-xl-" + count;
+            }
+        }
 
-        protected string SelectedProjectCode { get; private set; }
-
-        protected string SelectedProjectName { get; private set; }
-
-        protected string SingleProjectStatusText { get; private set; }
-
-        protected decimal SelectedProjectPlannedProgress { get; private set; }
-
-        protected decimal SelectedProjectVariance { get; private set; }
-
-        protected DateTime? SelectedProjectStartDate { get; private set; }
-
-        protected DateTime? SelectedProjectExpectedEndDate { get; private set; }
-
-        protected DateTime? SelectedProjectActualCompletionDate { get; private set; }
-
-        protected int SelectedProjectDueSoonTaskCount { get; private set; }
-
-        protected int SelectedProjectTaskCount { get; private set; }
-
-        protected int SelectedProjectCompletedTaskCount { get; private set; }
-
-        protected ProjectScheduleHealth SelectedProjectHealth { get; private set; }
-
-        protected int OpenRiskCount { get; private set; }
-
-        protected int OpenIssueCount { get; private set; }
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            new RegisterCSSAndJS("cpHeadVendor", "cpVendorScript",
+                new List<string> { CURRENT_PAGE.GetRelativeClientPath(
+                    "/Controls/Dashboard/dashboard-style.css?v=34") },
+                new List<string> { CURRENT_PAGE.GetRelativeClientPath(
+                    "/Styles/plugins/apexcharts/apexcharts.min.js"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                    "/Controls/Dashboard/dashboard-project-groups.js?v=1") }).Register();
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            ddlDateRange.AutoPostBack = IsProjectDashboard;
-            btnApplyDashboardFilter.Visible = !IsProjectDashboard;
+            if (!IsPostBack && !IsProjectDashboard)
+                LoadProjectFilter();
 
-            if (!IsPostBack)
+            Guid projectId;
+            var filter = new DashboardFilter
             {
-                if (!IsProjectDashboard)
-                {
-                    btnApplyDashboardFilter.Text =
-                        GetResourceText(Core.ResourceTexts.BackEndResourceKeys.APPLY);
-                    LoadProjectFilter();
-                }
+                ProjectId = Guid.TryParse(Page.Request.QueryString["project"], out projectId)
+                    ? (Guid?)projectId : null
+            };
+            Guid userId = SweetContext.Current.UserId;
+            ShowFinanceSignal = !IsProjectDashboard
+                && (DashboardMenuOptions.ShowAllForTesting
+                    || SweetContext.Current.CheckFunctionPermission(
+                        userId, ModuleKeys.DashboardCost));
+            ShowResourceSignal = !IsProjectDashboard
+                && (DashboardMenuOptions.ShowAllForTesting
+                    || SweetContext.Current.CheckFunctionPermission(
+                        userId, ModuleKeys.DashboardResource));
+            ShowIssueSignal = CURRENT_PAGE != null && CURRENT_PAGE.IsUserRight(
+                ActionKeys.View, ModuleKeys.Issue);
+            ShowRiskSignal = CURRENT_PAGE != null && CURRENT_PAGE.IsUserRight(
+                ActionKeys.View, ModuleKeys.Risk);
+            ShowProjectCostSummary = IsProjectDashboard
+                && (DashboardMenuOptions.ShowAllForTesting
+                    || SweetContext.Current.CheckFunctionPermission(
+                        userId, ModuleKeys.DashboardCost));
+            ShowProjectResourceSummary = IsProjectDashboard
+                && (DashboardMenuOptions.ShowAllForTesting
+                    || SweetContext.Current.CheckFunctionPermission(
+                        userId, ModuleKeys.DashboardResource));
+            Summary = DashboardOverviewManager.Instance.GetSimpleOverview(
+                filter, ShowFinanceSignal, ShowIssueSignal, ShowRiskSignal);
+            Summary.Projects = Summary.Projects ?? new List<OverviewProjectItem>();
+            Summary.Tasks = Summary.Tasks ?? new List<DashboardTaskSummary>();
+            Summary.Meetings = Summary.Meetings ?? new List<UpcomingMeetingSummary>();
+            Summary.Statuses = Summary.Statuses ?? new List<ProjectStatusStatistic>();
+            Summary.PendingCosts = Summary.PendingCosts ?? new List<OverviewPendingCostItem>();
+            Summary.OpenIssues = Summary.OpenIssues ?? new List<OverviewImportantIssue>();
+            Summary.ImportantIssues = Summary.ImportantIssues ?? new List<OverviewImportantIssue>();
+            Summary.RecordedRisks = Summary.RecordedRisks ?? new List<OverviewRecordedRisk>();
 
-                LoadDateRangeFilter();
-                InitDashboard();
+            if (!IsProjectDashboard)
+            {
+                AllTasksNotStartedCount = Summary.Tasks.Count(t => t.StatusCode == 0);
+                AllTasksInProgressCount = Summary.Tasks.Count(t => t.StatusCode == 1);
+                AllTasksCompletedCount = Summary.Tasks.Count(t => t.StatusCode == 2);
+                AllTasksOverdueCount = Summary.Tasks.Count(t => t.StatusCode == 3);
+                if (ShowFinanceSignal)
+                {
+                    AllProjectsCostSummary = DashboardCostManager.Instance
+                        .GetCostDashboard(new DashboardCostFilter());
+                    AllFinanceProjectsWithAmountsCount = AllProjectsCostSummary
+                        .ProjectStatistics.Count(project =>
+                            project.ReceivedPayment > 0
+                            || project.OutstandingPayment > 0);
+                }
             }
-        }
 
-
-        private void InitDashboard()
-        {
-            InitDashboard(BuildDashboardFilter());
-        }
-        private void InitDashboard(DashboardFilter filter)
-        {
-            DashboardOverviewModel overview =
-                DashboardOverviewManager.Instance.GetOverview(filter);
-            IsProjectView =
-    filter != null &&
-    filter.ProjectId.HasValue;
-
-            SelectedProjectId =
-                filter != null && filter.ProjectId.HasValue
-                    ? filter.ProjectId.Value
-                    : Guid.Empty;
-            SelectedProjectCode = string.Empty;
-            SelectedProjectName = string.Empty;
-            SelectedProjectPlannedProgress = 0;
-            SelectedProjectVariance = 0;
-            SelectedProjectStartDate = null;
-            SelectedProjectExpectedEndDate = null;
-            SelectedProjectActualCompletionDate = null;
-            SelectedProjectDueSoonTaskCount = 0;
-            SelectedProjectTaskCount = 0;
-            SelectedProjectCompletedTaskCount = 0;
-            SelectedProjectHealth = ProjectScheduleHealth.NotStarted;
-
-            OpenRiskCount = 0;
-            OpenIssueCount = 0;
-
-            if (IsProjectView)
+            OverloadedEmployees = new List<ResourceEmployeeLoad>();
+            if (ShowResourceSignal)
             {
-                var project =
-                    overview.ProjectProgressStatistics
-                        .FirstOrDefault();
-
-                if (project != null)
-                {
-                    SelectedProjectId = project.ProjectId;
-                    SelectedProjectCode = project.ProjectCode;
-                    SelectedProjectName = project.ProjectName;
-                    SelectedProjectPlannedProgress = project.PlannedProgress;
-                    SelectedProjectVariance = project.Variance;
-                    SelectedProjectStartDate = project.StartDate;
-                    SelectedProjectExpectedEndDate = project.ExpectedEndDate;
-                    SelectedProjectActualCompletionDate =
-                        project.ActualCompletionDate;
-                    SelectedProjectDueSoonTaskCount =
-                        project.DueSoonTaskCount;
-                    SelectedProjectTaskCount = project.TaskCount;
-                    SelectedProjectCompletedTaskCount =
-                        project.CompletedTaskCount;
-                    SelectedProjectHealth = project.Health;
-                }
-
-                if (overview.ProjectAttentionStatistics != null)
-                {
-                    var attention =
-                        overview.ProjectAttentionStatistics
-                            .FirstOrDefault();
-
-                    if (attention != null)
+                DashboardResourceModel resource = DashboardResourceManager.Instance
+                    .GetResourceDashboard(new DashboardResourceFilter
                     {
-                        OpenRiskCount = attention.RiskCount;
-                        OpenIssueCount = attention.IssueCount;
-                    }
-                }
-
-                var activeStatus = overview.ProjectStatusStatistics?.FirstOrDefault(x => x.Count > 0);
-                if (activeStatus != null)
-                {
-                    SingleProjectStatusText = activeStatus.Status;
-                }
-                else
-                {
-                    SingleProjectStatusText = "-";
-                }
+                        AnchorWeekStart = DateTime.Today,
+                        WeekCount = 2
+                    });
+                ResourceWeekStart = resource.AnchorWeekStart;
+                AllProjectsResourceSummary = resource;
+                AllResourceNoLoadCount = resource.EmployeeLoads.Count(
+                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 0);
+                AllResourceUnderloadedCount = resource.EmployeeLoads.Count(
+                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 1);
+                AllResourceBalancedCount = resource.EmployeeLoads.Count(
+                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 2);
+                AllResourceOverloadedCount = resource.EmployeeLoads.Count(
+                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 3);
+                OverloadedEmployees = resource.EmployeeLoads
+                    .Where(employee => employee.Status == ResourceLoadStatus.Overloaded)
+                    .ToList();
             }
 
-            TotalProjectCount =
-                overview.TotalProjectCount;
-
-            ActiveProjectCount =
-                overview.ActiveProjectCount;
-
-            OverallProgress =
-                overview.OverallProgress;
-
-            TotalTaskCount =
-                overview.TotalTaskCount;
-
-            OverdueTaskCount =
-                overview.OverdueTaskCount;
-
-            UpcomingMeetingCount =
-                overview.UpcomingMeetingCount;
-
-            UpcomingMeetings =
-                overview.UpcomingMeetings ??
-                new List<UpcomingMeetingSummary>();
-
-            AtRiskProjectRate =
-                overview.AtRiskProjectRate;
-
-            TotalContractValue =
-                overview.TotalContractValue;
-
-            ProjectStatusChartData =
-                BuildProjectStatusChartData(
-                    overview.ProjectStatusStatistics);
-
-            ProjectProgressChartData =
-                BuildProjectProgressChartData(
-                    overview.ProjectProgressStatistics);
-
-            DashboardTextsJson = ToSafeJson(new
+            SelectedProject = filter.ProjectId.HasValue
+                ? Summary.Projects.FirstOrDefault(p => p.ProjectId == filter.ProjectId.Value)
+                : null;
+            if (SelectedProject != null && ShowProjectCostSummary)
             {
-                progress = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN),
-                progressAxis = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_PROGRESS_AXIS),
-                start = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_START),
-                expected = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_EXPECTED)
-            });
-
-            ProjectAttentionStatistics =
-                overview.ProjectAttentionStatistics;
-
-            ResourceOverview =
-                overview.ResourceOverview;
-
-            CostOverview =
-                overview.CostOverview;
-        }
-
-        protected string GetVarianceText(decimal variance)
-        {
-            return (variance > 0 ? "+" : string.Empty)
-                + variance.ToString("0.##")
-                + "%";
-        }
-
-        protected string GetVarianceCss(decimal variance)
-        {
-            if (variance < 0)
-            {
-                return "text-danger";
+                ProjectCostSummary = DashboardCostManager.Instance
+                    .GetCostDashboard(new DashboardCostFilter
+                    {
+                        ProjectId = SelectedProject.ProjectId
+                    });
             }
-
-            if (variance > 0)
+            if (SelectedProject != null && ShowProjectResourceSummary)
             {
-                return "text-success";
+                ProjectResourceSummary = DashboardResourceManager.Instance
+                    .GetResourceDashboard(new DashboardResourceFilter
+                    {
+                        ProjectId = SelectedProject.ProjectId,
+                        AnchorWeekStart = DateTime.Today,
+                        WeekCount = 2
+                    });
+                ProjectResourceNoLoadCount = ProjectResourceSummary.EmployeeLoads
+                    .Count(employee => GetProjectWeekLoadCode(employee) == 0);
+                ProjectResourceUnderloadedCount = ProjectResourceSummary.EmployeeLoads
+                    .Count(employee => GetProjectWeekLoadCode(employee) == 1);
+                ProjectResourceBalancedCount = ProjectResourceSummary.EmployeeLoads
+                    .Count(employee => GetProjectWeekLoadCode(employee) == 2);
+                ProjectResourceOverloadedCount = ProjectResourceSummary.EmployeeLoads
+                    .Count(employee => GetProjectWeekLoadCode(employee) == 3);
             }
-
-            return "text-muted";
+            OverdueProjects = Summary.Projects.Where(p => p.IsOverdue).ToList();
+            ProjectsWithOverdueTasks = Summary.Projects
+                .Where(p => p.OverdueTaskCount > 0).ToList();
+            UpcomingProjects = Summary.Projects
+                .Where(p => p.StatusCode == (byte)DuAnStatus.DangThucHien
+                    && p.ExpectedEndDate.Date >= DateTime.Today
+                    && p.ExpectedEndDate.Date <= DateTime.Today.AddDays(7))
+                .OrderBy(p => p.ExpectedEndDate)
+                .ThenBy(p => p.ProjectCode)
+                .ToList();
+            PriorityProjects = Summary.Projects.Where(p => p.NeedsAttention)
+                .OrderByDescending(p => p.IsOverdue)
+                .ThenByDescending(p => p.OverdueTaskCount)
+                .ThenByDescending(p => p.ImportantIssueCount)
+                .ThenByDescending(p => p.OverdueDays)
+                .ThenBy(p => p.ProjectCode).ToList();
+            ProjectTasks = Summary.Tasks;
+            ProjectTasksNotStartedCount = ProjectTasks.Count(t => t.StatusCode == 0);
+            ProjectTasksInProgressCount = ProjectTasks.Count(t => t.StatusCode == 1);
+            ProjectTasksCompletedCount = ProjectTasks.Count(t => t.StatusCode == 2);
+            ProjectTasksOverdueCount = ProjectTasks.Count(t => t.StatusCode == 3);
+            CompletedProjectTasks = Summary.Tasks.Where(t => t.IsCompleted).ToList();
+            bool isOpenProject = SelectedProject != null
+                && SelectedProject.StatusCode != (byte)DuAnStatus.HoanThanh
+                && SelectedProject.StatusCode != (byte)DuAnStatus.KetThuc;
+            OverdueProjectTasks = isOpenProject
+                ? Summary.Tasks.Where(t => t.IsOverdue).ToList()
+                : new List<DashboardTaskSummary>();
+            DueSoonProjectTasks = Summary.Tasks.Where(t => !t.IsOverdue
+                && isOpenProject
+                && t.Deadline.HasValue
+                && t.Deadline.Value.Date >= DateTime.Today
+                && t.Deadline.Value.Date <= DateTime.Today.AddDays(7)
+                && !t.IsCompleted).ToList();
         }
-
-        protected string GetProgressBarCss(decimal progress)
-        {
-            if (progress >= 80)
-            {
-                return "bg-success";
-            }
-
-            if (progress >= 50)
-            {
-                return "bg-primary";
-            }
-
-            if (progress > 0)
-            {
-                return "bg-warning";
-            }
-
-            return "bg-secondary";
-        }
-
-        protected string GetProjectHealthText(ProjectScheduleHealth health)
-        {
-            switch (health)
-            {
-                case ProjectScheduleHealth.Completed:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
-                case ProjectScheduleHealth.OnTrack:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_HEALTH_ON_TRACK);
-                case ProjectScheduleHealth.AtRisk:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_HEALTH_AT_RISK);
-                case ProjectScheduleHealth.BehindSchedule:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_HEALTH_BEHIND);
-                case ProjectScheduleHealth.Overdue:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE);
-                default:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED);
-            }
-        }
-
-        protected string GetProjectHealthBadgeCss(
-            ProjectScheduleHealth health)
-        {
-            switch (health)
-            {
-                case ProjectScheduleHealth.Completed:
-                case ProjectScheduleHealth.OnTrack:
-                    return "bg-success-subtle text-success";
-                case ProjectScheduleHealth.AtRisk:
-                    return "bg-warning-subtle text-warning";
-                case ProjectScheduleHealth.BehindSchedule:
-                case ProjectScheduleHealth.Overdue:
-                    return "bg-danger-subtle text-danger";
-                default:
-                    return "bg-secondary-subtle text-secondary";
-            }
-        }
-
-        protected string GetProjectTimelineText()
-        {
-            if (IsSelectedProjectCompleted())
-            {
-                return SelectedProjectActualCompletionDate.HasValue
-                    ? string.Format(
-                        GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_ON),
-                        SelectedProjectActualCompletionDate.Value
-                            .ToString("dd/MM/yyyy"))
-                    : GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL);
-            }
-
-            if (!SelectedProjectStartDate.HasValue
-                || !SelectedProjectExpectedEndDate.HasValue)
-            {
-                return GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_INSUFFICIENT_TIME_INFO);
-            }
-
-            DateTime today = DateTime.Today;
-            DateTime startDate = SelectedProjectStartDate.Value.Date;
-            DateTime endDate = SelectedProjectExpectedEndDate.Value.Date;
-
-            if (startDate > today)
-            {
-                return string.Format(
-                    GetResourceText(BackEndResourceKeys.DASHBOARD_STARTS_IN_DAYS),
-                    (startDate - today).Days);
-            }
-
-            if (endDate < today)
-            {
-                return string.Format(
-                    GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_DAYS),
-                    (today - endDate).Days);
-            }
-
-            if (endDate == today)
-            {
-                return GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_ENDS_TODAY);
-            }
-
-            return string.Format(
-                GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_REMAINING),
-                (endDate - today).Days);
-        }
-
-        protected string GetProjectTimelineBadgeCss()
-        {
-            if (IsSelectedProjectCompleted())
-            {
-                return "bg-success-subtle text-success";
-            }
-
-            if (SelectedProjectStartDate.HasValue
-                && SelectedProjectStartDate.Value.Date > DateTime.Today)
-            {
-                return "bg-secondary-subtle text-secondary";
-            }
-
-            if (SelectedProjectExpectedEndDate.HasValue
-                && SelectedProjectExpectedEndDate.Value.Date < DateTime.Today)
-            {
-                return "bg-danger-subtle text-danger";
-            }
-
-            return "bg-primary-subtle text-primary";
-        }
-
-        protected string GetProjectDetailUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectDetail);
-        }
-
-        protected string GetProjectTasksUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
-        }
-
-        protected string GetProjectGanttUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectGanttCharts);
-        }
-
-        protected string GetProjectReportUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectReports);
-        }
-
-        protected string GetSelectedProjectActualCompletionText()
-        {
-            if (SelectedProjectActualCompletionDate.HasValue)
-            {
-                return SelectedProjectActualCompletionDate.Value
-                    .ToString("dd/MM/yyyy");
-            }
-
-            return IsSelectedProjectCompleted()
-                ? GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL)
-                : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED);
-        }
-
-        private bool IsSelectedProjectCompleted()
-        {
-            return SelectedProjectActualCompletionDate.HasValue
-                || SelectedProjectHealth == ProjectScheduleHealth.Completed;
-        }
-
-        protected string GetProjectRisksUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectRisks);
-        }
-
-        protected string GetProjectIssuesUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectIssues);
-        }
-
-        protected string GetProjectMeetingsUrl(Guid projectId)
-        {
-            return GetProjectUrl(projectId, RewriteURLHelper.ProjectMeets);
-        }
-
-        private string GetProjectUrl(
-            Guid projectId,
-            Func<Guid, string> routeBuilder)
-        {
-            if (projectId == Guid.Empty)
-            {
-                return string.Empty;
-            }
-
-            return CURRENT_PAGE.GetRelativeClientPath(
-                routeBuilder(projectId));
-        }
-
-        private string BuildProjectStatusChartData(
-            List<ProjectStatusStatistic> statistics)
-        {
-            if (statistics == null)
-            {
-                statistics = new List<ProjectStatusStatistic>();
-            }
-
-            var labels =
-                statistics.Select(x => x.Status).ToList();
-
-            var values =
-                statistics.Select(x => x.Count).ToList();
-
-            return ToSafeJson(
-                new
-                {
-                    labels = labels,
-                    values = values
-                });
-        }
-
-        private string BuildProjectProgressChartData(
-            List<ProjectProgressStatistic> statistics)
-        {
-            if (statistics == null)
-            {
-                statistics = new List<ProjectProgressStatistic>();
-            }
-
-            return ToSafeJson(
-                statistics.Select(x => new
-                {
-                    code = x.ProjectCode,
-                    name = x.ProjectName,
-                    detailUrl = GetProjectDetailUrl(x.ProjectId),
-                    progress = x.Progress,
-                    startDate = x.StartDate.ToString("dd/MM/yyyy"),
-                    expectedEndDate =
-                        x.ExpectedEndDate.ToString("dd/MM/yyyy")
-                })
-            );
-        }
-
-
-
 
         private void LoadProjectFilter()
         {
             ddlProjectFilter.Items.Clear();
-
-            ListItem allProjects = new ListItem(
-                GetResourceText(
-                    Core.ResourceTexts.BackEndResourceKeys.ALL_PROJECTS),
-                AllProjectsValue);
-            allProjects.Selected = true;
-            ddlProjectFilter.Items.Add(allProjects);
-
-            var projects =
-                DashboardOverviewManager.Instance.GetProjectsForFilter();
-
-            foreach (var project in projects)
-            {
-                ddlProjectFilter.Items.Add(
-                    new ListItem(
-                        project.MaDuAn + " - " + project.TenDuAn,
-                        project.IdDuAn.ToString()
-                    )
-                );
-            }
-
-            SelectProjectFromQuery();
+            ddlProjectFilter.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.ALL_PROJECTS), AllProjectsValue));
+            foreach (var project in DashboardOverviewManager.Instance.GetProjectsForFilter())
+                ddlProjectFilter.Items.Add(new ListItem(
+                    project.MaDuAn + " - " + project.TenDuAn,
+                    project.IdDuAn.ToString("D")));
         }
 
-        private void SelectProjectFromQuery()
+        protected void ddlProjectFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
             Guid projectId;
-            if (!Guid.TryParse(
-                Page.Request.QueryString["project"],
-                out projectId))
+            string route = Guid.TryParse(ddlProjectFilter.SelectedValue, out projectId)
+                ? RewriteURLHelper.DashboardOverviewForProject(projectId)
+                : RewriteURLHelper.DashboardOverview;
+            Response.Redirect(CURRENT_PAGE.GetRelativeClientPath(route), false);
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        protected int ActiveProjectCount
+        {
+            get { return Summary.Projects.Count(p =>
+                p.StatusCode == (byte)DuAnStatus.DangThucHien); }
+        }
+
+        protected string GetProjectDetailUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ProjectDetail(projectId));
+        }
+
+        protected string GetProjectTasksUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ProjectTasks(projectId));
+        }
+
+        protected string GetTaskDetailUrl(DashboardTaskSummary task)
+        {
+            return GetProjectTasksUrl(task.ProjectId)
+                + "?taskId=" + task.TaskId.ToString("D");
+        }
+
+        protected string GetProjectMeetingsUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ProjectMeets(projectId));
+        }
+
+        protected string GetProjectCostsUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ProjectCosts(projectId));
+        }
+
+        protected string GetProjectIssuesUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ProjectIssues(projectId));
+        }
+
+        protected string GetProjectRisksUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.ProjectRisks(projectId));
+        }
+
+        protected string GetProjectIssueDetailUrl(Guid projectId, Guid issueId)
+        {
+            return GetProjectIssuesUrl(projectId)
+                + "?issueId=" + issueId.ToString("D");
+        }
+
+        protected string GetProjectRiskDetailUrl(Guid projectId, Guid riskId)
+        {
+            return GetProjectRisksUrl(projectId)
+                + "?riskId=" + riskId.ToString("D");
+        }
+
+        protected string GetRiskProbabilityText(int? probability)
+        {
+            if (!probability.HasValue)
+                return "—";
+
+            string level;
+            switch (probability.Value)
             {
-                return;
+                case 10: level = "Rất thấp"; break;
+                case 25: level = "Thấp"; break;
+                case 50: level = "Trung bình"; break;
+                case 75: level = "Cao"; break;
+                case 90: level = "Rất cao"; break;
+                default: level = string.Empty; break;
             }
 
-            ListItem item = ddlProjectFilter.Items.FindByValue(
-                projectId.ToString());
-            if (item != null)
+            return string.IsNullOrEmpty(level)
+                ? probability.Value.ToString(CultureInfo.CurrentCulture) + "%"
+                : probability.Value.ToString(CultureInfo.CurrentCulture) + "% · " + level;
+        }
+
+        protected string GetRiskPlanText(OverviewRecordedRisk risk)
+        {
+            if (risk == null)
+                return "—";
+
+            List<string> plans = new List<string>();
+            if (!string.IsNullOrWhiteSpace(risk.PreventionPlan))
+                plans.Add("Phòng ngừa: " + risk.PreventionPlan.Trim());
+            if (!string.IsNullOrWhiteSpace(risk.ResponsePlan))
+                plans.Add("Ứng phó: " + risk.ResponsePlan.Trim());
+
+            return plans.Count == 0 ? "—" : string.Join(" · ", plans);
+        }
+
+        protected string GetProjectProgressUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.DashboardProgressForProject(projectId));
+        }
+
+        protected string GetProjectCostDashboardUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.DashboardCostForProject(projectId));
+        }
+
+        protected string GetProjectResourceDashboardUrl(Guid projectId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.DashboardResourceForProject(projectId));
+        }
+
+        protected string FormatProjectMoney(decimal amount)
+        {
+            return amount.ToString("#,##0", CultureInfo.CurrentCulture) + " đ";
+        }
+
+        protected int GetProjectCollectionRate()
+        {
+            return GetCollectionRate(ProjectCostSummary);
+        }
+
+        protected int GetCollectionRate(DashboardCostModel costSummary)
+        {
+            if (costSummary == null)
+                return 0;
+            decimal total = costSummary.ReceivedPayment
+                + costSummary.OutstandingPayment;
+            return total <= 0 ? 0 : (int)Math.Round(
+                costSummary.ReceivedPayment / total * 100m, 0);
+        }
+
+        protected IEnumerable<ProjectCostStatistic> GetAllProjectsFinanceRows()
+        {
+            return AllProjectsCostSummary.ProjectStatistics
+                .OrderBy(project => project.ProjectCode);
+        }
+
+        protected ResourceWeeklyLoad GetProjectWeekLoad(ResourceEmployeeLoad employee)
+        {
+            return ProjectResourceSummary == null || employee == null
+                ? null
+                : employee.WeeklyLoads.FirstOrDefault(week =>
+                    week.WeekStart == ProjectResourceSummary.AnchorWeekStart);
+        }
+
+        protected int GetProjectWeekLoadCode(ResourceEmployeeLoad employee)
+        {
+            return GetWeekLoadCode(employee, ProjectResourceSummary.AnchorWeekStart);
+        }
+
+        protected ResourceWeeklyLoad GetAllProjectsWeekLoad(ResourceEmployeeLoad employee)
+        {
+            return employee.WeeklyLoads.FirstOrDefault(week =>
+                week.WeekStart == AllProjectsResourceSummary.AnchorWeekStart);
+        }
+
+        protected int GetAllProjectsWeekLoadCode(ResourceEmployeeLoad employee)
+        {
+            return GetWeekLoadCode(employee, AllProjectsResourceSummary.AnchorWeekStart);
+        }
+
+        protected string GetAllProjectsWeekProjectNames(ResourceEmployeeLoad employee)
+        {
+            ResourceWeeklyLoad week = GetAllProjectsWeekLoad(employee);
+            return week == null ? string.Empty : string.Join(", ",
+                week.Projects.Select(project =>
+                    project.ProjectCode + " · " + project.ProjectName));
+        }
+
+        private static int GetWeekLoadCode(ResourceEmployeeLoad employee, DateTime weekStart)
+        {
+            ResourceWeeklyLoad week = employee.WeeklyLoads.FirstOrDefault(
+                item => item.WeekStart == weekStart);
+            if (week == null || week.AllocatedDays <= 0)
+                return 0;
+            if (week.Status == ResourceLoadStatus.Overloaded)
+                return 3;
+            return week.Status == ResourceLoadStatus.Balanced ? 2 : 1;
+        }
+
+        protected string GetProjectWeekLoadText(int code)
+        {
+            switch (code)
             {
-                ddlProjectFilter.SelectedValue = item.Value;
+                case 1: return "Thiếu tải";
+                case 2: return "Đủ tải";
+                case 3: return "Quá tải";
+                default: return "Không tải";
             }
         }
 
-
-        protected void btnApplyDashboardFilter_Click(
-    object sender,
-    EventArgs e)
+        protected string GetProjectResourceEmployeeUrl(Guid employeeId)
         {
-            DashboardFilter filter = BuildDashboardFilter();
-
-            InitDashboard(filter);
+            return GetProjectResourceDashboardUrl(SelectedProject.ProjectId)
+                + "&resourceWeek=" + ProjectResourceSummary.AnchorWeekStart.ToString("yyyy-MM-dd")
+                + "&resourceEmployee=" + employeeId.ToString("D");
         }
 
-        protected void ddlDateRange_SelectedIndexChanged(
-            object sender,
-            EventArgs e)
+        protected string GetIssueImpactText(int impactLevel)
         {
-            InitDashboard(BuildDashboardFilter());
-        }
-
-        private void LoadDateRangeFilter()
-        {
-            ddlDateRange.Items.Clear();
-            
-            ddlDateRange.Items.Add(new ListItem(GetResourceText(Core.ResourceTexts.BackEndResourceKeys.THIS_WEEK), "2"));
-            
-            ListItem thisMonth = new ListItem(GetResourceText(Core.ResourceTexts.BackEndResourceKeys.THIS_MONTH), "3");
-            thisMonth.Selected = true;
-            ddlDateRange.Items.Add(thisMonth);
-            
-            ddlDateRange.Items.Add(new ListItem(GetResourceText(Core.ResourceTexts.BackEndResourceKeys.THIS_QUARTER), "4"));
-            
-            ddlDateRange.Items.Add(new ListItem(GetResourceText(Core.ResourceTexts.BackEndResourceKeys.THIS_YEAR), "5"));
-        }
-
-        private DashboardFilter BuildDashboardFilter()
-        {
-            Guid? projectId = null;
-
-            if (!IsProjectDashboard
-                && ddlProjectFilter != null
-                && !string.IsNullOrEmpty(
-                    ddlProjectFilter.SelectedValue))
+            switch (impactLevel)
             {
-                Guid parsedProjectId;
-
-                if (Guid.TryParse(
-                    ddlProjectFilter.SelectedValue,
-                    out parsedProjectId))
-                {
-                    projectId = parsedProjectId;
-                }
-            }
-
-            if (!projectId.HasValue)
-            {
-                Guid queryProjectId;
-                if (Guid.TryParse(
-                    Page.Request.QueryString["project"],
-                    out queryProjectId))
-                {
-                    projectId = queryProjectId;
-                }
-            }
-
-            DashboardDateRange dateRange = DashboardDateRange.ThisMonth;
-            if (ddlDateRange.SelectedValue != "")
-            {
-                dateRange = (DashboardDateRange)int.Parse(ddlDateRange.SelectedValue);
-            }
-
-            DateTime fromDate = GetFromDate(dateRange);
-            DateTime toDate = GetToDate(dateRange);
-
-            return new DashboardFilter
-            {
-                ProjectId = projectId,
-                DateRange = dateRange,
-                FromDate = fromDate,
-                ToDate = toDate
-            };
-        }
-
-        private DateTime GetFromDate(DashboardDateRange dateRange)
-        {
-            DateTime today = DateTime.Today;
-            switch (dateRange)
-            {
-                case DashboardDateRange.Today: return today;
-                case DashboardDateRange.ThisWeek:
-                    int diff = (7 + (int)today.DayOfWeek - (int)DayOfWeek.Monday) % 7;
-                    return today.AddDays(-diff);
-                case DashboardDateRange.ThisMonth: return new DateTime(today.Year, today.Month, 1);
-                case DashboardDateRange.ThisQuarter:
-                    int startMonth = ((today.Month - 1) / 3) * 3 + 1;
-                    return new DateTime(today.Year, startMonth, 1);
-                case DashboardDateRange.ThisYear: return new DateTime(today.Year, 1, 1);
-                default: return today;
+                case 1: return GetResourceText(BackEndResourceKeys.VERY_LOW);
+                case 2: return GetResourceText(BackEndResourceKeys.LOW);
+                case 3: return GetResourceText(BackEndResourceKeys.MEDIUM);
+                case 4: return GetResourceText(BackEndResourceKeys.HIGH);
+                case 5: return GetResourceText(BackEndResourceKeys.VERY_HIGH);
+                default: return "—";
             }
         }
 
-        private DateTime GetToDate(DashboardDateRange dateRange)
+        protected string GetEmployeeResourceUrl(Guid employeeId)
         {
-            DateTime today = DateTime.Today;
-            switch (dateRange)
-            {
-                case DashboardDateRange.Today: return today;
-                case DashboardDateRange.ThisWeek:
-                    int diff = (7 + (int)today.DayOfWeek - (int)DayOfWeek.Monday) % 7;
-                    return today.AddDays(-diff).AddDays(6);
-                case DashboardDateRange.ThisMonth:
-                    return new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
-                case DashboardDateRange.ThisQuarter:
-                    int endMonth = ((today.Month - 1) / 3) * 3 + 3;
-                    return new DateTime(today.Year, endMonth, DateTime.DaysInMonth(today.Year, endMonth));
-                case DashboardDateRange.ThisYear: return new DateTime(today.Year, 12, 31);
-                default: return today;
-            }
+            return GetResourceDashboardUrl()
+                + "?resourceWeek=" + ResourceWeekStart.ToString("yyyy-MM-dd")
+                + "&resourceEmployee=" + employeeId.ToString("D");
         }
 
-        private static string ToSafeJson(object value)
+        protected string GetResourceDashboardUrl()
         {
-            return JsonConvert.SerializeObject(value)
-                .Replace("</", "<\\/");
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.DashboardResource);
         }
 
+        protected string FormatMoney(decimal amount)
+        {
+            return amount.ToString("#,##0", CultureInfo.CurrentCulture)
+                + GetResourceText(BackEndResourceKeys.DASHBOARD_CURRENCY_SUFFIX);
+        }
     }
 }

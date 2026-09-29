@@ -7,6 +7,13 @@ using System.Web.Security;
 
 namespace SweetSoft.QLDA.BackOffice.Common
 {
+    // Chỉ mở phần hiển thị menu trong giai đoạn kiểm thử. Quyền truy cập
+    // trang vẫn do PAGE_FUNCTION_CODE/BaseAdminPage kiểm tra theo function.
+    internal static class DashboardMenuOptions
+    {
+        internal const bool ShowAllForTesting = true;
+    }
+
     public class RewriteURLHelper
     {
         public static string Error404 => "/404";

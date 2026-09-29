@@ -793,6 +793,7 @@
     <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
     <Content Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx" />
     <Content Include="Controls\Dashboard\dashboard-overview.js" />
+    <Content Include="Controls\Dashboard\dashboard-project-groups.js" />
     <Content Include="Controls\Dashboard\dashboard-cost.js" />
     <Content Include="Controls\Dashboard\dashboard-progress.js" />
     <Content Include="Controls\Dashboard\dashboard-resource.js" />

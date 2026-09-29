@@ -9,7 +9,7 @@
     TagPrefix="SweetSoft" TagName="CtrlProjectDashboardTabs" %>
 
 <div class="container-fluid dashboard-progress">
-    <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3 <%= IsProjectDashboard ? "dashboard-project-heading" : string.Empty %>">
         <div class="flex-grow-1">
             <h4 class="mb-1 <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_TITLE) %></h4>
 
@@ -23,7 +23,8 @@
                         runat="server"
                         CssClass="form-select"
                         EmptyItemValue="-1"
-                        SimpleInit="true">
+                        SimpleInit="true"
+                        OnSelectedIndexChanged="ddlProjectFilter_SelectedIndexChanged">
                     </SweetSoft:ExtraDropdown>
                 </div>
 
@@ -37,7 +38,12 @@
 
                 <div class="col-12 col-sm-6 col-md-4 col-xl-3 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
                     <label class="form-label mb-1 text-nowrap <%= IsProjectDashboard ? "d-none" : string.Empty %>">
-                        <%= GetResourceText(BackEndResourceKeys.DATE_RANGE) %>
+                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_DATE_RANGE_LABEL) %>
+                        <span class="text-muted ms-1" role="img" tabindex="0"
+                              title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_FILTER_DESC) %>"
+                              aria-label="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_FILTER_DESC) %>">
+                            <i class="bx bx-info-circle"></i>
+                        </span>
                     </label>
                     <SweetSoft:ExtraDropdown
                         ID="ddlDateRange"
@@ -49,16 +55,6 @@
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-12 col-md-3 col-xl-auto mt-3 mt-md-0 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
-                    <SweetSoft:ExtraButton
-                        ID="btnApplyDashboardFilter"
-                        runat="server"
-                        CssClass="w-100 px-4"
-                        ButtonStyle="Primary"
-                        ButtonIcon="Search"
-                        OnClick="btnApplyDashboardFilter_Click">
-                    </SweetSoft:ExtraButton>
-                </div>
             </div>
 
         </div>
@@ -74,216 +70,381 @@
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-6 g-3 mb-4">
-        <div class="col">
-            <div class="card h-100 border-0 shadow-sm progress-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AVERAGE_PROGRESS) %></p>
-                        <h3 class="mb-0 text-primary"><%= Model.OverallProgress.ToString("0.##") %>%</h3>
-                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_COUNT), Model.TotalProjectCount) %></small>
-                    </div>
-                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary progress-kpi-icon">
-                        <i class="bx bx-trending-up fs-4"></i>
-                    </span>
-                </div>
-            </div>
-        </div>
+    <%-- TẠM THỜI: Chú thích cách hiểu số liệu để nhóm kiểm tra; xóa cả khối này khi đã chốt nội dung. --%>
+    <details class="alert alert-light border mb-3" open>
+        <summary class="fw-semibold" style="cursor: pointer">Chú thích số liệu (tạm thời)</summary>
+        <ul class="small mb-0 mt-2 ps-3">
+            <li><strong>Phạm vi công việc:</strong> khi lọc theo thời gian dự án, các KPI đếm toàn bộ công việc của những dự án giao với khoảng đã chọn; công việc gốc chỉ dùng để nhóm giai đoạn không bị đếm thêm khi đã có việc con.</li>
+            <li><strong>Công việc quá hạn:</strong> chưa hoàn thành và đã qua ngày kết thúc dự kiến.</li>
+            <% if (!Model.IsSingleProject) { %>
+            <li><strong>Dự án cần chú ý:</strong> dự án quá hạn, tiến độ thực tế thấp hơn kế hoạch trên 5 điểm phần trăm, hoặc có công việc quá hạn. Mỗi dự án chỉ đếm một lần.</li>
+            <% } %>
+            <li><strong>Tiến độ thực tế:</strong> trung bình % hoàn thành công việc; dự án có trạng thái hoàn thành được tính 100%. <strong>Kế hoạch:</strong> tỷ lệ thời gian đã qua từ ngày bắt đầu đến hạn dự kiến, theo lịch làm việc nếu có cấu hình, nếu không thì theo ngày lịch.</li>
+            <li><strong>Độ lệch tiến độ:</strong> % thực tế trừ % kế hoạch, tính bằng điểm phần trăm; số âm nghĩa là thực tế đang chậm hơn kế hoạch. Biểu đồ “Trạng thái công việc” đếm số việc, không cộng các tỷ lệ %.</li>
+        </ul>
+    </details>
 
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 <%= Model.IsSingleProject ? "row-cols-xl-4 dashboard-kpi-grid-four" : "row-cols-xl-5" %> g-3 mb-4 progress-kpi-grid">
         <div class="col">
+            <a href="#progressTaskDetailsModal" class="d-block h-100 text-decoration-none text-reset dashboard-kpi-trigger"
+               data-bs-toggle="modal" aria-controls="progressTaskDetailsModal" data-task-filter="all"
+               data-task-title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_TOTAL_TASKS) %>">
             <div class="card h-100 border-0 shadow-sm progress-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TOTAL_TASKS) %></p>
                         <h3 class="mb-0"><%= Model.TotalTaskCount %></h3>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_FILTERED_PROJECT_TASKS) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-info-subtle text-info progress-kpi-icon">
                         <i class="bx bx-task fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="col">
+            <a href="#progressTaskDetailsModal" class="d-block h-100 text-decoration-none text-reset dashboard-kpi-trigger"
+               data-bs-toggle="modal" aria-controls="progressTaskDetailsModal" data-task-filter="completed"
+               data-task-title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COMPLETED_TASKS) %>">
             <div class="card h-100 border-0 shadow-sm progress-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COMPLETED_TASKS) %></p>
                         <h3 class="mb-0 text-success"><%= Model.CompletedTaskCount %></h3>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_REACHED_100) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-success-subtle text-success progress-kpi-icon">
                         <i class="bx bx-check-circle fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="col">
+            <a href="#progressTaskDetailsModal" class="d-block h-100 text-decoration-none text-reset dashboard-kpi-trigger"
+               data-bs-toggle="modal" aria-controls="progressTaskDetailsModal" data-task-filter="in-progress"
+               data-task-title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS) %>">
             <div class="card h-100 border-0 shadow-sm progress-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
                         <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS) %></p>
                         <h3 class="mb-0 text-info"><%= Model.InProgressTaskCount %></h3>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_RANGE_1_99) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-info-subtle text-info progress-kpi-icon">
                         <i class="bx bx-loader-circle fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="col">
+            <a href="#progressTaskDetailsModal" class="d-block h-100 text-decoration-none text-reset dashboard-kpi-trigger"
+               data-bs-toggle="modal" aria-controls="progressTaskDetailsModal" data-task-filter="overdue"
+               data-task-title="<%: GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %>">
             <div class="card h-100 border-0 shadow-sm progress-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE) %></p>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.OVERDUE_TASKS) %></p>
                         <h3 class="mb-0 text-danger"><%= Model.OverdueTaskCount %></h3>
-                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DUE_SOON_TASK_COUNT), Model.DueSoonTaskCount) %></small>
                     </div>
                     <span class="avatar-title rounded-circle bg-danger-subtle text-danger progress-kpi-icon">
                         <i class="bx bx-error-circle fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
 
+        <% if (!Model.IsSingleProject) { %>
         <div class="col">
+            <a href="#needsAttentionProjectsModal" class="d-block h-100 text-decoration-none text-reset dashboard-kpi-trigger"
+               data-bs-toggle="modal" aria-controls="needsAttentionProjectsModal">
             <div class="card h-100 border-0 shadow-sm progress-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <% if (Model.IsSingleProject) { %>
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_VARIANCE) %></p>
-                        <h3 class="mb-0 <%= GetSelectedProjectVarianceCss() %>">
-                            <%= GetSelectedProjectVarianceText() %>
-                        </h3>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_MINUS_PLAN) %></small>
-                        <% } else { %>
                         <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NEEDS_ATTENTION) %></p>
                         <h3 class="mb-0 text-warning"><%= Model.NeedsAttentionProjectCount %></h3>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NEEDS_ATTENTION_DESC) %></small>
-                        <% } %>
                     </div>
-                    <% if (Model.IsSingleProject) { %>
-                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary progress-kpi-icon">
-                        <i class="bx bx-git-compare fs-4"></i>
-                    </span>
-                    <% } else { %>
                     <span class="avatar-title rounded-circle bg-warning-subtle text-warning progress-kpi-icon">
                         <i class="bx bx-alarm-exclamation fs-4"></i>
                     </span>
+                </div>
+            </div>
+            </a>
+        </div>
+        <% } %>
+    </div>
+
+    <div class="modal fade" id="progressTaskDetailsModal" tabindex="-1" aria-labelledby="progressTaskDetailsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="progressTaskDetailsModalTitle">
+                        <span id="progressTaskDetailsModalHeading"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TOTAL_TASKS) %></span>
+                        <span class="badge bg-primary-subtle text-primary ms-1" id="progressTaskDetailsCount"><%= AllTaskDetails.Count %></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
+                </div>
+                <div class="modal-body">
+                    <% if (AllTaskDetails.Count > 0) { %>
+                    <div class="row g-2 mb-3">
+                        <% if (!Model.IsSingleProject) { %>
+                        <div class="col-12 col-md-5">
+                            <label for="progressTaskProjectFilter" class="form-label mb-1"><%= GetResourceText(BackEndResourceKeys.PROJECT) %></label>
+                            <select id="progressTaskProjectFilter" class="form-select">
+                                <option value=""><%= GetResourceText(BackEndResourceKeys.ALL_PROJECTS) %></option>
+                                <% foreach (var project in TaskProjectFilterOptions) { %>
+                                <option value="<%= project.ProjectId %>"><%: project.ProjectCode %> - <%: project.ProjectName %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <% } %>
+                        <div class="col-12 <%= Model.IsSingleProject ? "" : "col-md-7" %>">
+                            <label for="progressTaskDetailsSearch" class="form-label mb-1"><%= GetResourceText(BackEndResourceKeys.SEARCH) %></label>
+                            <div class="input-group dashboard-list-search">
+                                <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                <input type="search" id="progressTaskDetailsSearch" class="form-control" placeholder="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>" aria-label="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>" />
+                            </div>
+                        </div>
+                    </div>
                     <% } %>
+                    <div class="table-responsive" id="progressTaskDetailsTableContainer">
+                        <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0" id="progressTaskDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DEADLINE) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %></th>
+                                </tr>
+                            </thead>
+                            <tbody id="progressTaskDetailsBody" data-project-group-count-format="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_COUNT) %>">
+                                <% foreach (var task in AllTaskDetails) { %>
+                                <tr data-task-status="<%= task.StatusCode %>"
+                                    data-task-project-id="<%= task.ProjectId %>"
+                                    data-group-project-id="<%= task.ProjectId %>"
+                                    data-group-project-code="<%: task.ProjectCode %>"
+                                    data-group-project-name="<%: task.ProjectName %>">
+                                    <td>
+                                        <div class="fw-semibold"><%: task.TaskCode %> - <%: task.TaskName %></div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold"><%: task.ProjectCode %></div>
+                                        <div class="small text-muted"><%: task.ProjectName %></div>
+                                    </td>
+                                    <td><%: task.PriorityName %></td>
+                                    <td class="text-nowrap">
+                                        <%= task.Deadline.HasValue ? task.Deadline.Value.ToString("dd/MM/yyyy") : "-" %>
+                                        <% if (task.IsDueSoon || task.StatusCode == TaskOverdueStatusCode) { %>
+                                        <div class="small text-muted"><%: GetTaskDeadlineText(task) %></div>
+                                        <% } %>
+                                    </td>
+                                    <td class="text-center"><%= task.Progress %>%</td>
+                                    <td class="text-center"><span class="badge <%= GetTaskStatusBadgeCss(task) %>"><%: task.Status %></span></td>
+                                    <td class="text-center">
+                                        <a href="<%: GetProjectTaskDetailUrl(task.ProjectId, task.TaskId) %>" class="btn btn-sm btn-outline-primary">
+                                            <%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="progressTaskDetailsEmpty" class="text-center text-muted py-4 d-none">
+                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_TASKS_IN_PERIOD) %>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><%= GetResourceText(BackEndResourceKeys.CLOSE) %></button>
                 </div>
             </div>
         </div>
     </div>
 
+    <% if (!Model.IsSingleProject) { %>
+    <div class="modal fade" id="needsAttentionProjectsModal" tabindex="-1" aria-labelledby="needsAttentionProjectsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="needsAttentionProjectsModalTitle">
+                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NEEDS_ATTENTION) %>
+                        <span class="badge bg-warning-subtle text-warning ms-1"><%= NeedsAttentionProjects.Count %></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
+                </div>
+                <div class="modal-body">
+                    <% if (NeedsAttentionProjects.Count > 0) { %>
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="input-group dashboard-list-search">
+                            <span class="input-group-text"><i class="bx bx-search"></i></span>
+                            <input type="search" class="form-control" placeholder="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>" aria-label="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>" data-dashboard-list-search="progressNeedsAttentionProjectsBody" />
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ASSESSMENT) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_VARIANCE) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %></th>
+                                </tr>
+                            </thead>
+                            <tbody id="progressNeedsAttentionProjectsBody">
+                                <% foreach (var project in NeedsAttentionProjects) { %>
+                                <tr data-search-row="true">
+                                    <td>
+                                        <div class="fw-semibold"><%: project.ProjectCode %></div>
+                                        <div class="small text-muted"><%: project.ProjectName %></div>
+                                    </td>
+                                    <td><span class="badge <%= GetHealthBadgeCss(project.Health) %>"><%= GetHealthText(project.Health) %></span></td>
+                                    <td class="text-center"><%= project.ActualProgress.ToString("0.##") %>%</td>
+                                    <td class="text-center"><span class="<%= GetVarianceCss(project.Health, project.Variance) %>"><%= project.Variance > 0 ? "+" : string.Empty %><%= project.Variance.ToString("0.##") %>%</span></td>
+                                    <td class="text-center">
+                                        <a href="<%: GetProjectDetailUrl(project.ProjectId) %>" class="btn btn-sm btn-outline-primary">
+                                            <%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                <tr data-search-empty class="d-none">
+                                    <td colspan="5" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_DATA) %></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <% } else { %>
+                    <div class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_PROJECTS_FILTER) %></div>
+                    <% } %>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><%= GetResourceText(BackEndResourceKeys.CLOSE) %></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <script type="text/javascript">
+        (function () {
+            var modal = document.getElementById("progressTaskDetailsModal");
+            if (!modal) return;
+
+            modal.addEventListener("show.bs.modal", function (event) {
+                var trigger = event.relatedTarget;
+                if (!trigger) return;
+
+                var activeFilter = trigger.getAttribute("data-task-filter") || "all";
+                var projectFilter = trigger.getAttribute("data-task-project-id") || "";
+                var statusCodeFilter = trigger.getAttribute("data-task-status-code") || "";
+                var title = trigger.getAttribute("data-task-title") || "";
+                var titleElement = document.getElementById("progressTaskDetailsModalHeading");
+                var countElement = document.getElementById("progressTaskDetailsCount");
+                var tableContainer = document.getElementById("progressTaskDetailsTableContainer");
+                var emptyState = document.getElementById("progressTaskDetailsEmpty");
+                var searchInput = document.getElementById("progressTaskDetailsSearch");
+                var projectSelect = document.getElementById("progressTaskProjectFilter");
+                var rows = modal.querySelectorAll("tbody tr[data-task-status]");
+                var groups = window.DashboardProjectGroups
+                    ? window.DashboardProjectGroups.create(document.getElementById("progressTaskDetailsBody"))
+                    : null;
+                if (groups) groups.reset();
+
+                if (titleElement && title) {
+                    titleElement.textContent = title;
+                }
+
+                if (searchInput) searchInput.value = "";
+                if (projectSelect) projectSelect.value = projectFilter;
+                function applyTaskFilter() {
+                    var query = searchInput
+                        ? (searchInput.value || "").trim().toLocaleLowerCase()
+                        : "";
+                    var visibleCount = 0;
+
+                    for (var index = 0; index < rows.length; index++) {
+                        var row = rows[index];
+                        var status = row.getAttribute("data-task-status");
+                        var rowProjectId = row.getAttribute("data-task-project-id") || "";
+                        var matchesFilter = statusCodeFilter
+                            ? status === statusCodeFilter
+                            : activeFilter === "all"
+                                || (activeFilter === "completed" && status === "2")
+                                || (activeFilter === "in-progress" && status === "1")
+                                || (activeFilter === "overdue" && status === "3");
+                        var selectedProjectFilter = projectSelect
+                            ? projectSelect.value
+                            : projectFilter;
+                        var matchesProject = !selectedProjectFilter
+                            || rowProjectId.toLowerCase() === selectedProjectFilter.toLowerCase();
+                        var matchesSearch = !query || row.textContent
+                            .toLocaleLowerCase().indexOf(query) >= 0;
+                        var isVisible = matchesFilter
+                            && matchesProject
+                            && matchesSearch;
+
+                        row.classList.toggle("d-none", !isVisible);
+                        if (isVisible) visibleCount++;
+                    }
+
+                    if (countElement) countElement.textContent = visibleCount;
+                    if (groups) groups.refresh(Boolean(query));
+                    if (tableContainer) tableContainer.classList.toggle("d-none", visibleCount === 0);
+                    if (emptyState) emptyState.classList.toggle("d-none", visibleCount > 0);
+                }
+
+                if (searchInput) {
+                    searchInput.oninput = applyTaskFilter;
+                }
+                if (projectSelect) {
+                    projectSelect.onchange = applyTaskFilter;
+                }
+                applyTaskFilter();
+            });
+        })();
+    </script>
+
     <div class="row g-3 mb-3 progress-summary-row">
         <div class="col-12 col-xl-8 d-flex">
             <div class="card w-100 border-0 shadow-sm overview-project-summary-card progress-schedule-card">
                 <div class="card-body">
-                    <% if (Model.IsSingleProject && Model.ProjectScheduleStatistics.Count > 0) {
-                           var selectedProject = Model.ProjectScheduleStatistics[0]; %>
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-3">
                         <div>
                             <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_VS_PLAN) %></h5>
-                            <p class="text-muted mb-0">
-                                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_VS_PLAN_DESC) %>
-                            </p>
-                        </div>
-                        <span class="badge <%= GetHealthBadgeCss(selectedProject.Health) %> mt-2 mt-md-0">
-                            <%= GetHealthText(selectedProject.Health) %>
-                        </span>
-                    </div>
-
-                    <a href="<%: GetProjectDetailUrl(selectedProject.ProjectId) %>" class="d-block text-decoration-none text-reset">
-                        <div class="overview-project-identity p-3 rounded mb-3">
-                            <div class="small text-muted mb-1"><%: selectedProject.ProjectCode %></div>
-                            <div class="fw-bold fs-5"><%: selectedProject.ProjectName %></div>
-                        </div>
-                    </a>
-
-                    <% if (Model.CurrentStage != null) { %>
-                    <div class="overview-project-identity px-3 py-2 rounded mb-3">
-                        <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CURRENT_PROJECT_STAGE) %></div>
-                        <div class="fw-semibold"><%: Model.CurrentStage.Name %></div>
-                    </div>
-                    <% } %>
-
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <a href="<%: GetProjectGanttUrl(selectedProject.ProjectId) %>" class="btn btn-sm btn-outline-primary">
-                            <i class="bx bx-git-branch me-1"></i><%= GetResourceText(BackEndResourceKeys.GANTT_CHART) %>
-                        </a>
-                        <a href="<%: GetProjectReportUrl(selectedProject.ProjectId) %>" class="btn btn-sm btn-outline-primary">
-                            <i class="bx bx-bar-chart-alt-2 me-1"></i><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %>
-                        </a>
-                    </div>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-4">
-                            <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></div>
-                            <div class="fw-semibold"><%= selectedProject.StartDate.ToString("dd/MM/yyyy") %></div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_EXPECTED_COMPLETION) %></div>
-                            <div class="fw-semibold"><%= selectedProject.ExpectedEndDate.ToString("dd/MM/yyyy") %></div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="small text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_COMPLETION) %></div>
-                            <div class="fw-semibold"><%= GetActualCompletionText(selectedProject) %></div>
+                            <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_VS_PLAN_DESC) %></p>
+                            <% if (Model.IsSingleProject && Model.ProjectScheduleStatistics.Count > 0) {
+                                   var selectedProject = Model.ProjectScheduleStatistics[0]; %>
+                            <div class="small text-muted mt-2"><strong><%: selectedProject.ProjectCode %></strong> · <%: selectedProject.ProjectName %></div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <a href="<%: GetProjectGanttUrl(selectedProject.ProjectId) %>" class="btn btn-sm btn-outline-primary">
+                                    <i class="bx bx-git-branch me-1"></i><%= GetResourceText(BackEndResourceKeys.GANTT_CHART) %>
+                                </a>
+                                <a href="<%: GetProjectReportUrl(selectedProject.ProjectId) %>" class="btn btn-sm btn-outline-primary">
+                                    <i class="bx bx-bar-chart-alt-2 me-1"></i><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %>
+                                </a>
+                                <% if (Model.ProjectStages.Count > 0) { %>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#progressStagesModal">
+                                    <i class="bx bx-layer me-1"></i><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_STAGES) %>
+                                    <span class="ms-1"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_STAGES_BUTTON_SUMMARY), CompletedStageCount, Model.ProjectStages.Count) %></span>
+                                    <% if (OverdueStageCount > 0) { %><span class="badge bg-danger ms-1"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_STAGE_OVERDUE_COUNT), OverdueStageCount) %></span><% } %>
+                                </button>
+                                <% } %>
+                            </div>
+                            <% } %>
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-medium"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS) %></span>
-                            <span class="fw-bold text-primary"><%= selectedProject.ActualProgress.ToString("0.##") %>%</span>
-                        </div>
-                        <div class="progress overview-progress-bar">
-                            <div class="progress-bar <%= GetProgressBarCss(selectedProject.ActualProgress) %>"
-                                 role="progressbar"
-                                 style="width: <%= GetPercentStyle(selectedProject.ActualProgress) %>%;"
-                                 aria-valuenow="<%= selectedProject.ActualProgress %>"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-medium"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PLANNED_PROGRESS) %></span>
-                            <span class="fw-bold text-warning"><%= selectedProject.PlannedProgress.ToString("0.##") %>%</span>
-                        </div>
-                        <div class="progress overview-progress-bar">
-                            <div class="progress-bar bg-warning"
-                                 role="progressbar"
-                                 style="width: <%= GetPercentStyle(selectedProject.PlannedProgress) %>%;"
-                                 aria-valuenow="<%= selectedProject.PlannedProgress %>"
-                                 aria-valuemin="0"
-                                 aria-valuemax="100"></div>
-                        </div>
-                    </div>
-
-                    <div class="overview-variance-box d-flex flex-column flex-sm-row align-items-sm-center justify-content-between p-3 rounded">
-                        <div>
-                            <div class="fw-semibold"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_VARIANCE) %></div>
-                            <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_VARIANCE_DESC) %></div>
-                        </div>
-                        <div class="fs-4 mt-2 mt-sm-0 <%= GetVarianceCss(selectedProject.Health, selectedProject.Variance) %>">
-                            <%= GetVarianceText(selectedProject.Variance) %>%
-                        </div>
-                    </div>
-                    <% } else { %>
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_VS_PLAN) %></h5>
-                    <p class="text-muted mb-3">
-                        <%= GetResourceText(BackEndResourceKeys.DASHBOARD_PLAN_TIME_DESC) %>
-                    </p>
                     <div id="progress-schedule-chart-wrapper" class="progress-chart-scroll">
                         <div id="progress-schedule-chart"></div>
                     </div>
-                    <% } %>
+                    <a id="progressProjectTaskTrigger" href="#progressTaskDetailsModal" class="d-none"
+                       data-bs-toggle="modal" data-task-filter="all" aria-hidden="true" tabindex="-1"></a>
                 </div>
             </div>
         </div>
@@ -294,14 +455,66 @@
                     <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_STATUS) %></h5>
                     <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_STATUS_DESC) %></p>
                     <div id="progress-task-status-chart"></div>
+                    <a id="progressTaskStatusCategoryTrigger" href="#progressTaskDetailsModal" class="d-none"
+                       data-bs-toggle="modal" data-task-filter="all" aria-hidden="true" tabindex="-1"></a>
                 </div>
             </div>
         </div>
     </div>
 
+    <% if (Model.IsSingleProject && Model.ProjectStages.Count > 0) { %>
+    <div class="modal fade" id="progressStagesModal" tabindex="-1" aria-labelledby="progressStagesModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="progressStagesModalTitle"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_STAGES) %></h5>
+                        <span class="small text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_STAGES_COMPLETED_COUNT), CompletedStageCount, Model.ProjectStages.Count) %></span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive"><table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
+                        <thead><tr>
+                            <th><%= GetResourceText(BackEndResourceKeys.PHASE) %></th>
+                            <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></th>
+                            <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DEADLINE) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_STAGE_TASK_COMPLETION) %></th>
+                        </tr></thead>
+                        <tbody>
+                        <% foreach (var stage in Model.ProjectStages) { %>
+                        <tr>
+                            <td><strong><%: stage.Name %></strong>
+                                <% if (stage.Tasks.Count > 0) { %>
+                                <details class="mt-1"><summary class="small text-primary" style="cursor:pointer"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_COUNT), stage.Tasks.Count) %></summary>
+                                    <ul class="list-unstyled mb-0 mt-2">
+                                    <% foreach (var task in stage.Tasks) { %>
+                                        <li class="mb-1"><a href="<%: GetProjectTaskDetailUrl(stage.ProjectId, task.TaskId) %>"><%: task.Code %> · <%: task.Name %></a></li>
+                                    <% } %>
+                                    </ul>
+                                </details>
+                                <% } %>
+                            </td>
+                            <td class="text-nowrap"><%= stage.StartDate.HasValue ? stage.StartDate.Value.ToString("dd/MM/yyyy") : "—" %></td>
+                            <td class="text-nowrap"><%= stage.ExpectedEndDate.HasValue ? stage.ExpectedEndDate.Value.ToString("dd/MM/yyyy") : GetResourceText(BackEndResourceKeys.DASHBOARD_STAGE_NO_DEADLINE) %>
+                                <% if (stage.IsOverdue) { %><small class="d-block text-danger"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_OVERDUE), stage.DaysOverdue) %></small><% } %>
+                            </td>
+                            <td class="text-center"><span class="badge <%= GetStageBadgeCss(stage) %>"><%= GetStageStatusText(stage) %></span></td>
+                            <td class="text-center"><%= stage.CompletedTaskCount %>/<%= stage.Tasks.Count %></td>
+                        </tr>
+                        <% } %>
+                        </tbody>
+                    </table></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <% if (Model.IsSingleProject) { %>
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
-            <% if (Model.IsSingleProject) { %>
             <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
                 <div>
                     <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_PROGRESS) %></h5>
@@ -319,27 +532,22 @@
                     <thead>
                         <tr>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                            <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DEADLINE) %></th>
                             <th style="min-width: 190px;"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN) %></th>
                             <th class="text-center"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="progressProjectTaskListBody">
                         <% foreach (var task in Model.TaskProgressDetails) { %>
-                        <tr>
+                        <tr data-search-row="true">
                             <td>
-                                <a href="<%: GetProjectTasksUrl(task.ProjectId) %>" class="text-decoration-none text-reset">
+                                <a href="<%: GetProjectTaskDetailUrl(task.ProjectId, task.TaskId) %>" class="text-decoration-none text-reset">
                                     <div class="fw-semibold"><%: task.TaskCode %> - <%: task.TaskName %></div>
                                 </a>
                             </td>
-                            <td>
-                                <a href="<%: GetProjectDetailUrl(task.ProjectId) %>" class="d-block text-decoration-none text-reset">
-                                    <div><%: task.ProjectCode %></div>
-                                    <div class="small text-muted"><%: task.ProjectName %></div>
-                                </a>
-                            </td>
+                            <td class="text-nowrap"><%= task.StartDate.HasValue ? task.StartDate.Value.ToString("dd/MM/yyyy") : "-" %></td>
                             <td><%: task.PriorityName %></td>
                             <td class="text-nowrap">
                                 <%= task.Deadline.HasValue ? task.Deadline.Value.ToString("dd/MM/yyyy") : "-" %>
@@ -363,6 +571,11 @@
                             </td>
                         </tr>
                         <% } %>
+                        <% if (Model.TaskProgressDetails.Count > 0) { %>
+                        <tr data-search-empty class="d-none">
+                            <td colspan="6" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_DATA) %></td>
+                        </tr>
+                        <% } %>
                         <% if (Model.TaskProgressDetails.Count == 0) { %>
                         <tr>
                             <td colspan="6" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_PROJECT_TASKS) %></td>
@@ -371,104 +584,11 @@
                     </tbody>
                 </table>
             </div>
-            <% } else { %>
-            <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_TASK_STRUCTURE) %></h5>
-            <p class="text-muted mb-3">
-                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_TASK_STRUCTURE_DESC) %>
-            </p>
-            <div id="progress-project-task-chart-wrapper" class="progress-chart-scroll">
-                <div id="progress-project-task-chart"></div>
-            </div>
-            <% } %>
         </div>
     </div>
+    <% } %>
 
     <% if (!Model.IsSingleProject) { %>
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
-            <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-                <div>
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_SCHEDULE_HEALTH) %></h5>
-                    <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_SCHEDULE_HEALTH_DESC) %></p>
-                </div>
-                <div class="small text-muted mt-2 mt-md-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_VARIANCE_FORMULA) %></div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PLANNED_TIME) %></th>
-                            <th style="min-width: 190px;"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS) %></th>
-                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PLANNED_PROGRESS) %></th>
-                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_VARIANCE) %></th>
-                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK) %></th>
-                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE) %></th>
-                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ASSESSMENT) %></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% foreach (var project in Model.ProjectScheduleStatistics) { %>
-                        <tr>
-                            <td>
-                                <a href="<%: GetProjectDetailUrl(project.ProjectId) %>" class="d-block text-decoration-none text-reset">
-                                    <div class="fw-semibold"><%: project.ProjectCode %></div>
-                                    <div class="small text-muted"><%: project.ProjectName %></div>
-                                </a>
-                            </td>
-                            <td class="text-nowrap">
-                                <%= project.StartDate.ToString("dd/MM/yyyy") %>
-                                <span class="text-muted mx-1">→</span>
-                                <%= project.ExpectedEndDate.ToString("dd/MM/yyyy") %>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="progress flex-grow-1 progress-table-bar">
-                                        <div class="progress-bar <%= GetProgressBarCss(project.ActualProgress) %>"
-                                             role="progressbar"
-                                             style="width: <%= project.ActualProgress.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) %>%;"
-                                             aria-valuenow="<%= project.ActualProgress %>"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100"></div>
-                                    </div>
-                                    <span class="small fw-semibold ms-2"><%= project.ActualProgress.ToString("0.##") %>%</span>
-                                </div>
-                            </td>
-                            <td class="text-center"><%= project.PlannedProgress.ToString("0.##") %>%</td>
-                            <td class="text-center">
-                                <span class="<%= GetVarianceCss(project.Health, project.Variance) %>">
-                                    <%= project.Variance > 0 ? "+" : string.Empty %><%= project.Variance.ToString("0.##") %>%
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <a href="<%: GetProjectTasksUrl(project.ProjectId) %>" class="text-decoration-none text-reset">
-                                    <%= project.CompletedTaskCount %>/<%= project.TotalTaskCount %>
-                                </a>
-                            </td>
-                            <td class="text-center">
-                                <a href="<%: GetProjectTasksUrl(project.ProjectId) %>" class="text-decoration-none <%= project.OverdueTaskCount > 0 ? "text-danger fw-semibold" : "text-muted" %>">
-                                    <%= project.OverdueTaskCount %>
-                                </a>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge <%= GetHealthBadgeCss(project.Health) %>">
-                                    <%= GetHealthText(project.Health) %>
-                                </span>
-                            </td>
-                        </tr>
-                        <% } %>
-                        <% if (Model.ProjectScheduleStatistics.Count == 0) { %>
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_PROJECTS_FILTER) %></td>
-                        </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
             <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
@@ -487,17 +607,18 @@
                         <tr>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_TASK) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                            <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DEADLINE) %></th>
                             <th style="min-width: 190px;"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROGRESS_COLUMN) %></th>
                             <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ALERT) %></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="progressPriorityTaskListBody">
                         <% foreach (var task in Model.AttentionTasks) { %>
-                        <tr>
+                        <tr data-search-row="true">
                             <td>
-                                <a href="<%: GetProjectTasksUrl(task.ProjectId) %>" class="text-decoration-none text-reset">
+                                <a href="<%: GetProjectTaskDetailUrl(task.ProjectId, task.TaskId) %>" class="text-decoration-none text-reset">
                                     <div class="fw-semibold"><%: task.TaskCode %> - <%: task.TaskName %></div>
                                 </a>
                             </td>
@@ -507,6 +628,7 @@
                                     <div class="small text-muted"><%: task.ProjectName %></div>
                                 </a>
                             </td>
+                            <td class="text-nowrap"><%= task.StartDate.HasValue ? task.StartDate.Value.ToString("dd/MM/yyyy") : "-" %></td>
                             <td><%: task.PriorityName %></td>
                             <td class="text-nowrap">
                                 <%= task.Deadline.HasValue ? task.Deadline.Value.ToString("dd/MM/yyyy") : "-" %>
@@ -531,9 +653,14 @@
                             </td>
                         </tr>
                         <% } %>
+                        <% if (Model.AttentionTasks.Count > 0) { %>
+                        <tr data-search-empty class="d-none">
+                            <td colspan="7" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_DATA) %></td>
+                        </tr>
+                        <% } %>
                         <% if (Model.AttentionTasks.Count == 0) { %>
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_ATTENTION_TASKS) %></td>
+                            <td colspan="7" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_ATTENTION_TASKS) %></td>
                         </tr>
                         <% } %>
                     </tbody>
@@ -544,10 +671,8 @@
     <% } %>
 
     <script type="text/javascript">
-        window.dashboardProgressScheduleData = <%= ProjectScheduleChartData %>;
+        window.dashboardProgressProjectData = <%= ProjectProgressChartData %>;
         window.dashboardProgressTaskStatusData = <%= TaskStatusChartData %>;
         window.dashboardProgressTexts = <%= DashboardTextsJson %>;
-        window.dashboardProgressProjectTaskData = <%= ProjectTaskChartData %>;
-        window.dashboardProgressIsSingleProject = <%= Model.IsSingleProject.ToString().ToLowerInvariant() %>;
     </script>
 </div>

@@ -104,7 +104,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void AddDashboardTab()
         {
-            if (!CanViewAnyDashboard())
+            if (!DashboardMenuOptions.ShowAllForTesting && !CanViewAnyDashboard())
                 return;
 
             AddTab(

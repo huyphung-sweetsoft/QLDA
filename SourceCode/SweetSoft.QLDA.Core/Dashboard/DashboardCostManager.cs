@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
@@ -26,6 +27,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public DashboardCostModel GetCostDashboard(DashboardCostFilter filter)
         {
+            // Toàn bộ số liệu thu - chi của dashboard chỉ được tổng hợp từ
+            // các dự án có trạng thái Hoàn thành.
             List<TblDuAn> projects = _repository.GetCompletedProjects(filter);
             List<Guid> projectIds = projects.Select(x => x.IdDuAn).ToList();
 
@@ -33,10 +36,45 @@ namespace SweetSoft.QLDA.Core.Dashboard
             // được lấy riêng để hiển thị, không làm thay đổi lãi/lỗ hiện tại.
             List<TblChiPhi> approvedCosts =
                 _repository.GetApprovedCostsForProjects(projectIds);
+            List<CostItemInfo> approvedCostItems =
+                BuildCostItemInfos(approvedCosts, projects)
+                    .OrderByDescending(x => x.Amount)
+                    .ThenByDescending(x => x.OccurredDate)
+                    .ToList();
             List<TblChiPhi> pendingApprovalCosts =
                 _repository.GetPendingApprovalCostsForProjects(projectIds);
+            List<CostItemInfo> pendingApprovalCostItems =
+                BuildCostItemInfos(pendingApprovalCosts, projects)
+                    .OrderByDescending(x => x.Amount)
+                    .ThenByDescending(x => x.OccurredDate)
+                    .ToList();
             List<TblThanhToan> payments =
                 _repository.GetPaymentsForProjects(projectIds);
+            Dictionary<Guid, TblDuAn> projectById = projects
+                .ToDictionary(x => x.IdDuAn);
+            List<OverduePaymentInfo> overduePayments = payments
+                .Where(x => x.TrangThai != (byte)ThanhToanStatus.DaThanhToan
+                    && !x.NgayThanhToanThucTe.HasValue
+                    && x.HanThanhToan.HasValue
+                    && x.HanThanhToan.Value.Date < DateTime.Today)
+                .Select(x =>
+                {
+                    TblDuAn project = projectById[x.IdDuAn];
+                    return new OverduePaymentInfo
+                    {
+                        ProjectId = x.IdDuAn,
+                        ProjectCode = project.MaDuAn,
+                        ProjectName = project.TenDuAn,
+                        PaymentCode = x.MaDotThanhToan,
+                        PaymentName = x.TenDotThanhToan,
+                        DueDate = x.HanThanhToan.Value.Date,
+                        DaysOverdue = (DateTime.Today - x.HanThanhToan.Value.Date).Days,
+                        Amount = x.SoTien
+                    };
+                })
+                .OrderByDescending(x => x.DaysOverdue)
+                .ThenBy(x => x.ProjectCode)
+                .ToList();
             List<TblHopDongThucHien> contracts =
                 _repository.GetContractsForProjects(projectIds);
 
@@ -63,17 +101,19 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return new DashboardCostModel
             {
                 GeneratedAt = DateTime.Now,
-                CompletedProjectCount = projects.Count,
+                ProjectCount = projects.Count,
                 TotalContractValue = totalContractValue,
                 ActualCost = actualCost,
                 PendingApprovalCost = pendingApprovalCost,
-                PendingApprovalCostItemCount = pendingApprovalCosts.Count,
+                PendingApprovalCostItemCount = pendingApprovalCostItems.Count,
                 GrossProfit = grossProfit,
                 ProfitMargin = GetPercent(grossProfit, totalContractValue),
                 ReceivedPayment = receivedPayment,
-                OutstandingPayment = Math.Max(
-                    0,
-                    totalContractValue - receivedPayment),
+                OutstandingPayment = projectStatistics.Sum(
+                    x => x.OutstandingPayment),
+                OverduePaymentAmount = overduePayments.Sum(x => x.Amount),
+                OverduePaymentCount = overduePayments.Count,
+                OverduePayments = overduePayments,
                 PaymentCollectionRate = GetPercent(
                     receivedPayment,
                     totalContractValue),
@@ -82,19 +122,15 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     : Math.Round(actualCost / projects.Count, 2),
                 ProjectStatistics = projectStatistics,
                 CostTrendStatistics = BuildCostTrend(approvedCosts),
-                LargestCostItems = BuildLargestCostItems(
-                    approvedCosts,
-                    projects)
+                LargestCostItems = approvedCostItems.Take(15).ToList(),
+                ApprovedCostItems = approvedCostItems,
+                PendingApprovalCostItems = pendingApprovalCostItems
             };
         }
 
-        public List<TblDuAn> GetCompletedProjectsForFilter()
+        public List<TblDuAn> GetProjectsForFilter()
         {
-            return _repository.GetCompletedProjects(
-                new DashboardCostFilter
-                {
-                    Period = DashboardCostPeriod.AllTime
-                });
+            return _repository.GetCompletedProjects(null);
         }
 
         private static List<ProjectCostStatistic> BuildProjectStatistics(
@@ -144,9 +180,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     ContractValue = contractValue,
                     ActualCost = actualCost,
                     ReceivedPayment = receivedPayment,
-                    OutstandingPayment = Math.Max(
-                        0,
-                        contractValue - receivedPayment),
+                    OutstandingPayment = contractValue > 0
+                        ? Math.Max(0, contractValue - receivedPayment)
+                        : projectPayments.Where(x => !x.NgayThanhToanThucTe.HasValue)
+                            .Sum(x => x.SoTien),
                     GrossProfit = grossProfit,
                     ProfitMargin = GetPercent(grossProfit, contractValue),
                     CostItemCount = projectCosts.Count
@@ -185,13 +222,21 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<TblChiPhi> costs,
             List<TblDuAn> projects)
         {
+            return BuildCostItemInfos(costs, projects)
+                .OrderByDescending(x => x.Amount)
+                .ThenByDescending(x => x.OccurredDate)
+                .Take(15)
+                .ToList();
+        }
+
+        private static List<CostItemInfo> BuildCostItemInfos(
+            List<TblChiPhi> costs,
+            List<TblDuAn> projects)
+        {
             Dictionary<Guid, TblDuAn> projectById = projects
                 .ToDictionary(x => x.IdDuAn);
 
             return costs
-                .OrderByDescending(x => x.SoTien)
-                .ThenByDescending(x => x.NgayTao)
-                .Take(15)
                 .Select(cost =>
                 {
                     TblDuAn project;

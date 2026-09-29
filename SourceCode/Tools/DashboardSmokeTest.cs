@@ -69,10 +69,10 @@ internal static class DashboardSmokeTest
                 "QLDA3 ActiveRecord models loaded {0} rows without schema errors.",
                 activeRecordRowCount);
             Console.WriteLine(
-                "Dashboards: overview-projects={0}; progress-tasks={1}; cost-completed={2}; resource-employees={3}; anchor-capacity={4}",
+                "Dashboards: overview-projects={0}; progress-tasks={1}; cost-projects={2}; resource-employees={3}; anchor-capacity={4}",
                 overview.TotalProjectCount,
                 progress.TotalTaskCount,
-                cost.CompletedProjectCount,
+                cost.ProjectCount,
                 resource.TotalEmployeeCount,
                 resource.EmployeeLoads.Count == 0
                     ? 0

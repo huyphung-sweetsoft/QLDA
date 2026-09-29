@@ -17,6 +17,5 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlDateRange;
 
-        protected global::SweetSoft.QLDA.Controls.ExtraButton btnApplyDashboardFilter;
     }
 }

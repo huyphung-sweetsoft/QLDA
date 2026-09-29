@@ -11,14 +11,14 @@
 <style>
     /* =========================================================
        DASHBOARD CHI PHÍ - KPI
-       Desktop: 4 card hàng trên + 3 card hàng dưới
+       Desktop: 5 chỉ số cùng một hàng
        Tablet: 2 cột
        Mobile: 1 cột
        ========================================================= */
 
     .dashboard-cost .cost-kpi-layout {
         display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 1rem;
         align-items: stretch;
     }
@@ -28,27 +28,23 @@
         display: flex;
     }
 
-    /* 4 KPI đầu: mỗi card chiếm 3/12 cột */
-    .dashboard-cost .cost-kpi-item:nth-child(-n+4) {
-        grid-column: span 3;
-    }
-
-    /* 3 KPI cuối: mỗi card chiếm 4/12 cột */
-    .dashboard-cost .cost-kpi-item:nth-child(n+5) {
-        grid-column: span 4;
+    .dashboard-cost .cost-kpi-trigger {
+        flex: 1 1 0;
+        width: 100%;
+        min-width: 0;
     }
 
     .dashboard-cost .cost-kpi-card {
         width: 100%;
         min-width: 0;
-        min-height: 182px;
+        min-height: 136px;
         margin-bottom: 0;
     }
 
     .dashboard-cost .cost-kpi-card .card-body {
         width: 100%;
         min-width: 0;
-        padding: 1.25rem;
+        padding: 1rem;
     }
 
     .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 {
@@ -58,11 +54,10 @@
 
     /* Tiêu đề luôn dành cùng chiều cao để các giá trị thẳng hàng */
     .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > p:first-child {
-        min-height: 44px;
+        min-height: 36px;
         margin-bottom: .25rem !important;
         line-height: 1.35;
-        display: flex;
-        align-items: flex-start;
+        display: block;
     }
 
     /* Giá trị KPI giữ trên một dòng */
@@ -80,31 +75,36 @@
 
     /* Phần mô tả có cùng vùng hiển thị */
     .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > small {
-        min-height: 40px;
+        position: absolute;
+        right: 1.2rem;
+        bottom: .75rem;
+        left: 1.2rem;
         display: block;
-        line-height: 1.35;
+        min-height: 0;
+        line-height: 1.25;
     }
 
     .dashboard-cost .cost-kpi-icon {
-        flex: 0 0 54px;
-        width: 54px;
-        height: 54px;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
         align-self: center;
     }
 
-    /* Tablet / laptop nhỏ: 2 card mỗi hàng */
+    /* Tablet / laptop nhỏ: 3 card mỗi hàng, giống các dashboard khác. */
     @media (max-width: 1199.98px) {
         .dashboard-cost .cost-kpi-layout {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .dashboard-cost .cost-kpi-item:nth-child(-n+4),
-        .dashboard-cost .cost-kpi-item:nth-child(n+5) {
-            grid-column: span 1;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .dashboard-cost .cost-kpi-card {
-            min-height: 176px;
+            min-height: 130px;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .dashboard-cost .cost-kpi-layout {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
@@ -115,7 +115,7 @@
         }
 
         .dashboard-cost .cost-kpi-card {
-            min-height: 168px;
+            min-height: 124px;
         }
 
         .dashboard-cost .cost-kpi-card .card-body > .flex-grow-1 > p:first-child,
@@ -131,7 +131,7 @@
 </style>
 
 <div class="container-fluid dashboard-cost">
-    <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between mb-3 <%= IsProjectDashboard ? "dashboard-project-heading" : string.Empty %>">
         <div class="flex-grow-1">
             <h4 class="mb-1 <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TITLE) %></h4>
 
@@ -145,7 +145,8 @@
                         runat="server"
                         CssClass="form-select"
                         EmptyItemValue="-1"
-                        SimpleInit="true">
+                        SimpleInit="true"
+                        OnSelectedIndexChanged="ddlProjectFilter_SelectedIndexChanged">
                     </SweetSoft:ExtraDropdown>
                 </div>
 
@@ -157,28 +158,6 @@
                 </div>
                 <% } %>
 
-                <div class="col-12 col-sm-6 col-md-4 col-xl-3 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
-                    <label class="form-label mb-1 text-nowrap <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETION_PERIOD) %></label>
-                    <SweetSoft:ExtraDropdown
-                        ID="ddlCompletionPeriod"
-                        runat="server"
-                        CssClass="form-select"
-                        EmptyItemValue="-1"
-                        SimpleInit="true"
-                        OnSelectedIndexChanged="ddlCompletionPeriod_SelectedIndexChanged">
-                    </SweetSoft:ExtraDropdown>
-                </div>
-
-                <div class="col-12 col-md-3 col-xl-auto mt-3 mt-md-0 <%= IsProjectDashboard ? "d-none" : string.Empty %>">
-                    <SweetSoft:ExtraButton
-                        ID="btnApplyCostFilter"
-                        runat="server"
-                        CssClass="w-100 px-4"
-                        ButtonStyle="Primary"
-                        ButtonIcon="Search"
-                        OnClick="btnApplyCostFilter_Click">
-                    </SweetSoft:ExtraButton>
-                </div>
             </div>
 
         </div>
@@ -194,150 +173,133 @@
         </div>
     </div>
 
-    <% if (Model.CompletedProjectCount == 0) { %>
-    <div class="alert alert-info border-0 shadow-sm d-flex align-items-start mb-4" role="alert">
-        <i class="bx bx-info-circle fs-3 me-3"></i>
-        <div>
-            <div class="fw-semibold mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COMPLETED_PROJECTS) %></div>
-            <div>
-                <%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COMPLETED_PROJECTS_DESC) %>
-            </div>
-        </div>
-    </div>
-    <% } %>
+    <%-- TẠM THỜI: Chú thích cách hiểu số liệu để nhóm kiểm tra; xóa cả khối này khi đã chốt nội dung. --%>
+    <details class="alert alert-light border mb-3" open>
+        <summary class="fw-semibold" style="cursor: pointer">Chú thích số liệu (tạm thời)</summary>
+        <ul class="small mb-0 mt-2 ps-3">
+            <li><strong>Số tiền trên dashboard:</strong> là số lũy kế của các dự án có trạng thái Hoàn thành trong phạm vi đang chọn, không giới hạn theo tháng; “triệu/tỷ” là cách viết gọn, rê chuột lên số để xem số tiền đầy đủ.</li>
+            <li><strong>Phải thu quá hạn:</strong> tổng tiền các đợt thanh toán chưa thu và đã qua hạn; số nhỏ bên dưới là số đợt quá hạn.</li>
+            <li><strong>Đã thu:</strong> tổng các đợt có ngày thanh toán thực tế. <strong>Còn phải thu:</strong> giá trị hợp đồng trừ đã thu; dự án chưa có giá trị hợp đồng thì cộng các đợt chưa thu. Đây không đồng nghĩa toàn bộ khoản tiền đã đến hạn.</li>
+            <li><strong>Chi phí đã duyệt:</strong> tổng khoản chi được duyệt, không khẳng định tiền đã được chi trả. <strong>Chi phí chờ duyệt:</strong> tổng khoản chi chưa được duyệt, chưa cộng vào chi phí đã duyệt.</li>
+            <li><strong>Chi phí theo dự án:</strong> hiển thị tối đa 8 dự án có chi phí đã duyệt cao nhất, không phải tổng của mọi dự án.</li>
+        </ul>
+    </details>
 
     <div class="cost-kpi-layout mb-4">
         <div class="cost-kpi-item">
+            <a href="#costOverduePaymentsModal"
+               class="cost-kpi-trigger dashboard-kpi-trigger d-block h-100 text-decoration-none text-reset"
+               data-bs-toggle="modal"
+               aria-controls="costOverduePaymentsModal">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_PROJECTS) %></p>
-                        <h3 class="mb-0 text-primary"><%= Model.CompletedProjectCount %></h3>
-                        <small class="text-muted"><%= GetSelectedPeriodText() %></small>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_RECEIVABLE) %></p>
+                        <h4 class="mb-0 <%= Model.OverduePaymentCount > 0 ? "text-danger" : "text-muted" %>" title="<%: FormatMoney(Model.OverduePaymentAmount) %>"><%= FormatMoneySummary(Model.OverduePaymentAmount) %></h4>
+                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_PAYMENT_COUNT), Model.OverduePaymentCount) %></small>
                     </div>
-                    <span class="avatar-title rounded-circle bg-primary-subtle text-primary cost-kpi-icon">
-                        <i class="bx bx-check-double fs-4"></i>
+                    <span class="avatar-title rounded-circle <%= Model.OverduePaymentCount > 0 ? "bg-danger-subtle text-danger" : "bg-secondary-subtle text-secondary" %> cost-kpi-icon">
+                        <i class="bx bx-error-circle fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="cost-kpi-item">
-            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.TOTAL_CONTRACT_VALUE) %></p>
-                        <h4 class="mb-0 text-info"><%= FormatMoney(Model.TotalContractValue) %></h4>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_REVENUE) %></small>
-                    </div>
-                    <span class="avatar-title rounded-circle bg-info-subtle text-info cost-kpi-icon">
-                        <i class="bx bx-file fs-4"></i>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="cost-kpi-item">
-            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.ACTUAL_COST) %></p>
-                        <h4 class="mb-0 text-danger"><%= FormatMoney(Model.ActualCost) %></h4>
-                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_AVERAGE_PER_PROJECT), FormatMoney(Model.AverageCostPerProject)) %></small>
-                    </div>
-                    <span class="avatar-title rounded-circle bg-danger-subtle text-danger cost-kpi-icon">
-                        <i class="bx bx-receipt fs-4"></i>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="cost-kpi-item">
-            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_GROSS_PROFIT) %></p>
-                        <h4 class="mb-0 <%= GetAmountCss(Model.GrossProfit) %>"><%= FormatMoney(Model.GrossProfit) %></h4>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_MINUS_COST) %></small>
-                    </div>
-                    <span class="avatar-title rounded-circle bg-success-subtle text-success cost-kpi-icon">
-                        <i class="bx bx-line-chart fs-4"></i>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="cost-kpi-item">
-            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROFIT_MARGIN) %></p>
-                        <h3 class="mb-0 <%= GetAmountCss(Model.GrossProfit) %>"><%= Model.ProfitMargin.ToString("0.##") %>%</h3>
-                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ON_CONTRACT_VALUE) %></small>
-                    </div>
-                    <span class="avatar-title rounded-circle bg-warning-subtle text-warning cost-kpi-icon">
-                        <i class="bx bx-pie-chart-alt-2 fs-4"></i>
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="cost-kpi-item">
+            <a href="#costPaymentProjectsModal" class="cost-kpi-trigger dashboard-kpi-trigger d-block h-100 text-decoration-none text-reset"
+               data-bs-toggle="modal" data-cost-payment-filter="received"
+               data-cost-modal-title="<%: GetResourceText(BackEndResourceKeys.RECEIVED_PAYMENT) %>">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
                         <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.RECEIVED_PAYMENT) %></p>
-                        <h4 class="mb-0 text-success"><%= FormatMoney(Model.ReceivedPayment) %></h4>
-                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_OUTSTANDING_AMOUNT), FormatMoney(Model.OutstandingPayment)) %></small>
+                        <h4 class="mb-0 text-success" title="<%: FormatMoney(Model.ReceivedPayment) %>"><%= FormatMoneySummary(Model.ReceivedPayment) %></h4>
                     </div>
                     <span class="avatar-title rounded-circle bg-success-subtle text-success cost-kpi-icon">
                         <i class="bx bx-money fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="cost-kpi-item">
+            <a href="#costPaymentProjectsModal" class="cost-kpi-trigger dashboard-kpi-trigger d-block h-100 text-decoration-none text-reset"
+               data-bs-toggle="modal" data-cost-payment-filter="outstanding"
+               data-cost-modal-title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_OUTSTANDING_PAYMENT) %>">
             <div class="card h-100 border-0 shadow-sm cost-kpi-card">
                 <div class="card-body d-flex align-items-center">
                     <div class="flex-grow-1 cost-kpi-value">
-                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.NOT_APPROVED) %></p>
-                        <h4 class="mb-0 text-warning"><%= FormatMoney(Model.PendingApprovalCost) %></h4>
-                        <small class="text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), Model.PendingApprovalCostItemCount) %></small>
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OUTSTANDING_PAYMENT) %></p>
+                        <h4 class="mb-0 text-warning" title="<%: FormatMoney(Model.OutstandingPayment) %>"><%= FormatMoneySummary(Model.OutstandingPayment) %></h4>
                     </div>
                     <span class="avatar-title rounded-circle bg-warning-subtle text-warning cost-kpi-icon">
                         <i class="bx bx-time-five fs-4"></i>
                     </span>
                 </div>
             </div>
+            </a>
         </div>
+
+        <div class="cost-kpi-item">
+            <a href="#costApprovedItemsModal" class="cost-kpi-trigger dashboard-kpi-trigger d-block h-100 text-decoration-none text-reset"
+               data-bs-toggle="modal" data-cost-modal-title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_APPROVED_COST) %>">
+            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1 cost-kpi-value">
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_APPROVED_COST) %></p>
+                        <h4 class="mb-0 text-danger" title="<%: FormatMoney(Model.ActualCost) %>"><%= FormatMoneySummary(Model.ActualCost) %></h4>
+                    </div>
+                    <span class="avatar-title rounded-circle bg-danger-subtle text-danger cost-kpi-icon">
+                        <i class="bx bx-receipt fs-4"></i>
+                    </span>
+                </div>
+            </div>
+            </a>
+        </div>
+
+        <div class="cost-kpi-item">
+            <a href="#costPendingApprovalModal" class="cost-kpi-trigger dashboard-kpi-trigger d-block h-100 text-decoration-none text-reset"
+               data-bs-toggle="modal" data-cost-modal-title="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_PENDING_COST) %>">
+            <div class="card h-100 border-0 shadow-sm cost-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <p class="text-muted mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PENDING_COST) %></p>
+                        <h3 class="mb-0 text-warning" title="<%: FormatMoney(Model.PendingApprovalCost) %>"><%= FormatMoneySummary(Model.PendingApprovalCost) %></h3>
+                    </div>
+                    <span class="avatar-title rounded-circle bg-warning-subtle text-warning cost-kpi-icon">
+                        <i class="bx bx-hourglass fs-4"></i>
+                    </span>
+                </div>
+            </div>
+            </a>
+        </div>
+
     </div>
 
     <div class="row g-3 mb-3 align-items-stretch">
-        <div class="col-12 col-xl-8 d-flex flex-column">
+        <div class="col-12 col-xl-6 d-flex flex-column">
             <div class="card w-100 h-100 flex-grow-1 border-0 shadow-sm cost-comparison-card">
                 <div class="card-body d-flex flex-column flex-grow-1">
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_VS_ACTUAL_COST) %></h5>
-                    <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC) %></p>
-                    <div class="cost-chart-scroll flex-grow-1">
-                        <div id="cost-project-comparison-chart"></div>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_APPROVAL_CHART) %></h5>
+                    <p class="text-muted mb-2"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_APPROVAL_CHART_DESC) %></p>
+                    <div class="d-flex flex-column justify-content-center align-items-center flex-grow-1 py-2">
+                        <div id="cost-approval-chart" class="w-100"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-xl-4 d-flex flex-column">
+        <div class="col-12 col-xl-6 d-flex flex-column">
             <div class="card w-100 h-100 flex-grow-1 border-0 shadow-sm cost-payment-card">
                 <div class="card-body d-flex flex-column flex-grow-1">
                     <div class="flex-shrink-0">
                         <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION) %></h5>
-                        <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION_DESC) %></p>
+                        <p class="text-muted mb-2"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION_DESC) %></p>
                     </div>
                     <div class="d-flex flex-column justify-content-center align-items-center flex-grow-1 py-2">
                         <div id="cost-payment-chart" class="w-100"></div>
-                        <div class="text-center small text-muted mt-2">
-                            <strong><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COLLECTION_RATE), Model.PaymentCollectionRate.ToString("0.##")) %></strong>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -348,154 +310,219 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND) %></h5>
-                    <p class="text-muted mb-3"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_TREND_DESC) %></p>
-                    <div id="cost-trend-chart"></div>
+                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT) %></h5>
+                    <p class="text-muted mb-3"><%= GetCostByProjectDescription() %></p>
+                    <div id="cost-project-comparison-chart"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-            <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-                <div>
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE) %></h5>
-                    <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_GROSS_PROFIT_FORMULA) %></p>
+    <div class="modal fade" id="costPaymentProjectsModal" tabindex="-1" aria-labelledby="costPaymentProjectsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="costPaymentProjectsModalTitle"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PAYMENT_SITUATION) %></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
                 </div>
-                <div class="small text-muted mt-2 mt-md-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_SORT_MARGIN_ASC) %></div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0 cost-project-table">
-                    <thead>
-                        <tr>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3"><div class="input-group dashboard-list-search">
+                        <span class="input-group-text"><i class="bx bx-search"></i></span>
+                        <input type="search" class="form-control" data-dashboard-list-search="costPaymentProjectsListBody"
+                            placeholder="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>"
+                            aria-label="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>" />
+                    </div></div>
+                    <div class="table-responsive"><table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
+                        <thead><tr>
                             <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETION) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_CONTRACT) %></th>
                             <th class="text-end"><%= GetResourceText(BackEndResourceKeys.TOTAL_CONTRACT_VALUE) %></th>
-                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.ACTUAL_COST) %></th>
-                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_GROSS_PROFIT) %></th>
-                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_MARGIN_SHORT) %></th>
-                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_RECEIVED_OUTSTANDING) %></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% foreach (var project in Model.ProjectStatistics) { %>
-                        <tr>
-                            <td>
-                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectDetailUrl(project.ProjectId) %>">
-                                    <div class="fw-semibold"><%: project.ProjectCode %></div>
-                                    <div class="small text-muted"><%: project.ProjectName %></div>
-                                </a>
-                            </td>
-                            <td class="text-nowrap"><%= project.CompletionDate.ToString("dd/MM/yyyy") %></td>
-                            <td>
-                                <% if (string.IsNullOrEmpty(project.ContractNumber)) { %>
-                                <span class="text-muted"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_CONTRACT) %></span>
-                                <% } else { %>
-                                <%: project.ContractNumber %>
-                                <% } %>
-                            </td>
-                            <td class="text-end text-nowrap"><%= FormatMoney(project.ContractValue) %></td>
-                            <td class="text-end text-nowrap">
-                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectCostsUrl(project.ProjectId) %>">
-                                    <div class="fw-semibold text-danger"><%= FormatMoney(project.ActualCost) %></div>
-                                    <div class="small text-muted"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), project.CostItemCount) %></div>
-                                </a>
-                            </td>
-                            <td class="text-end text-nowrap">
-                                <span class="fw-semibold <%= GetAmountCss(project.GrossProfit) %>"><%= FormatMoney(project.GrossProfit) %></span>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge <%= GetProfitBadgeCss(project.GrossProfit) %>"><%= project.ProfitMargin.ToString("0.##") %>%</span>
-                            </td>
-                            <td class="text-end text-nowrap">
-                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectPaymentsUrl(project.ProjectId) %>">
-                                    <div class="text-success"><%= FormatMoney(project.ReceivedPayment) %></div>
-                                    <div class="small text-muted"><%= FormatMoney(project.OutstandingPayment) %></div>
-                                </a>
-                            </td>
-                        </tr>
-                        <% } %>
-                        <% if (Model.ProjectStatistics.Count == 0) { %>
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_FINANCIAL_DATA) %></td>
-                        </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-3">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-            <div class="d-flex flex-column flex-md-row justify-content-between mb-3">
-                <div>
-                    <h5 class="card-title mb-1"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_LARGEST_COST_ITEMS) %></h5>
-                    <p class="text-muted mb-0"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_LARGEST_COST_ITEMS_DESC) %></p>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.RECEIVED_PAYMENT) %></th>
+                            <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OUTSTANDING_PAYMENT) %></th>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
+                        </tr></thead>
+                        <tbody id="costPaymentProjectsListBody">
+                            <% foreach (var project in Model.ProjectStatistics) { %>
+                            <tr data-search-row="true" data-cost-received="<%= project.ReceivedPayment > 0 ? "1" : "0" %>"
+                                data-cost-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>">
+                                <td><div class="fw-semibold"><%: project.ProjectCode %></div><div class="small text-muted"><%: project.ProjectName %></div></td>
+                                <td class="text-end text-nowrap"><%= FormatMoney(project.ContractValue) %></td>
+                                <td class="text-end text-nowrap"><%= FormatMoney(project.ReceivedPayment) %></td>
+                                <td class="text-end text-nowrap"><%= FormatMoney(project.OutstandingPayment) %></td>
+                                <td class="text-center"><a class="btn btn-sm btn-outline-primary text-nowrap" href="<%: GetProjectPaymentsUrl(project.ProjectId) %>"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %></a></td>
+                            </tr>
+                            <% } %>
+                            <tr data-search-empty="true" class="<%= Model.ProjectStatistics.Count == 0 ? string.Empty : "d-none" %>"><td colspan="5" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_DATA) %></td></tr>
+                        </tbody>
+                    </table></div>
                 </div>
-                <span class="badge bg-danger-subtle text-danger align-self-start mt-2 mt-md-0">
-                    <%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT), Model.LargestCostItems.Count) %>
-                </span>
             </div>
+        </div>
+    </div>
 
-            <div class="table-responsive">
-                <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
+    <div class="modal fade" id="costApprovedItemsModal" tabindex="-1" aria-labelledby="costApprovedItemsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="costApprovedItemsModalTitle"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_APPROVED_COST) %></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3"><div class="input-group dashboard-list-search">
+                        <span class="input-group-text"><i class="bx bx-search"></i></span>
+                        <input type="search" class="form-control" data-dashboard-list-search="costApprovedItemsListBody"
+                            placeholder="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>"
+                            aria-label="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>" />
+                    </div></div>
+                    <div class="table-responsive"><table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
+                        <thead><tr>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_CODE) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_NAME) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_INCURRED_DATE) %></th>
                             <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AMOUNT) %></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% foreach (var cost in Model.LargestCostItems) { %>
-                        <tr>
-                            <td>
-                                <a class="text-decoration-none text-reset" href="<%: GetProjectCostsUrl(cost.ProjectId) %>">
-                                    <%: string.IsNullOrEmpty(cost.CostCode) ? "-" : cost.CostCode %>
-                                </a>
-                            </td>
-                            <td class="fw-semibold">
-                                <a class="text-decoration-none text-reset" href="<%: GetProjectCostsUrl(cost.ProjectId) %>"><%: cost.CostName %></a>
-                            </td>
-                            <td>
-                                <a class="d-block text-decoration-none text-reset" href="<%: GetProjectDetailUrl(cost.ProjectId) %>">
-                                    <div><%: cost.ProjectCode %></div>
-                                    <div class="small text-muted"><%: cost.ProjectName %></div>
-                                </a>
-                            </td>
-                            <td class="text-nowrap"><%= cost.OccurredDate.ToString("dd/MM/yyyy") %></td>
-                            <td class="text-end text-nowrap fw-semibold text-danger"><%= FormatMoney(cost.Amount) %></td>
-                        </tr>
-                        <% } %>
-                        <% if (Model.LargestCostItems.Count == 0) { %>
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COST_ITEMS) %></td>
-                        </tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                            <th class="text-center"><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
+                        </tr></thead>
+                        <tbody id="costApprovedItemsListBody" data-project-group-count-format="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT) %>">
+                            <% foreach (var cost in Model.ApprovedCostItems) { %>
+                            <tr data-search-row="true" data-cost-project-id="<%= cost.ProjectId %>"
+                                data-group-project-id="<%= cost.ProjectId %>" data-group-project-code="<%: cost.ProjectCode %>"
+                                data-group-project-name="<%: cost.ProjectName %>">
+                                <td><%: string.IsNullOrEmpty(cost.CostCode) ? "-" : cost.CostCode %></td>
+                                <td class="fw-semibold"><%: cost.CostName %></td>
+                                <td><div class="fw-semibold"><%: cost.ProjectCode %></div><div class="small text-muted"><%: cost.ProjectName %></div></td>
+                                <td class="text-nowrap"><%= cost.OccurredDate.ToString("dd/MM/yyyy") %></td>
+                                <td class="text-end text-nowrap"><%= FormatMoney(cost.Amount) %></td>
+                                <td class="text-center"><a class="btn btn-sm btn-outline-primary text-nowrap" href="<%: GetProjectCostsUrl(cost.ProjectId) %>"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %></a></td>
+                            </tr>
+                            <% } %>
+                            <tr data-search-empty="true" class="<%= Model.ApprovedCostItems.Count == 0 ? string.Empty : "d-none" %>"><td colspan="6" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_DATA) %></td></tr>
+                        </tbody>
+                    </table></div>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="costOverduePaymentsModal" tabindex="-1" aria-labelledby="costOverduePaymentsModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="costOverduePaymentsModalTitle"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_RECEIVABLE) %> (<%= Model.OverduePaymentCount %>)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="input-group dashboard-list-search">
+                            <span class="input-group-text"><i class="bx bx-search"></i></span>
+                            <input type="search" class="form-control"
+                                   placeholder="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>"
+                                   aria-label="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>"
+                                   data-dashboard-list-search="costOverduePaymentListBody" />
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th><%= GetResourceText(BackEndResourceKeys.PAYMENT_NAME) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                                    <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.PAYMENT_DUE_DATE) %></th>
+                                    <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE) %></th>
+                                    <th class="text-end text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AMOUNT) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
+                                </tr>
+                            </thead>
+                            <tbody id="costOverduePaymentListBody" data-project-group-count-format="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_PAYMENT_COUNT) %>">
+                                <% foreach (var payment in Model.OverduePayments) { %>
+                                <tr data-search-row="true" data-group-project-id="<%= payment.ProjectId %>"
+                                    data-group-project-code="<%: payment.ProjectCode %>" data-group-project-name="<%: payment.ProjectName %>">
+                                    <td>
+                                        <div class="fw-semibold"><%: payment.PaymentCode %></div>
+                                        <div class="small text-muted"><%: payment.PaymentName %></div>
+                                    </td>
+                                    <td><strong><%: payment.ProjectCode %></strong><br /><small><%: payment.ProjectName %></small></td>
+                                    <td class="text-nowrap"><%= payment.DueDate.ToString("dd/MM/yyyy") %></td>
+                                    <td class="text-danger text-nowrap"><%= string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_DAYS_OVERDUE), payment.DaysOverdue) %></td>
+                                    <td class="text-end text-nowrap"><%= FormatMoney(payment.Amount) %></td>
+                                    <td class="text-center">
+                                        <a class="btn btn-sm btn-outline-primary text-nowrap" href="<%: GetProjectPaymentsUrl(payment.ProjectId) %>"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %></a>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                <tr data-search-empty="true" class="<%= Model.OverduePayments.Count == 0 ? string.Empty : "d-none" %>">
+                                    <td colspan="6" class="text-center text-muted py-4"><%= GetResourceText(BackEndResourceKeys.NO_DATA) %></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="costPendingApprovalModal" tabindex="-1" aria-labelledby="costPendingApprovalModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="costPendingApprovalModalTitle"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PENDING_COST) %></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= GetResourceText(BackEndResourceKeys.CLOSE) %>"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="input-group dashboard-list-search">
+                            <span class="input-group-text"><i class="bx bx-search"></i></span>
+                            <input type="search" class="form-control"
+                                   placeholder="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>"
+                                   aria-label="<%: GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS) %>"
+                                   data-dashboard-list-search="costPendingApprovalListBody" />
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table dashboard-data-table table-bordered table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_CODE) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_NAME) %></th>
+                                    <th><%= GetResourceText(BackEndResourceKeys.PROJECT) %></th>
+                                    <th class="text-nowrap"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_INCURRED_DATE) %></th>
+                                    <th class="text-end"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_AMOUNT) %></th>
+                                    <th class="text-center"><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
+                                </tr>
+                            </thead>
+                            <tbody id="costPendingApprovalListBody" data-project-group-count-format="<%: GetResourceText(BackEndResourceKeys.DASHBOARD_COST_ITEM_COUNT) %>">
+                                <% foreach (var cost in Model.PendingApprovalCostItems) { %>
+                                <tr data-search-row="true" data-group-project-id="<%= cost.ProjectId %>"
+                                    data-group-project-code="<%: cost.ProjectCode %>" data-group-project-name="<%: cost.ProjectName %>">
+                                    <td><%: string.IsNullOrEmpty(cost.CostCode) ? "-" : cost.CostCode %></td>
+                                    <td class="fw-semibold"><%: cost.CostName %></td>
+                                    <td>
+                                        <div class="fw-semibold"><%: cost.ProjectCode %></div>
+                                        <div class="small text-muted"><%: cost.ProjectName %></div>
+                                    </td>
+                                    <td class="text-nowrap"><%= cost.OccurredDate.ToString("dd/MM/yyyy") %></td>
+                                    <td class="text-end text-nowrap fw-semibold"><%= FormatMoney(cost.Amount) %></td>
+                                    <td class="text-center">
+                                        <a class="btn btn-sm btn-outline-primary text-nowrap" href="<%: GetProjectCostsUrl(cost.ProjectId) %>"><%= GetResourceText(BackEndResourceKeys.VIEW_DETAIL) %></a>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                <tr data-search-empty="true" class="<%= Model.PendingApprovalCostItems.Count == 0 ? string.Empty : "d-none" %>">
+                                    <td colspan="6" class="text-center text-muted py-4"><%= Model.PendingApprovalCostItems.Count == 0
+                                        ? GetResourceText(BackEndResourceKeys.DASHBOARD_NO_COST_ITEMS)
+                                        : GetResourceText(BackEndResourceKeys.NO_DATA) %></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="text/javascript">
         window.dashboardCostProjectData = <%= ProjectComparisonChartData %>;
-        window.dashboardCostTrendData = <%= CostTrendChartData %>;
-window.dashboardCostPaymentData = <%= PaymentChartData %>;
+        window.dashboardCostApprovalData = <%= CostApprovalChartData %>;
+        window.dashboardCostPaymentData = <%= PaymentChartData %>;
         window.dashboardCostTexts = <%= DashboardTextsJson %>;
     </script>
 </div>

@@ -69,13 +69,19 @@
                                     ResourceKey='<%# BackEndResourceKeys.DELETE %>' ButtonIcon="fas fa-trash" />
                                 <asp:LinkButton runat="server" ID="lbtQuickApprove"
                                     CommandName="ITEM_QUICK_APPROVE" CausesValidation="false"
-                                    Visible='<%# CURRENT_PAGE.IsEdit %>'
-                                    Enabled='<%# !IsPaid(Eval("TrangThai")) %>'
+                                    Visible='<%# CURRENT_PAGE.IsEdit && !IsPaid(Eval("TrangThai")) %>'
                                     CssClass="btn btn-outline-success btn-sm text-center btn-smart-link"
                                     ToolTip='<%# GetResourceText(BackEndResourceKeys.PAYMENT_QUICK_APPROVE) %>'
                                     OnClientClick='<%# GetQuickApproveConfirmScript(Eval("MaDotThanhToan")) %>'>
                                     <i class="fas fa-check-circle"></i>
                                 </asp:LinkButton>
+                                <asp:PlaceHolder runat="server" Visible='<%# IsPaid(Eval("TrangThai")) %>'>
+                                    <span class="btn btn-success btn-sm text-center btn-smart-link disabled"
+                                        aria-disabled="true"
+                                        title='<%# GetResourceText(BackEndResourceKeys.PAYMENT_PAID) %>'>
+                                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                    </span>
+                                </asp:PlaceHolder>
                             </div>
                         </ItemTemplate>
                     </asp:TemplateField>

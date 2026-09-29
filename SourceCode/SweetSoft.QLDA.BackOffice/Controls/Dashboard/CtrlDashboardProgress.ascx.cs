@@ -16,7 +16,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         private const int TaskNotStartedStatusCode = 0;
         private const int TaskInProgressStatusCode = 1;
         private const int TaskCompletedStatusCode = 2;
-        private const int TaskOverdueStatusCode = 3;
+        protected const int TaskOverdueStatusCode = 3;
 
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -25,7 +25,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=3")
+                        "/Controls/Dashboard/dashboard-style.css?v=27")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -33,7 +33,9 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-progress.js?v=5")
+                        "/Controls/Dashboard/dashboard-project-groups.js?v=1"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                        "/Controls/Dashboard/dashboard-progress.js?v=17")
                 };
 
                 return new RegisterCSSAndJS(
@@ -46,13 +48,25 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected DashboardProgressModel Model { get; private set; }
 
-        protected string ProjectScheduleChartData { get; private set; }
+        protected string ProjectProgressChartData { get; private set; }
 
         protected string TaskStatusChartData { get; private set; }
 
-        protected string ProjectTaskChartData { get; private set; }
-
         protected string DashboardTextsJson { get; private set; }
+
+        protected List<TaskProgressDetail> AllTaskDetails { get; private set; }
+
+        protected List<ProjectTaskProgressStatistic> TaskProjectFilterOptions
+        {
+            get;
+            private set;
+        }
+
+        protected List<ProjectScheduleStatistic> NeedsAttentionProjects
+        {
+            get;
+            private set;
+        }
 
         protected bool IsProjectDashboard
         {
@@ -65,22 +79,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             }
         }
 
-        protected Guid SelectedProjectId
-        {
-            get
-            {
-                if (Model == null
-                    || !Model.IsSingleProject
-                    || Model.ProjectScheduleStatistics == null
-                    || Model.ProjectScheduleStatistics.Count == 0)
-                {
-                    return Guid.Empty;
-                }
-
-                return Model.ProjectScheduleStatistics[0].ProjectId;
-            }
-        }
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -89,15 +87,15 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            ddlDateRange.AutoPostBack = IsProjectDashboard;
-            btnApplyDashboardFilter.Visible = !IsProjectDashboard;
+            ddlProjectFilter.AutoPostBack = !IsProjectDashboard;
+            ddlDateRange.AutoPostBack = true;
+            ddlDateRange.ToolTip = GetResourceText(
+                BackEndResourceKeys.DASHBOARD_PROGRESS_FILTER_DESC);
 
             if (!IsPostBack)
             {
                 if (!IsProjectDashboard)
                 {
-                    btnApplyDashboardFilter.Text =
-                        GetResourceText(BackEndResourceKeys.APPLY);
                     LoadProjectFilter();
                 }
 
@@ -106,7 +104,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             }
         }
 
-        protected void btnApplyDashboardFilter_Click(
+        protected void ddlProjectFilter_SelectedIndexChanged(
             object sender,
             EventArgs e)
         {
@@ -144,6 +142,37 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
                 default: return "-";
             }
+        }
+
+        private string GetProjectProgressStatus(ProjectScheduleStatistic project)
+        {
+            if (project.Health == ProjectScheduleHealth.Overdue)
+            {
+                int overdueDays = Math.Max(
+                    1,
+                    (Model.GeneratedAt.Date - project.ExpectedEndDate.Date).Days);
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_DAYS),
+                    overdueDays);
+            }
+
+            return GetHealthText(project.Health);
+        }
+
+        private string GetCompletionDelayText(ProjectScheduleStatistic project)
+        {
+            if (!project.ActualCompletionDate.HasValue)
+            {
+                return string.Empty;
+            }
+
+            int delayDays = (project.ActualCompletionDate.Value.Date
+                - project.ExpectedEndDate.Date).Days;
+            return delayDays > 0
+                ? string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_OVERDUE_DAYS),
+                    delayDays)
+                : string.Empty;
         }
 
         protected string GetHealthBadgeCss(ProjectScheduleHealth health)
@@ -198,46 +227,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return variance > 0
                 ? "text-success fw-semibold"
                 : "text-muted";
-        }
-
-        protected decimal GetSelectedProjectVariance()
-        {
-            if (Model == null || Model.ProjectScheduleStatistics.Count == 0)
-            {
-                return 0;
-            }
-
-            return Model.ProjectScheduleStatistics[0].Variance;
-        }
-
-        protected string GetSelectedProjectVarianceText()
-        {
-            decimal variance = GetSelectedProjectVariance();
-            return GetVarianceText(variance) + "%";
-        }
-
-        protected string GetSelectedProjectVarianceCss()
-        {
-            if (Model == null || Model.ProjectScheduleStatistics.Count == 0)
-            {
-                return "text-muted";
-            }
-
-            ProjectScheduleStatistic project =
-                Model.ProjectScheduleStatistics[0];
-            return GetVarianceCss(project.Health, project.Variance);
-        }
-
-        protected string GetVarianceText(decimal variance)
-        {
-            return (variance > 0 ? "+" : string.Empty)
-                + variance.ToString("0.##");
-        }
-
-        protected string GetPercentStyle(decimal progress)
-        {
-            decimal normalized = Math.Max(0, Math.Min(100, progress));
-            return normalized.ToString("0.##", CultureInfo.InvariantCulture);
         }
 
         protected string GetDeadlineText(ProgressTaskInfo task)
@@ -318,6 +307,46 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
         }
 
+        protected int CompletedStageCount
+        {
+            get { return Model.ProjectStages.Count(x => x.ActualEndDate.HasValue); }
+        }
+
+        protected int OverdueStageCount
+        {
+            get { return Model.ProjectStages.Count(x => x.IsOverdue); }
+        }
+
+        protected string GetStageStatusText(DashboardProjectStage stage)
+        {
+            if (stage.ActualEndDate.HasValue)
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED);
+            if (stage.IsOverdue)
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE);
+            if (stage.StartDate.HasValue && stage.StartDate.Value.Date <= DateTime.Today)
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS);
+            return GetResourceText(BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED);
+        }
+
+        protected string GetStageBadgeCss(DashboardProjectStage stage)
+        {
+            if (stage.ActualEndDate.HasValue)
+                return "bg-success-subtle text-success";
+            if (stage.IsOverdue)
+                return "bg-danger-subtle text-danger";
+            if (stage.StartDate.HasValue && stage.StartDate.Value.Date <= DateTime.Today)
+                return "bg-info-subtle text-info";
+            return "bg-secondary-subtle text-secondary";
+        }
+
+        protected string GetProjectTaskDetailUrl(Guid projectId, Guid taskId)
+        {
+            string projectTasksUrl = GetProjectTasksUrl(projectId);
+            return string.IsNullOrEmpty(projectTasksUrl)
+                ? string.Empty
+                : projectTasksUrl + "?taskId=" + taskId.ToString("D");
+        }
+
         protected string GetProjectGanttUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectGanttCharts);
@@ -326,19 +355,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetProjectReportUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectReports);
-        }
-
-        protected string GetActualCompletionText(
-            ProjectScheduleStatistic project)
-        {
-            if (project.ActualCompletionDate.HasValue)
-            {
-                return project.ActualCompletionDate.Value.ToString("dd/MM/yyyy");
-            }
-
-            return project.Health == ProjectScheduleHealth.Completed
-                ? GetResourceText(BackEndResourceKeys.DASHBOARD_COMPLETED_LABEL)
-                : GetResourceText(BackEndResourceKeys.DASHBOARD_NOT_COMPLETED);
         }
 
         private string GetProjectUrl(
@@ -358,60 +374,74 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             Model = DashboardProgressManager.Instance.GetProgress(filter);
 
-            ProjectScheduleChartData = JsonConvert.SerializeObject(
+            AllTaskDetails = Model.TaskProgressDetails
+                ?? new List<TaskProgressDetail>();
+            TaskProjectFilterOptions = Model.ProjectTaskStatistics
+                .OrderBy(project => project.ProjectCode)
+                .ToList();
+            NeedsAttentionProjects = Model.ProjectScheduleStatistics
+                .Where(project =>
+                    project.Health == ProjectScheduleHealth.AtRisk
+                    || project.Health == ProjectScheduleHealth.BehindSchedule
+                    || project.Health == ProjectScheduleHealth.Overdue)
+                .ToList();
+
+            ProjectProgressChartData = JsonConvert.SerializeObject(
                 Model.ProjectScheduleStatistics.Select(x => new
                 {
-                    code = x.ProjectCode,
+                    projectId = x.ProjectId.ToString("D"),
+                    projectCode = x.ProjectCode,
                     name = x.ProjectName,
-                    detailUrl = GetProjectDetailUrl(x.ProjectId),
+                    status = GetProjectProgressStatus(x),
+                    statusCss = GetHealthBadgeCss(x.Health),
+                    statusReason = x.Health == ProjectScheduleHealth.Overdue
+                        ? GetResourceText(
+                            BackEndResourceKeys.DASHBOARD_OVERDUE_PROJECT_REASON)
+                        : string.Empty,
                     actual = x.ActualProgress,
                     planned = x.PlannedProgress,
-                    variance = x.Variance
-                }));
+                    startDate = x.StartDate.ToString("dd/MM/yyyy"),
+                    expectedEndDate = x.ExpectedEndDate.ToString("dd/MM/yyyy"),
+                    actualCompletionDate = x.ActualCompletionDate.HasValue
+                        ? x.ActualCompletionDate.Value.ToString("dd/MM/yyyy")
+                        : string.Empty,
+                    completionDelayText = GetCompletionDelayText(x),
+                    completedTaskCount = x.CompletedTaskCount,
+                    taskCount = x.TotalTaskCount,
+                    overdueTaskCount = x.OverdueTaskCount
+                })).Replace("</", "<\\/");
 
             TaskStatusChartData = JsonConvert.SerializeObject(new
             {
                 labels = Model.TaskStatusStatistics.Select(x => x.Status),
                 values = Model.TaskStatusStatistics.Select(x => x.Count),
-                tasksUrl = Model.IsSingleProject
-                    ? GetProjectTasksUrl(SelectedProjectId)
-                    : string.Empty
+                statusCodes = Model.TaskStatusStatistics.Select(x => x.StatusCode)
             });
-
-            ProjectTaskChartData = JsonConvert.SerializeObject(
-                Model.ProjectTaskStatistics.Select(x => new
-                {
-                    code = x.ProjectCode,
-                    name = x.ProjectName,
-                    tasksUrl = GetProjectTasksUrl(x.ProjectId),
-                    completed = x.CompletedCount,
-                    inProgress = x.InProgressCount,
-                    notStarted = x.NotStartedCount,
-                    overdue = x.OverdueCount
-                }));
 
             DashboardTextsJson = JsonConvert.SerializeObject(new
             {
                 noProjectProgressData = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_PROJECT_PROGRESS_DATA),
+                completedTasks = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COMPLETED_TASKS_COUNT),
+                overdueTasks = GetResourceText(
+                    BackEndResourceKeys.OVERDUE_TASKS),
                 actual = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS),
                 planned = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_PLANNED_PROGRESS),
+                start = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_START),
+                expected = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EXPECTED),
+                actualCompletion = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_ACTUAL_COMPLETION),
+                progressAxis = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROGRESS_AXIS),
                 noTasksInPeriod = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_TASKS_IN_PERIOD),
                 totalTasks = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_TOTAL_TASKS),
-                noProjectTaskData = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_NO_PROJECT_TASK_DATA),
-                completed = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_STATUS_COMPLETED),
-                inProgress = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_STATUS_IN_PROGRESS),
-                notStarted = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_STATUS_NOT_STARTED),
-                overdue = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_STATUS_OVERDUE)
+                    BackEndResourceKeys.DASHBOARD_TOTAL_TASKS)
             }).Replace("</", "<\\/");
 
         }

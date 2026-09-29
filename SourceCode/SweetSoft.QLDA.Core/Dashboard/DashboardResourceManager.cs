@@ -52,13 +52,20 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 lastWeekCalendarEnd.Year,
                 lastWeekCalendarEnd.Month,
                 1).AddMonths(1).AddDays(-1);
+            DateTime selectedMonthStart = normalizedFilter.MonthStart;
+            DateTime selectedMonthEnd = normalizedFilter.MonthCount > 0
+                ? selectedMonthStart.AddMonths(normalizedFilter.MonthCount)
+                    .AddDays(-1)
+                : lastMonthEnd;
             DateTime calendarStart = GetMonday(
-                new[] { firstMonthStart, anchorStart.AddDays(-35) }.Min());
+                new[] { firstMonthStart, anchorStart.AddDays(-35),
+                    selectedMonthStart }.Min());
             DateTime calendarEnd = GetMonday(
                 new[] {
                     lastMonthEnd,
                     anchorStart.AddDays(18),
-                    lastWeekCalendarEnd
+                    lastWeekCalendarEnd,
+                    selectedMonthEnd
                 }.Max())
                 .AddDays(6);
             DashboardWorkingCalendar calendar = new DashboardWorkingCalendar(
@@ -119,8 +126,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 today,
                 calendar);
             List<ResourceMonthInfo> months = BuildMonthsForWindow(
-                windowStart,
-                windowEnd);
+                normalizedFilter.MonthCount > 0
+                    ? selectedMonthStart : windowStart,
+                normalizedFilter.MonthCount > 0
+                    ? selectedMonthEnd : windowEnd);
             List<ResourceEmployeeLoad> employeeLoads = BuildEmployeeLoads(
                 employees,
                 assignments,
@@ -147,8 +156,11 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 TotalEmployeeCount = employeeLoads.Count,
                 AssignedEmployeeCount = employeeLoads.Count(x =>
                     x.AllocatedDays > 0),
+                NoLoadEmployeeCount = employeeLoads.Count(x =>
+                    x.AllocatedDays <= 0),
                 UnderloadedEmployeeCount = employeeLoads.Count(x =>
-                    x.Status == ResourceLoadStatus.Underloaded),
+                    x.Status == ResourceLoadStatus.Underloaded
+                        && x.AllocatedDays > 0),
                 BalancedEmployeeCount = employeeLoads.Count(x =>
                     x.Status == ResourceLoadStatus.Balanced),
                 OverloadedEmployeeCount = employeeLoads.Count(x =>
@@ -196,12 +208,24 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 || filter.AnchorWeekStart == DateTime.MinValue
                     ? DateTime.Today
                     : filter.AnchorWeekStart.Date;
+            int monthCount = filter == null ? 0 : filter.MonthCount;
+            if (monthCount < 0 || monthCount > 12)
+            {
+                monthCount = 0;
+            }
+            DateTime monthAnchor = filter == null
+                || filter.MonthStart == DateTime.MinValue
+                    ? anchor
+                    : filter.MonthStart;
 
             return new DashboardResourceFilter
             {
                 ProjectId = filter == null ? null : filter.ProjectId,
                 AnchorWeekStart = GetMonday(anchor),
-                WeekCount = weekCount
+                WeekCount = weekCount,
+                MonthStart = new DateTime(
+                    monthAnchor.Year, monthAnchor.Month, 1),
+                MonthCount = monthCount
             };
         }
 
