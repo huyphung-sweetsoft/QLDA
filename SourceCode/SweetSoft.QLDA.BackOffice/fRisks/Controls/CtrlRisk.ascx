@@ -1,7 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlRisk.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fRisks.Controls.CtrlRisk" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-
-<div class="card-header">
+<%@ Register Src="~/fRisks/Controls/CtrlViewRiskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewRiskDetail" %><div class="card-header">
     <div class="d-flex flex-column flex-xl-row gap-3">
         <asp:UpdatePanel runat="server" ID="pnlSearchDropdowns" UpdateMode="Conditional">
             <ContentTemplate>
@@ -61,27 +60,41 @@
                 OnNeedDataSource="grvData_NeedDataSource" OnRowCommand="grvData_RowCommand">
                 <Columns>
                     <asp:TemplateField HeaderText="RiskName" SortExpression="TenRuiRo" HeaderStyle-CssClass="text-center">
-                        <ItemTemplate><%# Eval("TenRuiRo") != DBNull.Value && Eval("TenRuiRo") != null ? Eval("TenRuiRo") : "—" %></ItemTemplate>
+                        <ItemTemplate>
+                            <asp:LinkButton runat="server" ID="lbtViewDetail" CommandName="ITEM_VIEW" CommandArgument='<%# Eval("IdRuiRo_DuAn") %>'
+                                CssClass="text-primary fw-bold text-decoration-none" style="cursor: pointer;">
+                                <%# Eval("TenRuiRo") != DBNull.Value && Eval("TenRuiRo") != null ? Eval("TenRuiRo") : "—" %>
+                            </asp:LinkButton>
+                        </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Impact" SortExpression="MucDoAnhHuong" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate><%# GetMucDoAnhHuongText(Eval("MucDoAnhHuong")) %></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Probability" SortExpression="XacSuatXayRa" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
-                        <ItemTemplate><%# Eval("XacSuatXayRa") != DBNull.Value ? Eval("XacSuatXayRa") : "—" %>(%)</ItemTemplate>
+                        <ItemTemplate><%# GetXacSuatRuiRoText(Eval("XacSuatXayRa")) %></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="RiskLevel" SortExpression="DiemRuiRo" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center fw-bold text-danger">
-                        <ItemTemplate><%# GetMucDoRuiRoText(Eval("DiemRuiRo")) %></ItemTemplate>
+                        <ItemTemplate><%# GetMucDoRuiRoText(Eval("XacSuatXayRa"), Eval("MucDoAnhHuong"), Eval("DiemRuiRo")) %></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Monitor" SortExpression="TenNhanVienXuLy" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("TenNhanVienXuLy") != DBNull.Value ? Eval("TenNhanVienXuLy") : "—" %></ItemTemplate>
                     </asp:TemplateField>
+                    <asp:TemplateField HeaderText="CreatedDate" SortExpression="NgayTao" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                        <ItemTemplate>
+                            <%# GetFormattedDate(Eval("NgayTao")) %>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' 
-                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline" 
-                                ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>' 
-                                ButtonIcon='<%# this.IsView ? "fas fa-pencil-alt" : "fas fa-eye" %>'></SweetSoft:SmartLinkButton>
-
+                            <SweetSoft:SmartLinkButton runat="server"
+                                VisibleConditionKey='<%# this.IsEdit || this.IsView %>'
+                                ID="lbtAction"
+                                CommandName='<%# this.IsEdit ? "ITEM_DETAIL" : "ITEM_VIEW" %>'
+                                CommandArgument='<%# Eval("IdRuiRo_DuAn") %>'
+                                CssClass="btn-grid-action text-decoration-underline"
+                                ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
+                                ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
+                            </SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>' 
                                 ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger" 
                                 ResourceKey='<%# BackEndResourceKeys.DELETE %>' ButtonIcon="fas fa-trash"></SweetSoft:SmartLinkButton>
@@ -133,3 +146,4 @@
         </div>
     </div>
 </div>
+<SweetSoft:CtrlViewRiskDetail ID="CtrlViewRiskDetail1" runat="server" />

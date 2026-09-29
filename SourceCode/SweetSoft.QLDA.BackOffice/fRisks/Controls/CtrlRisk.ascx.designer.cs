@@ -211,5 +211,14 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtCancel;
+
+        /// <summary>
+        /// CtrlViewRiskDetail1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fRisks.Controls.CtrlViewRiskDetail CtrlViewRiskDetail1;
     }
 }
