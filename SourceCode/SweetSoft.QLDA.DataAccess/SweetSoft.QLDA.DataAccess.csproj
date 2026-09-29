@@ -116,6 +116,8 @@
     <Compile Include="TblGiaiDoanDuAnController.cs" />
     <Compile Include="TblGuiNhanKhachHang.cs" />
     <Compile Include="TblGuiNhanKhachHangController.cs" />
+    <Compile Include="TblHeSoDongGop.cs" />
+    <Compile Include="TblHeSoDongGopController.cs" />
     <Compile Include="TblHopDongThucHien.cs" />
     <Compile Include="TblHopDongThucHienController.cs" />
     <Compile Include="TblKhachHang.cs" />
@@ -173,6 +175,8 @@
     <Compile Include="TblThongBaoController.cs" />
     <Compile Include="TblTrinhKyTaiLieu.cs" />
     <Compile Include="TblTrinhKyTaiLieuController.cs" />
+    <Compile Include="TblTrinhKyTaiLieuFile.cs" />
+    <Compile Include="TblTrinhKyTaiLieuFileController.cs" />
     <Compile Include="TblUploadFile.cs" />
     <Compile Include="TblUploadFileController.cs" />
     <Compile Include="TblVaiTroDuAn.cs" />

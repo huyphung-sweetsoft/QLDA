@@ -1083,7 +1083,6 @@ namespace SweetSoft.QLDA.Core.Managers
         #region 4. Khai báo Tên cột CSDL
         public static readonly string ColIdCongViec = TblCongViec.Columns.IdCongViec;
         public static readonly string ColIdDuAn = TblCongViec.Columns.IdDuAn;
-        public static readonly string ColIdGiaiDoan = TblCongViec.Columns.IdGiaiDoan;
         public static readonly string ColIdCongViecCha = TblCongViec.Columns.IdCongViecCha;
         public static readonly string ColIdCongViecPhuThuoc = TblCongViec.Columns.IdCongViecPhuThuoc;
         public static readonly string ColIdDoUuTien = TblCongViec.Columns.IdDoUuTien;

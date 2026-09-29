@@ -38,8 +38,7 @@
         <div class="col-xl-12">
             <div class="card p-3 min-vh-100">
                 <SweetSoft:Navigation runat="server" ID="Navigation1" MainTitle="Project detail" />
-            
-            
+           
                 <asp:UpdatePanel runat="server" ID="upProjectDetail" UpdateMode="Conditional">
                     <ContentTemplate><%-- Tiêu đề và thao tác --%>
                         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-4">
@@ -56,29 +55,47 @@
 
                             <div class="d-flex align-items-center gap-2">
 
-                                <%-- Dropdown trạng thái --%>
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i runat="server" id="iCurrentStatusIcon" class="fas fa-circle text-info me-2 small"></i>
-                                        <asp:Literal runat="server" ID="ltrCurrentStatusName"></asp:Literal>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <asp:Repeater runat="server" ID="rptStatusDropdown" OnItemCommand="rptStatusDropdown_ItemCommand">
-                                            <ItemTemplate>
-                                                <li>
-                                                    <asp:LinkButton 
-                                                        runat="server" 
-                                                        CommandName="ChangeStatus" 
-                                                        CommandArgument='<%# Eval("Value") %>'  
-                                                        CssClass='<%# "dropdown-item " + (Convert.ToByte(Eval("Value")) == CurrentStatusValue ? "active" : "") %>'>
-                                                        <i class='<%# "fas fa-circle me-2 small " + GetStatusCssClass((SweetSoft.QLDA.Core.EnumHelper.Defines.DuAnStatus)Convert.ToByte(Eval("Value"))) %>'></i>
-                                                        <%# Eval("Name") %>
-                                                    </asp:LinkButton>
-                                                </li>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </ul>
-                                </div>
+                                <asp:Panel runat="server" ID="pnlStatusActions" CssClass="d-flex align-items-center gap-2">
+                                    <asp:LinkButton
+                                        runat="server"
+                                        ID="lbtStatusDangThucHien"
+                                        CssClass="btn btn-sm btn-outline-info"
+                                        OnClick="lbtStatusDangThucHien_Click"
+                                        CausesValidation="false">
+                                        <i class="fas fa-play me-1"></i>
+                                        Đang thực hiện
+                                    </asp:LinkButton>
+
+                                    <asp:LinkButton
+                                        runat="server"
+                                        ID="lbtStatusTamDung"
+                                        CssClass="btn btn-sm btn-outline-warning"
+                                        OnClick="lbtStatusTamDung_Click"
+                                        CausesValidation="false">
+                                        <i class="fas fa-pause me-1"></i>
+                                        Tạm dừng
+                                    </asp:LinkButton>
+
+                                    <asp:LinkButton
+                                        runat="server"
+                                        ID="lbtStatusHoanThanh"
+                                        CssClass="btn btn-sm btn-outline-success"
+                                        OnClick="lbtStatusHoanThanh_Click"
+                                        CausesValidation="false">
+                                        <i class="fas fa-check me-1"></i>
+                                        Hoàn thành
+                                    </asp:LinkButton>
+
+                                    <asp:LinkButton
+                                        runat="server"
+                                        ID="lbtStatusKetThuc"
+                                        CssClass="btn btn-sm btn-outline-danger"
+                                        OnClick="lbtStatusKetThuc_Click"
+                                        CausesValidation="false">
+                                        <i class="fas fa-times me-1"></i>
+                                        Kết thúc
+                                    </asp:LinkButton>
+                                </asp:Panel>
 
                                 <asp:UpdatePanel runat="server" ID="upEditProject" UpdateMode="Conditional">
                                     <ContentTemplate>
@@ -87,9 +104,7 @@
                                             Sửa
                                         </asp:LinkButton>
                                     </ContentTemplate>
-                                </asp:UpdatePanel>
-
-                               
+                                </asp:UpdatePanel>                              
                             </div>
                         </div>
 
@@ -153,9 +168,9 @@
 
                                         <div class="col-md-6">
                                             <div class="font-size-8 fw-bold mb-1">
-                                                Hoàn thành thực tế
+                                                <asp:Label runat="server" ID="lblNgayKetThucThucTeTitle" Text="Ngày hoàn thành thực tế"></asp:Label>
                                             </div>
-                                            <asp:Label runat="server" ID="lblNgayHoanThanhThucTe"></asp:Label>
+                                            <asp:Label runat="server" ID="lblNgayKetThucThucTe"></asp:Label>
                                         </div>
 
                                         <div class="col-md-6">
@@ -395,6 +410,39 @@
 </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
+    <SweetSoft:ExtraModal runat="server" ID="mdlStatusChange" Type="Primary">
+        <ContentTemplate>
+            <asp:UpdatePanel ID="upStatusChange" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <div class="p-3">
+                        <asp:HiddenField ID="hfStatusTarget" runat="server" />
+                        <asp:HiddenField ID="hfStatusAtModalOpen" runat="server" />
+                        <p class="text-muted" id="lblStatusDescription" runat="server"></p>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="<%= txtStatusReason.ClientID %>">
+                                Lý do <span class="text-danger">*</span>
+                            </label>
+                            <asp:TextBox ID="txtStatusReason" runat="server" CssClass="form-control"
+                                TextMode="MultiLine" Rows="4" MaxLength="1000"
+                                placeholder="Nhập lý do..."></asp:TextBox>
+                        </div>
+                    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </ContentTemplate>
+        <FooterTemplate>
+            <asp:UpdatePanel ID="upStatusChangeFooter" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <asp:LinkButton ID="lbtConfirmStatusChange" runat="server"
+                        CssClass="btn btn-primary"
+                        CausesValidation="false"
+                        OnClick="lbtConfirmStatusChange_Click">
+                        <i class="fas fa-check me-1"></i> Xác nhận
+                    </asp:LinkButton>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
     <SweetSoft:CtrlLichSuDuAn runat="server" ID="CtrlLichSuDuAn1" />
     <SweetSoft:CtrlDuAnForm runat="server" ID="CtrlDuAnForm1" />
     <SweetSoft:CtrlChonNhanVien runat="server" ID="CtrlChonNhanVien1" />
