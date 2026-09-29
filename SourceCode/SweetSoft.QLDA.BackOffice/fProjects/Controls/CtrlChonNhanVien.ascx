@@ -369,6 +369,16 @@
                 rowEl.removeClass('show-schedule');
             }
         };
+        $(document).on('click', '[id$="btnAccept"]', function () {
+            // Lấy chính xác cái Popup Chọn nhân viên hiện tại
+            var $pickerModal = $('#<%= mdlMemberPicker.ClientID %>');
+
+            // Nếu phát hiện user bấm "Đồng ý" trong lúc Popup này đang mở
+            if ($pickerModal.is(':visible')) {
+                // Kích hoạt hàm ẩn mặc định của Bootstrap
+                $pickerModal.modal('hide');
+            }
+        });
     });
     (function () {
         var BASE_Z = 106000;

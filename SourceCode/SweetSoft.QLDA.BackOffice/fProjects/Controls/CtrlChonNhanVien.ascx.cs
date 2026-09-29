@@ -496,7 +496,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 OnConfirmSelection(tempSelectedIds);
             }
         }
-
         // Bắt tín hiệu "Đồng ý Xóa" từ MessageBox
         public override void ConfirmRequest(ConfirmResult e)
         {
@@ -505,11 +504,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 List<Guid> finalIds = e.Value as List<Guid>;
                 if (finalIds != null)
                 {
+                    // 1. Cập nhật trạng thái đóng trên Server
                     mdlMemberPicker.CloseModal();
 
-                    // [BỔ SUNG]: Ép giao diện cập nhật để giấu Popup đi
-                    upnlMemberPicker.Update();
-
+                    // 2. Trả danh sách về để update UI Form Dự Án (Nó sẽ tự lo việc hiển thị)
                     if (OnConfirmSelection != null)
                     {
                         OnConfirmSelection(finalIds);

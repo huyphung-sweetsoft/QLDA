@@ -516,5 +516,12 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             UpdateMemberCountUI();
             upNhanVienThamGia.Update();
         }
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null && e.CommandName == "CONFIRM_REMOVE_PROJECT_MEMBERS")
+            {
+                CtrlChonNhanVien1.ConfirmRequest(e);
+            }
+        }
     }
 }
