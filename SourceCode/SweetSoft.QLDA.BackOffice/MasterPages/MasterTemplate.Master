@@ -714,7 +714,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                    '<i class="' + meta.icon + ' ' + meta.text + ' font-size-18"></i>' +
                                '</div>' +
                                '<div class="flex-grow-1 overflow-hidden">' +
-                                   '<p class="mb-0 ' + unread + ' text-truncate fs-14">' + n.tieuDe + '</p>' +
+                        '<p class="mb-0 ' + unread + ' text-truncate fs-14" title="' + $('<div>').text(n.tieuDe || '').html().replace(/"/g, '&quot;') + '">' + n.tieuDe + '</p>' +
                                    '<small class="text-muted">' + n.ngayTao + '</small>' +
                                '</div>' +
                            '</a>';
