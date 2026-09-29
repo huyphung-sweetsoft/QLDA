@@ -63,6 +63,15 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         protected void Page_Load(object sender, EventArgs e)
         {
             RegisterAsyncButton();
+
+            // Đảm bảo 2 nút trong popup vẫn nhận postback kể cả khi ExtraModal
+            // được render ngoài UpdatePanel chính.
+            ScriptManager script = ScriptManager.GetCurrent(this.Page);
+            if (script != null)
+            {
+                script.RegisterAsyncPostBackControl(btnQuickApprove);
+                script.RegisterAsyncPostBackControl(btnConfirmReject);
+            }
         }
 
         private void RegisterAsyncButton()
@@ -214,16 +223,34 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                         return;
                     }
 
-                    int rowIndexApprove = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
-                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-
-                    if (Guid.TryParse(grvData.DataKeys[rowIndexApprove].Value.ToString(), out Guid costIdApprove))
+                    // Status pill truyền thẳng IdChiPhi qua CommandArgument.
+                    // Không đổi CSS/UI; chỉ xử lý click để mở popup duyệt/từ chối nhanh.
+                    if (Guid.TryParse(Convert.ToString(e.CommandArgument), out Guid costIdApprove) && costIdApprove != Guid.Empty)
                     {
+                        TblChiPhi cost = TblChiPhi.FetchByID(costIdApprove);
+                        if (cost == null)
+                        {
+                            ShowInvalidDataError();
+                            return;
+                        }
+
                         hdfApproveCostId.Value = costIdApprove.ToString();
+                        ViewState["ApproveCostId"] = costIdApprove.ToString();
                         txtRejectReason.Text = string.Empty;
 
-                        ScriptManager.RegisterStartupScript(this, GetType(), "ResetApproveUI", "$('#divRejectReason').hide(); $('#grpActionButtons').show();", true);
+                        // Luôn mở ở màn hình chọn Duyệt / Từ chối.
+                        ScriptManager.RegisterStartupScript(
+                            this,
+                            GetType(),
+                            "ResetApproveUI",
+                            "$('#divRejectReason').hide(); $('#grpActionButtons').show();",
+                            true);
+
                         mdlFastApprove.OpenModal(true);
+                    }
+                    else
+                    {
+                        ShowInvalidDataError();
                     }
                     break;
 
@@ -294,65 +321,128 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
 
         protected void btnQuickApprove_Click(object sender, EventArgs e)
         {
-            if (Guid.TryParse(hdfApproveCostId.Value, out Guid costId))
+            if (!this.IsPM)
             {
-                try
-                {
-                    TblChiPhi costToApprove = TblChiPhi.FetchByID(costId);
-                    if (costToApprove != null)
-                    {
-                        ConfirmResult result = new ConfirmResult { CommandName = "COST_APPROVE", Value = costToApprove };
-                        this.CURRENT_PAGE.CurrentConfirmResult = result;
+                ShowAccessDeniedNotify();
+                return;
+            }
 
-                        MessageBox msg = new MessageBox(
-                            GetResourceText(BackEndResourceKeys.NOTIFICATION),
-                            string.Format("Bạn có chắc chắn muốn DUYỆT khoản chi <b>{0}</b> này không?", costToApprove.TenKhoanChi),
-                            MSGButton.AcceptCancel,
-                            MSGIcon.Success
-                        );
-
-                        mdlFastApprove.CloseModal();
-                        OpenMessageBox(msg, result, false, false);
-                    }
-                }
-                catch (Exception exc)
+            Guid costId;
+            string approveCostIdValue = Convert.ToString(ViewState["ApproveCostId"]);
+            if (!Guid.TryParse(approveCostIdValue, out costId) || costId == Guid.Empty)
+            {
+                // Fallback cho trường hợp hidden field còn giữ được giá trị.
+                if (!Guid.TryParse(hdfApproveCostId.Value, out costId) || costId == Guid.Empty)
                 {
-                    ShowNotify(exc.Message, MSGType.Error);
+                    ShowInvalidDataError();
+                    return;
                 }
+            }
+            hdfApproveCostId.Value = costId.ToString();
+
+            try
+            {
+                TblChiPhi cost = TblChiPhi.FetchByID(costId);
+                if (cost == null || cost.DaXoa == true)
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+
+                // Chỉ cho duyệt khoản chi đang ở trạng thái Chờ duyệt.
+                if (Convert.ToInt32(cost.TrangThai) != 0)
+                {
+                    ViewState.Remove("ApproveCostId");
+                    hdfApproveCostId.Value = string.Empty;
+                    mdlFastApprove.CloseModal();
+                    Rebind();
+                    return;
+                }
+
+                // Popup này đã là bước xác nhận nên duyệt trực tiếp, không mở thêm MessageBox.
+                cost.TrangThai = 1;
+                cost.LyDoTuChoi = null;
+                cost.Save();
+
+                ViewState.Remove("ApproveCostId");
+                hdfApproveCostId.Value = string.Empty;
+                mdlFastApprove.CloseModal();
+                ShowNotify("Đã phê duyệt khoản chi thành công!", MSGType.Success);
+                Rebind();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
             }
         }
 
         protected void btnConfirmReject_Click(object sender, EventArgs e)
         {
-            if (Guid.TryParse(hdfApproveCostId.Value, out Guid costId))
+            if (!this.IsPM)
             {
-                string reason = txtRejectReason.Text.Trim();
-                if (string.IsNullOrEmpty(reason))
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid costId;
+            string approveCostIdValue = Convert.ToString(ViewState["ApproveCostId"]);
+            if (!Guid.TryParse(approveCostIdValue, out costId) || costId == Guid.Empty)
+            {
+                // Fallback cho trường hợp hidden field còn giữ được giá trị.
+                if (!Guid.TryParse(hdfApproveCostId.Value, out costId) || costId == Guid.Empty)
                 {
-                    ShowNotify("Vui lòng nhập lý do từ chối!", MSGType.Warning);
-                    ScriptManager.RegisterStartupScript(this, GetType(), "KeepRejectUI", "$('#grpActionButtons').hide(); $('#divRejectReason').show();", true);
-                    mdlFastApprove.OpenModal(true);
+                    ShowInvalidDataError();
+                    return;
+                }
+            }
+            hdfApproveCostId.Value = costId.ToString();
+
+            string reason = txtRejectReason.Text.Trim();
+            if (string.IsNullOrEmpty(reason))
+            {
+                ShowNotify("Vui lòng nhập lý do từ chối!", MSGType.Warning);
+                ScriptManager.RegisterStartupScript(
+                    this,
+                    GetType(),
+                    "KeepRejectUI",
+                    "$('#grpActionButtons').hide(); $('#divRejectReason').show();",
+                    true);
+                mdlFastApprove.OpenModal(true);
+                return;
+            }
+
+            try
+            {
+                TblChiPhi cost = TblChiPhi.FetchByID(costId);
+                if (cost == null || cost.DaXoa == true)
+                {
+                    ShowInvalidDataError();
                     return;
                 }
 
-                try
+                // Chỉ cho từ chối khoản chi đang ở trạng thái Chờ duyệt.
+                if (Convert.ToInt32(cost.TrangThai) != 0)
                 {
-                    TblChiPhi cost = TblChiPhi.FetchByID(costId);
-                    if (cost != null)
-                    {
-                        cost.TrangThai = 2;
-                        cost.LyDoTuChoi = reason;
-                        cost.Save();
+                    ViewState.Remove("ApproveCostId");
+                    hdfApproveCostId.Value = string.Empty;
+                    mdlFastApprove.CloseModal();
+                    Rebind();
+                    return;
+                }
 
-                        ShowNotify("Đã từ chối khoản chi!", MSGType.Success);
-                        mdlFastApprove.CloseModal();
-                        Rebind();
-                    }
-                }
-                catch (Exception exc)
-                {
-                    ShowNotify(exc.Message, MSGType.Error);
-                }
+                cost.TrangThai = 2;
+                cost.LyDoTuChoi = reason;
+                cost.Save();
+
+                ViewState.Remove("ApproveCostId");
+                hdfApproveCostId.Value = string.Empty;
+                mdlFastApprove.CloseModal();
+                ShowNotify("Đã từ chối khoản chi!", MSGType.Success);
+                Rebind();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
             }
         }
 

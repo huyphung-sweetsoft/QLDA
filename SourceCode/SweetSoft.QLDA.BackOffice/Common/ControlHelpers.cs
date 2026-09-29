@@ -1229,7 +1229,20 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 dropdown.Items.Add(new DropdownItem(text, value));
             }
         }
+        public void BindTrangThaiVanDe(ExtraDropdown dropdown)
+        {
+            dropdown.Items.Clear();
+            foreach (TrangThaiVanDeEnum source in Enum.GetValues(typeof(TrangThaiVanDeEnum)))
+            {
+                string value = ((int)source).ToString();
+                var field = source.GetType().GetField(source.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+                string text = attribute != null ? attribute.Description : source.ToString();
 
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+        }
         #endregion
         #region Bind Meeting Data
         public void BindTrangThaiLichHop(ExtraDropdown dropdown)

@@ -58,7 +58,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                                 v.MucDoAnhHuong,
                                 v.TrangThai,
                                 v.NguonGocVanDe,
-                                v.NguoiTao
+                                v.NguoiTao,
+                                v.NgayTao
                             FROM TblVanDe v
                             WHERE v.DaXoa = 0 AND v.IdDuAn = @projectId
                         ) AS Base

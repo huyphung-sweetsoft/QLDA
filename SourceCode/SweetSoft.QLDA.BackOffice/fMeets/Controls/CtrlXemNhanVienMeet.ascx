@@ -95,9 +95,4 @@
             </div> 
         </div>
     </ContentTemplate>
-    <FooterTemplate>
-        <button type="button" class="btn btn-secondary px-4 waves-effect" data-bs-dismiss="modal">
-            <i class="fas fa-times me-1"></i> Đóng
-        </button>
-    </FooterTemplate>
 </SweetSoft:ExtraModal>

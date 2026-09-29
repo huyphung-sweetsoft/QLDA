@@ -110,7 +110,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
                 ddlMucDoAnhHuong.SelectedValue = risk.MucDoAnhHuong.ToString();
 
             if (risk.DiemRuiRo != null)
-                txtMucDoRuiRo.Text = risk.DiemRuiRo.ToString();
+                txtMucDoRuiRo.Text = CtrlRisk1.GetMucDoRuiRoText(risk.XacSuatXayRa, risk.MucDoAnhHuong, risk.DiemRuiRo);
 
             txtKeHoachPhongNgua.Text = risk.KeHoachPhongNgua != GetResourceText(BackEndResourceKeys.NOT_ENTERED) ? risk.KeHoachPhongNgua : "";
             txtKeHoachUngPho.Text = risk.KeHoachUngPho != GetResourceText(BackEndResourceKeys.NOT_ENTERED) ? risk.KeHoachUngPho : "";
