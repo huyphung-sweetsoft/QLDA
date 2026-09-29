@@ -32,9 +32,9 @@ namespace SweetSoft.QLDA.Core.Managers
             _repository = new DuAnRepository(_auditManager);
         }
 
-        public DataTable SearchDuAns(string searchTerm, Dictionary<string, object> parameters ,string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchDuAns(string searchTerm, Dictionary<string, object> parameters ,string orderBy, int pageNumber, int pageSize, out int totalRecord, Guid userId, bool isAdmin)
         {
-            return _repository.SearchPaging(searchTerm, parameters,orderBy, pageNumber, pageSize, out totalRecord);
+            return _repository.SearchPaging(searchTerm, parameters,orderBy, pageNumber, pageSize, out totalRecord, userId, isAdmin);
         }
 
         public TblDuAn CreateOrUpdate(TblDuAn dto)

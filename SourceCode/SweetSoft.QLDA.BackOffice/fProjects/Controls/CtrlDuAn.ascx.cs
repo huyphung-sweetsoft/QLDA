@@ -153,7 +153,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 //--------------------------------------------
                 DataTable dt = null;
                 Dictionary<string, object> keyValueSearchs = GetProjectSearchParameters();
-                dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                bool isAdmin = UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
+                dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows, SweetContext.Current.UserId, isAdmin);
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
