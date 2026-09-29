@@ -931,16 +931,29 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.Items.Clear();
             ddl.Items.Add(new ListItem("Không có nhân viên", "0"));
         }
-        public void BindTaskStatus(DropDownList ddl, byte? selectedStatus = null)
+        public void BindTaskStatus(DropDownList dropdown, int selectedValue)
         {
-            ddl.Items.Clear();
-            ddl.Items.Add(new ListItem("Chưa bắt đầu", "0") { Attributes = { ["class"] = "opt-status-todo" } });
-            ddl.Items.Add(new ListItem("Đang làm", "1") { Attributes = { ["class"] = "opt-status-doing" } });
-            ddl.Items.Add(new ListItem("Hoàn thành", "2") { Attributes = { ["class"] = "opt-status-done" } });
+            dropdown.Items.Clear();
 
-            if (selectedStatus.HasValue)
+            foreach (TrangThaiCongViec status in Enum.GetValues(typeof(TrangThaiCongViec)))
             {
-                ddl.SelectedValue = selectedStatus.Value.ToString();
+                if ((int)status == 3) continue;
+                string value = ((int)status).ToString();
+                var field = status.GetType().GetField(status.ToString());
+                var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                     .FirstOrDefault() as DescriptionAttribute;
+                string text = attribute != null ? attribute.Description : status.ToString();
+                dropdown.Items.Add(new ListItem(text, value));
+            }
+            int safeSelectedValue = (selectedValue == 3) ? 2 : selectedValue;
+            if (dropdown.Items.FindByValue(safeSelectedValue.ToString()) != null)
+            {
+                dropdown.ClearSelection();
+                dropdown.SelectedValue = safeSelectedValue.ToString();
+            }
+            else if (dropdown.Items.Count > 0)
+            {
+                dropdown.SelectedIndex = 0;
             }
         }
         public void BindParentTasks(DropDownList ddl, Guid projectId, Guid? excludeTaskId = null, Guid? selectedParentId = null)

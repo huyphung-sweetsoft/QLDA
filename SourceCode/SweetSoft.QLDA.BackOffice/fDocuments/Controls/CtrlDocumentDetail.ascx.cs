@@ -37,7 +37,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 chkGrantExternalUsers.Checked = false;
                 ViewState["GrantIncludeExternal"] = false;
                 BindDocumentPermissionRows(id, false);
-                mdlDocumentPermissions.OpenModal(true);
+                OpenSigningModal(mdlDocumentPermissions, "OpenDossierModal");
             } catch(Exception ex) { ShowNotify(ex.Message,MSGType.Warning); }
         }
 
@@ -83,7 +83,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 chkGrantExternalUsers.Checked = includeExternalUsers;
                 ViewState["GrantIncludeExternal"] = includeExternalUsers;
                 BindDocumentPermissionRows(id, includeExternalUsers);
-                mdlDocumentPermissions.OpenModal(true);
+                OpenSigningModal(mdlDocumentPermissions, "OpenDossierModal");
             }
             catch (Exception ex)
             {
@@ -126,7 +126,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 }
                 DocumentManager.Instance.SaveDocumentGrants(id,grants,Convert.ToString(ViewState["GrantStamp"]));
                 ViewState.Remove("GrantDocumentId");
-                mdlDocumentPermissions.CloseModal(true);
+                CloseWorkspaceModal(mdlDocumentPermissions);
                 ShowNotify("Đã lưu quyền hồ sơ.",MSGType.Success);
             } catch(Exception ex) { ShowNotify(ex.Message,MSGType.Warning); }
         }
@@ -197,6 +197,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
+            // This page has a multipart upload. Preserve the existing menu on
+            // its full postback without changing MasterTemplate for other pages.
+            Control menu = Page.Master == null ? null : Page.Master.FindControl("ltrMenu");
+            if (menu != null) menu.EnableViewState = true;
             fbVersions.UseDocumentFileSets = true;
             // Templated controls inside ExtraModal are created by the modal's
             // own Init. Rebuild the permission repeater at InitComplete so it
@@ -268,6 +272,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected override void OnPreRender(EventArgs e)
         {
+            RegisterWorkspaceControls();
             RegisterVersionHistoryPostBackControls();
             RegisterSigningPostBackControls();
             RegisterCustomerDeliveryPostBackControls();
@@ -643,14 +648,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 .GetCustomerDeliveryHistory(idTaiLieu);
             DataTable storageHistory = DocumentManager.Instance
                 .GetPhysicalStorageHistory(idTaiLieu);
+            DataRow storage = storageHistory.AsEnumerable().FirstOrDefault(r => Convert.ToBoolean(r["LaViTriHienTai"]));
+            lblWorkspaceStorage.Text = HttpUtility.HtmlEncode(storage == null ? "Chưa chọn" : Convert.ToString(storage["TenNoiLuuTru"]));
             DataTable activityHistory = DocumentManager.Instance
                 .GetDocumentActivityHistory(idTaiLieu);
 
-            bool requiresSigning = GetBoolean(document, "CanTrinhKy");
-            bool requiresCustomer = GetBoolean(
-                document,
-                "CanGuiKhachHang");
-            bool requiresStorage = GetBoolean(document, "CanLuuVatLy");
+            bool requiresSigning = true;
+            bool requiresCustomer = true;
+            bool requiresStorage = true;
             bool canManageFiles = DocumentManager.Instance.CanAccessDocument(
                 idTaiLieu,
                 DocumentPermissionKeys.ManageFiles);
@@ -687,16 +692,14 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             lblVersionCount.Text = currentFileSet == null
                 ? "0"
                 : Convert.ToInt32(currentFileSet["FileCount"]).ToString();
-            BindVersionUploader(idTaiLieu, canManageFiles);
+            pnlVersionUploader.Visible = false;
+            BindWorkspace();
 
             bool showSigning = requiresSigning
                 || signingHistory.Rows.Count > 0;
             phSigningTab.Visible = showSigning;
-            phSigningPane.Visible = showSigning;
-            pnlSigningActions.Visible = requiresSigning
-                && CURRENT_PAGE.IsEdit
-                && canSigning
-                && CanSubmitCurrentVersion(versions, signingHistory);
+            phSigningPane.Visible = false;
+            pnlSigningActions.Visible = false;
             BindRepeater(
                 rptSigning,
                 pnlSigning,
@@ -707,10 +710,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || customerHistory.Rows.Count > 0;
             phCustomerTab.Visible = showCustomer;
             phCustomerPane.Visible = showCustomer;
-            pnlCustomerActions.Visible = requiresCustomer
-                && CURRENT_PAGE.IsEdit
-                && canCustomerDelivery
-                && versions.Rows.Count > 0;
+            pnlCustomerActions.Visible = false;
             BindRepeater(
                 rptCustomer,
                 pnlCustomer,
@@ -720,10 +720,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             bool showStorage = requiresStorage
                 || storageHistory.Rows.Count > 0;
             phStorageTab.Visible = showStorage;
-            phStoragePane.Visible = showStorage;
-            pnlPhysicalStorageActions.Visible = requiresStorage
-                && CURRENT_PAGE.IsEdit
-                && canPhysicalStorage;
+            phStoragePane.Visible = false;
+            pnlPhysicalStorageActions.Visible = false;
             BindRepeater(
                 rptStorage,
                 pnlStorage,
@@ -1161,7 +1159,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
+                var selectedIds = SelectedWorkspaceFiles();
+                var state = DocumentManager.Instance.GetWorkspaceFiles(idTaiLieu);
+                if (selectedIds.Any(id => !state.AsEnumerable().Any(r => (Guid)r["IdFile"] == id && !Convert.ToBoolean(r["DaKhoa"]) && Convert.ToString(r["TrangThai"]) != DocumentSigningStatusKeys.Pending)))
+                    throw new InvalidOperationException("Có file đã ký, đang chờ ký hoặc đã thay đổi. Hãy chọn lại.");
                 BindSigningFileSelection(versions, currentVersion);
+                foreach (ListItem option in cblSubmitSigningFiles.Items.Cast<ListItem>().ToList())
+                    if (!selectedIds.Contains(Guid.Parse(option.Value))) cblSubmitSigningFiles.Items.Remove(option);
+                ViewState["WorkspaceSigningFiles"] = selectedIds;
+                cblSubmitSigningFiles.Enabled = false;
                 if (cblSubmitSigningFiles.Items.Count == 0)
                 {
                     ShowNotify(
@@ -1171,8 +1177,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 }
 
                 hdfSubmitSigningDocumentId.Value = idTaiLieu.ToString();
-                lblSubmitSigningVersion.Text = "v"
-                    + GetValueText(currentVersion["SoPhienBan"]);
+                lblSubmitSigningVersion.Text = selectedIds.Count + " file đã chọn";
                 DataTable detail = GetDocumentDetail(idTaiLieu);
                 lblSubmitSigningMethod.Text = detail.Rows.Count == 0
                     ? string.Empty
@@ -1184,7 +1189,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 hdfSubmitSigningSigner.Value = string.Empty;
                 mdlSubmitSigning.Title = GetResourceText(
                     BackEndResourceKeys.SUBMIT_FOR_SIGNING);
-                mdlSubmitSigning.OpenModal(true);
+                OpenSigningModal(mdlSubmitSigning, "OpenDossierModal");
                 KeepSigningTabOpen();
             }
             catch (Exception exc)
@@ -1262,19 +1267,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             try
             {
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.Signing);
-                List<Guid> selectedFileIds = cblSubmitSigningFiles.Items
-                    .Cast<ListItem>()
-                    .Where(item => item.Selected)
-                    .Select(item =>
-                    {
-                        Guid fileId;
-                        return Guid.TryParse(item.Value, out fileId)
-                            ? (Guid?)fileId
-                            : null;
-                    })
-                    .Where(fileId => fileId.HasValue)
-                    .Select(fileId => fileId.Value)
-                    .ToList();
+                List<Guid> selectedFileIds = ViewState["WorkspaceSigningFiles"] as List<Guid> ?? new List<Guid>();
                 if (selectedFileIds.Count == 0)
                 {
                     ShowNotify(
@@ -1288,7 +1281,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     idNguoiKy,
                     selectedFileIds,
                     txtSubmitSigningNote.Text);
-                mdlSubmitSigning.CloseModal(true);
+                CloseWorkspaceModal(mdlSubmitSigning);
                 RefreshSigningDetail(idTaiLieu);
                 ShowSuccessSaveData();
             }
@@ -1324,7 +1317,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected void btnCancelSubmitSigning_Click(object sender, EventArgs e)
         {
-            mdlSubmitSigning.CloseModal(true);
+            CloseWorkspaceModal(mdlSubmitSigning);
             KeepSigningTabOpen();
         }
 
@@ -1445,10 +1438,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             modal.UpdateContentModal();
             string title = HttpUtility.JavaScriptStringEncode(
                 modal.Title ?? string.Empty);
-            string script = string.Format(
-                "CMSMasterJs.OpenDialog('#{0}', '{1}');",
-                modal.ClientID,
-                title);
+            // Match SigningInbox: full postback startup scripts run before
+            // Bootstrap's jQuery bridge. Wait for the DOM and use its native API.
+            string script = "(function(){function openDossierModal(){"
+                + "var modal=document.getElementById('" + modal.ClientID + "');"
+                + "if(!modal)return;var title=modal.querySelector('.modal-title');"
+                + "if(title)title.textContent='" + title + "';"
+                + "bootstrap.Modal.getOrCreateInstance(modal).show();}"
+                + "if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',openDossierModal,{once:true});}"
+                + "else{openDossierModal();}})();";
             ScriptManager.RegisterStartupScript(
                 this.Page,
                 GetType(),
@@ -1478,7 +1476,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     idTaiLieu,
                     idTrinhKyTaiLieu,
                     txtSigningResultNote.Text);
-                mdlSigningResult.CloseModal(true);
+                CloseWorkspaceModal(mdlSigningResult);
                 RefreshSigningDetail(idTaiLieu);
                 ShowSuccessSaveData();
             }
@@ -1499,7 +1497,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected void btnCancelSigningResult_Click(object sender, EventArgs e)
         {
-            mdlSigningResult.CloseModal(true);
+            CloseWorkspaceModal(mdlSigningResult);
             KeepSigningTabOpen();
         }
 
@@ -1535,7 +1533,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         idTaiLieu,
                         idTrinhKyTaiLieu,
                         reason);
-                mdlSigningChanges.CloseModal(true);
+                CloseWorkspaceModal(mdlSigningChanges);
                 RefreshSigningDetail(idTaiLieu);
                 ShowSuccessSaveData();
             }
@@ -1556,7 +1554,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected void btnCancelSigningChanges_Click(object sender, EventArgs e)
         {
-            mdlSigningChanges.CloseModal(true);
+            CloseWorkspaceModal(mdlSigningChanges);
             KeepSigningTabOpen();
         }
 
@@ -1613,7 +1611,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.CustomerDelivery);
                 DataTable detail = GetDocumentDetail(idTaiLieu);
                 if (detail.Rows.Count == 0
-                    || !GetBoolean(detail.Rows[0], "CanGuiKhachHang"))
+                    )
                 {
                     ShowNotify(
                         "Hồ sơ này chưa được cấu hình gửi khách hàng.",
@@ -1631,21 +1629,27 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     return;
                 }
 
+                var ids = SelectedWorkspaceFiles();
+                var fileRows = DocumentManager.Instance.GetWorkspaceFiles(idTaiLieu).AsEnumerable()
+                    .Where(r => ids.Contains((Guid)r["IdFile"])).ToList();
+                if (fileRows.Count != ids.Count) throw new InvalidOperationException("File đã thay đổi. Hãy tải lại trang.");
+                ViewState["WorkspaceDeliveryFiles"] = fileRows.ToDictionary(r => (Guid)r["IdFile"],
+                    r => Convert.ToString(r["TrangThai"]) == DocumentSigningStatusKeys.Signed && r["IdFileSauKy"] != DBNull.Value ? (Guid)r["IdFileSauKy"] : (Guid)r["IdFile"]);
+                litWorkspaceDeliveryFiles.Text = "<ul class='list-group mb-3'>" + string.Join("", fileRows.Select(r =>
+                    "<li class='list-group-item'>" + HttpUtility.HtmlEncode(Convert.ToString(r["TenFile"])) +
+                    " · v" + r["FileVersion"] + " · " + (Convert.ToString(r["TrangThai"]) == DocumentSigningStatusKeys.Signed ? "Bản đã ký" : "Bản chưa ký") + "</li>")) + "</ul>";
                 BindCustomerDeliveryDropdowns();
-                BindCustomerDeliveryVersions(versions);
-                if (ddlCustomerDeliveryVersion.Items.Count <= 1)
-                {
-                    ShowNotify("Hiện gửi khách chỉ hỗ trợ phiên bản có một file. Bộ nhiều file sẽ được hỗ trợ ở chặng tiếp theo.", MSGType.Warning);
-                    return;
-                }
+                var versionId = DocumentManager.Instance.GetCurrentDocumentFileSet(idTaiLieu).VersionId.Value;
+                ddlCustomerDeliveryVersion.Items.Clear();
+                ddlCustomerDeliveryVersion.Items.Add(new ListItem("Các file đã chọn", versionId.ToString()));
                 hdfCustomerDeliveryDocumentId.Value = idTaiLieu.ToString();
-                hdfCustomerDeliveryVersion.Value = string.Empty;
+                hdfCustomerDeliveryVersion.Value = versionId.ToString();
                 hdfCustomerDeliveryCustomer.Value = string.Empty;
                 hdfCustomerDeliveryChannel.Value =
                     DocumentCustomerDeliveryChannelKeys.Email;
                 hdfCustomerDeliverySubmissionToken.Value =
                     Guid.NewGuid().ToString("N");
-                ddlCustomerDeliveryVersion.SelectedValue = string.Empty;
+                ddlCustomerDeliveryVersion.SelectedValue = versionId.ToString();
                 ddlCustomerDeliveryCustomer.SelectedValue = string.Empty;
                 ddlCustomerDeliveryChannel.SelectedValue =
                     DocumentCustomerDeliveryChannelKeys.Email;
@@ -1656,7 +1660,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 chkCustomerDeliveryBeforeSigning.Checked = false;
                 mdlCustomerDelivery.Title = GetResourceText(
                     BackEndResourceKeys.SEND_CUSTOMER);
-                mdlCustomerDelivery.OpenModal(true);
+                OpenSigningModal(mdlCustomerDelivery, "OpenDossierModal");
                 KeepCustomerTabOpen();
             }
             catch (Exception exc)
@@ -1740,7 +1744,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     channelValue,
                     dtCustomerDeliveryDeadline.DateValue,
                     chkCustomerDeliveryBeforeSigning.Checked,
-                    txtCustomerDeliveryNote.Text);
+                    txtCustomerDeliveryNote.Text,
+                    ViewState["WorkspaceDeliveryFiles"] as Dictionary<Guid, Guid>);
                 hasCreatedCustomerDelivery = true;
                 RefreshCustomerDeliveryDetail(idTaiLieu);
                 CloseCustomerDeliveryModal();
@@ -1765,7 +1770,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object sender,
             EventArgs e)
         {
-            mdlCustomerDelivery.CloseModal(true);
+            CloseWorkspaceModal(mdlCustomerDelivery);
             KeepCustomerTabOpen();
         }
 
@@ -1842,7 +1847,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         item["EmailNguoiNhan"]));
                 mdlCustomerDeliveryStatus.Title = GetResourceText(
                     BackEndResourceKeys.UPDATE_CUSTOMER_DELIVERY);
-                mdlCustomerDeliveryStatus.OpenModal(true);
+                OpenSigningModal(mdlCustomerDeliveryStatus, "OpenDossierModal");
                 KeepCustomerTabOpen();
             }
             catch (Exception exc)
@@ -1892,7 +1897,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     idGuiNhanKhachHang,
                     status,
                     txtCustomerDeliveryStatusNote.Text);
-                mdlCustomerDeliveryStatus.CloseModal(true);
+                CloseWorkspaceModal(mdlCustomerDeliveryStatus);
                 RefreshCustomerDeliveryDetail(idTaiLieu);
                 ShowSuccessSaveData();
             }
@@ -1914,7 +1919,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object sender,
             EventArgs e)
         {
-            mdlCustomerDeliveryStatus.CloseModal(true);
+            CloseWorkspaceModal(mdlCustomerDeliveryStatus);
             KeepCustomerTabOpen();
         }
 
@@ -2075,7 +2080,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 txtPhysicalStorageNote.Text = string.Empty;
                 mdlPhysicalStorage.Title = GetResourceText(
                     BackEndResourceKeys.STORE_PHYSICAL_COPY);
-                mdlPhysicalStorage.OpenModal(true);
+                OpenSigningModal(mdlPhysicalStorage, "OpenDossierModal");
                 KeepPhysicalStorageTabOpen();
             }
             catch (Exception exc)
@@ -2124,7 +2129,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         txtPhysicalStorageCode.Text,
                         txtPhysicalStorageOriginalCondition.Text,
                         txtPhysicalStorageNote.Text);
-                mdlPhysicalStorage.CloseModal(true);
+                CloseWorkspaceModal(mdlPhysicalStorage);
                 RefreshPhysicalStorageDetail(idTaiLieu);
                 ShowNotify(
                     string.Format(
@@ -2148,7 +2153,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object sender,
             EventArgs e)
         {
-            mdlPhysicalStorage.CloseModal(true);
+            CloseWorkspaceModal(mdlPhysicalStorage);
             KeepPhysicalStorageTabOpen();
         }
 
@@ -2234,7 +2239,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         idTaiLieu,
                         idPhienBanTaiLieu);
                     BindVersionFileModal(fileRows, idPhienBanTaiLieu);
-                    mdlVersionFiles.OpenModal(true);
+                    OpenSigningModal(mdlVersionFiles, "OpenDossierModal");
                     KeepVersionsTabOpen();
                     return;
                 }
@@ -2249,8 +2254,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     KeepVersionsTabOpen();
                     ShowVersionHistoryNotify(
                         restored.Created
-                            ? "Đã khôi phục mốc lịch sử thành phiên bản hiện tại."
-                            : "Bộ file hiện tại đã giống mốc lịch sử này.",
+                            ? "Đã khôi phục phiên bản trước thành bản hiện tại."
+                            : "Bộ file hiện tại đã giống phiên bản này.",
                         restored.Created ? MSGType.Success : MSGType.Info);
                     return;
                 }
@@ -2287,7 +2292,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     "Document version command {Command} failed for document {DocumentId}, version {VersionId}.",
                     e.CommandName, idTaiLieu, idPhienBanTaiLieu);
                 ShowVersionHistoryNotify(
-                    "Không thể xử lý mốc lịch sử. Vui lòng tải lại trang và thử lại.",
+                    "Không thể xử lý phiên bản trước. Vui lòng tải lại trang và thử lại.",
                     MSGType.Error);
             }
         }
@@ -2321,13 +2326,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             DataRow first = fileRows == null
                 ? null
                 : fileRows.AsEnumerable().FirstOrDefault();
-            string versionNumber = first == null
-                ? versionId.ToString("D")
-                : GetValueText(first["SoPhienBan"]);
+            string changedAt = first == null
+                ? "Lịch sử thay đổi"
+                : FormatDate(first["NgayTao"]);
             int fileCount = first == null
                 ? 0
                 : Convert.ToInt32(first["FileCount"]);
-            lblVersionFilesSummary.Text = "Mốc v" + versionNumber
+            lblVersionFilesSummary.Text = changedAt
                 + " · " + GetVersionFileSummary(fileCount);
         }
 
@@ -2377,6 +2382,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             lblDescription.Text = GetValueText(document["MoTa"]);
             string content = DocumentManager.Instance.GetDocumentContent(
                 (Guid)document["IdTaiLieu"]);
+            pnlWorkspaceContent.Visible = !string.IsNullOrWhiteSpace(content);
             litDocumentContent.Text = string.IsNullOrWhiteSpace(content)
                 ? "<span class='text-muted'>Chưa có nội dung soạn trực tiếp.</span>"
                 : content;
@@ -2826,32 +2832,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             int count;
             if (!int.TryParse(Convert.ToString(value), out count) || count <= 0)
-                return "Mốc này không có file";
+                return "Không có file tại thời điểm này";
             return count + " file trong bộ hồ sơ";
         }
 
         protected bool CanRestoreVersion(object isCurrentValue)
         {
-            Guid idTaiLieu;
-            if (!CURRENT_PAGE.IsEdit
-                || Convert.ToBoolean(isCurrentValue)
-                || !Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
-                || idTaiLieu == Guid.Empty)
-            {
-                return false;
-            }
-
-            DocumentManager manager = CreateRequestDocumentManager();
-            return IsProjectContext
-                ? manager.CanOpenProjectDocument(
-                    idTaiLieu,
-                    ProjectId,
-                    DocumentPermissionKeys.ManageFiles)
-                : manager.CanAccessDocument(
-                    idTaiLieu,
-                    DocumentPermissionKeys.ManageFiles);
+            // Legacy whole-dossier snapshots remain read-only; restore a single file in its history.
+            return false;
         }
-
         protected string GetFileUrl(object value)
         {
             return FileHelpers.IsValidPath(Convert.ToString(value));

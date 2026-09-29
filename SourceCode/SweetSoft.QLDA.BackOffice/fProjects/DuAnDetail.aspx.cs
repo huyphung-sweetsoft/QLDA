@@ -227,46 +227,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             txtContractDescription.Text = hopDong.MoTa;
         }
 
-        protected void lbtOpenContractDocument_Click(object sender, EventArgs e)
-        {
-            if (!IsContractView)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
-            if (IdHopDongThucHien == Guid.Empty)
-            {
-                ShowInvalidDataError();
-                return;
-            }
-
-            try
-            {
-                ContractDocumentLinkResult result = HopDongThucHienManager
-                    .Instance
-                    .GetOrCreateProjectDocument(IdHopDongThucHien);
-
-                string url = RewriteURLHelper.ProjectDocumentDetail(
-                    result.ProjectId,
-                    result.DocumentId) + "?tab=versions";
-                Response.Redirect(GetRelativeClientPath(url), false);
-                Context.ApplicationInstance.CompleteRequest();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                ShowAccessDeniedNotify();
-            }
-            catch (InvalidOperationException exception)
-            {
-                ShowNotify(exception.Message, MSGType.Warning);
-            }
-            catch (Exception exception)
-            {
-                ShowNotify(exception.Message, MSGType.Error);
-            }
-        }
-
         protected void lbtEditProject_Click(object sender, EventArgs e)
         {
             Guid idDuAn = this.QueryId;
@@ -667,29 +627,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             lbtEditProject.Visible = CanModifyProject;
 
             lbtThemThanhVien.Visible = CanModifyProject;
-        }
-
-        private bool CanOpenContractDocument(Guid idHopDongThucHien)
-        {
-            if (!IsContractView ||
-                idHopDongThucHien == Guid.Empty ||
-                QueryId == Guid.Empty ||
-                !DocumentManager.Instance.CanAccessProjectDocument(
-                    QueryId,
-                    ActionKeys.View))
-            {
-                return false;
-            }
-
-            if (HopDongThucHienManager.Instance.HasLinkedDocument(
-                idHopDongThucHien))
-            {
-                return true;
-            }
-
-            return DocumentManager.Instance.CanAccessProjectDocument(
-                QueryId,
-                ActionKeys.Create);
         }
 
         private string GetDisplayText(DataRow row, string columnName)

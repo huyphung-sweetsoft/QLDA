@@ -8,9 +8,10 @@ using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using static SweetSoft.QLDA.Core.Managers.TaskManager;
 
 namespace SweetSoft.QLDA.BackOffice.fTasks
 {
@@ -23,10 +24,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
-            CtrlTask1.NewTaskHandlerCallback = NewTask_Callback;
-            CtrlTask1.NewSubTaskHandlerCallback = NewSubTask_Callback;
             CtrlTask1.EditTaskHandlerCallback = EditTask_Callback;
-
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -36,7 +34,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Projects), true);
                     return;
                 }
-
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.TASK_LIST));
                 Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.TASK_LIST);
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>
@@ -44,95 +41,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
                     { "javascript:;", GetResourceText(BackEndResourceKeys.TASK_LIST) }
                 };
-
                 if (_dictPriorities.Count == 0)
-                {
                     _dictPriorities = TaskManager.Instance.GetDictPriorities();
-                }
             }
         }
 
-        #region Callbacks mở Popup
-        private void NewTask_Callback(object sender, EventArgs e)
-        {
-            _controlHelpers.ClearControlValues(upModal.Controls);
-            hfEditTaskId.Value = string.Empty;
-            mdlEditTask.Title = "Thêm giai đoạn mới";
-
-            string maCV = TaskManager.Instance.GenerateNewTaskCode(CurrentProjectId, null);
-            txtEditMaCv.Text = maCV;
-            txtEditGiaiDoan.Text = "Giai đoạn mới (Gốc)";
-            txtEditTenCv.Text = string.Empty;
-            txtEditMoTa.Text = string.Empty;
-            txtEditThoiHan.Text = "1";
-            txtEditNgayBatDau.Text = DateTime.Today.ToString("yyyy-MM-dd");
-            txtEditNgayKetThuc.Text = DateTime.Today.ToString("yyyy-MM-dd");
-
-            _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId);
-
-            _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, currentOrNewCode: maCV, chiLayGiaiDoan: true);
-
-            _controlHelpers.BindPriorities(ddlEditDoUuTien);
-            _controlHelpers.BindTaskStatus(ddlEditTrangThai, 0);
-
-            ddlEditTrangThai.SelectedValue = "0";
-            ddlEditDoUuTien.SelectedIndex = 0;
-
-            SetFormControlsState(isPhase: true, hasChildren: false);
-            ddlEditCongViecCha.Enabled = false;
-
-            UpdateMinStartDate();
-
-            upModal.Update();
-            mdlEditTask.OpenModal(true);
-        }
-
-        private void NewSubTask_Callback(object sender, Guid parentId)
-        {
-            _controlHelpers.ClearControlValues(upModal.Controls);
-            hfEditTaskId.Value = string.Empty;
-            mdlEditTask.Title = "Thêm công việc con";
-
-            TblCongViec parentTask = TaskManager.Instance.FetchById(parentId);
-            if (parentTask == null) return;
-
-            string maCV = TaskManager.Instance.GenerateNewTaskCode(CurrentProjectId, parentId);
-            txtEditMaCv.Text = maCV;
-            txtEditGiaiDoan.Text = TaskManager.Instance.GetRootPhaseName(CurrentProjectId, parentId);
-            txtEditTenCv.Text = string.Empty;
-            txtEditMoTa.Text = string.Empty;
-            txtEditThoiHan.Text = "1";
-            txtEditNgayBatDau.Text = parentTask.NgayBatDau.HasValue ? parentTask.NgayBatDau.Value.ToString("yyyy-MM-dd") : DateTime.Today.ToString("yyyy-MM-dd");
-            txtEditNgayKetThuc.Text = txtEditNgayBatDau.Text;
-
-            _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId);
-            _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, currentOrNewCode: maCV);
-            _controlHelpers.BindPriorities(ddlEditDoUuTien);
-            _controlHelpers.BindTaskStatus(ddlEditTrangThai, 0);
-
-            if (ddlEditCongViecCha.Items.FindByValue(parentId.ToString()) != null)
-            {
-                ddlEditCongViecCha.SelectedValue = parentId.ToString();
-            }
-            ddlEditTrangThai.SelectedValue = "0";
-
-            SetFormControlsState(isPhase: false, hasChildren: false);
-
-            ddlEditCongViecCha.Enabled = false;
-
-            UpdateMinStartDate();
-
-            upModal.Update();
-            mdlEditTask.OpenModal(true);
-        }
+        #region Logic hiển thị Popup Edit
         private void EditTask_Callback(object sender, EventArgs e)
         {
             Guid taskId = (Guid)sender;
             TblCongViec task = TaskManager.Instance.FetchById(taskId);
             if (task == null || task.DaXoa == true) return;
-
             hfEditTaskId.Value = task.IdCongViec.ToString();
-            mdlEditTask.Title = this.IsEdit ? GetResourceText(BackEndResourceKeys.EDIT) : GetResourceText(BackEndResourceKeys.DETAIL);
+            bool isPhase = TaskManager.Instance.CheckPhase(task);
+            bool hasChildren = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
+            mdlEditTask.Title = isPhase ? "Cập nhật Giai đoạn (Phase)" : "Cập nhật Công việc con";
             txtEditMaCv.Text = task.MaCongViec;
             txtEditTenCv.Text = task.TenCongViec;
             txtEditGiaiDoan.Text = TaskManager.Instance.GetRootPhaseName(CurrentProjectId, task.IdCongViecCha);
@@ -140,138 +63,131 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             txtEditThoiHan.Text = task.ThoiHanNgay.HasValue ? task.ThoiHanNgay.ToString() : "";
             txtEditNgayBatDau.Text = task.NgayBatDau.HasValue ? task.NgayBatDau.Value.ToString("yyyy-MM-dd") : "";
             txtEditNgayKetThuc.Text = task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("yyyy-MM-dd") : "";
-
-            bool isPhase = TaskManager.Instance.CheckPhase(task);
-            bool hasChildren = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
-
-            SetFormControlsState(isPhase, hasChildren);
-
-            _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
-            bool laGiaiDoanGoc = !task.IdCongViecCha.HasValue;
-            _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, task.IdCongViec, task.IdCongViecPhuThuoc, task.MaCongViec, chiLayGiaiDoan: laGiaiDoanGoc);
-
-            if (!task.IdCongViecCha.HasValue)
-            {
-                List<ListItem> invalidItems = new List<ListItem>();
-                foreach (ListItem item in ddlEditPhuThuoc.Items)
-                {
-                    if (Guid.TryParse(item.Value, out Guid depId))
-                    {
-                        var depTask = TaskManager.Instance.FetchById(depId);
-                        if (depTask != null && depTask.IdCongViecCha.HasValue)
-                        {
-                            invalidItems.Add(item);
-                        }
-                    }
-                }
-                foreach (var item in invalidItems) ddlEditPhuThuoc.Items.Remove(item);
-            }
-
+            lblEditMaCv.Text = task.MaCongViec;
+            lblEditGiaiDoan.Text = string.IsNullOrEmpty(txtEditGiaiDoan.Text) ? "Giai đoạn gốc" : txtEditGiaiDoan.Text;
+            lblNgayKetThuc.Text = task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "--/--/----";
             _controlHelpers.BindPriorities(ddlEditDoUuTien, task.IdDoUuTien);
             _controlHelpers.BindTaskStatus(ddlEditTrangThai, task.TrangThai);
-            UpdateMinStartDate();
-
-            byte trangThaiTask = task.TrangThai;
-
-            ddlEditCongViecCha.Enabled = false;
-            ddlEditPhuThuoc.Enabled = false;
-
-            if (trangThaiTask == 1 || trangThaiTask == 2)
+            boxTrangThai.Attributes["class"] = "header-dropdown-box status-box-" + task.TrangThai;
+            string prioClass = "priority-default";
+            if (ddlEditDoUuTien.SelectedItem != null)
             {
-                txtEditNgayBatDau.Enabled = false;
-
-                ListItem itemChuaBatDau = ddlEditTrangThai.Items.FindByValue("0");
-                if (itemChuaBatDau != null)
+                string textPrio = ddlEditDoUuTien.SelectedItem.Text.ToLower();
+                if (textPrio.Contains("cao")) prioClass = "priority-high";
+                else if (textPrio.Contains("trung bình")) prioClass = "priority-med";
+                else if (textPrio.Contains("thấp")) prioClass = "priority-low";
+            }
+            boxUuTien.Attributes["class"] = "header-dropdown-box " + prioClass;
+            if (isPhase)
+            {
+                rowBreadcrumb.Visible = false;
+                colCongViecCha.Visible = false;
+                colPhuThuoc.Visible = true;
+                BindPhaseDependencies(task);
+            }
+            else
+            {
+                rowBreadcrumb.Visible = true;
+                colCongViecCha.Visible = true;
+                colPhuThuoc.Visible = true;
+                _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
+                _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, task.IdCongViec, task.IdCongViecPhuThuoc, task.MaCongViec, chiLayGiaiDoan: false);
+                if (!task.IdCongViecCha.HasValue)
                 {
-                    itemChuaBatDau.Enabled = false;
+                    List<ListItem> invalidItems = new List<ListItem>();
+                    foreach (ListItem item in ddlEditPhuThuoc.Items)
+                    {
+                        if (Guid.TryParse(item.Value, out Guid depId))
+                        {
+                            var depTask = TaskManager.Instance.FetchById(depId);
+                            if (depTask != null && depTask.IdCongViecCha.HasValue) invalidItems.Add(item);
+                        }
+                    }
+                    foreach (var item in invalidItems) ddlEditPhuThuoc.Items.Remove(item);
                 }
             }
-
+            if (isPhase || hasChildren)
+            {
+                divRollUpNotice.Visible = true;
+                txtEditNgayBatDau.Enabled = this.IsEdit;
+                txtEditThoiHan.Enabled = false;
+                ddlEditDoUuTien.Enabled = false;
+                ddlEditTrangThai.Enabled = false;
+            }
+            else
+            {
+                divRollUpNotice.Visible = false;
+                txtEditNgayBatDau.Enabled = this.IsEdit;
+                txtEditThoiHan.Enabled = this.IsEdit;
+                ddlEditDoUuTien.Enabled = this.IsEdit;
+                ddlEditTrangThai.Enabled = this.IsEdit;
+                if (task.TrangThai == 1 || task.TrangThai == 2 || task.TrangThai == 3)
+                {
+                    ListItem itemChuaBatDau = ddlEditTrangThai.Items.FindByValue("0");
+                    if (itemChuaBatDau != null) itemChuaBatDau.Enabled = false;
+                }
+            }
+            ddlEditCongViecCha.Enabled = false;
+            UpdateMinStartDate();
             upModal.Update();
             mdlEditTask.OpenModal(true);
         }
         #endregion
 
-        #region Postbacks & Save
+        #region Logic Lưu Edit
         protected void btnSaveTask_Click(object sender, EventArgs e)
         {
-            try
+            if (!this.IsEdit) { ShowNotify(GetResourceText(BackEndResourceKeys.NO_PERMISSION_EDIT), MSGType.Error); return; }
+            if (!Guid.TryParse(hfEditTaskId.Value, out Guid taskId)) return;
+            try { DuAnManager.Instance.EnsureCanModifyStructure(CurrentProjectId); }
+            catch (Exception ex) { ShowNotify(ex.Message, MSGType.Error); return; }
+            TblCongViec task = TaskManager.Instance.FetchById(taskId);
+            if (task == null) return;
+            bool isPhase = TaskManager.Instance.CheckPhase(task);
+            bool isFatherTask = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
+            byte oldStatus = task.TrangThai;
+            string tenCv = txtEditTenCv.Text.Trim();
+            if (string.IsNullOrEmpty(tenCv)) { ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error); return; }
+            if (!DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out DateTime ngayBd))
             {
-                DuAnManager.Instance.EnsureCanModifyStructure(CurrentProjectId);
+                ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error);
+                return;
             }
-            catch (Exception ex)
+            if (isPhase)
             {
-                ShowNotify(ex.Message, MSGType.Error);
+                DataTable phaseTable = TaskManager.Instance.FetchPhasesByProjectId(CurrentProjectId);
+                List<TblCongViec> phases = GetOrderedProjectPhases(phaseTable);
+                int currentPhaseIndex = phases.FindIndex(x => x.IdCongViec == task.IdCongViec);
+
+                if (currentPhaseIndex <= 0)
+                {
+                    task.IdCongViecPhuThuoc = null;
+                }
+                else
+                {
+                    Guid? selectedDependencyId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid phaseDepId)
+                        ? (Guid?)phaseDepId
+                        : null;
+
+                    if (!selectedDependencyId.HasValue ||
+                        !phases.Take(currentPhaseIndex).Any(x => x.IdCongViec == selectedDependencyId.Value))
+                    {
+                        ShowNotify("Phụ thuộc của Giai đoạn phải là một Giai đoạn đứng trước nó.", MSGType.Warning);
+                        return;
+                    }
+
+                    task.IdCongViecPhuThuoc = selectedDependencyId;
+                }
+            }
+
+            var (minStartAllowed, limitReason) = TaskManager.Instance.GetMinStartDate(task.IdCongViecCha, task.IdCongViecPhuThuoc);
+            if (minStartAllowed.HasValue && ngayBd.Date < minStartAllowed.Value.Date)
+            {
+                ShowNotify(string.Format(GetResourceText(BackEndResourceKeys.INVALID_START_DATE_LIMIT), minStartAllowed.Value.ToString("dd/MM/yyyy"), limitReason), MSGType.Error);
                 return;
             }
 
-            bool isAddNew = string.IsNullOrEmpty(hfEditTaskId.Value);
-            if (isAddNew && !this.IsAdd) { ShowNotify(GetResourceText(BackEndResourceKeys.NO_PERMISSION_ADD), MSGType.Error); return; }
-            if (!isAddNew && !this.IsEdit) { ShowNotify(GetResourceText(BackEndResourceKeys.NO_PERMISSION_EDIT), MSGType.Error); return; }
-
-            TblCongViec task;
-            bool isPhase = false, isFatherTask = false;
-            byte? oldStatus = null;
-
-            if (isAddNew)
-            {
-                task = new TblCongViec { IdCongViec = Guid.NewGuid(), IdDuAn = CurrentProjectId, DaXoa = false, NgayTao = DateTime.Now };
-            }
-            else
-            {
-                if (!Guid.TryParse(hfEditTaskId.Value, out Guid taskId)) return;
-                task = TaskManager.Instance.FetchById(taskId);
-                if (task == null) return;
-                isPhase = TaskManager.Instance.CheckPhase(task);
-                isFatherTask = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
-                oldStatus = task.TrangThai;
-            }
-
-            string tenCv = txtEditTenCv.Text.Trim();
-            if (string.IsNullOrEmpty(tenCv)) { ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error); return; }
-
-            Guid? idCha = null;
-            Guid? idPhuThuoc = null;
-
-            if (isAddNew)
-            {
-                idCha = Guid.TryParse(ddlEditCongViecCha.SelectedValue, out Guid cId) ? (Guid?)cId : null;
-                idPhuThuoc = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid ptId) ? (Guid?)ptId : null;
-
-                isPhase = !idCha.HasValue;
-                isFatherTask = false;
-            }
-            else
-            {
-                idCha = task.IdCongViecCha;
-                idPhuThuoc = task.IdCongViecPhuThuoc;
-            }
-
-            task.IdCongViecCha = idCha;
-            task.IdCongViecPhuThuoc = idPhuThuoc;
-            if (isAddNew) task.MaCongViec = TaskManager.Instance.GenerateNewTaskCode(CurrentProjectId, idCha);
-
-            DateTime ngayBd;
-            if (!isAddNew && (oldStatus == 1 || oldStatus == 2))
-            {
-                ngayBd = task.NgayBatDau ?? DateTime.Today;
-            }
-            else
-            {
-                if (!DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out ngayBd))
-                {
-                    ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error);
-                    return;
-                }
-                var (minStartAllowed, limitReason) = TaskManager.Instance.GetMinStartDate(task.IdCongViecCha, task.IdCongViecPhuThuoc);
-                if (minStartAllowed.HasValue && ngayBd.Date < minStartAllowed.Value.Date)
-                {
-                    ShowNotify(string.Format(GetResourceText(BackEndResourceKeys.INVALID_START_DATE_LIMIT), minStartAllowed.Value.ToString("dd/MM/yyyy"), limitReason), MSGType.Error);
-                    return;
-                }
-            }
             task.NgayBatDau = ngayBd;
-
             if (!isPhase)
             {
                 if (!int.TryParse(txtEditThoiHan.Text.Trim(), out int thoiHan) || thoiHan <= 0)
@@ -279,22 +195,19 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     ShowNotify(GetResourceText(BackEndResourceKeys.TASK_DURATION_MUST_BE_POSITIVE), MSGType.Error);
                     return;
                 }
-
                 byte newStatus = Convert.ToByte(ddlEditTrangThai.SelectedValue);
-
-                if (newStatus != 0 && idPhuThuoc.HasValue)
+                if (newStatus != 0 && task.IdCongViecPhuThuoc.HasValue)
                 {
-                    TblCongViec dependentTask = TaskManager.Instance.FetchById(idPhuThuoc.Value);
-                    if (dependentTask != null && dependentTask.TrangThai != 2)
+                    TblCongViec dependentTask = TaskManager.Instance.FetchById(task.IdCongViecPhuThuoc.Value);
+                    if (dependentTask != null && (dependentTask.TrangThai != 2 && dependentTask.TrangThai != 3))
                     {
                         ShowNotify($"Không thể thực hiện! Công việc này phụ thuộc vào [{dependentTask.MaCongViec}] nhưng công việc đó chưa hoàn thành.", MSGType.Warning);
                         return;
                     }
                 }
-
                 if (newStatus != 0)
                 {
-                    Guid? checkParentId = idCha;
+                    Guid? checkParentId = task.IdCongViecCha;
                     while (checkParentId.HasValue)
                     {
                         TblCongViec pTask = TaskManager.Instance.FetchById(checkParentId.Value);
@@ -303,7 +216,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                             if (pTask.IdCongViecPhuThuoc.HasValue)
                             {
                                 TblCongViec pDepTask = TaskManager.Instance.FetchById(pTask.IdCongViecPhuThuoc.Value);
-                                if (pDepTask != null && pDepTask.TrangThai != 2)
+                                if (pDepTask != null && pDepTask.TrangThai != 2 && pDepTask.TrangThai != 3)
                                 {
                                     ShowNotify($"Không thể thực hiện! Giai đoạn/Công việc cha [{pTask.MaCongViec}] đang bị kẹt phụ thuộc vào [{pDepTask.MaCongViec}] chưa hoàn thành.", MSGType.Warning);
                                     return;
@@ -314,102 +227,128 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                         else break;
                     }
                 }
-
-                if (!isAddNew && (oldStatus == 1 || oldStatus == 2) && newStatus == 0)
+                if ((oldStatus == 1 || oldStatus == 2 || oldStatus == 3) && newStatus == 0)
                 {
                     ShowNotify("Không thể chuyển công việc đang làm hoặc đã hoàn thành về trạng thái Chưa bắt đầu!", MSGType.Warning);
                     return;
                 }
-
                 task.TrangThai = newStatus;
-
-                if (isAddNew && newStatus != 0 || !isAddNew && oldStatus != newStatus)
+                if (oldStatus != newStatus)
                 {
-                    try
-                    {
-                        DuAnManager.Instance.EnsureCanUpdateProgress(CurrentProjectId);
-                    }
-                    catch (Exception ex)
-                    {
-                        ShowNotify(ex.Message, MSGType.Error);
-                        return;
-                    }
+                    try { DuAnManager.Instance.EnsureCanUpdateProgress(CurrentProjectId); }
+                    catch (Exception ex) { ShowNotify(ex.Message, MSGType.Error); return; }
                 }
-
                 if (!isFatherTask) task.IdDoUuTien = Guid.TryParse(ddlEditDoUuTien.SelectedValue, out Guid idUt) ? (Guid?)idUt : null;
-
                 task.ThoiHanNgay = thoiHan;
                 task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);
-
-                if (newStatus == 2)
+                if (newStatus == 2 || newStatus == 3)
                 {
-                    if (oldStatus != 2 || !task.NgayHoanThanhThucTe.HasValue)
-                    {
+                    if ((oldStatus != 2 && oldStatus != 3) || !task.NgayHoanThanhThucTe.HasValue)
                         task.NgayHoanThanhThucTe = DateTime.Now;
+                    if (task.NgayKetThuc.HasValue && task.NgayHoanThanhThucTe.HasValue)
+                    {
+                        if (task.NgayHoanThanhThucTe.Value.Date > task.NgayKetThuc.Value.Date) task.TrangThai = 3;
+                        else task.TrangThai = 2;
                     }
                 }
                 else
-                {
                     task.NgayHoanThanhThucTe = null;
-                }
+                task.IdCongViecPhuThuoc = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid ptId) ? (Guid?)ptId : null;
             }
-            else
-            {
-                if (isAddNew)
-                {
-                    task.TrangThai = 0;
-                    task.ThoiHanNgay = 1;
-                    task.IdDoUuTien = Guid.TryParse(ddlEditDoUuTien.SelectedValue, out Guid idUt) ? (Guid?)idUt : null;
-                    task.NgayKetThuc = ngayBd;
-                }
-            }
-
             task.TenCongViec = tenCv;
             task.MoTa = txtEditMoTa.Text.Trim();
             task.NgayCapNhat = DateTime.Now;
             task.Save();
-
-            if (isAddNew)
+            if (isFatherTask)
             {
-                if (task.IdCongViecCha.HasValue)
-                {
-                    TaskManager.Instance.AutoSetParentPriority(CurrentProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                    TaskManager.Instance.AutoSetParentTime(CurrentProjectId, task.IdCongViecCha.Value);
-                    TaskManager.Instance.AutoSetParentStatus(CurrentProjectId, task.IdCongViecCha.Value);
-                }
+                TaskManager.Instance.AutoSetFirstChildStartTime(CurrentProjectId, task.IdCongViec, task.NgayBatDau.Value, true);
             }
             else
             {
-                if (isFatherTask)
+                TaskManager.Instance.AutoSetDependentTime(CurrentProjectId, task.IdCongViec, true);
+                if (task.IdCongViecCha.HasValue)
                 {
-                    TaskManager.Instance.AutoSetFirstChildStartTime(CurrentProjectId, task.IdCongViec, task.NgayBatDau.Value);
-                }
-                else
-                {
-                    TaskManager.Instance.AutoSetDependentTime(CurrentProjectId, task.IdCongViec);
-                    if (task.IdCongViecCha.HasValue)
-                    {
-                        TaskManager.Instance.AutoSetParentPriority(CurrentProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                        TaskManager.Instance.AutoSetParentTime(CurrentProjectId, task.IdCongViecCha.Value);
-                        TaskManager.Instance.AutoSetParentStatus(CurrentProjectId, task.IdCongViecCha.Value);
-                    }
+                    TaskManager.Instance.AutoSetParentPriority(CurrentProjectId, task.IdCongViecCha.Value, _dictPriorities);
+                    TaskManager.Instance.AutoSetParentTime(CurrentProjectId, task.IdCongViecCha.Value, true);
+                    TaskManager.Instance.AutoSetParentStatus(CurrentProjectId, task.IdCongViecCha.Value);
                 }
             }
-
-            ShowNotify(isAddNew ? GetResourceText(BackEndResourceKeys.NEW_DATA_ADDED_SUCCESSFULLY) : GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);
+            ShowNotify(GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);
             CtrlTask1.Rebind();
             mdlEditTask.CloseModal();
+        }
+
+        private List<TblCongViec> GetOrderedProjectPhases(DataTable phaseTable)
+        {
+            List<TblCongViec> phases = new List<TblCongViec>();
+            if (phaseTable == null) return phases;
+
+            foreach (DataRow row in phaseTable.Rows)
+            {
+                if (row[TaskManager.ColIdCongViec] == DBNull.Value ||
+                    !Guid.TryParse(row[TaskManager.ColIdCongViec].ToString(), out Guid phaseId))
+                    continue;
+
+                TblCongViec phase = TaskManager.Instance.FetchById(phaseId);
+                if (phase != null && phase.IdDuAn == CurrentProjectId && !phase.IdCongViecCha.HasValue && phase.DaXoa != true)
+                    phases.Add(phase);
+            }
+
+            return phases
+                .OrderBy(x =>
+                {
+                    string rootCode = string.IsNullOrWhiteSpace(x.MaCongViec) ? "" : x.MaCongViec.Split('.')[0];
+                    return int.TryParse(rootCode, out int number) ? number : int.MaxValue;
+                })
+                .ThenBy(x => x.MaCongViec)
+                .ToList();
+        }
+
+        private void BindPhaseDependencies(TblCongViec currentPhase)
+        {
+            ddlEditPhuThuoc.Items.Clear();
+
+            List<TblCongViec> phases = GetOrderedProjectPhases(TaskManager.Instance.FetchPhasesByProjectId(CurrentProjectId));
+            int currentIndex = phases.FindIndex(x => x.IdCongViec == currentPhase.IdCongViec);
+
+            if (currentIndex <= 0)
+            {
+                ddlEditPhuThuoc.Items.Add(new ListItem("Giai đoạn đầu tiên nên không có phụ thuộc", ""));
+                ddlEditPhuThuoc.SelectedIndex = 0;
+                ddlEditPhuThuoc.Enabled = false;
+                return;
+            }
+
+            for (int i = 0; i < currentIndex; i++)
+            {
+                TblCongViec previousPhase = phases[i];
+                ddlEditPhuThuoc.Items.Add(new ListItem(
+                    $"[{previousPhase.MaCongViec}] {previousPhase.TenCongViec}",
+                    previousPhase.IdCongViec.ToString()));
+            }
+
+            if (currentPhase.IdCongViecPhuThuoc.HasValue)
+            {
+                ListItem selectedItem = ddlEditPhuThuoc.Items.FindByValue(currentPhase.IdCongViecPhuThuoc.Value.ToString());
+                if (selectedItem != null)
+                    ddlEditPhuThuoc.SelectedValue = selectedItem.Value;
+                else
+                    ddlEditPhuThuoc.SelectedIndex = ddlEditPhuThuoc.Items.Count - 1;
+            }
+            else
+            {
+                ddlEditPhuThuoc.SelectedIndex = ddlEditPhuThuoc.Items.Count - 1;
+            }
+
+            ddlEditPhuThuoc.Enabled = this.IsEdit;
         }
 
         protected void ddlEditCongViecChaSelected(object sender, EventArgs e)
         {
             Guid? parentId = Guid.TryParse(ddlEditCongViecCha.SelectedValue, out Guid pid) ? (Guid?)pid : null;
-            bool isAddNew = string.IsNullOrEmpty(hfEditTaskId.Value);
             txtEditGiaiDoan.Text = TaskManager.Instance.GetRootPhaseName(CurrentProjectId, parentId);
-            string targetCode = isAddNew ? TaskManager.Instance.GenerateNewTaskCode(CurrentProjectId, parentId) : txtEditMaCv.Text.Trim();
-            if (isAddNew) txtEditMaCv.Text = targetCode;
-            Guid? currentExcludeId = isAddNew ? (Guid?)null : (Guid.TryParse(hfEditTaskId.Value, out Guid tid) ? (Guid?)tid : null);
-            _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, currentExcludeId, currentOrNewCode: targetCode);
+            Guid? currentExcludeId = Guid.TryParse(hfEditTaskId.Value, out Guid tid) ? (Guid?)tid : null;
+            _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, currentExcludeId, currentOrNewCode: txtEditMaCv.Text.Trim());
             UpdateMinStartDate();
             upModal.Update();
             mdlEditTask.OpenModal(true);
@@ -424,38 +363,45 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         #endregion
 
         #region Helpers
-        private void SetFormControlsState(bool isPhase, bool hasChildren)
-        {
-            bool canEdit = this.IsEdit;
-
-            txtEditTenCv.Enabled = canEdit;
-            txtEditMoTa.Enabled = canEdit;
-            txtEditNgayBatDau.Enabled = canEdit;
-            ddlEditCongViecCha.Enabled = canEdit;
-            ddlEditPhuThuoc.Enabled = canEdit;
-
-            ddlEditTrangThai.Enabled = canEdit && !isPhase && !hasChildren;
-            txtEditThoiHan.Enabled = canEdit && !isPhase && !hasChildren;
-            ddlEditDoUuTien.Enabled = canEdit && !isPhase && !hasChildren;
-        }
-
         private void UpdateMinStartDate()
         {
             txtEditNgayBatDau.Attributes.Remove("min");
-            Guid? parentId = Guid.TryParse(ddlEditCongViecCha.SelectedValue, out Guid pid) ? (Guid?)pid : null;
-            Guid? depId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid did) ? (Guid?)did : null;
+
+            Guid? parentId = Guid.TryParse(ddlEditCongViecCha.SelectedValue, out Guid pid)
+                ? (Guid?)pid
+                : null;
+
+            Guid? depId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid did)
+                ? (Guid?)did
+                : null;
+
+            if (Guid.TryParse(hfEditTaskId.Value, out Guid taskId))
+            {
+                TblCongViec currentTask = TaskManager.Instance.FetchById(taskId);
+
+                if (currentTask != null && TaskManager.Instance.CheckPhase(currentTask))
+                {
+                    // Phase không có công việc cha. Dependency của Phase luôn là một Phase
+                    // đứng trước nó và lấy trực tiếp từ dropdown để min ngày cập nhật ngay
+                    // khi người dùng đổi dependency.
+                    parentId = null;
+                    depId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid phaseDepId)
+                        ? (Guid?)phaseDepId
+                        : null;
+                }
+            }
+
             var (minStartLimit, _) = TaskManager.Instance.GetMinStartDate(parentId, depId);
 
             if (minStartLimit.HasValue)
             {
                 string minDateStr = minStartLimit.Value.ToString("yyyy-MM-dd");
                 txtEditNgayBatDau.Attributes["min"] = minDateStr;
+
                 if (DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out DateTime currentStartDate))
                 {
                     if (currentStartDate.Date < minStartLimit.Value.Date)
-                    {
                         txtEditNgayBatDau.Text = minDateStr;
-                    }
                 }
                 else
                 {

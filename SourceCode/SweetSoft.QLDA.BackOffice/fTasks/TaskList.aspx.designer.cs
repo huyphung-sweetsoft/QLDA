@@ -69,6 +69,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.HiddenField hfEditTaskId;
 
         /// <summary>
+        /// divContextCard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divContextCard;
+
+        /// <summary>
+        /// lblEditMaCv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEditMaCv;
+
+        /// <summary>
         /// txtEditMaCv control.
         /// </summary>
         /// <remarks>
@@ -78,40 +96,22 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.TextBox txtEditMaCv;
 
         /// <summary>
-        /// txtEditTenCv control.
+        /// rowUuTienTrangThai control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditTenCv;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl rowUuTienTrangThai;
 
         /// <summary>
-        /// txtEditGiaiDoan control.
+        /// boxUuTien control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditGiaiDoan;
-
-        /// <summary>
-        /// ddlEditCongViecCha control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditCongViecCha;
-
-        /// <summary>
-        /// ddlEditPhuThuoc control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlEditPhuThuoc;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl boxUuTien;
 
         /// <summary>
         /// ddlEditDoUuTien control.
@@ -123,6 +123,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.DropDownList ddlEditDoUuTien;
 
         /// <summary>
+        /// boxTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl boxTrangThai;
+
+        /// <summary>
         /// ddlEditTrangThai control.
         /// </summary>
         /// <remarks>
@@ -130,6 +139,96 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlEditTrangThai;
+
+        /// <summary>
+        /// rowBreadcrumb control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl rowBreadcrumb;
+
+        /// <summary>
+        /// lblEditGiaiDoan control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEditGiaiDoan;
+
+        /// <summary>
+        /// txtEditGiaiDoan control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEditGiaiDoan;
+
+        /// <summary>
+        /// txtEditTenCv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEditTenCv;
+
+        /// <summary>
+        /// rowChaVaPhuThuoc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl rowChaVaPhuThuoc;
+
+        /// <summary>
+        /// colCongViecCha control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl colCongViecCha;
+
+        /// <summary>
+        /// ddlEditCongViecCha control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlEditCongViecCha;
+
+        /// <summary>
+        /// colPhuThuoc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl colPhuThuoc;
+
+        /// <summary>
+        /// ddlEditPhuThuoc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlEditPhuThuoc;
+
+        /// <summary>
+        /// divRollUpNotice control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divRollUpNotice;
 
         /// <summary>
         /// txtEditNgayBatDau control.
@@ -148,6 +247,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtEditThoiHan;
+
+        /// <summary>
+        /// lblNgayKetThuc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNgayKetThuc;
 
         /// <summary>
         /// txtEditNgayKetThuc control.

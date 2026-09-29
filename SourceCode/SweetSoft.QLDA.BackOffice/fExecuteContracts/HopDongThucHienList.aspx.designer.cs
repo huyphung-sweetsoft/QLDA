@@ -59,14 +59,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenHopDong;
 
-        /// <summary>
-        /// pnlContractDocumentIdentityLocked control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlContractDocumentIdentityLocked;
 
         /// <summary>
         /// ddlKhachHang control.

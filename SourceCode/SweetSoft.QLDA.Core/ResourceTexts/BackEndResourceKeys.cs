@@ -302,8 +302,6 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PROJECT_CODE = "PROJECT_CODE";
         public const string CONTRACT = "CONTRACT";
         public const string CONTRACT_LIST = "CONTRACT_LIST";
-        public const string CONTRACT_DOCUMENT = "CONTRACT_DOCUMENT";
-        public const string CONTRACT_DOCUMENT_IDENTITY_LOCKED = "CONTRACT_DOCUMENT_IDENTITY_LOCKED";
         public const string CONTRACT_NUMBER = "CONTRACT_NUMBER";
         public const string CONTRACT_VALUE = "CONTRACT_VALUE";
         public const string SIGN_DATE = "SIGN_DATE";
@@ -414,6 +412,9 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string ERROR_OCCURED = "ERROR_OCCURED";
         public const string WORK_SCHEDULE_THIS_MONTH = "WORK_SCHEDULE_THIS_MONTH";
         public const string CONTRACT_DETAIL = "CONTRACT_DETAIL";
+        public const string PERSONNEL_WARNING = "PERSONNEL_WARNING";
+        public const string DOING_X_TASKS = "DOING_X_TASKS";
+        public const string WARNING_REMOVE_ACTIVE_MEMBERS_MSG = "WARNING_REMOVE_ACTIVE_MEMBERS_MSG";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

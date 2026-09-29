@@ -20,15 +20,45 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
     public partial class SigningInbox : BaseAdminPage
     {
         private const string ResultSavedCallbackKey = "SIGNING_INBOX_RESULT_SAVED";
+        private Guid? DetailDocumentId
+        {
+            get
+            {
+                string value = Request.QueryString["document"];
+                if (string.IsNullOrEmpty(value)) return null;
+                Guid id;
+                if (Guid.TryParse(value, out id) && id != Guid.Empty) return id;
+                throw new HttpException(400, "Đường dẫn hồ sơ trình ký không hợp lệ.");
+            }
+        }
+
+        protected string DetailUrl(object id)
+        {
+            return "SigningInbox.aspx?document=" + HttpUtility.UrlEncode(Convert.ToString(id))
+                + "&q=" + HttpUtility.UrlEncode(hdfAppliedKeyword.Value)
+                + "&status=" + HttpUtility.UrlEncode(hdfAppliedStatus.Value)
+                + "&project=" + HttpUtility.UrlEncode(hdfAppliedProject.Value)
+                + "&page=" + HttpUtility.UrlEncode(hdfPageIndex.Value)
+                + "&size=" + HttpUtility.UrlEncode(hdfPageSize.Value);
+        }
 
         public sealed class AssignedDocumentGroup
         {
+            public Guid Id { get; set; }
+            public string ProjectName { get; set; }
+            public string Sender { get; set; }
+            public string Note { get; set; }
+            public DateTime LastSent { get; set; }
+            public int PendingBatches { get; set; }
+            public bool Expanded { get; set; }
             public string TenTaiLieu { get; set; }
             public string MaTaiLieu { get; set; }
             public int FileCount { get; set; }
+            public int TotalFileCount { get; set; }
             public int PendingCount { get; set; }
             public int SignedCount { get; set; }
             public int ChangesCount { get; set; }
+            public int RecalledCount { get; set; }
             public List<DataRowView> Files { get; set; }
         }
 
@@ -67,7 +97,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             Response.Cache.SetCacheability(System.Web.HttpCacheability.NoCache);
             Response.Cache.SetNoStore();
             if (!IsPostBack)
-                SetMetaTagsOgTags("File được giao ký");
+            {
+                SetMetaTagsOgTags("Hồ sơ trình ký của tôi");
+                Navigation1.keyValuePairUrls = new Dictionary<string, string>
+                {
+                    { "javascript:;", "Hồ sơ trình ký" }
+                };
+            }
         }
 
         protected override void OnInit(EventArgs e)
@@ -78,10 +114,21 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             ddlSigningStatus.AddItem("Chờ ký", "PENDING");
             ddlSigningStatus.AddItem("Đã ký", "SIGNED");
             ddlSigningStatus.AddItem("Yêu cầu chỉnh sửa", "CHANGES");
+            ddlSigningStatus.AddItem("Đã thu hồi", "RECALLED");
             txtSigningSearch.EnterSubmitClientID = btnApplyFilters.ClientID;
             // Recreate the same command controls before loading their state
             // and dispatching the postback event.
             Page.InitComplete += Page_InitComplete;
+            Page.PreRenderComplete += Page_PreRenderComplete;
+        }
+
+        private void Page_PreRenderComplete(object sender, EventArgs e)
+        {
+            // The shared pager defaults its selector to the user's saved size.
+            // This page also restores sizes from the list/detail navigation URL.
+            DropDownList sizeSelector = ctrlGridviewPaging.FindControl("ddlPageSize") as DropDownList;
+            if (sizeSelector != null)
+                sizeSelector.SelectedValue = NormalizePageSize(hdfPageSize.Value).ToString();
         }
 
         private void Page_InitComplete(object sender, EventArgs e)
@@ -99,28 +146,58 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
         private void BindAssignedFiles(bool readPostedSnapshot)
         {
-            DataTable files = RequestManager.GetAssignedSigningFiles(
-                RequestedSigningId);
+            DataTable files = RequestManager.GetAssignedSigningFiles(null);
             List<DataRowView> rows = files.DefaultView.Cast<DataRowView>()
                 .ToList();
-            lblPendingCount.Text = rows.Count(row => IsPending(
-                row["TrangThai"])).ToString();
-            lblSignedCount.Text = rows.Count(row => IsSigned(
-                row["TrangThai"])).ToString();
-            lblChangesCount.Text = rows.Count(row => IsChangesRequested(
-                row["TrangThai"])).ToString();
+            Guid? detailId = DetailDocumentId;
+            if (RequestedSigningId.HasValue)
+            {
+                var assigned = rows.FirstOrDefault(r => (Guid)r["IdTrinhKyTaiLieu"] == RequestedSigningId.Value);
+                if (assigned == null) throw new HttpException(403,"Bạn không được giao đợt trình ký này.");
+                detailId = (Guid)assigned["IdTaiLieu"];
+            }
+            bool detail = detailId.HasValue;
+            if (detail)
+            {
+                rows = rows.Where(r => (Guid)r["IdTaiLieu"] == detailId.Value).ToList();
+                if(rows.Count==0) throw new HttpException(403,"Bạn không được giao xử lý hồ sơ này.");
+                lblDetailTitle.Text = HttpUtility.HtmlEncode(Convert.ToString(rows[0]["TenTaiLieu"]));
+                lblDetailScope.Text = HttpUtility.HtmlEncode(Convert.ToString(rows[0]["MaTaiLieu"]) + " · " + ProjectName(rows[0]));
+                lnkOriginalDocument.Visible = RequestManager.CanAccessDocument(detailId.Value, ActionKeys.View);
+                if (lnkOriginalDocument.Visible)
+                    lnkOriginalDocument.NavigateUrl = rows[0]["IdDuAn"] == DBNull.Value
+                        ? RewriteURLHelper.DocumentDetail(detailId.Value)
+                        : RewriteURLHelper.ProjectDocumentDetail((Guid)rows[0]["IdDuAn"], detailId.Value);
+            }
+            pnlDocumentList.Visible = !detail;
+            pnlDetail.Visible = detail;
+            pnlDetailHeader.Visible = detail;
+            ddlProject.Visible = !detail;
+            lnkBackToInbox.NavigateUrl = "SigningInbox.aspx?q=" + HttpUtility.UrlEncode(Request.QueryString["q"])
+                + "&status=" + HttpUtility.UrlEncode(QueryValueOrDefault("status", "PENDING"))
+                + "&project=" + HttpUtility.UrlEncode(QueryValueOrDefault("project", "ALL"))
+                + "&page=" + HttpUtility.UrlEncode(QueryValueOrDefault("page", "1"))
+                + "&size=" + HttpUtility.UrlEncode(QueryValueOrDefault("size", DefaultPageSize().ToString()));
+            ddlProject.ClearItems();
+            ddlProject.AddItem("Tất cả dự án", "ALL");
+            foreach(var group in rows.GroupBy(ProjectKey).OrderBy(g=>ProjectName(g.First())))
+                ddlProject.AddItem(ProjectName(group.First()),group.Key);
 
             string keyword = ReadAppliedValue(
-                hdfAppliedKeyword, string.Empty, readPostedSnapshot).Trim();
+                hdfAppliedKeyword, detail ? "" : Request.QueryString["q"] ?? "", readPostedSnapshot).Trim();
             string statusFilter = NormalizeStatusFilter(ReadAppliedValue(
-                hdfAppliedStatus, "ALL", readPostedSnapshot));
+                hdfAppliedStatus, detail ? "ALL" : QueryValueOrDefault("status", "PENDING"), readPostedSnapshot));
+            string projectFilter = ReadAppliedValue(hdfAppliedProject, detail ? "ALL" : QueryValueOrDefault("project", "ALL"),readPostedSnapshot);
+            if (string.IsNullOrWhiteSpace(projectFilter)) projectFilter = "ALL";
+            int assignedCount = rows.Count;
+            if(!detail && projectFilter!="ALL") rows=rows.Where(r=>ProjectKey(r)==projectFilter).ToList();
             int pageSize = NormalizePageSize(ReadAppliedValue(
-                hdfPageSize, DefaultPageSize().ToString(), readPostedSnapshot));
+                hdfPageSize, QueryValueOrDefault("size", DefaultPageSize().ToString()), readPostedSnapshot));
             int pageIndex = NormalizePageIndex(ReadAppliedValue(
-                hdfPageIndex, "1", readPostedSnapshot));
+                hdfPageIndex, detail ? "1" : QueryValueOrDefault("page", "1"), readPostedSnapshot));
 
             List<AssignedDocumentGroup> documents = rows
-                .GroupBy(row => Convert.ToString(row["IdTaiLieu"]))
+                .GroupBy(row => Convert.ToString(row[detail ? "IdTrinhKyTaiLieu" : "IdTaiLieu"]))
                 .Select(group =>
                 {
                     DataRowView first = group.First();
@@ -147,15 +224,27 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
                     return new AssignedDocumentGroup
                     {
+                        Id = (Guid)first[detail ? "IdTrinhKyTaiLieu" : "IdTaiLieu"],
+                        ProjectName = ProjectName(first),
+                        Sender = Convert.ToString(first["TenNguoiGui"]),
+                        Note = Convert.ToString(first["GhiChuYeuCau"]),
+                        LastSent = group.Max(r=>r["NgayGui"]==DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(r["NgayGui"])),
+                        PendingBatches = matchingFiles.Where(r=>IsPending(r["TrangThai"])).Select(r=>r["IdTrinhKyTaiLieu"]).Distinct().Count(),
+                        Expanded = matchingFiles.Any(r => IsPending(r["TrangThai"]))
+                            || statusFilter != "ALL" || !string.IsNullOrEmpty(keyword)
+                            || (RequestedSigningId.HasValue && (Guid)first["IdTrinhKyTaiLieu"] == RequestedSigningId.Value),
                         TenTaiLieu = Convert.ToString(first["TenTaiLieu"]),
                         MaTaiLieu = Convert.ToString(first["MaTaiLieu"]),
                         FileCount = matchingFiles.Count,
+                        TotalFileCount = group.Count(),
                         PendingCount = matchingFiles.Count(row => IsPending(
                             row["TrangThai"])),
                         SignedCount = matchingFiles.Count(row => IsSigned(
                             row["TrangThai"])),
                         ChangesCount = matchingFiles.Count(row => IsChangesRequested(
                             row["TrangThai"])),
+                        RecalledCount = matchingFiles.Count(row => string.Equals(
+                            Convert.ToString(row["TrangThai"]), "THU_HOI", StringComparison.OrdinalIgnoreCase)),
                         Files = matchingFiles
                         .OrderBy(row => IsPending(row["TrangThai"]) ? 0 : 1)
                         .ThenByDescending(row => row["NgayGui"] == DBNull.Value
@@ -165,14 +254,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                     };
                 })
                 .Where(document => document != null)
-                .OrderByDescending(group => group.Files.Max(row =>
-                    row["NgayGui"] == DBNull.Value
-                        ? DateTime.MinValue
-                        : Convert.ToDateTime(row["NgayGui"])))
+                .OrderBy(group => RequestedSigningId.HasValue && group.Id == RequestedSigningId.Value ? 0 : 1)
+                .ThenBy(group => group.PendingCount > 0 ? 0 : 1)
+                .ThenByDescending(group => group.LastSent)
+                .ThenBy(group => group.Id)
                 .ToList();
 
-            pnlEmpty.Visible = rows.Count == 0;
-            pnlNoMatches.Visible = rows.Count > 0 && documents.Count == 0;
+            pnlEmpty.Visible = assignedCount == 0;
+            pnlNoMatches.Visible = assignedCount > 0 && documents.Count == 0;
+            pnlDocumentList.Visible = !detail && documents.Count > 0;
             pnlFilters.Visible = true;
             rptAssignedDocuments.Visible = documents.Count > 0;
 
@@ -194,6 +284,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             // previous response; handlers then bind from these fields directly.
             hdfAppliedKeyword.Value = keyword;
             hdfAppliedStatus.Value = statusFilter;
+            hdfAppliedProject.Value = projectFilter;
+            ddlProject.SelectedValue = projectFilter;
+            if(!IsPostBack) txtSigningSearch.Text=keyword;
             hdfPageIndex.Value = pageIndex.ToString();
             hdfPageSize.Value = pageSize.ToString();
             ddlSigningStatus.SelectedValue = statusFilter;
@@ -206,19 +299,30 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             ctrlGridviewPaging.TotalItems = documents.Count;
             ctrlGridviewPaging.InitLoad();
 
-            rptAssignedDocuments.DataSource = pageDocuments;
+            rptAssignedDocuments.DataSource = detail ? pageDocuments : null;
             rptAssignedDocuments.DataBind();
+            grvDocumentList.CurrentPageIndex = pageIndex;
+            grvDocumentList.CurrentPageSize = pageSize;
+            grvDocumentList.DataSource = detail ? null : pageDocuments;
+            grvDocumentList.DataBind();
         }
+
+        private static string ProjectKey(DataRowView row) { return row["IdDuAn"]==DBNull.Value ? "COMMON" : Convert.ToString(row["IdDuAn"]); }
+        private static string ProjectName(DataRowView row) { return row["IdDuAn"]==DBNull.Value ? "Hồ sơ chung" : Convert.ToString(row["TenDuAn"]); }
+        protected void ddlProject_SelectedValueChanged(object sender,EventArgs e)
+        { hdfAppliedProject.Value=ddlProject.SelectedValue; hdfPageIndex.Value="1"; BindAssignedFiles(); }
 
         private string ReadAppliedValue(
             HiddenField field, string fallback, bool readPostedSnapshot)
         {
-            string value = null;
-            if (readPostedSnapshot && IsPostBack)
-                value = Request.Form[field.UniqueID];
-            else
-                value = field.Value;
+            if (IsPostBack)
+                return (readPostedSnapshot ? Request.Form[field.UniqueID] : field.Value) ?? fallback;
+            return string.IsNullOrEmpty(field.Value) ? fallback : field.Value;
+        }
 
+        private string QueryValueOrDefault(string name, string fallback)
+        {
+            string value = Request.QueryString[name];
             return string.IsNullOrWhiteSpace(value) ? fallback : value;
         }
 
@@ -234,7 +338,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         {
             int pageSize;
             if (!int.TryParse(value, out pageSize)
-                || !new[] { 10, 20, 30, 50, 100 }.Contains(pageSize))
+                || !new[] { 10, 20, 30, 50, 100, 200, 300, 500 }.Contains(pageSize))
             {
                 return 20;
             }
@@ -256,6 +360,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 return "SIGNED";
             if (string.Equals(value, "CHANGES", StringComparison.OrdinalIgnoreCase))
                 return "CHANGES";
+            if (string.Equals(value, "RECALLED", StringComparison.OrdinalIgnoreCase)) return "RECALLED";
             return "ALL";
         }
 
@@ -266,6 +371,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 case "PENDING": return IsPending(status);
                 case "SIGNED": return IsSigned(status);
                 case "CHANGES": return IsChangesRequested(status);
+                case "RECALLED": return Convert.ToString(status)=="THU_HOI";
                 default: return true;
             }
         }
@@ -292,6 +398,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             txtSigningSearch.Text = string.Empty;
             ddlSigningStatus.SelectedValue = "ALL";
             hdfAppliedKeyword.Value = string.Empty;
+            hdfAppliedProject.Value = "ALL";
             hdfAppliedStatus.Value = "ALL";
             hdfPageIndex.Value = "1";
             BindAssignedFiles();
@@ -312,7 +419,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 e.CurrentPageNumber.ToString()).ToString();
             hdfPageSize.Value = NormalizePageSize(
                 e.CurrentPageSize.ToString()).ToString();
-            BindAssignedFiles();
+            // The shared pager owns a nested conditional UpdatePanel. Refresh
+            // the parent too so rows and hidden paging state match the pager.
+            RefreshAssignedFiles();
         }
 
         protected void rptAssignedDocuments_ItemDataBound(
@@ -343,7 +452,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
         private DataRow GetAssignedPendingFile(Guid signingFileId)
         {
-            return RequestManager.GetAssignedSigningFiles(RequestedSigningId)
+            // A notification opens the dossier's batches, not only the batch
+            // in its URL. Authorization still comes from the assigned-user query.
+            return RequestManager.GetAssignedSigningFiles(null)
                 .AsEnumerable()
                 .FirstOrDefault(row =>
                     row.Field<Guid>("IdTrinhKyTaiLieuFile") == signingFileId
@@ -574,6 +685,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             if (status == DocumentSigningStatusKeys.Signed) return "Đã ký";
             if (status == DocumentSigningStatusKeys.ChangesRequested)
                 return "Yêu cầu chỉnh sửa";
+            if (status == "THU_HOI") return "Đã thu hồi";
             return status;
         }
 

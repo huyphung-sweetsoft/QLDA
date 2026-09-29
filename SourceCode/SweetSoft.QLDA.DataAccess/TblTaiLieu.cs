@@ -603,25 +603,6 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		private SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection colTblHopDongThucHienRecords;
-		public SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection TblHopDongThucHienRecords()
-		{
-			if(colTblHopDongThucHienRecords == null)
-			{
-				colTblHopDongThucHienRecords = new SweetSoft.QLDA.DataAccess.TblHopDongThucHienCollection().Where(TblHopDongThucHien.Columns.IdTaiLieu, IdTaiLieu).Load();
-				colTblHopDongThucHienRecords.ListChanged += new ListChangedEventHandler(colTblHopDongThucHienRecords_ListChanged);
-			}
-			return colTblHopDongThucHienRecords;
-		}
-				
-		void colTblHopDongThucHienRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblHopDongThucHienRecords[e.NewIndex].IdTaiLieu = IdTaiLieu;
-            }
-		}
 		private SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection colTblLichSuTaiLieuRecords;
 		public SweetSoft.QLDA.DataAccess.TblLichSuTaiLieuCollection TblLichSuTaiLieuRecords()
 		{
@@ -1130,17 +1111,6 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
-                if (colTblHopDongThucHienRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblHopDongThucHien item in colTblHopDongThucHienRecords)
-                    {
-                        if (item.IdTaiLieu == null ||item.IdTaiLieu != IdTaiLieu)
-                        {
-                            item.IdTaiLieu = IdTaiLieu;
-                        }
-                    }
-               }
-		
                 if (colTblLichSuTaiLieuRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblLichSuTaiLieu item in colTblLichSuTaiLieuRecords)
@@ -1193,11 +1163,6 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
-                if (colTblHopDongThucHienRecords != null)
-                {
-                    colTblHopDongThucHienRecords.SaveAll();
-               }
-		
                 if (colTblLichSuTaiLieuRecords != null)
                 {
                     colTblLichSuTaiLieuRecords.SaveAll();
