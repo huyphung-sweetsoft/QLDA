@@ -681,8 +681,8 @@
                             <span class="text-warning text-dark"><%= GetResourceText("DUE_SOON") %></span>
                         </div>
                     </div>
-                    <asp:LinkButton ID="lbtSwapPhase" runat="server" OnClick="lbtSwapPhase_Click" CssClass="btn-swap-custom font-mobile-small me-2 pt-1 pb-1 px-2">
-                        <i class="fas fa-exchange-alt me-1"></i> Đổi vị trí
+                    <asp:LinkButton ID="lbtConfigHeSo" runat="server" OnClick="lbtConfigHeSo_Click" CssClass="btn-swap-custom font-mobile-small me-2 pt-1 pb-1 px-2">
+                        <i class="fas fa-star text-warning me-1"></i> Hệ số đóng góp
                     </asp:LinkButton>
                     <SweetSoft:ExtraButton ButtonIcon="Add" ButtonStyle="Info" CssClass="waves-effect waves-light font-mobile-small" ID="lbtAdd" OnClick="lbtAdd_Click" Visible="false" runat="server">Add new</SweetSoft:ExtraButton>
                 </div>

@@ -25,6 +25,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         {
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlTask1.EditTaskHandlerCallback = EditTask_Callback;
+            CtrlTask1.ConfigHeSoHandlerCallback = ConfigHeSo_Callback;
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -416,7 +417,86 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             mdlEditTask.OpenModal(true);
             ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(), $"alert('{safeMsg}');", true);
         }
+        #region Logic Cấu Hình Hệ Số Đóng Góp (Popup)
 
+        private void ConfigHeSo_Callback(object sender, EventArgs e)
+        {
+            if (!this.IsEdit)
+            {
+                ShowNotify(GetResourceText(BackEndResourceKeys.NO_PERMISSION_EDIT), MSGType.Error);
+                return;
+            }
+
+            // Lấy 3 dòng hệ số của RIÊNG PROJECT NÀY
+            DataTable dtHeSo = HeSoDongGopManager.Instance.GetHeSoCuaDuAn(CurrentProjectId);
+
+            // Chốt chặn an toàn: Nếu dự án cũ chưa có hệ số -> Khởi tạo cho nó luôn
+            if (dtHeSo == null || dtHeSo.Rows.Count == 0)
+            {
+                HeSoDongGopManager.Instance.InitializeProjectCoefficients(CurrentProjectId);
+                dtHeSo = HeSoDongGopManager.Instance.GetHeSoCuaDuAn(CurrentProjectId);
+            }
+
+            rptHeSoDongGop.DataSource = dtHeSo;
+            rptHeSoDongGop.DataBind();
+            upHeSoDongGop.Update();
+            mdlHeSoDongGop.OpenModal(true);
+        }
+
+        protected void btnSaveHeSo_Click(object sender, EventArgs e)
+        {
+            if (!this.IsEdit) return;
+
+            try
+            {
+                List<TblHeSoDongGop> lstUpdate = new List<TblHeSoDongGop>();
+
+                // Quét qua Repeater để lấy ID và Hệ số mới
+                foreach (RepeaterItem item in rptHeSoDongGop.Items)
+                {
+                    if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                    {
+                        HiddenField hdfIdDoUuTien = (HiddenField)item.FindControl("hdfIdDoUuTien");
+                        HiddenField hdfIdHeSoDongGop = (HiddenField)item.FindControl("hdfIdHeSoDongGop");
+                        TextBox txtHeSo = (TextBox)item.FindControl("txtHeSo");
+
+                        if (Guid.TryParse(hdfIdDoUuTien.Value, out Guid idDoUuTien) &&
+                            decimal.TryParse(txtHeSo.Text.Trim(), out decimal heSo))
+                        {
+                            Guid.TryParse(hdfIdHeSoDongGop.Value, out Guid idHeSoDongGop);
+
+                            lstUpdate.Add(new TblHeSoDongGop
+                            {
+                                IdHeSoDongGop = idHeSoDongGop,
+                                IdDoUuTien = idDoUuTien,
+                                HeSoDongGop = heSo
+                            });
+                        }
+                    }
+                }
+
+                // Lưu Update đè lên 3 dòng của Project này
+                bool isSaved = HeSoDongGopManager.Instance.SaveHeSoCuaDuAn(CurrentProjectId, lstUpdate);
+                if (isSaved)
+                {
+                    ShowNotify("Cập nhật hệ số đóng góp thành công!", MSGType.Success);
+                    mdlHeSoDongGop.CloseModal();
+
+                    // Nạp lại danh sách công việc ở UI -> Tự động truy vấn lại -> Cập nhật toàn bộ điểm Task!
+                    CtrlTask1.Rebind();
+                }
+                else
+                {
+                    ShowNotify("Không thể lưu hệ số đóng góp.", MSGType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowNotify(ex.Message, MSGType.Error);
+            }
+        }
+
+        #endregion
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlTask1.ConfirmRequest(e);

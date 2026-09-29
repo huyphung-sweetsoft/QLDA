@@ -20,6 +20,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public EventHandler NewTaskHandlerCallback;
         public EventHandler<Guid> NewSubTaskHandlerCallback;
         public EventHandler EditTaskHandlerCallback;
+        public EventHandler ConfigHeSoHandlerCallback;
         public Guid ProjectId
         {
             get
@@ -665,9 +666,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ShowNotify(ex.Message, MSGType.Error);
             }
         }
-        protected void lbtSwapPhase_Click(object sender, EventArgs e)
+        protected void lbtConfigHeSo_Click(object sender, EventArgs e)
         {
-            CtrlSwapPhase1.OpenModal(this.ProjectId);
+            // Bắn sự kiện ra Trang Chính (TaskList.aspx) để nó mở Popup
+            if (ConfigHeSoHandlerCallback != null)
+                ConfigHeSoHandlerCallback(sender, e);
         }
         #endregion
     }
