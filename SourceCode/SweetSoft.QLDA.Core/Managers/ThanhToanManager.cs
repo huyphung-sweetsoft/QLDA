@@ -75,21 +75,19 @@ namespace SweetSoft.QLDA.Core.Managers
             return prefix + (maxSeq + 1).ToString();
         }
 
-        public TblThanhToan CreatePayment(Guid projectId, string paymentName,
+        public TblThanhToan CreatePayment(Guid projectId, string paymentCode, string paymentName,
             decimal amount, DateTime dueDate, byte status, DateTime? paidDate, string note)
         {
             RequireAccess(projectId, ActionKeys.Create);
             TblDuAn project = DuAnManager.Instance.GetDuAnById(projectId);
             BusinessValidator.ThrowIfNull(project, BackEndResourceKeys.NOT_FOUND, nameof(projectId));
-            string prefix = BuildPaymentCodePrefix(project.MaDuAn);
-            int maxSeq = _repository.GetMaxSequence(projectId, prefix);
-            string paymentCode = prefix + (maxSeq + 1).ToString();
-            status = NormalizeUnpaidStatus(status, dueDate);
+            paymentCode = NormalizePaymentCode(paymentCode);
+            ValidatePaymentCode(paymentCode);
             ValidatePayment(paymentName, amount, status, paidDate, note);
-            BusinessValidator.ThrowIf(paymentCode.Length > 50 || dueDate == DateTime.MinValue,
-                BackEndResourceKeys.INVALID_DATA, nameof(paymentCode));
+            BusinessValidator.ThrowIf(dueDate == DateTime.MinValue,
+                BackEndResourceKeys.INVALID_DATA, nameof(dueDate));
             BusinessValidator.ThrowIf(_repository.GetByCode(paymentCode) != null,
-                BackEndResourceKeys.INVALID_DATA, nameof(paymentCode));
+                BackEndResourceKeys.CODE_ALREADY_EXISTS, nameof(paymentCode));
 
             bool paid = status == (byte)ThanhToanStatus.DaThanhToan;
             var item = new TblThanhToan
@@ -117,16 +115,21 @@ namespace SweetSoft.QLDA.Core.Managers
             return (projectCode ?? string.Empty).Trim() + "-TT-";
         }
 
-        public TblThanhToan UpdatePayment(Guid id, Guid projectId, string paymentName,
+        public TblThanhToan UpdatePayment(Guid id, Guid projectId, string paymentCode, string paymentName,
             decimal amount, byte status, DateTime? paidDate, string note)
         {
             RequireAccess(projectId, ActionKeys.Update);
             TblThanhToan item = _repository.GetByProject(id, projectId);
             BusinessValidator.ThrowIfNull(item, BackEndResourceKeys.NOT_FOUND, nameof(id));
-            status = NormalizeUnpaidStatus(status, item.HanThanhToan);
+            paymentCode = NormalizePaymentCode(paymentCode);
+            ValidatePaymentCode(paymentCode);
             ValidatePayment(paymentName, amount, status, paidDate, note);
+            TblThanhToan duplicate = _repository.GetByCode(paymentCode);
+            BusinessValidator.ThrowIf(duplicate != null && duplicate.IdThanhToan != item.IdThanhToan,
+                BackEndResourceKeys.CODE_ALREADY_EXISTS, nameof(paymentCode));
 
             bool paid = status == (byte)ThanhToanStatus.DaThanhToan;
+            item.MaDotThanhToan = paymentCode;
             item.TenDotThanhToan = paymentName.Trim();
             item.SoTien = amount;
             item.TrangThai = status;
@@ -175,23 +178,27 @@ namespace SweetSoft.QLDA.Core.Managers
                 BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(paymentName));
             BusinessValidator.ThrowIf(paymentName.Length > 255 || amount <= 0 || note.Length > 1000,
                 BackEndResourceKeys.INVALID_DATA, nameof(paymentName));
-            BusinessValidator.ThrowIf(!Enum.IsDefined(typeof(ThanhToanStatus), status),
+            BusinessValidator.ThrowIf(
+                status != (byte)ThanhToanStatus.ChuaThanhToan
+                && status != (byte)ThanhToanStatus.DaThanhToan,
                 BackEndResourceKeys.INVALID_DATA, nameof(status));
             bool paid = status == (byte)ThanhToanStatus.DaThanhToan;
             BusinessValidator.ThrowIf(paid && (!paidDate.HasValue || paidDate.Value.Date > DateTime.Today),
                 BackEndResourceKeys.PAYMENT_DATE_REQUIRED, nameof(paidDate));
         }
 
-        private static byte NormalizeUnpaidStatus(byte status, DateTime? dueDate)
+        private static string NormalizePaymentCode(string paymentCode)
         {
-            if (status == (byte)ThanhToanStatus.DaThanhToan)
-                return status;
-            if (status != (byte)ThanhToanStatus.ChuaThanhToan
-                && status != (byte)ThanhToanStatus.TreHan)
-                return status;
-            return dueDate.HasValue && dueDate.Value.Date < DateTime.Today
-                ? (byte)ThanhToanStatus.TreHan
-                : (byte)ThanhToanStatus.ChuaThanhToan;
+            return (paymentCode ?? string.Empty).Trim();
         }
+
+        private static void ValidatePaymentCode(string paymentCode)
+        {
+            BusinessValidator.ThrowIfNullOrEmpty(paymentCode,
+                BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(paymentCode));
+            BusinessValidator.ThrowIf(paymentCode.Length > 50,
+                BackEndResourceKeys.INVALID_DATA, nameof(paymentCode));
+        }
+
     }
 }

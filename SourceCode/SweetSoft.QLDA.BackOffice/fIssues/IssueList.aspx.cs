@@ -58,6 +58,17 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                 };
                 ApplyControlsText();
                 CtrlIssue1.InitControls();
+
+                Guid issueId;
+                if (Guid.TryParse(Request.QueryString["issueId"], out issueId))
+                {
+                    TblVanDe issue = TblVanDe.FetchByID(issueId);
+                    if (issue != null && issue.DaXoa != true
+                        && issue.IdDuAn == CurrentProjectId)
+                    {
+                        EditIssueAction(issueId, EventArgs.Empty);
+                    }
+                }
             }
         }
 

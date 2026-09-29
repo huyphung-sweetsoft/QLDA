@@ -84,7 +84,7 @@ namespace SweetSoft.QLDA.Core.Respositories
 
                 ;WITH MyProjects AS (
                     SELECT da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn, da.NgayBatDau AS ProjectStartDate,
-                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro, da.SuDungHeSoDongGopMacDinh
+                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro
                     FROM TblDuAn da
                     INNER JOIN TblThanhVienDuAn tv ON tv.IdDuAn = da.IdDuAn
                     INNER JOIN TblVaiTroDuAn vt ON vt.IdVaiTroDuAn = tv.IdVaiTroDuAn
