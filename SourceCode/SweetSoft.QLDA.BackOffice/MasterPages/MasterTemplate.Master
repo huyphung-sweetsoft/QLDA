@@ -357,7 +357,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                      <%-- Icon chuông thông báo --%>
                                                      <div class="dropdown" id="bellDropdownWrapper">
                                                          <a href="javascript:void(0)"
-                                                            class="dropdown-notification dropdown-toggle position-relative"
+                                                            class="dropdown-notification dropdown-toggle position-relative ignore"
                                                             id="bellToggle"
                                                             data-bs-toggle="dropdown"
                                                             data-bs-auto-close="outside"
