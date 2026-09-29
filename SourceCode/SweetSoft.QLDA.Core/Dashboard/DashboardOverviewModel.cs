@@ -5,7 +5,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
 {
     public class DashboardOverviewModel
     {
-        public decimal AtRiskProjectRate { get; set; }
+        public int AtRiskProjectCount { get; set; }
         public int ActiveProjectCount { get; set; }
         public int UpcomingMeetingCount { get; set; }
         /// <summary>
@@ -41,12 +41,15 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public List<ProjectProgressStatistic> ProjectProgressStatistics { get; set; }
         public List<ProjectAttentionStatistic> ProjectAttentionStatistics { get; set; }
         public List<UpcomingMeetingSummary> UpcomingMeetings { get; set; }
+        public List<DashboardTaskSummary> TaskDetails { get; set; }
+        public List<ProjectEmployeeSummary> ProjectEmployees { get; set; }
         public ResourceOverviewModel ResourceOverview { get; set; }
         public CostOverviewModel CostOverview { get; set; }
 
     }
     public class ProjectStatusStatistic
     {
+        public byte StatusCode { get; set; }
         public string Status { get; set; }
         public int Count { get; set; }
     }
@@ -97,9 +100,109 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public Guid ProjectId { get; set; }
 
         public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
         public string Title { get; set; }
         public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public string Location { get; set; }
+        public string Content { get; set; }
+    }
+
+    /// <summary>
+    /// Thông tin công việc rút gọn để hiển thị trong danh sách nhanh của KPI.
+    /// </summary>
+    public class DashboardTaskSummary
+    {
+        public Guid TaskId { get; set; }
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public string TaskCode { get; set; }
+        public string TaskName { get; set; }
+        public string Status { get; set; }
+        public int StatusCode { get; set; }
+        public DateTime? Deadline { get; set; }
+        public int Progress { get; set; }
+        public bool IsCompleted { get; set; }
+        public bool IsOverdue { get; set; }
+    }
+
+    // Dữ liệu của trang tổng quan: trạng thái lưu trên dự án và cảnh báo hạn
+    // được giữ riêng để một dự án không bị đếm hai lần trong phân bố trạng thái.
+    public class DashboardOverviewSummary
+    {
+        public DateTime GeneratedAt { get; set; }
+        public List<OverviewProjectItem> Projects { get; set; }
+        public List<DashboardTaskSummary> Tasks { get; set; }
+        public List<UpcomingMeetingSummary> Meetings { get; set; }
+        public List<ProjectStatusStatistic> Statuses { get; set; }
+        public List<OverviewPendingCostItem> PendingCosts { get; set; }
+        public List<OverviewImportantIssue> OpenIssues { get; set; }
+        public List<OverviewImportantIssue> ImportantIssues { get; set; }
+        public List<OverviewRecordedRisk> RecordedRisks { get; set; }
+    }
+
+    public class OverviewImportantIssue
+    {
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public Guid IssueId { get; set; }
+        public string IssueCode { get; set; }
+        public string IssueName { get; set; }
+        public string HandlingPlan { get; set; }
+        public int ImpactLevel { get; set; }
+    }
+
+    public class OverviewRecordedRisk
+    {
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public Guid RiskId { get; set; }
+        public string RiskName { get; set; }
+        public int? Probability { get; set; }
+        public int? ImpactLevel { get; set; }
+        public float? RiskScore { get; set; }
+        public string PreventionPlan { get; set; }
+        public string ResponsePlan { get; set; }
+    }
+
+    public class OverviewPendingCostItem
+    {
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public string CostCode { get; set; }
+        public string CostName { get; set; }
+        public decimal Amount { get; set; }
+    }
+
+    public class OverviewProjectItem
+    {
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public byte StatusCode { get; set; }
+        public string Status { get; set; }
+        public DateTime ExpectedEndDate { get; set; }
+        public bool IsOverdue { get; set; }
+        public int OverdueDays { get; set; }
+        public int TaskCount { get; set; }
+        public int CompletedTaskCount { get; set; }
+        public int OverdueTaskCount { get; set; }
+        public int DueSoonTaskCount { get; set; }
+        public int ImportantIssueCount { get; set; }
+        public bool NeedsAttention { get { return IsOverdue || OverdueTaskCount > 0 || ImportantIssueCount > 0; } }
+    }
+
+    /// <summary>
+    /// Thông tin nhân sự thuộc dự án để mở danh sách nhanh từ KPI.
+    /// </summary>
+    public class ProjectEmployeeSummary
+    {
+        public Guid EmployeeId { get; set; }
+        public string DisplayName { get; set; }
     }
     public class ProjectAttentionStatistic
     {
@@ -126,40 +229,76 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
     public class ResourceOverviewModel
     {
-        public int TotalEmployeeCount { get; set; }
+        public DateTime WeekStart { get; set; }
+
+        public DateTime WeekEnd { get; set; }
 
         public int ParticipatingEmployeeCount { get; set; }
 
-        public int UnassignedEmployeeCount { get; set; }
+        public int NoLoadEmployeeCount { get; set; }
 
-        public int MultiProjectEmployeeCount { get; set; }
+        public int UnderloadedEmployeeCount { get; set; }
 
-        public int AssignedProjectMemberCount { get; set; }
+        public int BalancedEmployeeCount { get; set; }
 
-        public int UnassignedProjectMemberCount { get; set; }
+        public int OverloadedEmployeeCount { get; set; }
 
-        public List<ProjectResourceStatistic> ProjectResourceStatistics { get; set; }
+        public List<DashboardResourceEmployeeItem> EmployeeBreakdown { get; set; }
     }
 
-    public class ProjectResourceStatistic
+    public class DashboardResourceEmployeeItem
     {
+        public Guid EmployeeId { get; set; }
+
+        public string CategoryKey { get; set; }
+
+        public string DisplayName { get; set; }
+
+        public string DepartmentName { get; set; }
+
+        public decimal AllocatedDays { get; set; }
+
+        public decimal CapacityDays { get; set; }
+
+        public decimal AverageUtilization { get; set; }
+    }
+
+    public class CostOverviewModel
+    {
+        public decimal ApprovedCost { get; set; }
+
+        public decimal PendingApprovalCost { get; set; }
+
+        public decimal RejectedCost { get; set; }
+
+        public decimal TotalCostAmount
+        {
+            get
+            {
+                return ApprovedCost + PendingApprovalCost + RejectedCost;
+            }
+        }
+
+        public List<DashboardOverviewCostItem> CostItems { get; set; }
+    }
+
+    public class DashboardOverviewCostItem
+    {
+        public Guid ProjectId { get; set; }
+
+        public string CategoryKey { get; set; }
+
         public string ProjectCode { get; set; }
 
         public string ProjectName { get; set; }
 
-        public int MemberCount { get; set; }
+        public string CostCode { get; set; }
 
-        public int MultiProjectMemberCount { get; set; }
-    }
-    public class CostOverviewModel
-    {
-        public decimal TotalContractValue { get; set; }
+        public string CostName { get; set; }
 
-        public decimal ActualCost { get; set; }
+        public DateTime RecordedDate { get; set; }
 
-        public decimal ReceivedPayment { get; set; }
-
-        public decimal RemainingAfterCost { get; set; }
+        public decimal Amount { get; set; }
     }
 
 }

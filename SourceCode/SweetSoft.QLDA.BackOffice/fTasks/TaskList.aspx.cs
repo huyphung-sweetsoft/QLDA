@@ -43,6 +43,18 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 };
                 if (_dictPriorities.Count == 0)
                     _dictPriorities = TaskManager.Instance.GetDictPriorities();
+
+                Guid taskId;
+                if (Guid.TryParse(Request.QueryString["taskId"], out taskId))
+                {
+                    TblCongViec task = TaskManager.Instance.FetchById(taskId);
+                    if (task != null
+                        && task.DaXoa != true
+                        && task.IdDuAn == CurrentProjectId)
+                    {
+                        EditTask_Callback(taskId, EventArgs.Empty);
+                    }
+                }
             }
         }
 
@@ -130,7 +142,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             ddlEditCongViecCha.Enabled = false;
             UpdateMinStartDate();
             upModal.Update();
-            mdlEditTask.OpenModal(true);
+            mdlEditTask.OpenModal(true, IsPostBack ? 0 : 1000);
         }
         #endregion
 

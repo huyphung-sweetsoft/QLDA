@@ -9,6 +9,8 @@ using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,7 +65,17 @@ namespace SweetSoft.QLDA.Core.Functions
                 CacheManager.SetCacheData($"ModuleByUserId_{userId}", modules);
             }
             List<AspnetFunction> visible = WithoutRetiredDocumentCatalogues(modules);
-            bool canViewDocuments = DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View);
+            bool canViewDocuments = false;
+            try
+            {
+                canViewDocuments = DocumentManager.Instance.CanAccessDocumentArea(ActionKeys.View);
+            }
+            catch (SqlException ex) when (ex.Message.IndexOf("fn_HoSo_GroupRight", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                // Hồ sơ chưa được triển khai trong DB: không để lỗi quyền của
+                // một module làm biến mất toàn bộ menu hệ thống.
+                Trace.TraceWarning("Document permission function is unavailable: {0}", ex.Message);
+            }
             visible.RemoveAll(module => string.Equals(module.FunctionCode,
                 ModuleKeys.Document.ToString(), StringComparison.OrdinalIgnoreCase));
             if (canViewDocuments)
