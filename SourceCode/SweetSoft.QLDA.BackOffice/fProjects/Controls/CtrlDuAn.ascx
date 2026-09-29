@@ -80,7 +80,7 @@
                         <SweetSoft:BootstrapDropdown
                             runat="server"
                             ID="ddlSearchProjectManager"
-                            Text="Project Manager"
+                            Text="Nhân viên quản lý"
                             AutoPostBack="true"
                             AllowClear="true"
                             EnableSearch="true"
