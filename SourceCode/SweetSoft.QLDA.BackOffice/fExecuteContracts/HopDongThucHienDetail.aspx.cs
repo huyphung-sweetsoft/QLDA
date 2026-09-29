@@ -97,6 +97,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 ApplyControlsText();
                 lbtExportPdf.Visible = this.QueryId != Guid.Empty;
                 lbtExportDocx.Visible = this.QueryId != Guid.Empty;
+                lbtResetContent.Visible = this.IsEdit;
                 InitContractFileUploader();
 
                 if (this.QueryId == Guid.Empty)
@@ -124,6 +125,60 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         protected void lbtExportDocx_Click(object sender, EventArgs e)
         {
             RegisterAsyncTask(new PageAsyncTask(ExportContractDocxAsync));
+        }
+
+        protected void lbtResetContent_Click(object sender, EventArgs e)
+        {
+            if (!this.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid refId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
+            TblUploadFile file = GetContractFile(refId);
+
+            if (file == null)
+            {
+                ShowNotify("Không tìm thấy file gốc của hợp đồng.", MSGType.Warning);
+                return;
+            }
+
+            try
+            {
+                string html = string.Empty;
+
+                if (IsDocxFile(file))
+                {
+                    html = ConvertDocxToHtml(file);
+                }
+                else if (IsPdfFile(file))
+                {
+                    string physicalPath = GetContractFilePhysicalPath(file);
+                    html = PdfManager.Instance.ConvertPdfToHtml(physicalPath);
+                }
+                else
+                {
+                    ShowNotify("Định dạng file này chưa hỗ trợ khôi phục nội dung.", MSGType.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(html))
+                {
+                    ShowNotify("Không trích xuất được nội dung từ file gốc.", MSGType.Warning);
+                    return;
+                }
+
+                ClearContractContent = false;
+                txtNoiDungHopDong.Text = html;
+                SetNoiDungHopDongToEditor(html);
+
+                ShowNotify("Đã khôi phục nội dung từ file gốc.", MSGType.Success);
+            }
+            catch (Exception ex)
+            {
+                ShowNotify("Không thể khôi phục nội dung từ file gốc: " + ex.Message, MSGType.Error);
+            }
         }
 
         private async Task ExportContractDocxAsync()
@@ -256,24 +311,29 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                     );
                 }
             }
-            else if (IsPdfFile(file) && !string.IsNullOrWhiteSpace(txtNoiDungHopDong.Text))
+            else if (IsPdfFile(file))
             {
-                ConfirmResult result = new ConfirmResult
+                try
                 {
-                    CommandName = ContractClearContentConfirmCommand,
-                    Value = null
-                };
+                    string physicalPath = GetContractFilePhysicalPath(file);
+                    string html = PdfManager.Instance.ConvertPdfToHtml(physicalPath);
 
-                this.CurrentConfirmResult = result;
+                    if (string.IsNullOrWhiteSpace(html))
+                    {
+                        ShowNotify(
+                            "Không trích xuất được nội dung văn bản từ file PDF. File có thể là bản scan hoặc không chứa lớp văn bản.",
+                            MSGType.Warning
+                        );
+                        return;
+                    }
 
-                MessageBox msg = new MessageBox(
-                    GetResourceText(BackEndResourceKeys.NOTIFICATION),
-                    "File PDF mới đã được tải lên. Bạn có muốn xóa nội dung soạn thảo hiện tại không?",
-                    MSGButton.DeleteCancel,
-                    MSGIcon.Warning
-                );
-
-                OpenMessageBox(msg, result, false, false);
+                    txtNoiDungHopDong.Text = html;
+                    SetNoiDungHopDongToEditor(html);
+                }
+                catch (Exception ex)
+                {
+                    ShowNotify("Không thể đọc nội dung file PDF: " + ex.Message, MSGType.Error);
+                }
             }
         }
 
@@ -590,6 +650,8 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             return result.Value;
         }
+
+
 
         private void SetNoiDungHopDongToEditor(string html)
         {

@@ -105,6 +105,15 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTa;
 
         /// <summary>
+        /// lbtResetContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtResetContent;
+
+        /// <summary>
         /// lbtExportPdf control.
         /// </summary>
         /// <remarks>

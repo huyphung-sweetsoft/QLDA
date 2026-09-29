@@ -182,6 +182,12 @@
                                             <i class="fas fa-upload me-1"></i>
                                             Tải file
                                         </button>
+                                        <asp:LinkButton ID="lbtResetContent" runat="server"
+                                            CssClass="btn btn-secondary"
+                                            OnClick="lbtResetContent_Click"
+                                            CausesValidation="false">
+                                            <i class="fas fa-undo"></i> Khôi phục nội dung từ file gốc
+                                        </asp:LinkButton>
 
                                         <asp:LinkButton
                                             runat="server"
