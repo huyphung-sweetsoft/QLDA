@@ -350,7 +350,9 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     DateTime start = project.NgayBatDau.Date;
                     DateTime end = project.NgayDuKienHoanThanh.Date;
-                    DateTime now = DateTime.Now.Date;
+                    DuAnStatus status = (DuAnStatus)project.TrangThai;
+                    bool isTerminal = status == DuAnStatus.HoanThanh || status == DuAnStatus.KetThuc;
+                    DateTime now = isTerminal && project.NgayHoanThanhThucTe != default(DateTime) ? project.NgayHoanThanhThucTe.Value.Date : DateTime.Now.Date;
 
                     if (now < start)
                     {

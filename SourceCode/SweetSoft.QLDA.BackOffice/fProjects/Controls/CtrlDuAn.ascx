@@ -1,6 +1,56 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlDuAn.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlDuAn" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+
+<style>
+.project-status-badge {
+    min-width: 116px;
+    height: 30px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+}
+
+/* Chưa bắt đầu */
+.project-status-badge--pending {
+    color: #475569;
+    background-color: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+/* Đang thực hiện */
+.project-status-badge--active {
+    color: #fff;
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+/* Tạm dừng */
+.project-status-badge--paused {
+    color: #854d0e;
+    background-color: #fef3c7;
+    border-color: #fde68a;
+}
+
+/* Hoàn thành */
+.project-status-badge--completed {
+    color: #166534;
+    background-color: #dcfce7;
+    border-color: #bbf7d0;
+}
+
+/* Kết thúc */
+.project-status-badge--terminated {
+    color: #fff;
+    background-color: #e11d48;
+    border-color: #e11d48;
+}
+</style>
+
 <div class="card-header">
     <div class="d-flex flex-column flex-xl-row gap-3">
         <asp:UpdatePanel runat="server" ID="upnlSearchDefault" UpdateMode="Conditional">
@@ -110,11 +160,18 @@
                             <%# Eval("DisplayName") %>
                         </ItemTemplate>
                     </asp:TemplateField>
+                    <asp:TemplateField HeaderText="Trạng thái" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center align-middle">
+                        <ItemTemplate>
+                            <span class='badge rounded-pill d-inline-flex align-items-center justify-content-center project-status-badge <%# GetStatusBadgeClass(Eval("TrangThai")) %>'>
+                                <%# GetStatusText(Eval("TrangThai")) %>
+                            </span>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
                                 ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline text-info"
-                                ResourceKey='<%# BackEndResourceKeys.VIEW%>'
+                                ResourceKey='<%# BackEndResourceKeys.DETAIL%>'
                                 ButtonIcon="fas fa-eye"></SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
                                 ID="lbtEdit" CommandName="ITEM_EDIT" CssClass="btn-grid-action text-decoration-underline text-warning"

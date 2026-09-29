@@ -64,6 +64,7 @@ namespace SweetSoft.QLDA.Controls
                 switch (ResourceKey)
                 {
                     case "EMPLOYEE_DETAIL":
+                    case "DETAIL":
                         this.CssClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
                         break;
                     case "DELETE":

@@ -103,14 +103,14 @@
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
+                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
+                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline ms-2 me-2"
+                                ResourceKey='<%# BackEndResourceKeys.DETAIL%>'
+                                ButtonIcon="fas fa-eye"></SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
                                 ID="lbtEdit" CommandName="ITEM_EDIT" CssClass="btn-grid-action text-decoration-underline"
                                 ResourceKey='<%# BackEndResourceKeys.EDIT%>'
                                 ButtonIcon="fas fa-pencil-alt"></SweetSoft:SmartLinkButton>
-                            <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
-                                ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline ms-2 me-2"
-                                ResourceKey='<%# BackEndResourceKeys.VIEW%>'
-                                ButtonIcon="fas fa-eye"></SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
                                 ID="SmartLinkButton1" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
                                 ResourceKey='<%# BackEndResourceKeys.DELETE%>'
