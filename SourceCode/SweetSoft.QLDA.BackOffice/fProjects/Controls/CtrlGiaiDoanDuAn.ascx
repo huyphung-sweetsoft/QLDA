@@ -553,8 +553,7 @@
                 <asp:Repeater
                     runat="server"
                     ID="rptStageManagement"
-                    OnItemCommand="rptStageManagement_ItemCommand"
-                    OnItemDataBound="rptStageManagement_ItemDataBound">
+                    OnItemCommand="rptStageManagement_ItemCommand">
 
                     <HeaderTemplate>
                         <div class="stage-mgmt-table px-4">
