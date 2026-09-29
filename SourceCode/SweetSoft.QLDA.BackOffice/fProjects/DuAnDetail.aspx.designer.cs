@@ -51,31 +51,49 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblTrangThaiHead;
 
         /// <summary>
-        /// iCurrentStatusIcon control.
+        /// pnlStatusActions control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl iCurrentStatusIcon;
+        protected global::System.Web.UI.WebControls.Panel pnlStatusActions;
 
         /// <summary>
-        /// ltrCurrentStatusName control.
+        /// lbtStatusDangThucHien control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCurrentStatusName;
+        protected global::System.Web.UI.WebControls.LinkButton lbtStatusDangThucHien;
 
         /// <summary>
-        /// rptStatusDropdown control.
+        /// lbtStatusTamDung control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptStatusDropdown;
+        protected global::System.Web.UI.WebControls.LinkButton lbtStatusTamDung;
+
+        /// <summary>
+        /// lbtStatusHoanThanh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtStatusHoanThanh;
+
+        /// <summary>
+        /// lbtStatusKetThuc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtStatusKetThuc;
 
         /// <summary>
         /// upEditProject control.
@@ -159,13 +177,22 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblNgayHoanThanhDuKien;
 
         /// <summary>
-        /// lblNgayHoanThanhThucTe control.
+        /// lblNgayKetThucThucTeTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblNgayHoanThanhThucTe;
+        protected global::System.Web.UI.WebControls.Label lblNgayKetThucThucTeTitle;
+
+        /// <summary>
+        /// lblNgayKetThucThucTe control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblNgayKetThucThucTe;
 
         /// <summary>
         /// lblTrangThai control.
@@ -365,6 +392,78 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlEmptyRecentHistory;
+
+        /// <summary>
+        /// mdlStatusChange control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlStatusChange;
+
+        /// <summary>
+        /// upStatusChange control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upStatusChange;
+
+        /// <summary>
+        /// hfStatusTarget control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfStatusTarget;
+
+        /// <summary>
+        /// hfStatusAtModalOpen control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfStatusAtModalOpen;
+
+        /// <summary>
+        /// lblStatusDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl lblStatusDescription;
+
+        /// <summary>
+        /// txtStatusReason control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtStatusReason;
+
+        /// <summary>
+        /// upStatusChangeFooter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upStatusChangeFooter;
+
+        /// <summary>
+        /// lbtConfirmStatusChange control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtConfirmStatusChange;
 
         /// <summary>
         /// CtrlLichSuDuAn1 control.

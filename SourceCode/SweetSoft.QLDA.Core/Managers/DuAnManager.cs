@@ -1,3 +1,4 @@
+using SubSonic;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -293,7 +294,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
             switch (oldStatus)
             {
-                case DuAnStatus.ChoThucHien:
+                case DuAnStatus.ChuaBatDau:
                     if (newStatus != DuAnStatus.DangThucHien && newStatus != DuAnStatus.KetThuc)
                         throw new BusinessException("Không thể chuyển trạng thái từ '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), oldStatus) + "' sang '" + SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(typeof(DuAnStatus), newStatus) + "'", statusCode: ErrorCodes.Conflict);
                     break;
@@ -372,12 +373,12 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
 
                 // 2. Tiến độ công việc
-                var allTasks = new SubSonic.Select()
-                    .From<SweetSoft.QLDA.DataAccess.TblCongViec>()
-                    .Where(SweetSoft.QLDA.DataAccess.TblCongViec.IdDuAnColumn).IsEqualTo(idDuAn)
-                    .And(SweetSoft.QLDA.DataAccess.TblCongViec.DaXoaColumn).IsEqualTo(false)
-                    .And(SweetSoft.QLDA.DataAccess.TblCongViec.IdGiaiDoanDuAnColumn).IsNull()
-                    .ExecuteAsCollection<SweetSoft.QLDA.DataAccess.TblCongViecCollection>();
+                var allTasks = new Select()
+                    .From<TblCongViec>()
+                    .Where(TblCongViec.IdDuAnColumn).IsEqualTo(idDuAn)
+                    .And(TblCongViec.DaXoaColumn).IsEqualTo(false)
+                    .And(TblCongViec.IdGiaiDoanDuAnColumn).IsNull()
+                    .ExecuteAsCollection<TblCongViecCollection>();
 
                 if (allTasks != null && allTasks.Count > 0)
                 {
@@ -410,12 +411,87 @@ namespace SweetSoft.QLDA.Core.Managers
             return result;
         }
 
+        public TblDuAn UpdateProjectStatus(Guid idDuAn, DuAnStatus newStatus)
+        {
+            return UpdateProjectStatus(idDuAn, newStatus, null);
+        }
+
+        public TblDuAn UpdateProjectStatus(Guid idDuAn, DuAnStatus newStatus, string reason)
+        {
+            BusinessValidator.ThrowIf(idDuAn == Guid.Empty, BackEndResourceKeys.INVALID_DATA);
+
+            TblDuAn duAn = _repository.GetById(idDuAn);
+            BusinessValidator.ThrowIf(duAn == null || duAn.DaXoa, BackEndResourceKeys.NOT_FOUND, nameof(idDuAn), ErrorCodes.NotFound);
+
+            DuAnStatus oldStatus = (DuAnStatus)duAn.TrangThai;
+            ValidateStatusTransition(oldStatus, newStatus);
+
+            if (oldStatus == newStatus) return duAn;
+
+            bool needReason = newStatus == DuAnStatus.TamDung || newStatus == DuAnStatus.KetThuc;
+            reason = (reason ?? string.Empty).Trim();
+            BusinessValidator.ThrowIf(needReason && string.IsNullOrWhiteSpace(reason), BackEndResourceKeys.INVALID_DATA);
+
+            if (newStatus == DuAnStatus.HoanThanh)
+                EnsureAllTasksCompleted(idDuAn);
+
+            DateTime now = DateTime.UtcNow;
+            string dateText = now.ToString("dd/MM/yyyy");
+            string description = duAn.MoTa ?? string.Empty;
+            string history = string.Empty;
+
+            if (newStatus == DuAnStatus.TamDung)
+            {
+                history = "[" + dateText + "] Tạm dừng dự án: " + reason + "<br/>";
+                duAn.NgayHoanThanhThucTe = now;
+            }
+            else if (newStatus == DuAnStatus.KetThuc)
+            {
+                history = "[" + dateText + "] Kết thúc dự án: " + reason + "<br/>";
+                duAn.NgayHoanThanhThucTe = now;
+            }
+            else if (newStatus == DuAnStatus.HoanThanh)
+            {
+                duAn.NgayHoanThanhThucTe = now;
+            }
+            else if (oldStatus == DuAnStatus.TamDung && newStatus == DuAnStatus.DangThucHien)
+            {
+                history = "[" + dateText + "] Tiếp tục thực hiện dự án." + "<br/>";
+            }
+
+            if (!string.IsNullOrEmpty(history))
+                duAn.MoTa = history + (string.IsNullOrWhiteSpace(description) ? string.Empty : Environment.NewLine + Environment.NewLine + description);
+
+            duAn.TrangThai = (byte)newStatus;
+            duAn.NguoiCapNhat = SweetContext.Current.UserName;
+            duAn.NgayCapNhat = now;
+
+            duAn = _repository.Update(duAn);
+            BusinessValidator.ThrowIfNull(duAn, BackEndResourceKeys.SERVICE_UNAVAILABLE, nameof(idDuAn), ErrorCodes.ServiceUnavailable);
+
+            return duAn;
+        }
+
         public bool IsProjectCodeExists(string maDuAn, Guid idDuAn)
         {
             if (string.IsNullOrWhiteSpace(maDuAn))
                 return false;
             TblDuAn duAn = _repository.GetByMaDuAn(maDuAn.Trim());
             return duAn != null && duAn.IdDuAn != idDuAn;
+        }
+
+        private void EnsureAllTasksCompleted(Guid idDuAn)
+        {
+            int unfinishedCount = new Select()
+                .From(TblCongViec.Schema)
+                .Where(TblCongViec.IdDuAnColumn).IsEqualTo(idDuAn)
+                .And(TblCongViec.DaXoaColumn).IsEqualTo(false)
+                .And(TblCongViec.TrangThaiColumn).IsNotEqualTo((byte)2)
+                .And(TblCongViec.TrangThaiColumn).IsNotEqualTo((byte)3) 
+                .GetRecordCount();
+
+            if (unfinishedCount > 0)
+                throw new BusinessException("Không thể hoàn thành dự án vì vẫn còn công việc chưa hoàn thành.", statusCode: ErrorCodes.Conflict);
         }
     }
 }
