@@ -44,7 +44,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);
                 var file=files.FirstOrDefault(f=> {
                     if (ProjectRecordFileAccess.IsRecordAttachment(f.RefType))
-                        return ProjectRecordFileAccess.IsLinkedFile(f.RefId, f.RefType, f.Id)
+                        return ProjectRecordFileAccess.BelongsToRecord(f.RefId, f.RefType, f.Id)
                             && ProjectRecordFileAccess.CanAccess(
                                 SweetContext.Current.UserId, f.RefId, f.RefType, false);
                     var id=repository.ResolveUploadDocument(f.RefId,f.RefType);
@@ -59,10 +59,45 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 if(!physical.StartsWith(uploads.TrimEnd(Path.DirectorySeparatorChar)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)
                     || !File.Exists(physical)) { context.Response.StatusCode=404; return; }
                 string extension=Path.GetExtension(physical).ToLowerInvariant();
-                bool preview=new[]{".pdf",".png",".jpg",".jpeg",".gif",".webp",".bmp",".mp4",".webm",".m4v",".mp3",".wav",".ogg"}.Contains(extension);
-                context.Response.ContentType=preview?MimeMapping.GetMimeMapping(physical):"application/octet-stream";
-                context.Response.AddHeader("Content-Disposition",(preview?"inline":"attachment")+"; filename*=UTF-8''"+Uri.EscapeDataString(Path.GetFileName(file.OriginalFileName??file.Name)));
-                if(context.Request.HttpMethod=="GET") context.Response.TransmitFile(physical);
+                bool preview=new[]{".pdf",".png",".jpg",".jpeg",".gif",".webp",".bmp",".mp4",".webm",".m4v",".mp3",".m4a",".wav",".ogg"}.Contains(extension);
+                context.Response.ContentType=extension==".m4a" ? "audio/mp4" : preview?MimeMapping.GetMimeMapping(physical):"application/octet-stream";
+                bool download = context.Request.QueryString["download"] == "1";
+                context.Response.AddHeader("Content-Disposition",(preview && !download?"inline":"attachment")+"; filename*=UTF-8''"+Uri.EscapeDataString(Path.GetFileName(file.OriginalFileName??file.Name)));
+                // Authorize first, then support a single byte range for media seeking.
+                long length = new FileInfo(physical).Length;
+                long start = 0, end = length - 1;
+                context.Response.AddHeader("Accept-Ranges", "bytes");
+                string range = context.Request.Headers["Range"];
+                if (!string.IsNullOrEmpty(range) && context.Request.HttpMethod == "GET")
+                {
+                    Match match = Regex.Match(range, @"^bytes=(\d*)-(\d*)$");
+                    long value;
+                    bool valid = match.Success && length > 0;
+                    if (valid && match.Groups[1].Value.Length == 0)
+                    {
+                        valid = long.TryParse(match.Groups[2].Value, out value) && value > 0;
+                        if (valid) start = Math.Max(0, length - value);
+                    }
+                    else if (valid)
+                    {
+                        valid = long.TryParse(match.Groups[1].Value, out start) && start < length;
+                        if (valid && match.Groups[2].Value.Length > 0)
+                        {
+                            valid = long.TryParse(match.Groups[2].Value, out value) && value >= start;
+                            if (valid) end = Math.Min(end, value);
+                        }
+                    }
+                    if (!valid)
+                    {
+                        context.Response.StatusCode = 416;
+                        context.Response.AddHeader("Content-Range", "bytes */" + length);
+                        return;
+                    }
+                    context.Response.StatusCode = 206;
+                    context.Response.AddHeader("Content-Range", "bytes " + start + "-" + end + "/" + length);
+                }
+                context.Response.AddHeader("Content-Length", (end - start + 1).ToString());
+                if(context.Request.HttpMethod=="GET") context.Response.TransmitFile(physical, start, end - start + 1);
             } catch(Exception ex) {
                 SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,"Protected document download failed");
                 context.Response.StatusCode=403;
@@ -193,7 +228,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             var request = parseResult.Request;
 
             // 3. Validate file
-            var fileValidationResult = ValidateFile(request.File);
+            var fileValidationResult = ValidateFile(request.File, request.RefType);
             if (!fileValidationResult.Success) return fileValidationResult;
 
             // 4. Validate business rules
@@ -298,7 +333,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
         #endregion
 
         #region File Validation
-        private UploadResult ValidateFile(HttpPostedFile file)
+        private UploadResult ValidateFile(HttpPostedFile file, string refType = null)
         {
             if (file == null || file.ContentLength == 0)
             {
@@ -311,12 +346,14 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             }
 
             // Validate file size
-            if (file.ContentLength > _config.MaxFileSize)
+            bool meeting = refType == FileUploadTypes.MeetingAttachment.ToString();
+            long maxSize = meeting ? 100L * 1024 * 1024 : _config.MaxFileSize;
+            if (file.ContentLength > maxSize)
             {
                 return new UploadResult
                 {
                     Success = false,
-                    Message = $"Kích thước tập tin vượt quá giới hạn {_config.MaxFileSize / (1024 * 1024)}MB",
+                    Message = $"Kích thước tập tin vượt quá giới hạn {maxSize / (1024 * 1024)}MB",
                     ErrorCode = "FILE_TOO_LARGE"
                 };
             }
@@ -334,7 +371,17 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
             // Validate file extension
             string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!_config.AllowedExtensions.Contains(extension))
+            var meetingMedia = new Dictionary<string, string[]>
+            {
+                { ".mp4", new[] { "video/mp4" } },
+                { ".webm", new[] { "video/webm", "audio/webm" } },
+                { ".mp3", new[] { "audio/mpeg", "audio/mp3" } },
+                { ".m4a", new[] { "audio/mp4", "audio/x-m4a" } },
+                { ".wav", new[] { "audio/wav", "audio/x-wav", "audio/wave" } },
+                { ".ogg", new[] { "audio/ogg", "application/ogg" } }
+            };
+            bool allowedMedia = meeting && meetingMedia.ContainsKey(extension);
+            if (!allowedMedia && !_config.AllowedExtensions.Contains(extension))
             {
                 return new UploadResult
                 {
@@ -345,7 +392,9 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             }
 
             // Validate MIME type
-            if (!_config.AllowedMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
+            string mimeType = (file.ContentType ?? string.Empty).ToLowerInvariant();
+            if (allowedMedia ? !meetingMedia[extension].Contains(mimeType)
+                : !_config.AllowedMimeTypes.Contains(mimeType))
             {
                 return new UploadResult
                 {
@@ -530,12 +579,6 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 // Create database record
                 var fileUpload = CreateFileRecord(request, filePath);
                 savedFile = UploadManager.Instance.Create(fileUpload);
-                if (ProjectRecordFileAccess.IsRecordAttachment(request.RefType))
-                {
-                    ProjectRecordFileAccess.LinkFile(
-                        SweetContext.Current.UserId, request.RefId,
-                        request.RefType, savedFile.Id);
-                }
 
                 return new UploadResult
                 {
@@ -547,6 +590,12 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             catch (Exception ex)
             {
                 LogError(ex);
+                if (request.RefType == "DocumentSigningResult" && savedFile == null
+                    && !string.IsNullOrEmpty(fullPath) && File.Exists(fullPath))
+                {
+                    try { File.Delete(fullPath); }
+                    catch (Exception cleanupError) { LogError(cleanupError); }
+                }
                 if (ProjectRecordFileAccess.IsRecordAttachment(request.RefType))
                 {
                     try
@@ -734,8 +783,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
         private void LogError(Exception ex)
         {
-            // Implement your logging mechanism
-            //System.Diagnostics.Debug.WriteLine($"Upload Error: {ex}");
+            SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "Secure file upload failed");
         }
         #endregion
     }

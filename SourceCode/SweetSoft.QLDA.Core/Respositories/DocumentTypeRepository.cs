@@ -180,13 +180,9 @@ namespace SweetSoft.QLDA.Core.Respositories
                         TblLoaiTaiLieu.Columns.MoTa),
                     500);
 
-            string hinhThucKyMacDinh =
-                InlineQueryHelpers.SQLEncode(
-                    GetParameterText(
-                        parameters,
-                        TblLoaiTaiLieu.Columns
-                            .HinhThucKyMacDinh),
-                    20);
+            string documentScope = GetParameterText(parameters, "PhamViHoSo");
+            if (documentScope != "DU_AN" && documentScope != "CHUNG")
+                documentScope = string.Empty;
 
             // Điều kiện GUID.
             Guid idNhomTaiLieu = Guid.Empty; // Retired group filters must not hide independent types.
@@ -201,23 +197,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                 GetNullableBitSql(
                     parameters,
                     TblLoaiTaiLieu.Columns.KichHoat);
-
-            string canTrinhKySql =
-                GetNullableBitSql(
-                    parameters,
-                    TblLoaiTaiLieu.Columns.CanTrinhKy);
-
-            string canGuiKhachHangSql =
-                GetNullableBitSql(
-                    parameters,
-                    TblLoaiTaiLieu.Columns
-                        .CanGuiKhachHang);
-
-            string canLuuVatLySql =
-                GetNullableBitSql(
-                    parameters,
-                    TblLoaiTaiLieu.Columns
-                        .CanLuuVatLy);
 
             // Không sử dụng trực tiếp orderBy truyền vào SQL.
             string safeOrderBy =
@@ -236,23 +215,14 @@ namespace SweetSoft.QLDA.Core.Respositories
         DECLARE @moTa NVARCHAR(500)
             = N'%{moTa}%';
 
-        DECLARE @hinhThucKyMacDinh VARCHAR(20)
-            = '{hinhThucKyMacDinh}';
+        DECLARE @documentScope VARCHAR(10)
+            = '{documentScope}';
 
         DECLARE @idNhomTaiLieu UNIQUEIDENTIFIER
             = {idNhomTaiLieuSql};
 
         DECLARE @kichHoat BIT
             = {kichHoatSql};
-
-        DECLARE @canTrinhKy BIT
-            = {canTrinhKySql};
-
-        DECLARE @canGuiKhachHang BIT
-            = {canGuiKhachHangSql};
-
-        DECLARE @canLuuVatLy BIT
-            = {canLuuVatLySql};
 
         ;WITH SearchResult AS
         (
@@ -331,32 +301,8 @@ namespace SweetSoft.QLDA.Core.Respositories
 
                 AND
                 (
-                    @canTrinhKy IS NULL
-                    OR f.CanTrinhKy
-                        = @canTrinhKy
-                )
-
-                AND
-                (
-                    @hinhThucKyMacDinh = ''
-                    OR ISNULL(
-                        f.HinhThucKyMacDinh,
-                        ''
-                    ) = @hinhThucKyMacDinh
-                )
-
-                AND
-                (
-                    @canGuiKhachHang IS NULL
-                    OR f.CanGuiKhachHang
-                        = @canGuiKhachHang
-                )
-
-                AND
-                (
-                    @canLuuVatLy IS NULL
-                    OR f.CanLuuVatLy
-                        = @canLuuVatLy
+                    @documentScope = ''
+                    OR f.PhamViHoSo = @documentScope
                 )
         )
 

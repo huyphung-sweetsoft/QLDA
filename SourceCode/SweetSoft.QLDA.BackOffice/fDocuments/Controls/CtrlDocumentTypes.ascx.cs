@@ -45,8 +45,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (scriptManager == null)
                 return;
             scriptManager.RegisterAsyncPostBackControl(btnSearch);
-            scriptManager.RegisterAsyncPostBackControl(btnSearchAdvanced);
-            scriptManager.RegisterAsyncPostBackControl(btnResetSearch);
+            scriptManager.RegisterAsyncPostBackControl(ddlSearchScope);
         }
 
         public void InitControls()
@@ -62,26 +61,16 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             txtSearch.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
-            ddlSearchNhom.SearchTagItemText = GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP);
-            txtSearchTenLoai.SearchTagItemText = "Tên loại hồ sơ";
-            txtSearchMoTa.SearchTagItemText = GetResourceText(BackEndResourceKeys.DESCRIPTION);
-            ddlSearchCanTrinhKy.SearchTagItemText = GetResourceText(BackEndResourceKeys.ALLOW_SIGNING);
-            ddlSearchHinhThucKy.SearchTagItemText = GetResourceText(BackEndResourceKeys.DEFAULT_SIGNING_METHOD);
-            ddlSearchCanGuiKhachHang.SearchTagItemText = GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER);
-            ddlSearchCanLuuVatLy.SearchTagItemText = GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE);
+            ddlSearchScope.SearchTagItemText = GetResourceText(BackEndResourceKeys.DOCUMENT_SCOPE);
             btnSearch.ToolTip = btnSearch.Text = GetResourceText(BackEndResourceKeys.SEARCH);
             btnAdd.ToolTip = btnAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
             btnSave.ToolTip = btnSave.Text = GetResourceText(BackEndResourceKeys.SAVE);
             btnCancel.ToolTip = btnCancel.Text = GetResourceText(BackEndResourceKeys.CANCEL);
-            btnSearchAdvanced.ToolTip = btnSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.SEARCH);
-            btnResetSearch.ToolTip = btnResetSearch.Text = GetResourceText(BackEndResourceKeys.REFRESH);
             ddlSearchStatus.Text = GetResourceText(BackEndResourceKeys.STATUS);
-            ddlSearchNhom.Text = GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP);
-            ddlSearchNhom.SearchPlaceholder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
-            ddlSearchNhom.NoResultsText = GetResourceText(BackEndResourceKeys.NO_DATA);
-            txtSearch.PlaceHolder = txtSearchTenLoai.PlaceHolder = txtSearchMoTa.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+            ddlSearchScope.Text = GetResourceText(BackEndResourceKeys.DOCUMENT_SCOPE);
+            txtSearch.PlaceHolder = "Nhập tên hoặc mô tả";
             ddlNhomTaiLieu.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_DOCUMENT_GROUP);
-            ddlHinhThucKy.PlaceHolder = ddlSearchCanTrinhKy.PlaceHolder = ddlSearchHinhThucKy.PlaceHolder = ddlSearchCanGuiKhachHang.PlaceHolder = ddlSearchCanLuuVatLy.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
+            ddlHinhThucKy.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
             chkKichHoat.OnText = GetResourceText(BackEndResourceKeys.ACTIVE);
             chkKichHoat.OffText = GetResourceText(BackEndResourceKeys.INACTIVE);
             chkCanTrinhKy.OnText = chkCanGuiKhachHang.OnText = chkCanLuuVatLy.OnText = GetResourceText(BackEndResourceKeys.YES);
@@ -91,6 +80,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 GetResourceText(BackEndResourceKeys.INDEX),
                 "Tên loại hồ sơ",
                 GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP),
+                GetResourceText(BackEndResourceKeys.DOCUMENT_SCOPE),
                 GetResourceText(BackEndResourceKeys.ALLOW_SIGNING),
                 GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER),
                 GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE),
@@ -108,14 +98,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ControlHelpers controlHelpers = new ControlHelpers();
             // Bộ lọc nhanh: BootstrapDropdown.
             controlHelpers.BindStatus(ddlSearchStatus);
-            ddlSearchNhom.Items.Clear();
+            ddlSearchScope.Items.Clear();
+            ddlSearchScope.AddItem("Hồ sơ dự án", "DU_AN");
+            ddlSearchScope.AddItem("Hồ sơ chung", "CHUNG");
+            ddlSearchScope.ClearSelection();
             // Dropdown trong form: ExtraDropdown.
             ddlNhomTaiLieu.Items.Clear();
             controlHelpers.BindDocumentSigningMethods(ddlHinhThucKy);
-            controlHelpers.BindStatusYesNo(ddlSearchCanTrinhKy, true);
-            controlHelpers.BindDocumentSigningMethods(ddlSearchHinhThucKy, true);
-            controlHelpers.BindStatusYesNo(ddlSearchCanGuiKhachHang, true);
-            controlHelpers.BindStatusYesNo(ddlSearchCanLuuVatLy, true);
         }
 
         private void LoadSearchState()
@@ -123,7 +112,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master == null)
                 return;
-            master.LoadSessionLastSearch(searchTagBox, pnlSearchPopup, grvData, txtSearch);
+            master.LoadSessionLastSearch(searchTagBox, pnlSearchDefault, grvData, txtSearch);
+            grvData.GridSearchType = GridSearchType.Single;
+            master.UpdateSearchTagBox(searchTagBox, pnlSearchDefault, grvData, txtSearch);
         }
 
         private void InitGridData()
@@ -157,21 +148,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ControlHelpers controlHelpers = new ControlHelpers();
                 Dictionary<string, object> searchParameters = controlHelpers.GetControlValues(pnlSearchDefault);
                 string orderBy = grid.CurrentSortExpression + " " + grid.CurrentSortDerection;
-                DataTable data;
-                if (grid.GridSearchType == GridSearchType.Single)
-                {
-                    data = DocumentTypeManager.Instance.SearchDocumentTypes(txtSearch.Text, searchParameters, orderBy, rowOffset, endRow, out totalRows);
-                }
-                else
-                {
-                    Dictionary<string, object> advancedParameters = controlHelpers.GetControlValues(pnlSearchPopup);
-                    foreach (KeyValuePair<string, object> parameter in advancedParameters)
-                    {
-                        searchParameters[parameter.Key] = parameter.Value;
-                    }
-
-                    data = DocumentTypeManager.Instance.SearchDocumentTypes(searchParameters, orderBy, rowOffset, endRow, out totalRows);
-                }
+                DataTable data = DocumentTypeManager.Instance.SearchDocumentTypes(
+                    txtSearch.Text, searchParameters, orderBy, rowOffset, endRow, out totalRows);
 
                 bool hasData = data != null && data.Rows.Count > 0;
                 grid.VirtualItemCount = totalRows;
@@ -278,41 +256,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
-            if (grvData.GridSearchType == GridSearchType.Single)
-            {
-                master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearch);
-            }
-            else
-            {
-                master.btnSearchAdvanced_Click(searchTagBox, pnlSearchDefault, pnlSearchPopup, grvData);
-            }
-        }
-
-        protected void btnSearchAdvanced_Click(object sender, EventArgs e)
-        {
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master == null)
-            {
-                RebindGridFromFirstPage();
-                return;
-            }
-
-            master.btnSearchAdvanced_Click(searchTagBox, pnlSearchDefault, pnlSearchPopup, grvData);
-        }
-
-        protected void btnResetSearch_Click(object sender, EventArgs e)
-        {
-            ControlHelpers controlHelpers = new ControlHelpers();
-            controlHelpers.ClearControlValues(pnlSearchPopup.Controls);
-            pnlSearch.Update();
-            MasterTemplate master = Page.Master as MasterTemplate;
-            if (master == null)
-            {
-                RebindGridFromFirstPage();
-                return;
-            }
-
-            master.btnSearchAdvanced_Click(searchTagBox, pnlSearchDefault, pnlSearchPopup, grvData);
+            master.btnSearchSingle_Click(searchTagBox, pnlSearchDefault, grvData, txtSearch);
         }
 
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
@@ -323,8 +267,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 if (master == null)
                     return;
                 GridSearchType? searchType;
-                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, pnlSearchPopup, grvData, txtSearch, out searchType);
-                pnlSearch.Update();
+                master.searchTagBox_TagClosed(searchTagBox, tag, pnlSearchDefault, grvData, txtSearch, out searchType);
             }
             catch (Exception exc)
             {
