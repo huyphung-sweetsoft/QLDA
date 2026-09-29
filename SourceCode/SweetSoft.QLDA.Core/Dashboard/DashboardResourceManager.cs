@@ -52,18 +52,29 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 lastWeekCalendarEnd.Year,
                 lastWeekCalendarEnd.Month,
                 1).AddMonths(1).AddDays(-1);
+            DateTime selectedMonthStart = normalizedFilter.MonthStart;
+            DateTime selectedMonthEnd = normalizedFilter.MonthCount > 0
+                ? selectedMonthStart.AddMonths(normalizedFilter.MonthCount)
+                    .AddDays(-1)
+                : lastMonthEnd;
             DateTime calendarStart = GetMonday(
-                new[] { firstMonthStart, anchorStart.AddDays(-35) }.Min());
+                new[] { firstMonthStart, anchorStart.AddDays(-35),
+                    selectedMonthStart }.Min());
             DateTime calendarEnd = GetMonday(
-                new[] { lastMonthEnd, anchorStart.AddDays(18) }.Max())
+                new[] {
+                    lastMonthEnd,
+                    anchorStart.AddDays(18),
+                    lastWeekCalendarEnd,
+                    selectedMonthEnd
+                }.Max())
                 .AddDays(6);
-            ResourceWorkCalendar calendar = new ResourceWorkCalendar(
+            DashboardWorkingCalendar calendar = new DashboardWorkingCalendar(
                 _repository.GetWorkWeekConfigurations(),
                 _repository.GetCalendarExceptions(
                     calendarStart,
                     calendarEnd));
-            DateTime anchorEnd = calendar.GetWeekEnd(anchorStart);
-            DateTime windowEnd = calendar.GetWeekEnd(lastWeekStart);
+            DateTime anchorEnd = anchorStart.AddDays(6);
+            DateTime windowEnd = lastWeekCalendarEnd;
 
             DashboardFilter projectFilter = new DashboardFilter
             {
@@ -94,18 +105,18 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .Where(x => activeEmployeeIds.Contains(x.IdNhanVien))
                 .ToList();
 
-            Dictionary<Guid, TblPhongBan> departments = _repository
+            Dictionary<Guid, TblLoai> departments = _repository
                 .GetDepartments()
-                .ToDictionary(x => x.IdPhongBan);
-            Dictionary<Guid, TblChucDanh> jobTitles = _repository
+                .ToDictionary(x => x.IdLoai);
+            Dictionary<Guid, TblLoai> jobTitles = _repository
                 .GetJobTitles()
-                .ToDictionary(x => x.IdChucDanh);
+                .ToDictionary(x => x.IdLoai);
             Dictionary<Guid, TblDuAn> projectById = projects
                 .ToDictionary(x => x.IdDuAn);
             Dictionary<Guid, TblCongViec> taskById = tasks
                 .ToDictionary(x => x.IdCongViec);
 
-            List<DateTime> windowDays = calendar.GetWorkingDays(
+            List<DateTime> windowDays = GetCalendarDays(
                 windowStart,
                 windowEnd);
             List<ResourceWeekInfo> weeks = BuildWeeks(
@@ -115,8 +126,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 today,
                 calendar);
             List<ResourceMonthInfo> months = BuildMonthsForWindow(
-                windowStart,
-                windowEnd);
+                normalizedFilter.MonthCount > 0
+                    ? selectedMonthStart : windowStart,
+                normalizedFilter.MonthCount > 0
+                    ? selectedMonthEnd : windowEnd);
             List<ResourceEmployeeLoad> employeeLoads = BuildEmployeeLoads(
                 employees,
                 assignments,
@@ -143,8 +156,11 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 TotalEmployeeCount = employeeLoads.Count,
                 AssignedEmployeeCount = employeeLoads.Count(x =>
                     x.AllocatedDays > 0),
+                NoLoadEmployeeCount = employeeLoads.Count(x =>
+                    x.AllocatedDays <= 0),
                 UnderloadedEmployeeCount = employeeLoads.Count(x =>
-                    x.Status == ResourceLoadStatus.Underloaded),
+                    x.Status == ResourceLoadStatus.Underloaded
+                        && x.AllocatedDays > 0),
                 BalancedEmployeeCount = employeeLoads.Count(x =>
                     x.Status == ResourceLoadStatus.Balanced),
                 OverloadedEmployeeCount = employeeLoads.Count(x =>
@@ -192,12 +208,24 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 || filter.AnchorWeekStart == DateTime.MinValue
                     ? DateTime.Today
                     : filter.AnchorWeekStart.Date;
+            int monthCount = filter == null ? 0 : filter.MonthCount;
+            if (monthCount < 0 || monthCount > 12)
+            {
+                monthCount = 0;
+            }
+            DateTime monthAnchor = filter == null
+                || filter.MonthStart == DateTime.MinValue
+                    ? anchor
+                    : filter.MonthStart;
 
             return new DashboardResourceFilter
             {
                 ProjectId = filter == null ? null : filter.ProjectId,
                 AnchorWeekStart = GetMonday(anchor),
-                WeekCount = weekCount
+                WeekCount = weekCount,
+                MonthStart = new DateTime(
+                    monthAnchor.Year, monthAnchor.Month, 1),
+                MonthCount = monthCount
             };
         }
 
@@ -240,13 +268,13 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<TblCongViecNhanVien> assignments,
             Dictionary<Guid, TblCongViec> taskById,
             Dictionary<Guid, TblDuAn> projectById,
-            Dictionary<Guid, TblPhongBan> departments,
-            Dictionary<Guid, TblChucDanh> jobTitles,
+            Dictionary<Guid, TblLoai> departments,
+            Dictionary<Guid, TblLoai> jobTitles,
             List<DateTime> windowDays,
             List<ResourceWeekInfo> weeks,
             List<ResourceMonthInfo> months,
             DateTime anchorStart,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             Dictionary<Guid, List<TblCongViec>> tasksByEmployee = assignments
                 .GroupBy(x => x.IdNhanVien)
@@ -303,7 +331,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     ? 0
                     : anchorLoad.DailyLoads.Max(x => x.AllocationPercent);
 
-                TblPhongBan department = null;
+                TblLoai department = null;
                 if (employee.IdPhongBan.HasValue)
                 {
                     departments.TryGetValue(
@@ -311,7 +339,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         out department);
                 }
 
-                TblChucDanh jobTitle = null;
+                TblLoai jobTitle = null;
                 if (employee.IdChucDanh.HasValue)
                 {
                     jobTitles.TryGetValue(
@@ -326,10 +354,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     UserName = employee.UserName,
                     DepartmentName = department == null
                         ? string.Empty
-                        : department.TenPhongBan,
+                        : department.TenLoai,
                     JobTitleName = jobTitle == null
                         ? string.Empty
-                        : jobTitle.TenChucDanh,
+                        : jobTitle.TenLoai,
                     AllocatedDays = Math.Round(allocatedDays, 1),
                     CapacityDays = anchorLoad.CapacityDays,
                     AverageUtilization = averageUtilization,
@@ -355,14 +383,20 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DateTime day,
             List<TblCongViec> tasks,
             Dictionary<Guid, TblDuAn> projectById,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
-            List<TblCongViec> activeTasks = tasks
-                .Where(x => IsTaskActiveOn(x, day, calendar))
-                .ToList();
+            bool isWorkingDay = calendar.IsWorkingDay(day);
+            List<TblCongViec> activeTasks = isWorkingDay
+                ? tasks
+                    .Where(x => IsTaskActiveOn(x, day, calendar))
+                    .ToList()
+                : new List<TblCongViec>();
             ResourceDailyLoad load = new ResourceDailyLoad
             {
                 Date = day,
+                IsWorkingDay = isWorkingDay,
+                IsHoliday = calendar.IsHoliday(day),
+                HolidayName = calendar.GetHolidayName(day),
                 AllocationPercent = activeTasks.Count
                     * TaskDailyAllocationPercent
             };
@@ -403,19 +437,22 @@ namespace SweetSoft.QLDA.Core.Dashboard
             {
                 List<ResourceDailyLoad> weekDays = dailyLoads
                     .Where(x => x.Date >= week.StartDate
-                        && x.Date <= week.EndDate)
+                        && x.Date <= week.StartDate.AddDays(6))
                     .OrderBy(x => x.Date)
                     .ToList();
-                decimal allocatedDays = weekDays.Sum(x =>
+                List<ResourceDailyLoad> workingDays = weekDays
+                    .Where(x => x.IsWorkingDay)
+                    .ToList();
+                decimal allocatedDays = workingDays.Sum(x =>
                     x.AllocationPercent / 100m);
-                decimal capacityDays = weekDays.Count;
+                decimal capacityDays = workingDays.Count;
                 decimal allocationPercent = capacityDays == 0
                     ? 0
                     : Math.Round(
                         allocatedDays / capacityDays * 100m,
                         1);
 
-                var taskDays = weekDays
+                var taskDays = workingDays
                     .SelectMany(day => day.Tasks.Select(task => new
                     {
                         Date = day.Date,
@@ -492,7 +529,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     OverAllocatedDays = Math.Max(
                         0m,
                         allocatedDays - capacityDays),
-                    OverlapDayCount = weekDays.Count(x =>
+                    OverlapDayCount = workingDays.Count(x =>
                         x.AllocationPercent > 100m),
                     Status = GetStatus(allocationPercent),
                     Projects = weeklyProjects,
@@ -509,7 +546,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<TblCongViec> employeeTasks,
             Dictionary<Guid, TblDuAn> projectById,
             DateTime anchorStart,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             List<ResourceWeekInfo> monthWeeks = BuildMonthWeeks(
                 month.StartDate,
@@ -562,7 +599,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             int weekCount,
             DateTime anchorStart,
             DateTime today,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             List<ResourceWeekInfo> result = new List<ResourceWeekInfo>();
 
@@ -572,7 +609,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 ResourceWeekInfo week = new ResourceWeekInfo
                 {
                     StartDate = start,
-                    EndDate = calendar.GetWeekEnd(start),
+                    EndDate = start.AddDays(6),
                     Label = string.Format(
                         UITextsReader.GetBackEndResourceText(
                             BackEndResourceKeys.DASHBOARD_WEEK_LABEL),
@@ -580,15 +617,19 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     IsAnchorWeek = start == anchorStart
                 };
 
-                foreach (DateTime date in calendar.GetWorkingDays(
+                foreach (DateTime date in GetCalendarDays(
                     start,
                     start.AddDays(6)))
                 {
+                    bool isWorkingDay = calendar.IsWorkingDay(date);
                     week.Days.Add(new ResourceDayInfo
                     {
                         Date = date,
                         DayLabel = GetDayLabel(date),
-                        IsToday = date == today
+                        IsToday = date == today,
+                        IsWorkingDay = isWorkingDay,
+                        IsHoliday = calendar.IsHoliday(date),
+                        HolidayName = calendar.GetHolidayName(date)
                     });
                 }
 
@@ -602,7 +643,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DateTime monthStart,
             DateTime monthEnd,
             DateTime anchorStart,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             List<ResourceWeekInfo> result =
                 new List<ResourceWeekInfo>();
@@ -617,7 +658,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     result.Add(new ResourceWeekInfo
                     {
                         StartDate = weekStart,
-                        EndDate = calendar.GetWeekEnd(weekStart),
+                        EndDate = weekStart.AddDays(6),
                         Label = string.Format(
                             UITextsReader.GetBackEndResourceText(
                                 BackEndResourceKeys.DASHBOARD_WEEK_LABEL),
@@ -688,7 +729,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             Dictionary<Guid, TblCongViec> taskById,
             DateTime anchorStart,
             DateTime today,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             List<TblCongViec> assignedTasks = assignments
                 .Select(x =>
@@ -741,7 +782,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DateTime anchorStart,
             DateTime anchorEnd,
             Guid? selectedProjectId,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             Dictionary<Guid, TblCongViec> taskById = tasks
                 .ToDictionary(x => x.IdCongViec);
@@ -819,7 +860,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
         private static bool IsTaskActiveOn(
             TblCongViec task,
             DateTime day,
-            ResourceWorkCalendar calendar)
+            DashboardWorkingCalendar calendar)
         {
             if (!task.NgayBatDau.HasValue || !calendar.IsWorkingDay(day))
             {
@@ -841,6 +882,28 @@ namespace SweetSoft.QLDA.Core.Dashboard
             if (task.NgayHoanThanhThucTe.HasValue)
             {
                 return task.NgayHoanThanhThucTe.Value.Date;
+            }
+
+            // Một số luồng chỉ đổi trạng thái Hoàn thành mà không ghi ngày
+            // thực tế. Dùng lần cập nhật cuối làm mốc kết thúc để không tiếp
+            // tục tính công việc đó vào tải nguồn lực trong các ngày sau.
+            if (DashboardProgressCalculator.IsTaskCompleted(task))
+            {
+                DateTime completedOn = task.NgayCapNhat.HasValue
+                    ? task.NgayCapNhat.Value.Date
+                    : task.NgayBatDau.HasValue
+                        ? task.NgayBatDau.Value.Date
+                        : DateTime.MinValue;
+
+                if (task.NgayBatDau.HasValue
+                    && completedOn < task.NgayBatDau.Value.Date)
+                {
+                    completedOn = task.NgayBatDau.Value.Date;
+                }
+
+                return completedOn == DateTime.MinValue
+                    ? (DateTime?)null
+                    : completedOn;
             }
 
             if (task.NgayKetThuc.HasValue)
@@ -866,6 +929,21 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return date.Date.AddDays(-difference);
         }
 
+        private static List<DateTime> GetCalendarDays(
+            DateTime start,
+            DateTime end)
+        {
+            List<DateTime> result = new List<DateTime>();
+            for (DateTime date = start.Date;
+                date <= end.Date;
+                date = date.AddDays(1))
+            {
+                result.Add(date);
+            }
+
+            return result;
+        }
+
         private static int GetIsoWeekNumber(DateTime date)
         {
             System.Globalization.CultureInfo culture =
@@ -884,12 +962,16 @@ namespace SweetSoft.QLDA.Core.Dashboard
         }
     }
 
-    internal sealed class ResourceWorkCalendar
+    /// <summary>
+    /// Lịch làm việc dùng chung cho các Dashboard, tạo từ cấu hình tuần và
+    /// các ngoại lệ nghỉ/làm bù đã được đọc theo lô.
+    /// </summary>
+    internal sealed class DashboardWorkingCalendar
     {
         private readonly Dictionary<DayOfWeek, bool> _weeklyPattern;
         private readonly List<TblLichNgoaiLe> _exceptions;
 
-        public ResourceWorkCalendar(
+        public DashboardWorkingCalendar(
             IEnumerable<TblCauHinhTuanLamViec> configurations,
             IEnumerable<TblLichNgoaiLe> exceptions)
         {
@@ -911,10 +993,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public bool IsWorkingDay(DateTime date)
         {
             DateTime day = date.Date;
-            TblLichNgoaiLe exception = _exceptions.FirstOrDefault(x =>
-                !string.IsNullOrEmpty(x.NgayBatDau.ToString()) &&
-                DateTime.Parse(x.NgayBatDau.ToString()).Date <= day.Date
-            );
+            TblLichNgoaiLe exception = FindException(day);
             if (exception != null)
             {
                 return exception.LaNgayLamViec;
@@ -930,6 +1009,20 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
             return day.DayOfWeek != DayOfWeek.Saturday
                 && day.DayOfWeek != DayOfWeek.Sunday;
+        }
+
+        public bool IsHoliday(DateTime date)
+        {
+            TblLichNgoaiLe exception = FindException(date.Date);
+            return exception != null && !exception.LaNgayLamViec;
+        }
+
+        public string GetHolidayName(DateTime date)
+        {
+            TblLichNgoaiLe exception = FindException(date.Date);
+            return exception != null && !exception.LaNgayLamViec
+                ? exception.TenNgoaiLe
+                : string.Empty;
         }
 
         public List<DateTime> GetWorkingDays(
@@ -948,6 +1041,19 @@ namespace SweetSoft.QLDA.Core.Dashboard
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Đếm ngày làm việc từ ngày bắt đầu (có tính) đến ngày kết thúc
+        /// (không tính), phù hợp với công thức tỷ lệ tiến độ theo thời gian.
+        /// </summary>
+        public int CountWorkingDays(
+            DateTime startInclusive,
+            DateTime endExclusive)
+        {
+            return GetWorkingDays(
+                startInclusive,
+                endExclusive.AddDays(-1)).Count;
         }
 
         public DateTime GetWeekEnd(DateTime weekStart)
@@ -1012,11 +1118,63 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return result;
         }
 
+        private TblLichNgoaiLe FindException(DateTime date)
+        {
+            DateTime day = date.Date;
+            return _exceptions.FirstOrDefault(x =>
+                x.NgayBatDau.Date <= day &&
+                (x.NgayKetThuc != DateTime.MinValue
+                    ? x.NgayKetThuc.Date
+                    : x.NgayBatDau.Date) >= day);
+        }
+
         private static DateTime GetEffectiveDate(TblLichNgoaiLe exception)
         {
             return exception.NgayCapNhat
                 ?? exception.NgayTao
                 ?? DateTime.MinValue;
+        }
+    }
+
+    /// <summary>
+    /// Tạo một lịch làm việc dùng chung cho Dashboard tổng quan và tiến độ.
+    /// Lịch chỉ cần được tải cho các dự án đang nằm giữa ngày bắt đầu và ngày
+    /// dự kiến kết thúc; các trạng thái còn lại đã được Calculator xử lý trực tiếp.
+    /// </summary>
+    internal static class DashboardWorkingCalendarFactory
+    {
+        internal static DashboardWorkingCalendar CreateForActiveProjects(
+            DashboardRepository repository,
+            IEnumerable<TblDuAn> projects,
+            DateTime calculationDate)
+        {
+            if (repository == null || projects == null)
+            {
+                return null;
+            }
+
+            DateTime today = calculationDate.Date;
+            List<TblDuAn> activeProjects = projects
+                .Where(project =>
+                    project != null
+                    && !DashboardProgressCalculator.IsProjectCompleted(project)
+                    && project.NgayBatDau.Date < today
+                    && project.NgayDuKienHoanThanh.Date > today)
+                .ToList();
+
+            if (activeProjects.Count == 0)
+            {
+                return null;
+            }
+
+            DateTime calendarStart = activeProjects
+                .Min(project => project.NgayBatDau.Date);
+            DateTime calendarEnd = activeProjects
+                .Max(project => project.NgayDuKienHoanThanh.Date);
+
+            return new DashboardWorkingCalendar(
+                repository.GetWorkWeekConfigurations(),
+                repository.GetCalendarExceptions(calendarStart, calendarEnd));
         }
     }
 }

@@ -13,6 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
     public partial class CtrlDashboardCost
     {
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Dashboard.CtrlProjectDashboardTabs CtrlProjectDashboardTabs1;
 
         /// <summary>
         /// ddlProjectFilter control.
@@ -23,22 +24,5 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlProjectFilter;
 
-        /// <summary>
-        /// ddlCompletionPeriod control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCompletionPeriod;
-
-        /// <summary>
-        /// btnApplyCostFilter control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton btnApplyCostFilter;
     }
 }

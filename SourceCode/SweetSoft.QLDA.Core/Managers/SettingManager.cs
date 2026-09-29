@@ -54,12 +54,6 @@ namespace SweetSoft.QLDA.Core.Managers
         public static string ContentFooter = string.Format(SettingKeyPrefix, "ContentFooter");
 
         // The document type used when the system creates the canonical
-        // project document for an execution contract.  Its value is a GUID
-        // from TblLoaiTaiLieu, configured in TblSetting rather than inferred
-        // from a display name that an administrator can rename.
-        public static string ContractDocumentTypeId = string.Format(SettingKeyPrefix, "ContractDocumentTypeId");
-
-        // The document type used when the system creates the canonical
         // project document for a meeting. Its value is a GUID from
         // TblLoaiTaiLieu and is configured by an administrator.
         public static string MeetingDocumentTypeId = string.Format(SettingKeyPrefix, "MeetingDocumentTypeId");

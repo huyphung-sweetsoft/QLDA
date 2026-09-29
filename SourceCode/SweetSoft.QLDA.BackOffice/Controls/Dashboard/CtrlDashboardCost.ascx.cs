@@ -12,8 +12,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 {
     public partial class CtrlDashboardCost : BaseAdminUserControl
     {
-        private const string AllCompletedProjectsValue =
-            "__all_completed_projects__";
+        private const string AllProjectsValue = "__all_projects__";
 
         protected virtual RegisterCSSAndJS RegisterCSSAndJS
         {
@@ -22,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=2")
+                        "/Controls/Dashboard/dashboard-style.css?v=27")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -30,7 +29,9 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-cost.js?v=2")
+                        "/Controls/Dashboard/dashboard-project-groups.js?v=1"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                        "/Controls/Dashboard/dashboard-cost.js?v=9")
                 };
 
                 return new RegisterCSSAndJS(
@@ -45,11 +46,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string ProjectComparisonChartData { get; private set; }
 
-        protected string CostTrendChartData { get; private set; }
+        protected int ProjectComparisonCount { get; private set; }
+
+        protected string CostApprovalChartData { get; private set; }
 
         protected string PaymentChartData { get; private set; }
 
         protected string DashboardTextsJson { get; private set; }
+
+        protected bool IsProjectDashboard
+        {
+            get
+            {
+                Guid projectId;
+                return Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out projectId);
+            }
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -59,17 +73,20 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            ddlProjectFilter.AutoPostBack = !IsProjectDashboard;
+
             if (!IsPostBack)
             {
-                btnApplyCostFilter.Text =
-                    GetResourceText(BackEndResourceKeys.APPLY);
-                LoadProjectFilter();
-                LoadCompletionPeriodFilter();
+                if (!IsProjectDashboard)
+                {
+                    LoadProjectFilter();
+                }
+
                 InitDashboard(BuildCostFilter());
             }
         }
 
-        protected void btnApplyCostFilter_Click(
+        protected void ddlProjectFilter_SelectedIndexChanged(
             object sender,
             EventArgs e)
         {
@@ -81,6 +98,26 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return value.ToString("#,##0", CultureInfo.CurrentCulture)
                 + GetResourceText(
                     BackEndResourceKeys.DASHBOARD_CURRENCY_SUFFIX);
+        }
+
+        protected string FormatMoneySummary(decimal value)
+        {
+            decimal absolute = Math.Abs(value);
+            if (absolute >= 1000000000m)
+            {
+                return (value / 1000000000m).ToString("0.#",
+                    CultureInfo.CurrentCulture) + GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_BILLION_SUFFIX);
+            }
+
+            if (absolute >= 1000000m)
+            {
+                return (value / 1000000m).ToString("0.#",
+                    CultureInfo.CurrentCulture) + GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_MILLION_SUFFIX);
+            }
+
+            return FormatMoney(value);
         }
 
         protected string GetAmountCss(decimal amount)
@@ -113,12 +150,25 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return "bg-secondary-subtle text-secondary";
         }
 
-        protected string GetSelectedPeriodText()
+        protected string GetCostByProjectDescription()
         {
-            ListItem selectedItem = ddlCompletionPeriod.SelectedItem;
-            return selectedItem == null
-                ? GetResourceText(BackEndResourceKeys.DASHBOARD_ALL_TIME)
-                : selectedItem.Text;
+            if (ProjectComparisonCount == 0)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT_DESC_EMPTY);
+            }
+
+            if (ProjectComparisonCount == 1)
+            {
+                return GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT_DESC_SINGLE);
+            }
+
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT_DESC),
+                ProjectComparisonCount);
         }
 
         protected string GetProjectDetailUrl(Guid projectId)
@@ -129,6 +179,11 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetProjectPaymentsUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectPayments);
+        }
+
+        protected string GetProjectCostsUrl(Guid projectId)
+        {
+            return GetProjectUrl(projectId, RewriteURLHelper.ProjectCosts);
         }
 
         private string GetProjectUrl(
@@ -148,29 +203,33 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             Model = DashboardCostManager.Instance.GetCostDashboard(filter);
 
+            var comparisonProjects = Model.ProjectStatistics
+                .Where(x => x.ActualCost > 0)
+                .OrderByDescending(x => x.ActualCost)
+                .Take(8)
+                .ToList();
+            ProjectComparisonCount = comparisonProjects.Count;
+
             ProjectComparisonChartData = JsonConvert.SerializeObject(
-                Model.ProjectStatistics.Select(x => new
+                comparisonProjects.Select(x => new
                 {
+                    projectId = x.ProjectId,
                     code = x.ProjectCode,
                     name = x.ProjectName,
-                    detailUrl = GetProjectDetailUrl(x.ProjectId),
-                    contractValue = x.ContractValue,
-                    actualCost = x.ActualCost,
-                    grossProfit = x.GrossProfit,
-                    profitMargin = x.ProfitMargin
-                }));
+                    actualCost = x.ActualCost
+                })).Replace("</", "<\\/");
 
-            CostTrendChartData = JsonConvert.SerializeObject(
-                Model.CostTrendStatistics.Select(x => new
-                {
-                    month = x.Month.ToString("MM/yyyy"),
-                    amount = x.Amount
-                }));
+            CostApprovalChartData = JsonConvert.SerializeObject(new
+            {
+                approved = Model.ActualCost,
+                pending = Model.PendingApprovalCost
+            });
 
             PaymentChartData = JsonConvert.SerializeObject(new
             {
                 received = Model.ReceivedPayment,
-                outstanding = Model.OutstandingPayment
+                outstanding = Model.OutstandingPayment,
+                totalContractValue = Model.TotalContractValue
             });
 
             DashboardTextsJson = JsonConvert.SerializeObject(new
@@ -182,67 +241,62 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_BILLION_SUFFIX),
                 millionSuffix = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_MILLION_SUFFIX),
-                noCompletedProjectComparison = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_NO_COMPLETED_PROJECT_COMPARISON),
-                contractValue = GetResourceText(
-                    BackEndResourceKeys.TOTAL_CONTRACT_VALUE),
-                actualCost = GetResourceText(
-                    BackEndResourceKeys.ACTUAL_COST),
+                noCostItems = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_COST_ITEMS),
+                approvedCost = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_APPROVED_COST),
+                pendingCost = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PENDING_COST),
                 noContractOrPayment = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_CONTRACT_OR_PAYMENT),
                 received = GetResourceText(
                     BackEndResourceKeys.RECEIVED_PAYMENT),
                 outstanding = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_OUTSTANDING_PAYMENT),
-                noCostTrend = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_NO_COST_TREND),
-                incurredCost = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_INCURRED_COST)
+                contractValue = GetResourceText(
+                    BackEndResourceKeys.CONTRACT_VALUE),
+                totalRecordedCost = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TOTAL_RECORDED_COST)
             }).Replace("</", "<\\/");
         }
 
         private void LoadProjectFilter()
         {
             ddlProjectFilter.Items.Clear();
-            ListItem allCompletedProjects = new ListItem(
+            ListItem allProjects = new ListItem(
                 GetResourceText(
                     BackEndResourceKeys.DASHBOARD_ALL_COMPLETED_PROJECTS),
-                AllCompletedProjectsValue);
-            allCompletedProjects.Selected = true;
-            ddlProjectFilter.Items.Add(allCompletedProjects);
+                AllProjectsValue);
+            allProjects.Selected = true;
+            ddlProjectFilter.Items.Add(allProjects);
 
             foreach (var project in
-                DashboardCostManager.Instance.GetCompletedProjectsForFilter())
+                DashboardCostManager.Instance.GetProjectsForFilter())
             {
                 ddlProjectFilter.Items.Add(new ListItem(
                     project.MaDuAn + " - " + project.TenDuAn,
                     project.IdDuAn.ToString()));
             }
+
+            SelectProjectFromQuery();
         }
 
-        private void LoadCompletionPeriodFilter()
+        private void SelectProjectFromQuery()
         {
-            ddlCompletionPeriod.Items.Clear();
+            Guid projectId;
+            if (!Guid.TryParse(
+                Page.Request.QueryString["project"],
+                out projectId))
+            {
+                return;
+            }
 
-            ListItem allTime = new ListItem(
-                GetResourceText(BackEndResourceKeys.DASHBOARD_ALL_TIME),
-                ((int)DashboardCostPeriod.AllTime).ToString(
-                    CultureInfo.InvariantCulture));
-            allTime.Selected = true;
-            ddlCompletionPeriod.Items.Add(allTime);
-
-            ddlCompletionPeriod.Items.Add(new ListItem(
-                GetResourceText(BackEndResourceKeys.THIS_MONTH),
-                ((int)DashboardCostPeriod.ThisMonth).ToString(
-                    CultureInfo.InvariantCulture)));
-            ddlCompletionPeriod.Items.Add(new ListItem(
-                GetResourceText(BackEndResourceKeys.THIS_QUARTER),
-                ((int)DashboardCostPeriod.ThisQuarter).ToString(
-                    CultureInfo.InvariantCulture)));
-            ddlCompletionPeriod.Items.Add(new ListItem(
-                GetResourceText(BackEndResourceKeys.THIS_YEAR),
-                ((int)DashboardCostPeriod.ThisYear).ToString(
-                    CultureInfo.InvariantCulture)));
+            ListItem item = ddlProjectFilter.Items.FindByValue(
+                projectId.ToString());
+            if (item != null)
+            {
+                ddlProjectFilter.SelectedValue = item.Value;
+            }
         }
 
         private DashboardCostFilter BuildCostFilter()
@@ -250,7 +304,9 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             Guid? projectId = null;
             Guid parsedProjectId;
 
-            if (!string.IsNullOrEmpty(ddlProjectFilter.SelectedValue)
+            if (!IsProjectDashboard
+                && ddlProjectFilter != null
+                && !string.IsNullOrEmpty(ddlProjectFilter.SelectedValue)
                 && Guid.TryParse(
                     ddlProjectFilter.SelectedValue,
                     out parsedProjectId))
@@ -258,62 +314,21 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 projectId = parsedProjectId;
             }
 
-            DashboardCostPeriod period = DashboardCostPeriod.AllTime;
-            int parsedPeriod;
-
-            if (int.TryParse(
-                ddlCompletionPeriod.SelectedValue,
-                out parsedPeriod)
-                && Enum.IsDefined(typeof(DashboardCostPeriod), parsedPeriod))
+            if (!projectId.HasValue)
             {
-                period = (DashboardCostPeriod)parsedPeriod;
+                Guid queryProjectId;
+                if (Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out queryProjectId))
+                {
+                    projectId = queryProjectId;
+                }
             }
-
-            DateTime? completedFrom;
-            DateTime? completedTo;
-            GetCompletionDateRange(period, out completedFrom, out completedTo);
 
             return new DashboardCostFilter
             {
-                ProjectId = projectId,
-                Period = period,
-                CompletedFrom = completedFrom,
-                CompletedTo = completedTo
+                ProjectId = projectId
             };
-        }
-
-        private static void GetCompletionDateRange(
-            DashboardCostPeriod period,
-            out DateTime? completedFrom,
-            out DateTime? completedTo)
-        {
-            DateTime today = DateTime.Today;
-            completedFrom = null;
-            completedTo = null;
-
-            switch (period)
-            {
-                case DashboardCostPeriod.ThisMonth:
-                    completedFrom = new DateTime(today.Year, today.Month, 1);
-                    completedTo = new DateTime(
-                        today.Year,
-                        today.Month,
-                        DateTime.DaysInMonth(today.Year, today.Month));
-                    break;
-                case DashboardCostPeriod.ThisQuarter:
-                    int startMonth = ((today.Month - 1) / 3) * 3 + 1;
-                    int endMonth = startMonth + 2;
-                    completedFrom = new DateTime(today.Year, startMonth, 1);
-                    completedTo = new DateTime(
-                        today.Year,
-                        endMonth,
-                        DateTime.DaysInMonth(today.Year, endMonth));
-                    break;
-                case DashboardCostPeriod.ThisYear:
-                    completedFrom = new DateTime(today.Year, 1, 1);
-                    completedTo = new DateTime(today.Year, 12, 31);
-                    break;
-            }
         }
     }
 }

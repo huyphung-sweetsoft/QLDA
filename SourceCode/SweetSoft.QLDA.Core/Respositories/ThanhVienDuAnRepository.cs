@@ -84,7 +84,7 @@ namespace SweetSoft.QLDA.Core.Respositories
 
                 ;WITH MyProjects AS (
                     SELECT da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn, da.NgayBatDau AS ProjectStartDate,
-                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro, da.SuDungHeSoDongGopMacDinh
+                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro
                     FROM TblDuAn da
                     INNER JOIN TblThanhVienDuAn tv ON tv.IdDuAn = da.IdDuAn
                     INNER JOIN TblVaiTroDuAn vt ON vt.IdVaiTroDuAn = tv.IdVaiTroDuAn
@@ -104,31 +104,89 @@ namespace SweetSoft.QLDA.Core.Respositories
                     SELECT DISTINCT IdDuAn, IdGiaiDoanDuAn FROM AssignedLeafTasks
                 ),
                 RelevantLeafTasks AS (
-                    SELECT cv.IdCongViec, cv.IdDuAn, cv.ThoiHanNgay, ISNULL(ut.DiemUuTien, 1) AS DiemUuTien, CASE WHEN mp.SuDungHeSoDongGopMacDinh = 1 THEN hsDefault.HeSoDongGop ELSE hsProject.HeSoDongGop END AS HeSoDongGop
-                    FROM TblCongViec cv
-                    INNER JOIN RelevantPhases rp ON cv.IdDuAn = rp.IdDuAn AND cv.IdGiaiDoanDuAn = rp.IdGiaiDoanDuAn
-                    INNER JOIN MyProjects mp ON mp.IdDuAn = cv.IdDuAn
-                    INNER JOIN TblGiaiDoanDuAn gd ON gd.IdGiaiDoanDuAn = cv.IdGiaiDoanDuAn AND gd.IdDuAn = cv.IdDuAn AND gd.DaXoa = 0
-                    LEFT JOIN TblDoUuTien ut ON cv.IdDoUuTien = ut.IdDoUuTien
-                    LEFT JOIN TblHeSoDongGop hsProject ON hsProject.IdDuAn = cv.IdDuAn AND hsProject.IdDoUuTien = cv.IdDoUuTien AND hsProject.DaXoa = 0
-                    LEFT JOIN TblHeSoDongGop hsDefault ON hsDefault.IdDuAn IS NULL AND hsDefault.IdDoUuTien = cv.IdDoUuTien AND hsDefault.DaXoa = 0
-                    WHERE cv.DaXoa = 0 AND cv.IdCongViecCha IS NOT NULL
-                      AND NOT EXISTS (SELECT 1 FROM TblCongViec child WHERE child.IdCongViecCha = cv.IdCongViec AND child.DaXoa = 0)
-                ),
+    SELECT
+        cv.IdCongViec,
+        cv.IdDuAn,
+        cv.ThoiHanNgay,
+        ISNULL(ut.DiemUuTien, 1) AS DiemUuTien,
+        hs.HeSoDongGop
+    FROM TblCongViec cv
+    INNER JOIN RelevantPhases rp
+        ON cv.IdDuAn = rp.IdDuAn
+       AND cv.IdGiaiDoanDuAn = rp.IdGiaiDoanDuAn
+
+    INNER JOIN TblGiaiDoanDuAn gd
+        ON gd.IdGiaiDoanDuAn = cv.IdGiaiDoanDuAn
+       AND gd.IdDuAn = cv.IdDuAn
+       AND gd.DaXoa = 0
+
+    LEFT JOIN TblDoUuTien ut
+        ON cv.IdDoUuTien = ut.IdDoUuTien
+
+    LEFT JOIN TblHeSoDongGop hs
+        ON hs.IdDuAn = cv.IdDuAn
+       AND hs.IdDoUuTien = cv.IdDoUuTien
+       AND hs.DaXoa = 0
+
+    WHERE cv.DaXoa = 0
+      AND cv.IdCongViecCha IS NOT NULL
+      AND NOT EXISTS (
+          SELECT 1
+          FROM TblCongViec child
+          WHERE child.IdCongViecCha = cv.IdCongViec
+            AND child.DaXoa = 0
+      )
+),
                 TaskStats AS (
-                    SELECT t.IdCongViec, t.IdDuAn, t.ThoiHanNgay, t.DiemUuTien, COUNT(a.IdNhanVien) AS AssigneeCount, t.HeSoDongGop,
-                           MAX(CASE WHEN a.IdNhanVien = @IdNhanVien THEN 1 ELSE 0 END) AS IsMyTask
-                    FROM RelevantLeafTasks t
-                    LEFT JOIN TblCongViec_NhanVien a ON a.IdCongViec = t.IdCongViec
-                    GROUP BY t.IdCongViec, t.IdDuAn, t.ThoiHanNgay, t.DiemUuTien, t.HeSoDongGop
-                ),
-                ProjectContribution AS (
-                    SELECT IdDuAn,
-                           SUM(CAST(ISNULL(ThoiHanNgay, 0) AS DECIMAL(18,4)) * HeSoDongGop ) AS Total_E_All_Employees,
-                           SUM( CASE WHEN IsMyTask = 1 THEN ( CAST(ISNULL(ThoiHanNgay, 0) AS DECIMAL(18,4)) * HeSoDongGop ) / NULLIF(AssigneeCount, 0) ELSE 0 END ) AS Total_E_My_Employee
-                    FROM TaskStats
-                    GROUP BY IdDuAn
-                )
+    SELECT
+        t.IdCongViec,
+        t.IdDuAn,
+        t.ThoiHanNgay,
+        t.DiemUuTien,
+        t.HeSoDongGop,
+        COUNT(a.IdNhanVien) AS AssigneeCount,
+        MAX(
+            CASE
+                WHEN a.IdNhanVien = @IdNhanVien
+                THEN 1
+                ELSE 0
+            END
+        ) AS IsMyTask
+    FROM RelevantLeafTasks t
+    LEFT JOIN TblCongViec_NhanVien a
+        ON a.IdCongViec = t.IdCongViec
+    GROUP BY
+        t.IdCongViec,
+        t.IdDuAn,
+        t.ThoiHanNgay,
+        t.DiemUuTien,
+        t.HeSoDongGop
+),
+               ProjectContribution AS (
+    SELECT
+        IdDuAn,
+
+        SUM(
+            CAST(ISNULL(ThoiHanNgay, 0) AS DECIMAL(18,4))
+            * ISNULL(HeSoDongGop, 0)
+        ) AS Total_E_All_Employees,
+
+        SUM(
+            CASE
+                WHEN IsMyTask = 1
+                THEN
+                    (
+                        CAST(ISNULL(ThoiHanNgay, 0) AS DECIMAL(18,4))
+                        * ISNULL(HeSoDongGop, 0)
+                    )
+                    / NULLIF(AssigneeCount, 0)
+                ELSE 0
+            END
+        ) AS Total_E_My_Employee
+
+    FROM TaskStats
+    GROUP BY IdDuAn
+)
                 SELECT mp.IdDuAn, mp.MaDuAn, mp.TenDuAn, mp.VaiTro, mp.TrangThaiDuAn, mp.ProjectStartDate, mp.ProjectEndDate,
                        ISNULL(pc.Total_E_All_Employees, 0) AS Total_E_All_Employees,
                        ISNULL(pc.Total_E_My_Employee, 0) AS Total_E_My_Employee
@@ -153,7 +211,7 @@ namespace SweetSoft.QLDA.Core.Respositories
 
                 ;WITH MyProject AS (
                     SELECT da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn, da.NgayBatDau AS ProjectStartDate,
-                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro, da.SuDungHeSoDongGopMacDinh
+                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro
                     FROM TblDuAn da
                     INNER JOIN TblThanhVienDuAn tv ON tv.IdDuAn = da.IdDuAn
                     INNER JOIN TblVaiTroDuAn vt ON vt.IdVaiTroDuAn = tv.IdVaiTroDuAn
@@ -175,7 +233,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                            parent.MaCongViec AS MaTaskCha, parent.TenCongViec AS TenTaskCha,
                            cv.IdCongViec AS IdTask, cv.MaCongViec AS MaTask, cv.TenCongViec AS TenTask,
                            cv.NgayBatDau, cv.NgayKetThuc, cv.NgayHoanThanhThucTe, cv.ThoiHanNgay, cv.TrangThai AS TrangThaiTask,
-                           ISNULL(ut.DiemUuTien, 1) AS DiemUuTien, ISNULL(ut.TenDoUuTien, N'Thấp') AS TenDoUuTien,  CASE WHEN mp.SuDungHeSoDongGopMacDinh = 1 THEN hsDefault.HeSoDongGop  ELSE hsProject.HeSoDongGop END AS HeSoDongGop
+                           ISNULL(ut.DiemUuTien, 1) AS DiemUuTien, ISNULL(ut.TenDoUuTien, N'Thấp') AS TenDoUuTien, hsProject.HeSoDongGop AS HeSoDongGop
                     FROM TblCongViec cv
                     INNER JOIN RelevantPhases rp ON cv.IdDuAn = rp.IdDuAn AND cv.IdGiaiDoanDuAn = rp.IdGiaiDoanDuAn
                     INNER JOIN MyProject mp ON mp.IdDuAn = cv.IdDuAn
@@ -184,7 +242,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                     LEFT JOIN TblCongViec parent ON cv.IdCongViecCha = parent.IdCongViec
                     LEFT JOIN TblDoUuTien ut ON cv.IdDoUuTien = ut.IdDoUuTien
                     LEFT JOIN TblHeSoDongGop hsProject ON hsProject.IdDuAn = cv.IdDuAn AND hsProject.IdDoUuTien = cv.IdDoUuTien AND hsProject.DaXoa = 0
-                    LEFT JOIN TblHeSoDongGop hsDefault ON hsDefault.IdDuAn IS NULL AND hsDefault.IdDoUuTien = cv.IdDoUuTien AND hsDefault.DaXoa = 0
                     WHERE cv.IdDuAn = @IdDuAn AND cv.DaXoa = 0 AND cv.IdCongViecCha IS NOT NULL
                       AND NOT EXISTS (SELECT 1 FROM TblCongViec child WHERE child.IdCongViecCha = cv.IdCongViec AND child.DaXoa = 0)
                 ),

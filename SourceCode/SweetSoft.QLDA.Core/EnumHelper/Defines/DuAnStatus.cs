@@ -9,7 +9,7 @@ namespace SweetSoft.QLDA.Core.EnumHelper.Defines
     public enum DuAnStatus : Byte
     {
         [ERender("Chưa bắt đầu")]
-        ChoThucHien = 0,
+        ChuaBatDau = 0,
 
         [ERender("Đang thực hiện")]
         DangThucHien = 1,

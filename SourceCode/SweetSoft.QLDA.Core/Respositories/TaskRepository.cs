@@ -132,6 +132,62 @@ namespace SweetSoft.QLDA.Core.Respositories
             dt.Load(iDataReader);
             return dt;
         }
+        public List<Guid> GetActiveTaskIdsOfUserInProject(Guid idDuAn, Guid idNhanVien)
+        {
+            List<Guid> tasks = new List<Guid>();
+
+            string sql = $@"
+                SELECT t.IdCongViec 
+                FROM [dbo].[TblCongViec] t
+                INNER JOIN [dbo].[TblCongViec_NhanVien] cn ON t.IdCongViec = cn.IdCongViec
+                WHERE t.IdDuAn = '{idDuAn}' 
+                  AND cn.IdNhanVien = '{idNhanVien}'
+                  AND t.TrangThai != 2 
+                  AND (t.DaXoa = 0 OR t.DaXoa IS NULL)";
+
+            IDataReader reader = new SubSonic.InlineQuery().ExecuteReader(sql);
+            if (reader != null)
+            {
+                while (reader.Read())
+                {
+                    if (reader["IdCongViec"] != DBNull.Value && Guid.TryParse(reader["IdCongViec"].ToString(), out Guid taskId))
+                    {
+                        tasks.Add(taskId);
+                    }
+                }
+                reader.Close();
+            }
+            return tasks;
+        }
+        public Dictionary<Guid, int> GetTaskCountsByProject(Guid idDuAn)
+        {
+            Dictionary<Guid, int> taskCounts = new Dictionary<Guid, int>();
+            // JOIN bảng TblCongViec và bảng trung gian TblCongViec_NhanVien
+            string sql = $@"
+                SELECT cn.IdNhanVien, COUNT(t.IdCongViec) as TotalTasks 
+                FROM [dbo].[TblCongViec] t
+                INNER JOIN [dbo].[TblCongViec_NhanVien] cn ON t.IdCongViec = cn.IdCongViec
+                WHERE t.IdDuAn = '{idDuAn}' AND (t.DaXoa = 0 OR t.DaXoa IS NULL)
+                GROUP BY cn.IdNhanVien";
+            // Dùng đúng chuẩn InlineQuery và IDataReader của dự án
+            IDataReader reader = new SubSonic.InlineQuery().ExecuteReader(sql);
+            if (reader != null)
+            {
+                while (reader.Read())
+                {
+                    if (reader["IdNhanVien"] != DBNull.Value)
+                    {
+                        if (Guid.TryParse(reader["IdNhanVien"].ToString(), out Guid idNv))
+                        {
+                            taskCounts[idNv] = Convert.ToInt32(reader["TotalTasks"]);
+                        }
+                    }
+                }
+                reader.Close();
+            }
+
+            return taskCounts;
+        }
         public DataTable FetchPhasesByProjectId(Guid projectId)
         {
             return new SubSonic.Select(
@@ -240,7 +296,6 @@ namespace SweetSoft.QLDA.Core.Respositories
                                .ExecuteSingle<TblDoUuTien>();
         }
         #endregion
-
         #region 2. Truy vấn Danh mục & Thành viên
         public DataTable FetchAllPrioritiesTable()
         {

@@ -480,7 +480,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     out idLoaiTaiLieu)
                 || idLoaiTaiLieu == Guid.Empty)
             {
-                ShowNotify("Vui lòng chọn loại tài liệu.", MSGType.Warning);
+                ShowNotify("Vui lòng chọn loại hồ sơ.", MSGType.Warning);
                 return;
             }
 

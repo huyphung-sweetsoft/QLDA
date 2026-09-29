@@ -1188,12 +1188,6 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Contract</value>
   </data>
-  <data name="CONTRACT_DOCUMENT" xml:space="preserve">
-    <value>Contract document</value>
-  </data>
-  <data name="CONTRACT_DOCUMENT_IDENTITY_LOCKED" xml:space="preserve">
-    <value>The contract number and name are used by the linked document and cannot be changed here.</value>
-  </data>
   <data name="CONTRACT_NUMBER" xml:space="preserve">
     <value />
   </data>
@@ -1777,6 +1771,9 @@
   <data name="ACTIVE_PROJECTS" xml:space="preserve">
     <value>Active projects</value>
   </data>
+  <data name="UPCOMING_MEETINGS" xml:space="preserve">
+    <value>Upcoming meetings</value>
+  </data>
   <data name="PROJECTS_IN_PROGRESS" xml:space="preserve">
     <value>Projects in progress</value>
   </data>
@@ -1787,7 +1784,7 @@
     <value>From today until the end of the selected period</value>
   </data>
   <data name="AT_RISK_PROJECTS" xml:space="preserve">
-    <value>At-risk projects</value>
+    <value>Projects needing schedule attention</value>
   </data>
   <data name="RATE_ON_ACTIVE_PROJECTS" xml:space="preserve">
     <value>Rate on active projects</value>
@@ -1822,6 +1819,9 @@
   <data name="PROGRESS_OF_EACH_PROJECT" xml:space="preserve">
     <value>Progress of each project</value>
   </data>
+  <data name="DASHBOARD_OVERVIEW_PROGRESS_CHART_DESC" xml:space="preserve">
+    <value>Compare task completion with planned time.</value>
+  </data>
   <data name="PROJECTS_NEEDING_ATTENTION" xml:space="preserve">
     <value>Projects needing attention</value>
   </data>
@@ -1838,22 +1838,46 @@
     <value>No projects with risks or issues.</value>
   </data>
   <data name="RESOURCE_OVERVIEW" xml:space="preserve">
-    <value>Resource overview</value>
+    <value>Project staffing</value>
   </data>
   <data name="HR_AND_MEMBER_ALLOCATION" xml:space="preserve">
     <value>HR and project member allocation</value>
   </data>
+  <data name="DASHBOARD_OVERVIEW_RESOURCE_SCOPE_DESC" xml:space="preserve">
+    <value>Employee workload this week ({0} – {1}).</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_PROJECT_RESOURCE_DESC" xml:space="preserve">
+    <value>Member workload within this project this week ({0} – {1}).</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_EMPLOYEES_IN_SCOPE" xml:space="preserve">
+    <value>Employees in the projects in view</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_OTHER_PROJECTS" xml:space="preserve">
+    <value>Also in another project</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_MULTI_PROJECT_HELP" xml:space="preserve">
+    <value>Employees listed as members of at least two projects.</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_OTHER_PROJECTS_HELP" xml:space="preserve">
+    <value>These project members are also listed in at least one other project.</value>
+  </data>
   <data name="TOTAL_EMPLOYEES" xml:space="preserve">
-    <value>Total employees</value>
+    <value>Company employees</value>
   </data>
   <data name="PARTICIPATING" xml:space="preserve">
     <value>Participating</value>
   </data>
   <data name="UNASSIGNED" xml:space="preserve">
-    <value>Unassigned</value>
+    <value>Not in the projects in view</value>
   </data>
   <data name="MULTI_PROJECT_MEMBERS" xml:space="preserve">
-    <value>Multi-project members</value>
+    <value>Listed in 2 or more projects</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_SINGLE_PROJECT_MEMBERS" xml:space="preserve">
+    <value>In 1 project</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_NO_EMPLOYEES" xml:space="preserve">
+    <value>No employees match the current scope.</value>
   </data>
   <data name="ASSIGNED_TO_TASKS" xml:space="preserve">
     <value>Assigned to tasks</value>
@@ -1862,7 +1886,7 @@
     <value>Not assigned to tasks</value>
   </data>
   <data name="COST_OVERVIEW" xml:space="preserve">
-    <value>Cost overview</value>
+    <value>Expenses by approval status</value>
   </data>
   <data name="COST_LIST" xml:space="preserve">
     <value>Cost list</value>
@@ -1880,7 +1904,25 @@
     <value>Cost management</value>
   </data>
   <data name="BUDGET_AND_COST_SUMMARY" xml:space="preserve">
-    <value>Contract value and project cost summary</value>
+    <value>Expenses in the selected period, grouped by approval status.</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_TOTAL_COST_AMOUNT" xml:space="preserve">
+    <value>Total expenses</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_RECEIVED_PAYMENT" xml:space="preserve">
+    <value>Received</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_RECEIVED_PAYMENT_HELP" xml:space="preserve">
+    <value>Payments marked Paid; the selected period uses the actual payment date.</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_APPROVED_COST" xml:space="preserve">
+    <value>Approved costs</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_APPROVED_COST_HELP" xml:space="preserve">
+    <value>Total approved costs; the selected period uses the recorded date.</value>
+  </data>
+  <data name="DASHBOARD_OVERVIEW_CONTRACT_SCOPE" xml:space="preserve">
+    <value>All projects in view</value>
   </data>
   <data name="BUDGET" xml:space="preserve">
     <value>Budget</value>
@@ -1945,11 +1987,29 @@
   <data name="DASHBOARD_STATUS_OVERDUE" xml:space="preserve">
     <value>Overdue</value>
   </data>
+  <data name="DASHBOARD_PROJECT_STATUS_WAITING" xml:space="preserve">
+    <value>Not started</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_STATUS_IN_PROGRESS" xml:space="preserve">
+    <value>In progress</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_STATUS_PAUSED" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_STATUS_COMPLETED" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_STATUS_ENDED" xml:space="preserve">
+    <value>Ended</value>
+  </data>
   <data name="DASHBOARD_HEALTH_ON_TRACK" xml:space="preserve">
     <value>On track</value>
   </data>
+  <data name="DASHBOARD_HEALTH_AHEAD" xml:space="preserve">
+    <value>Ahead of schedule</value>
+  </data>
   <data name="DASHBOARD_HEALTH_AT_RISK" xml:space="preserve">
-    <value>At risk</value>
+    <value>At risk of falling behind schedule</value>
   </data>
   <data name="DASHBOARD_HEALTH_BEHIND" xml:space="preserve">
     <value>Behind schedule</value>
@@ -2023,6 +2083,9 @@
   <data name="DASHBOARD_ACTUAL_MINUS_PLAN" xml:space="preserve">
     <value>Actual − Plan</value>
   </data>
+  <data name="DASHBOARD_PERCENTAGE_POINTS" xml:space="preserve">
+    <value>percentage points</value>
+  </data>
   <data name="DASHBOARD_NEEDS_ATTENTION" xml:space="preserve">
     <value>Projects needing attention</value>
   </data>
@@ -2032,17 +2095,23 @@
   <data name="DASHBOARD_PROGRESS_TITLE" xml:space="preserve">
     <value>Project and task progress dashboard</value>
   </data>
+  <data name="DASHBOARD_PROGRESS_DATE_RANGE_LABEL" xml:space="preserve">
+    <value>Project date range</value>
+  </data>
   <data name="DASHBOARD_PROGRESS_FILTER_DESC" xml:space="preserve">
-    <value>Project progress is compared with elapsed planned time; the date range determines which projects are included, while task figures cover all tasks belonging to those projects.</value>
+    <value>Include projects whose schedule overlaps this range. Task counts cover all tasks in the selected projects.</value>
   </data>
   <data name="DASHBOARD_ACTUAL_VS_PLAN" xml:space="preserve">
     <value>Actual versus plan</value>
   </data>
+  <data name="DASHBOARD_SELECT_PROJECT" xml:space="preserve">
+    <value>Select a project</value>
+  </data>
   <data name="DASHBOARD_ACTUAL_VS_PLAN_DESC" xml:space="preserve">
-    <value>Project completion progress compared with elapsed planned time.</value>
+    <value>Project completion progress compared with elapsed planned working days.</value>
   </data>
   <data name="DASHBOARD_PLAN_TIME_DESC" xml:space="preserve">
-    <value>Plan is calculated from the elapsed time between the start date and expected completion date.</value>
+    <value>Plan is calculated from configured working days, holidays, and make-up days.</value>
   </data>
   <data name="DASHBOARD_EXPECTED_COMPLETION" xml:space="preserve">
     <value>Expected completion</value>
@@ -2058,6 +2127,9 @@
   </data>
   <data name="DASHBOARD_PROGRESS_VARIANCE_DESC" xml:space="preserve">
     <value>Actual progress minus planned progress</value>
+  </data>
+  <data name="DASHBOARD_PROGRESS_ASSESSMENT" xml:space="preserve">
+    <value>Schedule assessment</value>
   </data>
   <data name="DASHBOARD_TASK_STATUS" xml:space="preserve">
     <value>Task status</value>
@@ -2082,18 +2154,6 @@
   </data>
   <data name="DASHBOARD_NO_PROJECT_TASKS" xml:space="preserve">
     <value>This project has no tasks.</value>
-  </data>
-  <data name="DASHBOARD_PROJECT_TASK_STRUCTURE" xml:space="preserve">
-    <value>Task structure by project</value>
-  </data>
-  <data name="DASHBOARD_PROJECT_TASK_STRUCTURE_DESC" xml:space="preserve">
-    <value>Compare completed, in-progress, not-started, and overdue tasks across projects.</value>
-  </data>
-  <data name="DASHBOARD_PROJECT_SCHEDULE_HEALTH" xml:space="preserve">
-    <value>Project schedule health</value>
-  </data>
-  <data name="DASHBOARD_PROJECT_SCHEDULE_HEALTH_DESC" xml:space="preserve">
-    <value>Projects with a large negative variance are behind schedule.</value>
   </data>
   <data name="DASHBOARD_VARIANCE_FORMULA" xml:space="preserve">
     <value>Variance = Actual − Plan</value>
@@ -2124,6 +2184,9 @@
   </data>
   <data name="DASHBOARD_NO_TASKS_IN_PERIOD" xml:space="preserve">
     <value>No tasks in this period.</value>
+  </data>
+  <data name="DASHBOARD_NO_OVERDUE_TASKS" xml:space="preserve">
+    <value>No overdue tasks.</value>
   </data>
   <data name="DASHBOARD_NO_PROJECT_TASK_DATA" xml:space="preserve">
     <value>No project task data.</value>
@@ -2206,11 +2269,17 @@
   <data name="DASHBOARD_OVERDUE_DAYS" xml:space="preserve">
     <value>{0} days overdue</value>
   </data>
+  <data name="DASHBOARD_OVERDUE_PROJECT_REASON" xml:space="preserve">
+    <value>The expected end date has passed; the project status is not marked as completed.</value>
+  </data>
   <data name="DASHBOARD_ENDS_TODAY" xml:space="preserve">
     <value>Ends today</value>
   </data>
   <data name="DASHBOARD_PROGRESS_AXIS" xml:space="preserve">
     <value>Progress (%)</value>
+  </data>
+  <data name="DASHBOARD_COMPLETED_TASKS_COUNT" xml:space="preserve">
+    <value>Completed tasks (reference)</value>
   </data>
   <data name="DASHBOARD_START" xml:space="preserve">
     <value>Start</value>
@@ -2219,19 +2288,28 @@
     <value>Expected</value>
   </data>
   <data name="DASHBOARD_COST_TITLE" xml:space="preserve">
-    <value>Completed project cost dashboard</value>
+    <value>Project finances · Current cumulative totals</value>
   </data>
+  <data name="DASHBOARD_PROJECTS_IN_SCOPE" xml:space="preserve"><value>Projects in scope</value></data>
+  <data name="DASHBOARD_OVERDUE_RECEIVABLE" xml:space="preserve"><value>Overdue receivables</value></data>
+  <data name="DASHBOARD_OVERDUE_PAYMENT_COUNT" xml:space="preserve"><value>{0} overdue unpaid instalments</value></data>
+  <data name="DASHBOARD_PROJECT_STAGES" xml:space="preserve"><value>Project stages</value></data>
+  <data name="DASHBOARD_STAGES_COMPLETED_COUNT" xml:space="preserve"><value>{0}/{1} stages completed</value></data>
+  <data name="DASHBOARD_STAGE_OVERDUE_COUNT" xml:space="preserve"><value>{0} overdue stages</value></data>
+  <data name="DASHBOARD_STAGE_NO_DEADLINE" xml:space="preserve"><value>No due date</value></data>
+  <data name="DASHBOARD_STAGE_TASK_COMPLETION" xml:space="preserve"><value>Completed tasks</value></data>
+  <data name="DASHBOARD_STAGES_BUTTON_SUMMARY" xml:space="preserve"><value>{0}/{1} completed</value></data>
   <data name="DASHBOARD_COMPLETION_PERIOD" xml:space="preserve">
     <value>Completion period</value>
   </data>
   <data name="DASHBOARD_COST_FILTER_DESC" xml:space="preserve">
-    <value>Only projects with an actual completion date are included. The period filters project completion dates, while costs and payments cover the full lifecycle of matching projects.</value>
+    <value>Only income and cost data from projects marked Completed are included.</value>
   </data>
   <data name="DASHBOARD_NO_COMPLETED_PROJECTS" xml:space="preserve">
     <value>No completed projects match the filter</value>
   </data>
   <data name="DASHBOARD_NO_COMPLETED_PROJECTS_DESC" xml:space="preserve">
-    <value>A project appears only after its actual completion date is updated; active projects are excluded from financial indicators.</value>
+    <value>A project appears in the financial dashboard after it is marked Completed.</value>
   </data>
   <data name="DASHBOARD_COMPLETED_PROJECTS" xml:space="preserve">
     <value>Completed projects</value>
@@ -2261,13 +2339,22 @@
     <value>Contract versus actual cost</value>
   </data>
   <data name="DASHBOARD_CONTRACT_VS_ACTUAL_COST_DESC" xml:space="preserve">
-    <value>Compare contract value with total cost for each completed project.</value>
+    <value>Compare contract value with total approved cost for each completed project.</value>
   </data>
   <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve">
-    <value>Payment situation</value>
+    <value>Payment overview</value>
   </data>
+  <data name="DASHBOARD_APPROVED_COST" xml:space="preserve"><value>Approved cost</value></data>
+  <data name="DASHBOARD_PENDING_COST" xml:space="preserve"><value>Cost awaiting approval</value></data>
+  <data name="DASHBOARD_COST_APPROVAL_CHART" xml:space="preserve"><value>Cost overview</value></data>
+  <data name="DASHBOARD_COST_APPROVAL_CHART_DESC" xml:space="preserve"><value>Approved and pending costs for completed projects; select a chart segment to view cost items.</value></data>
+  <data name="DASHBOARD_TOTAL_RECORDED_COST" xml:space="preserve"><value>Total recorded cost</value></data>
+  <data name="DASHBOARD_COST_BY_PROJECT" xml:space="preserve"><value>Cost by project</value></data>
+  <data name="DASHBOARD_COST_BY_PROJECT_DESC" xml:space="preserve"><value>Showing the top {0} completed projects by approved cost; select a bar to view cost items.</value></data>
+  <data name="DASHBOARD_COST_BY_PROJECT_DESC_EMPTY" xml:space="preserve"><value>No completed projects have approved costs yet.</value></data>
+  <data name="DASHBOARD_COST_BY_PROJECT_DESC_SINGLE" xml:space="preserve"><value>Approved cost for the completed project; select the bar to view cost items.</value></data>
   <data name="DASHBOARD_PAYMENT_SITUATION_DESC" xml:space="preserve">
-    <value>Received and outstanding amounts compared with total contract value.</value>
+    <value>Received and outstanding payments for completed projects; select a chart segment to view related projects.</value>
   </data>
   <data name="DASHBOARD_COLLECTION_RATE" xml:space="preserve">
     <value>Collection rate: {0}%</value>
@@ -2276,7 +2363,7 @@
     <value>Cost occurrence trend</value>
   </data>
   <data name="DASHBOARD_COST_TREND_DESC" xml:space="preserve">
-    <value>Monthly costs across the full lifecycle of completed projects in the selected scope.</value>
+    <value>Monthly approved costs across the full lifecycle of completed projects in the selected scope.</value>
   </data>
   <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve">
     <value>Financial performance by project</value>
@@ -2312,7 +2399,7 @@
     <value>Largest cost items</value>
   </data>
   <data name="DASHBOARD_LARGEST_COST_ITEMS_DESC" xml:space="preserve">
-    <value>Up to 15 highest-value cost items in the selected project scope.</value>
+    <value>Up to 15 highest-value approved cost items in the selected project scope.</value>
   </data>
   <data name="DASHBOARD_COST_ITEM_CODE" xml:space="preserve">
     <value>Cost item code</value>
@@ -2365,9 +2452,15 @@
   <data name="DASHBOARD_DISPLAY_RANGE" xml:space="preserve">
     <value>Display range</value>
   </data>
+  <data name="DASHBOARD_VIEW_BY_WEEK" xml:space="preserve"><value>By week</value></data>
+  <data name="DASHBOARD_VIEW_BY_MONTH" xml:space="preserve"><value>By month</value></data>
   <data name="DASHBOARD_FOCUS_WEEK" xml:space="preserve">
-    <value>Focus week</value>
+    <value>Selected week</value>
   </data>
+  <data name="DASHBOARD_FOCUS_MONTHS" xml:space="preserve"><value>4-month range</value></data>
+  <data name="DASHBOARD_PREVIOUS_MONTH" xml:space="preserve"><value>Previous month</value></data>
+  <data name="DASHBOARD_CURRENT_MONTH" xml:space="preserve"><value>Back to current month</value></data>
+  <data name="DASHBOARD_NEXT_MONTH" xml:space="preserve"><value>Next month</value></data>
   <data name="DASHBOARD_PREVIOUS_WEEK" xml:space="preserve">
     <value>Previous week</value>
   </data>
@@ -2378,8 +2471,17 @@
     <value>Next week</value>
   </data>
   <data name="DASHBOARD_WEEKLY_CALCULATION_DESC" xml:space="preserve">
-    <value>Weekly calculation: each active task day equals one allocated workday; weekly load is allocated workdays divided by actual working days configured by the workweek and exception calendar. For example, 5 days on project A plus 2 days on project B in a 5-day week equals 140% load.</value>
+    <value>Estimated from scheduled tasks: each task on a working day counts as one task-day; overlapping tasks add together. This is not actual hours worked.</value>
   </data>
+  <data name="DASHBOARD_WEEKLY_CALCULATION_TITLE" xml:space="preserve"><value>How it is estimated</value></data>
+  <data name="DASHBOARD_DAY_UNIT" xml:space="preserve"><value>days</value></data>
+  <data name="DASHBOARD_VIEW_WEEK" xml:space="preserve"><value>View week</value></data>
+  <data name="DASHBOARD_MONTH_SELECT_WEEK_DESC" xml:space="preserve"><value>Select a week to see the work assigned each day.</value></data>
+  <data name="DASHBOARD_WEEK_DAYS_COMPARISON" xml:space="preserve"><value>{0} assigned task-days / {1} working days</value></data>
+  <data name="DASHBOARD_TOTAL_EMPLOYEES" xml:space="preserve"><value>Total personnel</value></data>
+  <data name="DASHBOARD_VIEW_MONTH_WEEKS" xml:space="preserve"><value>View weeks</value></data>
+  <data name="DASHBOARD_MONTH_KPI_TITLE" xml:space="preserve"><value>Planned workload · {0}</value></data>
+  <data name="DASHBOARD_MONTHLY_CALCULATION_DESC" xml:space="preserve"><value>The KPI groups use average workload for the month named above. A month cell can still flag an overloaded week even when the monthly average is not overloaded.</value></data>
   <data name="DASHBOARD_EMPLOYEES_IN_SCOPE" xml:space="preserve">
     <value>Employees in scope</value>
   </data>
@@ -2392,17 +2494,20 @@
   <data name="DASHBOARD_UNDERLOADED" xml:space="preserve">
     <value>Underloaded</value>
   </data>
+  <data name="DASHBOARD_NO_LOAD" xml:space="preserve">
+    <value>No assigned work</value>
+  </data>
   <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve">
-    <value>Balanced load</value>
+    <value>Adequately loaded</value>
   </data>
   <data name="DASHBOARD_OVERLOADED" xml:space="preserve">
     <value>Overloaded</value>
   </data>
   <data name="DASHBOARD_WEEKLY_RESOURCE_HEATMAP" xml:space="preserve">
-    <value>Weekly resource allocation heatmap</value>
+    <value>Planned weekly assignments</value>
   </data>
   <data name="DASHBOARD_RESOURCE_HEATMAP_DESC" xml:space="preserve">
-    <value>Select a cell to see projects, tasks, and days contributing to the load; the table below summarizes each month in range.</value>
+    <value>Select a cell to see the employee's tasks from Monday to Sunday; select a task to edit it.</value>
   </data>
   <data name="DASHBOARD_EMPLOYEE_LABEL" xml:space="preserve">
     <value>Employee</value>
@@ -2414,10 +2519,10 @@
     <value>The project has no members, manager, or employees assigned to tasks.</value>
   </data>
   <data name="DASHBOARD_MONTHLY_LOAD_SUMMARY" xml:space="preserve">
-    <value>Monthly load summary</value>
+    <value>Planned monthly workload</value>
   </data>
   <data name="DASHBOARD_MONTHLY_LOAD_DESC" xml:space="preserve">
-    <value>Each month uses all working days in that month. A cross-month week is flagged under the month containing most of its working days.</value>
+    <value>Select a month cell to see its weekly load.</value>
   </data>
   <data name="DASHBOARD_NO_MONTHLY_EMPLOYEES" xml:space="preserve">
     <value>No employees to summarize in the selected scope.</value>
@@ -2456,7 +2561,7 @@
     <value>Available capacity</value>
   </data>
   <data name="DASHBOARD_UTILIZATION" xml:space="preserve">
-    <value>Utilization</value>
+    <value>Planned workload</value>
   </data>
   <data name="DASHBOARD_NO_PROJECT_ALLOCATION" xml:space="preserve">
     <value>No project allocation occurred in the focus week.</value>
@@ -2487,6 +2592,12 @@
   </data>
   <data name="DASHBOARD_ALLOCATED_CAPACITY" xml:space="preserve">
     <value>{0}/{1} days</value>
+  </data>
+  <data name="DASHBOARD_ASSIGNED_WORKDAYS" xml:space="preserve">
+    <value>Assigned: {0} workdays</value>
+  </data>
+  <data name="DASHBOARD_AVAILABLE_WORKDAYS" xml:space="preserve">
+    <value>Available: {0} days</value>
   </data>
   <data name="DASHBOARD_OVERLOAD_DETAIL" xml:space="preserve">
     <value>Assigned {0} workdays; exceeded by {1} days</value>
@@ -2519,7 +2630,7 @@
     <value>100% threshold</value>
   </data>
   <data name="DASHBOARD_CAPACITY" xml:space="preserve">
-    <value>{0} capacity</value>
+    <value>{0} working days</value>
   </data>
   <data name="DASHBOARD_EXCESS" xml:space="preserve">
     <value> · exceeds by {0}</value>
@@ -3073,6 +3184,63 @@
   <data name="ERROR_OCCURED" xml:space="preserve">
     <value>Error occured</value>
   </data>
+  <data name="CONTINGENCY" xml:space="preserve">
+    <value>Contingency</value>
+  </data>
+  <data name="ISSUE_LIST" xml:space="preserve">
+    <value>Issue list</value>
+  </data>
+  <data name="DASHBOARD_CURRENT_PROJECT_STAGE" xml:space="preserve">
+    <value>Current project stage</value>
+  </data>
+  <data name="DASHBOARD_DAILY_ALLOCATION_DETAIL" xml:space="preserve">
+    <value>Daily allocation</value>
+  </data>
+  <data name="DASHBOARD_HOLIDAY_DAY" xml:space="preserve">
+    <value>Holiday: {0}</value>
+  </data>
+  <data name="DASHBOARD_HOLIDAY_DAYS" xml:space="preserve">
+    <value> · {0} holiday days</value>
+  </data>
+  <data name="DASHBOARD_WEEK_SCHEDULE_CHANGE" xml:space="preserve">
+    <value>{0}.</value>
+  </data>
+  <data name="DASHBOARD_WEEK_SCHEDULE_CHANGED" xml:space="preserve">
+    <value>This week's work schedule has changed.</value>
+  </data>
+  <data name="DASHBOARD_WEEK_EXCEPTION_OFF_NOTE" xml:space="preserve">
+    <value>Off on {0}{1}</value>
+  </data>
+  <data name="DASHBOARD_WEEK_SCHEDULED_OFF_NOTE" xml:space="preserve">
+    <value>Scheduled off on {0}</value>
+  </data>
+  <data name="DASHBOARD_WEEK_WEEKEND_WORK_NOTE" xml:space="preserve">
+    <value>Working on {0}</value>
+  </data>
+  <data name="DASHBOARD_NO_ASSIGNMENT_WEEK" xml:space="preserve">
+    <value>No task assignment this week</value>
+  </data>
+  <data name="DASHBOARD_NO_TASKS_ON_DAY" xml:space="preserve">
+    <value>No assigned tasks</value>
+  </data>
+  <data name="DASHBOARD_NON_WORKING_DAY" xml:space="preserve">
+    <value>Non-working day</value>
+  </data>
+  <data name="DASHBOARD_WEEKLY_LOAD_FORMULA" xml:space="preserve">
+    <value>Weekly load = {0} assigned task-days ÷ {1} working days × 100 = {2}.</value>
+  </data>
+  <data name="DASHBOARD_MONTHLY_LOAD_FORMULA" xml:space="preserve">
+    <value>Monthly load = {0} assigned task-days ÷ {1} working days × 100 = {2}.</value>
+  </data>
+  <data name="DASHBOARD_LOAD_CALCULATION_NOTE" xml:space="preserve">
+    <value>Each active task counts as one task-day on each working day; two tasks on the same day count as two. This is planned load, not actual hours worked.</value>
+  </data>
+  <data name="DASHBOARD_NO_WORKING_DAYS_LOAD" xml:space="preserve">
+    <value>There are no working days in this period, so the load is shown as 0%.</value>
+  </data>
+  <data name="DASHBOARD_WORKING_DAY" xml:space="preserve">
+    <value>Working day</value>
+  </data>
   <data name="NO_TASK_FOR_YOU" xml:space="preserve">
     <value>You haven't been assigned any work yet.</value>
   </data>
@@ -3089,9 +3257,18 @@
     <value>Work Schedule this month</value>
   </data>
   <data name="CONTRACT_DETAIL" xml:space="preserve">
-    <value>&#x8;</value>
+    <value>Contract details</value>
+  </data>
+  <data name="PERSONNEL_WARNING" xml:space="preserve">
+    <value>Personnel warning</value>
+  </data>
+  <data name="DOING_X_TASKS" xml:space="preserve">
+    <value>Doing {0} tasks</value>
+  </data>
+  <data name="WARNING_REMOVE_ACTIVE_MEMBERS_MSG" xml:space="preserve">
+    <value />
   </data>
   <data name="COMPLETED_LATE" xml:space="preserve">
-    <value>Hoàn thành trễ</value>
+    <value>Completed late</value>
   </data>
 </root>

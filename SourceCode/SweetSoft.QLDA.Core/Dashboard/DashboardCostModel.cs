@@ -29,13 +29,24 @@ namespace SweetSoft.QLDA.Core.Dashboard
             ProjectStatistics = new List<ProjectCostStatistic>();
             CostTrendStatistics = new List<CostTrendStatistic>();
             LargestCostItems = new List<CostItemInfo>();
+            ApprovedCostItems = new List<CostItemInfo>();
+            PendingApprovalCostItems = new List<CostItemInfo>();
+            OverduePayments = new List<OverduePaymentInfo>();
         }
 
-        public int CompletedProjectCount { get; set; }
+        public int ProjectCount { get; set; }
 
         public decimal TotalContractValue { get; set; }
 
         public decimal ActualCost { get; set; }
+
+        /// <summary>
+        /// Tổng giá trị các khoản chi đang chờ duyệt. Khoản này không được
+        /// cộng vào chi phí thực tế cho đến khi được phê duyệt.
+        /// </summary>
+        public decimal PendingApprovalCost { get; set; }
+
+        public int PendingApprovalCostItemCount { get; set; }
 
         public decimal GrossProfit { get; set; }
 
@@ -44,6 +55,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public decimal ReceivedPayment { get; set; }
 
         public decimal OutstandingPayment { get; set; }
+
+        public decimal OverduePaymentAmount { get; set; }
+
+        public int OverduePaymentCount { get; set; }
 
         public decimal PaymentCollectionRate { get; set; }
 
@@ -56,6 +71,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public List<CostTrendStatistic> CostTrendStatistics { get; set; }
 
         public List<CostItemInfo> LargestCostItems { get; set; }
+
+        public List<CostItemInfo> ApprovedCostItems { get; set; }
+
+        public List<CostItemInfo> PendingApprovalCostItems { get; set; }
+
+        public List<OverduePaymentInfo> OverduePayments { get; set; }
     }
 
     public class ProjectCostStatistic
@@ -108,6 +129,18 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public DateTime OccurredDate { get; set; }
 
+        public decimal Amount { get; set; }
+    }
+
+    public class OverduePaymentInfo
+    {
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public string PaymentCode { get; set; }
+        public string PaymentName { get; set; }
+        public DateTime DueDate { get; set; }
+        public int DaysOverdue { get; set; }
         public decimal Amount { get; set; }
     }
 }
