@@ -84,16 +84,14 @@
             white-space: nowrap;
         }
 
-        .contract-file-box-hidden {
-            position: fixed;
-            left: -10000px;
-            top: -10000px;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-        }
+.contract-file-box-hidden {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
 
         .contract-file-box-hidden .file-box {
             width: 1px !important;
@@ -177,7 +175,7 @@
                             <div class="contract-content-panel">
                                 <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
                                     <h5 class="mb-0">Nội dung hợp đồng</h5>
-                                    <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                                    <div class="d-flex gap-2 pt-3 mt-4">
                                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="OpenContractFileUpload();">
                                             <i class="fas fa-upload me-1"></i>
                                             Tải file
@@ -222,7 +220,7 @@
                                             ButtonStyle="Primary"
                                             ButtonIcon="Save"
                                             IsPace="true"
-                                            OnClientClick="return CMSMasterJs.CheckValid();"
+                                            OnClientClick="return SubmitContractWithFiles();"
                                             OnClick="lbtSubmit_Click">
                                             Lưu
                                         </SweetSoft:ExtraButton>
@@ -231,23 +229,27 @@
                                 </div>
 
                                 <%-- File đã tải lên --%>
-                                <div id="contractFileInfo" class="contract-file-info d-none mb-3">
-                                    <div class="contract-file-name">
-                                        <i id="contractFileIcon" class="fas fa-file-alt text-primary me-2"></i>
-                                        <span id="contractFileName"></span>
+                                <div id="contractFileInfo" class="mb-3">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <strong>File hợp đồng</strong>
+                                        <small class="text-muted">Chọn “Nạp vào trình soạn thảo” để lấy nội dung từ file</small>
                                     </div>
-
-                                    <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="RemoveContractFile();" title="Xóa file">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div id="contractFileList" class="list-group"></div>
                                 </div>
 
-                                <%-- FilesBox được giữ lại để sử dụng cơ chế upload hiện tại nhưng không hiển thị UI --%>
+                                <asp:HiddenField runat="server" ID="hdfSelectedContractFileId" />
+                                <asp:HiddenField runat="server" ID="hdfSubmitAfterFileApply" Value="0" />
+
+                                <asp:LinkButton runat="server" ID="lbtLoadContractFile"
+                                    OnClick="lbtLoadContractFile_Click"
+                                    CausesValidation="false"
+                                    Style="display:none;" />
+
                                 <div id="contractFileBox" class="contract-file-box-hidden">
                                     <SweetSoft:FilesBox
                                         runat="server"
                                         ID="fbHopDong"
-                                        IsMultiple="false" />
+                                        IsMultiple="true" />
                                 </div>
 
                                 <%-- CKEditor --%>
@@ -291,6 +293,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         InitContractEditorA4();
         InitContractFileInfo();
+        InitContractAutoUpload();
     });
 
     function InitContractEditorA4() {
@@ -340,148 +343,166 @@
             editor.on("instanceReady", applyEditorStyle);
         }
     }
-
     function GetContractFileBox() {
-        var $box = $("#contractFileBox .file-box");
-
-        if ($box.length === 0) {
-            return $();
+        var $box = $("#contractFileBox .file-box").first();
+        if ($box.length) {
+            $("#contractFileBox .file-box").removeClass("active");
+            $box.addClass("active");
         }
-
-        $("#contractFileBox .file-box").removeClass("active");
-        $box.first().addClass("active");
-
-        return $box.first();
+        return $box;
     }
 
     function OpenContractFileUpload() {
         var $box = GetContractFileBox();
-
-        if ($box.length === 0) {
-            return;
-        }
-
         var $input = $box.find(".ipfFile").first();
 
-        if ($input.length === 0) {
-            return;
-        }
+        if (!$input.length) return;
 
         $input.attr("accept", "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         $input.attr("data-type", "<%= SweetSoft.QLDA.Core.FileManager.FileUploadTypes.ProjectContract %>");
-        $input.removeAttr("multiple");
+        $input.attr("multiple", "multiple");
         $input.trigger("click");
     }
 
+    var contractFileUploadStarted = false;
+
+    function InitContractAutoUpload() {
+        if (typeof FilesBox === "undefined" || typeof FilesBox.SelectedFile !== "function")
+            return;
+
+        // Không bọc SelectedFile nhiều lần.
+        if (FilesBox.SelectedFile.__contractWrapped)
+            return;
+
+        var originalSelectedFile = FilesBox.SelectedFile;
+
+        FilesBox.SelectedFile = function (input) {
+            // Để FilesBox xử lý lựa chọn file trước.
+            var result = originalSelectedFile.apply(this, arguments);
+
+            // Chờ FilesBox cập nhật ValidatedFile và PendingUploadIds.
+            window.setTimeout(function () {
+                if (contractFileUploadStarted || FilesBox.UploadInProgress)
+                    return;
+
+                if (!FilesBox.ValidatedFile || FilesBox.ValidatedFile.length === 0)
+                    return;
+
+                var $box = GetContractFileBox();
+                if (!$box.length)
+                    return;
+
+                var refType = "<%= SweetSoft.QLDA.Core.FileManager.FileUploadTypes.ProjectContract %>";
+            var refId = "<%= QueryId == Guid.Empty ? TempContractFileRefId : QueryId %>";
+
+            contractFileUploadStarted = true;
+
+            FilesBox.SimpleUploadComplete = function () {
+                console.log("[Contract] Upload complete");
+
+                var $contractBox = GetContractFileBox();
+                var applyButton = $contractBox.find('[data-selector="btnApplyFile"]')[0];
+
+                if (!applyButton) {
+                    contractFileUploadStarted = false;
+                    console.error("[Contract] Không tìm thấy nút Apply.");
+                    return;
+                }
+
+                console.log("[Contract] Clicking Apply");
+                applyButton.click();
+            };
+
+            console.log("[Contract] Starting upload:", FilesBox.ValidatedFile.length, "file(s)");
+            FilesBox.SaveFile(refType, refId);
+        }, 0);
+
+        return result;
+    };
+
+    FilesBox.SelectedFile.__contractWrapped = true;
+}
+
+    function GetContractFileName($item) {
+        var name = $item.find("input.title").first().val();
+        if (!name) name = $item.attr("data-file-name") || $item.attr("data-name") || "";
+        return name;
+    }
+
+    function RenderContractFileList() {
+        var $box = GetContractFileBox();
+        var $list = $("#contractFileList").empty();
+
+        if (!$box.length) return;
+
+        $box.find(".illustration-upload .item.show").each(function () {
+            var $item = $(this);
+            var fileId = $item.attr("data-ar");
+            var fileName = GetContractFileName($item);
+            var $row = $("<div/>", { "class": "list-group-item d-flex align-items-center justify-content-between gap-2" });
+            var $name = $("<span/>", { "class": "text-truncate", "text": fileName || "File chưa có tên" });
+            var $actions = $("<div/>", { "class": "d-flex gap-2 flex-shrink-0" });
+
+            if (fileId && fileId !== "00000000-0000-0000-0000-000000000000") {
+                $("<button/>", {
+                    type: "button",
+                    "class": "btn btn-sm btn-outline-primary",
+                    text: "Nạp vào trình soạn thảo",
+                    click: function () {
+                        $("#<%= hdfSelectedContractFileId.ClientID %>").val(fileId);
+                    $("#<%= lbtLoadContractFile.ClientID %>").trigger("click");
+                }
+            }).appendTo($actions);
+        }
+
+        $("<button/>", {
+            type: "button",
+            "class": "btn btn-sm btn-outline-danger",
+            title: "Xóa file",
+            html: '<i class="fas fa-trash"></i>',
+            click: function () {
+                var removeButton = $item.find(".remove-item").first();
+                if (removeButton.length) {
+                    FilesBox.RemoveFile(removeButton[0], false);
+                    window.setTimeout(RenderContractFileList, 100);
+                }
+            }
+        }).appendTo($actions);
+
+        $row.append($name, $actions);
+        $list.append($row);
+    });
+
+        if (!$list.children().length) {
+            $list.append($("<div/>", {
+                "class": "list-group-item text-muted",
+                text: "Chưa có file hợp đồng."
+            }));
+        }
+    }
+
     function InitContractFileInfo() {
-        var $box = GetContractFileBox();
-
-        if ($box.length === 0) {
-            return;
-        }
-
-        var $item = $box.find(".illustration-upload .item.show").first();
-
-        if ($item.length === 0) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var fileName = $item.find("input.title").first().val();
-
-        if (!fileName) {
-            fileName = $item.attr("data-file-name") || $item.attr("data-name") || "";
-        }
-
-        if (!fileName) {
-            return;
-        }
-
-        ShowContractFileInfo(fileName);
-    }
-
-    function ShowContractFileInfo(fileName) {
-        if (!fileName) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var extension = "";
-        var lastDot = fileName.lastIndexOf(".");
-
-        if (lastDot >= 0) {
-            extension = fileName.substring(lastDot + 1).toLowerCase();
-        }
-
-        var iconClass = "fas fa-file-alt text-primary";
-
-        if (extension === "pdf") {
-            iconClass = "fas fa-file-pdf text-danger";
-        } else if (extension === "doc" || extension === "docx") {
-            iconClass = "fas fa-file-word text-primary";
-        }
-
-        $("#contractFileIcon").attr("class", iconClass + " me-2");
-        $("#contractFileName").text(fileName);
-        $("#contractFileInfo").removeClass("d-none");
-    }
-
-    function RemoveContractFile() {
-        var $box = GetContractFileBox();
-
-        if ($box.length === 0) {
-            return;
-        }
-
-        var $item = $box.find(".illustration-upload .item.show").first();
-
-        if ($item.length === 0) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var removeButton = $item.find(".remove-item").first();
-
-        if (removeButton.length > 0) {
-            FilesBox.RemoveFile(removeButton[0], false);
-        }
-
-        $("#contractFileInfo").addClass("d-none");
-        $("#contractFileName").text("");
+        RenderContractFileList();
     }
 
     function SyncContractFileInfo() {
-        var $box = GetContractFileBox();
+        RenderContractFileList();
+    }
 
-        if ($box.length === 0) {
-            return;
-        }
-
-        var $item = $box.find(".illustration-upload .item.show").first();
-
-        if ($item.length === 0) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var fileName = $item.find("input.title").first().val();
-
-        if (!fileName) {
-            fileName = $item.attr("data-file-name") || $item.attr("data-name") || "";
-        }
-
-        ShowContractFileInfo(fileName);
+    function RemoveContractFile() {
+        RenderContractFileList();
     }
 
     if (typeof CMSMasterJs !== "undefined" && CMSMasterJs.AddEndRequest) {
         CMSMasterJs.AddEndRequest(function () {
             InitContractEditorA4();
             InitContractFileInfo();
+            InitContractAutoUpload();
         });
+    }
+
+    function SubmitContractWithFiles() {
+        return CMSMasterJs.CheckValid();
     }
 </script>
 </asp:Content>
