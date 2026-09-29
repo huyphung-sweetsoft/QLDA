@@ -23,7 +23,44 @@
         .member-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
         .member-email:empty { display: none; }
         .record-attachments .file-actions { display: none !important; }
-
+        #<%= dlDetail.ClientID %> .modal-dialog { max-width: 1180px; width: calc(100vw - 32px); margin: 1rem auto; }
+        #<%= dlDetail.ClientID %> .modal-body { padding: 18px 20px 14px; background: #f8fafc; }
+        #<%= dlDetail.ClientID %> .modal-footer { padding: 12px 20px 16px; border-top: 1px solid #e2e8f0; background: #fff; }
+        .meeting-detail-layout { align-items: stretch; }
+        .meeting-form-column { height: 100%; }
+        .meeting-form-card { height: 100%; display: flex; flex-direction: column; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 15px; box-shadow: 0 4px 14px rgba(15,23,42,.04); }
+        .meeting-form-card-title { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; padding-bottom: 10px; border-bottom: 1px solid #eef2f7; font-size: 12px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: .35px; }
+        .meeting-form-card-title i { color: #6366f1; font-size: 13px; }
+        .meeting-form-field { margin-bottom: 12px; }
+        .meeting-form-field:last-child { margin-bottom: 0; }
+        .meeting-form-field .form-label { margin-bottom: 6px; font-size: 11px; font-weight: 700; color: #475569; }
+        .meeting-form-field .form-text { margin-top: 6px; font-size: 10px; color: #94a3b8; }
+        .meeting-summary-box { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+        .meeting-summary-box i { color: #6366f1; font-size: 13px; }
+        .meeting-summary-box strong { color: #334155; font-size: 12px; }
+        .meeting-summary-box span { color: #64748b; font-size: 10px; }
+        .meeting-description-card { display: flex; flex-direction: column; }
+        .meeting-description-editor { min-height: 340px; }
+        .meeting-description-editor .cke { border-radius: 10px; overflow: hidden; border: 1px solid #dbe3ec; }
+        .meeting-description-editor .cke_contents { min-height: 275px !important; }
+        .meeting-description-editor .cke_top { border-radius: 10px 10px 0 0; }
+        .meeting-participant-box .input-group > .form-control { min-height: 54px; }
+        .meeting-participant-row { flex: 1 1 auto; min-height: 0; }
+        .meeting-participant-row > .col-12 { display: flex; flex-direction: column; min-height: 0; }
+        .meeting-participant-row .meeting-form-field { margin-bottom: 0; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+        .selected-meeting-members-box { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; padding: 8px; }
+        .selected-meeting-members-list { display: flex; flex-direction: column; gap: 6px; max-height: 168px; overflow-y: auto; }
+        .meeting-participant-row .selected-meeting-members-box { flex: 1 1 auto; min-height: 180px; overflow: hidden; }
+        .meeting-participant-row .selected-meeting-members-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; max-height: none; height: 100%; overflow-y: auto; align-content: start; }
+        .selected-meeting-member-row { display: flex; align-items: center; gap: 10px; padding: 7px 9px; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; min-width: 0; }
+        .selected-meeting-member-avatar { width: 34px; height: 34px; flex: 0 0 34px; display: flex; align-items: center; justify-content: center; }
+        .selected-meeting-member-avatar .single-avatar-circle { width: 34px; height: 34px; }
+        .selected-meeting-member-info { min-width: 0; line-height: 1.25; }
+        .selected-meeting-member-name { font-size: 12px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .selected-meeting-member-email { font-size: 10.5px; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .selected-meeting-members-empty { min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px dashed #cbd5e1; border-radius: 9px; color: #94a3b8; font-size: 11px; background: #fff; }
+        .selected-meeting-members-empty i { color: #94a3b8; }
+        .meeting-readonly-input { background: #f8fafc !important; color: #475569 !important; }
         .meeting-time-picker,
         .meeting-duration-picker { position: relative; }
         .meeting-input-shell { position: relative; }
@@ -61,6 +98,15 @@
         .meeting-time-summary { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 9px; font-size: 11px; color: #64748b; }
         .meeting-time-summary strong { color: #334155; font-weight: 800; }
         @keyframes meetingPickerIn { from { opacity: 0; transform: translateY(-3px) scale(.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @media (max-width: 991.98px) {
+            #<%= dlDetail.ClientID %> .modal-dialog { width: calc(100vw - 20px); margin: .6rem auto; }
+            #<%= dlDetail.ClientID %> .modal-body { padding: 14px; }
+            .meeting-description-editor { min-height: 0; }
+            .meeting-description-editor .cke_contents { min-height: 220px !important; }
+        }
+        @media (max-width: 767.98px) {
+            .meeting-participant-row .selected-meeting-members-list { grid-template-columns: 1fr; }
+        }
         @media (max-width: 640px) {
             .meeting-hour-grid { grid-template-columns: repeat(6, minmax(0,1fr)); }
             .duration-quick { grid-template-columns: repeat(3, minmax(0,1fr)); }
@@ -82,113 +128,133 @@
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" Title="Thông tin cuộc họp" DefaultButton="lbtSubmit">
         <ContentTemplate>
-            <div class="row js-validation validationEngineContainer">
-                <div class="col-lg-12">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_NAME) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtTenCuocHop" Required="true"></SweetSoft:ExtraTextBox>
-                    </div>
-                </div>
-                <div class="col-lg-3">
-                    <div class="mb-3">
-                        <label class="form-label label-valid">Ngày bắt đầu</label>
-                        <SweetSoft:ExtraDateTime runat="server" ID="txtNgayBatDau" Required="true" SingleDatePicker="true" Format="dd/MM/yyyy" PlaceHolder="Ngày..." />
-                    </div>
-                </div>
-                <div class="col-lg-3">
-                    <div class="mb-3 meeting-time-picker" id="meetingStartTimePickerWrap">
-                        <label class="form-label label-valid">Giờ bắt đầu</label>
-                        <div class="meeting-input-shell">
-                            <SweetSoft:ExtraTextBox runat="server" ID="txtGioBatDau" CssClass="meeting-picker-input" Required="true" PlaceHolder="Chọn giờ..." MaxLength="5"></SweetSoft:ExtraTextBox>
-                            <button type="button" class="meeting-picker-trigger" id="btnOpenStartTimePicker" aria-label="Chọn giờ bắt đầu"><i class="fas fa-clock"></i></button>
-                        </div>
-                        <div class="meeting-picker-popover" id="startTimePicker">
-                            <div class="meeting-picker-title"><strong>Chọn giờ bắt đầu</strong><span>Lần đầu mở mới sẽ tự làm tròn lên đầu giờ</span></div>
-                            <div class="meeting-time-selected"><span class="selected-time" id="selectedStartTimeText">--:--</span></div>
-                            <div class="meeting-time-section">
-                                <div class="meeting-time-section-label">Giờ</div>
-                                <div class="meeting-hour-grid" id="meetingHourGrid"></div>
-                            </div>
-                            <div class="meeting-time-section">
-                                <div class="meeting-time-section-label">Phút</div>
-                                <div class="meeting-minute-grid" id="meetingMinuteGrid"></div>
-                            </div>
-                            <div class="meeting-picker-footer">
-                                <div class="meeting-picker-hint"><i class="fas fa-lightbulb me-1"></i>Chọn giờ rồi chọn 00 / 15 / 30 / 45.</div>
-                                <button type="button" class="meeting-picker-close" id="btnCloseStartTimePicker">Xong</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3 meeting-duration-picker" id="meetingDurationPickerWrap">
-                        <label class="form-label label-valid">Thời lượng cuộc họp</label>
-                        <div class="meeting-input-shell">
-                            <SweetSoft:ExtraTextBox runat="server" ID="txtThoiLuong" Required="true" AutoCompleteType="Disabled" CssClass="meeting-picker-input" PlaceHolder="Chọn thời lượng..."></SweetSoft:ExtraTextBox>
-                            <button type="button" class="meeting-picker-trigger" id="btnOpenDurationPicker" aria-label="Chọn thời lượng"><i class="fas fa-hourglass-half"></i></button>
-                        </div>
-                        <div class="meeting-picker-popover" id="durationPicker">
-                            <div class="meeting-picker-title"><strong>Chọn thời lượng</strong><span>Mỗi lần bấm tăng / giảm 15 phút</span></div>
-                            <div class="meeting-duration-card">
-                                <button type="button" class="duration-step-button" data-duration-step="-15" aria-label="Giảm 15 phút">−</button>
-                                <div class="duration-value-box">
-                                    <div class="duration-value-main" id="durationValueMain">60 phút</div>
-                                    <div class="duration-value-sub" id="durationValueSub">1 giờ</div>
+            <div class="row js-validation validationEngineContainer meeting-detail-layout g-3">
+                <div class="col-lg-7 meeting-form-column">
+                    <div class="meeting-form-card">
+                        <div class="meeting-form-card-title"><i class="fas fa-calendar-alt"></i><span>Thông tin cuộc họp</span></div>
+                        <div class="row g-2">
+                            <div class="col-md-8">
+                                <div class="meeting-form-field">
+                                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_NAME) %></label>
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtTenCuocHop" Required="true"></SweetSoft:ExtraTextBox>
                                 </div>
-                                <button type="button" class="duration-step-button" data-duration-step="15" aria-label="Tăng 15 phút">+</button>
                             </div>
-                            <div class="duration-quick" id="durationQuickGrid">
-                                <button type="button" class="duration-quick-button" data-duration="15">15p</button>
-                                <button type="button" class="duration-quick-button" data-duration="30">30p</button>
-                                <button type="button" class="duration-quick-button" data-duration="45">45p</button>
-                                <button type="button" class="duration-quick-button" data-duration="60">1 giờ</button>
-                                <button type="button" class="duration-quick-button" data-duration="90">1g30</button>
-                                <button type="button" class="duration-quick-button" data-duration="120">2 giờ</button>
+                            <div class="col-md-4">
+                                <div class="meeting-form-field">
+                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
+                                    <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" Enabled="false" CssClass="disabled meeting-readonly-input"></SweetSoft:ExtraDropdown>
+                                </div>
                             </div>
-                            <div class="meeting-duration-note"><i class="fas fa-mouse-pointer"></i><span>Có thể bấm + / − liên tục, mỗi lần 15 phút.</span></div>
-                            <div class="meeting-picker-footer">
-                                <div class="meeting-picker-hint"><i class="fas fa-calendar-check me-1"></i>Thời gian kết thúc được cập nhật ngay.</div>
-                                <button type="button" class="meeting-picker-close" id="btnCloseDurationPicker">Xong</button>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <div class="meeting-form-field">
+                                    <label class="form-label label-valid">Ngày bắt đầu</label>
+                                    <SweetSoft:ExtraDateTime runat="server" ID="txtNgayBatDau" Required="true" SingleDatePicker="true" Format="dd/MM/yyyy" PlaceHolder="Ngày..." />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="meeting-form-field meeting-time-picker" id="meetingStartTimePickerWrap">
+                                    <label class="form-label label-valid">Giờ bắt đầu</label>
+                                    <div class="meeting-input-shell">
+                                        <SweetSoft:ExtraTextBox runat="server" ID="txtGioBatDau" CssClass="meeting-picker-input" Required="true" PlaceHolder="Chọn giờ..." MaxLength="5"></SweetSoft:ExtraTextBox>
+                                        <button type="button" class="meeting-picker-trigger" id="btnOpenStartTimePicker" aria-label="Chọn giờ bắt đầu"><i class="fas fa-clock"></i></button>
+                                    </div>
+                                    <div class="meeting-picker-popover" id="startTimePicker">
+                                        <div class="meeting-picker-title"><strong>Chọn giờ bắt đầu</strong><span>Lần đầu mở mới sẽ tự làm tròn lên đầu giờ</span></div>
+                                        <div class="meeting-time-selected"><span class="selected-time" id="selectedStartTimeText">--:--</span></div>
+                                        <div class="meeting-time-section">
+                                            <div class="meeting-time-section-label">Giờ</div>
+                                            <div class="meeting-hour-grid" id="meetingHourGrid"></div>
+                                        </div>
+                                        <div class="meeting-time-section">
+                                            <div class="meeting-time-section-label">Phút</div>
+                                            <div class="meeting-minute-grid" id="meetingMinuteGrid"></div>
+                                        </div>
+                                        <div class="meeting-picker-footer">
+                                            <div class="meeting-picker-hint"><i class="fas fa-lightbulb me-1"></i>Chọn giờ rồi chọn 00 / 15 / 30 / 45.</div>
+                                            <button type="button" class="meeting-picker-close" id="btnCloseStartTimePicker">Xong</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="meeting-form-field meeting-duration-picker" id="meetingDurationPickerWrap">
+                                    <label class="form-label label-valid">Thời lượng cuộc họp</label>
+                                    <div class="meeting-input-shell">
+                                        <SweetSoft:ExtraTextBox runat="server" ID="txtThoiLuong" Required="true" AutoCompleteType="Disabled" CssClass="meeting-picker-input" PlaceHolder="Chọn thời lượng..."></SweetSoft:ExtraTextBox>
+                                        <button type="button" class="meeting-picker-trigger" id="btnOpenDurationPicker" aria-label="Chọn thời lượng"><i class="fas fa-hourglass-half"></i></button>
+                                    </div>
+                                    <div class="meeting-picker-popover" id="durationPicker">
+                                        <div class="meeting-picker-title"><strong>Chọn thời lượng</strong><span>Mỗi lần bấm tăng / giảm 15 phút</span></div>
+                                        <div class="meeting-duration-card">
+                                            <button type="button" class="duration-step-button" data-duration-step="-15" aria-label="Giảm 15 phút">−</button>
+                                            <div class="duration-value-box">
+                                                <div class="duration-value-main" id="durationValueMain">60 phút</div>
+                                                <div class="duration-value-sub" id="durationValueSub">1 giờ</div>
+                                            </div>
+                                            <button type="button" class="duration-step-button" data-duration-step="15" aria-label="Tăng 15 phút">+</button>
+                                        </div>
+                                        <div class="duration-quick" id="durationQuickGrid">
+                                            <button type="button" class="duration-quick-button" data-duration="15">15p</button>
+                                            <button type="button" class="duration-quick-button" data-duration="30">30p</button>
+                                            <button type="button" class="duration-quick-button" data-duration="45">45p</button>
+                                            <button type="button" class="duration-quick-button" data-duration="60">1 giờ</button>
+                                            <button type="button" class="duration-quick-button" data-duration="90">1g30</button>
+                                            <button type="button" class="duration-quick-button" data-duration="120">2 giờ</button>
+                                        </div>
+                                        <div class="meeting-duration-note"><i class="fas fa-mouse-pointer"></i><span>Có thể bấm + / − liên tục, mỗi lần 15 phút.</span></div>
+                                        <div class="meeting-picker-footer">
+                                            <div class="meeting-picker-hint"><i class="fas fa-calendar-check me-1"></i>Thời gian kết thúc được cập nhật ngay.</div>
+                                            <button type="button" class="meeting-picker-close" id="btnCloseDurationPicker">Xong</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="meeting-form-field">
+                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.END_TIME) %></label>
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtThoiGianKetThuc" Enabled="false" CssClass="disabled meeting-readonly-input" PlaceHolder="Hệ thống tự tính..."></SweetSoft:ExtraTextBox>
+                                    <div class="meeting-time-summary"><i class="fas fa-clock"></i><span>Kết thúc:</span><strong id="meetingEndPreview">--/--/---- --:--</strong></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="meeting-form-field">
+                                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_ROOM) %></label>
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtDiaDiemHop" Required="true"></SweetSoft:ExtraTextBox>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-2 meeting-participant-row">
+                            <div class="col-12">
+                                <div class="meeting-form-field meeting-participant-box">
+                                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                        <label class="form-label mb-0"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME) %></label>
+                                        <asp:LinkButton runat="server" ID="btnMoPopupNhanVien" CssClass="btn btn-secondary btn-sm" OnClick="btnMoPopupNhanVien_Click">
+                                            <i class="fa fa-users me-1"></i><%= GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE) %>
+                                        </asp:LinkButton>
+                                    </div>
+                                    <asp:TextBox runat="server" ID="txtNhanVienThamGia" CssClass="d-none" ReadOnly="true"></asp:TextBox>
+                                    <asp:HiddenField runat="server" ID="hdfNhanVienIds" />
+                                    <div id="selectedMeetingMembers" class="selected-meeting-members-box">
+                                        <div class="selected-meeting-members-empty">
+                                            <i class="fas fa-user-friends"></i><span>Chưa có nhân viên tham gia cuộc họp.</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.END_TIME) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtThoiGianKetThuc" Enabled="false" CssClass="disabled" PlaceHolder="Hệ thống tự tính..."></SweetSoft:ExtraTextBox>
-                        <div class="meeting-time-summary"><i class="fas fa-clock"></i><span>Kết thúc:</span><strong id="meetingEndPreview">--/--/---- --:--</strong></div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.STATUS) %></label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTrangThai" SimpleInit="true" Enabled="false" CssClass="disabled"></SweetSoft:ExtraDropdown>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME) %></label>
-                        <div class="input-group">
-                            <asp:TextBox runat="server" ID="txtNhanVienThamGia" CssClass="form-control bg-white" ReadOnly="true" TextMode="MultiLine" Rows="2" Style="resize: none;"></asp:TextBox>
-                            <asp:HiddenField runat="server" ID="hdfNhanVienIds" />
-                            <asp:LinkButton runat="server" ID="btnMoPopupNhanVien" CssClass="btn btn-secondary" OnClick="btnMoPopupNhanVien_Click">
-                                <i class="fa fa-users"></i> <%= GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE) %>
-                            </asp:LinkButton>
+                <div class="col-lg-5 meeting-form-column">
+                    <div class="meeting-form-card meeting-description-card">
+                        <div class="meeting-form-card-title"><i class="fas fa-align-left"></i><span>Mô tả / nội dung cuộc họp</span></div>
+                        <div class="meeting-form-field meeting-description-editor flex-grow-1">
+                            <CKEditor:CKEditorControl runat="server" ID="txtNoiDungCuocHop" Width="100%" CssClass="ck-editor" Toolbar="Full" Language="vi-VN" AutoParagraph="false" BasePath="~/Styles/plugins/ckeditor/" Height="320" />
+                            <div class="form-text"><i class="fas fa-paperclip me-1"></i>File đính kèm được tải bằng nút thư mục của cuộc họp trong danh sách.</div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="mb-3">
-                        <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_ROOM) %></label>
-                        <SweetSoft:ExtraTextBox runat="server" ID="txtDiaDiemHop" Required="true"></SweetSoft:ExtraTextBox>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="mb-3">
-                        <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTENT) %></label>
-                        <CKEditor:CKEditorControl runat="server" ID="txtNoiDungCuocHop" Width="100%" CssClass="ck-editor" Toolbar="Full" Language="vi-VN" AutoParagraph="false" BasePath="~/Styles/plugins/ckeditor/" Height="200" />
-                        <div class="form-text">File đính kèm được tải bằng nút thư mục của cuộc họp trong danh sách.</div>
                     </div>
                 </div>
             </div>
@@ -450,11 +516,17 @@
             recalcMeetingTime();
             applyRecommendedStartIfEmpty();
 
+            var $selectedMeetingMembers = $('#selectedMeetingMembers');
+            var $selectedMeetingMembersSource = $('#<%= txtNhanVienThamGia.ClientID %>');
+            if ($selectedMeetingMembers.length && $selectedMeetingMembersSource.length) {
+                var selectedMembersHtml = $selectedMeetingMembersSource.val() || '';
+                $selectedMeetingMembers.html(selectedMembersHtml || '<div class="selected-meeting-members-empty"><i class="fas fa-user-friends"></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>');
+            }
+
             var $searchBox = $('#<%= txtSearchSingle.ClientID %>');
             var $selectAll = $('#chkSelectAllEmployees');
             var $chkListRows = $('.member-item-row');
             $searchBox.val('');
-            $selectAll.prop('checked', false);
             $searchBox.off('keyup.meeting').on('keyup.meeting', function () {
                 var value = $(this).val().toLowerCase();
                 $chkListRows.filter(function () { $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1); });

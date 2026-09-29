@@ -56,6 +56,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 script.RegisterAsyncPostBackControl(lbtSearchSingle);
                 script.RegisterAsyncPostBackControl(lbtSearchAdvanced);
                 script.RegisterAsyncPostBackControl(lbtCancel);
+                script.RegisterAsyncPostBackControl(btnRefreshMeetingStatuses);
             }
         }
 
@@ -73,7 +74,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = "MaCuocHop";
             grvData.CurrentSortDerection = "ASC";
-            grvData.Rebind();
+            Rebind();
             pnlSearch.Update();
             pnlButtons.Update();
         }
@@ -85,8 +86,89 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
         public void Rebind()
         {
+            UpdateMeetingStatuses();
             grvData.CurrentPageIndex = 1;
             grvData.Rebind();
+        }
+
+        private bool UpdateMeetingStatuses()
+        {
+            if (this.ProjectId == Guid.Empty)
+                return false;
+
+            DateTime now = DateTime.Now;
+            bool hasChanged = false;
+
+            List<TblLichHop> meetings = MeetManager.Instance.GetMeetingsByProject(this.ProjectId);
+
+            if (meetings == null || meetings.Count == 0)
+                return false;
+
+            foreach (TblLichHop meeting in meetings)
+            {
+                if (meeting == null || meeting.DaXoa == true)
+                    continue;
+
+                if (meeting.ThoiGianBatDau == DateTime.MinValue ||
+                    meeting.ThoiGianKetThuc == DateTime.MinValue)
+                    continue;
+
+                DateTime startTime = meeting.ThoiGianBatDau;
+                DateTime endTime = meeting.ThoiGianKetThuc;
+
+                byte newStatus;
+
+                // 3 - Kết thúc: thời điểm hiện tại đã tới hoặc vượt quá thời gian kết thúc.
+                if (now >= endTime)
+                {
+                    newStatus = 3;
+                }
+                // 2 - Đang diễn ra: hiện tại nằm trong khoảng bắt đầu -> kết thúc.
+                else if (now >= startTime && now < endTime)
+                {
+                    newStatus = 2;
+                }
+                // 1 - Sắp diễn ra: còn tối đa 15 phút trước giờ bắt đầu.
+                else if (now < startTime && startTime <= now.AddMinutes(15))
+                {
+                    newStatus = 1;
+                }
+                // 0 - Đã lên lịch: còn hơn 15 phút mới bắt đầu.
+                else
+                {
+                    newStatus = 0;
+                }
+
+                int currentStatus = Convert.ToInt32(meeting.TrangThai);
+
+                if (currentStatus != newStatus)
+                {
+                    meeting.TrangThai = newStatus;
+                    meeting.Save();
+                    hasChanged = true;
+                }
+            }
+
+            return hasChanged;
+        }
+
+        protected void btnRefreshMeetingStatuses_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                bool hasChanged = UpdateMeetingStatuses();
+
+                if (hasChanged)
+                {
+                    // Giữ nguyên trang hiện tại khi refresh tự động mỗi phút.
+                    grvData.Rebind();
+                    upMain.Update();
+                }
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
+            }
         }
 
         private void ApplyControlsText()
@@ -98,7 +180,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.MEETING_CODE),
                 GetResourceText(BackEndResourceKeys.MEETING_NAME),
                 "Người tham gia",
                 GetResourceText(BackEndResourceKeys.START_TIME),
@@ -205,10 +286,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                     }
 
                     Guid meetingIdForFiles;
-                    if (!Guid.TryParse(
-                        Convert.ToString(e.CommandArgument),
-                        out meetingIdForFiles)
-                        || meetingIdForFiles == Guid.Empty)
+                    if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out meetingIdForFiles) || meetingIdForFiles == Guid.Empty)
                     {
                         ShowInvalidDataError();
                         return;
@@ -216,29 +294,74 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 
                     if (OpenMeetingFilesHandlerCallback != null)
                     {
-                        OpenMeetingFilesHandlerCallback(
-                            meetingIdForFiles,
-                            EventArgs.Empty);
+                        OpenMeetingFilesHandlerCallback(meetingIdForFiles, EventArgs.Empty);
+                    }
+                    break;
+
+                case "ITEM_VIEW":
+                    if (!this.CURRENT_PAGE.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
                     }
 
+                    int rowIndexView = e.CommandSource.GetType() != typeof(GridviewExtension)
+                        ? ((GridViewRow)((LinkButton)e.CommandSource).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
+
+                    Guid meetIdView = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexView].Value.ToString(), out meetIdView))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    CtrlViewMeetDetail1.OpenModal(meetIdView);
                     break;
 
                 case "ITEM_DETAIL":
-                    if (!this.CURRENT_PAGE.IsEdit) { ShowAccessDeniedNotify(); return; }
-                    int rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-                    Guid meetId = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out meetId)) { ShowInvalidDataError(); return; }
-                    EditMeetingHandlerCallback?.Invoke(meetId, EventArgs.Empty);
-                    break;
+                    if (!this.CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
 
+                    int rowIndexEdit = e.CommandSource.GetType() != typeof(GridviewExtension)
+                        ? ((GridViewRow)((LinkButton)e.CommandSource).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
+
+                    Guid meetIdEdit = Guid.Empty;
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexEdit].Value.ToString(), out meetIdEdit))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    if (EditMeetingHandlerCallback != null)
+                        EditMeetingHandlerCallback(meetIdEdit, EventArgs.Empty);
+                    break;
                 case "ITEM_DELETE":
-                    if (!this.CURRENT_PAGE.IsDelete) { ShowAccessDeniedNotify(); return; }
-                    int rowIndexDel = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                    if (!this.CURRENT_PAGE.IsDelete)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    int rowIndexDel = (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
                     Guid meetIdDel = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out meetIdDel)) { ShowInvalidDataError(); return; }
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out meetIdDel))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
 
                     TblLichHop meetDel = TblLichHop.FetchByID(meetIdDel);
-                    if (meetDel == null || meetDel.DaXoa == true) { ShowInvalidNotFoundData(); return; }
+                    if (meetDel == null || meetDel.DaXoa == true)
+                    {
+                        ShowInvalidNotFoundData();
+                        return;
+                    }
 
                     ConfirmResult result = new ConfirmResult { CommandName = "MEETING_DELETE", Value = meetDel };
                     this.CURRENT_PAGE.CurrentConfirmResult = result;
@@ -258,6 +381,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                     ShowInvalidNotFoundData();
                     return;
                 }
+
                 try
                 {
                     MeetManager.Instance.DeleteMeet(meet);
@@ -282,7 +406,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected void btnSearch_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
-            master?.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
+            if (master != null)
+                master.btnSearchSingle_Click(searchTagBox, grvData, txtSearchSingle);
             upSearchTagBox.Update();
         }
 
@@ -300,30 +425,42 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
                 ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
             }
-            catch (Exception exc) { ShowNotify(exc.Message, MSGType.Error); }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
+            }
         }
 
         protected void btnSearchAdvanced_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
-            master?.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
+            if (master != null)
+                master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
             upSearchTagBox.Update();
         }
 
         protected void btnCancel_Click(object sender, EventArgs e)
         {
-            if (pnlSearchPopup != null) new ControlHelpers().ClearControlValues(pnlSearchPopup.Controls);
+            if (pnlSearchPopup != null)
+                new ControlHelpers().ClearControlValues(pnlSearchPopup.Controls);
             pnlSearch.Update();
+
             MasterTemplate master = Page.Master as MasterTemplate;
-            master?.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
+            if (master != null)
+                master.btnSearchAdvanced_Click(searchTagBox, null, pnlSearchPopup, grvData);
             upSearchTagBox.Update();
         }
 
         protected void lbtAdd_Click(object sender, EventArgs e)
         {
-            if (!this.CURRENT_PAGE.IsAdd) { ShowAccessDeniedNotify(); return; }
+            if (!this.CURRENT_PAGE.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
             NewMeetingHandlerCallback?.Invoke(Guid.Empty, EventArgs.Empty);
         }
+
         protected string GetTrangThaiCuocHopText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
@@ -357,8 +494,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 if (!isDefaultAvatar)
                 {
                     string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
-                    string fallbackHtml = $"<div class=\\'avatar-circle\\' style=\\'background-color: {color};\\' title=\\'{name}\\'>{GetInitials(name)}</div>";
-                    html += $"<img src='{avatarUrl}' class='avatar-circle' style='object-fit: cover;' title='{name}' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+                    string safeName = System.Web.HttpUtility.HtmlAttributeEncode(name ?? string.Empty);
+                    string safeInitials = System.Web.HttpUtility.HtmlEncode(GetInitials(name));
+                    string fallbackHtml = $"<div class='avatar-circle' style='background-color: {color};' title='{safeName}'>{safeInitials}</div>";
+                    string fallbackJs = System.Web.HttpUtility.JavaScriptStringEncode(fallbackHtml);
+                    string safeAvatarUrl = System.Web.HttpUtility.HtmlAttributeEncode(avatarUrl);
+                    html += $"<img src='{safeAvatarUrl}' class='avatar-circle' style='object-fit: cover;' title='{safeName}' onerror=\"this.onerror=null;this.outerHTML='{fallbackJs}';\" />";
                 }
                 else
                 {
@@ -368,9 +509,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             }
 
             if (count > maxDisplay)
-            {
                 html += $"<div class='avatar-circle avatar-more' title='Và {count - maxDisplay} người khác'>+{count - maxDisplay}</div>";
-            }
 
             return html;
         }
@@ -382,15 +521,16 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
             return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
+
         protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
-            {
                 master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
-            }
+
             upSearchTagBox.Update();
-            if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
+            if (pnlSearchDropdowns != null)
+                pnlSearchDropdowns.Update();
         }
     }
 }

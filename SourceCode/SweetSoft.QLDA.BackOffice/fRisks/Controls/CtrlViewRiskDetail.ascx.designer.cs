@@ -7,155 +7,128 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fIssues
+namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
 {
 
 
-    public partial class IssueList
+    public partial class CtrlViewRiskDetail
     {
 
         /// <summary>
-        /// Navigation1 control.
+        /// upRiskView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::System.Web.UI.UpdatePanel upRiskView;
 
         /// <summary>
-        /// CtrlProjectTabs1 control.
+        /// mdlRiskView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlRiskView;
 
         /// <summary>
-        /// CtrlIssue1 control.
+        /// lblRiskName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fIssues.Controls.CtrlIssue CtrlIssue1;
+        protected global::System.Web.UI.WebControls.Label lblRiskName;
 
         /// <summary>
-        /// dlDetail control.
+        /// lblRiskLevel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal dlDetail;
+        protected global::System.Web.UI.WebControls.Label lblRiskLevel;
 
         /// <summary>
-        /// txtTenVanDe control.
+        /// lblProbability control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenVanDe;
+        protected global::System.Web.UI.WebControls.Label lblProbability;
 
         /// <summary>
-        /// divTrangThaiVanDe control.
+        /// lblImpact control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divTrangThaiVanDe;
+        protected global::System.Web.UI.WebControls.Label lblImpact;
 
         /// <summary>
-        /// ddlTrangThaiVanDe control.
+        /// lblCreatedBy control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThaiVanDe;
+        protected global::System.Web.UI.WebControls.Label lblCreatedBy;
 
         /// <summary>
-        /// ddlMucDoAnhHuong control.
+        /// lblCreatedDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlMucDoAnhHuong;
+        protected global::System.Web.UI.WebControls.Label lblCreatedDate;
 
         /// <summary>
-        /// ddlNguonGocVanDe control.
+        /// rptAssignees control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNguonGocVanDe;
+        protected global::System.Web.UI.WebControls.Repeater rptAssignees;
 
         /// <summary>
-        /// ddlCongViecPhatSinh control.
+        /// pnlNoAssignees control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecPhatSinh;
+        protected global::System.Web.UI.WebControls.Panel pnlNoAssignees;
 
         /// <summary>
-        /// ddlCongViecBiAnhHuong control.
+        /// ltrKeHoachPhongNgua control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecBiAnhHuong;
+        protected global::System.Web.UI.WebControls.Literal ltrKeHoachPhongNgua;
 
         /// <summary>
-        /// rptNhanVienXuLy control.
+        /// ltrKeHoachUngPho control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptNhanVienXuLy;
+        protected global::System.Web.UI.WebControls.Literal ltrKeHoachUngPho;
 
         /// <summary>
-        /// pnlNoNhanVienXuLy control.
+        /// btnCloseRiskView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoNhanVienXuLy;
-
-        /// <summary>
-        /// txtMoTaChiTiet control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTaChiTiet;
-
-        /// <summary>
-        /// txtKeHoachXuLy control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtKeHoachXuLy;
-
-        /// <summary>
-        /// lbtSubmit control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+        protected global::System.Web.UI.WebControls.LinkButton btnCloseRiskView;
     }
 }

@@ -477,6 +477,13 @@
     <Compile Include="fIssues\Controls\CtrlIssue.ascx.designer.cs">
       <DependentUpon>CtrlIssue.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fIssues\Controls\CtrlViewIssueDetail.ascx.cs">
+      <DependentUpon>CtrlViewIssueDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlViewIssueDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewIssueDetail.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fIssues\IssueList.aspx.cs">
       <DependentUpon>IssueList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -511,6 +518,13 @@
     </Compile>
     <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.designer.cs">
       <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.cs">
+      <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fMeets\MeetList.aspx.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
@@ -665,6 +679,13 @@
     </Compile>
     <Compile Include="fRisks\Controls\CtrlRisk.ascx.designer.cs">
       <DependentUpon>CtrlRisk.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.cs">
+      <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fRisks\RiskList.aspx.cs">
       <DependentUpon>RiskList.aspx</DependentUpon>
@@ -850,11 +871,13 @@
     <Content Include="favicon.ico" />
     <Content Include="fGanttCharts\Gantts.aspx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
+    <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
+    <Content Include="fMeets\Controls\CtrlViewMeetDetail.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
@@ -886,6 +909,7 @@
     <Content Include="fThanhToan\ThanhToanList.aspx" />
     <Content Include="fThanhToan\Controls\CtrlThanhToan.ascx" />
     <Content Include="fRisks\Controls\CtrlRisk.ascx" />
+    <Content Include="fRisks\Controls\CtrlViewRiskDetail.ascx" />
     <Content Include="fRisks\RiskList.aspx" />
     <Content Include="fSettings\AuditTrails.aspx" />
     <Content Include="fSettings\FileManagers.aspx" />

@@ -60,6 +60,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenCuocHop;
 
         /// <summary>
+        /// ddlTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThai;
+
+        /// <summary>
         /// txtNgayBatDau control.
         /// </summary>
         /// <remarks>
@@ -96,13 +105,22 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtThoiGianKetThuc;
 
         /// <summary>
-        /// ddlTrangThai control.
+        /// txtDiaDiemHop control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThai;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtDiaDiemHop;
+
+        /// <summary>
+        /// btnMoPopupNhanVien control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnMoPopupNhanVien;
 
         /// <summary>
         /// txtNhanVienThamGia control.
@@ -121,24 +139,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hdfNhanVienIds;
-
-        /// <summary>
-        /// btnMoPopupNhanVien control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnMoPopupNhanVien;
-
-        /// <summary>
-        /// txtDiaDiemHop control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtDiaDiemHop;
 
         /// <summary>
         /// txtNoiDungCuocHop control.

@@ -17,7 +17,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head id="Head1" runat="server">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>System Management - Control Panel - PM Quản Lý Dự Án</title>
     <link rel="shortcut icon" href="/favicon.ico">
     <asp:PlaceHolder runat="server">
         <script type="text/javascript">

@@ -121,6 +121,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 existingIssue.IdCongViecPhatSinh = dto.IdCongViecPhatSinh;
                 existingIssue.MucDoAnhHuong = dto.MucDoAnhHuong;
                 existingIssue.NguonGocVanDe = dto.NguonGocVanDe;
+                existingIssue.TrangThai = dto.TrangThai;
 
                 existingIssue.NgayCapNhat = DateTime.Now;
                 existingIssue.NguoiCapNhat = currentUser;
@@ -128,13 +129,15 @@ namespace SweetSoft.QLDA.Core.Managers
                 existingIssue.Save();
                 result = existingIssue;
             }
+
             if (result != null)
             {
                 if (result.IdCongViecPhatSinh.HasValue)
                 {
-                    SyncNhanVienXuLyVanDe(result.IdVanDe, result.IdCongViecPhatSinh.Value);
+                    SyncNhanVienXuLyVanDe(result.IdVanDe, result.IdCongViecBiAnhHuong.Value);
                 }
             }
+
             return result;
         }
     }

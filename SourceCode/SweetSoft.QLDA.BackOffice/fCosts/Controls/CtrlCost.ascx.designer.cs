@@ -132,15 +132,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
 
         /// <summary>
-        /// mdlFastApprove control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlFastApprove;
-
-        /// <summary>
         /// hdfApproveCostId control.
         /// </summary>
         /// <remarks>
@@ -148,6 +139,15 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hdfApproveCostId;
+
+        /// <summary>
+        /// mdlFastApprove control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlFastApprove;
 
         /// <summary>
         /// btnQuickApprove control.

@@ -104,6 +104,31 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return result;
         }
+        public string GetXacSuatRuiRoText(object value)
+        {
+            if (value == null || value == DBNull.Value)
+                return "—";
+
+            int xacSuat;
+            if (!int.TryParse(value.ToString(), out xacSuat))
+                return "—";
+
+            switch (xacSuat)
+            {
+                case (int)XacSuatRuiRoEnum.VeryLow:
+                    return "Rất thấp";
+                case (int)XacSuatRuiRoEnum.Low:
+                    return "Thấp";
+                case (int)XacSuatRuiRoEnum.Medium:
+                    return "Trung bình";
+                case (int)XacSuatRuiRoEnum.High:
+                    return "Cao";
+                case (int)XacSuatRuiRoEnum.VeryHigh:
+                    return "Rất cao";
+                default:
+                    return "—";
+            }
+        }
         public void DeleteRisk(TblRuiRoDuAn risk)
         {
             _repository.DeleteRisk(risk);

@@ -60,15 +60,6 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenRuiRo;
 
         /// <summary>
-        /// ddlNhanVien control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVien;
-
-        /// <summary>
         /// ddlXacSuat control.
         /// </summary>
         /// <remarks>
@@ -96,6 +87,15 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMucDoRuiRo;
 
         /// <summary>
+        /// ddlNhanVien control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVien;
+
+        /// <summary>
         /// txtKeHoachPhongNgua control.
         /// </summary>
         /// <remarks>
@@ -121,5 +121,14 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+
+        /// <summary>
+        /// mdlRiskCalcInfo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlRiskCalcInfo;
     }
 }
