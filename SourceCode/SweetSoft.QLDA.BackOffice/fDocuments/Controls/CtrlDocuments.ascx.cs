@@ -135,6 +135,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            upMain.Visible = !EditOnly;
+            // A hidden editor shares the detail page's HTML form. Native required
+            // validation would block unrelated submit buttons before postback.
+            // btnSave_Click still validates the document type on the server.
+            if (EditOnly) ddlLoaiTaiLieu.Required = false;
             RegisterAsyncButtons();
             Page.Form.Enctype = "multipart/form-data";
             ScriptManager scriptManager = ScriptManager.GetCurrent(Page);
@@ -158,6 +163,23 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 SelectedDocumentScope = DocumentScopeKeys.Project;
             ResetForm();
             InitGridData();
+        }
+
+        public bool EditOnly { get; set; }
+
+        public void OpenDocumentEditor(Guid documentId)
+        {
+            if (!DocumentManager.Instance.CanAccessDocument(documentId, DocumentPermissionKeys.UpdateInfo))
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+            var item = GetDocumentByCurrentScope(documentId);
+            if (item == null) { ShowInvalidNotFoundData(); return; }
+            ApplyControlsText();
+            BindDropdowns();
+            ResetForm();
+            ShowEditForm(item);
         }
 
         private void ConfigureGridLayout()
@@ -819,7 +841,26 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 + " "
                 + GetResourceText(BackEndResourceKeys.DOCUMENT);
             pnlInitialContent.Visible = false;
-            dlDetail.OpenModal(true);
+            OpenEditorModal();
+        }
+
+        private void OpenEditorModal()
+        {
+            if (!EditOnly)
+            {
+                dlDetail.OpenModal(true);
+                return;
+            }
+            dlDetail.UpdateContentModal();
+            string title = HttpUtility.JavaScriptStringEncode(dlDetail.Title ?? string.Empty);
+            string script = "(function(){function openDocumentEditor(){"
+                + "var modal=document.getElementById('" + dlDetail.ClientID + "');"
+                + "if(!modal)return;var title=modal.querySelector('.modal-title');"
+                + "if(title)title.textContent='" + title + "';"
+                + "bootstrap.Modal.getOrCreateInstance(modal).show();}"
+                + "if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',openDocumentEditor,{once:true});}"
+                + "else{openDocumentEditor();}})();";
+            ScriptManager.RegisterStartupScript(Page, GetType(), "OpenEditor" + dlDetail.ClientID, script, true);
         }
 
         private void ApplySelectedTypeDefaults()
@@ -1096,7 +1137,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ? " Nếu đã chọn file, vui lòng chọn lại trước khi lưu."
                 : string.Empty;
             ShowNotify(message + fileHint, MSGType.Warning);
-            dlDetail.OpenModal(true);
+            OpenEditorModal();
         }
 
         private string UploadInitialFiles(
@@ -1164,6 +1205,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
 
             bool isNew = idTaiLieu == Guid.Empty;
+            if (EditOnly && isNew) { ShowInvalidDataError(); return; }
             if (isNew && !this.IsAdd)
             {
                 ShowAccessDeniedNotify();
@@ -1360,6 +1402,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 else
                     ShowSuccessSaveData();
 
+                if (EditOnly)
+                {
+                    Response.Redirect(GetDocumentDetailUrl(idTaiLieu, selectedProjectId), false);
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
                 ResetForm();
                 dlDetail.CloseModal(true);
                 RebindGridFromFirstPage();
@@ -1375,7 +1423,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             catch (Exception exc)
             {
                 ShowNotify(exc.Message, MSGType.Error);
-                dlDetail.OpenModal(true);
+                OpenEditorModal();
             }
         }
 
@@ -1553,6 +1601,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 || projectIdValue == DBNull.Value
                 || string.IsNullOrWhiteSpace(
                     Convert.ToString(projectIdValue));
+        }
+
+        protected string GetProjectDocumentsUrl(object projectIdValue)
+        {
+            Guid projectId;
+            return Guid.TryParse(Convert.ToString(projectIdValue), out projectId)
+                && projectId != Guid.Empty
+                ? RewriteURLHelper.ProjectDocuments(projectId)
+                : string.Empty;
         }
 
         protected string GetDocumentScopeText(

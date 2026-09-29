@@ -328,6 +328,48 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarDanhSachFileJson.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarDanhSachFileJson);
 				
+				TableSchema.TableColumn colvarIdChuoiFile = new TableSchema.TableColumn(schema);
+				colvarIdChuoiFile.ColumnName = "IdChuoiFile";
+				colvarIdChuoiFile.DataType = DbType.Guid;
+				colvarIdChuoiFile.MaxLength = 0;
+				colvarIdChuoiFile.AutoIncrement = false;
+				colvarIdChuoiFile.IsNullable = true;
+				colvarIdChuoiFile.IsPrimaryKey = false;
+				colvarIdChuoiFile.IsForeignKey = true;
+				colvarIdChuoiFile.IsReadOnly = false;
+				colvarIdChuoiFile.DefaultSetting = @"";
+				
+					colvarIdChuoiFile.ForeignKeyTableName = "TblUploadFile";
+				schema.Columns.Add(colvarIdChuoiFile);
+				
+				TableSchema.TableColumn colvarIdFileThayDoi = new TableSchema.TableColumn(schema);
+				colvarIdFileThayDoi.ColumnName = "IdFileThayDoi";
+				colvarIdFileThayDoi.DataType = DbType.Guid;
+				colvarIdFileThayDoi.MaxLength = 0;
+				colvarIdFileThayDoi.AutoIncrement = false;
+				colvarIdFileThayDoi.IsNullable = true;
+				colvarIdFileThayDoi.IsPrimaryKey = false;
+				colvarIdFileThayDoi.IsForeignKey = true;
+				colvarIdFileThayDoi.IsReadOnly = false;
+				colvarIdFileThayDoi.DefaultSetting = @"";
+				
+					colvarIdFileThayDoi.ForeignKeyTableName = "TblUploadFile";
+				schema.Columns.Add(colvarIdFileThayDoi);
+				
+				TableSchema.TableColumn colvarIdFileTruoc = new TableSchema.TableColumn(schema);
+				colvarIdFileTruoc.ColumnName = "IdFileTruoc";
+				colvarIdFileTruoc.DataType = DbType.Guid;
+				colvarIdFileTruoc.MaxLength = 0;
+				colvarIdFileTruoc.AutoIncrement = false;
+				colvarIdFileTruoc.IsNullable = true;
+				colvarIdFileTruoc.IsPrimaryKey = false;
+				colvarIdFileTruoc.IsForeignKey = true;
+				colvarIdFileTruoc.IsReadOnly = false;
+				colvarIdFileTruoc.DefaultSetting = @"";
+				
+					colvarIdFileTruoc.ForeignKeyTableName = "TblUploadFile";
+				schema.Columns.Add(colvarIdFileTruoc);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -457,6 +499,30 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<string>(Columns.DanhSachFileJson); }
 			set { SetColumnValue(Columns.DanhSachFileJson, value); }
 		}
+		  
+		[XmlAttribute("IdChuoiFile")]
+		[Bindable(true)]
+		public Guid? IdChuoiFile 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdChuoiFile); }
+			set { SetColumnValue(Columns.IdChuoiFile, value); }
+		}
+		  
+		[XmlAttribute("IdFileThayDoi")]
+		[Bindable(true)]
+		public Guid? IdFileThayDoi 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdFileThayDoi); }
+			set { SetColumnValue(Columns.IdFileThayDoi, value); }
+		}
+		  
+		[XmlAttribute("IdFileTruoc")]
+		[Bindable(true)]
+		public Guid? IdFileTruoc 
+		{
+			get { return GetColumnValue<Guid?>(Columns.IdFileTruoc); }
+			set { SetColumnValue(Columns.IdFileTruoc, value); }
+		}
 		
 		#endregion
 		
@@ -559,6 +625,39 @@ namespace SweetSoft.QLDA.DataAccess
 		/// </summary>
 		public SweetSoft.QLDA.DataAccess.TblUploadFile TblUploadFile
 		{
+			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdChuoiFile); }
+			set { SetColumnValue("IdChuoiFile", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblUploadFile ActiveRecord object related to this TblPhienBanTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblUploadFile TblUploadFileToIdFileThayDoi
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileThayDoi); }
+			set { SetColumnValue("IdFileThayDoi", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblUploadFile ActiveRecord object related to this TblPhienBanTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblUploadFile TblUploadFileToIdFileTruoc
+		{
+			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileTruoc); }
+			set { SetColumnValue("IdFileTruoc", value.Id); }
+		}
+		
+		
+		/// <summary>
+		/// Returns a TblUploadFile ActiveRecord object related to this TblPhienBanTaiLieu
+		/// 
+		/// </summary>
+		public SweetSoft.QLDA.DataAccess.TblUploadFile TblUploadFileToIdFileNoiDung
+		{
 			get { return SweetSoft.QLDA.DataAccess.TblUploadFile.FetchByID(this.IdFileNoiDung); }
 			set { SetColumnValue("IdFileNoiDung", value.Id); }
 		}
@@ -600,7 +699,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung,string varDanhSachFileJson)
+		public static void Insert(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung,string varDanhSachFileJson,Guid? varIdChuoiFile,Guid? varIdFileThayDoi,Guid? varIdFileTruoc)
 		{
 			TblPhienBanTaiLieu item = new TblPhienBanTaiLieu();
 			
@@ -634,6 +733,12 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.DanhSachFileJson = varDanhSachFileJson;
 			
+			item.IdChuoiFile = varIdChuoiFile;
+			
+			item.IdFileThayDoi = varIdFileThayDoi;
+			
+			item.IdFileTruoc = varIdFileTruoc;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -644,7 +749,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung,string varDanhSachFileJson)
+		public static void Update(Guid varIdPhienBanTaiLieu,Guid varIdTaiLieu,string varSoPhienBan,string varNguonTao,Guid? varIdPhienBanNguon,string varMoTaPhienBan,string varNoiDungTrucTiep,bool varLaPhienBanHienTai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNoiDung,string varDanhSachFileJson,Guid? varIdChuoiFile,Guid? varIdFileThayDoi,Guid? varIdFileTruoc)
 		{
 			TblPhienBanTaiLieu item = new TblPhienBanTaiLieu();
 			
@@ -677,6 +782,12 @@ namespace SweetSoft.QLDA.DataAccess
 				item.IdFileNoiDung = varIdFileNoiDung;
 			
 				item.DanhSachFileJson = varDanhSachFileJson;
+			
+				item.IdChuoiFile = varIdChuoiFile;
+			
+				item.IdFileThayDoi = varIdFileThayDoi;
+			
+				item.IdFileTruoc = varIdFileTruoc;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -796,6 +907,27 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn IdChuoiFileColumn
+        {
+            get { return Schema.Columns[15]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn IdFileThayDoiColumn
+        {
+            get { return Schema.Columns[16]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn IdFileTruocColumn
+        {
+            get { return Schema.Columns[17]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -815,6 +947,9 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NgayCapNhat = @"NgayCapNhat";
 			 public static string IdFileNoiDung = @"IdFileNoiDung";
 			 public static string DanhSachFileJson = @"DanhSachFileJson";
+			 public static string IdChuoiFile = @"IdChuoiFile";
+			 public static string IdFileThayDoi = @"IdFileThayDoi";
+			 public static string IdFileTruoc = @"IdFileTruoc";
 						
 		}
 		#endregion

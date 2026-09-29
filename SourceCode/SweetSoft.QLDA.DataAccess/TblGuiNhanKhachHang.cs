@@ -382,6 +382,19 @@ namespace SweetSoft.QLDA.DataAccess
 					colvarIdFileNhanLai.ForeignKeyTableName = "TblUploadFile";
 				schema.Columns.Add(colvarIdFileNhanLai);
 				
+				TableSchema.TableColumn colvarDanhSachFileGuiJson = new TableSchema.TableColumn(schema);
+				colvarDanhSachFileGuiJson.ColumnName = "DanhSachFileGuiJson";
+				colvarDanhSachFileGuiJson.DataType = DbType.String;
+				colvarDanhSachFileGuiJson.MaxLength = -1;
+				colvarDanhSachFileGuiJson.AutoIncrement = false;
+				colvarDanhSachFileGuiJson.IsNullable = true;
+				colvarDanhSachFileGuiJson.IsPrimaryKey = false;
+				colvarDanhSachFileGuiJson.IsForeignKey = false;
+				colvarDanhSachFileGuiJson.IsReadOnly = false;
+				colvarDanhSachFileGuiJson.DefaultSetting = @"";
+				colvarDanhSachFileGuiJson.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDanhSachFileGuiJson);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -543,6 +556,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<Guid?>(Columns.IdFileNhanLai); }
 			set { SetColumnValue(Columns.IdFileNhanLai, value); }
 		}
+		  
+		[XmlAttribute("DanhSachFileGuiJson")]
+		[Bindable(true)]
+		public string DanhSachFileGuiJson 
+		{
+			get { return GetColumnValue<string>(Columns.DanhSachFileGuiJson); }
+			set { SetColumnValue(Columns.DanhSachFileGuiJson, value); }
+		}
 		
 		#endregion
 		
@@ -609,7 +630,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdGuiNhanKhachHang,Guid varIdPhienBanTaiLieu,Guid varIdKhachHang,Guid varIdNguoiThucHien,string varTenNguoiNhan,string varEmailNguoiNhan,DateTime? varNgayGui,DateTime? varHanPhanHoi,DateTime? varNgayNhanLai,string varKenhGui,string varTrangThai,bool varLaBanChinhThuc,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNhanLai)
+		public static void Insert(Guid varIdGuiNhanKhachHang,Guid varIdPhienBanTaiLieu,Guid varIdKhachHang,Guid varIdNguoiThucHien,string varTenNguoiNhan,string varEmailNguoiNhan,DateTime? varNgayGui,DateTime? varHanPhanHoi,DateTime? varNgayNhanLai,string varKenhGui,string varTrangThai,bool varLaBanChinhThuc,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNhanLai,string varDanhSachFileGuiJson)
 		{
 			TblGuiNhanKhachHang item = new TblGuiNhanKhachHang();
 			
@@ -651,6 +672,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.IdFileNhanLai = varIdFileNhanLai;
 			
+			item.DanhSachFileGuiJson = varDanhSachFileGuiJson;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -661,7 +684,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdGuiNhanKhachHang,Guid varIdPhienBanTaiLieu,Guid varIdKhachHang,Guid varIdNguoiThucHien,string varTenNguoiNhan,string varEmailNguoiNhan,DateTime? varNgayGui,DateTime? varHanPhanHoi,DateTime? varNgayNhanLai,string varKenhGui,string varTrangThai,bool varLaBanChinhThuc,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNhanLai)
+		public static void Update(Guid varIdGuiNhanKhachHang,Guid varIdPhienBanTaiLieu,Guid varIdKhachHang,Guid varIdNguoiThucHien,string varTenNguoiNhan,string varEmailNguoiNhan,DateTime? varNgayGui,DateTime? varHanPhanHoi,DateTime? varNgayNhanLai,string varKenhGui,string varTrangThai,bool varLaBanChinhThuc,string varGhiChu,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdFileNhanLai,string varDanhSachFileGuiJson)
 		{
 			TblGuiNhanKhachHang item = new TblGuiNhanKhachHang();
 			
@@ -702,6 +725,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NgayCapNhat = varNgayCapNhat;
 			
 				item.IdFileNhanLai = varIdFileNhanLai;
+			
+				item.DanhSachFileGuiJson = varDanhSachFileGuiJson;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -849,6 +874,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn DanhSachFileGuiJsonColumn
+        {
+            get { return Schema.Columns[19]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -872,6 +904,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
 			 public static string IdFileNhanLai = @"IdFileNhanLai";
+			 public static string DanhSachFileGuiJson = @"DanhSachFileGuiJson";
 						
 		}
 		#endregion

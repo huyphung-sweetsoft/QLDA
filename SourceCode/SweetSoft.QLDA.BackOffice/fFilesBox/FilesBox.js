@@ -157,7 +157,7 @@ FilesBox.LayoutFilePopUp = function (el) {
     var extension = cleanUrl.substring(cleanUrl.lastIndexOf('.') + 1);
     var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
     var videoExtensions = ['mp4', 'webm', 'm4v'];
-    var audioExtensions = ['mp3', 'wav', 'ogg'];
+    var audioExtensions = ['mp3', 'm4a', 'wav', 'ogg'];
     var isSameOrigin = resolvedUrl.origin === window.location.origin;
 
     function showDownloadFallback(message) {
@@ -463,7 +463,7 @@ FilesBox.SelectedFile = function (elm) {
         if (!file)
             return true;
 
-        var isVideo = FilesBox.IsVideo(file.name);
+        var isVideo = FilesBox.IsVideo(file.name) || /\.(webm|mp3|m4a|wav|ogg)$/i.test(file.name);
         var isDoc = FilesBox.IsDoc(file.name);
         var isExcel = FilesBox.IsExcel(file.name);
         var isPDF = FilesBox.IsPDF(file.name);
@@ -817,7 +817,14 @@ FilesBox.ValidateUploadParameters = function (file, refType, refId, title, ar) {
     }
 
     // Check file size (client-side validation)
-    var maxSize = FilesBox.Config.MaxFileSize || (10 * 1024 * 1024); // 10MB default
+    // Use the owning control's policy, just as SelectedFile does. Different
+    // pages can allow different formats/sizes without changing global defaults.
+    var input = FilesBox.FindItemByKey(ar).closest('.file-box').find('.ipfFile');
+    if (!input.length)
+        input = $('.file-box.active .ipfFile');
+    var configuredSize = parseInt(input.attr('data-max-size'), 10);
+    var maxSize = configuredSize > 0 ? configuredSize
+        : FilesBox.Config.MaxFileSize || (10 * 1024 * 1024);
     if (file.size > maxSize) {
         var maxSizeMB = Math.round(maxSize / (1024 * 1024));
         FilesBox.ShowError("File size exceeds " + maxSizeMB + "MB limit", ar);
@@ -825,14 +832,18 @@ FilesBox.ValidateUploadParameters = function (file, refType, refId, title, ar) {
     }
 
     // Check file type (client-side validation)
-    var allowedTypes = FilesBox.Config.AllowedTypes || [
+    var accept = input.attr('accept');
+    var allowedTypes = accept ? accept.split(',').map(function (type) { return type.trim().toLowerCase(); }) : FilesBox.Config.AllowedTypes || [
         'image/jpeg', 'image/png', 'application/pdf',
         'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'audio/mpeg', 'video/mp4', 'video/avi'
     ];
 
-    if (allowedTypes.indexOf(file.type) === -1) {
+    var mime = (file.type || '').toLowerCase();
+    var allowed = allowedTypes.indexOf(mime) !== -1
+        || (mime.indexOf('image/') === 0 && allowedTypes.indexOf('image/*') !== -1);
+    if (!allowed) {
         FilesBox.ShowError("File type not allowed: " + file.type, ar);
         return false;
     }

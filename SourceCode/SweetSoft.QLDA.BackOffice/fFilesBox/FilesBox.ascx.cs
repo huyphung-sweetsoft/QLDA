@@ -253,7 +253,7 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
                 ViewState["RefType"] = value;
             }
         }
-        static string[] mediaExtensions = new string[] { ".MP3", ".AVI", ".MP4" };
+        static string[] mediaExtensions = new string[] { ".MP3", ".AVI", ".MP4", ".WEBM", ".M4A", ".WAV", ".OGG" };
         static bool IsMediaFile(string path)
         {
             return -1 != Array.IndexOf(mediaExtensions, Path.GetExtension(path).ToUpperInvariant());

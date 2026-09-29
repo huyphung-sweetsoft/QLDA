@@ -31,8 +31,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             CtrlCost1.NewCostHandlerCallback += NewCostAction;
             CtrlCost1.EditCostHandlerCallback += EditCostAction;
             CtrlCost1.OpenCostFilesHandlerCallback += OpenCostFilesAction;
-            fbCostFiles.CurrentFileIdResolver = (recordId, refType) =>
-                ProjectRecordFileAccess.GetLinkedFileId(recordId, refType.ToString());
             fbCostFiles.FileMutationValidator = (recordId, refType, fileId) =>
                 ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId,
                     recordId, refType.ToString(), true)
@@ -142,7 +140,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 return;
             }
 
-            fbCostFiles.IsMultiple = false;
+            fbCostFiles.IsMultiple = true;
             fbCostFiles.IsEnabled = ProjectRecordFileAccess.CanAccess(
                 SweetContext.Current.UserId, idChiPhi,
                 FileUploadTypes.CostAttachment.ToString(), true);

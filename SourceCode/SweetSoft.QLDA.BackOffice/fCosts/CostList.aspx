@@ -135,10 +135,10 @@
                 OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false"><%= GetResourceText(BackEndResourceKeys.SAVE) %></SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
-    <SweetSoft:ExtraModal runat="server" ID="dlCostFiles" Type="Primary" Size="Small" Title="File đính kèm chi phí">
+    <SweetSoft:ExtraModal runat="server" ID="dlCostFiles" Type="Primary" Size="Large" Title="File đính kèm chi phí">
         <ContentTemplate>
             <div class="record-attachments">
-                <SweetSoft:FilesBox runat="server" ID="fbCostFiles" IsMultiple="false" MaxFileSizeBytes="10485760" />
+                <SweetSoft:FilesBox runat="server" ID="fbCostFiles" IsMultiple="true" MaxFileSizeBytes="10485760" />
             </div>
         </ContentTemplate>
     </SweetSoft:ExtraModal>

@@ -197,6 +197,33 @@ namespace SweetSoft.QLDA.Core.Respositories
                 }));
         }
 
+        public void SaveDraftSigningUpload(Guid userId, TblUploadFile file)
+        {
+            if (file == null || file.RefType != "DocumentSigningResult")
+                throw new InvalidOperationException("File kết quả ký không hợp lệ.");
+            using (var scope = new TransactionScope(TransactionScopeOption.Required, TimeSpan.FromMinutes(2)))
+            {
+                Guid? documentId = ResolveUploadDocument(file.RefId, file.RefType);
+                if (!documentId.HasValue)
+                    throw new InvalidOperationException("Không tìm thấy hồ sơ trình ký.");
+                ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblTaiLieu WITH (UPDLOCK,HOLDLOCK) WHERE IdTaiLieu=@Id AND DaXoa=0",
+                    new Dictionary<string, object> { { "@Id", documentId.Value } });
+                if (!CanProcessSigningResult(userId, file.RefId))
+                    throw new UnauthorizedAccessException("Yêu cầu ký đã thay đổi hoặc bạn không có quyền xử lý.");
+
+                // Retire only draft results. The unique active-result index remains enforced.
+                // Both changes roll back together if saving the replacement fails.
+                ExecuteNonQuery(@"UPDATE f SET IsDeleted=1
+                    FROM dbo.TblUploadFile f
+                    WHERE f.RefId=@Ref AND f.RefType='DocumentSigningResult' AND f.IsDeleted=0
+                      AND NOT EXISTS (SELECT 1 FROM dbo.TblTrinhKyTaiLieu s WHERE s.IdFileSauKy=f.Id)
+                      AND NOT EXISTS (SELECT 1 FROM dbo.TblTrinhKyTaiLieuFile s WHERE s.IdFileSauKy=f.Id)",
+                    new Dictionary<string, object> { { "@Ref", file.RefId } });
+                file.Save();
+                scope.Complete();
+            }
+        }
+
         public bool CanProcessAssignedSigningFile(
             Guid userId, Guid documentId, Guid signingFileId)
         {
@@ -407,6 +434,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                    AND g.UserId=u.UserId
                 WHERE t.IdTaiLieu=@Id
                   AND t.DaXoa=0
+                  AND m.IdNhanVien IS NOT NULL
                   AND (d.IdNhanVienQuanLy IS NULL OR u.UserId<>d.IdNhanVienQuanLy)
                   AND
                   (
@@ -455,21 +483,15 @@ namespace SweetSoft.QLDA.Core.Respositories
                 ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblTaiLieu WITH(UPDLOCK,HOLDLOCK) WHERE IdTaiLieu=@Id",new Dictionary<string,object>{{"@Id",documentId}});
                 if(!CanAccess(actor,documentId,"Manage")) throw new UnauthorizedAccessException("Bạn không được cấp quyền hồ sơ này.");
                 if(GetGrantStamp(documentId)!=expectedStamp) throw new InvalidOperationException("Quyền đã thay đổi. Hãy đóng và mở lại popup.");
-                bool canGrantOutsideProject = HasGroupRight(actor, "Document.View")
-                    && HasGroupRight(actor, "Document.Update");
-                var members=GetGrantMembers(documentId, canGrantOutsideProject)
+                var members=GetGrantMembers(documentId, false)
                     .AsEnumerable()
                     .ToDictionary(r=>(Guid)r["UserId"]);
                 foreach(var item in items) {
                     DataRow member;
                     if(!members.TryGetValue(item.UserId,out member)) throw new InvalidOperationException("Nhân viên không còn thuộc dự án hoặc không nằm trong danh sách được cấp quyền.");
-                    if (!canGrantOutsideProject
-                        && !Convert.ToBoolean(member["IsProjectMember"]))
+                    if (!Convert.ToBoolean(member["IsProjectMember"]))
                     {
-                        /* Người phụ trách ngoài dự án vẫn có quyền mặc định
-                           theo hồ sơ, nhưng PM dự án không được tạo/sửa ACL
-                           riêng cho một người ngoài. */
-                        continue;
+                        throw new InvalidOperationException("Chỉ được cấp quyền cho thành viên trong dự án.");
                     }
                     bool hasGranularUpdate = item.CanUpdateInfo
                         || item.CanManageFiles
@@ -2438,7 +2460,7 @@ string configuredMethod = Convert.ToString(
                 Guid resultFileId = GetGuid(resultFile, "Id");
                 if (!IsAllowedSigningResultExtension(resultFile))
                     throw new InvalidOperationException(
-                        "Tệp kết quả ký chỉ được phép có định dạng PDF, JPG, JPEG hoặc PNG.");
+                        "Tệp kết quả ký chỉ được phép có định dạng Word (DOC, DOCX), PDF, JPG, JPEG hoặc PNG.");
                 if (resultFileId == Guid.Empty
                     || !IsFileAvailable(resultFile["FileUrl"]))
                 {
@@ -2588,20 +2610,22 @@ string configuredMethod = Convert.ToString(
                     throw new UnauthorizedAccessException(
                         "Chỉ người ký được chỉ định mới được xử lý file đang chờ ký này.");
 
-                DataTable uploadedResults = ExecuteDataTable(@"
-                    SELECT TOP 1 Id
-                    FROM dbo.TblUploadFile WITH (UPDLOCK, HOLDLOCK)
-                    WHERE RefId=@SigningFileId
-                      AND RefType=@ResultRefType
-                      AND IsDeleted=0;",
+                // Uploading a result only stages a draft. Requesting changes
+                // abandons that draft atomically with the status transition.
+                // Never retire a result already referenced by a confirmed signature.
+                ExecuteNonQuery(@"
+                    UPDATE f SET IsDeleted=1
+                    FROM dbo.TblUploadFile f
+                    WHERE f.RefId=@SigningFileId
+                      AND f.RefType=@ResultRefType
+                      AND f.IsDeleted=0
+                      AND NOT EXISTS (SELECT 1 FROM dbo.TblTrinhKyTaiLieu s WHERE s.IdFileSauKy=f.Id)
+                      AND NOT EXISTS (SELECT 1 FROM dbo.TblTrinhKyTaiLieuFile s WHERE s.IdFileSauKy=f.Id);",
                     new Dictionary<string, object>
                     {
                         { "@SigningFileId", idTrinhKyTaiLieuFile },
                         { "@ResultRefType", FileUploadTypes.DocumentSigningResult.ToString() }
                     });
-                if (uploadedResults.Rows.Count > 0)
-                    throw new InvalidOperationException(
-                        "Hãy xóa file kết quả ký đang tải dở trước khi yêu cầu điều chỉnh.");
 
                 DataRow item = itemRows.Rows[0];
                 Guid signingId = GetGuid(item, "IdTrinhKyTaiLieu");
@@ -2747,7 +2771,7 @@ string configuredMethod = Convert.ToString(
                 Guid resultFileId = GetGuid(resultFile, "Id");
                 if (!IsAllowedSigningResultExtension(resultFile))
                     throw new InvalidOperationException(
-                        "File kết quả ký chỉ được phép có định dạng PDF, JPG, JPEG hoặc PNG.");
+                        "File kết quả ký chỉ được phép có định dạng Word (DOC, DOCX), PDF, JPG, JPEG hoặc PNG.");
                 if (resultFileId == Guid.Empty
                     || !IsFileAvailable(resultFile["FileUrl"]))
                 {
@@ -3858,7 +3882,7 @@ string configuredMethod = Convert.ToString(
             return ExecuteDataTable(sql);
         }
 
-        public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
+        public DataTable GetDocumentActivityHistory(Guid idTaiLieu, int skip = 0, int? take = null, DateTime? until = null)
         {
             DataTable history = CreateDocumentActivityHistoryTable();
             if (idTaiLieu == Guid.Empty)
@@ -3876,7 +3900,7 @@ string configuredMethod = Convert.ToString(
                     DateTimeKind.Utc);
                 List<AuditLogDto> auditLogs = GetDocumentAuditHistoryAsync(
                         idTaiLieu,
-                        earliestAuditDate)
+                        earliestAuditDate, until, skip, take)
                     .GetAwaiter()
                     .GetResult();
 
@@ -3889,6 +3913,7 @@ string configuredMethod = Convert.ToString(
                     exception,
                     "Failed to load AuditLog history for document "
                     + idTaiLieu);
+                if (take.HasValue) throw;
             }
 
             return history;
@@ -3961,7 +3986,7 @@ string configuredMethod = Convert.ToString(
         public Task<List<AuditLogDto>> GetDocumentAuditHistoryAsync(
             Guid documentId,
             DateTime fromUtc,
-            DateTime? toUtc = null)
+            DateTime? toUtc = null, int skip = 0, int? take = null)
         {
             if (documentId == Guid.Empty)
                 throw new ArgumentException("Hồ sơ không hợp lệ.", nameof(documentId));
@@ -3988,14 +4013,20 @@ string configuredMethod = Convert.ToString(
             }
 
             var logs = new List<AuditLogDto>();
-            foreach (string table in tables)
+            if (tables.Count > 0)
             {
                 // Table names come from metadata and have been validated; values are parameters.
+                string union = string.Join(" UNION ALL ", tables.Select(table =>
+                    "SELECT Id, Title, ReferenceId, TableName, RecordId, ActionType, Changes, UserId, ChangedBy, ChangedAt FROM dbo.[" + table + "] "
+                    + "WHERE TableName='TblTaiLieu' AND RecordId=@DocumentId AND ChangedAt>=@FromUtc AND ChangedAt<=@ToUtc"));
                 var command = new QueryCommand(
-                    "SELECT Id, Title, ReferenceId, TableName, RecordId, ActionType, Changes, "
-                    + "UserId, ChangedBy, ChangedAt FROM dbo.[" + table + "] "
-                    + "WHERE TableName = 'TblTaiLieu' AND RecordId = @DocumentId "
-                    + "AND ChangedAt >= @FromUtc AND ChangedAt <= @ToUtc", provider);
+                    "SELECT * FROM (" + union + ") history ORDER BY ChangedAt DESC, Id DESC"
+                    + (take.HasValue ? " OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY" : ""), provider);
+                if (take.HasValue)
+                {
+                    command.Parameters.Add("@Skip", Math.Max(0, skip), DbType.Int32);
+                    command.Parameters.Add("@Take", Math.Max(1, Math.Min(100, take.Value)), DbType.Int32);
+                }
                 command.Parameters.Add("@DocumentId", documentId, DbType.Guid);
                 command.Parameters.Add("@FromUtc", fromUtc, DbType.DateTime);
                 command.Parameters.Add("@ToUtc", endUtc, DbType.DateTime);
@@ -4617,6 +4648,8 @@ string configuredMethod = Convert.ToString(
             }
 
             return extension == "pdf"
+                || extension == "doc"
+                || extension == "docx"
                 || extension == "jpg"
                 || extension == "jpeg"
                 || extension == "png";

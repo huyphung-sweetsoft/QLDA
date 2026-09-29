@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdGuiNhanKhachHang,Guid IdPhienBanTaiLieu,Guid IdKhachHang,Guid IdNguoiThucHien,string TenNguoiNhan,string EmailNguoiNhan,DateTime? NgayGui,DateTime? HanPhanHoi,DateTime? NgayNhanLai,string KenhGui,string TrangThai,bool LaBanChinhThuc,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNhanLai)
+	    public void Insert(Guid IdGuiNhanKhachHang,Guid IdPhienBanTaiLieu,Guid IdKhachHang,Guid IdNguoiThucHien,string TenNguoiNhan,string EmailNguoiNhan,DateTime? NgayGui,DateTime? HanPhanHoi,DateTime? NgayNhanLai,string KenhGui,string TrangThai,bool LaBanChinhThuc,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNhanLai,string DanhSachFileGuiJson)
 	    {
 		    TblGuiNhanKhachHang item = new TblGuiNhanKhachHang();
 		    
@@ -122,6 +122,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.IdFileNhanLai = IdFileNhanLai;
             
+            item.DanhSachFileGuiJson = DanhSachFileGuiJson;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -130,7 +132,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdGuiNhanKhachHang,Guid IdPhienBanTaiLieu,Guid IdKhachHang,Guid IdNguoiThucHien,string TenNguoiNhan,string EmailNguoiNhan,DateTime? NgayGui,DateTime? HanPhanHoi,DateTime? NgayNhanLai,string KenhGui,string TrangThai,bool LaBanChinhThuc,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNhanLai)
+	    public void Update(Guid IdGuiNhanKhachHang,Guid IdPhienBanTaiLieu,Guid IdKhachHang,Guid IdNguoiThucHien,string TenNguoiNhan,string EmailNguoiNhan,DateTime? NgayGui,DateTime? HanPhanHoi,DateTime? NgayNhanLai,string KenhGui,string TrangThai,bool LaBanChinhThuc,string GhiChu,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdFileNhanLai,string DanhSachFileGuiJson)
 	    {
 		    TblGuiNhanKhachHang item = new TblGuiNhanKhachHang();
 	        item.MarkOld();
@@ -173,6 +175,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NgayCapNhat = NgayCapNhat;
 				
 			item.IdFileNhanLai = IdFileNhanLai;
+				
+			item.DanhSachFileGuiJson = DanhSachFileGuiJson;
 				
 	        item.Save(UserName);
 	    }

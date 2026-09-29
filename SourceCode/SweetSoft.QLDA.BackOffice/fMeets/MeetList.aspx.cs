@@ -34,7 +34,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
             CtrlMeet1.OpenMeetingFilesHandlerCallback += OpenMeetingFilesAction;
-            fbMeetingFiles.CurrentFileIdResolver = (recordId, refType) => ProjectRecordFileAccess.GetLinkedFileId(recordId, refType.ToString());
             fbMeetingFiles.FileMutationValidator = (recordId, refType, fileId) => ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId, recordId, refType.ToString(), true) && ProjectRecordFileAccess.BelongsToRecord(recordId, refType.ToString(), fileId);
             if (!IsPostBack)
             {
@@ -98,7 +97,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowAccessDeniedNotify();
                 return;
             }
-            fbMeetingFiles.IsMultiple = false;
+            fbMeetingFiles.IsMultiple = true;
+            fbMeetingFiles.AcceptType = "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/x-wav,audio/ogg,application/ogg";
             fbMeetingFiles.IsEnabled = ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId, idLichHop, FileUploadTypes.MeetingAttachment.ToString(), true);
             fbMeetingFiles.LoadFile(idLichHop, FileUploadTypes.MeetingAttachment);
             dlMeetingFiles.OpenModal(true);

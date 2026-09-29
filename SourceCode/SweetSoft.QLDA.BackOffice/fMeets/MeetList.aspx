@@ -197,9 +197,9 @@
             <SweetSoft:ExtraButton runat="server" ID="lbtSubmit" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true" OnClientClick="return CMSMasterJs.CheckValid();" OnClick="lbtSubmit_Click" Visible="false">Lưu</SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
-    <SweetSoft:ExtraModal runat="server" ID="dlMeetingFiles" Type="Primary" Size="Small" Title="File đính kèm lịch họp">
+    <SweetSoft:ExtraModal runat="server" ID="dlMeetingFiles" Type="Primary" Size="Large" Title="File đính kèm lịch họp">
         <ContentTemplate>
-            <div class="record-attachments"><SweetSoft:FilesBox runat="server" ID="fbMeetingFiles" IsMultiple="false" MaxFileSizeBytes="10485760" /></div>
+            <div class="record-attachments"><SweetSoft:FilesBox runat="server" ID="fbMeetingFiles" IsMultiple="true" MaxFileSizeBytes="104857600" /></div>
         </ContentTemplate>
     </SweetSoft:ExtraModal>
     <SweetSoft:ExtraModal runat="server" ID="dlChonNhanVien" Type="Primary" DefaultButton="btnXacNhanNhanVien" Title="Chọn nhân viên">
