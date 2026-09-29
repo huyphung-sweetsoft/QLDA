@@ -11,196 +11,151 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
 {
 
 
-    public partial class CtrlMeet
+    public partial class CtrlViewMeetDetail
     {
 
         /// <summary>
-        /// pnlSearchDropdowns control.
+        /// mdlMeetView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel pnlSearchDropdowns;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlMeetView;
 
         /// <summary>
-        /// pnlSearchDefaultStatus control.
+        /// upMeetView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSearchDefaultStatus;
+        protected global::System.Web.UI.UpdatePanel upMeetView;
 
         /// <summary>
-        /// ddlSearchTrangThai control.
+        /// lblMeetName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSearchTrangThai;
+        protected global::System.Web.UI.WebControls.Literal lblMeetName;
 
         /// <summary>
-        /// txtSearchSingle control.
+        /// lblMeetRoom control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchSingle;
+        protected global::System.Web.UI.WebControls.Literal lblMeetRoom;
 
         /// <summary>
-        /// lbtSearchSingle control.
+        /// lblMeetStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchSingle;
+        protected global::System.Web.UI.WebControls.Literal lblMeetStatus;
 
         /// <summary>
-        /// tagOther control.
+        /// lblMeetStart control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl tagOther;
+        protected global::System.Web.UI.WebControls.Literal lblMeetStart;
 
         /// <summary>
-        /// pnlButtons control.
+        /// lblMeetEnd control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel pnlButtons;
+        protected global::System.Web.UI.WebControls.Literal lblMeetEnd;
 
         /// <summary>
-        /// lbtAdd control.
+        /// ltrMeetCreatorAvatar control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtAdd;
+        protected global::System.Web.UI.WebControls.Literal ltrMeetCreatorAvatar;
 
         /// <summary>
-        /// upSearchTagBox control.
+        /// lblMeetCreator control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upSearchTagBox;
+        protected global::System.Web.UI.WebControls.Literal lblMeetCreator;
 
         /// <summary>
-        /// searchTagBox control.
+        /// lblMeetCreatorEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBox;
+        protected global::System.Web.UI.WebControls.Literal lblMeetCreatorEmail;
 
         /// <summary>
-        /// upMain control.
+        /// lblMeetCreatedDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upMain;
+        protected global::System.Web.UI.WebControls.Literal lblMeetCreatedDate;
 
         /// <summary>
-        /// grvData control.
+        /// rptMeetParticipants control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.GridviewExtension grvData;
+        protected global::System.Web.UI.WebControls.Repeater rptMeetParticipants;
 
         /// <summary>
-        /// ctrlGridviewPaging control.
+        /// pnlNoMeetParticipants control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
+        protected global::System.Web.UI.WebControls.Panel pnlNoMeetParticipants;
 
         /// <summary>
-        /// btnRefreshMeetingStatuses control.
+        /// ltrMeetContent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnRefreshMeetingStatuses;
+        protected global::System.Web.UI.WebControls.Literal ltrMeetContent;
 
         /// <summary>
-        /// CtrlViewMeetDetail1 control.
+        /// hdfMeetParticipantIds control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlViewMeetDetail CtrlViewMeetDetail1;
+        protected global::System.Web.UI.WebControls.HiddenField hdfMeetParticipantIds;
 
         /// <summary>
-        /// CtrlXemNhanVienMeet1 control.
+        /// txtMeetParticipantNames control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlXemNhanVienMeet CtrlXemNhanVienMeet1;
-
-        /// <summary>
-        /// pnlSearch control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel pnlSearch;
-
-        /// <summary>
-        /// pnlSearchPopup control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSearchPopup;
-
-        /// <summary>
-        /// txtSearchTenCuocHop control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTenCuocHop;
-
-        /// <summary>
-        /// lbtSearchAdvanced control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchAdvanced;
-
-        /// <summary>
-        /// lbtCancel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtCancel;
+        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMeetParticipantNames;
     }
 }

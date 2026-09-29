@@ -87,6 +87,42 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTongTien;
 
         /// <summary>
+        /// pnlRequesterCard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlRequesterCard;
+
+        /// <summary>
+        /// litRequesterAvatar control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRequesterAvatar;
+
+        /// <summary>
+        /// litRequesterName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRequesterName;
+
+        /// <summary>
+        /// litRequesterEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litRequesterEmail;
+
+        /// <summary>
         /// txtNhanVienYeuCau control.
         /// </summary>
         /// <remarks>
@@ -167,10 +203,22 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
 
-        /// <summary>dlCostFiles control.</summary>
+        /// <summary>
+        /// dlCostFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraModal dlCostFiles;
 
-        /// <summary>fbCostFiles control.</summary>
+        /// <summary>
+        /// fbCostFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fFilesBox.FilesBox fbCostFiles;
     }
 }

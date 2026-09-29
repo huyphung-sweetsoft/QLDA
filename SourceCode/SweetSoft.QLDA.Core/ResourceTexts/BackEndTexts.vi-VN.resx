@@ -583,7 +583,7 @@
     <value>Tỉnh</value>
   </data>
   <data name="PROBABILITY" xml:space="preserve">
-    <value>Xác suất</value>
+    <value>Xác suất xảy ra</value>
   </data>
   <data name="PROJECT_MANAGEMENT" xml:space="preserve">
     <value>Quản lý dự án</value>
@@ -3063,6 +3063,9 @@
   </data>
   <data name="CONTRACT_DETAIL" xml:space="preserve">
     <value>Chi tiết hợp đồng</value>
+  </data>
+  <data name="COMPLETED_LATE" xml:space="preserve">
+    <value>Hoàn thành trễ</value>
   </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>

@@ -47,7 +47,17 @@ namespace SweetSoft.QLDA.Core.Respositories
 
             return new InlineQuery().ExecuteScalar<int>(sql) == 1;
         }
+        public List<TblLichHop> GetMeetingsByProject(Guid projectId)
+        {
+            if (projectId == Guid.Empty)
+                return new List<TblLichHop>();
 
+            return new Select()
+                .From(TblLichHop.Schema)
+                .Where(TblLichHop.Columns.IdDuAn)
+                .IsEqualTo(projectId)
+                .ExecuteTypedList<TblLichHop>();
+        }
         public Guid? GetLinkedDocumentId(Guid idLichHop)
         {
             return GetLinkedDocumentId(idLichHop, false);

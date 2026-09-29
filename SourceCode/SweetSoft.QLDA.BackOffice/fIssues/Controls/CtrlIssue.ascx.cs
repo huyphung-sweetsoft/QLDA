@@ -22,9 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
     {
         public EventHandler NewIssueHandlerCallback;
         public EventHandler EditIssueHandlerCallback;
-
         private readonly ControlHelpers _controlHelpers = new ControlHelpers();
-
         public Guid ProjectId
         {
             get
@@ -41,16 +39,10 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             }
             set => ViewState["ProjectId"] = value;
         }
-
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
         protected bool IsDelete => this.CURRENT_PAGE.IsDelete;
-
-        protected void Page_Load(object sender, EventArgs e)
-        {
-            RegisterAsyncButton();
-        }
-
+        protected void Page_Load(object sender, EventArgs e) { RegisterAsyncButton(); }
         private void RegisterAsyncButton()
         {
             ScriptManager script = ScriptManager.GetCurrent(this.Page);
@@ -62,22 +54,18 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 script.RegisterAsyncPostBackControl(ddlSearchNguonGoc);
             }
         }
-
         public void InitControls()
         {
             ApplyControlsText();
             AssignSearchColumns();
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             lbtAdd.Visible = this.CURRENT_PAGE.IsAdd;
-
             _controlHelpers.BindMucDoAnhHuong(ddlSearchMucDoAnhHuong);
             _controlHelpers.BindTrangThaiVanDe(ddlSearchTrangThai);
             _controlHelpers.BindNguonGocVanDe(ddlSearchNguonGoc);
-
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
                 master.LoadSessionLastSearch(searchTagBox, null, grvData, txtSearchSingle);
-
             grvData.CurrentPageSize = Convert.ToInt32(SweetContext.Current.CurrentPageSize);
             grvData.CurrentSortExpression = "MaVanDe";
             grvData.CurrentSortDerection = "ASC";
@@ -85,61 +73,40 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             pnlSearchDropdowns.Update();
             pnlButtons.Update();
         }
-
-        private void AssignSearchColumns()
-        {
-            txtSearchSingle.SearchColumn = "MaVanDe";
-        }
-
-        public void Rebind()
-        {
-            grvData.CurrentPageIndex = 1;
-            grvData.Rebind();
-        }
-
+        private void AssignSearchColumns() { txtSearchSingle.SearchColumn = "MaVanDe"; }
+        public void Rebind() { grvData.CurrentPageIndex = 1; grvData.Rebind(); }
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
-
             ddlSearchMucDoAnhHuong.SearchTagItemText = GetResourceText(BackEndResourceKeys.IMPACT);
             ddlSearchMucDoAnhHuong.Text = GetResourceText(BackEndResourceKeys.IMPACT);
-
             ddlSearchTrangThai.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
             ddlSearchTrangThai.Text = GetResourceText(BackEndResourceKeys.STATUS);
-
             ddlSearchNguonGoc.SearchTagItemText = GetResourceText(BackEndResourceKeys.ORIGIN);
             ddlSearchNguonGoc.Text = GetResourceText(BackEndResourceKeys.ORIGIN);
-            ddlSearchMucDoAnhHuong.Text = GetResourceText(BackEndResourceKeys.IMPACT);
-            ddlSearchTrangThai.Text = GetResourceText(BackEndResourceKeys.STATUS);
             lbtAdd.ToolTip = lbtAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
-
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.ISSUE_CODE),
                 GetResourceText(BackEndResourceKeys.ISSUE_NAME),
                 GetResourceText(BackEndResourceKeys.IMPACT),
                 GetResourceText(BackEndResourceKeys.STATUS),
                 GetResourceText(BackEndResourceKeys.ORIGIN),
                 GetResourceText(BackEndResourceKeys.CREATED_BY),
-                GetResourceText(BackEndResourceKeys.ACTION),
-                GetResourceText(BackEndResourceKeys.FAST_APPROVAL) 
+                GetResourceText(BackEndResourceKeys.CREATED_DATE),
+                GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.HeaderTexts = lstTableHeader;
         }
-
         protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
             if (master != null)
-            {
                 master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
-            }
             upSearchTagBox.Update();
             if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
         }
-
         protected void grvData_NeedDataSource(object sender, ExtraGridEventArg e)
         {
             try
@@ -150,29 +117,16 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                     this.ShowInvalidDataError();
                     return;
                 }
-
                 int totalRows = 0;
                 int rowIndex = (grid.CurrentPageIndex - 1) * grid.CurrentPageSize;
                 int pageSize = rowIndex + grid.CurrentPageSize;
-
                 Dictionary<string, object> keyValueSearchs = new Dictionary<string, object>();
-
                 if (pnlSearchDefaultStatus != null)
                 {
                     var defaultParams = _controlHelpers.GetControlValues(pnlSearchDefaultStatus);
                     foreach (var item in defaultParams) keyValueSearchs[item.Key] = item.Value;
                 }
-
-                DataTable dt = IssueManager.Instance.SearchIssue(
-                    this.ProjectId,
-                    txtSearchSingle.Text,
-                    keyValueSearchs,
-                    $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}",
-                    rowIndex,
-                    pageSize,
-                    out totalRows
-                );
-
+                DataTable dt = IssueManager.Instance.SearchIssue(ProjectId, txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
                 if (dt == null || dt.Rows.Count == 0)
                 {
                     grvData.DataSource = null;
@@ -190,114 +144,117 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                     ctrlGridviewPaging.TotalItems = totalRows;
                     ctrlGridviewPaging.InitLoad();
                 }
-
                 upMain.Update();
                 pnlButtons.Update();
             }
-            catch (Exception exc)
-            {
-                ShowNotify(exc.Message, MSGType.Error);
-            }
+            catch (Exception exc) { ShowNotify(exc.Message, MSGType.Error); }
         }
-
         protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             switch (e.CommandName)
             {
-                case "ITEM_PROCESS":
-                    if (!this.CURRENT_PAGE.IsEdit)
+                case "ITEM_COMPLETE_PROCESS":
+                    if (!IsEdit)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
-
-                    int rowIndexProcess = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
-                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
-
-                    Guid issueIdProcess = Guid.Empty;
-                    if (Guid.TryParse(grvData.DataKeys[rowIndexProcess].Value.ToString(), out issueIdProcess))
+                    int rowIndexProcess = e.CommandSource.GetType() != typeof(GridviewExtension) ? ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                    if (Guid.TryParse(grvData.DataKeys[rowIndexProcess].Value.ToString(), out Guid issueIdProcess))
                     {
-                        try
+                        TblVanDe issueProcess = TblVanDe.FetchByID(issueIdProcess);
+                        if (issueProcess == null || issueProcess.DaXoa == true)
                         {
-                            string sqlProcess = $"UPDATE TblVanDe SET TrangThai = 1 WHERE IdVanDe = '{issueIdProcess}'";    
-                            new InlineQuery().Execute(sqlProcess);
-                            ShowNotify("Đã cập nhật trạng thái xử lý thành công!", MSGType.Success);
-                            Rebind();
+                            ShowInvalidNotFoundData();
+                            return;
                         }
-                        catch (Exception exc)
+                        if (issueProcess.TrangThai != 0)
                         {
-                            ShowNotify(exc.Message, MSGType.Error);
+                            return;
                         }
+                        ConfirmResult resultProcess = new ConfirmResult { CommandName = "ISSUE_COMPLETE_PROCESS", Value = issueProcess };
+                        this.CURRENT_PAGE.CurrentConfirmResult = resultProcess;
+                        MessageBox msgProcess = new MessageBox(
+                            GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                            string.Format("Bạn có chắc chắn muốn đánh dấu vấn đề <b>{0}</b> là <b>Đã xử lý</b> không?", issueProcess.TenVanDe),
+                            MSGButton.AcceptCancel,
+                            MSGIcon.Success);
+                        OpenMessageBox(msgProcess, resultProcess, false, false);
                     }
                     break;
-
                 case "ITEM_DETAIL":
-                    if (!this.CURRENT_PAGE.IsEdit)
+                    if (!IsEdit && !IsView)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
-
                     int rowIndex = 0;
                     if (e.CommandSource.GetType() != typeof(GridviewExtension))
-                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                        rowIndex = ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex;
                     else
                         rowIndex = Convert.ToInt32(e.CommandArgument);
-
-                    Guid issueId = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out issueId))
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out Guid issueId))
                     {
                         ShowInvalidDataError();
                         return;
                     }
-
-                    if (EditIssueHandlerCallback != null)
-                        EditIssueHandlerCallback(issueId, EventArgs.Empty);
+                    if (IsEdit)
+                    {
+                        if (EditIssueHandlerCallback != null)
+                            EditIssueHandlerCallback(issueId, EventArgs.Empty);
+                    }
+                    else
+                    {
+                        CtrlViewIssueDetail viewControl = FindControl("CtrlViewIssueDetail1") as CtrlViewIssueDetail;
+                        if (viewControl != null)
+                            viewControl.OpenModal(issueId);
+                    }
                     break;
-
-                case "ITEM_DELETE":
-                    if (!this.CURRENT_PAGE.IsDelete)
+                case "ITEM_VIEW_DETAIL":
+                    if (!IsEdit && !IsView)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
-
-                    int rowIndexDel = 0;
+                    int rowIndexView = 0;
                     if (e.CommandSource.GetType() != typeof(GridviewExtension))
-                        rowIndexDel = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                        rowIndexView = ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex;
                     else
-                        rowIndexDel = Convert.ToInt32(e.CommandArgument);
-
-                    Guid issueIdDel = Guid.Empty;
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out issueIdDel))
+                        rowIndexView = Convert.ToInt32(e.CommandArgument);
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexView].Value.ToString(), out Guid issueIdView))
                     {
                         ShowInvalidDataError();
                         return;
                     }
-
+                    CtrlViewIssueDetail viewDetailControl = FindControl("CtrlViewIssueDetail1") as CtrlViewIssueDetail;
+                    if (viewDetailControl != null)
+                        viewDetailControl.OpenModal(issueIdView);
+                    break;
+                case "ITEM_DELETE":
+                    if (!IsDelete)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    int rowIndexDel = e.CommandSource.GetType() != typeof(GridviewExtension) ? ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexDel].Value.ToString(), out Guid issueIdDel))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
                     TblVanDe issueDel = TblVanDe.FetchByID(issueIdDel);
                     if (issueDel == null || issueDel.DaXoa == true)
                     {
                         ShowInvalidNotFoundData();
                         return;
                     }
-
-                    ConfirmResult result = new ConfirmResult();
-                    result.CommandName = "ISSUE_DELETE";
-                    result.Value = issueDel;
+                    ConfirmResult result = new ConfirmResult { CommandName = "ISSUE_DELETE", Value = issueDel };
                     this.CURRENT_PAGE.CurrentConfirmResult = result;
-
-                    MessageBox msg = new MessageBox(
-                        GetResourceText(BackEndResourceKeys.NOTIFICATION),
-                        string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), issueDel.TenVanDe),
-                        MSGButton.DeleteCancel,
-                        MSGIcon.Error
-                    );
+                    MessageBox msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION), string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_DELETE_THE_DATA), issueDel.TenVanDe), MSGButton.DeleteCancel, MSGIcon.Error);
                     OpenMessageBox(msg, result, false, false);
                     break;
             }
         }
-
         public override void ConfirmRequest(ConfirmResult e)
         {
             if (e != null)
@@ -312,7 +269,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                             ShowInvalidNotFoundData();
                             return;
                         }
-
                         try
                         {
                             IssueManager.Instance.DeleteIssue(issue);
@@ -320,10 +276,26 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                             grvData.CurrentPageIndex = 1;
                             grvData.Rebind();
                         }
-                        catch (Exception exc)
+                        catch (Exception exc) { ShowNotify(exc.Message, MSGType.Error); }
+                    }
+                    else if (e.CommandName.Contains("ISSUE_COMPLETE_PROCESS"))
+                    {
+                        TblVanDe issue = e.Value as TblVanDe;
+                        if (issue == null)
                         {
-                            ShowNotify(exc.Message, MSGType.Error);
+                            ShowInvalidNotFoundData();
+                            return;
                         }
+                        try
+                        {
+                            issue.TrangThai = 1;
+                            issue.NgayCapNhat = DateTime.Now;
+                            issue.NguoiCapNhat = SweetContext.Current != null ? SweetContext.Current.UserName : "System";
+                            issue.Save();
+                            ShowNotify("Đã cập nhật vấn đề sang trạng thái Đã xử lý!", MSGType.Success);
+                            grvData.Rebind();
+                        }
+                        catch (Exception exc) { ShowNotify(exc.Message, MSGType.Error); }
                     }
                 }
                 else
@@ -333,14 +305,12 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 }
             }
         }
-
         protected void ctrlGridviewPaging_PageChanged(object sender, GridviewCustomPageChangeArgs e)
         {
             grvData.CurrentPageSize = e.CurrentPageSize;
             grvData.CurrentPageIndex = e.CurrentPageNumber;
             grvData.Rebind();
         }
-
         protected void btnSearch_ServerClick(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
@@ -348,7 +318,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 master.btnSearchSingle_Click(searchTagBox, pnlSearchDefaultStatus, grvData, txtSearchSingle);
             upSearchTagBox.Update();
         }
-
         protected void searchTagBox_TagClosed(object sender, SearchTagItem tag)
         {
             try
@@ -361,16 +330,11 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
                 }
                 upSearchTagBox.Update();
                 if (pnlSearchDropdowns != null) pnlSearchDropdowns.Update();
-
                 string script = string.Format("$('#{0}').val('');", txtSearchSingle.ClientID);
                 ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "UpdateTxtSearch", script, true);
             }
-            catch (Exception exc)
-            {
-                ShowNotify(exc.Message, MSGType.Error);
-            }
+            catch (Exception exc) { ShowNotify(exc.Message, MSGType.Error); }
         }
-
         protected void lbtAdd_Click(object sender, EventArgs e)
         {
             if (!this.CURRENT_PAGE.IsAdd)
@@ -381,25 +345,29 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
             if (NewIssueHandlerCallback != null)
                 NewIssueHandlerCallback(Guid.Empty, EventArgs.Empty);
         }
-
         protected string GetMucDoAnhHuongText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
             MucDoAnhHuonEnum mucDo = (MucDoAnhHuonEnum)Convert.ToInt32(value);
             return GetResourceText(IssueManager.Instance.GetValueForMucDoAnhHuong(mucDo));
         }
-
         protected string GetTrangThaiVanDeText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
-            TrangThaiVanDeEnum status = (TrangThaiVanDeEnum)Convert.ToInt32(value);
-            return GetResourceText(IssueManager.Instance.GetValueForTrangThaiVanDe(status));
+            int status = Convert.ToInt32(value);
+            if (status == 0) return "Đang xử lý";
+            if (status == 1) return "Đã xử lý";
+            return "—";
         }
         protected string GetNguonGocVanDeText(object value)
         {
             if (value == null || value == DBNull.Value) return "—";
             NguonGocVanDeEnum origin = (NguonGocVanDeEnum)Convert.ToInt32(value);
             return GetResourceText(IssueManager.Instance.GetValueForNguonGocVanDe(origin));
+        }
+        protected string GetFormattedDate(object value)
+        {
+            return _controlHelpers.FormatDateTime(value);
         }
     }
 }
