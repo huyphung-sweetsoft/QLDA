@@ -40,7 +40,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         {
             CtrlHopDongThucHien1.NewHopDongHandlerCallback += NewHopDongAction;
             CtrlHopDongThucHien1.EditHopDongHandlerCallback += EditHopDongAction;
-            CtrlHopDongThucHien1.OpenContractDocumentHandlerCallback += OpenContractDocumentAction;
 
             if (!IsPostBack)
             {
@@ -108,7 +107,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             ddlKhachHang.SelectedIndex = 0;
             txtSoHopDong.Enabled = true;
             txtTenHopDong.Enabled = true;
-            pnlContractDocumentIdentityLocked.Visible = false;
 
             this.IdHopDongThucHien = Guid.Empty;
         }
@@ -293,43 +291,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             Response.Redirect(RewriteURLHelper.ContractDetail(Guid.Empty));
             Context.ApplicationInstance.CompleteRequest();
-        }
-
-        private void OpenContractDocumentAction(object sender, EventArgs e)
-        {
-            Guid idHopDongThucHien = sender is Guid
-                ? (Guid)sender
-                : Guid.Empty;
-            if (idHopDongThucHien == Guid.Empty)
-            {
-                ShowInvalidDataError();
-                return;
-            }
-
-            try
-            {
-                ContractDocumentLinkResult result = HopDongThucHienManager
-                    .Instance
-                    .GetOrCreateProjectDocument(idHopDongThucHien);
-
-                string url = RewriteURLHelper.ProjectDocumentDetail(
-                    result.ProjectId,
-                    result.DocumentId) + "?tab=versions";
-                Response.Redirect(GetRelativeClientPath(url), false);
-                Context.ApplicationInstance.CompleteRequest();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                ShowAccessDeniedNotify();
-            }
-            catch (InvalidOperationException exception)
-            {
-                ShowNotify(exception.Message, MSGType.Warning);
-            }
-            catch (Exception exception)
-            {
-                ShowNotify(exception.Message, MSGType.Error);
-            }
         }
 
         public override void ConfirmRequest(ConfirmResult e)

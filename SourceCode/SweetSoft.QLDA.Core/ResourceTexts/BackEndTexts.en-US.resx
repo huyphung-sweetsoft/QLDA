@@ -1188,12 +1188,6 @@
   <data name="CONTRACT" xml:space="preserve">
     <value>Contract</value>
   </data>
-  <data name="CONTRACT_DOCUMENT" xml:space="preserve">
-    <value>Contract document</value>
-  </data>
-  <data name="CONTRACT_DOCUMENT_IDENTITY_LOCKED" xml:space="preserve">
-    <value>The contract number and name are used by the linked document and cannot be changed here.</value>
-  </data>
   <data name="CONTRACT_NUMBER" xml:space="preserve">
     <value />
   </data>
@@ -3123,6 +3117,15 @@
   </data>
   <data name="CONTRACT_DETAIL" xml:space="preserve">
     <value>Contract details</value>
+  </data>
+  <data name="PERSONNEL_WARNING" xml:space="preserve">
+    <value>Personnel warning</value>
+  </data>
+  <data name="DOING_X_TASKS" xml:space="preserve">
+    <value>Doing {0} tasks</value>
+  </data>
+  <data name="WARNING_REMOVE_ACTIVE_MEMBERS_MSG" xml:space="preserve">
+    <value />
   </data>
   <data name="COMPLETED_LATE" xml:space="preserve">
     <value>Completed late</value>

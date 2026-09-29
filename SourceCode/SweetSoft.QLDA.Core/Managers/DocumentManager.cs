@@ -220,7 +220,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public const string PhysicalStorage = "TblLuuTruVatLy";
     }
 
-    public class DocumentManager : BaseManager
+    public partial class DocumentManager : BaseManager
     {
         private static readonly Lazy<DocumentManager> _instance =
             new Lazy<DocumentManager>(() => new DocumentManager());
@@ -699,16 +699,12 @@ namespace SweetSoft.QLDA.Core.Managers
             if (document == null)
                 throw new InvalidOperationException(
                     "Không tìm thấy hồ sơ.");
-            if (!document.CanTrinhKy)
-                throw new InvalidOperationException(
-                    "Hồ sơ này không được cấu hình trình ký.");
-
-            DocumentSigningOperationResult result =
+DocumentSigningOperationResult result =
                 _repository.SubmitDocumentSigning(
                     idTaiLieu,
                     idNguoiKy,
                     string.Empty,
-                    document.HinhThucKy,
+                    string.IsNullOrWhiteSpace(document.HinhThucKy) ? DocumentSigningMethodKeys.Paper : document.HinhThucKy,
                     ghiChu,
                     selectedFileIds,
                     GetCurrentUserId(),
@@ -857,17 +853,13 @@ namespace SweetSoft.QLDA.Core.Managers
             string kenhGui,
             DateTime? hanPhanHoi,
             bool choPhepGuiTruocKhiKy,
-            string ghiChu)
+            string ghiChu, IDictionary<Guid, Guid> selectedFiles = null)
         {
             EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.CustomerDelivery);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
-            if (!document.CanGuiKhachHang)
-            {
-                throw new InvalidOperationException(
-                    "Hồ sơ này không được cấu hình gửi khách hàng.");
-            }
+
 
             DocumentCustomerDeliveryOperationResult result =
                 _repository.SendDocumentToCustomer(
@@ -882,7 +874,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     ghiChu,
                     GetCurrentUserId(),
                     GetCurrentUserName(),
-                    DateTime.UtcNow);
+                    DateTime.UtcNow, selectedFiles);
             WriteCustomerDeliveryAudit(idTaiLieu, result);
             return result;
         }
@@ -923,7 +915,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 string tinhTrangBanGoc,
                 string ghiChu)
         {
-            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.PhysicalStorage);
+            EnsureDocumentAccess(idTaiLieu, DocumentPermissionKeys.UpdateInfo);
             TblTaiLieu document = _repository.GetById(idTaiLieu);
             if (document == null)
                 throw new InvalidOperationException("Không tìm thấy hồ sơ.");
@@ -1043,6 +1035,10 @@ namespace SweetSoft.QLDA.Core.Managers
             bool canGuiKhachHang,
             bool canLuuVatLy, string noiDungHtml = null)
         {
+            canTrinhKy = canGuiKhachHang = canLuuVatLy = true;
+            if (string.IsNullOrWhiteSpace(hinhThucKy)) hinhThucKy = DocumentSigningMethodKeys.Paper;
+            if (DocumentTypeManager.Instance.GetScope(idLoaiTaiLieu) != (projectId.HasValue ? "DU_AN" : "CHUNG"))
+                throw new ArgumentException("Loại hồ sơ không phù hợp với phạm vi đã chọn.");
             maTaiLieu = (maTaiLieu ?? string.Empty).Trim().ToUpperInvariant();
             tenTaiLieu = (tenTaiLieu ?? string.Empty).Trim();
             moTa = (moTa ?? string.Empty).Trim();
@@ -1091,21 +1087,6 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (string.IsNullOrEmpty(maTaiLieu))
                     throw new ArgumentException("Mã hồ sơ không được để trống.");
 
-                if (_repository.IsDocumentLinkedToActiveContract(
-                        item.IdTaiLieu)
-                    && (item.IdLoaiTaiLieu != idLoaiTaiLieu
-                        || !string.Equals(
-                            item.MaTaiLieu,
-                            maTaiLieu,
-                            StringComparison.OrdinalIgnoreCase)
-                        || !string.Equals(
-                            item.TenTaiLieu,
-                            tenTaiLieu,
-                            StringComparison.Ordinal)))
-                {
-                    throw new InvalidOperationException(
-                        "Hồ sơ đang liên kết với hợp đồng. Hãy cập nhật thông tin nhận diện từ chức năng Hợp đồng.");
-                }
             }
             else if (string.IsNullOrEmpty(maTaiLieu))
             {
@@ -1644,12 +1625,6 @@ namespace SweetSoft.QLDA.Core.Managers
             if (item == null)
                 return false;
 
-            if (_repository.IsDocumentLinkedToActiveContract(idTaiLieu))
-            {
-                throw new InvalidOperationException(
-                    "Hồ sơ đang liên kết với hợp đồng nên không thể xóa.");
-            }
-
             if (item.IdFileBanChinhThuc.HasValue
                 || _repository.HasRelatedRecords(idTaiLieu))
             {
@@ -1676,12 +1651,6 @@ namespace SweetSoft.QLDA.Core.Managers
                 projectId);
             if (item == null)
                 return false;
-
-            if (_repository.IsDocumentLinkedToActiveContract(idTaiLieu))
-            {
-                throw new InvalidOperationException(
-                    "Hồ sơ đang liên kết với hợp đồng nên không thể xóa.");
-            }
 
             if (item.IdFileBanChinhThuc.HasValue
                 || _repository.HasRelatedRecords(idTaiLieu))

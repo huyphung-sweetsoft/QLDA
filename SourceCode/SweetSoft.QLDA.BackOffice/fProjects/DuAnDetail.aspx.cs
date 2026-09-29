@@ -75,6 +75,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
         }
 
+        private bool CanModifyProject
+        {
+            get
+            {
+                return this.IsEdit &&
+                       CurrentStatusValue != (byte)DuAnStatus.HoanThanh &&
+                       CurrentStatusValue != (byte)DuAnStatus.KetThuc;
+            }
+        }
+
         private AuditManager _auditManager;
         protected byte CurrentStatusValue { get; set; }
 
@@ -215,46 +225,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 ? hopDong.NgayHetHan.Value.ToString("yyyy-MM-dd")
                 : string.Empty;
             txtContractDescription.Text = hopDong.MoTa;
-        }
-
-        protected void lbtOpenContractDocument_Click(object sender, EventArgs e)
-        {
-            if (!IsContractView)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
-            if (IdHopDongThucHien == Guid.Empty)
-            {
-                ShowInvalidDataError();
-                return;
-            }
-
-            try
-            {
-                ContractDocumentLinkResult result = HopDongThucHienManager
-                    .Instance
-                    .GetOrCreateProjectDocument(IdHopDongThucHien);
-
-                string url = RewriteURLHelper.ProjectDocumentDetail(
-                    result.ProjectId,
-                    result.DocumentId) + "?tab=versions";
-                Response.Redirect(GetRelativeClientPath(url), false);
-                Context.ApplicationInstance.CompleteRequest();
-            }
-            catch (UnauthorizedAccessException)
-            {
-                ShowAccessDeniedNotify();
-            }
-            catch (InvalidOperationException exception)
-            {
-                ShowNotify(exception.Message, MSGType.Warning);
-            }
-            catch (Exception exception)
-            {
-                ShowNotify(exception.Message, MSGType.Error);
-            }
         }
 
         protected void lbtEditProject_Click(object sender, EventArgs e)
@@ -604,7 +574,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             lblNgayKy.Text = FormatDate(row, "NgayKy");
             lblNgayBatDau.Text = FormatDate(row, "NgayBatDau");
             lblNgayHoanThanhDuKien.Text = FormatDate(row, "NgayDuKienHoanThanh");
-            lblNgayHoanThanhThucTe.Text = FormatDate(row, "NgayHoanThanhThucTe");
+            lblNgayKetThucThucTe.Text = FormatDate(row, "NgayHoanThanhThucTe");
             ltrMoTa.Text = GetHtmlText(row, "MoTa");
             lblNhanVienQuanLy.Text = GetDisplayText(row, "DisplayName");
 
@@ -619,13 +589,28 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             }
 
             byte trangThai = Convert.ToByte(row["TrangThai"]);
+            switch ((DuAnStatus)trangThai)
+            {
+                case DuAnStatus.TamDung:
+                    lblNgayKetThucThucTeTitle.Text = "Ngày tạm dừng";
+                    break;
+                case DuAnStatus.HoanThanh:
+                    lblNgayKetThucThucTeTitle.Text = "Ngày hoàn thành thực tế";
+                    break;
+                case DuAnStatus.KetThuc:
+                    lblNgayKetThucThucTeTitle.Text = "Ngày kết thúc";
+                    break;
+                default:
+                    lblNgayKetThucThucTeTitle.Text = "Ngày hoàn thành thực tế";
+                    break;
+            }
             lblTrangThai.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), (DuAnStatus)trangThai));
             lblTrangThaiHead.Text = Convert.ToString(EnumHelpers.GetERenderText(typeof(DuAnStatus), (DuAnStatus)trangThai));
             CurrentStatusValue = trangThai;
             DuAnStatus statusEnum = (DuAnStatus)trangThai;
-            ltrCurrentStatusName.Text = EnumHelpers.GetERenderText(typeof(DuAnStatus), statusEnum);
-            iCurrentStatusIcon.Attributes["class"] = "fas fa-circle me-2 small " + GetStatusCssClass(statusEnum);
-            BindStatusDropdown();
+            //ltrCurrentStatusName.Text = EnumHelpers.GetERenderText(typeof(DuAnStatus), statusEnum);
+            //iCurrentStatusIcon.Attributes["class"] = "fas fa-circle me-2 small " + GetStatusCssClass(statusEnum);
+            BindStatusActions(statusEnum);
 
             Guid idHopDongThucHien = Guid.Empty;
             if (row.Table.Columns.Contains("IdHopDongThucHien") && row["IdHopDongThucHien"] != DBNull.Value)
@@ -639,32 +624,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
             lblNoContract.Visible =  idHopDongThucHien == Guid.Empty;
 
-            lbtEditProject.Visible = this.IsEdit;
+            lbtEditProject.Visible = CanModifyProject;
 
-            lbtThemThanhVien.Visible = this.IsEdit;
-        }
-
-        private bool CanOpenContractDocument(Guid idHopDongThucHien)
-        {
-            if (!IsContractView ||
-                idHopDongThucHien == Guid.Empty ||
-                QueryId == Guid.Empty ||
-                !DocumentManager.Instance.CanAccessProjectDocument(
-                    QueryId,
-                    ActionKeys.View))
-            {
-                return false;
-            }
-
-            if (HopDongThucHienManager.Instance.HasLinkedDocument(
-                idHopDongThucHien))
-            {
-                return true;
-            }
-
-            return DocumentManager.Instance.CanAccessProjectDocument(
-                QueryId,
-                ActionKeys.Create);
+            lbtThemThanhVien.Visible = CanModifyProject;
         }
 
         private string GetDisplayText(DataRow row, string columnName)
@@ -756,66 +718,98 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             rptRecentProjectHistory.DataBind();
         }
 
-        protected void rptStatusDropdown_ItemCommand(object source, RepeaterCommandEventArgs e)
+        protected void lbtStatusDangThucHien_Click(object sender, EventArgs e)
         {
-            if (e.CommandName != "ChangeStatus")
-                return;
+            ChangeProjectStatus(DuAnStatus.DangThucHien);
+        }
 
+        protected void lbtStatusTamDung_Click(object sender, EventArgs e)
+        {
             if (!this.IsEdit)
             {
                 ShowAccessDeniedNotify();
                 return;
             }
 
-            byte trangThai;
-
-            if (!byte.TryParse(e.CommandArgument.ToString(), out trangThai) ||
-                !Enum.IsDefined(typeof(DuAnStatus), trangThai))
-            {
-                ShowNotify(
-                    GetResourceText(BackEndResourceKeys.PLEASE_SELECT_THE_VALUE),
-                    MSGType.Error
-                );
-                return;
-            }
-
-            TblDuAn duAn = DuAnManager.Instance.GetDuAnById(QueryId);
-
-            if (duAn == null || duAn.DaXoa)
-            {
-                ShowInvalidNotFoundData();
-                return;
-            }
-
-            if (duAn.TrangThai == trangThai)
-                return;
-
-            duAn.TrangThai = trangThai;
-
-            DuAnManager.Instance.CreateOrUpdate(duAn);
-
-            // POST -> GET
-            Response.Redirect(Request.RawUrl, false);
-            Context.ApplicationInstance.CompleteRequest();
+            OpenStatusChangeModal(DuAnStatus.TamDung.ToString());
         }
 
-        private void BindStatusDropdown()
+        protected void lbtStatusHoanThanh_Click(object sender, EventArgs e)
         {
-            var statuses = Enum.GetValues(typeof(DuAnStatus)).Cast<DuAnStatus>().Select(s => new {
-                Value = (byte)s,
-                Name = EnumHelpers.GetERenderText(typeof(DuAnStatus), s),
-                CssClass = GetStatusCssClass(s)
-            }).ToList();
-            
-            rptStatusDropdown.DataSource = statuses;
-            rptStatusDropdown.DataBind();
+            ChangeProjectStatus(DuAnStatus.HoanThanh);
+        }
+
+        protected void lbtStatusKetThuc_Click(object sender, EventArgs e)
+        {
+            if (!this.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            OpenStatusChangeModal(DuAnStatus.KetThuc.ToString());
+        }
+
+        private void ChangeProjectStatus(DuAnStatus newStatus)
+        {
+            if (!this.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (QueryId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            try
+            {
+                DuAnManager.Instance.UpdateProjectStatus(QueryId, newStatus, txtStatusReason.Text);
+                Response.Redirect(Request.RawUrl, false);
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (Exception ex)
+            {
+                ShowNotify(ex.Message, MSGType.Error);
+            }
+        }
+
+        private void BindStatusActions(DuAnStatus currentStatus)
+        {
+            lbtStatusDangThucHien.Visible = false;
+            lbtStatusTamDung.Visible = false;
+            lbtStatusHoanThanh.Visible = false;
+            lbtStatusKetThuc.Visible = false;
+
+            if (!this.IsEdit) return;
+
+            switch (currentStatus)
+            {
+                case DuAnStatus.ChuaBatDau:
+                    lbtStatusDangThucHien.Visible = true;
+                    lbtStatusKetThuc.Visible = true;
+                    break;
+
+                case DuAnStatus.DangThucHien:
+                    lbtStatusTamDung.Visible = true;
+                    lbtStatusHoanThanh.Visible = true;
+                    lbtStatusKetThuc.Visible = true;
+                    break;
+
+                case DuAnStatus.TamDung:
+                    lbtStatusDangThucHien.Visible = true;
+                    lbtStatusKetThuc.Visible = true;
+                    break;
+            }
         }
 
         protected string GetStatusCssClass(DuAnStatus status)
         {
             switch (status)
             {
-                case DuAnStatus.ChoThucHien: return "text-warning";
+                case DuAnStatus.ChuaBatDau: return "text-warning";
                 case DuAnStatus.DangThucHien: return "text-info";
                 case DuAnStatus.TamDung: return "text-secondary";
                 case DuAnStatus.HoanThanh: return "text-success";
@@ -828,6 +822,123 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         {
             BindData();
             upProjectDetail.Update();
+        }
+
+        private void OpenStatusChangeModal(string targetStatus)
+        {
+            if (QueryId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            TblDuAn duAn = DuAnManager.Instance.GetDuAnById(QueryId);
+            if (duAn == null || duAn.DaXoa)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            hfStatusTarget.Value = targetStatus;
+            hfStatusAtModalOpen.Value = duAn.TrangThai.ToString();
+            txtStatusReason.Text = string.Empty;
+
+            bool isPause = targetStatus == DuAnStatus.TamDung.ToString();
+            mdlStatusChange.Title = isPause ? "Xác nhận tạm dừng dự án" : "Xác nhận kết thúc dự án";
+            lblStatusDescription.InnerText = isPause
+                ? "Dự án sẽ chuyển sang trạng thái Tạm dừng. Vui lòng nhập lý do."
+                : "Dự án sẽ chuyển sang trạng thái Kết thúc. Vui lòng nhập lý do.";
+
+            upStatusChange.Update();
+            mdlStatusChange.OpenModal(true);
+        }
+
+        protected void lbtConfirmStatusChange_Click(object sender, EventArgs e)
+        {
+            if (!this.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (QueryId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            string target = hfStatusTarget.Value;
+            DuAnStatus newStatus;
+
+            if (!Enum.TryParse(target, out newStatus) ||
+                (newStatus != DuAnStatus.TamDung && newStatus != DuAnStatus.KetThuc))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            string reason = (txtStatusReason.Text ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                ShowNotify("Vui lòng nhập lý do.", MSGType.Warning);
+                mdlStatusChange.OpenModal(true);
+                return;
+            }
+
+            if (reason.Length > 1000)
+            {
+                ShowNotify("Lý do không được vượt quá 1000 ký tự.", MSGType.Warning);
+                mdlStatusChange.OpenModal(true);
+                return;
+            }
+
+            try
+            {
+                TblDuAn duAn = DuAnManager.Instance.GetDuAnById(QueryId);
+
+                if (duAn == null || duAn.DaXoa)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+
+                byte statusAtModalOpen;
+                if (!byte.TryParse(hfStatusAtModalOpen.Value, out statusAtModalOpen) ||
+                    duAn.TrangThai != statusAtModalOpen)
+                {
+                    ShowNotify("Trạng thái dự án đã thay đổi. Vui lòng tải lại trang.", MSGType.Warning);
+                    return;
+                }
+
+                // Chỉ cho phép hai thao tác mà modal này phục vụ.
+                if (newStatus == DuAnStatus.TamDung && duAn.TrangThai != (byte)DuAnStatus.DangThucHien)
+                {
+                    ShowNotify("Chỉ có thể tạm dừng dự án đang thực hiện.", MSGType.Warning);
+                    return;
+                }
+
+                if (newStatus == DuAnStatus.KetThuc &&
+                    duAn.TrangThai != (byte)DuAnStatus.ChuaBatDau &&
+                    duAn.TrangThai != (byte)DuAnStatus.DangThucHien &&
+                    duAn.TrangThai != (byte)DuAnStatus.TamDung)
+                {
+                    ShowNotify("Không thể kết thúc dự án ở trạng thái hiện tại.", MSGType.Warning);
+                    return;
+                }
+
+                // TODO: Lưu reason cùng lần cập nhật trạng thái ở DuAnManager.
+                DuAnManager.Instance.UpdateProjectStatus(QueryId, newStatus, reason);
+
+                BindData();
+                upProjectDetail.Update();
+                mdlStatusChange.CloseModal();
+            }
+            catch (Exception ex)
+            {
+                ShowNotify(ex.Message, MSGType.Error);
+                mdlStatusChange.OpenModal(true);
+            }
         }
     }
 }

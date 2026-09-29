@@ -400,9 +400,9 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         {
             ddlLoaiTaiLieu.Items.Clear();
 
-            new ControlHelpers().BindDocumentTypes(
-                ddlLoaiTaiLieu,
-                (Guid?)null);
+            ddlLoaiTaiLieu.Items.Add(new ListItem("Chọn loại hồ sơ", ""));
+            foreach (DataRow type in DocumentTypeManager.Instance.GetScopedTypes(rblCreateScope.SelectedValue).Rows)
+                ddlLoaiTaiLieu.Items.Add(new ListItem(Convert.ToString(type["TenLoai"]), Convert.ToString(type["IdLoaiTaiLieu"])));
             ddlLoaiTaiLieu.Enabled = true;
         }
 
@@ -435,11 +435,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void BindCreateProjects()
         {
             ddlCreateProject.Items.Clear();
-            if (DocumentManager.Instance.CanCreateCompanyDocument())
-            {
-                ddlCreateProject.Items.Add(new ListItem(
-                    "Hồ sơ công ty (không chọn dự án)", string.Empty));
-            }
+            ddlCreateProject.Items.Add(new ListItem("Chọn dự án", string.Empty));
 
             if (IsProjectContext)
                 return;
@@ -718,7 +714,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ResetForm()
         {
             hdfIdTaiLieu.Value = string.Empty;
-            pnlCreateProject.Visible = !IsProjectContext;
+            pnlCreateScope.Visible = true;
+            rblCreateScope.Enabled = !IsProjectContext;
+            rblCreateScope.Items.FindByValue("CHUNG").Enabled = DocumentManager.Instance.CanCreateCompanyDocument();
+            rblCreateScope.SelectedValue = !IsProjectContext && DocumentManager.Instance.CanCreateCompanyDocument() ? "CHUNG" : "DU_AN";
+            pnlCreateProject.Visible = !IsProjectContext && rblCreateScope.SelectedValue == "DU_AN";
+            BindDocumentStorage();
             pnlCreateUnavailable.Visible = false;
             btnSave.Enabled = true;
             pnlInitialFileUpload.Visible = true;
@@ -743,12 +744,32 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             ApplyInitialSourceState();
         }
 
+        private void BindDocumentStorage()
+        {
+            ddlDocumentStorage.Items.Clear();
+            ddlDocumentStorage.Items.Add(new ListItem("Chưa xác định", ""));
+            foreach (var place in DocumentStorageLocationManager.Instance.GetAll())
+                if (!place.DaXoa && place.KichHoat)
+                    ddlDocumentStorage.Items.Add(new ListItem(place.TenNoiLuuTru, place.IdNoiLuuTru.ToString()));
+            ddlDocumentStorage.Enabled = true;
+        }
+
+        protected void rblCreateScope_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            pnlCreateProject.Visible = !IsProjectContext && rblCreateScope.SelectedValue == "DU_AN";
+            ddlCreateProject.ClearSelection();
+            BindDocumentFormTypes(null);
+            pnlCreateUnavailable.Visible = pnlCreateProject.Visible && ddlCreateProject.Items.Count <= 1;
+            btnSave.Enabled = !pnlCreateUnavailable.Visible;
+            dlDetail.OpenModal(true);
+        }
+
         private void ShowAddForm()
         {
             BindCreateProjects();
             ResetForm();
             pnlCreateUnavailable.Visible = !IsProjectContext
-                && ddlCreateProject.Items.Count == 0;
+                && rblCreateScope.SelectedValue == "DU_AN" && ddlCreateProject.Items.Count <= 1;
             btnSave.Enabled = !pnlCreateUnavailable.Visible;
             dlDetail.Title = GetAddDocumentText();
             dlDetail.OpenModal(true);
@@ -757,6 +778,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         private void ShowEditForm(TblTaiLieu item)
         {
             hdfIdTaiLieu.Value = item.IdTaiLieu.ToString();
+            pnlCreateScope.Visible = true;
+            rblCreateScope.Enabled = false;
+            rblCreateScope.SelectedValue = item.IdDuAn.HasValue ? "DU_AN" : "CHUNG";
+            BindDocumentStorage();
+            Guid? currentStorage = DocumentManager.Instance.GetStorageLocation(item.IdTaiLieu);
+            if (currentStorage.HasValue && ddlDocumentStorage.Items.FindByValue(currentStorage.Value.ToString()) == null)
+            {
+                var place = DocumentStorageLocationManager.Instance.GetById(currentStorage.Value);
+                ddlDocumentStorage.Items.Add(new ListItem((place == null ? "Vị trí lưu cũ" : place.TenNoiLuuTru) + " (ngừng sử dụng)", currentStorage.Value.ToString()));
+            }
+            SelectDropdownValue(ddlDocumentStorage, currentStorage?.ToString() ?? "");
+            ddlDocumentStorage.Enabled = DocumentManager.Instance.CanAccessDocument(item.IdTaiLieu, DocumentPermissionKeys.UpdateInfo);
             pnlCreateProject.Visible = false;
             pnlInitialFileUpload.Visible = false;
             txtMaTaiLieu.Text = item.MaTaiLieu;
@@ -812,7 +845,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (documentType == null)
             {
                 ShowNotify(
-                    "Loại tài liệu không tồn tại hoặc đã bị xóa.",
+                    "Loại hồ sơ không tồn tại hoặc đã bị xóa.",
                     MSGType.Warning);
                 return;
             }
@@ -1164,6 +1197,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 return;
             }
 
+            if (isNew && rblCreateScope.SelectedValue != "CHUNG" && rblCreateScope.SelectedValue != "DU_AN")
+            { ShowSaveWarning("Vui lòng chọn phạm vi hồ sơ."); return; }
             Guid? selectedProjectId;
             if (isNew)
             {
@@ -1183,8 +1218,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 selectedProjectId = existingDocument.IdDuAn;
             }
 
-            if (isNew && !IsProjectContext
-                && !string.IsNullOrWhiteSpace(ddlCreateProject.SelectedValue))
+            if (isNew && !IsProjectContext && rblCreateScope.SelectedValue == "DU_AN")
             {
                 Guid projectId;
                 if (!Guid.TryParse(ddlCreateProject.SelectedValue, out projectId)
@@ -1202,7 +1236,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (isNew && !selectedProjectId.HasValue
                 && !DocumentManager.Instance.CanCreateCompanyDocument())
             {
-                ShowSaveWarning("Bạn chưa có quyền tạo hồ sơ công ty. Vui lòng chọn dự án mà bạn làm PM.");
+                ShowSaveWarning("Bạn chưa có quyền tạo hồ sơ chung. Vui lòng chọn dự án mà bạn làm PM.");
                 return;
             }
 
@@ -1264,7 +1298,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
             try
             {
-                TblTaiLieu savedItem = selectedProjectId.HasValue
+                TblTaiLieu savedItem;
+                using (var transaction = new System.Transactions.TransactionScope())
+                {
+                savedItem = selectedProjectId.HasValue
                     ? DocumentManager.Instance.SaveProjectDocument(
                         selectedProjectId.Value,
                         idTaiLieu,
@@ -1273,10 +1310,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         txtMaTaiLieu.Text,
                         txtTenTaiLieu.Text,
                         txtMoTa.Text,
-                        chkCanTrinhKy.Checked,
-                        ddlHinhThucKy.SelectedValue,
-                        chkCanGuiKhachHang.Checked,
-                        chkCanLuuVatLy.Checked, DecodeDocumentContent())
+                        true,
+                        DocumentSigningMethodKeys.Paper,
+                        true,
+                        true, DecodeDocumentContent())
                     : DocumentManager.Instance.SaveCompanyDocument(
                         idTaiLieu,
                         idLoaiTaiLieu,
@@ -1284,10 +1321,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                         txtMaTaiLieu.Text,
                         txtTenTaiLieu.Text,
                         txtMoTa.Text,
-                        chkCanTrinhKy.Checked,
-                        ddlHinhThucKy.SelectedValue,
-                        chkCanGuiKhachHang.Checked,
-                        chkCanLuuVatLy.Checked, DecodeDocumentContent());
+                        true,
+                        DocumentSigningMethodKeys.Paper,
+                        true,
+                        true, DecodeDocumentContent());
+                if (isNew || ddlDocumentStorage.Enabled)
+                    DocumentManager.Instance.SaveStorageLocation(savedItem.IdTaiLieu,
+                        string.IsNullOrWhiteSpace(ddlDocumentStorage.SelectedValue) ? (Guid?)null : Guid.Parse(ddlDocumentStorage.SelectedValue), isNew);
+                transaction.Complete();
+                }
 
                 if (isNew)
                 {

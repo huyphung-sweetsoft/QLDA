@@ -248,6 +248,9 @@
     <Compile Include="fCustomers\KhachHangList.aspx.designer.cs">
       <DependentUpon>KhachHangList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fDocuments\Controls\CtrlDocumentDetail.Workspace.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="fDocuments\Controls\CtrlDocumentDetail.ascx.cs">
       <DependentUpon>CtrlDocumentDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

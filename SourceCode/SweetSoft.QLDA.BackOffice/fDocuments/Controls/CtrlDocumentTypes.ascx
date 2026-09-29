@@ -124,7 +124,7 @@
 
                                         <asp:BoundField
                                             DataField="TenLoai"
-                                            HeaderText="Tên loại tài liệu"
+                                            HeaderText="Tên loại hồ sơ"
                                             SortExpression="TenLoai" />
 
                                         <asp:BoundField
@@ -132,7 +132,10 @@
                                             HeaderText="Nhóm tài liệu"
                                             SortExpression="TenNhom" />
 
-                                        <asp:TemplateField
+                                        <asp:TemplateField HeaderText="Phạm vi">
+                                            <ItemTemplate><%#: Convert.ToString(Eval("PhamViHoSo")) == "DU_AN" ? "Hồ sơ dự án" : "Hồ sơ chung" %></ItemTemplate>
+                                        </asp:TemplateField>
+                                        <asp:TemplateField Visible="false"
                                             HeaderText="Trình ký"
                                             SortExpression="CanTrinhKy">
                                             <ItemTemplate>
@@ -141,7 +144,7 @@
                                         </asp:TemplateField>
 
                                         <asp:TemplateField
-                                            HeaderText="Gửi khách"
+                                            Visible="false" HeaderText="Gửi khách"
                                             SortExpression="CanGuiKhachHang"
                                             ItemStyle-CssClass="text-center">
                                             <ItemTemplate>
@@ -150,7 +153,7 @@
                                         </asp:TemplateField>
 
                                         <asp:TemplateField
-                                            HeaderText="Lưu bản cứng"
+                                            Visible="false" HeaderText="Lưu bản cứng"
                                             SortExpression="CanLuuVatLy"
                                             ItemStyle-CssClass="text-center">
                                             <ItemTemplate>
@@ -244,6 +247,13 @@
                     ID="hdfIdLoaiTaiLieu" />
 
                 <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label label-valid">Phạm vi áp dụng</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTypeScope" SimpleInit="true">
+                            <asp:ListItem Value="DU_AN" Text="Hồ sơ dự án" />
+                            <asp:ListItem Value="CHUNG" Text="Hồ sơ chung" />
+                        </SweetSoft:ExtraDropdown>
+                    </div>
                     <div class="col-md-6 mb-3" runat="server" visible="false">
                         <label class="form-label label-valid">
                             <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %>
@@ -319,7 +329,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-3" runat="server" visible="false">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.ALLOW_SIGNING) %>
                         </label>
@@ -336,7 +346,7 @@
 
                     <div
                         runat="server"
-                        id="divHinhThucKy"
+                        id="divHinhThucKy" visible="false"
                         class="col-md-3 mb-3">
 
                         <label class="form-label">
@@ -350,7 +360,7 @@
                         </SweetSoft:ExtraDropdown>
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-3" runat="server" visible="false">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER) %>
                         </label>
@@ -364,7 +374,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-3 mb-3" runat="server" visible="false">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE) %>
                         </label>
@@ -473,7 +483,7 @@
                                         runat="server"
                                         ID="txtSearchTenLoai"
                                         SearchColumn="TenLoai"
-                                        PlaceHolder="Nhập tên loại tài liệu">
+                                        PlaceHolder="Nhập tên loại hồ sơ">
                                     </SweetSoft:ExtraTextBox>
                                 </div>
 
@@ -579,4 +589,3 @@
                 toggleDocumentSigningMethod);
         }
     </script>
-

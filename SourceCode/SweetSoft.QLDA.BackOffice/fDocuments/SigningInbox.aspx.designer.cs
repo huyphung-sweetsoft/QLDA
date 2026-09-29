@@ -11,6 +11,17 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         protected global::System.Web.UI.UpdatePanel upAssignedFiles;
         protected global::System.Web.UI.WebControls.HiddenField hdfAppliedKeyword;
         protected global::System.Web.UI.WebControls.HiddenField hdfAppliedStatus;
+        protected global::System.Web.UI.WebControls.HiddenField hdfAppliedProject;
+        protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlProject;
+        protected global::System.Web.UI.WebControls.Panel pnlDocumentList;
+        protected global::System.Web.UI.WebControls.Panel pnlDetail;
+        protected global::System.Web.UI.WebControls.Panel pnlDetailHeader;
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::SweetSoft.QLDA.Controls.GridviewExtension grvDocumentList;
+        protected global::System.Web.UI.WebControls.Label lblDetailTitle;
+        protected global::System.Web.UI.WebControls.Label lblDetailScope;
+        protected global::System.Web.UI.WebControls.HyperLink lnkBackToInbox;
+        protected global::System.Web.UI.WebControls.HyperLink lnkOriginalDocument;
         protected global::System.Web.UI.WebControls.HiddenField hdfPageIndex;
         protected global::System.Web.UI.WebControls.HiddenField hdfPageSize;
         protected global::System.Web.UI.WebControls.Panel pnlEmpty;
@@ -21,9 +32,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         protected global::SweetSoft.QLDA.Controls.BootstrapDropdown ddlSigningStatus;
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnResetFilters;
         protected global::System.Web.UI.WebControls.Panel pnlNoMatches;
-        protected global::System.Web.UI.WebControls.Label lblPendingCount;
-        protected global::System.Web.UI.WebControls.Label lblSignedCount;
-        protected global::System.Web.UI.WebControls.Label lblChangesCount;
         protected global::System.Web.UI.WebControls.Repeater rptAssignedDocuments;
         protected global::System.Web.UI.WebControls.Panel pnlPagination;
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;

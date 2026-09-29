@@ -27,6 +27,15 @@
         padding: .4rem 0 1rem;
     }
 
+    .document-detail__actions {
+        align-items: center;
+        display: flex;
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        gap: .5rem;
+        justify-content: flex-end;
+    }
+
     .document-detail__identity {
         align-items: flex-start;
         display: flex;
@@ -217,8 +226,13 @@
         }
 
         .document-detail__header .btn {
+            margin-top: 0;
+            width: auto;
+        }
+
+        .document-detail__actions {
+            justify-content: flex-start;
             margin-top: 1rem;
-            width: 100%;
         }
     }
 
@@ -269,13 +283,9 @@
     ID="upDetail"
     UpdateMode="Conditional"
     ChildrenAsTriggers="false">
-    <ContentTemplate>
+<ContentTemplate>
 <div class="document-detail">
     <asp:HiddenField runat="server" ID="hdfIdTaiLieu" />
-    <div class="d-flex justify-content-end mb-2">
-        <asp:Button runat="server" ID="btnDocumentPermissions" Text="Cấp quyền" Visible="false"
-            CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="btnDocumentPermissions_Click" />
-    </div>
 
     <div class="document-detail__header">
         <div class="document-detail__identity">
@@ -295,21 +305,25 @@
                         <%= GetResourceText(BackEndResourceKeys.DOCUMENT_CODE) %>:
                         <asp:Label runat="server" ID="lblDocumentCode" />
                     </span>
-                    <asp:Label runat="server" ID="lblDocumentStatus" />
+                    <asp:Label runat="server" ID="lblDocumentStatus" Visible="false" />
                 </div>
             </div>
         </div>
 
-        <SweetSoft:ExtraButton
-            runat="server"
-            ID="btnBack"
-            NavigateUrl="/Documents"
-            CssClass="btn-outline-secondary waves-effect"
-            ButtonIcon="Reply"
-            IsSubmit="false" />
+        <div class="document-detail__actions">
+            <asp:Button runat="server" ID="btnDocumentPermissions" Text="Cấp quyền" Visible="false"
+                CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="btnDocumentPermissions_Click" />
+            <SweetSoft:ExtraButton
+                runat="server"
+                ID="btnBack"
+                NavigateUrl="/Documents"
+                CssClass="btn-outline-secondary waves-effect"
+                ButtonIcon="Reply"
+                IsSubmit="false" />
+        </div>
     </div>
 
-    <div class="row g-3">
+    <div class="row g-3" runat="server" visible="false">
         <div class="col-xl-6">
             <div class="document-detail__hero-card">
                 <span class="document-detail__summary-label">
@@ -384,10 +398,9 @@
         </div>
     </div>
 
+            <details class="mb-3">
+                <summary class="text-primary py-2">Thông tin hồ sơ và nơi lưu trữ</summary>
             <div class="document-detail__section">
-                <div class="document-detail__section-title">
-                    <%= GetResourceText(BackEndResourceKeys.BASIC_INFORMATION) %>
-                </div>
                 <div class="row g-0 gx-lg-4">
                     <div class="col-lg-4 col-md-6" runat="server" visible="false">
                         <div class="document-detail__field">
@@ -425,6 +438,12 @@
                             <asp:Label runat="server" ID="lblUpdatedDate" CssClass="document-detail__field-value" />
                         </div>
                     </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="document-detail__field">
+                            <span class="document-detail__field-label">Nơi lưu trữ</span>
+                            <asp:Label runat="server" ID="lblWorkspaceStorage" CssClass="document-detail__field-value" />
+                        </div>
+                    </div>
                     <div class="col-12" runat="server" visible="false">
                         <div class="document-detail__field border-0">
                             <span class="document-detail__field-label"><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></span>
@@ -433,11 +452,71 @@
                     </div>
                 </div>
             </div>
-    <div class="document-detail__section mb-3">
+    <div class="document-detail__section mb-3" runat="server" ID="pnlWorkspaceContent">
         <div class="document-detail__section-title">Nội dung hồ sơ</div>
         <div class="document-content-view"><asp:Literal runat="server" ID="litDocumentContent" /></div>
     </div>
-    <ul class="nav nav-pills document-detail__tabs" role="tablist">
+
+    </details>
+    <div class="document-detail__section">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <span class="document-detail__section-title mb-0">Các file hồ sơ</span>
+            <div class="d-flex flex-wrap gap-2">
+                <asp:Button runat="server" ID="btnWorkspaceAdd" Text="Thêm file" CssClass="btn btn-info" CausesValidation="false" OnClick="btnWorkspaceAdd_Click" />
+                <asp:Button runat="server" ID="btnWorkspaceSign" Text="Trình ký" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnOpenSubmitSigning_Click" />
+                <asp:Button runat="server" ID="btnWorkspaceSend" Text="Gửi khách" CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="btnOpenCustomerDelivery_Click" />
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#workspaceHistories">Lịch sử thao tác</button>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <div style="width:220px;max-width:100%">
+            <SweetSoft:ExtraDropdown runat="server" ID="ddlWorkspaceStatus" PlaceHolder="Tất cả trạng thái" SimpleInit="true" AutoPostBack="true" OnSelectedIndexChanged="WorkspaceFilterChanged">
+                <asp:ListItem Value="" Text="Tất cả trạng thái" />
+                <asp:ListItem Value="CHUA_TRINH" Text="Chưa trình ký" />
+                <asp:ListItem Value="DANG_TRINH" Text="Chờ ký" />
+                <asp:ListItem Value="YEU_CAU_DIEU_CHINH" Text="Yêu cầu chỉnh sửa" />
+                <asp:ListItem Value="DA_KY" Text="Đã ký" />
+                <asp:ListItem Value="THU_HOI" Text="Đã thu hồi yêu cầu" />
+            </SweetSoft:ExtraDropdown>
+            </div>
+            <div class="input-group" style="max-width:420px">
+                <asp:TextBox runat="server" ID="txtWorkspaceSearch" CssClass="form-control" placeholder="Tìm tên file..." />
+                <asp:Button runat="server" ID="btnWorkspaceFilter" Text="Tìm kiếm" CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="WorkspaceFilterChanged" />
+            </div>
+        </div>
+        <asp:GridView runat="server" ID="grdWorkspace" AutoGenerateColumns="false" DataKeyNames="IdFile,IdChuoiFile"
+            GridLines="None" CssClass="table table-bordered table-hover w-100" AllowPaging="true" PageSize="10"
+            OnPageIndexChanging="grdWorkspace_PageIndexChanging" OnRowCommand="grdWorkspace_RowCommand"
+            EmptyDataText="Chưa có file phù hợp." ShowHeaderWhenEmpty="true" PagerStyle-CssClass="text-center">
+            <Columns>
+                <asp:TemplateField HeaderStyle-Width="40px">
+                    <HeaderTemplate><input type="checkbox" aria-label="Chọn các file trên trang" onclick="var selected=this.checked;this.closest('table').querySelectorAll('tbody input[type=checkbox]').forEach(function(c){if(!c.disabled)c.checked=selected;});" /></HeaderTemplate>
+                    <ItemTemplate><asp:CheckBox runat="server" ID="chkWorkspaceFile" data-workspace-select="true" /></ItemTemplate>
+                </asp:TemplateField>
+                <asp:TemplateField HeaderText="Tên file">
+                    <ItemTemplate>
+                        <asp:LinkButton runat="server" CommandName="FILE_DETAIL" CommandArgument='<%# Eval("IdFile") %>'
+                            Text='<%#: Eval("TenFile") %>' CausesValidation="false" CssClass="text-primary"
+                            style="overflow-wrap:anywhere" />
+                        <small class="text-muted d-block"><%#: FormatFileSize(Eval("FileSize")) %></small>
+                        <asp:HyperLink runat="server" Text="Bản đã ký" Target="_blank" CssClass="text-success d-inline-block mt-1"
+                            NavigateUrl='<%# GetFileUrl(Eval("SignedFileUrl")) %>' Visible='<%# HasValue(Eval("SignedFileUrl")) %>' />
+                    </ItemTemplate>
+                </asp:TemplateField>
+                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản" HeaderStyle-Width="95px" ItemStyle-CssClass="text-center" />
+                <asp:TemplateField HeaderText="Trạng thái ký" HeaderStyle-Width="170px">
+                    <ItemTemplate><span class='<%# GetSigningStatusCss(Eval("TrangThai")) %>'><%#: WorkspaceStatusText(Eval("TrangThai")) %></span></ItemTemplate>
+                </asp:TemplateField>
+                <asp:TemplateField HeaderText="Cập nhật" HeaderStyle-Width="170px"><ItemTemplate><%#: FormatDate(Eval("NgayCapNhat")) %></ItemTemplate></asp:TemplateField>
+                <asp:TemplateField HeaderText="Thao tác" HeaderStyle-Width="90px" ItemStyle-CssClass="text-center">
+                    <ItemTemplate><asp:LinkButton runat="server" CommandName="FILE_DETAIL" CommandArgument='<%# Eval("IdFile") %>' CausesValidation="false" CssClass="btn btn-sm btn-outline-primary" ToolTip="Chi tiết và lịch sử"><i class="fas fa-eye"></i></asp:LinkButton></ItemTemplate>
+                </asp:TemplateField>
+            </Columns>
+        </asp:GridView>
+        <asp:Label runat="server" ID="lblWorkspaceCount" CssClass="text-muted small" />
+    </div>
+
+    <ul class="nav nav-pills document-detail__tabs d-none" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" data-bs-toggle="tab"
                 data-bs-target="#document-versions" type="button" role="tab">
@@ -483,10 +562,10 @@
         </li>
     </ul>
 
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="document-versions" role="tabpanel">
+    <div class="collapse" id="workspaceHistories">
+        <div class="mb-3" id="document-versions" role="tabpanel">
             <div class="document-detail__section">
-                <div class="document-detail__section-title">Các file hồ sơ</div>
+                <div class="document-detail__section-title">Lịch sử thay đổi bộ file</div>
                 <asp:Panel
                     runat="server"
                     ID="pnlVersionUploader"
@@ -522,7 +601,7 @@
                                     <div class="document-file-history__head">
                                         <div>
                                             <div class="document-file-history__version">
-                                                Mốc v<%#: Eval("SoPhienBan") %>
+                                                <%#: FormatDate(Eval("NgayTao")) %>
                                                 <asp:Label runat="server"
                                                     Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
                                                     Text="Hiện tại"
@@ -545,7 +624,7 @@
                                                 Visible='<%# CanRestoreVersion(Eval("LaPhienBanHienTai")) %>'
                                                 CommandName="RESTORE_VERSION"
                                                 CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
-                                                Text="Khôi phục mốc này"
+                                                Text="Khôi phục bản này"
                                                 CausesValidation="false"
                                                 CssClass="btn btn-sm btn-outline-warning" />
                                             <asp:LinkButton runat="server"
@@ -580,7 +659,7 @@
         </div>
 
         <asp:PlaceHolder runat="server" ID="phSigningPane">
-            <div class="tab-pane fade" id="document-signing" role="tabpanel">
+            <div class="mb-3" id="document-signing" role="tabpanel">
                 <div class="document-detail__section">
                     <div class="document-detail__section-title d-flex flex-wrap align-items-center justify-content-between gap-2">
                         <span><%= GetResourceText(BackEndResourceKeys.SIGNING_HISTORY) %></span>
@@ -663,7 +742,7 @@
         </asp:PlaceHolder>
 
         <asp:PlaceHolder runat="server" ID="phCustomerPane">
-            <div class="tab-pane fade" id="document-customer" role="tabpanel">
+            <div class="mb-3" id="document-customer" role="tabpanel">
                 <div class="document-detail__section">
                     <div class="document-detail__section-title d-flex flex-wrap align-items-center justify-content-between gap-2">
                         <span><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_HISTORY) %></span>
@@ -698,7 +777,7 @@
                                 runat="server"
                                 ID="rptCustomer"
                                 OnItemCommand="rptCustomer_ItemCommand"><ItemTemplate><tr>
-                                <td>v<%#: Eval("SoPhienBan") %></td>
+                                <td>v<%#: Eval("SoPhienBan") %><div class="small text-muted text-break"><%#: WorkspaceDeliveryFilesText(Eval("DanhSachFileGuiJson")) %></div></td>
                                 <td><%#: GetValueText(Eval("TenKhachHang")) %></td>
                                 <td><%#: GetRecipientText(Eval("TenNguoiNhan"), Eval("EmailNguoiNhan")) %></td>
                                 <td><%#: GetCustomerDeliveryChannelText(Eval("KenhGui")) %></td>
@@ -728,7 +807,7 @@
         </asp:PlaceHolder>
 
         <asp:PlaceHolder runat="server" ID="phStoragePane">
-            <div class="tab-pane fade" id="document-storage" role="tabpanel">
+            <div class="mb-3" id="document-storage" role="tabpanel">
                 <div class="document-detail__section">
                     <div class="document-detail__section-title d-flex flex-wrap align-items-center justify-content-between gap-2">
                         <span><%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_HISTORY) %></span>
@@ -775,7 +854,7 @@
             </div>
         </asp:PlaceHolder>
 
-        <div class="tab-pane fade" id="document-activity" role="tabpanel">
+        <div class="mb-3" id="document-activity" role="tabpanel">
             <div class="document-detail__section">
                 <div class="document-detail__section-title"><%= GetResourceText(BackEndResourceKeys.DOCUMENT_ACTIVITY_HISTORY) %></div>
                 <asp:Panel runat="server" ID="pnlNoActivity" CssClass="document-detail__empty">
@@ -818,8 +897,8 @@
         <asp:Panel runat="server" ID="pnlSubmitSigningForm" CssClass="validationEngineContainer">
             <asp:HiddenField runat="server" ID="hdfSubmitSigningDocumentId" />
             <asp:HiddenField runat="server" ID="hdfSubmitSigningSigner" />
-            <div class="alert alert-light border py-2">
-                <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.SIGNING_VERSION) %></div>
+            <div class="border rounded p-2 mb-3">
+                <div class="small text-muted">File trình ký</div>
                 <asp:Label runat="server" ID="lblSubmitSigningVersion" CssClass="fw-semibold" />
                 <span class="mx-1">·</span>
                 <asp:Label runat="server" ID="lblSubmitSigningMethod" CssClass="fw-semibold" />
@@ -973,13 +1052,13 @@
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantUpdateInfo"
                                         Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxUpdateInfo")) &amp;&amp; !Convert.ToBoolean(Eval("IsResponsibleDefault")) %>'
                                         Checked='<%# Convert.ToBoolean(Eval("CanUpdateInfo")) &amp;&amp; Convert.ToBoolean(Eval("MaxUpdateInfo")) %>' Text="Thông tin chung" /></div>
-                                    <small>Sửa tên, mã, loại và nội dung hồ sơ</small>
+                                    <small>Sửa tên, mã, loại, nội dung và nơi lưu trữ hồ sơ</small>
                                 </div>
                                 <div class="document-permission-item">
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantManageFiles"
                                         Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxManageFiles")) %>'
                                         Checked='<%# Convert.ToBoolean(Eval("CanManageFiles")) &amp;&amp; Convert.ToBoolean(Eval("MaxManageFiles")) %>' Text="Quản lý file" /></div>
-                                    <small>Thêm, thay, gỡ file và khôi phục mốc</small>
+                                    <small>Thêm, thay, gỡ file và khôi phục bản trước</small>
                                 </div>
                                 <div class="document-permission-item">
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantSigning"
@@ -993,7 +1072,7 @@
                                         Checked='<%# Convert.ToBoolean(Eval("CanCustomerDelivery")) &amp;&amp; Convert.ToBoolean(Eval("MaxCustomerDelivery")) %>' Text="Gửi khách hàng" /></div>
                                     <small>Gửi hồ sơ và cập nhật phản hồi</small>
                                 </div>
-                                <div class="document-permission-item">
+                                <div class="document-permission-item" runat="server" visible="false">
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantPhysicalStorage"
                                         Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxPhysicalStorage")) %>'
                                         Checked='<%# Convert.ToBoolean(Eval("CanPhysicalStorage")) &amp;&amp; Convert.ToBoolean(Eval("MaxPhysicalStorage")) %>' Text="Lưu bản cứng" /></div>
@@ -1020,7 +1099,7 @@
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 
-<SweetSoft:ExtraModal runat="server" ID="mdlVersionFiles" Title="Các file trong mốc lịch sử" Size="Large"
+<SweetSoft:ExtraModal runat="server" ID="mdlVersionFiles" Title="File tại thời điểm thay đổi" Size="Large"
     Position="modal-dialog-scrollable" FooterButtonClose="true"
     EnsureChildControlsOnPostback="true">
     <ContentTemplate>
@@ -1054,7 +1133,7 @@
         </asp:Panel>
         <asp:Panel runat="server" ID="pnlNoVersionFiles" CssClass="document-detail__empty">
             <i class="fas fa-file-circle-xmark"></i>
-            Mốc lịch sử này không có file.
+            Không có file tại thời điểm này.
         </asp:Panel>
     </ContentTemplate>
 </SweetSoft:ExtraModal>
@@ -1078,16 +1157,17 @@
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryCustomer" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryChannel" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliverySubmissionToken" />
-            <div class="alert alert-light border py-2 small">
+            <div class="border rounded p-2 mb-3 small">
                 <i class="fas fa-info-circle me-1"></i>
                 <%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_RECORD_NOTICE) %>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_VERSION) %></label>
+                    <label class="form-label">File chuẩn bị gửi</label>
+                    <asp:Literal runat="server" ID="litWorkspaceDeliveryFiles" />
                     <SweetSoft:ExtraDropdown
                         runat="server"
-                        ID="ddlCustomerDeliveryVersion"
+                        ID="ddlCustomerDeliveryVersion" style="display:none"
                         ValueIsOfTypeGUID="true"
                         SimpleInit="true" />
                 </div>
@@ -1188,7 +1268,7 @@
         <asp:Panel runat="server" ID="pnlPhysicalStorageForm" CssClass="validationEngineContainer">
             <asp:HiddenField runat="server" ID="hdfPhysicalStorageDocumentId" />
             <asp:HiddenField runat="server" ID="hdfPhysicalStorageLocation" />
-            <div class="alert alert-light border py-2 small">
+            <div class="border rounded p-2 mb-3 small">
                 <i class="fas fa-info-circle me-1"></i>
                 <%= GetResourceText(BackEndResourceKeys.PHYSICAL_STORAGE_CODE_NOTICE) %>
             </div>
@@ -1289,7 +1369,7 @@
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatusDocumentId" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatusId" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatus" />
-            <div class="alert alert-light border py-2">
+            <div class="border rounded p-2 mb-3">
                 <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_VERSION) %></div>
                 <asp:Label runat="server" ID="lblCustomerDeliveryStatusVersion" CssClass="fw-semibold" />
                 <span class="mx-1">·</span>
@@ -1421,5 +1501,67 @@
                 UseSubmitBehavior="true"
                 CssClass="btn btn-outline-secondary btn-sm waves-effect waves-light" />
         </div>
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+
+<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceFile" Title="Chi tiết file" Size="Large"
+    Position="modal-dialog-centered modal-dialog-scrollable" EnsureChildControlsOnPostback="true">
+    <ContentTemplate>
+        <asp:Label runat="server" ID="lblWorkspaceFileName" CssClass="fw-semibold d-block mb-2" />
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <asp:HyperLink runat="server" ID="lnkWorkspaceView" Text="Xem / tải bản hiện tại" Target="_blank" CssClass="btn btn-outline-primary" />
+            <asp:HyperLink runat="server" ID="lnkWorkspaceSigned" Text="Xem / tải bản đã ký" Target="_blank" CssClass="btn btn-outline-success" />
+            <asp:Button runat="server" ID="btnWorkspaceReplace" Text="Tải bản mới" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnWorkspaceReplace_Click" />
+            <asp:Button runat="server" ID="btnWorkspaceRemove" Text="Gỡ file" CssClass="btn btn-outline-danger" CausesValidation="false" UseSubmitBehavior="false" OnClick="btnWorkspaceRemove_Click" />
+        </div>
+        <asp:Label runat="server" ID="lblWorkspaceLocked" Text="File đã ký được khóa để giữ nguyên nội dung và lịch sử." CssClass="border border-success rounded text-success p-3 mb-3 d-block" />
+        <asp:CheckBox runat="server" ID="chkWorkspaceRecall" Text="Thu hồi yêu cầu ký đang chờ của file này khi thay đổi hoặc khôi phục." CssClass="d-block mb-3" />
+        <asp:Panel runat="server" ID="pnlWorkspaceConfirm" Visible="false" CssClass="border border-warning rounded p-3 mb-3">
+            <asp:Label runat="server" ID="lblWorkspaceConfirm" CssClass="d-block mb-2" />
+            <asp:LinkButton runat="server" ID="btnWorkspaceConfirm" Text="Xác nhận" CssClass="btn btn-warning btn-sm" CausesValidation="false" OnClick="btnWorkspaceConfirm_Click" />
+            <asp:LinkButton runat="server" ID="btnWorkspaceCancelConfirm" Text="Hủy" CssClass="btn btn-outline-secondary btn-sm" CausesValidation="false" OnClick="btnWorkspaceCancelConfirm_Click" />
+        </asp:Panel>
+        <h6>Lịch sử phiên bản</h6>
+        <asp:GridView runat="server" ID="grdFileTimeline" AutoGenerateColumns="false" GridLines="None"
+            CssClass="table table-bordered table-hover" OnRowCommand="grdFileTimeline_RowCommand">
+            <Columns>
+                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản" />
+                <asp:BoundField DataField="HanhDong" HeaderText="Thao tác" />
+                <asp:BoundField DataField="NguoiThucHien" HeaderText="Người thực hiện" />
+                <asp:TemplateField HeaderText="Thời gian"><ItemTemplate><%#: FormatDate(Eval("NgayTao")) %></ItemTemplate></asp:TemplateField>
+                <asp:TemplateField HeaderText="File">
+                    <ItemTemplate>
+                        <asp:HyperLink runat="server" NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>' Text="Xem / tải" Target="_blank" CssClass="btn btn-sm btn-outline-primary" Visible='<%# HasValue(Eval("FileUrl")) %>' />
+                        <asp:LinkButton runat="server" Text="Khôi phục" CommandName="RESTORE_FILE" CommandArgument='<%# Eval("IdFile") %>'
+                            CausesValidation="false" CssClass="btn btn-sm btn-outline-warning"
+                            Visible='<%# WorkspaceCanRestore(Eval("IdFile")) %>' />
+                    </ItemTemplate>
+                </asp:TemplateField>
+            </Columns>
+        </asp:GridView>
+        <asp:Panel runat="server" ID="pnlWorkspaceSigningHistory" Visible="false" CssClass="mt-3">
+            <h6>Thông tin trình ký của file</h6>
+            <asp:Repeater runat="server" ID="rptWorkspaceSigningHistory"><ItemTemplate>
+                <div class="border-top py-2">
+                    <span class='<%# GetSigningStatusCss(Eval("TrangThaiTrinhKy")) %>'><%#: WorkspaceStatusText(Eval("TrangThaiTrinhKy")) %></span>
+                    <span class="ms-2"><%#: GetValueText(Eval("TenNguoiKyHienThi")) %></span>
+                    <div class="small text-muted">Gửi lúc <%#: FormatDate(Eval("NgayGui")) %> · Xử lý lúc <%#: FormatDate(Eval("NgayNhanLai")) %></div>
+                    <div class="small text-break"><%#: GetValueText(Eval("GhiChu")) %></div>
+                    <asp:HyperLink runat="server" Text="Xem bản đã ký" Target="_blank" CssClass="text-success"
+                        NavigateUrl='<%# GetFileUrl(Eval("FileSauKyUrl")) %>' Visible='<%# HasValue(Eval("FileSauKyUrl")) %>' />
+                </div>
+            </ItemTemplate></asp:Repeater>
+        </asp:Panel>
+    </ContentTemplate>
+</SweetSoft:ExtraModal>
+<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceUpload" Title="Tải file" Size="Normal"
+    EnsureChildControlsOnPostback="true" FooterButtonClose="true">
+    <ContentTemplate>
+        <label class="form-label">Chọn file</label>
+        <asp:FileUpload runat="server" ID="fuWorkspaceFiles" AllowMultiple="true" CssClass="form-control" />
+        <asp:Label runat="server" ID="lblWorkspaceUploadHint" CssClass="text-muted small d-block mt-2" />
+    </ContentTemplate>
+    <FooterTemplate>
+        <asp:Button runat="server" ID="btnWorkspaceUpload" Text="Tải lên và lưu" CssClass="btn btn-primary" CausesValidation="false" UseSubmitBehavior="false" OnClientClick="CMSMasterJs.DisableContentChanged();" OnClick="btnWorkspaceUpload_Click" />
     </FooterTemplate>
 </SweetSoft:ExtraModal>

@@ -51,6 +51,14 @@
     .duration-suffix { display: none; margin-left: 7px; color: #4b5563; font-size: 14px !important; font-weight: 750 !important; white-space: nowrap; align-self: center; }
     .smart-field:has(input[readonly]) .duration-suffix,
     .smart-field:has(input:disabled) .duration-suffix { display: inline-block; }
+
+    /* Đồng bộ chiều cao 3 ô ngày bắt đầu / thời hạn / ngày kết thúc */
+    .task-edit-date-row { align-items: stretch !important; }
+    .task-edit-date-row > [class*="col-"] { display: flex; align-items: stretch; }
+    .task-edit-date-row > [class*="col-"] > .smart-field,
+    .task-edit-date-row > [class*="col-"] > .end-date-locked { width: 100%; height: 100%; }
+    .task-edit-date-row .smart-field { min-height: 78px; }
+
     .end-date-locked { min-height: 78px; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 10px 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #22c55e; border-radius: 9px; box-shadow: 0 1px 2px rgba(22, 101, 52, 0.04); }
     .end-date-locked > label { display: flex; align-items: center; margin-bottom: 4px; color: #15803d; font-size: 10.5px; font-weight: 800; letter-spacing: .45px; text-transform: uppercase; }
     .end-date-locked > label i { color: #16a34a !important; }
@@ -59,52 +67,52 @@
     .task-context-breadcrumb { display: flex; align-items: center; gap: 8px; margin-top: 11px; padding-top: 10px; border-top: 1px dashed #d1d5db; color: #4b5563; font-size: 13px; font-weight: 500; }
     .task-context-breadcrumb i { color: #7c3aed; font-size: 13px; }
     .badge-code { min-width: 38px; display: inline-flex; justify-content: center; align-items: center; padding: 5px 10px; background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 7px; color: #5b21b6; font-size: 15px; font-weight: 800; line-height: 1.2; }
-    
+
     /* ===================================================================
        HEADER DROPDOWN - MÀU SẮC ĐỘNG VÀ CĂN CHỈNH
        =================================================================== */
     .header-dropdown-box { min-height: 38px; display: flex; align-items: center; padding: 0 10px 0 12px; border: 1px solid #d1d5db; border-radius: 8px; transition: border-color .18s ease, box-shadow .18s ease; }
     .header-dropdown-box:hover { border-color: #a78bfa; }
-    .header-dropdown-label { 
-        margin-right: 6px; 
-        color: #6b7280; 
-        font-size: 10.5px; 
-        font-weight: 800; 
-        letter-spacing: .35px; 
-        text-transform: uppercase; 
-        white-space: nowrap !important; 
-        flex-shrink: 0 !important; 
+    .header-dropdown-label {
+        margin-right: 6px;
+        color: #6b7280;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .35px;
+        text-transform: uppercase;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
     }
-    
-    .header-select { 
+
+    .header-select {
         width: auto !important;
         min-width: max-content !important;
-        height: 30px !important; 
-        margin: 0 !important; 
-        padding: 0 19px 0 0 !important; 
-        border: none !important; 
-        background-color: transparent !important; 
-        box-shadow: none !important; 
-        color: #1f2937 !important; 
-        font-size: 13px !important; 
-        font-weight: 750 !important; 
-        outline: none !important; 
-        cursor: pointer; 
+        height: 30px !important;
+        margin: 0 !important;
+        padding: 0 19px 0 0 !important;
+        border: none !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        color: #1f2937 !important;
+        font-size: 13px !important;
+        font-weight: 750 !important;
+        outline: none !important;
+        cursor: pointer;
     }
     .header-select:focus { border: none !important; outline: none !important; box-shadow: none !important; }
-    .header-select:disabled { 
-        padding-right: 0 !important; 
+    .header-select:disabled {
+        padding-right: 0 !important;
         background-color: transparent !important;
-        background-image: none !important; 
-        appearance: none !important; 
-        -webkit-appearance: none !important; 
+        background-image: none !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
         -moz-appearance: none !important;
-        opacity: 1 !important; 
-        cursor: default !important; 
+        opacity: 1 !important;
+        cursor: default !important;
         -webkit-text-fill-color: inherit !important;
     }
     .header-dropdown-box:has(select:disabled) { cursor: default; }
-    
+
     /* LÀM ĐẸP DANH SÁCH DROPDOWN BÊN TRONG */
     .header-select option {
         padding: 8px 12px !important;
@@ -112,7 +120,7 @@
         color: #1e293b;
         font-weight: 600;
         font-size: 14px;
-        text-indent: 5px; 
+        text-indent: 5px;
     }
 
     /* MÀU ĐỘNG ƯU TIÊN */
@@ -120,17 +128,14 @@
     .priority-default .label-priority { color: #64748b; }
     .priority-default .header-select { color: #334155 !important; }
     .priority-default:focus-within { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(100, 116, 139, .08); }
-
     .priority-low { background: #f0f9ff; border-color: #bae6fd; }
     .priority-low .label-priority { color: #0284c7; }
     .priority-low .header-select { color: #0369a1 !important; }
     .priority-low:focus-within { border-color: #7dd3fc; box-shadow: 0 0 0 3px rgba(2, 132, 199, .08); }
-
     .priority-med { background: #fffbeb; border-color: #fde68a; }
     .priority-med .label-priority { color: #d97706; }
     .priority-med .header-select { color: #b45309 !important; }
     .priority-med:focus-within { border-color: #fcd34d; box-shadow: 0 0 0 3px rgba(217, 119, 6, .08); }
-
     .priority-high { background: #fef2f2; border-color: #fecaca; }
     .priority-high .label-priority { color: #dc2626; }
     .priority-high .header-select { color: #b91c1c !important; }
@@ -141,27 +146,22 @@
     .status-box-0 .label-status { color: #64748b; }
     .status-box-0 .header-select { color: #334155 !important; }
     .status-box-0:focus-within { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(100, 116, 139, .08); }
-
     .status-box-1 { background: #eff6ff; border-color: #bfdbfe; }
     .status-box-1 .label-status { color: #2563eb; }
     .status-box-1 .header-select { color: #1d4ed8 !important; }
     .status-box-1:focus-within { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(37, 99, 235, .08); }
-
     .status-box-2 { background: #f0fdf4; border-color: #bbf7d0; }
     .status-box-2 .label-status { color: #16a34a; }
     .status-box-2 .header-select { color: #15803d !important; }
     .status-box-2:focus-within { border-color: #4ade80; box-shadow: 0 0 0 3px rgba(22, 163, 74, .08); }
-
     .status-box-3 { background: #fef2f2; border-color: #fecaca; }
     .status-box-3 .label-status { color: #dc2626; }
     .status-box-3 .header-select { color: #b91c1c !important; }
     .status-box-3:focus-within { border-color: #f87171; box-shadow: 0 0 0 3px rgba(220, 38, 38, .08); }
-
     #divRollUpNotice .badge { display: inline-flex; align-items: center; padding: 6px 9px !important; background: #fff7ed !important; border: 1px solid #fed7aa; border-radius: 7px; color: #9a3412 !important; font-size: 11px !important; font-weight: 700; }
     #divRollUpNotice .badge i { color: #ea580c !important; }
-
     @media (min-width: 768px) { #<%= mdlEditTask.ClientID %> .modal-dialog { width: 92% !important; max-width: 760px !important; } }
-    @media (max-width: 767.98px) { .task-context-card { padding: 12px; } #rowUuTienTrangThai { width: 100%; } .header-dropdown-box { width: 100%; justify-content: space-between; } .end-date-locked { min-height: 72px; } }
+    @media (max-width: 767.98px) { .task-context-card { padding: 12px; } #rowUuTienTrangThai { width: 100%; } .header-dropdown-box { width: 100%; justify-content: space-between; } .end-date-locked { min-height: 72px; } .task-edit-date-row > [class*="col-"] { display: block; } .task-edit-date-row .smart-field, .task-edit-date-row .end-date-locked { min-height: 72px; height: auto; } }
 </style>
 </asp:Content>
 
@@ -235,7 +235,7 @@
                                 <i class="fas fa-lock me-1"></i>Ngày tháng và Trạng thái bị khóa do tổng hợp từ task con
                             </span>
                         </div>
-                        <div class="row g-3 mb-3">
+                        <div class="row g-3 mb-3 task-edit-date-row">
                             <div class="col-md-4">
                                 <div class="smart-field">
                                     <label><i class="far fa-calendar-alt"></i><%= GetResourceText(BackEndResourceKeys.START_DATE) %> <span class="text-danger ms-1">*</span></label>
@@ -300,9 +300,7 @@
     function updatePriorityColor(selectElement) {
         var box = $(selectElement).closest('.header-dropdown-box');
         var text = $(selectElement).find("option:selected").text().toLowerCase();
-        
         box.removeClass('priority-default priority-low priority-med priority-high');
-        
         if (text.indexOf('cao') > -1) {
             box.addClass('priority-high');
         } else if (text.indexOf('trung bình') > -1) {
