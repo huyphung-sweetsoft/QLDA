@@ -1,5 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="HopDongThucHienDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fExecuteContracts.HopDongThucHienDetail" %>
-<%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" Async="true" CodeBehind="HopDongThucHienDetail.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fExecuteContracts.HopDongThucHienDetail" %><%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
@@ -85,53 +84,18 @@
             white-space: nowrap;
         }
 
-        .contract-file-box-hidden {
-            position: fixed;
-            left: -10000px;
-            top: -10000px;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-        }
+.contract-file-box-hidden {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
 
         .contract-file-box-hidden .file-box {
             width: 1px !important;
             min-width: 1px !important;
-        }
-
-        .contract-file-list {
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            background: #fff;
-            margin-bottom: 16px;
-        }
-
-        .contract-file-list table {
-            margin-bottom: 0;
-        }
-
-        .contract-file-list .file-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .contract-file-list .file-name span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .contract-file-actions {
-            white-space: nowrap;
-            text-align: right;
-        }
-
-        .contract-file-actions .btn {
-            margin-left: 4px;
         }
 
         @media (max-width: 1200px) {
@@ -207,98 +171,87 @@
                                 </div>
                             </div>
 
-                            <%-- File đã tải lên --%>
-
-
                             <%-- Bên phải: Nội dung hợp đồng --%>
                             <div class="contract-content-panel">
                                 <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
                                     <h5 class="mb-0">Nội dung hợp đồng</h5>
+                                    <div class="d-flex gap-2 pt-3 mt-4">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="OpenContractFileUpload();">
+                                            <i class="fas fa-upload me-1"></i>
+                                            Tải file
+                                        </button>
+                                        <asp:LinkButton ID="lbtResetContent" runat="server"
+                                            CssClass="btn btn-secondary"
+                                            OnClick="lbtResetContent_Click"
+                                            CausesValidation="false">
+                                            <i class="fas fa-undo"></i> Khôi phục nội dung từ file gốc
+                                        </asp:LinkButton>
 
-                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="OpenContractFileUpload();">
-                                        <i class="fas fa-upload me-1"></i>
-                                        Tải file
-                                    </button>
-                                </div>
-                                <%-- Danh sách file hợp đồng --%>
-                                <div class="contract-file-list">
-                                    <table class="table table-hover align-middle mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Tên file</th>
-                                                <th style="width: 140px;">Kích thước</th>
-                                                <th style="width: 180px;">Thao tác</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <asp:Repeater runat="server" ID="rptContractFiles" OnItemCommand="rptContractFiles_ItemCommand">
-                                                <ItemTemplate>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="file-name">
-                                                                <i class='<%# GetContractFileIcon(Eval("Ext")) %>'></i>
-                                                                <span title='<%# Eval("OriginalFileName") %>'>
-                                                                    <%# Eval("OriginalFileName") %>
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <%# FormatFileSize(Eval("FileSize")) %>
-                                                        </td>
-                                                        <td class="contract-file-actions">
-                                                            <asp:LinkButton
-                                                                runat="server"
-                                                                ID="btnDownload"
-                                                                CommandName="Download"
-                                                                CommandArgument='<%# Eval("Id") %>'
-                                                                CssClass="btn btn-sm btn-light"
-                                                                CausesValidation="false"
-                                                                ToolTip="Tải về">
-                                                                <i class="fas fa-download"></i>
-                                                            </asp:LinkButton>
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtExportPdf"
+                                            CssClass="btn btn-danger"
+                                            OnClick="lbtExportPdf_Click"
+                                            CausesValidation="false">
+                                            <i class="fas fa-file-pdf me-1"></i> Xuất PDF
+                                        </asp:LinkButton>
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtExportDocx"
+                                            CssClass="btn btn-info"
+                                            OnClick="lbtExportDocx_Click"
+                                            OnClientClick="var editor = CKEDITOR.instances['<%= txtNoiDungHopDong.ClientID %>']; if (editor) editor.updateElement();"
+                                            CausesValidation="false">
+                                            <i class="fas fa-file-word me-1"></i> Xuất DOCX
+                                        </asp:LinkButton>
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtCancel"
+                                            CssClass="btn btn-light"
+                                            OnClick="lbtCancel_Click"
+                                            CausesValidation="false">
+                                            Hủy
+                                        </asp:LinkButton>
 
-                                                            <asp:LinkButton
-                                                                runat="server"
-                                                                ID="btnEdit"
-                                                                CommandName="Edit"
-                                                                CommandArgument='<%# Eval("Id") %>'
-                                                                CssClass="btn btn-sm btn-light"
-                                                                CausesValidation="false"
-                                                                Visible='<%# IsContractFileEditable(Eval("Ext")) %>'
-                                                                ToolTip="Chỉnh sửa">
-                                                                <i class="fas fa-edit"></i>
-                                                            </asp:LinkButton>
+                                        <SweetSoft:ExtraButton
+                                            runat="server"
+                                            ID="lbtSubmit"
+                                            CssClass="waves-effect waves-light"
+                                            ButtonStyle="Primary"
+                                            ButtonIcon="Save"
+                                            IsPace="true"
+                                            OnClientClick="return SubmitContractWithFiles();"
+                                            OnClick="lbtSubmit_Click">
+                                            Lưu
+                                        </SweetSoft:ExtraButton>
+                                    </div>
 
-                                                            <asp:LinkButton
-                                                                runat="server"
-                                                                ID="btnDelete"
-                                                                CommandName="Delete"
-                                                                CommandArgument='<%# Eval("Id") %>'
-                                                                CssClass="btn btn-sm btn-light text-danger"
-                                                                CausesValidation="false"
-                                                                OnClientClick="return confirm('Bạn có chắc muốn xóa file này không?');"
-                                                                ToolTip="Xóa">
-                                                                <i class="fas fa-trash"></i>
-                                                            </asp:LinkButton>
-                                                        </td>
-                                                    </tr>
-                                                </ItemTemplate>
-                                            </asp:Repeater>
-                                        </tbody>
-                                    </table>
                                 </div>
 
-                                <asp:Panel runat="server" ID="pnlNoContractFiles" CssClass="text-center text-muted py-3">
-                                    Không có file nào.
-                                </asp:Panel>
+                                <%-- File đã tải lên --%>
+                                <div id="contractFileInfo" class="mb-3">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <strong>File hợp đồng</strong>
+                                        <small class="text-muted">Chọn “Nạp vào trình soạn thảo” để lấy nội dung từ file</small>
+                                    </div>
+                                    <div id="contractFileList" class="list-group"></div>
+                                </div>
 
-                            <%-- FilesBox được giữ lại để sử dụng cơ chế upload hiện tại nhưng không hiển thị UI --%>
-                            <div id="contractFileBox" class="contract-file-box-hidden">
-                                <SweetSoft:FilesBox
-                                    runat="server"
-                                    ID="fbHopDong"
-                                    IsMultiple="false" />
-                            </div>
+                                <asp:HiddenField runat="server" ID="hdfSelectedContractFileId" />
+                                <asp:HiddenField runat="server" ID="hdfSubmitAfterFileApply" Value="0" />
+
+                                <asp:LinkButton runat="server" ID="lbtLoadContractFile"
+                                    OnClick="lbtLoadContractFile_Click"
+                                    CausesValidation="false"
+                                    Style="display:none;" />
+
+                                <div id="contractFileBox" class="contract-file-box-hidden">
+                                    <SweetSoft:FilesBox
+                                        runat="server"
+                                        ID="fbHopDong"
+                                        IsMultiple="true" />
+                                </div>
+
                                 <%-- CKEditor --%>
                                 <asp:Panel runat="server" ID="pnlSoanThao" ClientIDMode="Static">
                                     <div class="contract-editor-wrapper">
@@ -322,37 +275,7 @@
                     </asp:Panel>
 
                     <%-- Buttons --%>
-                    <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                        <asp:LinkButton
-                            runat="server"
-                            ID="lbtCancel"
-                            CssClass="btn btn-light"
-                            OnClick="lbtCancel_Click"
-                            CausesValidation="false">
-                            Hủy
-                        </asp:LinkButton>
-
-                        <asp:LinkButton
-                            runat="server"
-                            ID="lbtExportPdf"
-                            CssClass="btn btn-danger"
-                            OnClick="lbtExportPdf_Click"
-                            CausesValidation="false">
-                            <i class="fas fa-file-pdf me-1"></i> Xuất PDF
-                        </asp:LinkButton>
-
-                        <SweetSoft:ExtraButton
-                            runat="server"
-                            ID="lbtSubmit"
-                            CssClass="waves-effect waves-light"
-                            ButtonStyle="Primary"
-                            ButtonIcon="Save"
-                            IsPace="true"
-                            OnClientClick="return CMSMasterJs.CheckValid();"
-                            OnClick="lbtSubmit_Click">
-                            Lưu
-                        </SweetSoft:ExtraButton>
-                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -370,6 +293,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         InitContractEditorA4();
         InitContractFileInfo();
+        InitContractAutoUpload();
     });
 
     function InitContractEditorA4() {
@@ -419,148 +343,166 @@
             editor.on("instanceReady", applyEditorStyle);
         }
     }
-
     function GetContractFileBox() {
-        var $box = $("#contractFileBox .file-box");
-
-        if ($box.length === 0) {
-            return $();
+        var $box = $("#contractFileBox .file-box").first();
+        if ($box.length) {
+            $("#contractFileBox .file-box").removeClass("active");
+            $box.addClass("active");
         }
-
-        $("#contractFileBox .file-box").removeClass("active");
-        $box.first().addClass("active");
-
-        return $box.first();
+        return $box;
     }
 
     function OpenContractFileUpload() {
         var $box = GetContractFileBox();
-
-        if ($box.length === 0) {
-            return;
-        }
-
         var $input = $box.find(".ipfFile").first();
 
-        if ($input.length === 0) {
-            return;
-        }
+        if (!$input.length) return;
 
         $input.attr("accept", "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         $input.attr("data-type", "<%= SweetSoft.QLDA.Core.FileManager.FileUploadTypes.ProjectContract %>");
-        $input.removeAttr("multiple");
+        $input.attr("multiple", "multiple");
         $input.trigger("click");
     }
 
+    var contractFileUploadStarted = false;
+
+    function InitContractAutoUpload() {
+        if (typeof FilesBox === "undefined" || typeof FilesBox.SelectedFile !== "function")
+            return;
+
+        // Không bọc SelectedFile nhiều lần.
+        if (FilesBox.SelectedFile.__contractWrapped)
+            return;
+
+        var originalSelectedFile = FilesBox.SelectedFile;
+
+        FilesBox.SelectedFile = function (input) {
+            // Để FilesBox xử lý lựa chọn file trước.
+            var result = originalSelectedFile.apply(this, arguments);
+
+            // Chờ FilesBox cập nhật ValidatedFile và PendingUploadIds.
+            window.setTimeout(function () {
+                if (contractFileUploadStarted || FilesBox.UploadInProgress)
+                    return;
+
+                if (!FilesBox.ValidatedFile || FilesBox.ValidatedFile.length === 0)
+                    return;
+
+                var $box = GetContractFileBox();
+                if (!$box.length)
+                    return;
+
+          <%--      var refType = "<%= SweetSoft.QLDA.Core.FileManager.FileUploadTypes.ProjectContract %>"; --%>
+          <%--  var refId = "<%= QueryId == Guid.Empty ? TempContractFileRefId : QueryId %>"; --%>
+
+            contractFileUploadStarted = true;
+
+            FilesBox.SimpleUploadComplete = function () {
+                console.log("[Contract] Upload complete");
+
+                var $contractBox = GetContractFileBox();
+                var applyButton = $contractBox.find('[data-selector="btnApplyFile"]')[0];
+
+                if (!applyButton) {
+                    contractFileUploadStarted = false;
+                    console.error("[Contract] Không tìm thấy nút Apply.");
+                    return;
+                }
+
+                console.log("[Contract] Clicking Apply");
+                applyButton.click();
+            };
+
+            console.log("[Contract] Starting upload:", FilesBox.ValidatedFile.length, "file(s)");
+            FilesBox.SaveFile(refType, refId);
+        }, 0);
+
+        return result;
+    };
+
+    FilesBox.SelectedFile.__contractWrapped = true;
+}
+
+    function GetContractFileName($item) {
+        var name = $item.find("input.title").first().val();
+        if (!name) name = $item.attr("data-file-name") || $item.attr("data-name") || "";
+        return name;
+    }
+
+    function RenderContractFileList() {
+        var $box = GetContractFileBox();
+        var $list = $("#contractFileList").empty();
+
+        if (!$box.length) return;
+
+        $box.find(".illustration-upload .item.show").each(function () {
+            var $item = $(this);
+            var fileId = $item.attr("data-ar");
+            var fileName = GetContractFileName($item);
+            var $row = $("<div/>", { "class": "list-group-item d-flex align-items-center justify-content-between gap-2" });
+            var $name = $("<span/>", { "class": "text-truncate", "text": fileName || "File chưa có tên" });
+            var $actions = $("<div/>", { "class": "d-flex gap-2 flex-shrink-0" });
+
+            if (fileId && fileId !== "00000000-0000-0000-0000-000000000000") {
+                $("<button/>", {
+                    type: "button",
+                    "class": "btn btn-sm btn-outline-primary",
+                    text: "Nạp vào trình soạn thảo",
+                    click: function () {
+                        $("#<%= hdfSelectedContractFileId.ClientID %>").val(fileId);
+                    $("#<%= lbtLoadContractFile.ClientID %>").trigger("click");
+                }
+            }).appendTo($actions);
+        }
+
+        $("<button/>", {
+            type: "button",
+            "class": "btn btn-sm btn-outline-danger",
+            title: "Xóa file",
+            html: '<i class="fas fa-trash"></i>',
+            click: function () {
+                var removeButton = $item.find(".remove-item").first();
+                if (removeButton.length) {
+                    FilesBox.RemoveFile(removeButton[0], false);
+                    window.setTimeout(RenderContractFileList, 100);
+                }
+            }
+        }).appendTo($actions);
+
+        $row.append($name, $actions);
+        $list.append($row);
+    });
+
+        if (!$list.children().length) {
+            $list.append($("<div/>", {
+                "class": "list-group-item text-muted",
+                text: "Chưa có file hợp đồng."
+            }));
+        }
+    }
+
     function InitContractFileInfo() {
-        var $box = GetContractFileBox();
-
-        if ($box.length === 0) {
-            return;
-        }
-
-        var $item = $box.find(".illustration-upload .item.show").first();
-
-        if ($item.length === 0) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var fileName = $item.find("input.title").first().val();
-
-        if (!fileName) {
-            fileName = $item.attr("data-file-name") || $item.attr("data-name") || "";
-        }
-
-        if (!fileName) {
-            return;
-        }
-
-        ShowContractFileInfo(fileName);
-    }
-
-    function ShowContractFileInfo(fileName) {
-        if (!fileName) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var extension = "";
-        var lastDot = fileName.lastIndexOf(".");
-
-        if (lastDot >= 0) {
-            extension = fileName.substring(lastDot + 1).toLowerCase();
-        }
-
-        var iconClass = "fas fa-file-alt text-primary";
-
-        if (extension === "pdf") {
-            iconClass = "fas fa-file-pdf text-danger";
-        } else if (extension === "doc" || extension === "docx") {
-            iconClass = "fas fa-file-word text-primary";
-        }
-
-        $("#contractFileIcon").attr("class", iconClass + " me-2");
-        $("#contractFileName").text(fileName);
-        $("#contractFileInfo").removeClass("d-none");
-    }
-
-    function RemoveContractFile() {
-        var $box = GetContractFileBox();
-
-        if ($box.length === 0) {
-            return;
-        }
-
-        var $item = $box.find(".illustration-upload .item.show").first();
-
-        if ($item.length === 0) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var removeButton = $item.find(".remove-item").first();
-
-        if (removeButton.length > 0) {
-            FilesBox.RemoveFile(removeButton[0], false);
-        }
-
-        $("#contractFileInfo").addClass("d-none");
-        $("#contractFileName").text("");
+        RenderContractFileList();
     }
 
     function SyncContractFileInfo() {
-        var $box = GetContractFileBox();
+        RenderContractFileList();
+    }
 
-        if ($box.length === 0) {
-            return;
-        }
-
-        var $item = $box.find(".illustration-upload .item.show").first();
-
-        if ($item.length === 0) {
-            $("#contractFileInfo").addClass("d-none");
-            $("#contractFileName").text("");
-            return;
-        }
-
-        var fileName = $item.find("input.title").first().val();
-
-        if (!fileName) {
-            fileName = $item.attr("data-file-name") || $item.attr("data-name") || "";
-        }
-
-        ShowContractFileInfo(fileName);
+    function RemoveContractFile() {
+        RenderContractFileList();
     }
 
     if (typeof CMSMasterJs !== "undefined" && CMSMasterJs.AddEndRequest) {
         CMSMasterJs.AddEndRequest(function () {
             InitContractEditorA4();
             InitContractFileInfo();
+            InitContractAutoUpload();
         });
+    }
+
+    function SubmitContractWithFiles() {
+        return CMSMasterJs.CheckValid();
     }
 </script>
 </asp:Content>
