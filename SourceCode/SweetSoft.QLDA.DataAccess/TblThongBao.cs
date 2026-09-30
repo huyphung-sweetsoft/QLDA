@@ -461,6 +461,37 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
+		private SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection colTblNhacViecLichCongViecRecords;
+		public SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection TblNhacViecLichCongViecRecords()
+		{
+			if(colTblNhacViecLichCongViecRecords == null)
+			{
+				colTblNhacViecLichCongViecRecords = new SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection().Where(TblNhacViecLichCongViec.Columns.IdThongBao, IdThongBao).Load();
+				colTblNhacViecLichCongViecRecords.ListChanged += new ListChangedEventHandler(colTblNhacViecLichCongViecRecords_ListChanged);
+			}
+			return colTblNhacViecLichCongViecRecords;
+		}
+				
+		void colTblNhacViecLichCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblNhacViecLichCongViecRecords[e.NewIndex].IdThongBao = IdThongBao;
+            }
+		}
+		#endregion
+		
 			
 		
 		#region ForeignKey Properties
@@ -733,10 +764,32 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
+        public void SetPKValues()
+        {
+                if (colTblNhacViecLichCongViecRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViec item in colTblNhacViecLichCongViecRecords)
+                    {
+                        if (item.IdThongBao != IdThongBao)
+                        {
+                            item.IdThongBao = IdThongBao;
+                        }
+                    }
+               }
+		}
         #endregion
     
         #region Deep Save
 		
+        public void DeepSave()
+        {
+            Save();
+            
+                if (colTblNhacViecLichCongViecRecords != null)
+                {
+                    colTblNhacViecLichCongViecRecords.SaveAll();
+               }
+		}
         #endregion
 	}
 }

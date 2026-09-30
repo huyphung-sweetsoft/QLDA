@@ -660,6 +660,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblCongViecNhanVienRecords[e.NewIndex].IdCongViec = IdCongViec;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection colTblNhacViecLichCongViecRecords;
+		public SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection TblNhacViecLichCongViecRecords()
+		{
+			if(colTblNhacViecLichCongViecRecords == null)
+			{
+				colTblNhacViecLichCongViecRecords = new SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection().Where(TblNhacViecLichCongViec.Columns.IdCongViec, IdCongViec).Load();
+				colTblNhacViecLichCongViecRecords.ListChanged += new ListChangedEventHandler(colTblNhacViecLichCongViecRecords_ListChanged);
+			}
+			return colTblNhacViecLichCongViecRecords;
+		}
+				
+		void colTblNhacViecLichCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblNhacViecLichCongViecRecords[e.NewIndex].IdCongViec = IdCongViec;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colChildTblCongViecRecords;
 		public SweetSoft.QLDA.DataAccess.TblCongViecCollection ChildTblCongViecRecords()
 		{
@@ -1233,6 +1252,17 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colTblNhacViecLichCongViecRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViec item in colTblNhacViecLichCongViecRecords)
+                    {
+                        if (item.IdCongViec != IdCongViec)
+                        {
+                            item.IdCongViec = IdCongViec;
+                        }
+                    }
+               }
+		
                 if (colChildTblCongViecRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colChildTblCongViecRecords)
@@ -1299,6 +1329,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblCongViecNhanVienRecords != null)
                 {
                     colTblCongViecNhanVienRecords.SaveAll();
+               }
+		
+                if (colTblNhacViecLichCongViecRecords != null)
+                {
+                    colTblNhacViecLichCongViecRecords.SaveAll();
                }
 		
                 if (colChildTblCongViecRecords != null)
