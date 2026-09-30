@@ -1,5 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlSwapPhase.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlSwapPhase" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+
 <style>
     .btn-swap-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #f1f5f9; color: #64748b; transition: all .3s ease; text-decoration: none; border: 1px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,.05); }
     .btn-swap-icon:hover { background-color: #6366f1; color: #fff; border-color: #6366f1; transform: scale(1.05); box-shadow: 0 4px 12px rgba(99,102,241,.3); }
@@ -75,19 +76,65 @@
     [id$="_mdlReorderReview"] .modal-dialog, [id$="mdlReorderReview"] .modal-dialog { max-width: 1440px !important; width: calc(100vw - 28px) !important; }
     [id$="_mdlReorderOptions"] .modal-content, [id$="mdlReorderOptions"] .modal-content, [id$="_mdlReorderReview"] .modal-content, [id$="mdlReorderReview"] .modal-content { border-radius: 13px !important; overflow: visible !important; }
     [id$="_mdlReorderOptions"] .modal-header, [id$="mdlReorderOptions"] .modal-header, [id$="_mdlReorderReview"] .modal-header, [id$="mdlReorderReview"] .modal-header { border-top-left-radius: 13px !important; border-top-right-radius: 13px !important; }
-    @keyframes reorderReviewIn { from { opacity: 0; transform: translateY(6px) scale(.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .reorder-loading-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .reorder-loading-btn i { font-size: 13px; }
+
+    .reorder-modal-loading { position: relative; }
+
+    .reorder-loading-overlay { position: absolute; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.8); backdrop-filter: blur(2px); border-radius: 13px; animation: reorderLoadingFadeIn .18s ease both; }
+
+    .reorder-loading-box { min-width: 290px; max-width: 90%; padding: 22px 24px; text-align: center; background: rgba(255,255,255,.97); border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 14px 40px rgba(15,23,42,.14); animation: reorderLoadingPopup .22s ease both; }
+
+    .reorder-loading-spinner { width: 50px; height: 50px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f3efff; color: #6366f1; font-size: 21px; }
+
+    .reorder-loading-spinner i { animation-duration: .85s; }
+
+    .reorder-loading-title { color: #334155; font-size: 14px; font-weight: 800; line-height: 1.4; }
+
+    .reorder-loading-desc { margin-top: 5px; color: #64748b; font-size: 11px; line-height: 1.45; }
+
+    .reorder-loading-progress { width: 170px; height: 4px; margin: 14px auto 0; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
+
+    .reorder-loading-progress::after { content: ""; display: block; width: 45%; height: 100%; border-radius: 999px; background: #6366f1; animation: reorderLoadingProgress 1.05s ease-in-out infinite; }
+
+    .reorder-review-back-button:hover { color: #4f46e5 !important; background: #f5f3ff !important; border-radius: 7px !important; }
+
+    @keyframes reorderReviewIn {
+        from { opacity: 0; transform: translateY(6px) scale(.995); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes reorderLoadingFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes reorderLoadingPopup {
+        from { opacity: 0; transform: translateY(8px) scale(.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes reorderLoadingProgress {
+        0% { transform: translateX(-190%); }
+        100% { transform: translateX(390%); }
+    }
+
     @media (max-width: 980px) {
         .reorder-option-grid, .reorder-review-options { grid-template-columns: 1fr; }
         .reorder-review-board { grid-template-columns: 1fr; }
         .reorder-review-list { max-height: 42vh; }
     }
+
     @media (max-width: 640px) {
         .reorder-option { align-items: center; }
         .reorder-switch-button, .reorder-switch { width: 82px; flex-basis: 82px; }
         .reorder-switch.on .reorder-switch-thumb { left: 56px; }
         .reorder-review-header { flex-direction: column; }
+        .reorder-loading-box { min-width: 250px; padding: 20px 18px; }
     }
 </style>
+
 <SweetSoft:ExtraModal DefaultButton="btnConfirmSwap" ID="mdlSwapPhase" Type="Primary" runat="server" Title="Hoán đổi vị trí Giai đoạn">
     <ContentTemplate>
         <asp:UpdatePanel ID="upSwap" runat="server" UpdateMode="Conditional">
@@ -114,6 +161,7 @@
         </asp:UpdatePanel>
     </ContentTemplate>
 </SweetSoft:ExtraModal>
+
 <SweetSoft:ExtraModal DefaultButton="btnConfirmReorder" ID="mdlReorderOptions" Type="Primary" runat="server" Title="Xác nhận thay đổi thứ tự giai đoạn">
     <ContentTemplate>
         <asp:UpdatePanel ID="upReorderOptions" runat="server" UpdateMode="Conditional">
@@ -150,13 +198,14 @@
     <FooterTemplate>
         <asp:UpdatePanel ID="upnlFooterReorderOptions" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
-                <asp:LinkButton ID="btnConfirmReorder" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnConfirmReorder_Click">
+                <asp:LinkButton ID="btnConfirmReorder" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorder_Click">
                     <i class="fas fa-check me-1"></i> Áp dụng thay đổi
                 </asp:LinkButton>
             </ContentTemplate>
         </asp:UpdatePanel>
     </FooterTemplate>
 </SweetSoft:ExtraModal>
+
 <SweetSoft:ExtraModal DefaultButton="btnConfirmReorderFromReview" ID="mdlReorderReview" Type="Primary" runat="server" Title="Chi tiết công việc bị ảnh hưởng">
     <ContentTemplate>
         <asp:UpdatePanel ID="upReorderReview" runat="server" UpdateMode="Conditional">
@@ -199,13 +248,14 @@
             <ContentTemplate>
                 <asp:LinkButton ID="btnBackFromReview" runat="server" CausesValidation="false" OnClick="btnBackFromReview_Click" Style="display:none !important;">
                 </asp:LinkButton>
-                <asp:LinkButton ID="btnConfirmReorderFromReview" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnConfirmReorderFromReview_Click">
+                <asp:LinkButton ID="btnConfirmReorderFromReview" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorderFromReview_Click">
                     <i class="fas fa-check me-1"></i> Áp dụng thay đổi
                 </asp:LinkButton>
             </ContentTemplate>
         </asp:UpdatePanel>
     </FooterTemplate>
 </SweetSoft:ExtraModal>
+
 <script type="text/javascript">
     (function () {
         function setupReorderReviewBackButton() {
@@ -213,13 +263,13 @@
             if (!modal) return;
 
             var closeButton = modal.querySelector(
-                '.modal-header button[data-bs-dismiss="modal"],
-                    .modal - header a[data - bs - dismiss= "modal"],
-                 .modal - header button[data-dismiss="modal"],
-                 .modal - header a[data - dismiss= "modal"],
-                 .modal - header button.close,
-                 .modal - header a.close,
-                 .modal - header.btn - close'
+                '.modal-header button[data-bs-dismiss="modal"],' +
+                '.modal-header a[data-bs-dismiss="modal"],' +
+                '.modal-header button[data-dismiss="modal"],' +
+                '.modal-header a[data-dismiss="modal"],' +
+                '.modal-header button.close,' +
+                '.modal-header a.close,' +
+                '.modal-header .btn-close'
             );
 
             if (!closeButton) {
@@ -229,7 +279,8 @@
                 }
             }
 
-            if (!closeButton || closeButton.getAttribute('data-reorder-back-bound') === '1') return;
+            if (!closeButton || closeButton.getAttribute('data-reorder-back-bound') === '1')
+                return;
 
             closeButton.setAttribute('data-reorder-back-bound', '1');
             closeButton.setAttribute('aria-label', 'Quay lại');
@@ -250,20 +301,99 @@
 
             closeButton.onclick = function (event) {
                 event.preventDefault();
-                event.stopImmediatePropagation();
-                __doPostBack('<%= btnBackFromReview.UniqueID %>', '');
-                return false;
-            };
+            event.stopImmediatePropagation();
+            __doPostBack('<%= btnBackFromReview.UniqueID %>', '');
+            return false;
+        };
         }
-
-        if (typeof Sys !== 'undefined' && Sys.Application) {
-            Sys.Application.add_load(setupReorderReviewBackButton);
-        } else if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupReorderReviewBackButton);
-        } else {
+            typeof Sys !== 'undefined' && Sys.Application) {
+        Sys.Application.add_load(setupReorderReviewBackButton);
+        se if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupReorderReviewBackButton);
+        se {
             setupReorderReviewBackButton();
         }
-    })();
+})();
+        tion removeReorderLoadingOverlay() {
+    var overlays = document.querySelectorAll('.reorder-loading-overlay');
+
+    for (var i = 0; i < overlays.length; i++) {
+        if (overlays[i] && overlays[i].parentNode) {
+            overlays[i].parentNode.removeChild(overlays[i]);
+        }
+    }
+    r loadingContents = document.querySelectorAll('.reorder-modal-loading');
+
+        for (var j = 0; j < loadingContents.length; j++) {
+            loadingContents[j].classList.remove('reorder-modal-loading');
+        }
+
+        var loadingButtons = document.querySelectorAll('[data-loading="1"]');
+
+        for (var k = 0; k < loadingButtons.length; k++) {
+            loadingButtons[k].removeAttribute('data-loading');
+        }
+    }
+
+    function setReorderLoading(btn) {
+        if (!btn)
+            return true;
+
+        if (btn.getAttribute('data-loading') === '1')
+            return false;
+
+        btn.setAttribute('data-loading', '1');
+        btn.classList.add('disabled');
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.75';
+
+        btn.innerHTML =
+            '<span class="reorder-loading-btn">' +
+                '<i class="fas fa-spinner fa-spin"></i>' +
+                '<span>Đang xử lý...</span>' +
+            '</span>';
+
+        var modal = btn.closest('.modal');
+
+        if (modal) {
+            var modalContent = modal.querySelector('.modal-content');
+
+            if (modalContent) {
+                modalContent.classList.add('reorder-modal-loading');
+
+                if (!modalContent.querySelector('.reorder-loading-overlay')) {
+                    var overlay = document.createElement('div');
+                    overlay.className = 'reorder-loading-overlay';
+                    overlay.innerHTML =
+                        '<div class="reorder-loading-box">' +
+                            '<div class="reorder-loading-spinner">' +
+                                '<i class="fas fa-spinner fa-spin"></i>' +
+                            '</div>' +
+                            '<div class="reorder-loading-title">Đang áp dụng thay đổi...</div>' +
+                            '<div class="reorder-loading-desc">Hệ thống đang cập nhật thứ tự và thời gian công việc.</div>' +
+                            '<div class="reorder-loading-progress"></div>' +
+                        '</div>';
+
+                    modalContent.appendChild(overlay);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+        var reorderRequestManager = Sys.WebForms.PageRequestManager.getInstance();
+
+        reorderRequestManager.add_endRequest(function () {
+            removeReorderLoadingOverlay();
+            setupReorderReviewBackButton();
+        });
+    }
+
+    window.addEventListener('pageshow', function () {
+        removeReorderLoadingOverlay();
+    });
 </script>
 <style type="text/css">
     .reorder-review-back-button:hover {
