@@ -3,6 +3,7 @@ using SweetSoft.QLDA.BackOffice.fTasks.Controls;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
@@ -26,6 +27,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlTask1.EditTaskHandlerCallback = EditTask_Callback;
             CtrlTask1.ConfigHeSoHandlerCallback = ConfigHeSo_Callback;
+            CtrlTask1.ReminderHandlerCallback = Reminder_Callback;
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -132,6 +134,123 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             UpdateMinStartDate();
             upModal.Update();
             mdlEditTask.OpenModal(true);
+        }
+        private void Reminder_Callback(object sender, Guid taskId)
+        {
+            if (taskId == Guid.Empty)
+                return;
+
+            Guid currentUserId = SweetContext.Current != null
+                ? SweetContext.Current.UserId
+                : Guid.Empty;
+
+            if (currentUserId == Guid.Empty)
+                return;
+
+            TblCongViec task = TaskManager.Instance.FetchById(taskId);
+
+            if (task == null || task.DaXoa == true ||task.IdDuAn != CurrentProjectId) return;
+            hdfReminderTaskId.Value = taskId.ToString();
+            hdfSelectedReminderIds.Value = string.Empty;
+            ScriptManager.RegisterStartupScript(
+                this,
+                GetType(),
+                "ResetReminderButton",
+                "setTimeout(function(){ var b=document.getElementById('" + btnProcessReminders.ClientID + "'); if(b){ b.style.pointerEvents='none'; b.style.opacity='0.55'; b.style.cursor='default'; } }, 0);",
+                true
+            );
+            List<TblNhacViecLichCongViec> reminders =
+                NhacViecLichCongViecManager.Instance.GetPendingByTask(
+                    taskId,
+                    currentUserId);
+
+            ltrReminderTaskName.Text =
+                $"[{task.MaCongViec}] {task.TenCongViec}";
+
+            rptTaskReminders.DataSource = reminders;
+            rptTaskReminders.DataBind();
+
+            pnlNoReminder.Visible =
+                reminders == null || reminders.Count == 0;
+
+            mdlTaskReminder.Title = "Nhắc việc - " + task.MaCongViec;
+
+            upTaskReminder.Update();
+            mdlTaskReminder.OpenModal(true);
+        }
+        protected void btnProcessReminders_Click(object sender, EventArgs e)
+        {
+
+            if (!Guid.TryParse(hdfReminderTaskId.Value, out Guid taskId) ||
+                taskId == Guid.Empty)
+                return;
+            TblCongViec task = TaskManager.Instance.FetchById(taskId);
+
+            if (task == null ||
+                task.DaXoa == true ||
+                task.IdDuAn != CurrentProjectId)
+                return;
+            Guid currentUserId = SweetContext.Current != null
+                ? SweetContext.Current.UserId
+                : Guid.Empty;
+            if (currentUserId == Guid.Empty)
+                return;
+            List<Guid> reminderIds = new List<Guid>();
+            string rawIds = hdfSelectedReminderIds.Value ?? string.Empty;
+            foreach (string value in rawIds.Split(','))
+            {
+                if (Guid.TryParse(value, out Guid reminderId) &&
+                    reminderId != Guid.Empty)
+                {
+                    reminderIds.Add(reminderId);
+                }
+            }
+            reminderIds = reminderIds
+                .Distinct()
+                .ToList();
+            if (reminderIds.Count == 0)
+                return;
+            List<TblNhacViecLichCongViec> pendingReminders =
+                NhacViecLichCongViecManager.Instance.GetPendingByTask(
+                    taskId,
+                    currentUserId);
+
+            HashSet<Guid> validReminderIds =
+                new HashSet<Guid>(
+                    pendingReminders.Select(x => x.IdNhacViec));
+            reminderIds = reminderIds
+                .Where(id => validReminderIds.Contains(id))
+                .Distinct()
+                .ToList();
+            if (reminderIds.Count == 0)
+                return;
+            NhacViecLichCongViecManager.Instance.MarkAsProcessed(reminderIds);
+            hdfSelectedReminderIds.Value = string.Empty;
+            List<TblNhacViecLichCongViec> reminders =
+                NhacViecLichCongViecManager.Instance.GetPendingByTask(
+                    taskId,
+                    currentUserId);
+            rptTaskReminders.DataSource = reminders;
+            rptTaskReminders.DataBind();
+            pnlNoReminder.Visible =
+                reminders == null || reminders.Count == 0;
+            upTaskReminder.Update();
+            CtrlTask1.Rebind();
+            ScriptManager.RegisterStartupScript(
+                this,
+                GetType(),
+                "ResetReminderBtnAfterProcess",
+                "setTimeout(function(){ var b=document.getElementById('" + btnProcessReminders.ClientID + "'); if(b){ b.style.pointerEvents='none'; b.style.opacity='0.55'; b.style.cursor='default'; } }, 0);",
+                true
+            );
+            if (reminders != null && reminders.Count > 0)
+            {
+                mdlTaskReminder.OpenModal(true);
+            }
+            else
+            {
+                mdlTaskReminder.CloseModal();
+            }
         }
         #endregion
 
@@ -450,7 +569,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             try
             {
                 List<TblHeSoDongGop> lstUpdate = new List<TblHeSoDongGop>();
-
                 // Quét qua Repeater để lấy ID và Hệ số mới
                 foreach (RepeaterItem item in rptHeSoDongGop.Items)
                 {
@@ -460,8 +578,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                         HiddenField hdfIdHeSoDongGop = (HiddenField)item.FindControl("hdfIdHeSoDongGop");
                         TextBox txtHeSo = (TextBox)item.FindControl("txtHeSo");
 
+                        // [CHỮA BỆNH Ở ĐÂY]: Quy đổi mọi dấu phẩy thành dấu chấm
+                        string val = txtHeSo.Text.Trim().Replace(",", ".");
+
+                        // Dùng InvariantCulture để ép server luôn hiểu dấu chấm là thập phân
                         if (Guid.TryParse(hdfIdDoUuTien.Value, out Guid idDoUuTien) &&
-                            decimal.TryParse(txtHeSo.Text.Trim(), out decimal heSo))
+                            decimal.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal heSo))
                         {
                             Guid.TryParse(hdfIdHeSoDongGop.Value, out Guid idHeSoDongGop);
 

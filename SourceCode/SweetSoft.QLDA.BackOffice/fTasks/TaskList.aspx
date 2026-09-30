@@ -324,6 +324,54 @@
         </asp:UpdatePanel>
     </FooterTemplate>
 </SweetSoft:ExtraModal>
+    <SweetSoft:ExtraModal runat="server" ID="mdlTaskReminder" Type="Primary">
+        <ContentTemplate>
+            <asp:UpdatePanel runat="server" ID="upTaskReminder" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <div class="p-3">
+                        <div class="mb-3 p-2 rounded bg-light border">
+                            <div class="small text-muted mb-1">CÔNG VIỆC</div>
+                            <div class="fw-bold fs-6 text-dark">
+                                <asp:Literal runat="server" ID="ltrReminderTaskName" />
+                            </div>
+                        </div>
+                        <asp:HiddenField runat="server" ID="hdfReminderTaskId" />
+                        <asp:HiddenField runat="server" ID="hdfSelectedReminderIds" />
+                        <asp:Panel runat="server" ID="pnlNoReminder" CssClass="text-center text-muted p-2" Visible="false">
+                            Không còn nhắc việc chưa xử lý.
+                        </asp:Panel>
+
+                       <asp:Repeater runat="server" ID="rptTaskReminders">
+                            <ItemTemplate>
+                                <div class="d-flex align-items-center border-bottom py-2 gap-2">
+                                    <!-- [SỬA LỖI]: Dùng input thuần thay vì asp:CheckBox -->
+                                    <input type="checkbox" class="form-check-input mt-0" 
+                                           value='<%# Eval("IdNhacViec") %>' 
+                                           onchange="toggleReminderSelection(this);" 
+                                           style="cursor: pointer; width: 18px; height: 18px; flex-shrink: 0;" />
+                                    
+                                    <asp:HiddenField runat="server" ID="hdfIdNhacViec" Value='<%# Eval("IdNhacViec") %>' />
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold"><%# Eval("NoiDung") %></div>
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </ContentTemplate>
+
+        <FooterTemplate>
+            <asp:UpdatePanel runat="server" ID="upTaskReminderFooter" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <SweetSoft:ExtraButton runat="server" ID="btnProcessReminders" ButtonStyle="Primary" ButtonIcon="Check" Enabled="true" OnClick="btnProcessReminders_Click">
+                        Đã xử lý
+                    </SweetSoft:ExtraButton>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
@@ -368,5 +416,38 @@
             }
         }
     });
+    function toggleReminderSelection(chk) {
+        var hidden = document.getElementById('<%= hdfSelectedReminderIds.ClientID %>');
+        var button = document.getElementById('<%= btnProcessReminders.ClientID %>');
+
+        if (!hidden || !button)
+            return;
+
+        // [SỬA LỖI]: Lấy trực tiếp từ thuộc tính value
+        var id = chk.value;
+        if (!id)
+            return;
+
+        var ids = hidden.value
+            ? hidden.value.split(',').filter(function (x) { return x; })
+            : [];
+
+        if (chk.checked) {
+            if (ids.indexOf(id) === -1)
+                ids.push(id);
+        }
+        else {
+            ids = ids.filter(function (x) { return x !== id; });
+        }
+
+        hidden.value = ids.join(',');
+
+        var disabled = ids.length === 0;
+
+        // Bật/tắt nút bằng CSS
+        button.style.pointerEvents = disabled ? 'none' : 'auto';
+        button.style.opacity = disabled ? '0.55' : '1';
+        button.style.cursor = disabled ? 'default' : 'pointer';
+    }
 </script>
 </asp:Content>

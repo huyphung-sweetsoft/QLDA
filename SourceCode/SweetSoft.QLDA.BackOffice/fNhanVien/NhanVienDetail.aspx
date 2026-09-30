@@ -399,14 +399,24 @@
                     <div class="side-panel-body">
                         <asp:UpdatePanel ID="upProjectDetail" runat="server" UpdateMode="Conditional">
                             <ContentTemplate>
-                                <!-- =========================================
-                                     PROJECT INFO (ĐÃ SỬA CẤU TRÚC 4 Ô)
+                               <!-- =========================================
+                                     PROJECT INFO (BỔ SUNG HỆ SỐ ĐÓNG GÓP)
                                      ========================================= -->
                                 <div class="detail-project-header">
-                                    <div class="mb-3">
-                                        <div class="detail-project-title"><asp:Literal ID="ltrDetailTenDuAn" runat="server" /></div>
-                                        <div class="detail-project-code mt-1"><asp:Literal ID="ltrDetailMaDuAn" runat="server" /></div>
+                                    <!-- 1. Tiêu đề và Trạng thái nằm cùng 1 dòng -->
+                                    <div class="mb-3 d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="detail-project-title d-flex align-items-center gap-2">
+                                                <asp:Literal ID="ltrDetailTenDuAn" runat="server" />
+                                                <span class="project-status-tag" style="margin: 0; padding: 3px 10px; font-size: 11px;">
+                                                    <asp:Literal ID="ltrDetailTrangThai" runat="server" />
+                                                </span>
+                                            </div>
+                                            <div class="detail-project-code mt-1"><asp:Literal ID="ltrDetailMaDuAn" runat="server" /></div>
+                                        </div>
                                     </div>
+                                    
+                                    <!-- 2. Khối 4 ô thông tin -->
                                     <div class="row g-2">
                                         <div class="col-md-6">
                                             <div class="detail-info-item">
@@ -426,15 +436,15 @@
                                                 <span class="detail-info-value text-primary"><asp:Literal ID="ltrDetailContribution" runat="server" />%</span>
                                             </div>
                                         </div>
-                                        <!-- ĐÃ DỜI TRẠNG THÁI XUỐNG ĐÂY ĐỂ LẤP CHỖ TRỐNG -->
+                                        <!-- Ô thứ 4: Hiển thị bộ Hệ số đóng góp -->
                                         <div class="col-md-6">
-                                            <div class="detail-info-item">
-                                                <span class="detail-info-label"><%= GetResourceText(BackEndResourceKeys.STATUS) ?? "Trạng thái" %></span>
-                                                <span class="detail-info-value">
-                                                    <span class="project-status-tag" style="margin: 0; padding: 3px 10px; font-size: 12px;">
-                                                        <asp:Literal ID="ltrDetailTrangThai" runat="server" />
-                                                    </span>
-                                                </span>
+                                            <div class="detail-info-item" style="justify-content: flex-start; padding: 8px 12px;">
+                                                <span class="detail-info-label mb-1">Hệ số đóng góp</span>
+                                                <div class="d-flex flex-wrap gap-2" style="font-size: 12px; line-height: 1.2;">
+                                                    <span class="text-danger fw-bold">Cao: <asp:Literal ID="ltrHeSoCao" runat="server" Text="-" /></span>
+                                                    <span class="text-warning fw-bold text-dark">Trung bình: <asp:Literal ID="ltrHeSoTrungBinh" runat="server" Text="-" /></span>
+                                                    <span class="text-info fw-bold">Thấp: <asp:Literal ID="ltrHeSoThap" runat="server" Text="-" /></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -496,6 +506,16 @@
                                                                     <div class='<%# GetTaskStatusWrapperClass(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>' data-status='<%# Eval("TrangThaiTask") %>'>
                                                                         <%# GetTaskStatusDisplay(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>
                                                                     </div>
+                                                                   <!-- NÚT XEM LÝ DO TRỄ HẠN -->
+                                                                    <asp:PlaceHolder runat="server" Visible='<%# IsTaskCompletedLate(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>'>
+                                                                        <div class="mt-1">
+                                                                            <a href="javascript:void(0);" 
+                                                                               onclick='<%# "showDelayReason(\"" + Eval("MaTask") + "\", " + HttpUtility.JavaScriptStringEncode(Convert.ToString(Eval("LyDoTreHan")), true) + ")" %>' 
+                                                                               class="text-danger" style="font-size: 11px; text-decoration: underline; font-weight: 600;">
+                                                                                <i class="fas fa-info-circle"></i> Xem lý do
+                                                                            </a>
+                                                                        </div>
+                                                                    </asp:PlaceHolder>
                                                                 </td>
                                                             </tr>
                                                         </ItemTemplate>
@@ -631,9 +651,26 @@
                 renderEmployeeMonthCalendar();
             });
         }
+        function showDelayReason(taskCode, reason) {
+            // Nạp data vào ExtraModal
+            $('#delayTaskCode').text('Công việc: [' + taskCode + ']');
+            $('#delayTaskReason').text(reason || 'Không có lý do được ghi nhận.');
+
+            // Gọi popup bằng ClientID của ExtraModal
+            var modalId = '#<%= mdlDelayReason.ClientID %>';
+            $(modalId).modal('show');
+        }
     </script>
 </asp:Content>
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <SweetSoft:CtrlNhanVienPopup runat="server" ID="CtrlNhanVienPopup1" />
+    <SweetSoft:ExtraModal runat="server" ID="mdlDelayReason" Type="Primary" Title="Lý do trễ hạn">
+        <ContentTemplate>
+            <div class="p-3">
+                <div class="fw-bold text-dark mb-2" id="delayTaskCode" style="font-size: 13px;"></div>
+                <div class="text-muted p-2 bg-light rounded border" id="delayTaskReason" style="font-size: 13px; white-space: pre-wrap; line-height: 1.5; max-height: 250px; overflow-y: auto;"></div>
+            </div>
+        </ContentTemplate>
+    </SweetSoft:ExtraModal>
 </asp:Content>

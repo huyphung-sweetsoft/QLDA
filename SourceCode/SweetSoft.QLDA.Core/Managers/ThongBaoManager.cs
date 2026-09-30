@@ -244,7 +244,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 IdDuAn = idDuAn,
                 TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
                 NoiDung = noiDung,
-                LoaiThongBao = ThongBaoTypes.DuAn, // Dùng cờ Dự án để hiện icon cái cặp
+                LoaiThongBao = ThongBaoTypes.CongViec, // Dùng cờ Dự án để hiện icon cái cặp
                 DuongDanLienKet = null,
                 DaDoc = false,
                 NgayDoc = null,

@@ -274,6 +274,27 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             ltrDetailTrangThai.Text = GetDuAnStatusText(project.TrangThai);
             ltrDetailProjectTime.Text = FormatDateRange(project.ProjectStartDate, project.ProjectEndDate);
             ltrDetailContribution.Text = project.ContributionPercent.ToString("0.0");
+            ltrHeSoCao.Text = "-";
+            ltrHeSoTrungBinh.Text = "-";
+            ltrHeSoThap.Text = "-";
+
+            DataTable dtHeSo = HeSoDongGopManager.Instance.GetHeSoCuaDuAn(idDuAn);
+            if (dtHeSo != null && dtHeSo.Rows.Count > 0)
+            {
+                foreach (DataRow row in dtHeSo.Rows)
+                {
+                    if (row["DiemUuTien"] != DBNull.Value && row["HeSoDongGop"] != DBNull.Value)
+                    {
+                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
+                        // Ép về dấu chấm cho chuẩn giao diện
+                        string heSo = Convert.ToDecimal(row["HeSoDongGop"]).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+                        if (diemUuTien == 3) ltrHeSoCao.Text = heSo;
+                        else if (diemUuTien == 2) ltrHeSoTrungBinh.Text = heSo;
+                        else if (diemUuTien == 1) ltrHeSoThap.Text = heSo;
+                    }
+                }
+            }
             rptDetailPhases.DataSource = project.Phases;
             rptDetailPhases.DataBind();
             upProjectDetail.Update();
@@ -419,66 +440,55 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             return _controlHelpers.GetTaskStatusBadge(status);
         }
 
-        private bool IsTaskCompletedLate(object status, object plannedEndDate, object actualEndDate)
+        protected bool IsTaskCompletedLate(object status, object plannedEndDate, object actualEndDate)
         {
-            if (status == null || status == DBNull.Value)
+            if (status == null || status == DBNull.Value) return false;
+            if (!int.TryParse(status.ToString(), out int taskStatus)) return false;
+
+            // [FIX ĐỒNG BỘ VỚI CTRLTASK]: Ép trạng thái = 3 chính là Hoàn thành trễ hạn
+            if (taskStatus == 3) return true;
+
+            // Giữ lại logic cũ: Nếu trạng thái = 2 nhưng ngày thực tế > ngày dự kiến
+            if (taskStatus == 2)
             {
-                return false;
+                if (plannedEndDate != null && actualEndDate != null &&
+                    DateTime.TryParse(plannedEndDate.ToString(), out DateTime plannedEnd) &&
+                    DateTime.TryParse(actualEndDate.ToString(), out DateTime actualEnd))
+                {
+                    if (plannedEnd.Year > 1900 && actualEnd.Year > 1900)
+                    {
+                        return actualEnd.Date > plannedEnd.Date;
+                    }
+                }
             }
 
-            if (!int.TryParse(status.ToString(), out int taskStatus))
-            {
-                return false;
-            }
-
-            // 2 = Hoàn thành
-            if (taskStatus != 2)
-            {
-                return false;
-            }
-
-            if (plannedEndDate == null || plannedEndDate == DBNull.Value)
-            {
-                return false;
-            }
-
-            if (actualEndDate == null || actualEndDate == DBNull.Value)
-            {
-                return false;
-            }
-
-            if (!DateTime.TryParse(plannedEndDate.ToString(), out DateTime plannedEnd))
-            {
-                return false;
-            }
-
-            if (!DateTime.TryParse(actualEndDate.ToString(), out DateTime actualEnd))
-            {
-                return false;
-            }
-
-            if (plannedEnd.Year <= 1900 || actualEnd.Year <= 1900)
-            {
-                return false;
-            }
-
-            return actualEnd.Date > plannedEnd.Date;
+            return false;
         }
 
         protected string GetTaskStatusDisplay(object status, object plannedEndDate, object actualEndDate)
         {
             if (IsTaskCompletedLate(status, plannedEndDate, actualEndDate))
             {
-                DateTime plannedEnd = Convert.ToDateTime(plannedEndDate);
-                DateTime actualEnd = Convert.ToDateTime(actualEndDate);
-                int lateDays = (actualEnd.Date - plannedEnd.Date).Days;
+                int lateDays = 0;
+                if (plannedEndDate != null && actualEndDate != null &&
+                    DateTime.TryParse(plannedEndDate.ToString(), out DateTime plannedEnd) &&
+                    DateTime.TryParse(actualEndDate.ToString(), out DateTime actualEnd))
+                {
+                    if (plannedEnd.Year > 1900 && actualEnd.Year > 1900)
+                    {
+                        lateDays = (actualEnd.Date - plannedEnd.Date).Days;
+                    }
+                }
 
-                return string.Format("Hoàn thành trễ ({0} ngày)", lateDays);
+                // Nếu có ngày cụ thể thì hiển thị số ngày, nếu không thì cứ báo "Hoàn thành trễ"
+                if (lateDays > 0)
+                    return string.Format("Hoàn thành trễ ({0} ngày)", lateDays);
+                else
+                    return "Hoàn thành trễ";
             }
 
             return GetTaskStatusBadge(status);
         }
-
         protected string GetTaskStatusWrapperClass(object status, object plannedEndDate, object actualEndDate)
         {
             if (IsTaskCompletedLate(status, plannedEndDate, actualEndDate))

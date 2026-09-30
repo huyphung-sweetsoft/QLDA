@@ -69,18 +69,93 @@
 
     .btn-add-subtask-right { background-color: #eff6ff !important; color: #2563eb !important; border: 1px dashed #93c5fd !important; width: 24px; height: 24px; border-radius: 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease; text-decoration: none; flex-shrink: 0; }
     .btn-add-subtask-right:hover { background-color: #2563eb !important; color: #ffffff !important; border-color: #2563eb !important; }
+    /* ============================================================
+       LỊCH THÁNG MINI VÀ TOOLTIP TASK
+       ============================================================ */
+    .mini-cal-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; width: 100%;}
+    .mini-cal { flex: 1; min-width: 0; box-sizing: border-box; user-select: none; width: 100%;}
 
-    .sched-day-card { position: relative; cursor: pointer; overflow: visible !important; -webkit-user-select: none; user-select: none; }
-    .sd-header { border-radius: 5px 5px 0 0; }
-    .sd-body { border-radius: 0 0 5px 5px; }
-    .custom-task-tooltip { position: fixed !important; z-index: 999999 !important; background: #ffffff; color: #334155; border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 14px; min-width: 180px; max-width: 420px; white-space: normal; word-break: break-word; overflow-wrap: anywhere; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18); font-size: 12px; line-height: 1.5; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease; }
+    .mc-header { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 4px 4px; }
+    .mc-title { font-size: 14px; font-weight: 700; color: #1e293b; }
+    .mc-nav { display: flex; gap: 2px; }
+    .mc-nav-btn { width: 30px; height: 26px; border: 0; background: transparent; border-radius: 6px; color: #64748b; font-size: 10px; line-height: 1; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .mc-nav-btn:hover { background: #eff6ff; color: #2563eb; }
+    .mc-nav-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+
+    .mc-weekdays, .mc-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%;}
+    .mc-weekdays span { text-align: center; font-size: 11px; font-weight: 700; color: #64748b; padding: 3px 0 5px; }
+    .mc-weekdays span.mc-we { color: #94a3b8; }
+    .mc-grid { grid-auto-rows: 50px; gap: 2px; }
+    
+ /* ============================================================
+       CẤU HÌNH VIEWPORT VÀ Z-INDEX (SỬA LỖI ĐÈ HEADER)
+       ============================================================ */
+    .mc-header, .mc-weekdays { position: relative; z-index: 20; background: #ffffff; }
+    
+    /* Mặc định Viewport phải có z-index: 30 (Cao hơn Header) để Tooltip nổi lên trên hoàn toàn */
+    .mc-viewport { position: relative; overflow: visible !important; height: 310px; z-index: 30; }
+    
+    /* Khi JS gọi hiệu ứng trượt, nó bị giáng cấp xuống z-index: 10 để chạy ngầm dưới Header */
+    .mc-viewport.is-animating { overflow: hidden !important; z-index: 10 !important; }
+
+    /* ============================================================
+       CĂN CHỈNH Ô NGÀY (SỬA LỖI TOOLTIP NẰM 1 CHỖ)
+       ============================================================ */
+    .mc-day { 
+        /* QUAN TRỌNG NHẤT: Bắt buộc phải là relative để Tooltip neo đúng vào ngày này */
+        position: relative !important; 
+        overflow: visible !important; 
+        
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        border-radius: 6px; border: 1px solid transparent; box-sizing: border-box; 
+        font-size: 12px; color: #1e293b; cursor: default; min-width: 0; 
+    }
+    .mc-day.has-tooltip { cursor: pointer; }
+    .mc-day:hover, .mc-day.show-tooltip { z-index: 50; }
+
+    .mc-day .mc-num { font-weight: 600; line-height: 1; }
+    .mc-day.out-month .mc-num { color: #94a3b8; }
+    .mc-day.out-range { opacity: 0.32; }
+    .mc-day.st-busy    { background: #fee2e2; color: #b91c1c; }
+    .mc-day.st-holiday { background: #fef3c7; color: #b45309; }
+    .mc-day.st-weekend { background: #f1f5f9; color: #64748b; }
+    .mc-day.st-free    { background: #e6f4ea; color: #137333; }
+    .mc-day.today { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
+    .mc-label { margin-top: 3px; max-width: 100%; padding: 0 3px; box-sizing: border-box; font-size: 9.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ============================================================
+       CSS TOOLTIP DANH SÁCH TASK 
+       ============================================================ */
+    .custom-task-tooltip { 
+        position: absolute !important; 
+        bottom: calc(100% + 5px); /* Cách đỉnh ô ngày 5px để không bị dính sát */
+        left: 50%; 
+        transform: translateX(-50%); 
+        margin-bottom: 8px; z-index: 999999 !important; background: #ffffff; color: #334155; 
+        border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 14px; min-width: 180px; max-width: 420px; 
+        white-space: normal; word-break: break-word; overflow-wrap: anywhere; 
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.2); font-size: 12px; line-height: 1.5; 
+        opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease; 
+    }
     .custom-task-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: #ffffff transparent transparent transparent; }
-    .sched-day-card:hover .custom-task-tooltip, .sched-day-card.show-tooltip .custom-task-tooltip { opacity: 1; visibility: visible; pointer-events: auto; }
+    .mc-day:hover .custom-task-tooltip, .mc-day.show-tooltip .custom-task-tooltip { opacity: 1; visibility: visible; pointer-events: auto; }
     .tooltip-task-list { list-style: none; margin: 0; padding: 0; text-align: left; }
     .tooltip-task-list li { margin: 0; padding: 7px 0; border-bottom: 1px solid #e2e8f0; color: #334155; }
     .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
     .tooltip-task-list li:first-child { padding-top: 0; }
     .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
+
+    /* CHỐNG TRÀN MÉP TRÁI */
+    .mc-day:nth-child(7n + 1) .custom-task-tooltip,
+    .mc-day:nth-child(7n + 2) .custom-task-tooltip { left: -10px !important; transform: none !important; }
+    .mc-day:nth-child(7n + 1) .custom-task-tooltip::after,
+    .mc-day:nth-child(7n + 2) .custom-task-tooltip::after { left: 24px !important; margin-left: 0 !important; }
+
+    /* CHỐNG TRÀN MÉP PHẢI */
+    .mc-day:nth-child(7n + 6) .custom-task-tooltip,
+    .mc-day:nth-child(7n) .custom-task-tooltip { left: auto !important; right: -10px !important; transform: none !important; }
+    .mc-day:nth-child(7n + 6) .custom-task-tooltip::after,
+    .mc-day:nth-child(7n) .custom-task-tooltip::after { left: auto !important; right: 24px !important; margin-left: 0 !important; }
 
     /* ===================================================================
        2 NÚT CÔNG CỤ: NHẸ HƠN, GỌN HƠN, VẪN GIỮ ĐÚNG MÀU CHỨC NĂNG
@@ -701,6 +776,18 @@
                         <ItemTemplate>
                             <div class="d-flex align-items-center justify-content-between py-1 px-1">
                                 <div style="width: 88%; word-break: break-word; white-space: normal;">
+                                        <asp:PlaceHolder runat="server"
+                                        Visible='<%# Convert.ToInt32(Eval("ReminderCount")) > 0 %>'>
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbtReminder"
+                                            CommandName="REMINDER"
+                                            CommandArgument='<%# Eval("IdCongViec") %>'
+                                            CssClass="me-1 text-danger text-decoration-none"
+                                            ToolTip='<%# "Có " + Eval("ReminderCount") + " nhắc việc chưa xử lý" %>'>
+                                            <i class="fas fa-bell"></i>
+                                        </asp:LinkButton>
+                                    </asp:PlaceHolder>
                                     <asp:LinkButton runat="server" ID="lbtTaskName" 
                                         CommandName="ITEM_DETAIL" 
                                         CommandArgument='<%# Eval("IdCongViec") %>'
@@ -871,17 +958,19 @@
         <ContentTemplate>
             <asp:UpdatePanel ID="upnlTaskSchedule" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>
-                    <div class="p-3">
+                   <div class="p-3">
                         <div style="font-size: 13px; color: #1e40af; background: #eff6ff; padding: 10px 12px; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
                             <i class="fas fa-calendar-alt me-1"></i>
                             <%= GetResourceText(BackEndResourceKeys.EXECUTION_TIME) %>:
-                            <strong>
-                                <asp:Literal ID="ltrScheduleTaskName" runat="server"></asp:Literal>
-                            </strong>
+                            <strong><asp:Literal ID="ltrScheduleTaskName" runat="server"></asp:Literal></strong>
                         </div>
                         <asp:HiddenField ID="hdfSingleTaskScheduleJson" runat="server" />
-                        <div style="max-height:60vh; overflow-y:auto; padding:15px 5px 40px 5px;">
-                            <div id="task-timeline-container" class="row-sched-timeline-grid-7col"></div>
+                        
+                        <!-- CHUẨN HTML MỚI CỦA MINI-CALENDAR -->
+                        <div class="row-schedule-inner" style="padding: 10px 0;">
+                            <div class="mini-cal-wrap">
+                                <div class="mini-cal" id="task-timeline-container"></div>
+                            </div>
                         </div>
                     </div>
                 </ContentTemplate>
@@ -1270,57 +1359,190 @@ function toggleTaskTree() {
         initPhaseDragDrop();
 
         window.CMSMasterJs = window.CMSMasterJs || {};
+
+        // ==========================================
+        // VẼ LỊCH CHI TIẾT TASK & TOOLTIP
+        // ==========================================
         CMSMasterJs.RenderSingleTaskSchedule = function () {
-            var container = $('#task-timeline-container');
-            container.empty();
-            
-            var jsonString = $('#<%= hdfSingleTaskScheduleJson.ClientID %>').val();
+            var cal = $('#task-timeline-container');
+            cal.empty();
+
+            // Tìm HiddenField bất chấp ClientID bị biến đổi bởi ASP.NET
+            var hiddenField = $('input[id$="hdfSingleTaskScheduleJson"]');
+            if (hiddenField.length === 0) return;
+
+            var jsonString = hiddenField.val();
             if (!jsonString) return;
 
+            var data = {};
             try {
                 var decodedJson = $('<textarea/>').html(jsonString).text();
-                var scheduleData = JSON.parse(decodedJson);
+                data = JSON.parse(decodedJson) || {};
+            } catch (e) {
+                console.error("Lỗi parse JSON lịch biểu: ", e);
+                return;
+            }
 
-                for (var dateKey in scheduleData) {
-                    var dayData = scheduleData[dateKey];
-                    var dateParts = dateKey.split('-');
-                    var formattedDate = dateParts[2] + '/' + dateParts[1];
+            var keys = Object.keys(data).sort();
+            if (keys.length === 0) return;
 
-                    var tooltipHtml = "";
-                    var hasTasks = (dayData.status === "busy" && dayData.tasks && dayData.tasks.length > 0);
+            var minKey = keys[0];
+            var maxKey = keys[keys.length - 1];
+            var baseDate = new Date(parseInt(minKey.split('-')[0]), parseInt(minKey.split('-')[1]) - 1, parseInt(minKey.split('-')[2]));
 
+            cal.data('mc', {
+                data: data,
+                minKey: minKey,
+                maxKey: maxKey,
+                year: baseDate.getFullYear(),
+                month: baseDate.getMonth()
+            });
+
+            CMSMasterJs.DrawTaskCalendarGrid(cal);
+        };
+
+        CMSMasterJs.DrawTaskCalendarGrid = function (cal) {
+            var st = cal.data('mc');
+            if (!st) return;
+
+            var WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+            function titleText(s) { return 'Tháng ' + (s.month + 1) + ', ' + s.year; }
+
+            var html = '<div class="mc-header">' +
+                '<span class="mc-title">' + titleText(st) + '</span>' +
+                '<div class="mc-nav">' +
+                '<button type="button" class="mc-nav-btn" onclick="CMSMasterJs.ChangeTaskScheduleMonth(this, -1)">&#9650;</button>' +
+                '<button type="button" class="mc-nav-btn" onclick="CMSMasterJs.ChangeTaskScheduleMonth(this, 1)">&#9660;</button>' +
+                '</div></div>';
+
+            html += '<div class="mc-weekdays">';
+            for (var w = 0; w < 7; w++) html += '<span' + (w >= 5 ? ' class="mc-we"' : '') + '>' + WEEKDAYS[w] + '</span>';
+            html += '</div>';
+
+            html += '<div class="mc-viewport">' + CMSMasterJs.BuildTaskGridHtml(st) + '</div>';
+            cal.html(html);
+        };
+
+        CMSMasterJs.BuildTaskGridHtml = function (st) {
+            function pad(n) { return n < 10 ? '0' + n : '' + n; }
+            function toKey(y, m, d) { return y + '-' + pad(m + 1) + '-' + pad(d); }
+            function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+            var now = new Date();
+            var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
+            var offset = (new Date(st.year, st.month, 1).getDay() + 6) % 7;
+            var html = '<div class="mc-grid">';
+
+            for (var i = 0; i < 42; i++) {
+                var d = new Date(st.year, st.month, 1 - offset + i);
+                var key = toKey(d.getFullYear(), d.getMonth(), d.getDate());
+                var inRange = key >= st.minKey && key <= st.maxKey;
+                var info = inRange ? st.data[key] : null;
+
+                var cls = 'mc-day';
+                if (d.getMonth() !== st.month) cls += ' out-month';
+                if (!inRange) cls += ' out-range';
+                else if (info && info.status) cls += ' st-' + info.status;
+                if (key === todayKey) cls += ' today';
+
+                var extra = '';
+                var tooltipHtml = '';
+                var clickAttr = '';
+
+                if (info) {
+                    var label = String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
+                    if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+
+                    // Vẽ Tooltip nếu có task
+                    var hasTasks = (info.status === "busy" && info.tasks && info.tasks.length > 0);
                     if (hasTasks) {
+                        cls += ' has-tooltip';
+                        clickAttr = ' onclick="CMSMasterJs.PinTooltip(this, event)"';
                         tooltipHtml = '<div class="custom-task-tooltip"><ul class="tooltip-task-list">';
-                        for (var i = 0; i < dayData.tasks.length; i++) {
-                            tooltipHtml += '<li><span class="t-code">[' + dayData.tasks[i].code + ']</span>' + dayData.tasks[i].name + '</li>';
+                        for (var t = 0; t < info.tasks.length; t++) {
+                            tooltipHtml += '<li><span class="t-code">[' + escAttr(info.tasks[t].code) + ']</span>' + escAttr(info.tasks[t].name) + '</li>';
                         }
                         tooltipHtml += '</ul></div>';
+                    } else if (info.text) {
+                        clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
                     }
-
-                    var clickAttr = hasTasks ? 'onclick="CMSMasterJs.PinTooltip(this, event)"' : '';
-
-                    var html = '<div class="sched-day-card" ' + clickAttr + '>' +
-                        '<div class="sd-header">' + formattedDate + '<small>' + dayData.dayName + '</small></div>' +
-                        '<div class="sd-body ' + dayData.status + '">' + dayData.displayText + '</div>' +
-                        tooltipHtml +
-                        '</div>';
-                    container.append(html);
                 }
-            } catch (e) {
-                console.error("Lỗi vẽ JSON Lịch biểu Task: ", e);
+
+                html += '<div class="' + cls + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + tooltipHtml + '</div>';
+            }
+            return html + '</div>';
+        };
+
+        // Hàm trượt lịch
+        // Hàm trượt lịch (Đã fix lỗi cắt Tooltip)
+        CMSMasterJs.ChangeTaskScheduleMonth = function (btnElement, delta) {
+            var cal = $(btnElement).closest('.mini-cal');
+            var st = cal.data('mc');
+            if (!st) return;
+
+            var viewport = cal.find('.mc-viewport');
+
+            // [QUAN TRỌNG]: Bật chế độ "cắt viền" lên để chạy hiệu ứng trượt, đồng thời xóa Tooltip đang ghim
+            viewport.addClass('is-animating');
+            $('.mc-day').removeClass('show-tooltip');
+
+            var grids = viewport.children('.mc-grid');
+            if (grids.length > 1) {
+                grids.not(':last').remove();
+                var lastEl = grids.last()[0];
+                if (lastEl.getAnimations) lastEl.getAnimations().forEach(function (a) { a.cancel(); });
+            }
+
+            var d = new Date(st.year, st.month + delta, 1);
+            st.year = d.getFullYear();
+            st.month = d.getMonth();
+            cal.find('.mc-title').text('Tháng ' + (st.month + 1) + ', ' + st.year);
+
+            var oldGrid = viewport.children('.mc-grid').last();
+            var newGrid = $(CMSMasterJs.BuildTaskGridHtml(st));
+            viewport.append(newGrid);
+
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion || !newGrid[0].animate) {
+                oldGrid.remove();
+                viewport.removeClass('is-animating'); // Trả lại bình thường nếu không có hiệu ứng
+                return;
+            }
+
+            var dir = delta > 0 ? 1 : -1;
+            var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
+
+            oldGrid[0].animate([
+                { transform: 'translateY(0)', opacity: 1 },
+                { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }
+            ], opts).onfinish = function () {
+                oldGrid.remove();
+            };
+
+            newGrid[0].animate([
+                { transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 },
+                { transform: 'translateY(0)', opacity: 1 }
+            ], opts).onfinish = function () {
+                // [QUAN TRỌNG]: Hiệu ứng xong rồi, tắt "cắt viền" đi để Tooltip tự do nổi lên
+                viewport.removeClass('is-animating');
+            };
+        };
+
+        // Hàm ghim/bỏ ghim Tooltip
+        CMSMasterJs.PinTooltip = function (element, event) {
+            event.stopPropagation();
+            var isPinned = $(element).hasClass('show-tooltip');
+            $('.mc-day').removeClass('show-tooltip');
+            if (!isPinned) {
+                $(element).addClass('show-tooltip');
             }
         };
 
-        CMSMasterJs.PinTooltip = function (element, event) {
-            event.stopPropagation();
-            var isPinned = $(element).hasClass('show-tooltip'); $('.sched-day-card').removeClass('show-tooltip');
-            if (!isPinned) $(element).addClass('show-tooltip');
-        };
-
+        // Click ra ngoài để tắt Tooltip
         $(document).on('click', function () {
-            $('.sched-day-card').removeClass('show-tooltip');
+            $('.mc-day').removeClass('show-tooltip');
         });
-
+        
         // UpdatePanel có thể render lại tbody. Sau khi render xong, áp lại state hiện tại.
         if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
             Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
