@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
+using Org.BouncyCastle.Asn1.Crmf;
 namespace SweetSoft.QLDA.Core.Managers
 {
     public class ThanhVienDuAnManager : BaseManager
@@ -168,6 +169,7 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
+
         public List<Guid> GetIdNhanVienByDuAnAndVaiTro(Guid idDuAn, Guid idVaiTro)
         {
             return _repository.GetIdNhanVienByDuAnAndVaiTro(idDuAn, idVaiTro);   // chỉ còn 1 dòng, gọi thẳng xuống Repository
@@ -202,6 +204,11 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable GetThanhVienDuAnDetail(Guid idDuAn)
         {
             return _repository.GetThanhVienDuAnDetail(idDuAn);
+        }
+
+        public TblThanhVienDuAn GetByNhanVienAndDuAn(Guid idNhanVien, Guid idDuAn)
+        {
+            return _repository.GetNhanVienIsActiveInDuAn(idNhanVien, idDuAn, Guid.Empty);
         }
     }
 }

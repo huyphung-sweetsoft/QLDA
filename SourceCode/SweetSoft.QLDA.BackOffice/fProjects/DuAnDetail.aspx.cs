@@ -103,7 +103,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
             CtrlProjectTabs1.ProjectId = QueryId;
             if (!IsPostBack)
             {
-                if (!this.IsView)
+                if (!this.IsView || ThanhVienDuAnManager.Instance.GetByNhanVienAndDuAn(SweetContext.Current.UserId, QueryId) == null)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.PROJECT_LIST));
                 Navigation1.keyValuePairUrls = new Dictionary<string, string>()
