@@ -139,12 +139,14 @@
             <li><strong>Dự án trễ hạn:</strong> chỉ dự án đang thực hiện và ngày hiện tại đã qua ngày kết thúc dự kiến.</li>
             <li><strong>Đến hạn trong 7 ngày tới:</strong> dự án đang thực hiện, có hạn dự kiến từ hôm nay đến hết 7 ngày tới.</li>
             <li><strong>Khoản chi chờ duyệt:</strong> đếm các khoản chi chưa được duyệt, không phải số tiền đã chi.</li>
+            <li><strong>Thu chi:</strong> chỉ tổng hợp từ các dự án đã Hoàn thành, cùng phạm vi với Dashboard Chi phí.</li>
             <li><strong>Tình hình phân công công việc:</strong> căn cứ số việc nhiều nhất trong một ngày của tuần: 0 là Rảnh, 1 là Bình thường, từ 2 là Quá tải. Đây là lịch giao việc dự kiến, không phải giờ làm thực tế.</li>
             <li><strong>Dự án cần xử lý:</strong> dự án trễ hạn, có công việc quá hạn hoặc có vấn đề ảnh hưởng cao. Một dự án chỉ được đếm một lần.</li>
             <% } else { %>
             <li><strong>Công việc quá hạn:</strong> chưa hoàn thành và đã qua ngày kết thúc dự kiến. <strong>Đến hạn trong 7 ngày:</strong> chưa hoàn thành, hạn từ hôm nay đến hết 7 ngày tới.</li>
             <li><strong>Chi phí chờ duyệt:</strong> tổng tiền của các khoản chi chưa được duyệt; chưa tính vào “Chi phí đã duyệt”.</li>
             <li><strong>Còn phải thu:</strong> giá trị hợp đồng trừ tiền đã thu; nếu chưa có giá trị hợp đồng, dùng tổng các đợt thanh toán chưa thu.</li>
+            <li><strong>Thu chi:</strong> chỉ có số liệu khi dự án đã Hoàn thành, cùng phạm vi với Dashboard Chi phí.</li>
             <li><strong>Tình hình phân công công việc:</strong> căn cứ số việc nhiều nhất trong một ngày của tuần thuộc dự án: 0 là Rảnh, 1 là Bình thường, từ 2 là Quá tải; không phải giờ làm thực tế.</li>
             <% } %>
         </ul>
@@ -339,7 +341,7 @@
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
-                    <p class="dashboard-project-glance-caption">Tổng hợp thu chi · <%= AllFinanceProjectsWithActivityCount %>/<%= Summary.FinanceSummary.Projects.Count %> dự án có phát sinh</p>
+                    <p class="dashboard-project-glance-caption"><%= Summary.FinanceSummary.Projects.Count == 0 ? "Chưa có dự án hoàn thành trong phạm vi" : "Tổng hợp thu chi · " + AllFinanceProjectsWithActivityCount + "/" + Summary.FinanceSummary.Projects.Count + " dự án hoàn thành có phát sinh" %></p>
                     <div class="dashboard-finance-chart-layout">
                         <div id="overviewAllFinanceChart" class="dashboard-finance-chart"
                             data-values="<%= Summary.FinanceSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.ApprovedCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.PendingApprovalCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
@@ -347,7 +349,7 @@
                             <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="received"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Đã thu</span></button>
                             <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="outstanding"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Còn phải thu</span></button>
                             <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="cost"><i class="dashboard-chart-dot" style="background:#518cdd"></i><span>Chi đã duyệt</span></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewPendingCostsModal" data-finance-filter="pending"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Chi chờ duyệt</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="pending"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Chi chờ duyệt</span></button>
                         </div>
                     </div>
                 </div>
@@ -541,7 +543,7 @@
             <div class="modal-header"><h5 class="modal-title" id="overviewAllFinanceTitle">Thu tiền và chi phí theo dự án</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
-                <p class="small text-muted mb-2">Một dự án đã thu một phần vẫn có thể còn phải thu, nên có thể xuất hiện ở cả hai danh sách.</p>
+                <p class="small text-muted mb-2">Chỉ thống kê dự án đã Hoàn thành. Một dự án đã thu một phần vẫn có thể còn phải thu, nên có thể xuất hiện ở cả hai danh sách.</p>
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                     <input type="search" class="form-control dashboard-attention-search" id="overviewAllFinanceSearch" placeholder="Tìm dự án" aria-label="Tìm dự án" />
                     <strong class="dashboard-list-count" id="overviewAllFinanceCount"></strong>
@@ -550,7 +552,7 @@
                     <thead><tr><th>Dự án</th><th class="text-end">Đã thu</th><th class="text-end">Còn phải thu</th><th class="text-end">Chi phí đã duyệt</th><th class="text-end">Chi phí chờ duyệt</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var project in GetAllProjectsFinanceRows()) { %>
                     <tr class="overview-all-finance-row" data-received="<%= project.ReceivedPayment > 0 ? "1" : "0" %>"
-                        data-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>" data-cost="<%= project.ApprovedCost > 0 ? "1" : "0" %>"
+                        data-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>" data-cost="<%= project.ApprovedCost > 0 ? "1" : "0" %>" data-pending="<%= project.PendingApprovalCost > 0 ? "1" : "0" %>"
                         data-search="<%: (project.ProjectCode + " " + project.ProjectName).ToLowerInvariant() %>">
                         <td><strong><%: project.ProjectCode %></strong><br /><small><%: project.ProjectName %></small></td>
                         <td class="text-end text-nowrap"><%: FormatProjectMoney(project.ReceivedPayment) %></td>
@@ -646,7 +648,7 @@
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
-                    <p class="dashboard-project-glance-caption"><%= ProjectCostSummary.TotalContractValue > 0 ? "Hợp đồng: " + FormatProjectMoney(ProjectCostSummary.TotalContractValue) : "Chưa ghi nhận giá trị hợp đồng" %></p>
+                    <p class="dashboard-project-glance-caption"><%= ProjectCostSummary.ProjectCount == 0 ? "Chỉ thống kê dự án đã hoàn thành" : ProjectCostSummary.TotalContractValue > 0 ? "Hợp đồng: " + FormatProjectMoney(ProjectCostSummary.TotalContractValue) : "Chưa ghi nhận giá trị hợp đồng" %></p>
                     <div class="dashboard-finance-chart-layout">
                         <div id="overviewProjectFinanceChart" class="dashboard-finance-chart"
                             data-values="<%= ProjectCostSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.ActualCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.PendingApprovalCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
@@ -1271,7 +1273,8 @@
         bindAllProjectsBreakdown('overviewAllFinanceModal', '.overview-all-finance-row', 'data-finance-filter',
             {
                 all: 'Thu tiền và chi phí theo dự án', received: 'Đã thu theo dự án',
-                outstanding: 'Còn phải thu theo dự án', cost: 'Chi phí đã duyệt theo dự án'
+                outstanding: 'Còn phải thu theo dự án', cost: 'Chi phí đã duyệt theo dự án',
+                pending: 'Chi phí chờ duyệt theo dự án'
             }, 'dự án');
         bindAllProjectsBreakdown('overviewAllResourceModal', '.overview-all-resource-row', 'data-load',
             {
