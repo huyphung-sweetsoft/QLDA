@@ -471,7 +471,31 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         private void UpdateMemberCountUI()
         {
             int count = this.SelectedMemberIds.Count;
-            txtSoLuongNhanVien.Text = count > 0 ? $"Đã chọn {count} nhân viên" : "";
+
+            if (count == 1)
+            {
+                // [ĐẶC BIỆT]: Nếu chỉ chọn 1 người, truy vấn DB lấy thẳng tên họ ra
+                Guid singleMemberId = this.SelectedMemberIds[0];
+                var user = UserManager.Instance.GetUserById(singleMemberId);
+
+                if (user != null)
+                {
+                    txtSoLuongNhanVien.Text = user.DisplayName;
+                }
+                else
+                {
+                    txtSoLuongNhanVien.Text = "Đã chọn 1 nhân viên"; // Fallback an toàn
+                }
+            }
+            else if (count > 1)
+            {
+                // Nếu > 1 người thì hiển thị số lượng như cũ
+                txtSoLuongNhanVien.Text = $"Đã chọn {count} nhân viên";
+            }
+            else
+            {
+                txtSoLuongNhanVien.Text = "";
+            }
         }
 
         private void LoadHopDongThucHien(TblDuAn duAn)

@@ -107,6 +107,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         TenTaskCha = taskRow.Field<string>("TenTaskCha"),
                         TenPhaseGoc = phaseRow.Field<string>("TenPhase"),
                         TrangThaiTask = taskRow.Field<byte>("TrangThaiTask"),
+                        LyDoTreHan = taskRow["LyDoTre"] != DBNull.Value ? taskRow.Field<string>("LyDoTre") : string.Empty,
                         AssigneeCount = taskRow.Field<int>("AssigneeCount"),
                         IsMyTask = taskRow.Field<int>("IsMyTask") == 1
                     };

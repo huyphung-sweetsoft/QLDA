@@ -29,12 +29,13 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             if (!IsPostBack)
             {
-                if (!this.IsView)
+                // [ĐÃ SỬA]: Gỡ bỏ check quyền (!this.IsView) mù quáng ở đây.
+                // Chuyển việc xét duyệt vào hàm InitSecurityAndTargetUser để nhân viên được tự xem lịch mình.
+                if (!InitSecurityAndTargetUser())
                 {
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                     return;
                 }
-                InitSecurityAndTargetUser();
 
                 // Mặc định load ngày hôm nay, chế độ "Tháng"
                 hfCurrentDate.Value = DateTime.Today.ToString("yyyy-MM-dd");
@@ -45,7 +46,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         }
 
         #region 1. Xử lý Bảo mật & Phân quyền
-        private void InitSecurityAndTargetUser()
+        private bool InitSecurityAndTargetUser()
         {
             Guid loggedInUser = SweetContext.Current.UserId;
             string rawQueryId = Request.QueryString["Id"];
@@ -66,15 +67,15 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                     if (queryId == loggedInUser)
                     {
                         litTitle.Text = GetResourceText(BackEndResourceKeys.MY_PERSONAL_SCHEDULE);
+                        // [HỢP LỆ]: Tự xem mình thì pass luôn, không cần check quyền!
                     }
                     else
                     {
+                        // [CHẶN]: Nếu xem lịch người khác thì mới bắt đầu lôi quyền Module ra check
                         bool hasViewRight = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien);
                         if (!hasViewRight)
                         {
-                            // Không đủ quyền -> Đuổi ra ngoài trang lỗi 403
-                            Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
-                            return;
+                            return false; // Báo hiệu cho Page_Load đuổi ra 403
                         }
 
                         TargetUserId = queryId;
@@ -90,8 +91,9 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 }
                 else
                 {
+                    // Lỗi format ID thì đuổi ra 404
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), true);
-                    return;
+                    return true;
                 }
             }
             else
@@ -124,6 +126,8 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             }
 
             Navigation1.keyValuePairUrls = navLinks;
+
+            return true; // Pass ải an ninh thành công!
         }
         #endregion
 

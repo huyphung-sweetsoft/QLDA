@@ -15,6 +15,7 @@ namespace SweetSoft.QLDA.Core.Models
         public DateTime? NgayHoanThanhThucTe { get; set; }
         public byte TrangThaiTask { get; set; }
         public string TrangThaiText { get; set; }
+        public string LyDoTreHan { get; set; }
 
         // RAW DATA TỪ SQL
         public int ThoiHanNgay { get; set; }

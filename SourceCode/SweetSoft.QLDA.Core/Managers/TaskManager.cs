@@ -670,12 +670,13 @@ namespace SweetSoft.QLDA.Core.Managers
             return int.TryParse(root, out int result) ? result : int.MaxValue;
         }
 
-        public void NotifyPMsOnScheduleChange(DateTime fromDate, DateTime? toDate, string detailReason)
+        public void NotifyPMsOnScheduleChange(DateTime fromDate, DateTime? toDate, string detailReason, string loaiThayDoi = null,Guid? idCauHinh = null,Guid? idNgoaiLe = null)
         {
             try
             {
                 string sql = @"
                     SELECT 
+                        c.IdCongViec,
                         c.IdDuAn,
                         d.TenDuAn,
                         d.IdNhanVienQuanLy,
@@ -742,7 +743,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     string bellTitle = $"Tiến độ dự án [{projectGroup.Key.TenDuAn}]";
                     string bellContent = $"Có {count} công việc bị ảnh hưởng do {detailReason.ToLower()} Kiểm tra Email để xem chi tiết.";
 
-                    ThongBaoManager.Instance.CreateScheduleChangeNotification(
+                    TblThongBao notification = ThongBaoManager.Instance.CreateScheduleChangeNotification(
                         pmId.Value,
                         bellTitle,
                         bellContent,
@@ -751,6 +752,36 @@ namespace SweetSoft.QLDA.Core.Managers
                         detailReason,
                         taskListHtml.ToString()
                     );
+                    if (notification != null)
+                    {
+                        List<TblNhacViecLichCongViec> reminderItems =
+                            new List<TblNhacViecLichCongViec>();
+
+                        foreach (var row in projectGroup)
+                        {
+                            Guid idCongViec = row.Field<Guid>("IdCongViec");
+
+                            reminderItems.Add(new TblNhacViecLichCongViec
+                            {
+                                IdNhacViec = Guid.NewGuid(),
+                                IdThongBao = notification.IdThongBao,
+                                IdDuAn = projectGroup.Key.IdDuAn,
+                                IdCongViec = idCongViec,
+                                UserId = pmId.Value,
+                                LoaiThayDoi = loaiThayDoi,
+                                IdCauHinh = idCauHinh,
+                                IdNgoaiLe = idNgoaiLe,
+                                NoiDung = detailReason,
+                                NgayHieuLucTu = fromDate,
+                                NgayHieuLucDen = toDate
+                            });
+                        }
+
+                        if (reminderItems.Count > 0)
+                        {
+                            NhacViecLichCongViecManager.Instance.CreateRange(reminderItems);
+                        }
+                    }
                 }
             }
             catch (Exception ex)

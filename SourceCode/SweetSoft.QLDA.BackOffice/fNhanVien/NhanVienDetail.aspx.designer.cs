@@ -294,6 +294,15 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.WebControls.Literal ltrDetailTenDuAn;
 
         /// <summary>
+        /// ltrDetailTrangThai control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDetailTrangThai;
+
+        /// <summary>
         /// ltrDetailMaDuAn control.
         /// </summary>
         /// <remarks>
@@ -330,13 +339,31 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.WebControls.Literal ltrDetailContribution;
 
         /// <summary>
-        /// ltrDetailTrangThai control.
+        /// ltrHeSoCao control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrDetailTrangThai;
+        protected global::System.Web.UI.WebControls.Literal ltrHeSoCao;
+
+        /// <summary>
+        /// ltrHeSoTrungBinh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrHeSoTrungBinh;
+
+        /// <summary>
+        /// ltrHeSoThap control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrHeSoThap;
 
         /// <summary>
         /// rptDetailPhases control.
@@ -355,5 +382,14 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fNhanVien.Controls.CtrlNhanVienPopup CtrlNhanVienPopup1;
+
+        /// <summary>
+        /// mdlDelayReason control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlDelayReason;
     }
 }
