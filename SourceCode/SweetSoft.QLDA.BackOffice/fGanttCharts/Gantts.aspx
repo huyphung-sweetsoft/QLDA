@@ -1,6 +1,7 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPages/MasterTemplate.Master" CodeBehind="Gantts.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fGanttCharts.Gantts" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
+<%@ Register Src="~/fIssues/Controls/CtrlViewIssueDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewIssueDetail" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
@@ -238,7 +239,6 @@
                             <table class="table table-hover table-bordered mb-0 align-middle" style="font-size: 13px;">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-center" style="width: 100px;"><%= GetResourceText(BackEndResourceKeys.ISSUE_CODE) %></th>
                                         <th><%= GetResourceText(BackEndResourceKeys.ISSUE_NAME) %></th>
                                         <th class="text-center" style="width: 130px;"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                                     </tr>
@@ -247,8 +247,11 @@
                                     <asp:Repeater ID="rptIssues" runat="server">
                                         <ItemTemplate>
                                             <tr>
-                                                <td class="text-center fw-bold"><%# Eval("MaVanDe") %></td>
-                                                <td><%# Eval("TenVanDe") %></td>
+                                                <td>
+                                                    <a href="javascript:;" onclick="openIssueDetail('<%# Eval("IdVanDe") %>'); return false;" class="text-primary text-decoration-none fw-bold">
+                                                        <%# Eval("TenVanDe") %>
+                                                    </a>
+                                                </td>
                                                 <td class="text-center">
                                                     <span class="badge <%# GetIssueStatusBadge(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>">
                                                         <%# GetIssueStatusText(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>
@@ -270,12 +273,75 @@
             </SweetSoft:ExtraModal>
         </ContentTemplate>
     </asp:UpdatePanel>
+
+    <!-- Nút ẩn để gọi Server mở Popup 2 -->
+    <asp:UpdatePanel ID="upViewIssueTrigger" runat="server" UpdateMode="Conditional">
+        <ContentTemplate>
+            <asp:HiddenField ID="hdfIssueIdToView" runat="server" />
+            <asp:Button ID="btnTriggerViewIssue" runat="server" CssClass="d-none" OnClick="btnTriggerViewIssue_Click" />
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <SweetSoft:CtrlViewIssueDetail runat="server" ID="CtrlViewIssueDetail1" />
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script>
+        var shouldReopenTaskInfo = false;
+
+        function openIssueDetail(issueId) {
+            shouldReopenTaskInfo = true;
+            
+            // 1. Ép Bootstrap TẮT Popup 1 ngay lập tức
+            $('#<%= modalIssues.ClientID %>').modal('hide');
+            
+            // 2. Chờ 350ms cho hiệu ứng tắt xong xuôi và lớp nền đen biến mất
+            // Rồi mới bấm nút ẩn để gọi Server vẽ lên Popup 2
+            setTimeout(function() {
+                document.getElementById('<%= hdfIssueIdToView.ClientID %>').value = issueId;
+                document.getElementById('<%= btnTriggerViewIssue.ClientID %>').click();
+            }, 350);
+        }
+
+        function bindModalEvents() {
+            // Xóa rác event cũ (phòng khi postback UpdatePanel làm nhân đôi event)
+            $(document).off('hidden.bs.modal.ganttReopen');
+            
+            // Lắng nghe sự kiện: Lúc nào có 1 cái Modal nào đó VỪA BỊ ĐÓNG LẠI XONG
+            $(document).on('hidden.bs.modal.ganttReopen', '.modal', function (e) {
+                // Ta soi xem: Nếu cái Modal vừa bị đóng là thằng Popup 2 (CtrlViewIssueDetail) 
+                // VÀ cờ shouldReopenTaskInfo đang bật
+                if (e.target.id.indexOf('mdlIssueView') !== -1) {
+                    if (shouldReopenTaskInfo) {
+                        shouldReopenTaskInfo = false;
+                        
+                        // Thì ta ra lệnh: Bấm lại nút Load để bung Popup 1 lên như cũ!
+                        var btnLoad = document.getElementById('<%= btnLoadIssues.ClientID %>');
+                        if(btnLoad) btnLoad.click();
+                    }
+                }
+            });
+        }
+
+        if (typeof Sys !== 'undefined' && Sys.Application) {
+            Sys.Application.add_load(function () {
+                bindModalEvents();
+                if (document.getElementById("chartHeader").innerHTML === '') {
+                    renderGanttChart();
+                }
+            });
+        } else {
+            window.addEventListener('DOMContentLoaded', function() {
+                bindModalEvents();
+                renderGanttChart();
+            });
+        }
+
+        // ==========================================
+        // CÁC HÀM CŨ GIỮ NGUYÊN (VẼ BIỂU ĐỒ GANTT)
+        // ==========================================
         function toggleTask(maCv, element) {
             element.classList.toggle('collapsed');
             const icon = element.querySelector('.toggle-icon');
@@ -478,16 +544,6 @@
             chartTracks.appendChild(todayLabel);
 
             updateVisibility();
-        }
-
-        if (typeof Sys !== 'undefined' && Sys.Application) {
-            Sys.Application.add_load(function () {
-                if (document.getElementById("chartHeader").innerHTML === '') {
-                    renderGanttChart();
-                }
-            });
-        } else {
-            window.addEventListener('DOMContentLoaded', renderGanttChart);
         }
     </script>
 </asp:Content>
