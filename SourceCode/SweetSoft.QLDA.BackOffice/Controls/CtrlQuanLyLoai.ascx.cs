@@ -34,8 +34,11 @@ namespace SweetSoft.QLDA.BackOffice.Controls
             string title = "Quản lý loại danh mục";
             if (doiTuong == LoaiManager.LoaiDoiTuong.DuAn) title = "Quản lý Loại Dự Án";
             else if (doiTuong == LoaiManager.LoaiDoiTuong.KhachHang) title = "Quản lý Loại Khách Hàng";
-            
-            mdlQuanLyLoai.Title = title;
+            else if (doiTuong == LoaiManager.LoaiDoiTuong.ChucDanh) title = "Quản lý Chúc danh";
+            else if (doiTuong == LoaiManager.LoaiDoiTuong.PhongBan) title = "Quản lý Phòng ban";
+
+
+                mdlQuanLyLoai.Title = title;
             lblError.Visible = false;
             lblSuccess.Visible = false;
             txtTenLoaiNew.Text = string.Empty;
