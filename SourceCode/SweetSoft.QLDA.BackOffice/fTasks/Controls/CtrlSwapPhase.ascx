@@ -150,7 +150,7 @@
     <FooterTemplate>
         <asp:UpdatePanel ID="upnlFooterReorderOptions" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
-                <asp:LinkButton ID="btnConfirmReorder" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnConfirmReorder_Click">
+                <asp:LinkButton ID="btnConfirmReorder" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorder_Click">
                     <i class="fas fa-check me-1"></i> Áp dụng thay đổi
                 </asp:LinkButton>
             </ContentTemplate>
@@ -199,7 +199,7 @@
             <ContentTemplate>
                 <asp:LinkButton ID="btnBackFromReview" runat="server" CausesValidation="false" OnClick="btnBackFromReview_Click" Style="display:none !important;">
                 </asp:LinkButton>
-                <asp:LinkButton ID="btnConfirmReorderFromReview" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnConfirmReorderFromReview_Click">
+                <asp:LinkButton ID="btnConfirmReorderFromReview" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorderFromReview_Click">
                     <i class="fas fa-check me-1"></i> Áp dụng thay đổi
                 </asp:LinkButton>
             </ContentTemplate>
@@ -262,8 +262,20 @@
             document.addEventListener('DOMContentLoaded', setupReorderReviewBackButton);
         } else {
             setupReorderReviewBackButton();
-        }
-    })();
+    }
+})();
+    function setReorderLoading(btn) {
+        if (!btn) return true;
+        // Chặn bấm 2 lần liên tiếp (Double-click)
+        if (btn.classList.contains('disabled')) return false;
+
+        // Đổi giao diện nút thành vòng xoay
+        btn.classList.add('disabled');
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.85';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...';
+            return true; // Trả về true để Server tiếp tục chạy Postback
+    }
 </script>
 <style type="text/css">
     .reorder-review-back-button:hover {
