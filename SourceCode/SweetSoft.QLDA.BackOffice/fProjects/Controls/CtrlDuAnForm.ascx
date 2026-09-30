@@ -3,36 +3,37 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>  
 <%@ Register Src="~/fProjects/Controls/CtrlChonNhanVien.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVien" %>
 
-<SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" Title="Project Infomation">
+<SweetSoft:ExtraModal runat="server" ID="dlDetail" Type="Primary" Title="Project Infomation" Size="Large">
         <ContentTemplate>
             <div class="row js-validation validationEngineContainer">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_CODE) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtMaDuAn"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_NAME) %></label>
                         <SweetSoft:ExtraTextBox runat="server" ID="txtTenDuAn" Required="true"></SweetSoft:ExtraTextBox>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PROJECT_TYPE) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlLoaiDuAn" Required="true" SimpleInit="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="mb-3">
                         <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlKhachHang" Required="true" PlaceHolder="Select the value"></SweetSoft:ExtraDropdown>
                     </div>
                 </div>
+                <div class="col-lg-8">
                <asp:UpdatePanel runat="server" ID="upHopDong" UpdateMode="Conditional">
                     <ContentTemplate>
-                        <div class="col-lg-12">
+                        
                             <div class="mb-3">
                                 <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NUMBER) %></label>
                                 <div class="input-group">
@@ -51,28 +52,33 @@
                                     </SweetSoft:ExtraButton>
                                 </div>
                             </div>
-                        </div>
+                        
                     </ContentTemplate>
                 </asp:UpdatePanel>
+                </div>
                 <asp:UpdatePanel runat="server" ID="upHopDongInfo" UpdateMode="Conditional">
                     <ContentTemplate>
                         <asp:Panel runat="server" ID="pnlHopDongInfo" Visible="false" CssClass="col-lg-12">
-                            <div class="border rounded p-3 mb-3">
-                                <div class="row">
+                            <div class="border rounded p-3 mb-3 position-relative">
+                                <button type="button" class="btn-close position-absolute top-0 end-0 m-2"
+                                    aria-label="Đóng" onclick="$(this).closest('#<%= pnlHopDongInfo.ClientID %>').hide();">
+                                </button>
+
+                                <div class="row pe-4">
                                     <div class="col-lg-3">
-                                        <small class="text-muted">Tên hợp đồng</small>
+                                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.CONTRACT_NAME) %></small>
                                         <div class="fw-semibold">
                                             <asp:Label runat="server" ID="lblTenHopDong" />
                                         </div>
                                     </div>
                                     <div class="col-lg-3">
-                                        <small class="text-muted">Giá trị</small>
+                                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %></small>
                                         <div class="fw-semibold">
                                             <asp:Label runat="server" ID="lblGiaTriHopDong" />
                                         </div>
                                     </div>
                                     <div class="col-lg-3">
-                                        <small class="text-muted">Ngày ký</small>
+                                        <small class="text-muted"><%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %></small>
                                         <div class="fw-semibold">
                                             <asp:Label runat="server" ID="lblNgayKyHopDong" />
                                         </div>
@@ -154,7 +160,7 @@
                         <label class="form-label"><%= GetResourceText(BackEndResourceKeys.SUMMARY) %></label>
                         <CKEditor:CKEditorControl ID="txtMoTa" Width="100%" CssClass="ck-editor"
                             Toolbar="Full" BodyId="StatucPageContent" Language="vi-VN" AutoParagraph="false"
-                            BasePath="~/Styles/plugins/ckeditor/" runat="server" Height="200">
+                            BasePath="~/Styles/plugins/ckeditor/" runat="server" Height="100">
                         </CKEditor:CKEditorControl>
                     </div>
                 </div>

@@ -15,13 +15,15 @@ namespace SweetSoft.QLDA.Core.Respositories
     {
         public DuAnRepository(AuditManager auditManager) : base(auditManager) { }
 
-        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord)
+        public DataTable SearchPaging(string searchTerm, Dictionary<string, object> parameters, string orderBy, int pageNumber, int pageSize, out int totalRecord, Guid userId, bool isAdmin)
         {
             totalRecord = 0;
             string keyword = InlineQueryHelpers.SQLEncode(searchTerm ?? string.Empty);
             string sql = $@"
                 DECLARE @startRow INT = {pageNumber};
                 DECLARE @endRow INT = {pageSize};
+                DECLARE @userId VARCHAR(36) = '{userId}';
+                DECLARE @isAdmin BIT = {(isAdmin ? 1 : 0)};
                 DECLARE @idLoaiDuAn VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdLoaiDuAn])}';
                 DECLARE @idNhanVienQuanLy VARCHAR(36) = '{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.IdNhanVienQuanLy])}';
                 DECLARE @trangThai TINYINT = {(parameters[TblDuAn.Columns.TrangThai] == null ? "NULL" : $"'{InlineQueryHelpers.SQLEncode(parameters[TblDuAn.Columns.TrangThai])}'")};
@@ -37,6 +39,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                         left join aspnet_Users u on u.UserId = d.IdNhanVienQuanLy
                         left join TblKhachHang kh on kh.IdKhachHang = d.IdKhachHang
                         where d.DaXoa = 0
+                        and (
+                            @isAdmin = 1
+                            or exists (
+                                select 1
+                                from TblThanhVienDuAn tv
+                                where tv.IdDuAn = d.IdDuAn
+                                  and tv.IdNhanVien = @userId
+                                  and tv.DaXoa = 0
+                            )
+                        )
                         and (@idLoaiDuAn = '{Guid.Empty}' or d.IdLoaiDuAn = @idLoaiDuAn)
                         and (@idNhanVienQuanLy = '{Guid.Empty}' or d.IdNhanVienQuanLy = @idNhanVienQuanLy)
                         and (@trangThai is null or d.TrangThai = @trangThai)
