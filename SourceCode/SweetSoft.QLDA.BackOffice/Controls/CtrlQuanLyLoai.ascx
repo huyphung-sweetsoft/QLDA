@@ -38,7 +38,9 @@
                                             <asp:Label runat="server" ID="lblTenLoai" Text='<%# Eval("TenLoai") %>'></asp:Label>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <SweetSoft:ExtraTextBox runat="server" ID="txtTenLoaiEdit" Text='<%# Bind("TenLoai") %>' MaxLength="250"></SweetSoft:ExtraTextBox>
+                                            <SweetSoft:ExtraTextBox runat="server" ID="txtTenLoaiEdit"
+                                                Text='<%# Eval("TenLoai") %>' MaxLength="250">
+                                            </SweetSoft:ExtraTextBox>
                                         </EditItemTemplate>
                                     </asp:TemplateField>
 
