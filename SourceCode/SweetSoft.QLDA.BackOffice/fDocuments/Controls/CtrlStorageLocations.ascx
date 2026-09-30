@@ -268,7 +268,7 @@
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-lg-5 col-md-6 mb-3">
                     <label class="form-label">
                         <%= GetResourceText(BackEndResourceKeys.PARENT_STORAGE_LOCATION) %>
                     </label>
@@ -287,7 +287,7 @@
                     </small>
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-lg-3 col-md-6 mb-3">
                     <label class="form-label">
                         <%= GetResourceText(BackEndResourceKeys.RESPONSIBLE_EMPLOYEE) %>
                     </label>
@@ -302,21 +302,10 @@
                     </SweetSoft:ExtraDropdown>
                 </div>
 
-                <div class="col-md-8 mb-3">
-                    <label class="form-label">
-                        <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
-                    </label>
+                <%-- Keep existing descriptions when editing without showing an input. --%>
+                <SweetSoft:ExtraTextBox runat="server" ID="txtMoTa" Visible="false" />
 
-                    <SweetSoft:ExtraTextBox
-                        runat="server"
-                        ID="txtMoTa"
-                        TextMode="MultiLine"
-                        Rows="3"
-                        MaxLength="500">
-                    </SweetSoft:ExtraTextBox>
-                </div>
-
-                <div class="col-md-2 mb-3">
+                <div class="col-lg-2 col-md-6 mb-3">
                     <label class="form-label label-valid">
                         <%= GetResourceText(BackEndResourceKeys.DISPLAY_ORDER) %>
                     </label>
@@ -330,7 +319,7 @@
                     </SweetSoft:ExtraTextBox>
                 </div>
 
-                <div class="col-md-2 mb-3">
+                <div class="col-lg-2 col-md-6 mb-3">
                     <label class="form-label">
                         <%= GetResourceText(BackEndResourceKeys.STATUS) %>
                     </label>

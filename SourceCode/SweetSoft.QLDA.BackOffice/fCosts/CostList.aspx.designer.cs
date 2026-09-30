@@ -141,6 +141,24 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVienYeuCau;
 
         /// <summary>
+        /// pnlStatusNew control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlStatusNew;
+
+        /// <summary>
+        /// pnlStatusEdit control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlStatusEdit;
+
+        /// <summary>
         /// ddlTrangThai control.
         /// </summary>
         /// <remarks>
@@ -148,6 +166,42 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThai;
+
+        /// <summary>
+        /// pnlCreatorCard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlCreatorCard;
+
+        /// <summary>
+        /// litCreatorAvatar control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCreatorAvatar;
+
+        /// <summary>
+        /// litCreatorName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCreatorName;
+
+        /// <summary>
+        /// litCreatorEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCreatorEmail;
 
         /// <summary>
         /// txtNguoiTao control.

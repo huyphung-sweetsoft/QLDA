@@ -261,6 +261,36 @@
     width: min(100%, 320px);
 }
 
+.dashboard-resource .resource-employee-controls {
+    display: flex;
+    flex: 0 1 610px;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+    min-width: 0;
+    margin-left: auto;
+}
+
+.dashboard-resource .resource-employee-controls .resource-employee-status {
+    flex: 0 0 185px;
+    width: 185px;
+}
+
+.dashboard-resource .resource-employee-controls .dashboard-list-search {
+    flex: 0 1 320px;
+    min-width: 180px;
+    width: 320px;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-resource .resource-employee-controls {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
 /* Bộ tab chỉ dùng trên Dashboard của một dự án. */
 .dashboard-project-tabs-inline {
     position: relative;
@@ -339,6 +369,67 @@
 
 .dashboard-progress #progress-task-status-chart {
     min-height: 330px;
+}
+
+.dashboard-progress #progress-task-status-chart,
+.dashboard-cost #cost-payment-chart,
+.dashboard-cost #cost-approval-chart {
+    position: relative;
+    overflow: visible;
+}
+
+.dashboard-progress #progress-task-status-chart .apexcharts-canvas,
+.dashboard-cost #cost-payment-chart .apexcharts-canvas,
+.dashboard-cost #cost-approval-chart .apexcharts-canvas,
+.dashboard-progress #progress-task-status-chart .apexcharts-svg,
+.dashboard-cost #cost-payment-chart .apexcharts-svg,
+.dashboard-cost #cost-approval-chart .apexcharts-svg {
+    overflow: visible !important;
+}
+
+.dashboard-donut-center {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    width: 120px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    color: #253047;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+}
+
+.dashboard-donut-center strong {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.dashboard-donut-center small {
+    margin-top: .1rem;
+    color: #64748b;
+    font-size: .7rem;
+}
+
+.dashboard-cost .dashboard-donut-center {
+    width: 146px;
+}
+
+.dashboard-cost .dashboard-donut-center strong {
+    font-size: 1.15rem;
+}
+
+.dashboard-donut-external-label {
+    font-size: 10px;
+    font-weight: 800;
+    pointer-events: none;
+}
+
+.dashboard-donut-connector {
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
 }
 
 .dashboard-progress #progressTaskDetailsModal .modal-dialog {
@@ -1142,8 +1233,15 @@ a.resource-day-task:focus-visible {
 }
 
 .dashboard-overview-simple .dashboard-overview-filter {
-    flex: 0 1 290px;
-    min-width: 220px;
+    display: grid;
+    flex: 1 1 510px;
+    grid-template-columns: minmax(160px, .85fr) minmax(220px, 1.15fr);
+    gap: .75rem;
+    min-width: 350px;
+}
+
+.dashboard-overview-simple .dashboard-overview-filter-field {
+    min-width: 0;
 }
 
 .dashboard-overview-simple .dashboard-overview-filter label {
@@ -1231,8 +1329,50 @@ a.resource-day-task:focus-visible {
     outline-offset: 2px;
 }
 
+.dashboard-overview-simple .dashboard-overview-status-visual {
+    flex: 0 0 62%;
+    min-width: 0;
+    height: 270px;
+    min-height: 270px;
+    position: relative;
+}
+
 .dashboard-overview-simple .dashboard-overview-status-chart {
-    min-height: 220px;
+    width: 100%;
+    height: 100%;
+}
+
+.dashboard-overview-simple .dashboard-overview-status-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    color: #253047;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+}
+
+.dashboard-overview-simple .dashboard-overview-status-center strong {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.dashboard-overview-simple .dashboard-overview-status-center small {
+    color: #64748b;
+    font-size: .72rem;
+}
+
+.dashboard-overview-simple .dashboard-overview-status-layout {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    min-height: 270px;
 }
 
 .dashboard-overview-simple .dashboard-overview-three-up > div {
@@ -1268,27 +1408,30 @@ a.resource-day-task:focus-visible {
 
 .dashboard-overview-simple .dashboard-overview-status-legend {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .5rem;
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    min-width: 0;
+    gap: .15rem;
 }
 
 .dashboard-overview-simple .dashboard-status-legend-button {
     display: flex;
     align-items: center;
-    gap: .55rem;
+    gap: .5rem;
     min-width: 0;
-    padding: .45rem .55rem;
-    border: 1px solid #e0e7f0;
+    padding: .45rem .3rem;
+    border: 0;
+    border-bottom: 1px solid #e8edf3;
     border-radius: .45rem;
-    background: #fbfcff;
+    background: transparent;
     color: #243044;
     text-align: left;
     cursor: pointer;
 }
 
 .dashboard-overview-simple .dashboard-status-legend-button:hover {
-    border-color: #9bbfe9;
-    background: #f3f8ff;
+    background: rgba(74, 19, 135, .045);
 }
 
 .dashboard-overview-simple .dashboard-status-legend-button:focus-visible {
@@ -1301,9 +1444,11 @@ a.resource-day-task:focus-visible {
     flex: 1;
 }
 
-.dashboard-overview-simple .dashboard-status-legend-button strong {
-    color: #2b4566;
-    font-size: 1.05rem;
+.dashboard-overview-simple .dashboard-pie-external-label {
+    fill: #45546a;
+    font-size: 10px;
+    font-weight: 700;
+    pointer-events: none;
 }
 
 .dashboard-overview-simple .dashboard-status-dot {
@@ -1538,8 +1683,21 @@ a.resource-day-task:focus-visible {
 }
 
 @media (max-width: 575.98px) {
+    .dashboard-overview-simple .dashboard-overview-status-layout {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-overview-simple .dashboard-overview-status-visual {
+        flex: 0 0 auto;
+        width: 100%;
+        height: 250px;
+        min-height: 250px;
+    }
+
     .dashboard-overview-simple .dashboard-overview-status-legend {
-        grid-template-columns: 1fr;
+        flex: 0 0 auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -1649,6 +1807,40 @@ a.resource-day-task:focus-visible {
     font-size: 12px;
     font-weight: 600;
 }
+
+.dashboard-overview-simple .dashboard-overview-filter .form-text {
+    display: block;
+    margin-top: .35rem;
+    color: #64748b;
+    font-size: .75rem;
+    line-height: 1.35;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-overview-simple .dashboard-overview-filter {
+        flex: 1 1 100%;
+        grid-template-columns: minmax(0, 1fr);
+        min-width: 0;
+    }
+}
+.resource-drawer-status-primary {
+    padding: 6px 12px;
+    font-size: 15px;
+    font-weight: 700;
+}
+.resource-drawer-summary-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.35;
+}
+.resource-drawer-summary-count {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+}
 .resource-drawer-days { color: #64748b; font-size: 13px; }
 .resource-drawer-calendar-note {
     flex-basis: 100%;
@@ -1693,6 +1885,130 @@ a.resource-day-task:focus-visible {
 .resource-month-week-load .resource-drawer-status {
     display: inline-block;
     margin-top: 4px;
+}
+
+/* Resource workload is counted by assigned tasks per calendar day. */
+.dashboard-resource .resource-day-column {
+    min-width: 118px;
+    vertical-align: middle;
+}
+.dashboard-resource .resource-day-column span,
+.dashboard-resource .resource-day-column small {
+    display: block;
+}
+.dashboard-resource .resource-day-column small {
+    margin-top: 3px;
+    color: #748197;
+    font-weight: 400;
+}
+.dashboard-resource .resource-load-cell {
+    min-width: 118px;
+    padding: 6px;
+}
+.dashboard-resource .resource-load-button {
+    width: 100%;
+    min-height: 88px;
+    padding: 8px 6px;
+    white-space: normal;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+.dashboard-resource .resource-day-status {
+    display: block;
+    font-size: 14px;
+    line-height: 1.15;
+    font-weight: 750;
+}
+.dashboard-resource .resource-load-button .resource-day-type,
+.dashboard-resource .resource-day-task-count {
+    display: block;
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 500;
+    opacity: .82;
+}
+.dashboard-resource .resource-day-task-count {
+    margin: 0;
+}
+.dashboard-resource .resource-load-normal {
+    background: #c8f1df;
+    color: #167353;
+}
+.dashboard-resource .resource-load-none {
+    background: #e9edf2;
+    color: #59677a;
+}
+.dashboard-resource .resource-month-counts {
+    color: #64748b;
+    font-weight: 500;
+}
+.resource-drawer-count {
+    color: #34445b;
+    font-size: 19px;
+}
+.resource-drawer-month-counts {
+    color: #52617a;
+    font-size: 13px;
+}
+.resource-drawer-day-link {
+    display: grid;
+    grid-template-columns: minmax(100px, .8fr) minmax(130px, auto) minmax(150px, 1fr);
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 7px;
+    border: 1px solid #e5e9f1;
+    border-radius: 8px;
+    background: #fff;
+    color: #34445b;
+    text-align: left;
+    cursor: pointer;
+}
+.resource-drawer-day-link:hover,
+.resource-drawer-day-link:focus-visible {
+    border-color: #556ee6;
+    background: #f7f8ff;
+    outline: 0;
+}
+.resource-drawer-day-type {
+    font-size: 12px;
+}
+.resource-drawer-day-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: #64748b;
+    font-size: 12px;
+}
+.resource-drawer-day-count {
+    color: #52617a;
+    font-size: 12px;
+}
+.resource-month-week-link.resource-drawer-open-week {
+    width: 100%;
+    background: #fff;
+    color: #34445b;
+    text-align: left;
+    cursor: pointer;
+}
+.resource-month-week-link.resource-drawer-open-week:hover,
+.resource-month-week-link.resource-drawer-open-week:focus-visible {
+    border-color: #556ee6;
+    background: #f7f8ff;
+}
+@media (max-width: 575.98px) {
+    .resource-drawer-day-link {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    .resource-drawer-day-count {
+        justify-self: auto;
+    }
 }
 @media (max-width: 575.98px) {
     .resource-month-week-link { align-items: flex-start; }
@@ -2010,30 +2326,100 @@ a.resource-day-task:focus-visible {
     font-weight: 600;
 }
 
+/* Popup dashboard dùng cùng form ExtraModal: tiêu đề tím, nút X góc phải.
+   Đây đều là popup xem nhanh nên không thêm nút "Cập nhật". */
 :is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
     .modal-content {
-    border: 1px solid #e2e7ef;
-    border-radius: .75rem;
-    box-shadow: 0 18px 40px rgba(25, 37, 62, .16);
+    overflow: hidden;
+    border: 0;
+    border-radius: .5rem;
+    box-shadow: 0 18px 40px rgba(25, 37, 62, .18);
 }
 
 :is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
     .modal-header {
-    padding: 1rem 1.2rem;
-    border-color: #e2e7ef;
-    background: #fff;
+    min-height: 48px;
+    padding: .55rem .8rem;
+    border: 0 !important;
+    background: var(--bs-primary, #5f258f) !important;
+    color: #fff;
 }
 
 :is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
     .modal-title {
-    color: #253047;
-    font-size: 1.1rem;
+    color: #fff !important;
+    font-size: 1rem;
     font-weight: 650;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-header :is(.small, .text-muted) {
+    color: rgba(255, 255, 255, .82) !important;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-header .btn-close {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    margin: -.15rem -.3rem -.15rem auto;
+    padding: 0;
+    border: 0;
+    border-radius: .35rem;
+    background: #fff !important;
+    background-image: none !important;
+    color: var(--bs-primary, #4b148c);
+    filter: none !important;
+    opacity: 1;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-header .btn-close::before {
+    content: "×";
+    display: block;
+    color: var(--bs-primary, #4b148c);
+    font-family: Arial, sans-serif;
+    font-size: 1.7rem;
+    font-weight: 400;
+    line-height: .9;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-header .btn-close:hover,
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-header .btn-close:focus-visible {
+    border-radius: .3rem;
+    background-color: #f0e8f8 !important;
+    opacity: 1;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-header .badge {
+    background: rgba(255, 255, 255, .18) !important;
+    color: #fff !important;
 }
 
 :is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
     .modal-body {
     padding: 1.2rem;
+    background: #fff;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-footer {
+    min-height: 0;
+    padding: .55rem .8rem;
+    border-top: 1px solid #e9edf3;
+    background: #fff;
+}
+
+:is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
+    .modal-footer .dashboard-modal-close-button {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
 }
 
 :is(.dashboard-overview, .dashboard-progress, .dashboard-cost, .dashboard-resource)
@@ -2376,24 +2762,133 @@ a.resource-day-task:focus-visible {
 .dashboard-overview-simple .dashboard-project-chart-layout {
     display: flex;
     align-items: center;
+    gap: .65rem;
+    min-height: 250px;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-layout {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    gap: .15rem;
+    min-width: 0;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart {
+    width: 100%;
+    min-width: 0;
+    height: 160px;
+    overflow: visible;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-empty {
+    display: flex;
+    min-height: 132px;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    border: 1px dashed #d6deea;
+    border-radius: .5rem;
+    background: #f8fafc;
+    color: #718096;
+    font-size: .88rem;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-legend {
+    display: grid;
+    width: min(100%, 520px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: .15rem .75rem;
+    margin: 0 auto;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-legend button {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
     gap: .45rem;
-    min-height: 178px;
+    padding: .18rem .1rem;
+    border: 0;
+    background: transparent;
+    color: #596b84;
+    font-size: .78rem;
+    text-align: left;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-legend button:hover,
+.dashboard-overview-simple .dashboard-finance-chart-legend button:focus-visible {
+    color: #4d42a5;
+    text-decoration: underline;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-legend button span {
+    white-space: nowrap;
+}
+
+.dashboard-overview-simple .dashboard-finance-chart-legend .dashboard-chart-dot {
+    flex: 0 0 9px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+
+.dashboard-finance-tooltip {
+    display: grid;
+    gap: .15rem;
+    padding: .55rem .7rem;
+    color: #334155;
+    font-size: .8rem;
+}
+
+.dashboard-finance-tooltip strong {
+    color: #253047;
+}
+
+.dashboard-finance-tooltip small {
+    color: #718096;
+}
+
+.dashboard-overview-simple .dashboard-all-projects-glance-row .dashboard-finance-chart-legend {
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 575.98px) {
+    .dashboard-overview-simple .dashboard-all-projects-glance-row .dashboard-finance-chart-legend {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-overview-simple .dashboard-finance-chart {
+        height: 150px;
+    }
 }
 
 .dashboard-overview-simple .dashboard-project-mini-chart {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 46%;
+    flex: 0 0 48%;
     min-width: 0;
-    height: 170px;
+    height: 250px;
     position: relative;
 }
 
 .dashboard-overview-simple .dashboard-project-chart-canvas {
     width: 100%;
     min-width: 0;
-    height: 170px;
+    height: 250px;
+}
+
+.dashboard-overview-simple .dashboard-project-glance-progress .dashboard-project-chart-canvas,
+.dashboard-overview-simple .dashboard-project-glance-progress .dashboard-project-chart-canvas .apexcharts-canvas,
+.dashboard-overview-simple .dashboard-project-glance-progress .dashboard-project-chart-canvas .apexcharts-svg {
+    overflow: visible !important;
+}
+
+.dashboard-overview-simple .dashboard-project-glance-progress .dashboard-project-chart-legend {
+    margin-left: 1rem;
 }
 
 .dashboard-overview-simple .dashboard-project-chart-center {
@@ -2405,6 +2900,7 @@ a.resource-day-task:focus-visible {
     align-items: center;
     justify-content: center;
     width: 78px;
+    z-index: 2;
     transform: translate(-50%, -50%);
     color: #253047;
     line-height: 1.2;
@@ -2455,6 +2951,17 @@ a.resource-day-task:focus-visible {
     margin-top: auto;
 }
 
+.dashboard-overview-simple .dashboard-project-finance-totals {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    margin-top: auto;
+}
+
+.dashboard-overview-simple .dashboard-project-finance-totals .dashboard-project-secondary-line {
+    margin-top: 0;
+}
+
 .dashboard-overview-simple .dashboard-project-secondary-action {
     width: 100%;
     border: 0;
@@ -2493,7 +3000,7 @@ a.resource-day-task:focus-visible {
 
 .dashboard-overview-simple .dashboard-project-chart-legend {
     display: grid;
-    gap: .2rem;
+    gap: .28rem;
     flex: 1 1 0;
     min-width: 0;
 }
@@ -2501,11 +3008,11 @@ a.resource-day-task:focus-visible {
 .dashboard-overview-simple .dashboard-project-chart-legend button {
     display: flex;
     align-items: center;
-    gap: .35rem;
+    gap: .42rem;
     width: 100%;
     border: 0;
     border-radius: .35rem;
-    padding: .3rem .25rem;
+    padding: .32rem .25rem;
     background: transparent;
     color: #4e5c71;
     font-size: .78rem;
@@ -2514,15 +3021,24 @@ a.resource-day-task:focus-visible {
 
 .dashboard-overview-simple .dashboard-project-chart-legend button:hover,
 .dashboard-overview-simple .dashboard-project-chart-legend button:focus-visible {
-    background: #f1ecf9;
+    background: rgba(74, 19, 135, .055);
     color: #4a1387;
 }
 
 .dashboard-overview-simple .dashboard-project-chart-legend strong {
     margin-left: auto;
     color: #253047;
-    font-size: .8rem;
+    font-size: .72rem;
     white-space: nowrap;
+}
+
+.dashboard-overview-simple .dashboard-project-chart-legend button > span:not(.dashboard-chart-dot) {
+    min-width: 0;
+}
+
+.dashboard-overview-simple .dashboard-pie-external-connector {
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
 }
 
 .dashboard-overview-simple .dashboard-chart-dot {
@@ -2548,18 +3064,14 @@ a.resource-day-task:focus-visible {
     white-space: nowrap;
 }
 
-/* Keep the three all-project summaries level and leave room for finance amounts. */
+/* Keep the three all-project summaries level without forcing unused card height. */
 @media (min-width: 1400px) {
-    .dashboard-overview-simple .dashboard-all-projects-glance-row .dashboard-project-glance {
-        height: 390px !important;
-    }
-
     .dashboard-overview-simple .dashboard-all-projects-glance-row .dashboard-project-mini-chart {
-        flex-basis: 38%;
+        flex-basis: 48%;
     }
 
     .dashboard-overview-simple .dashboard-all-projects-glance-row .dashboard-project-chart-legend button {
-        white-space: nowrap;
+        white-space: normal;
     }
 }
 
@@ -2601,5 +3113,513 @@ a.resource-day-task:focus-visible {
 
     .dashboard-overview-simple .dashboard-project-chart-legend {
         width: 100%;
+    }
+
+    .dashboard-overview-simple .dashboard-project-glance-progress .dashboard-project-chart-legend {
+        margin-left: 0;
+    }
+}
+
+/* Resource dashboard: workload summary, employee attention, and a full-width week grid. */
+.dashboard-resource .resource-insights-grid > [class*="col-"] {
+    min-width: 0;
+}
+
+.dashboard-resource .resource-insights-grid > .col-xl-5,
+.dashboard-resource .resource-insights-grid > .col-xl-7 {
+    align-self: stretch;
+}
+
+.dashboard-resource .resource-insights-grid .resource-load-distribution-card,
+.dashboard-resource .resource-insights-grid .resource-attention-card {
+    flex: 1 1 auto;
+    width: 100%;
+}
+
+@media (min-width: 1200px) {
+    .dashboard-resource .resource-insights-grid-weekly {
+        display: grid !important;
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        align-items: stretch;
+    }
+
+    .dashboard-resource .resource-insights-grid-weekly > .col-12 {
+        width: auto !important;
+        max-width: none !important;
+        min-width: 0;
+    }
+}
+
+.dashboard-resource .resource-load-distribution-card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-resource .resource-load-distribution {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    min-width: 0;
+}
+
+.dashboard-resource .resource-load-donut {
+    display: grid;
+    position: relative;
+    flex: 0 0 154px;
+    place-items: center;
+    width: 154px;
+    height: 154px;
+    padding: 21px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.dashboard-resource .resource-load-donut:hover,
+.dashboard-resource .resource-load-donut:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(18, 38, 63, .18);
+    outline: 2px solid rgba(85, 110, 230, .45);
+    outline-offset: 2px;
+}
+
+.dashboard-resource .resource-load-donut-center {
+    display: flex;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff;
+    color: #253047;
+    text-align: center;
+    text-decoration: none;
+}
+
+.dashboard-resource .resource-load-donut-center:hover {
+    color: #253047;
+}
+
+.dashboard-resource .resource-load-donut-center:focus-visible {
+    outline: 2px solid rgba(85, 110, 230, .6);
+    outline-offset: 2px;
+}
+
+.dashboard-resource .resource-load-donut-center strong {
+    font-size: 1.8rem;
+    line-height: 1.05;
+}
+
+.dashboard-resource .resource-load-donut-center small {
+    max-width: 90px;
+    margin-top: .25rem;
+    color: #68778d;
+    font-size: .7rem;
+    line-height: 1.2;
+}
+
+.dashboard-resource .resource-load-slice-highlight {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    border-radius: 50%;
+    opacity: 0;
+    background: conic-gradient(
+        from var(--resource-hover-start, 0deg),
+        rgba(255, 255, 255, .42) 0 var(--resource-hover-sweep, 0deg),
+        transparent var(--resource-hover-sweep, 0deg) 360deg);
+    -webkit-mask: radial-gradient(circle, transparent 0 71%, #000 73%);
+    mask: radial-gradient(circle, transparent 0 71%, #000 73%);
+    pointer-events: none;
+    transition: opacity .12s ease;
+}
+
+.dashboard-resource .resource-load-slice-highlight.is-visible {
+    opacity: 1;
+}
+
+.dashboard-resource .resource-load-slice-tooltip {
+    position: absolute;
+    z-index: 4;
+    max-width: 220px;
+    padding: .3rem .5rem;
+    transform: translate(-50%, -100%);
+    border: 1px solid #d7deea;
+    border-radius: .35rem;
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(18, 38, 63, .16);
+    color: #253047;
+    font-size: .75rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .12s ease;
+}
+
+.dashboard-resource .resource-load-slice-tooltip.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dashboard-resource .resource-load-share {
+    position: absolute;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px #1b293e;
+    pointer-events: none;
+}
+
+.dashboard-resource .resource-load-share.is-external {
+    padding: 2px 3px;
+    border-radius: 3px;
+    background: #fff;
+    color: #45546a;
+    text-shadow: none;
+}
+
+.dashboard-resource .resource-load-connector {
+    position: absolute;
+    z-index: 1;
+    height: 1px;
+    transform-origin: left center;
+    pointer-events: none;
+}
+
+.dashboard-resource .resource-load-legend {
+    display: grid;
+    flex: 1 1 auto;
+    gap: .45rem;
+    min-width: 0;
+}
+
+.dashboard-resource .resource-load-legend-item {
+    display: grid;
+    grid-template-columns: 11px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .55rem;
+    padding: .42rem .5rem;
+    border-radius: .4rem;
+    color: #52617a;
+    font-size: .85rem;
+    text-decoration: none;
+}
+
+.dashboard-resource .resource-load-legend-item:hover,
+.dashboard-resource .resource-load-legend-item:focus-visible {
+    background: #f5f7fb;
+    color: #253047;
+    outline: 0;
+}
+
+.dashboard-resource .resource-load-legend-item strong {
+    color: #253047;
+    font-size: .95rem;
+}
+
+.dashboard-resource .resource-load-legend-marker {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+.dashboard-resource .resource-load-free-marker {
+    background: #36a778;
+}
+
+.dashboard-resource .resource-load-normal-marker {
+    background: #efb63e;
+}
+
+.dashboard-resource .resource-load-over-marker {
+    background: #ef6d63;
+}
+
+.dashboard-resource .resource-load-none {
+    background: #d9f2e4;
+    color: #16724e;
+}
+
+.dashboard-resource .resource-load-normal {
+    background: #fff0c2;
+    color: #8b5c00;
+}
+
+.dashboard-resource .resource-load-over {
+    background: #fbc9c9;
+    color: #b52f2f;
+}
+
+.dashboard-resource .resource-kpi-none {
+    border-top-color: #36a778 !important;
+}
+
+.dashboard-resource .resource-kpi-low,
+.dashboard-resource .resource-kpi-balanced {
+    border-top-color: #efb63e !important;
+}
+
+.dashboard-resource .resource-attention-list {
+    max-height: 360px;
+}
+
+.dashboard-resource details.resource-attention-item {
+    display: block;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.dashboard-resource .resource-attention-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 4px;
+    color: inherit;
+    cursor: pointer;
+    list-style: none;
+}
+
+.dashboard-resource .resource-attention-summary::-webkit-details-marker {
+    display: none;
+}
+
+.dashboard-resource .resource-attention-summary:hover,
+.dashboard-resource .resource-attention-summary:focus-visible {
+    background: #f7f8fc;
+    outline: 0;
+}
+
+.dashboard-resource .resource-attention-person {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.dashboard-resource .resource-attention-person-heading {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    min-width: 0;
+}
+
+.dashboard-resource .resource-attention-person-heading > strong {
+    min-width: 0;
+}
+
+.dashboard-resource .resource-attention-chevron {
+    flex: 0 0 auto;
+    margin-left: auto;
+    color: #748197;
+    transition: transform .15s ease;
+}
+
+.dashboard-resource details[open] > .resource-attention-summary .resource-attention-chevron {
+    transform: rotate(180deg);
+}
+
+.dashboard-resource .resource-attention-summary-text {
+    display: block;
+    margin-top: .2rem;
+    color: #68778d;
+    font-size: .78rem;
+    line-height: 1.35;
+}
+
+.dashboard-resource .resource-attention-details {
+    display: grid;
+    gap: .35rem;
+    padding: 0 4px 10px 25px;
+}
+
+.dashboard-resource .resource-attention-day {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .42rem .6rem;
+    border: 1px solid #f2d4d2;
+    border-radius: .4rem;
+    background: #fff;
+    color: #34445b;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dashboard-resource .resource-attention-day:hover,
+.dashboard-resource .resource-attention-day:focus-visible {
+    border-color: #ef6d63;
+    background: #fff8f7;
+    outline: 0;
+}
+
+.dashboard-resource .resource-attention-day-date {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .25rem .6rem;
+}
+
+.dashboard-resource .resource-attention-day-date small {
+    color: #748197;
+}
+
+.dashboard-resource .resource-heatmap-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.dashboard-resource .resource-heatmap-table {
+    width: 100%;
+    min-width: 850px;
+    table-layout: fixed;
+}
+
+.dashboard-resource .resource-heatmap-table .resource-person-column {
+    width: 210px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
+}
+
+.dashboard-resource .resource-heatmap-table .resource-day-column,
+.dashboard-resource .resource-heatmap-table .resource-load-cell {
+    width: auto;
+    min-width: 90px;
+}
+
+.dashboard-resource .resource-load-cell {
+    padding: 4px;
+}
+
+@media (max-width: 1199.98px) {
+    .dashboard-resource .resource-heatmap-table {
+        min-width: 720px;
+    }
+
+    .dashboard-resource .resource-heatmap-table .resource-person-column {
+        width: 175px !important;
+        min-width: 175px !important;
+        max-width: 175px !important;
+    }
+
+    .dashboard-resource .resource-heatmap-table .resource-day-column,
+    .dashboard-resource .resource-heatmap-table .resource-load-cell {
+        min-width: 78px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .dashboard-resource .resource-load-distribution {
+        flex-direction: column;
+        gap: .9rem;
+    }
+
+    .dashboard-resource .resource-load-legend {
+        width: 100%;
+    }
+
+    .dashboard-resource .resource-load-donut {
+        flex-basis: 128px;
+        width: 128px;
+        height: 128px;
+        padding: 17px;
+    }
+
+    .dashboard-resource .resource-load-legend-item {
+        gap: .35rem;
+        padding: .35rem .25rem;
+        font-size: .76rem;
+    }
+
+    .dashboard-resource .resource-heatmap-table {
+        min-width: 670px;
+    }
+
+    .dashboard-resource .resource-heatmap-table .resource-person-column {
+        width: 145px !important;
+        min-width: 145px !important;
+        max-width: 145px !important;
+    }
+
+    .dashboard-resource .resource-heatmap-table .resource-day-column,
+    .dashboard-resource .resource-heatmap-table .resource-load-cell {
+        min-width: 75px;
+    }
+}
+
+/* Resource day cells: keep the date type secondary and the workload state centered. */
+.dashboard-resource .resource-load-button {
+    text-align: center;
+}
+
+.dashboard-resource .resource-load-button .resource-day-type {
+    order: 0;
+    color: #59677a;
+    opacity: .9;
+}
+
+.dashboard-resource .resource-load-button .resource-day-status {
+    order: 1;
+    width: 100%;
+    text-align: center;
+}
+
+.dashboard-resource .resource-load-button .resource-day-task-count {
+    order: 2;
+}
+
+/* Keep the day-detail modal compact for short content while allowing long task lists to scroll. */
+.dashboard-resource #resource-detail-drawer .modal-dialog {
+    width: calc(100% - 2rem);
+    max-width: 960px;
+}
+
+.dashboard-resource #resource-detail-drawer .modal-content {
+    max-height: calc(100vh - 2rem);
+}
+
+.dashboard-resource #resource-detail-drawer .resource-drawer-body {
+    flex: 0 1 auto;
+    overflow-y: auto;
+}
+
+.dashboard-resource #resource-detail-drawer .resource-detail-close-button {
+    flex: 0 0 2rem;
+    color: #4b148c;
+}
+
+.dashboard-resource #resource-detail-drawer .resource-detail-close-button::before {
+    content: none !important;
+}
+
+.dashboard-resource #resource-detail-drawer .resource-detail-close-button span {
+    display: block;
+    color: #4b148c;
+    font-family: Arial, sans-serif;
+    font-size: 1.7rem;
+    font-weight: 400;
+    line-height: .9;
+}
+
+@media (max-width: 575.98px) {
+    .dashboard-resource #resource-detail-drawer .modal-dialog {
+        width: calc(100% - 1rem);
+        margin-right: auto;
+        margin-left: auto;
     }
 }

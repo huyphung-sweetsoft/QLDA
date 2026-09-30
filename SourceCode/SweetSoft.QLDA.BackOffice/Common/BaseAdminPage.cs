@@ -438,12 +438,10 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
         public void CheckFunctionPermission(Guid userId)
         {
-            // This page is scoped by signing assignment, not by dossier/menu
-            // permissions. Its queries and mutations independently verify the
-            // currently logged-in assignee for every file.
+            // The inbox requires group View access in addition to per-file assignments.
             if (PAGE_FUNCTION_CODE == ModuleKeys.DocumentSigningInbox)
             {
-                if (userId != Guid.Empty && SweetContext.Current.User != null)
+                if (FunctionManager.Instance.CanAccessSigningInbox(userId))
                     return;
                 Response.Redirect(GetRelativeClientPath("/403"), true);
                 return;
@@ -632,6 +630,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
             try
             {
                 ModuleKeys requestedModule = module ?? this.PAGE_FUNCTION_CODE;
+                if (requestedModule == ModuleKeys.DocumentSigningInbox)
+                {
+                    Guid inboxUserId = SweetContext.Current.UserId;
+                    return (permissionKeys.HasFlag(ActionKeys.View)
+                            && FunctionManager.Instance.CanAccessSigningInbox(inboxUserId))
+                        || (permissionKeys.HasFlag(ActionKeys.Update)
+                            && FunctionManager.Instance.CanAccessSigningInbox(inboxUserId, true));
+                }
                 if (requestedModule == ModuleKeys.Document || requestedModule == ModuleKeys.ProjectDocument)
                 {
                     Guid documentId = Guid.Empty;

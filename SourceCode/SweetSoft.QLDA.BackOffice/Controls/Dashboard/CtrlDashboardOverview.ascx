@@ -3,6 +3,98 @@
 <%@ Register Src="~/Controls/Dashboard/CtrlProjectDashboardTabs.ascx"
     TagPrefix="SweetSoft" TagName="CtrlProjectDashboardTabs" %>
 
+<style>
+/* Căn chính giữa số tổng trong các biểu đồ donut */
+.dashboard-overview-status-visual,
+.dashboard-project-mini-chart {
+    position: relative;
+}
+
+.dashboard-overview-status-center,
+.dashboard-project-chart-center {
+    position: absolute !important;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    text-align: center;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.dashboard-overview-status-center strong,
+.dashboard-project-chart-center strong {
+    display: block;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+.dashboard-overview-status-center small,
+.dashboard-project-chart-center small {
+    display: block;
+    margin-top: 5px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Responsive riêng cho biểu đồ phân công nhân sự.
+   Tránh legend dài ép donut quá hẹp ở zoom 100%. */
+.dashboard-project-glance-resource .dashboard-project-chart-layout {
+    display: grid !important;
+    grid-template-columns: minmax(190px, 220px) minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-width: 0;
+}
+
+.dashboard-project-glance-resource .dashboard-project-mini-chart {
+    width: 100% !important;
+    max-width: 220px !important;
+    min-width: 0 !important;
+    height: 220px !important;
+    flex: none !important;
+    justify-self: center;
+}
+
+.dashboard-project-glance-resource .dashboard-project-chart-canvas {
+    width: 100% !important;
+    max-width: 220px !important;
+    min-width: 0 !important;
+    height: 220px !important;
+}
+
+.dashboard-project-glance-resource .dashboard-project-chart-legend {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+
+.dashboard-project-glance-resource .dashboard-project-chart-legend button {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Màn hình điện thoại: xếp donut và chú giải thành 2 hàng. */
+@media (max-width: 575.98px) {
+    .dashboard-project-glance-resource .dashboard-project-chart-layout {
+        grid-template-columns: 1fr !important;
+        justify-items: center;
+    }
+
+    .dashboard-project-glance-resource .dashboard-project-chart-legend {
+        max-width: 280px;
+    }
+}
+</style>
+
 <div class="container-fluid dashboard-overview dashboard-overview-simple">
     <div class="dashboard-overview-heading mb-3 <%= IsProjectDashboard ? "dashboard-project-heading" : string.Empty %>">
         <div class="dashboard-overview-heading-main">
@@ -14,11 +106,20 @@
         </div>
         <% if (!IsProjectDashboard) { %>
         <div class="dashboard-overview-filter">
-            <label class="form-label mb-1" for="<%= ddlProjectFilter.ClientID %>">Phạm vi dự án</label>
-            <asp:DropDownList ID="ddlProjectFilter" runat="server"
-                CssClass="form-select dashboard-overview-project-filter"
-                AutoPostBack="true"
-                OnSelectedIndexChanged="ddlProjectFilter_SelectedIndexChanged" />
+            <div class="dashboard-overview-filter-field">
+                <label class="form-label mb-1" for="<%= ddlProjectFilter.ClientID %>">Phạm vi dự án</label>
+                <asp:DropDownList ID="ddlProjectFilter" runat="server"
+                    CssClass="form-select dashboard-overview-project-filter"
+                    AutoPostBack="true"
+                    OnSelectedIndexChanged="ddlProjectFilter_SelectedIndexChanged" />
+            </div>
+            <div class="dashboard-overview-filter-field dashboard-overview-time-filter">
+                <label class="form-label mb-1" for="<%= ddlDateRange.ClientID %>">Khoảng thời gian</label>
+                <asp:DropDownList ID="ddlDateRange" runat="server"
+                    CssClass="form-select dashboard-overview-date-range"
+                    AutoPostBack="true" />
+                <small class="form-text">Lọc công việc, lịch họp, vấn đề và rủi ro; KPI hiện tại giữ nguyên.</small>
+            </div>
         </div>
         <% } %>
         <div class="dashboard-overview-date-card <%= IsProjectDashboard ? "dashboard-project-date-card" : string.Empty %>">
@@ -35,22 +136,22 @@
         <summary class="fw-semibold" style="cursor: pointer">Chú thích số liệu (tạm thời)</summary>
         <ul class="small mb-0 mt-2 ps-3">
             <% if (!IsProjectDashboard) { %>
-            <li><strong>Dự án quá hạn:</strong> chưa hoàn thành hoặc kết thúc và đã qua ngày dự kiến hoàn thành; không phải một trạng thái dự án riêng.</li>
-            <li><strong>Sắp đến hạn (7 ngày):</strong> dự án đang thực hiện, có hạn dự kiến từ hôm nay đến hết 7 ngày tới.</li>
+            <li><strong>Dự án trễ hạn:</strong> chỉ dự án đang thực hiện và ngày hiện tại đã qua ngày kết thúc dự kiến.</li>
+            <li><strong>Đến hạn trong 7 ngày tới:</strong> dự án đang thực hiện, có hạn dự kiến từ hôm nay đến hết 7 ngày tới.</li>
             <li><strong>Khoản chi chờ duyệt:</strong> đếm các khoản chi chưa được duyệt, không phải số tiền đã chi.</li>
-            <li><strong>Nhân sự quá tải theo lịch:</strong> đếm người được giao số ngày công dự kiến vượt số ngày làm việc của tuần này; không phải giờ làm thực tế.</li>
-            <li><strong>Dự án cần xử lý:</strong> dự án quá hạn, có công việc quá hạn hoặc có vấn đề ảnh hưởng cao. Một dự án chỉ được đếm một lần.</li>
+            <li><strong>Tình hình phân công công việc:</strong> phân loại theo lịch giao việc trong tuần — chưa được giao việc, còn khả năng nhận thêm việc, phân công phù hợp hoặc quá tải; đây là tải dự kiến, không phải giờ làm thực tế.</li>
+            <li><strong>Dự án cần xử lý:</strong> dự án trễ hạn, có công việc quá hạn hoặc có vấn đề ảnh hưởng cao. Một dự án chỉ được đếm một lần.</li>
             <% } else { %>
             <li><strong>Công việc quá hạn:</strong> chưa hoàn thành và đã qua ngày kết thúc dự kiến. <strong>Đến hạn trong 7 ngày:</strong> chưa hoàn thành, hạn từ hôm nay đến hết 7 ngày tới.</li>
             <li><strong>Chi phí chờ duyệt:</strong> tổng tiền của các khoản chi chưa được duyệt; chưa tính vào “Chi phí đã duyệt”.</li>
             <li><strong>Còn phải thu:</strong> giá trị hợp đồng trừ tiền đã thu; nếu chưa có giá trị hợp đồng, dùng tổng các đợt thanh toán chưa thu.</li>
-            <li><strong>Mức tải nhân sự:</strong> số ngày công được giao chia cho số ngày làm việc trong tuần này; trên 100% là quá tải theo lịch, không phải giờ làm thực tế.</li>
+            <li><strong>Tình hình phân công công việc:</strong> chưa có việc được giao, còn khả năng nhận thêm, phân công phù hợp hoặc quá tải theo lịch tuần; không phải giờ làm thực tế.</li>
             <% } %>
         </ul>
     </details>
 
     <% if (!IsProjectDashboard) { %>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mb-3 dashboard-overview-kpis">
+    <div class="row row-cols-1 row-cols-sm-2 <%= ShowCustomerSignal ? "row-cols-xl-4" : "row-cols-xl-3" %> g-3 mb-3 dashboard-overview-kpis">
         <div class="col">
             <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
                 data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="all" data-overview-title="Tất cả dự án">
@@ -61,77 +162,90 @@
         </div>
         <div class="col">
             <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
-                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="overdue" data-overview-title="Dự án quá hạn">
-                <span class="card-body"><span class="text-muted d-block">Dự án quá hạn</span>
+                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="overdue" data-overview-title="Dự án trễ hạn">
+                <span class="card-body"><span class="text-muted d-block">Dự án trễ hạn</span>
                     <strong class="fs-3 text-danger"><%= OverdueProjects.Count %></strong>
                     <span class="dashboard-kpi-icon bg-danger-subtle text-danger"><i class="bx bx-error-circle"></i></span></span>
             </button>
         </div>
         <div class="col">
             <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
-                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="due-soon" data-overview-title="Dự án sắp đến hạn">
-                <span class="card-body"><span class="text-muted d-block">Sắp đến hạn (7 ngày)</span>
+                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="due-soon" data-overview-title="Dự án đến hạn trong 7 ngày tới">
+                <span class="card-body"><span class="text-muted d-block">Đến hạn trong 7 ngày tới</span>
                     <strong class="fs-3 dashboard-days-left"><%= UpcomingProjects.Count %></strong>
                     <span class="dashboard-kpi-icon bg-warning-subtle dashboard-days-left"><i class="bx bx-calendar-event"></i></span></span>
             </button>
         </div>
+        <% if (ShowCustomerSignal) { %>
         <div class="col">
-            <% if (ShowFinanceSignal) { %>
             <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
-                data-bs-toggle="modal" data-bs-target="#overviewPendingCostsModal">
-                <span class="card-body"><span class="text-muted d-block">Khoản chi chờ duyệt</span>
-                    <strong class="fs-3 dashboard-attention-text"><%= Summary.PendingCosts.Count %></strong>
-                    <span class="dashboard-kpi-icon bg-warning-subtle dashboard-attention-text"><i class="bx bx-receipt"></i></span></span>
+                data-bs-toggle="modal" data-bs-target="#overviewActiveCustomersModal">
+                <span class="card-body"><span class="text-muted d-block">Khách hàng đang hợp tác</span>
+                    <strong class="fs-3 text-primary"><%= Summary.ActiveCustomerCount %></strong>
+                    <span class="dashboard-kpi-icon bg-primary-subtle text-primary"><i class="bx bx-user-check"></i></span></span>
             </button>
-            <% } else { %>
-            <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
-                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="overdue-task" data-overview-title="Dự án có công việc quá hạn">
-                <span class="card-body"><span class="text-muted d-block">Có công việc quá hạn</span>
-                    <strong class="fs-3 dashboard-attention-text"><%= ProjectsWithOverdueTasks.Count %></strong>
-                    <span class="dashboard-kpi-icon bg-warning-subtle dashboard-attention-text"><i class="bx bx-task"></i></span></span>
-            </button>
-            <% } %>
         </div>
-        <div class="col">
-            <% if (ShowResourceSignal) { %>
-            <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
-                data-bs-toggle="modal" data-bs-target="#overviewOverloadedEmployeesModal">
-                <span class="card-body"><span class="text-muted d-block">Nhân sự quá tải theo lịch</span>
-                    <strong class="fs-3 text-danger"><%= OverloadedEmployees.Count %></strong>
-                    <span class="dashboard-kpi-icon bg-danger-subtle text-danger"><i class="bx bx-group"></i></span></span>
-            </button>
-            <% } else { %>
-            <button type="button" class="card border-0 shadow-sm h-100 w-100 text-start dashboard-simple-kpi"
-                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal" data-overview-filter="status-1" data-overview-title="Dự án đang thực hiện">
-                <span class="card-body"><span class="text-muted d-block">Đang thực hiện</span>
-                    <strong class="fs-3 text-primary"><%= ActiveProjectCount %></strong>
-                    <span class="dashboard-kpi-icon bg-info-subtle text-info"><i class="bx bx-play-circle"></i></span></span>
-            </button>
-            <% } %>
-        </div>
+        <% } %>
     </div>
+
+    <% if (ShowCustomerSignal) { %>
+    <div class="modal fade" id="overviewActiveCustomersModal" tabindex="-1" aria-labelledby="overviewActiveCustomersTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="overviewActiveCustomersTitle">Khách hàng đang hợp tác (<%= Summary.ActiveCustomerCount %>)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <input type="search" class="form-control mb-3 dashboard-list-search"
+                    data-overview-signal-search="active-customer"
+                    placeholder="Tìm tên khách hàng" aria-label="Tìm khách hàng đang hợp tác" />
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
+                        <thead><tr><th>Khách hàng</th><th class="text-center">Dự án liên quan</th></tr></thead>
+                        <tbody>
+                        <% foreach (var customer in Summary.ActiveCustomers) { %>
+                        <tr data-overview-signal-row="active-customer">
+                            <td><a class="fw-semibold text-decoration-none" href="<%: GetCustomerDetailUrl(customer.CustomerId) %>"><%: customer.CustomerName %></a></td>
+                            <td class="text-center"><%= customer.ProjectCount %></td>
+                        </tr>
+                        <% } %>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted mb-0 py-3 <%= Summary.ActiveCustomers.Count == 0 ? string.Empty : "d-none" %>"
+                    data-overview-signal-empty="active-customer">Chưa có khách hàng đang hợp tác.</p>
+            </div>
+        </div></div>
+    </div>
+    <% } %>
 
     <div class="row g-3 mb-3 dashboard-overview-three-up">
         <div class="col-12 col-xl-5">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header"><h5 class="dashboard-overview-section-title"><i class="bx bx-pie-chart-alt-2" aria-hidden="true"></i> Trạng thái dự án</h5></div>
                 <div class="card-body">
-                    <div id="overviewStatusChart" class="dashboard-overview-status-chart"
-                        aria-label="Biểu đồ số dự án theo trạng thái"></div>
-                    <div class="dashboard-overview-status-legend">
-                        <% foreach (var status in Summary.Statuses) { %>
-                        <button type="button" class="dashboard-status-legend-button"
-                            data-status-code="<%= status.StatusCode %>"
-                            data-status-label="<%: status.Status %>"
-                            data-status-count="<%= status.Count %>"
-                            data-bs-toggle="modal" data-bs-target="#overviewProjectsModal"
-                            data-overview-filter="status-<%= status.StatusCode %>"
-                            data-overview-title="<%: status.Status %>">
-                            <span class="dashboard-status-dot" aria-hidden="true"></span>
-                            <span class="dashboard-status-name"><%: status.Status %></span>
-                            <strong><%= status.Count %></strong>
-                        </button>
-                        <% } %>
+                    <div class="dashboard-overview-status-layout">
+                        <div class="dashboard-overview-status-visual" style="position:relative!important;">
+                            <div id="overviewStatusChart" class="dashboard-overview-status-chart"
+                                aria-label="Biểu đồ số dự án theo trạng thái"></div>
+                            <span class="dashboard-overview-status-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;<%= Summary.Projects.Count == 0 ? "display:none!important;" : "display:flex!important;" %>">
+                                <strong><%= Summary.Projects.Count %></strong><small>dự án</small>
+                            </span>
+                        </div>
+                        <div class="dashboard-overview-status-legend">
+                            <% foreach (var status in Summary.Statuses) { %>
+                            <button type="button" class="dashboard-status-legend-button"
+                                data-status-code="<%= status.StatusCode %>"
+                                data-status-label="<%: status.Status %>"
+                                data-status-count="<%= status.Count %>"
+                                data-bs-toggle="modal" data-bs-target="#overviewProjectsModal"
+                                data-overview-filter="status-<%= status.StatusCode %>"
+                                data-overview-title="<%: status.Status %>">
+                                <span class="dashboard-status-dot" aria-hidden="true"></span>
+                                <span class="dashboard-status-name"><%: status.Status %></span>
+                            </button>
+                            <% } %>
+                        </div>
                     </div>
                     <p class="small text-muted mb-0 mt-2">Chọn một phần biểu đồ để xem danh sách dự án. Quá hạn được theo dõi riêng.</p>
                 </div>
@@ -162,7 +276,7 @@
                                 <span class="dashboard-attention-open flex-shrink-0">Xem lý do <i class="bx bx-chevron-right" aria-hidden="true"></i></span>
                             </div>
                             <div class="mt-2">
-                                <% if (project.IsOverdue) { %><span class="badge bg-danger-subtle text-danger me-1">Quá hạn <%= project.OverdueDays %> ngày</span><% } %>
+                                <% if (project.IsOverdue) { %><span class="badge bg-danger-subtle text-danger me-1">Trễ hạn <%= project.OverdueDays %> ngày</span><% } %>
                                 <% if (project.OverdueTaskCount > 0) { %><span class="badge bg-warning-subtle text-dark"><%= project.OverdueTaskCount %> việc quá hạn</span><% } %>
                                 <% if (project.ImportantIssueCount > 0) { %><span class="badge bg-danger-subtle text-danger"><%= project.ImportantIssueCount %> vấn đề ảnh hưởng cao</span><% } %>
                             </div>
@@ -199,94 +313,90 @@
         </div>
     </div>
 
-    <% if (ShowIssueSignal || ShowRiskSignal) { %>
+    <div class="row g-3 mb-3 dashboard-project-glance-row dashboard-all-projects-glance-row">
+        <div class="col-12 <%= ShowFinanceSignal && Summary.FinanceSummary != null ? "col-lg-4" : "col-lg-12" %>">
+            <div class="card h-100 dashboard-project-glance dashboard-project-glance-progress">
+                <div class="card-body">
+                    <h5 class="dashboard-project-glance-title"><i class="bx bx-task"></i> Tiến độ công việc</h5>
+                    <p class="dashboard-project-glance-caption"><%= AllTasksCompletedCount %>/<%= Summary.Tasks.Count %> công việc thuộc kỳ <%= SelectedDateRangeText %> đã hoàn thành</p>
+                    <div class="dashboard-project-chart-layout">
+                        <div class="dashboard-project-mini-chart" style="position:relative!important;">
+                            <div id="overviewAllTasksChart" class="dashboard-project-chart-canvas"
+                                data-values="<%= AllTasksCompletedCount %>,<%= AllTasksInProgressCount %>,<%= AllTasksNotStartedCount %>"></div>
+                            <span class="dashboard-project-chart-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;"><strong><%= Summary.Tasks.Count %></strong><small>công việc</small></span>
+                        </div>
+                        <div class="dashboard-project-chart-legend">
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="completed"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Hoàn thành</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="in-progress"><i class="dashboard-chart-dot" style="background:#518cdd"></i><span>Đang làm</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="not-started"><i class="dashboard-chart-dot" style="background:#8592a6"></i><span>Chưa bắt đầu</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% if (ShowFinanceSignal && Summary.FinanceSummary != null) { %>
+        <div class="col-12 col-lg-8">
+            <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
+                <div class="card-body">
+                    <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
+                    <p class="dashboard-project-glance-caption">Tổng hợp thu chi · <%= AllFinanceProjectsWithActivityCount %>/<%= Summary.FinanceSummary.Projects.Count %> dự án có phát sinh</p>
+                    <div class="dashboard-finance-chart-layout">
+                        <div id="overviewAllFinanceChart" class="dashboard-finance-chart"
+                            data-values="<%= Summary.FinanceSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.ApprovedCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.PendingApprovalCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
+                        <div class="dashboard-finance-chart-legend" aria-label="Chú giải thu chi">
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="received"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Đã thu</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="outstanding"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Còn phải thu</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="cost"><i class="dashboard-chart-dot" style="background:#518cdd"></i><span>Chi đã duyệt</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewPendingCostsModal" data-finance-filter="pending"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Chi chờ duyệt</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+
+    <% if (ShowIssueSignal || ShowRiskSignal || (ShowResourceSignal && AllProjectsResourceSummary != null)) { %>
     <div class="row g-3 mb-3 dashboard-overview-signal-row">
         <% if (ShowIssueSignal) { %>
-        <div class="col-12 <%= ShowRiskSignal ? "col-lg-6" : "col-lg-12" %>">
+        <div class="col-12 <%= ShowRiskSignal && ShowResourceSignal ? "col-lg-4" : (ShowRiskSignal || ShowResourceSignal ? "col-lg-6" : "col-lg-12") %>">
             <button type="button" class="card h-100 w-100 text-start dashboard-project-issue-card dashboard-overview-signal-card"
                 data-bs-toggle="modal" data-bs-target="#overviewAllIssuesModal">
                 <span class="card-body d-flex align-items-center justify-content-between gap-3">
-                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-error-circle" aria-hidden="true"></i> Vấn đề đang xử lý</strong><small class="text-muted">Trong tất cả dự án · Bấm để xem danh sách</small></span>
+                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-error-circle" aria-hidden="true"></i> Vấn đề đang xử lý</strong><small class="text-muted">Trong kỳ <%= SelectedDateRangeText %> · Bấm để xem danh sách</small></span>
                     <strong class="dashboard-project-issue-count"><%= Summary.OpenIssues.Count %></strong>
                 </span>
             </button>
         </div>
         <% } %>
         <% if (ShowRiskSignal) { %>
-        <div class="col-12 <%= ShowIssueSignal ? "col-lg-6" : "col-lg-12" %>">
+        <div class="col-12 <%= ShowIssueSignal && ShowResourceSignal ? "col-lg-4" : (ShowIssueSignal || ShowResourceSignal ? "col-lg-6" : "col-lg-12") %>">
             <button type="button" class="card h-100 w-100 text-start dashboard-project-issue-card dashboard-project-risk-card dashboard-overview-signal-card"
                 data-bs-toggle="modal" data-bs-target="#overviewRisksModal">
                 <span class="card-body d-flex align-items-center justify-content-between gap-3">
-                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-shield" aria-hidden="true"></i> Rủi ro đã ghi nhận</strong><small class="text-muted">Trong tất cả dự án · Bấm để xem danh sách</small></span>
+                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-shield" aria-hidden="true"></i> Rủi ro đã ghi nhận</strong><small class="text-muted">Trong kỳ <%= SelectedDateRangeText %> · Bấm để xem danh sách</small></span>
                     <strong class="dashboard-project-issue-count dashboard-project-risk-count"><%= Summary.RecordedRisks.Count %></strong>
                 </span>
             </button>
         </div>
         <% } %>
-    </div>
-    <% } %>
-
-    <div class="row g-3 mb-3 dashboard-project-glance-row dashboard-all-projects-glance-row">
-        <div class="col-12 <%= ShowFinanceSignal && ShowResourceSignal ? "col-lg-4" : (ShowFinanceSignal || ShowResourceSignal ? "col-lg-6" : "col-lg-12") %>">
-            <div class="card h-100 dashboard-project-glance dashboard-project-glance-progress">
-                <div class="card-body">
-                    <h5 class="dashboard-project-glance-title"><i class="bx bx-task"></i> Tiến độ công việc</h5>
-                    <p class="dashboard-project-glance-caption"><%= AllTasksCompletedCount %>/<%= Summary.Tasks.Count %> công việc hoàn thành · Tất cả dự án</p>
-                    <div class="dashboard-project-chart-layout">
-                        <div class="dashboard-project-mini-chart">
-                            <div id="overviewAllTasksChart" class="dashboard-project-chart-canvas"
-                                data-values="<%= AllTasksCompletedCount %>,<%= AllTasksInProgressCount %>,<%= AllTasksNotStartedCount %>,<%= AllTasksOverdueCount %>"></div>
-                            <span class="dashboard-project-chart-center"><strong><%= Summary.Tasks.Count %></strong><small>công việc</small></span>
-                        </div>
-                        <div class="dashboard-project-chart-legend">
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="completed"><i class="dashboard-chart-dot" style="background:#35a875"></i>Hoàn thành <strong><%= AllTasksCompletedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="in-progress"><i class="dashboard-chart-dot" style="background:#518cdd"></i>Đang làm <strong><%= AllTasksInProgressCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="not-started"><i class="dashboard-chart-dot" style="background:#9da9bb"></i>Chưa bắt đầu <strong><%= AllTasksNotStartedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllTasksModal" data-task-filter="overdue"><i class="dashboard-chart-dot" style="background:#ef6b60"></i>Quá hạn <strong><%= AllTasksOverdueCount %></strong></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <% if (ShowFinanceSignal && AllProjectsCostSummary != null) { %>
-        <div class="col-12 <%= ShowResourceSignal ? "col-lg-4" : "col-lg-6" %>">
-            <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
-                <div class="card-body">
-                    <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu tiền và chi phí <small>lũy kế</small></h5>
-                    <p class="dashboard-project-glance-caption"><%= AllFinanceProjectsWithAmountsCount %>/<%= AllProjectsCostSummary.ProjectCount %> dự án có khoản thu hoặc phải thu</p>
-                    <div class="dashboard-project-chart-layout">
-                        <div class="dashboard-project-mini-chart">
-                            <div id="overviewAllFinanceChart" class="dashboard-project-chart-canvas"
-                                data-values="<%= AllProjectsCostSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= AllProjectsCostSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
-                            <span class="dashboard-project-chart-center"><strong><%= GetCollectionRate(AllProjectsCostSummary) %>%</strong><small>đã thu</small></span>
-                        </div>
-                        <div class="dashboard-project-chart-legend">
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="received"><i class="dashboard-chart-dot" style="background:#35a875"></i>Đã thu <strong><%: FormatProjectMoney(AllProjectsCostSummary.ReceivedPayment) %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="outstanding"><i class="dashboard-chart-dot" style="background:#f2b84b"></i>Còn phải thu <strong><%: FormatProjectMoney(AllProjectsCostSummary.OutstandingPayment) %></strong></button>
-                        </div>
-                    </div>
-                    <button type="button" class="dashboard-project-secondary-line dashboard-project-secondary-action" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="cost"><span>Chi phí đã duyệt</span><strong><%: FormatProjectMoney(AllProjectsCostSummary.ActualCost) %></strong></button>
-                </div>
-            </div>
-        </div>
-        <% } %>
         <% if (ShowResourceSignal && AllProjectsResourceSummary != null) { %>
-        <div class="col-12 <%= ShowFinanceSignal ? "col-lg-4" : "col-lg-6" %>">
+        <div class="col-12 <%= ShowIssueSignal && ShowRiskSignal ? "col-lg-4" : (ShowIssueSignal || ShowRiskSignal ? "col-lg-6" : "col-lg-12") %>">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-resource">
                 <div class="card-body">
-                    <h5 class="dashboard-project-glance-title"><i class="bx bx-group"></i> Mức tải nhân sự <small>tuần này</small></h5>
+                    <h5 class="dashboard-project-glance-title"><i class="bx bx-group"></i> Tình hình phân công công việc <small>tuần này</small></h5>
                     <p class="dashboard-project-glance-caption"><%= AllProjectsResourceSummary.TotalEmployeeCount %> nhân sự trong hệ thống</p>
                     <div class="dashboard-project-chart-layout">
-                        <div class="dashboard-project-mini-chart">
+                        <div class="dashboard-project-mini-chart" style="position:relative!important;">
                             <div id="overviewAllResourceChart" class="dashboard-project-chart-canvas"
                                 data-values="<%= AllResourceNoLoadCount %>,<%= AllResourceUnderloadedCount %>,<%= AllResourceBalancedCount %>,<%= AllResourceOverloadedCount %>"></div>
-                            <span class="dashboard-project-chart-center"><strong><%= AllProjectsResourceSummary.TotalEmployeeCount %></strong><small>nhân sự</small></span>
+                            <span class="dashboard-project-chart-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;"><strong><%= AllProjectsResourceSummary.TotalEmployeeCount %></strong><small>nhân sự</small></span>
                         </div>
                         <div class="dashboard-project-chart-legend">
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#aab6c7"></i>Không tải <strong><%= AllResourceNoLoadCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#52b6aa"></i>Thiếu tải <strong><%= AllResourceUnderloadedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#f2b84b"></i>Đủ tải <strong><%= AllResourceBalancedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="3"><i class="dashboard-chart-dot" style="background:#ef6b60"></i>Quá tải <strong><%= AllResourceOverloadedCount %></strong></button>
+                            <button type="button" title="Chưa được giao việc" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#8592a6"></i><span>Chưa được giao việc</span></button>
+                            <button type="button" title="Còn khả năng nhận thêm việc" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#38a99b"></i><span>Còn khả năng nhận thêm việc</span></button>
+                            <button type="button" title="Phân công phù hợp" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Phân công phù hợp</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="3"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Quá tải</span></button>
                         </div>
                     </div>
                 </div>
@@ -294,6 +404,7 @@
         </div>
         <% } %>
     </div>
+    <% } %>
 
     <% if (ShowFinanceSignal) { %>
     <div class="modal fade" id="overviewPendingCostsModal" tabindex="-1" aria-hidden="true">
@@ -319,34 +430,6 @@
                 </table></div>
                 <p class="text-muted mb-0 <%= Summary.PendingCosts.Count == 0 ? string.Empty : "d-none" %>" data-overview-signal-empty="pending-cost">Không có khoản chi phù hợp.</p>
             </div>
-        </div></div>
-    </div>
-    <% } %>
-    <% if (ShowResourceSignal) { %>
-    <div class="modal fade" id="overviewOverloadedEmployeesModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">Nhân sự quá tải theo lịch · <%= ResourceWeekStart.ToString("dd/MM") %>–<%= ResourceWeekStart.AddDays(6).ToString("dd/MM/yyyy") %></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
-            <div class="modal-body">
-                <p class="small text-muted">Mức tải dự kiến theo lịch giao việc, không phải giờ làm thực tế.</p>
-                <input type="search" class="form-control mb-3 dashboard-list-search" data-overview-signal-search="overloaded-employee"
-                    placeholder="Tìm nhân sự" aria-label="Tìm nhân sự quá tải" />
-                <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table">
-                    <thead><tr><th>Nhân sự</th><th class="text-end">Mức tải dự kiến</th><th class="text-end">Ngày công giao / ngày làm việc</th><th>Chi tiết</th></tr></thead>
-                    <tbody>
-                    <% foreach (var employee in OverloadedEmployees) { %>
-                    <tr data-overview-signal-row="overloaded-employee">
-                        <td><strong><%: employee.DisplayName %></strong><br /><small><%: employee.DepartmentName %></small></td>
-                        <td class="text-end text-danger fw-semibold"><%= employee.AverageUtilization.ToString("0.#") %>%</td>
-                        <td class="text-end"><%= employee.AllocatedDays.ToString("0.#") %> / <%= employee.CapacityDays.ToString("0.#") %></td>
-                        <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetEmployeeResourceUrl(employee.EmployeeId) %>">Xem phân bổ tuần</a></td>
-                    </tr>
-                    <% } %>
-                    </tbody>
-                </table></div>
-                <p class="text-muted mb-0 <%= OverloadedEmployees.Count == 0 ? string.Empty : "d-none" %>" data-overview-signal-empty="overloaded-employee">Không có nhân sự phù hợp.</p>
-            </div>
-            <div class="modal-footer"><a class="btn btn-outline-primary btn-sm" href="<%: GetResourceDashboardUrl() %>">Xem dashboard nguồn lực</a></div>
         </div></div>
     </div>
     <% } %>
@@ -401,7 +484,7 @@
                 <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table dashboard-attention-task-table">
                     <colgroup><col class="dashboard-attention-task-name" /><col class="dashboard-attention-task-date" /><col class="dashboard-attention-task-action" /></colgroup>
                     <thead><tr><th>Việc cần xử lý</th><th>Hạn / ảnh hưởng</th><th>Chi tiết</th></tr></thead><tbody>
-                    <% foreach (var task in Summary.Tasks.Where(t => t.IsOverdue)) { %>
+                    <% foreach (var task in Summary.CurrentTasks.Where(t => t.IsOverdue)) { %>
                     <tr class="overview-attention-task-row" data-project-id="<%= task.ProjectId %>" data-attention-kind="task"
                         data-search="<%: (task.TaskCode + " " + task.TaskName).ToLowerInvariant() %>">
                         <td><span class="badge bg-warning-subtle text-dark me-1">Công việc quá hạn</span><strong><%: task.TaskCode %></strong><br /><small><%: task.TaskName %></small></td>
@@ -420,7 +503,7 @@
                     </tr>
                     <% } %>
                     </tbody></table></div>
-                <p class="text-muted mb-2 d-none" id="overviewAttentionTasksEmpty">Dự án quá hạn dự kiến.</p>
+                <p class="text-muted mb-2 d-none" id="overviewAttentionTasksEmpty">Dự án trễ hạn dự kiến.</p>
             </div>
             <div class="modal-footer"><a id="overviewAttentionProjectLink" class="btn btn-outline-primary btn-sm" href="#">Xem dự án</a></div>
         </div></div>
@@ -438,12 +521,12 @@
                     <thead><tr><th>Công việc</th><th>Hạn</th><th>Trạng thái</th><th>Chi tiết</th></tr></thead>
                     <tbody id="overviewAllTasksBody" data-project-group-count-format="{0} công việc">
                     <% foreach (var task in Summary.Tasks) { %>
-                    <tr class="overview-all-task-row" data-task-state="<%= task.StatusCode %>"
+                    <tr class="overview-all-task-row" data-task-lifecycle="<%= task.LifecycleStatusCode %>"
                         data-group-project-id="<%= task.ProjectId %>" data-group-project-code="<%: task.ProjectCode %>" data-group-project-name="<%: task.ProjectName %>"
                         data-search="<%: (task.ProjectCode + " " + task.ProjectName + " " + task.TaskCode + " " + task.TaskName).ToLowerInvariant() %>">
                         <td><strong><%: task.TaskCode %></strong><br /><small><%: task.TaskName %></small></td>
                         <td><%: task.Deadline.HasValue ? task.Deadline.Value.ToString("dd/MM/yyyy") : "—" %></td>
-                        <td><%: task.Status %></td>
+                        <td><%: GetTaskLifecycleStatusText(task) %><% if (task.IsOverdue) { %><br /><small class="text-danger">Quá hạn</small><% } %></td>
                         <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetTaskDetailUrl(task) %>">Xem chi tiết</a></td>
                     </tr>
                     <% } %>
@@ -453,7 +536,7 @@
             </div>
         </div></div>
     </div>
-    <% if (ShowFinanceSignal && AllProjectsCostSummary != null) { %>
+    <% if (ShowFinanceSignal && Summary.FinanceSummary != null) { %>
     <div class="modal fade" id="overviewAllFinanceModal" tabindex="-1" aria-labelledby="overviewAllFinanceTitle" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
             <div class="modal-header"><h5 class="modal-title" id="overviewAllFinanceTitle">Thu tiền và chi phí theo dự án</h5>
@@ -465,15 +548,16 @@
                     <strong class="dashboard-list-count" id="overviewAllFinanceCount"></strong>
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
-                    <thead><tr><th>Dự án</th><th class="text-end">Đã thu</th><th class="text-end">Còn phải thu</th><th class="text-end">Chi phí đã duyệt</th><th>Chi tiết</th></tr></thead><tbody>
+                    <thead><tr><th>Dự án</th><th class="text-end">Đã thu</th><th class="text-end">Còn phải thu</th><th class="text-end">Chi phí đã duyệt</th><th class="text-end">Chi phí chờ duyệt</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var project in GetAllProjectsFinanceRows()) { %>
                     <tr class="overview-all-finance-row" data-received="<%= project.ReceivedPayment > 0 ? "1" : "0" %>"
-                        data-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>" data-cost="<%= project.ActualCost > 0 ? "1" : "0" %>"
+                        data-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>" data-cost="<%= project.ApprovedCost > 0 ? "1" : "0" %>"
                         data-search="<%: (project.ProjectCode + " " + project.ProjectName).ToLowerInvariant() %>">
                         <td><strong><%: project.ProjectCode %></strong><br /><small><%: project.ProjectName %></small></td>
                         <td class="text-end text-nowrap"><%: FormatProjectMoney(project.ReceivedPayment) %></td>
                         <td class="text-end text-nowrap"><%: FormatProjectMoney(project.OutstandingPayment) %></td>
-                        <td class="text-end text-nowrap"><%: FormatProjectMoney(project.ActualCost) %></td>
+                        <td class="text-end text-nowrap"><%: FormatProjectMoney(project.ApprovedCost) %></td>
+                        <td class="text-end text-nowrap"><%: FormatProjectMoney(project.PendingApprovalCost) %></td>
                         <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetProjectCostDashboardUrl(project.ProjectId) %>">Xem chi tiết</a></td>
                     </tr><% } %>
                     </tbody></table></div>
@@ -485,7 +569,7 @@
     <% if (ShowResourceSignal && AllProjectsResourceSummary != null) { %>
     <div class="modal fade" id="overviewAllResourceModal" tabindex="-1" aria-labelledby="overviewAllResourceTitle" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title" id="overviewAllResourceTitle">Mức tải nhân sự tuần này</h5>
+            <div class="modal-header"><h5 class="modal-title" id="overviewAllResourceTitle">Tình hình phân công công việc tuần này</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
                 <p class="small text-muted">Một nhân sự được tính một lần dù tham gia nhiều dự án. Mức tải dự kiến theo lịch giao việc.</p>
@@ -494,13 +578,13 @@
                     <strong class="dashboard-list-count" id="overviewAllResourceCount"></strong>
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
-                    <thead><tr><th>Nhân sự</th><th>Dự án có việc tuần này</th><th class="text-end">Mức tải</th><th class="text-end">Ngày giao / ngày làm việc</th><th>Chi tiết</th></tr></thead><tbody>
+                    <thead><tr><th>Nhân sự</th><th>Dự án có việc tuần này</th><th class="text-end">Tình hình phân công</th><th class="text-end">Ngày giao / ngày làm việc</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var employee in AllProjectsResourceSummary.EmployeeLoads) { var week = GetAllProjectsWeekLoad(employee); var loadCode = GetAllProjectsWeekLoadCode(employee); var projectNames = GetAllProjectsWeekProjectNames(employee); %>
                     <tr class="overview-all-resource-row" data-load="<%= loadCode %>"
                         data-search="<%: (employee.DisplayName + " " + employee.UserName + " " + projectNames).ToLowerInvariant() %>">
                         <td><strong><%: employee.DisplayName %></strong></td>
                         <td><%: string.IsNullOrEmpty(projectNames) ? "Chưa có việc trong tuần" : projectNames %></td>
-                        <td class="text-end text-nowrap"><%: GetProjectWeekLoadText(loadCode) %> · <%= week == null ? "0" : week.AllocationPercent.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %>%</td>
+                        <td class="text-end"><%: GetProjectWeekLoadText(loadCode) %> · <%= week == null ? "0" : week.AllocationPercent.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %>%</td>
                         <td class="text-end text-nowrap"><%= week == null ? "0" : week.AllocatedDays.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %> / <%= week == null ? "0" : week.CapacityDays.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %> ngày</td>
                         <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetEmployeeResourceUrl(employee.EmployeeId) %>">Xem chi tiết</a></td>
                     </tr><% } %>
@@ -515,7 +599,7 @@
         <strong class="me-2"><%: SelectedProject.ProjectCode %> · <%: SelectedProject.ProjectName %></strong>
         <span class="badge bg-primary-subtle text-primary">Trạng thái: <%: SelectedProject.Status %></span>
         <% if (SelectedProject.IsOverdue) { %>
-        <span class="badge bg-danger-subtle text-danger">Dự án quá hạn <%= SelectedProject.OverdueDays %> ngày</span>
+        <span class="badge bg-danger-subtle text-danger">Dự án trễ hạn <%= SelectedProject.OverdueDays %> ngày</span>
         <% } %>
         <span class="text-muted small ms-auto">Hạn dự kiến: <%: SelectedProject.ExpectedEndDate.ToString("dd/MM/yyyy") %></span>
     </div>
@@ -530,13 +614,6 @@
             <span class="card-body"><span class="text-muted d-block">Đến hạn trong 7 ngày</span><strong class="fs-3 dashboard-days-left"><%= DueSoonProjectTasks.Count %></strong>
                 <span class="dashboard-kpi-icon bg-warning-subtle dashboard-days-left"><i class="bx bx-calendar-event"></i></span></span>
         </button></div>
-        <% if (ShowProjectCostSummary && ProjectCostSummary != null) { %>
-        <div class="col"><button type="button" class="card w-100 h-100 text-start dashboard-simple-kpi dashboard-project-signal"
-            data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="pending">
-            <span class="card-body"><span class="text-muted d-block">Chi phí chờ duyệt</span><strong class="fs-3 dashboard-attention-text"><%: FormatProjectMoney(ProjectCostSummary.PendingApprovalCost) %></strong>
-                <span class="dashboard-kpi-icon bg-warning-subtle dashboard-attention-text"><i class="bx bx-receipt"></i></span></span>
-        </button></div>
-        <% } %>
         <% if (ShowProjectResourceSummary && ProjectResourceSummary != null) { %>
         <div class="col"><button type="button" class="card w-100 h-100 text-start dashboard-simple-kpi dashboard-project-signal"
             data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="3">
@@ -546,22 +623,21 @@
         <% } %>
     </div>
     <div class="row g-3 mb-3 dashboard-project-glance-row">
-        <div class="col-12 col-lg-4">
+        <div class="col-12 <%= ShowProjectCostSummary && ProjectCostSummary != null ? "col-lg-4" : "col-lg-12" %>">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-progress">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-task"></i> Tiến độ công việc</h5>
                     <p class="dashboard-project-glance-caption"><%= CompletedProjectTasks.Count %>/<%= SelectedProject.TaskCount %> công việc hoàn thành</p>
                     <div class="dashboard-project-chart-layout">
-                        <div class="dashboard-project-mini-chart">
+                        <div class="dashboard-project-mini-chart" style="position:relative!important;">
                             <div id="overviewProjectTasksChart" class="dashboard-project-chart-canvas"
-                                data-values="<%= ProjectTasksCompletedCount %>,<%= ProjectTasksInProgressCount %>,<%= ProjectTasksNotStartedCount %>,<%= ProjectTasksOverdueCount %>"></div>
-                            <span class="dashboard-project-chart-center"><strong><%= SelectedProject.TaskCount %></strong><small>công việc</small></span>
+                                data-values="<%= ProjectTasksCompletedCount %>,<%= ProjectTasksInProgressCount %>,<%= ProjectTasksNotStartedCount %>"></div>
+                            <span class="dashboard-project-chart-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;"><strong><%= SelectedProject.TaskCount %></strong><small>công việc</small></span>
                         </div>
                         <div class="dashboard-project-chart-legend">
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="completed" data-task-title="Công việc hoàn thành"><i class="dashboard-chart-dot" style="background:#35a875"></i>Hoàn thành <strong><%= ProjectTasksCompletedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="in-progress" data-task-title="Công việc đang thực hiện"><i class="dashboard-chart-dot" style="background:#518cdd"></i>Đang làm <strong><%= ProjectTasksInProgressCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="not-started" data-task-title="Công việc chưa bắt đầu"><i class="dashboard-chart-dot" style="background:#9da9bb"></i>Chưa bắt đầu <strong><%= ProjectTasksNotStartedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="overdue" data-task-title="Công việc quá hạn"><i class="dashboard-chart-dot" style="background:#ef6b60"></i>Quá hạn <strong><%= ProjectTasksOverdueCount %></strong></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="completed" data-task-title="Công việc hoàn thành"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Hoàn thành</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="in-progress" data-task-title="Công việc đang thực hiện"><i class="dashboard-chart-dot" style="background:#518cdd"></i><span>Đang làm</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewTasksModal" data-task-filter="not-started" data-task-title="Công việc chưa bắt đầu"><i class="dashboard-chart-dot" style="background:#8592a6"></i><span>Chưa bắt đầu</span></button>
                         </div>
                     </div>
                 </div>
@@ -571,20 +647,18 @@
         <div class="col-12 col-lg-4">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
                 <div class="card-body">
-                    <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu tiền và chi phí <small>lũy kế</small></h5>
+                    <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
                     <p class="dashboard-project-glance-caption"><%= ProjectCostSummary.TotalContractValue > 0 ? "Hợp đồng: " + FormatProjectMoney(ProjectCostSummary.TotalContractValue) : "Chưa ghi nhận giá trị hợp đồng" %></p>
-                    <div class="dashboard-project-chart-layout">
-                        <div class="dashboard-project-mini-chart">
-                            <div id="overviewProjectFinanceChart" class="dashboard-project-chart-canvas"
-                                data-values="<%= ProjectCostSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
-                            <span class="dashboard-project-chart-center"><strong><%= GetProjectCollectionRate() %>%</strong><small>đã thu</small></span>
-                        </div>
-                        <div class="dashboard-project-chart-legend">
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="all"><i class="dashboard-chart-dot" style="background:#35a875"></i>Đã thu <strong><%: FormatProjectMoney(ProjectCostSummary.ReceivedPayment) %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="all"><i class="dashboard-chart-dot" style="background:#f2b84b"></i>Còn phải thu <strong><%: FormatProjectMoney(ProjectCostSummary.OutstandingPayment) %></strong></button>
+                    <div class="dashboard-finance-chart-layout">
+                        <div id="overviewProjectFinanceChart" class="dashboard-finance-chart"
+                            data-values="<%= ProjectCostSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.ActualCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.PendingApprovalCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
+                        <div class="dashboard-finance-chart-legend" aria-label="Chú giải thu chi">
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="all"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Đã thu</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="all"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Còn phải thu</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="approved"><i class="dashboard-chart-dot" style="background:#518cdd"></i><span>Chi đã duyệt</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectFinanceModal" data-finance-filter="pending"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Chi chờ duyệt</span></button>
                         </div>
                     </div>
-                    <div class="dashboard-project-secondary-line"><span>Chi phí đã duyệt</span><strong><%: FormatProjectMoney(ProjectCostSummary.ActualCost) %></strong></div>
                 </div>
             </div>
         </div>
@@ -593,19 +667,19 @@
         <div class="col-12 col-lg-4">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-resource">
                 <div class="card-body">
-                    <h5 class="dashboard-project-glance-title"><i class="bx bx-group"></i> Mức tải nhân sự <small>tuần này</small></h5>
+                    <h5 class="dashboard-project-glance-title"><i class="bx bx-group"></i> Tình hình phân công công việc <small>tuần này</small></h5>
                     <p class="dashboard-project-glance-caption"><%= ProjectResourceSummary.TotalEmployeeCount %> nhân sự thuộc dự án</p>
                     <div class="dashboard-project-chart-layout">
-                        <div class="dashboard-project-mini-chart">
+                        <div class="dashboard-project-mini-chart" style="position:relative!important;">
                             <div id="overviewProjectResourceChart" class="dashboard-project-chart-canvas"
                                 data-values="<%= ProjectResourceNoLoadCount %>,<%= ProjectResourceUnderloadedCount %>,<%= ProjectResourceBalancedCount %>,<%= ProjectResourceOverloadedCount %>"></div>
-                            <span class="dashboard-project-chart-center"><strong><%= ProjectResourceSummary.TotalEmployeeCount %></strong><small>nhân sự</small></span>
+                            <span class="dashboard-project-chart-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;"><strong><%= ProjectResourceSummary.TotalEmployeeCount %></strong><small>nhân sự</small></span>
                         </div>
                         <div class="dashboard-project-chart-legend">
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#aab6c7"></i>Không tải <strong><%= ProjectResourceNoLoadCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#52b6aa"></i>Thiếu tải <strong><%= ProjectResourceUnderloadedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#f2b84b"></i>Đủ tải <strong><%= ProjectResourceBalancedCount %></strong></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="3"><i class="dashboard-chart-dot" style="background:#ef6b60"></i>Quá tải <strong><%= ProjectResourceOverloadedCount %></strong></button>
+                            <button type="button" title="Chưa được giao việc" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#8592a6"></i><span>Chưa được giao việc</span></button>
+                            <button type="button" title="Còn khả năng nhận thêm việc" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#38a99b"></i><span>Còn khả năng nhận thêm việc</span></button>
+                            <button type="button" title="Phân công phù hợp" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Phân công phù hợp</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="3"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Quá tải</span></button>
                         </div>
                     </div>
                 </div>
@@ -673,13 +747,13 @@
                     <% foreach (var task in ProjectTasks) { %>
                     <tr class="overview-task-row" data-overdue="<%= OverdueProjectTasks.Contains(task) ? "1" : "0" %>"
                         data-completed="<%= task.IsCompleted ? "1" : "0" %>"
-                        data-in-progress="<%= task.StatusCode == 1 ? "1" : "0" %>"
-                        data-not-started="<%= task.StatusCode == 0 ? "1" : "0" %>"
+                        data-in-progress="<%= task.LifecycleStatusCode == 1 ? "1" : "0" %>"
+                        data-not-started="<%= task.LifecycleStatusCode == 0 ? "1" : "0" %>"
                         data-due-soon="<%= DueSoonProjectTasks.Contains(task) ? "1" : "0" %>"
                         data-search="<%: (task.TaskCode + " " + task.TaskName).ToLowerInvariant() %>">
                         <td><strong><%: task.TaskCode %></strong><br /><small><%: task.TaskName %></small></td>
                         <td><%: task.Deadline.HasValue ? task.Deadline.Value.ToString("dd/MM/yyyy") : "—" %></td>
-                        <td><%: task.Status %></td>
+                        <td><%: GetTaskLifecycleStatusText(task) %><% if (OverdueProjectTasks.Contains(task)) { %><br /><small class="text-danger">Quá hạn</small><% } %></td>
                         <td><a class="btn btn-outline-primary btn-sm" href="<%: GetTaskDetailUrl(task) %>">Xem chi tiết</a></td>
                     </tr>
                     <% } %>
@@ -724,7 +798,7 @@
     <% if (ShowProjectResourceSummary && ProjectResourceSummary != null) { %>
     <div class="modal fade" id="overviewProjectResourceModal" tabindex="-1" aria-labelledby="overviewProjectResourceTitle" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title" id="overviewProjectResourceTitle">Mức tải nhân sự tuần này</h5>
+            <div class="modal-header"><h5 class="modal-title" id="overviewProjectResourceTitle">Tình hình phân công công việc tuần này</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
@@ -732,7 +806,7 @@
                     <input type="search" class="form-control dashboard-attention-search" id="overviewProjectResourceSearch" placeholder="Tìm nhân sự" aria-label="Tìm nhân sự" />
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0"><thead>
-                    <tr><th>Nhân sự</th><th>Mức tải</th><th>Ngày giao / ngày làm việc</th><th>Chi tiết</th></tr></thead><tbody>
+                    <tr><th>Nhân sự</th><th>Tình hình phân công</th><th>Ngày giao / ngày làm việc</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var employee in ProjectResourceSummary.EmployeeLoads) { var week = GetProjectWeekLoad(employee); var loadCode = GetProjectWeekLoadCode(employee); %>
                     <tr class="overview-project-resource-row" data-load="<%= loadCode %>" data-search="<%: (employee.DisplayName + " " + employee.UserName).ToLowerInvariant() %>">
                         <td><strong><%: employee.DisplayName %></strong></td>
@@ -857,606 +931,834 @@
     <% } %>
 </div>
 <script type="text/javascript">
-(function () {
-    function bindSignalModal(kind) {
-        var input = document.querySelector('[data-overview-signal-search="' + kind + '"]');
-        if (!input) return;
-        var modal = input.closest('.modal');
-        var rows = modal.querySelectorAll('[data-overview-signal-row="' + kind + '"]');
-        var empty = modal.querySelector('[data-overview-signal-empty="' + kind + '"]');
-        var groups = null;
-        function refresh() {
-            if (kind === 'pending-cost' && !groups && window.DashboardProjectGroups)
-                groups = window.DashboardProjectGroups.create(document.getElementById('overviewPendingCostsBody'));
-            var query = (input.value || '').trim().toLocaleLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var show = row.textContent.toLocaleLowerCase().indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
-            });
-            if (groups) groups.refresh(Boolean(query));
-            empty.classList.toggle('d-none', visible > 0);
-        }
-        modal.addEventListener('show.bs.modal', function () {
-            if (groups) groups.reset();
-            input.value = '';
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
-
-    function bindProjectModal() {
-        var modal = document.getElementById('overviewProjectsModal');
-        if (!modal) return;
-        var input = document.getElementById('overviewProjectsSearch');
-        var title = document.getElementById('overviewProjectsModalTitle');
-        var description = document.getElementById('overviewProjectsDescription');
-        var count = document.getElementById('overviewProjectsCount');
-        var contextHeader = document.getElementById('overviewProjectsContextHeader');
-        var empty = document.getElementById('overviewProjectsEmpty');
-        var rows = modal.querySelectorAll('.overview-project-row');
-        var filter = 'all';
-
-        function matches(row) {
-            if (filter.indexOf('status-') === 0)
-                return row.getAttribute('data-status') === filter.substring(7);
-            if (filter === 'attention')
-                return row.getAttribute('data-overdue') === '1'
-                    || row.getAttribute('data-overdue-task') === '1';
-            return filter === 'all' || row.getAttribute('data-' + filter) === '1';
-        }
-
-        function describeRow(row) {
-            var done = row.getAttribute('data-completed-count');
-            var total = row.getAttribute('data-task-count');
-            var overdueDays = row.getAttribute('data-overdue-days');
-            var overdueTasks = row.getAttribute('data-overdue-task-count');
-            var daysLeft = row.getAttribute('data-days-left');
-            var cell = row.querySelector('.overview-project-context');
-            cell.className = 'overview-project-context';
-            if (filter === 'overdue') {
-                cell.textContent = 'Quá hạn ' + overdueDays + ' ngày';
-                cell.classList.add('text-danger', 'fw-semibold');
-            } else if (filter === 'overdue-task') {
-                cell.textContent = overdueTasks + ' công việc quá hạn';
-                cell.classList.add('dashboard-attention-text');
-            } else if (filter === 'attention') {
-                var reasons = [];
-                if (row.getAttribute('data-overdue') === '1') reasons.push('Dự án quá hạn ' + overdueDays + ' ngày');
-                if (row.getAttribute('data-overdue-task') === '1') reasons.push(overdueTasks + ' việc quá hạn');
-                cell.textContent = reasons.join(' · ');
-                cell.classList.add('dashboard-attention-text');
-            } else if (filter === 'due-soon') {
-                cell.textContent = daysLeft === '0' ? 'Đến hạn hôm nay' : 'Còn ' + daysLeft + ' ngày';
-                cell.classList.add('dashboard-days-left', 'fw-semibold');
-            } else {
-                cell.textContent = done + '/' + total + ' việc hoàn thành';
+    (function () {
+        function bindSignalModal(kind) {
+            var input = document.querySelector('[data-overview-signal-search="' + kind + '"]');
+            if (!input) return;
+            var modal = input.closest('.modal');
+            var rows = modal.querySelectorAll('[data-overview-signal-row="' + kind + '"]');
+            var empty = modal.querySelector('[data-overview-signal-empty="' + kind + '"]');
+            var groups = null;
+            function refresh() {
+                if (kind === 'pending-cost' && !groups && window.DashboardProjectGroups)
+                    groups = window.DashboardProjectGroups.create(document.getElementById('overviewPendingCostsBody'));
+                var query = (input.value || '').trim().toLocaleLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var show = row.textContent.toLocaleLowerCase().indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                if (groups) groups.refresh(Boolean(query));
+                empty.classList.toggle('d-none', visible > 0);
             }
-        }
-
-        function refresh() {
-            var query = (input.value || '').trim().toLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var show = matches(row) && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) { describeRow(row); visible++; }
+            modal.addEventListener('show.bs.modal', function () {
+                if (groups) groups.reset();
+                input.value = '';
+                refresh();
             });
-            count.textContent = visible + ' dự án';
-            empty.classList.toggle('d-none', visible > 0);
+            input.addEventListener('input', refresh);
         }
 
-        function select(trigger) {
-            if (!trigger) return;
-            filter = trigger.getAttribute('data-overview-filter') || 'all';
-            title.textContent = trigger.getAttribute('data-overview-title') || 'Danh sách dự án';
-            description.textContent = filter === 'overdue'
-                ? 'Hạn dự kiến đã qua, dự án chưa hoàn thành hoặc kết thúc.'
-                : filter === 'overdue-task'
-                    ? 'Dự án có ít nhất một công việc chưa hoàn thành đã quá hạn.'
-                    : filter === 'attention'
-                        ? 'Dự án quá hạn hoặc có công việc quá hạn.'
-                        : filter === 'due-soon'
-                            ? 'Dự án đang thực hiện, đến hạn trong 7 ngày tới.'
-                            : filter.indexOf('status-') === 0
-                                ? 'Các dự án thuộc trạng thái đã chọn.'
-                                : 'Toàn bộ dự án trong phạm vi hiện tại.';
-            contextHeader.textContent = filter === 'overdue' ? 'Số ngày quá hạn'
-                : filter === 'overdue-task' ? 'Công việc quá hạn'
-                : filter === 'attention' ? 'Lý do cần xử lý'
-                : filter === 'due-soon' ? 'Thời gian còn lại'
-                : 'Công việc hoàn thành';
-            input.value = '';
-            refresh();
-        }
+        function bindProjectModal() {
+            var modal = document.getElementById('overviewProjectsModal');
+            if (!modal) return;
+            var input = document.getElementById('overviewProjectsSearch');
+            var title = document.getElementById('overviewProjectsModalTitle');
+            var description = document.getElementById('overviewProjectsDescription');
+            var count = document.getElementById('overviewProjectsCount');
+            var contextHeader = document.getElementById('overviewProjectsContextHeader');
+            var empty = document.getElementById('overviewProjectsEmpty');
+            var rows = modal.querySelectorAll('.overview-project-row');
+            var filter = 'all';
 
-        Array.prototype.forEach.call(document.querySelectorAll('[data-bs-target="#overviewProjectsModal"]'), function (trigger) {
-            trigger.addEventListener('click', function () { select(trigger); });
-        });
-        modal.addEventListener('show.bs.modal', function (event) { select(event.relatedTarget); });
-        input.addEventListener('input', refresh);
-    }
+            function matches(row) {
+                if (filter.indexOf('status-') === 0)
+                    return row.getAttribute('data-status') === filter.substring(7);
+                if (filter === 'attention')
+                    return row.getAttribute('data-overdue') === '1'
+                        || row.getAttribute('data-overdue-task') === '1';
+                return filter === 'all' || row.getAttribute('data-' + filter) === '1';
+            }
 
-    function bindTaskModal() {
-        var modal = document.getElementById('overviewTasksModal');
-        if (!modal) return;
-        var input = document.getElementById('overviewTasksSearch');
-        var title = document.getElementById('overviewTasksModalTitle');
-        var count = document.getElementById('overviewTasksCount');
-        var empty = document.getElementById('overviewTasksEmpty');
-        var rows = modal.querySelectorAll('.overview-task-row');
-        var filter = 'all';
-        function refresh() {
-            var query = (input.value || '').trim().toLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var belongs = filter === 'all' || (filter === 'attention'
-                    ? row.getAttribute('data-overdue') === '1' || row.getAttribute('data-due-soon') === '1'
-                    : row.getAttribute('data-' + filter) === '1');
-                var show = belongs && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
+            function describeRow(row) {
+                var done = row.getAttribute('data-completed-count');
+                var total = row.getAttribute('data-task-count');
+                var overdueDays = row.getAttribute('data-overdue-days');
+                var overdueTasks = row.getAttribute('data-overdue-task-count');
+                var daysLeft = row.getAttribute('data-days-left');
+                var cell = row.querySelector('.overview-project-context');
+                cell.className = 'overview-project-context';
+                if (filter === 'overdue') {
+                    cell.textContent = 'Quá hạn ' + overdueDays + ' ngày';
+                    cell.classList.add('text-danger', 'fw-semibold');
+                } else if (filter === 'overdue-task') {
+                    cell.textContent = overdueTasks + ' công việc quá hạn';
+                    cell.classList.add('dashboard-attention-text');
+                } else if (filter === 'attention') {
+                    var reasons = [];
+                    if (row.getAttribute('data-overdue') === '1') reasons.push('Dự án trễ hạn ' + overdueDays + ' ngày');
+                    if (row.getAttribute('data-overdue-task') === '1') reasons.push(overdueTasks + ' việc quá hạn');
+                    cell.textContent = reasons.join(' · ');
+                    cell.classList.add('dashboard-attention-text');
+                } else if (filter === 'due-soon') {
+                    cell.textContent = daysLeft === '0' ? 'Đến hạn hôm nay' : 'Còn ' + daysLeft + ' ngày';
+                    cell.classList.add('dashboard-days-left', 'fw-semibold');
+                } else {
+                    cell.textContent = done + '/' + total + ' việc hoàn thành';
+                }
+            }
+
+            function refresh() {
+                var query = (input.value || '').trim().toLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var show = matches(row) && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) { describeRow(row); visible++; }
+                });
+                count.textContent = visible + ' dự án';
+                empty.classList.toggle('d-none', visible > 0);
+            }
+
+            function select(trigger) {
+                if (!trigger) return;
+                filter = trigger.getAttribute('data-overview-filter') || 'all';
+                title.textContent = trigger.getAttribute('data-overview-title') || 'Danh sách dự án';
+                description.textContent = filter === 'overdue'
+                    ? 'Hạn dự kiến đã qua, dự án chưa hoàn thành hoặc kết thúc.'
+                    : filter === 'overdue-task'
+                        ? 'Dự án có ít nhất một công việc chưa hoàn thành đã quá hạn.'
+                        : filter === 'attention'
+                            ? 'Dự án trễ hạn hoặc có công việc quá hạn.'
+                            : filter === 'due-soon'
+                                ? 'Dự án đang thực hiện, đến hạn trong 7 ngày tới.'
+                                : filter.indexOf('status-') === 0
+                                    ? 'Các dự án thuộc trạng thái đã chọn.'
+                                    : 'Toàn bộ dự án trong phạm vi hiện tại.';
+                contextHeader.textContent = filter === 'overdue' ? 'Số ngày trễ hạn'
+                    : filter === 'overdue-task' ? 'Công việc quá hạn'
+                        : filter === 'attention' ? 'Lý do cần xử lý'
+                            : filter === 'due-soon' ? 'Thời gian còn lại'
+                                : 'Công việc hoàn thành';
+                input.value = '';
+                refresh();
+            }
+
+            Array.prototype.forEach.call(document.querySelectorAll('[data-bs-target="#overviewProjectsModal"]'), function (trigger) {
+                trigger.addEventListener('click', function () { select(trigger); });
             });
-            count.textContent = visible + ' công việc';
-            empty.classList.toggle('d-none', visible > 0);
+            modal.addEventListener('show.bs.modal', function (event) { select(event.relatedTarget); });
+            input.addEventListener('input', refresh);
         }
-        function select(trigger) {
-            if (!trigger) return;
-            filter = trigger.getAttribute('data-task-filter') || 'all';
-            title.textContent = trigger.getAttribute('data-task-title') || 'Danh sách công việc';
-            input.value = '';
-            refresh();
-        }
-        Array.prototype.forEach.call(document.querySelectorAll('[data-bs-target="#overviewTasksModal"]'), function (trigger) {
-            trigger.addEventListener('click', function () { select(trigger); });
-        });
-        modal.addEventListener('show.bs.modal', function (event) { select(event.relatedTarget); });
-        input.addEventListener('input', refresh);
-    }
 
-    function bindOpenIssuesModal() {
-        var modal = document.getElementById('overviewOpenIssuesModal');
-        if (!modal) return;
-        var input = document.getElementById('overviewOpenIssuesSearch');
-        var count = document.getElementById('overviewOpenIssuesCount');
-        var empty = document.getElementById('overviewOpenIssuesEmpty');
-        var rows = modal.querySelectorAll('.overview-open-issue-row');
-        function refresh() {
-            var query = (input.value || '').trim().toLocaleLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var show = (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
+        function bindTaskModal() {
+            var modal = document.getElementById('overviewTasksModal');
+            if (!modal) return;
+            var input = document.getElementById('overviewTasksSearch');
+            var title = document.getElementById('overviewTasksModalTitle');
+            var count = document.getElementById('overviewTasksCount');
+            var empty = document.getElementById('overviewTasksEmpty');
+            var rows = modal.querySelectorAll('.overview-task-row');
+            var filter = 'all';
+            function refresh() {
+                var query = (input.value || '').trim().toLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var belongs = filter === 'all' || (filter === 'attention'
+                        ? row.getAttribute('data-overdue') === '1' || row.getAttribute('data-due-soon') === '1'
+                        : row.getAttribute('data-' + filter) === '1');
+                    var show = belongs && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                count.textContent = visible + ' công việc';
+                empty.classList.toggle('d-none', visible > 0);
+            }
+            function select(trigger) {
+                if (!trigger) return;
+                filter = trigger.getAttribute('data-task-filter') || 'all';
+                title.textContent = trigger.getAttribute('data-task-title') || 'Danh sách công việc';
+                input.value = '';
+                refresh();
+            }
+            Array.prototype.forEach.call(document.querySelectorAll('[data-bs-target="#overviewTasksModal"]'), function (trigger) {
+                trigger.addEventListener('click', function () { select(trigger); });
             });
-            count.textContent = visible + ' vấn đề';
-            empty.classList.toggle('d-none', visible > 0);
+            modal.addEventListener('show.bs.modal', function (event) { select(event.relatedTarget); });
+            input.addEventListener('input', refresh);
         }
-        modal.addEventListener('show.bs.modal', function () {
-            input.value = '';
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
 
-    function bindGroupedRecordModal(modalId, inputId, countId, emptyId, bodyId, rowSelector, unit) {
-        var modal = document.getElementById(modalId);
-        if (!modal) return;
-        var input = document.getElementById(inputId);
-        var count = document.getElementById(countId);
-        var empty = document.getElementById(emptyId);
-        var body = document.getElementById(bodyId);
-        var rows = modal.querySelectorAll(rowSelector);
-        var groups = body && window.DashboardProjectGroups
-            ? window.DashboardProjectGroups.create(body) : null;
-
-        function refresh() {
-            var query = (input.value || '').trim().toLocaleLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var searchText = (row.getAttribute('data-search') || '').toLocaleLowerCase();
-                var show = searchText.indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
+        function bindOpenIssuesModal() {
+            var modal = document.getElementById('overviewOpenIssuesModal');
+            if (!modal) return;
+            var input = document.getElementById('overviewOpenIssuesSearch');
+            var count = document.getElementById('overviewOpenIssuesCount');
+            var empty = document.getElementById('overviewOpenIssuesEmpty');
+            var rows = modal.querySelectorAll('.overview-open-issue-row');
+            function refresh() {
+                var query = (input.value || '').trim().toLocaleLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var show = (row.getAttribute('data-search') || '').indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                count.textContent = visible + ' vấn đề';
+                empty.classList.toggle('d-none', visible > 0);
+            }
+            modal.addEventListener('show.bs.modal', function () {
+                input.value = '';
+                refresh();
             });
-            if (groups) groups.refresh(Boolean(query));
-            count.textContent = visible + ' ' + unit;
-            empty.classList.toggle('d-none', visible > 0);
+            input.addEventListener('input', refresh);
         }
 
-        modal.addEventListener('show.bs.modal', function () {
-            input.value = '';
-            if (groups) groups.reset();
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
+        function bindGroupedRecordModal(modalId, inputId, countId, emptyId, bodyId, rowSelector, unit) {
+            var modal = document.getElementById(modalId);
+            if (!modal) return;
+            var input = document.getElementById(inputId);
+            var count = document.getElementById(countId);
+            var empty = document.getElementById(emptyId);
+            var body = document.getElementById(bodyId);
+            var rows = modal.querySelectorAll(rowSelector);
+            var groups = body && window.DashboardProjectGroups
+                ? window.DashboardProjectGroups.create(body) : null;
 
-    function bindProjectFinanceModal() {
-        var modal = document.getElementById('overviewProjectFinanceModal');
-        if (!modal) return;
-        var input = document.getElementById('overviewProjectFinanceSearch');
-        var count = document.getElementById('overviewProjectFinanceCount');
-        var empty = document.getElementById('overviewProjectFinanceEmpty');
-        var title = document.getElementById('overviewProjectFinanceTitle');
-        var rows = modal.querySelectorAll('.overview-project-cost-row');
-        var filter = 'all';
-        function refresh() {
-            var query = (input.value || '').trim().toLocaleLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var show = (filter === 'all' || row.getAttribute('data-cost-status') === filter)
-                    && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
+            function refresh() {
+                var query = (input.value || '').trim().toLocaleLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var searchText = (row.getAttribute('data-search') || '').toLocaleLowerCase();
+                    var show = searchText.indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                if (groups) groups.refresh(Boolean(query));
+                count.textContent = visible + ' ' + unit;
+                empty.classList.toggle('d-none', visible > 0);
+            }
+
+            modal.addEventListener('show.bs.modal', function () {
+                input.value = '';
+                if (groups) groups.reset();
+                refresh();
             });
-            count.textContent = '(' + visible + ')';
-            empty.classList.toggle('d-none', visible > 0);
+            input.addEventListener('input', refresh);
         }
-        modal.addEventListener('show.bs.modal', function (event) {
-            filter = event.relatedTarget && event.relatedTarget.getAttribute('data-finance-filter') || 'all';
-            title.textContent = filter === 'pending' ? 'Chi phí chờ duyệt' : 'Thu tiền và chi phí của dự án';
-            input.value = '';
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
 
-    function bindProjectResourceModal() {
-        var modal = document.getElementById('overviewProjectResourceModal');
-        if (!modal) return;
-        var input = document.getElementById('overviewProjectResourceSearch');
-        var count = document.getElementById('overviewProjectResourceCount');
-        var empty = document.getElementById('overviewProjectResourceEmpty');
-        var title = document.getElementById('overviewProjectResourceTitle');
-        var rows = modal.querySelectorAll('.overview-project-resource-row');
-        var labels = ['không tải', 'thiếu tải', 'đủ tải', 'quá tải'];
-        var filter = 'all';
-        function refresh() {
-            var query = (input.value || '').trim().toLocaleLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var show = (filter === 'all' || row.getAttribute('data-load') === filter)
-                    && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
+        function bindProjectFinanceModal() {
+            var modal = document.getElementById('overviewProjectFinanceModal');
+            if (!modal) return;
+            var input = document.getElementById('overviewProjectFinanceSearch');
+            var count = document.getElementById('overviewProjectFinanceCount');
+            var empty = document.getElementById('overviewProjectFinanceEmpty');
+            var title = document.getElementById('overviewProjectFinanceTitle');
+            var rows = modal.querySelectorAll('.overview-project-cost-row');
+            var filter = 'all';
+            function refresh() {
+                var query = (input.value || '').trim().toLocaleLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var show = (filter === 'all' || row.getAttribute('data-cost-status') === filter)
+                        && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                count.textContent = '(' + visible + ')';
+                empty.classList.toggle('d-none', visible > 0);
+            }
+            modal.addEventListener('show.bs.modal', function (event) {
+                filter = event.relatedTarget && event.relatedTarget.getAttribute('data-finance-filter') || 'all';
+                title.textContent = filter === 'pending' ? 'Chi phí chờ duyệt' : 'Thu tiền và chi phí của dự án';
+                input.value = '';
+                refresh();
             });
-            count.textContent = visible + ' nhân sự';
-            empty.classList.toggle('d-none', visible > 0);
+            input.addEventListener('input', refresh);
         }
-        modal.addEventListener('show.bs.modal', function (event) {
-            filter = event.relatedTarget && event.relatedTarget.getAttribute('data-load-filter') || 'all';
-            title.textContent = filter === 'all' ? 'Mức tải nhân sự tuần này'
-                : 'Nhân sự ' + labels[Number(filter)] + ' tuần này';
-            input.value = '';
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
 
-    function bindAllProjectsBreakdown(modalId, rowClass, filterAttribute, labels, unit) {
-        var modal = document.getElementById(modalId);
-        if (!modal) return;
-        var input = modal.querySelector('input[type="search"]');
-        var title = modal.querySelector('.modal-title');
-        var count = modal.querySelector('.dashboard-list-count');
-        var empty = modal.querySelector('.modal-body > p:last-child');
-        var rows = modal.querySelectorAll(rowClass);
-        var body = modalId === 'overviewAllTasksModal'
-            ? document.getElementById('overviewAllTasksBody') : null;
-        var groups = body && window.DashboardProjectGroups
-            ? window.DashboardProjectGroups.create(body) : null;
-        var filter = 'all';
-        function refresh() {
-            var query = (input.value || '').trim().toLocaleLowerCase();
-            var visible = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var matchesFilter = filter === 'all';
-                if (modalId === 'overviewAllTasksModal')
-                    matchesFilter = matchesFilter || row.getAttribute(filterAttribute) ===
-                        { 'not-started': '0', 'in-progress': '1', completed: '2', overdue: '3' }[filter];
-                else if (modalId === 'overviewAllFinanceModal')
-                    matchesFilter = matchesFilter || row.getAttribute('data-' + filter) === '1';
-                else
-                    matchesFilter = matchesFilter || row.getAttribute(filterAttribute) === filter;
-                var show = matchesFilter
-                    && (row.getAttribute('data-search') || '').toLocaleLowerCase().indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
+        function bindProjectResourceModal() {
+            var modal = document.getElementById('overviewProjectResourceModal');
+            if (!modal) return;
+            var input = document.getElementById('overviewProjectResourceSearch');
+            var count = document.getElementById('overviewProjectResourceCount');
+            var empty = document.getElementById('overviewProjectResourceEmpty');
+            var title = document.getElementById('overviewProjectResourceTitle');
+            var rows = modal.querySelectorAll('.overview-project-resource-row');
+            var labels = ['Chưa được giao việc', 'Còn khả năng nhận thêm việc', 'Phân công phù hợp', 'Quá tải'];
+            var filter = 'all';
+            function refresh() {
+                var query = (input.value || '').trim().toLocaleLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var show = (filter === 'all' || row.getAttribute('data-load') === filter)
+                        && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                count.textContent = visible + ' nhân sự';
+                empty.classList.toggle('d-none', visible > 0);
+            }
+            modal.addEventListener('show.bs.modal', function (event) {
+                filter = event.relatedTarget && event.relatedTarget.getAttribute('data-load-filter') || 'all';
+                title.textContent = filter === 'all' ? 'Tình hình phân công công việc tuần này'
+                    : 'Nhân sự: ' + labels[Number(filter)] + ' · tuần này';
+                input.value = '';
+                refresh();
             });
-            if (groups) groups.refresh(Boolean(query));
-            count.textContent = visible + ' ' + unit;
-            empty.classList.toggle('d-none', visible > 0);
+            input.addEventListener('input', refresh);
         }
-        modal.addEventListener('show.bs.modal', function (event) {
-            filter = event.relatedTarget && event.relatedTarget.getAttribute(
-                modalId === 'overviewAllTasksModal' ? 'data-task-filter'
-                    : modalId === 'overviewAllFinanceModal' ? 'data-finance-filter' : 'data-load-filter') || 'all';
-            title.textContent = labels[filter] || labels.all;
-            input.value = '';
-            if (groups) groups.reset();
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
 
-    bindProjectModal();
-    bindTaskModal();
-    bindOpenIssuesModal();
-    bindGroupedRecordModal('overviewAllIssuesModal', 'overviewAllIssuesSearch',
-        'overviewAllIssuesCount', 'overviewAllIssuesEmpty', 'overviewAllIssuesBody',
-        '.overview-all-issue-row', 'vấn đề');
-    bindGroupedRecordModal('overviewRisksModal', 'overviewRisksSearch',
-        'overviewRisksCount', 'overviewRisksEmpty', 'overviewRisksBody',
-        '.overview-recorded-risk-row', 'rủi ro');
-    bindProjectFinanceModal();
-    bindProjectResourceModal();
-    bindAllProjectsBreakdown('overviewAllTasksModal', '.overview-all-task-row', 'data-task-state',
-        { all: 'Công việc của các dự án', completed: 'Công việc hoàn thành',
-            'in-progress': 'Công việc đang làm', 'not-started': 'Công việc chưa bắt đầu',
-            overdue: 'Công việc quá hạn' }, 'công việc');
-    bindAllProjectsBreakdown('overviewAllFinanceModal', '.overview-all-finance-row', 'data-finance-filter',
-        { all: 'Thu tiền và chi phí theo dự án', received: 'Đã thu theo dự án',
-            outstanding: 'Còn phải thu theo dự án', cost: 'Chi phí đã duyệt theo dự án' }, 'dự án');
-    bindAllProjectsBreakdown('overviewAllResourceModal', '.overview-all-resource-row', 'data-load',
-        { all: 'Mức tải nhân sự tuần này', '0': 'Nhân sự không tải tuần này',
-            '1': 'Nhân sự thiếu tải tuần này', '2': 'Nhân sự đủ tải tuần này',
-            '3': 'Nhân sự quá tải tuần này' }, 'nhân sự');
-    bindSignalModal('pending-cost');
-    bindSignalModal('overloaded-employee');
+        function bindAllProjectsBreakdown(modalId, rowClass, filterAttribute, labels, unit) {
+            var modal = document.getElementById(modalId);
+            if (!modal) return;
+            var input = modal.querySelector('input[type="search"]');
+            var title = modal.querySelector('.modal-title');
+            var count = modal.querySelector('.dashboard-list-count');
+            var empty = modal.querySelector('.modal-body > p:last-child');
+            var rows = modal.querySelectorAll(rowClass);
+            var body = modalId === 'overviewAllTasksModal'
+                ? document.getElementById('overviewAllTasksBody') : null;
+            var groups = body && window.DashboardProjectGroups
+                ? window.DashboardProjectGroups.create(body) : null;
+            var filter = 'all';
+            function refresh() {
+                var query = (input.value || '').trim().toLocaleLowerCase();
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var matchesFilter = filter === 'all';
+                    if (modalId === 'overviewAllTasksModal')
+                        matchesFilter = matchesFilter || row.getAttribute(filterAttribute) ===
+                            { 'not-started': '0', 'in-progress': '1', completed: '2' }[filter];
+                    else if (modalId === 'overviewAllFinanceModal')
+                        matchesFilter = matchesFilter || row.getAttribute('data-' + filter) === '1';
+                    else
+                        matchesFilter = matchesFilter || row.getAttribute(filterAttribute) === filter;
+                    var show = matchesFilter
+                        && (row.getAttribute('data-search') || '').toLocaleLowerCase().indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) visible++;
+                });
+                if (groups) groups.refresh(Boolean(query));
+                count.textContent = visible + ' ' + unit;
+                empty.classList.toggle('d-none', visible > 0);
+            }
+            modal.addEventListener('show.bs.modal', function (event) {
+                filter = event.relatedTarget && event.relatedTarget.getAttribute(
+                    modalId === 'overviewAllTasksModal' ? 'data-task-filter'
+                        : modalId === 'overviewAllFinanceModal' ? 'data-finance-filter' : 'data-load-filter') || 'all';
+                title.textContent = labels[filter] || labels.all;
+                input.value = '';
+                if (groups) groups.reset();
+                refresh();
+            });
+            input.addEventListener('input', refresh);
+        }
 
-    function renderProjectMiniChart(id, labels, colors, unit, isMoney) {
-        var element = document.getElementById(id);
-        if (!element) return;
-        var layout = element.parentNode.parentNode;
-        var values = (element.getAttribute('data-values') || '').split(',').map(function (value) {
-            return Number(value) || 0;
-        });
-        var total = values.reduce(function (sum, value) { return sum + value; }, 0);
-        if (!total) {
-            layout.classList.add('is-empty');
-            element.innerHTML = '<div class="dashboard-project-chart-empty"><i class="bx bx-info-circle" aria-hidden="true"></i><span>'
-                + (isMoney ? 'Chưa có dữ liệu thu tiền' : 'Chưa có dữ liệu') + '</span></div>';
-            return;
-        }
-        if (typeof ApexCharts === 'undefined') {
-            layout.classList.add('is-empty');
-            element.innerHTML = '<div class="dashboard-project-chart-empty"><i class="bx bx-error-circle" aria-hidden="true"></i><span>Không tải được biểu đồ</span></div>';
-            return;
-        }
-        var legend = layout.querySelector('.dashboard-project-chart-legend');
-        var buttons = legend ? legend.querySelectorAll('button') : [];
-        var chart = new ApexCharts(element, {
-            chart: {
-                type: 'donut', height: 170, toolbar: { show: false },
-                events: { dataPointSelection: function (event, context, config) {
-                    if (buttons[config.dataPointIndex]) buttons[config.dataPointIndex].click();
-                } }
-            },
-            series: values,
-            labels: labels,
-            colors: colors,
-            stroke: { width: 2, colors: ['#fff'] },
-            legend: { show: false },
-            dataLabels: {
-                enabled: true,
-                formatter: function (percentage, options) {
-                    if (isMoney)
-                        return percentage > 0 && percentage < 1
-                            ? '<1%' : Math.round(percentage) + '%';
-                    return values[options.seriesIndex] || '';
-                },
-                style: { fontSize: '10px', fontWeight: 700, colors: ['#18273f'] },
-                dropShadow: { enabled: false }
-            },
-            tooltip: { y: { formatter: function (value) {
-                return isMoney ? new Intl.NumberFormat('vi-VN').format(value) + ' đ' : value + ' ' + unit;
-            } } },
-            plotOptions: { pie: { expandOnClick: false, dataLabels: { minAngleToShowLabel: 8 },
-                donut: { size: '58%', labels: { show: false } } } },
-            states: { active: { filter: { type: 'none' } } }
-        });
-        chart.render();
-    }
+        bindProjectModal();
+        bindTaskModal();
+        bindOpenIssuesModal();
+        bindGroupedRecordModal('overviewAllIssuesModal', 'overviewAllIssuesSearch',
+            'overviewAllIssuesCount', 'overviewAllIssuesEmpty', 'overviewAllIssuesBody',
+            '.overview-all-issue-row', 'vấn đề');
+        bindGroupedRecordModal('overviewRisksModal', 'overviewRisksSearch',
+            'overviewRisksCount', 'overviewRisksEmpty', 'overviewRisksBody',
+            '.overview-recorded-risk-row', 'rủi ro');
+        bindProjectFinanceModal();
+        bindProjectResourceModal();
+        bindAllProjectsBreakdown('overviewAllTasksModal', '.overview-all-task-row', 'data-task-lifecycle',
+            {
+                all: 'Công việc của các dự án', completed: 'Công việc hoàn thành',
+                'in-progress': 'Công việc đang làm', 'not-started': 'Công việc chưa bắt đầu'
+            }, 'công việc');
+        bindAllProjectsBreakdown('overviewAllFinanceModal', '.overview-all-finance-row', 'data-finance-filter',
+            {
+                all: 'Thu tiền và chi phí theo dự án', received: 'Đã thu theo dự án',
+                outstanding: 'Còn phải thu theo dự án', cost: 'Chi phí đã duyệt theo dự án'
+            }, 'dự án');
+        bindAllProjectsBreakdown('overviewAllResourceModal', '.overview-all-resource-row', 'data-load',
+            {
+                all: 'Tình hình phân công công việc tuần này', '0': 'Nhân sự chưa được giao việc tuần này',
+                '1': 'Nhân sự còn khả năng nhận thêm việc tuần này', '2': 'Nhân sự được phân công phù hợp tuần này',
+                '3': 'Nhân sự quá tải tuần này'
+            }, 'nhân sự');
+        bindSignalModal('pending-cost');
+        bindSignalModal('overloaded-employee');
+        bindSignalModal('active-customer');
 
-    function renderProjectMiniCharts() {
-        var task = document.getElementById('overviewProjectTasksChart');
-        if (task) {
-            renderProjectMiniChart('overviewProjectTasksChart',
-                ['Hoàn thành', 'Đang làm', 'Chưa bắt đầu', 'Quá hạn'],
-                ['#35a875', '#518cdd', '#9da9bb', '#ef6b60'],
-                'công việc', false);
-        }
-        var finance = document.getElementById('overviewProjectFinanceChart');
-        if (finance) {
-            renderProjectMiniChart('overviewProjectFinanceChart',
-                ['Đã thu', 'Còn phải thu'], ['#35a875', '#f2b84b'],
-                '', true);
-        }
-        var resource = document.getElementById('overviewProjectResourceChart');
-        if (resource) {
-            renderProjectMiniChart('overviewProjectResourceChart',
-                ['Không tải', 'Thiếu tải', 'Đủ tải', 'Quá tải'],
-                ['#aab6c7', '#52b6aa', '#f2b84b', '#ef6b60'],
-                'nhân sự', false);
-        }
-        renderProjectMiniChart('overviewAllTasksChart',
-            ['Hoàn thành', 'Đang làm', 'Chưa bắt đầu', 'Quá hạn'],
-            ['#35a875', '#518cdd', '#9da9bb', '#ef6b60'],
-            'công việc', false);
-        renderProjectMiniChart('overviewAllFinanceChart',
-            ['Đã thu', 'Còn phải thu'], ['#35a875', '#f2b84b'],
-            '', true);
-        renderProjectMiniChart('overviewAllResourceChart',
-            ['Không tải', 'Thiếu tải', 'Đủ tải', 'Quá tải'],
-            ['#aab6c7', '#52b6aa', '#f2b84b', '#ef6b60'],
-            'nhân sự', false);
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderProjectMiniCharts);
-    } else {
-        renderProjectMiniCharts();
-    }
+        var smallSliceLabelAngle = 14;
 
-    function bindAttentionTasksModal() {
-        var modal = document.getElementById('overviewAttentionTasksModal');
-        if (!modal) return;
-        var input = document.getElementById('overviewAttentionTasksSearch');
-        var rows = modal.querySelectorAll('.overview-attention-task-row');
-        var projectId = '';
-        var overdueDays = 0;
-        var projectTitle = document.getElementById('overviewAttentionTasksProject');
-        var count = document.getElementById('overviewAttentionTasksCount');
-        var empty = document.getElementById('overviewAttentionTasksEmpty');
-        var projectLink = document.getElementById('overviewAttentionProjectLink');
-        var table = modal.querySelector('.dashboard-attention-task-table');
-        function refresh() {
-            var query = (input.value || '').trim().toLowerCase();
-            var visible = 0;
-            var total = 0;
-            var taskCount = 0;
-            var issueCount = 0;
-            Array.prototype.forEach.call(rows, function (row) {
-                var belongs = row.getAttribute('data-project-id') === projectId;
-                if (belongs) total++;
-                var show = belongs && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                row.classList.toggle('d-none', !show);
-                if (show) {
-                    visible++;
-                    if (row.getAttribute('data-attention-kind') === 'issue') issueCount++;
-                    else taskCount++;
+        function formatChartShare(percent) {
+            if (percent > 0 && percent < 1) return '<1%';
+            return Math.round(percent) + '%';
+        }
+
+        function scheduleSmallPieLabels(element, chart, values, colors) {
+            window.setTimeout(function () {
+                placeSmallPieLabels(element, chart, values, colors);
+            }, 0);
+        }
+
+        // Reposition only narrow-slice labels outside the ring; ApexCharts 3.x has no external pie-label option.
+        function placeSmallPieLabels(element, chart, values, colors) {
+            var svg = element && element.querySelector('svg');
+            var globals = chart && chart.w && chart.w.globals;
+            if (!svg || !globals) return;
+
+            // Center totals are positioned by CSS relative to the chart wrapper.
+            // ApexCharts grid dimensions can exclude padding, so using them here
+            // shifts the total away from the actual donut center.
+            Array.prototype.forEach.call(svg.querySelectorAll('[data-dashboard-pie-connector]'), function (connector) {
+                connector.parentNode.removeChild(connector);
+            });
+
+            var labels = Array.prototype.slice.call(svg.querySelectorAll('text.apexcharts-pie-label'));
+            var total = values.reduce(function (sum, value) { return sum + value; }, 0);
+            var gridWidth = Number(globals.gridWidth) || element.clientWidth;
+            var gridHeight = Number(globals.gridHeight) || element.clientHeight;
+            var diameter = Math.min(gridWidth, gridHeight);
+            var centerX = gridWidth / 2;
+            var centerY = diameter / 2;
+            var radius = Number(globals.radialSize) || diameter / 2.05;
+            var config = chart.w.config.plotOptions.pie;
+            var startAngle = Number(config.startAngle) || 0;
+            var fullAngle = Math.abs(Number(config.endAngle) - startAngle) || 360;
+            var donutRadius = radius * (parseInt(config.donut.size, 10) || 65) / 100;
+            var dataLabelRadius = (radius + donutRadius) / 2 + (Number(config.dataLabels.offset) || 0);
+            var sweepAngle = 0;
+            var labelIndex = 0;
+            var external = [];
+
+            values.forEach(function (value, index) {
+                if (value <= 0) return;
+                var sliceAngle = total ? value / total * fullAngle : 0;
+                var label = labels[labelIndex++];
+                if (!label) {
+                    sweepAngle += sliceAngle;
+                    return;
+                }
+
+                var angleDegrees = startAngle + sweepAngle + sliceAngle / 2;
+                var angle = (angleDegrees - 90) * Math.PI / 180;
+                var xDirection = Math.cos(angle);
+                var yDirection = Math.sin(angle);
+                label.setAttribute('x', centerX + xDirection * dataLabelRadius);
+                label.setAttribute('y', centerY + yDirection * dataLabelRadius);
+                label.setAttribute('text-anchor', 'middle');
+                label.style.fill = '';
+                label.classList.remove('dashboard-pie-external-label');
+
+                if (sliceAngle < smallSliceLabelAngle) {
+                    external.push({
+                        label: label,
+                        color: colors[index] || '#6b7280',
+                        xDirection: xDirection,
+                        yDirection: yDirection,
+                        x: centerX + xDirection * (radius + 20),
+                        y: centerY + yDirection * (radius + 20),
+                        side: xDirection >= 0 ? 'right' : 'left'
+                    });
+                }
+                sweepAngle += sliceAngle;
+            });
+
+            ['left', 'right'].forEach(function (side) {
+                var items = external.filter(function (item) { return item.side === side; })
+                    .sort(function (left, right) { return left.y - right.y; });
+                var minY = 12;
+                var maxY = gridHeight - 8;
+                var minGap = 16;
+                items.forEach(function (item, index) {
+                    item.y = Math.max(minY, item.y);
+                    if (index > 0) item.y = Math.max(item.y, items[index - 1].y + minGap);
+                });
+                if (items.length && items[items.length - 1].y > maxY) {
+                    var shiftUp = items[items.length - 1].y - maxY;
+                    items.forEach(function (item) { item.y -= shiftUp; });
                 }
             });
-            count.textContent = taskCount + ' công việc quá hạn · '
-                + issueCount + ' vấn đề đang xử lý';
-            empty.textContent = total === 0
-                ? 'Dự án quá hạn dự kiến ' + overdueDays + ' ngày; không có công việc quá hạn hoặc vấn đề ảnh hưởng cao đang xử lý.'
-                : 'Không có mục phù hợp với từ khóa.';
-            empty.classList.toggle('d-none', visible > 0);
-            table.classList.toggle('d-none', visible === 0);
-        }
-        modal.addEventListener('show.bs.modal', function (event) {
-            var trigger = event.relatedTarget;
-            if (!trigger) return;
-            projectId = trigger.getAttribute('data-project-id') || '';
-            overdueDays = Number(trigger.getAttribute('data-project-overdue-days')) || 0;
-            projectTitle.textContent = trigger.getAttribute('data-project-title') || '';
-            projectLink.href = trigger.getAttribute('data-project-url') || '#';
-            input.value = '';
-            refresh();
-        });
-        input.addEventListener('input', refresh);
-    }
 
-    function bindMeetingModal() {
-        var modal = document.getElementById('overviewMeetingModal');
-        if (!modal) return;
-        modal.addEventListener('show.bs.modal', function (event) {
-            var trigger = event.relatedTarget;
-            if (!trigger) return;
-            var fields = {
-                overviewMeetingTitle: 'title',
-                overviewMeetingProject: 'project',
-                overviewMeetingStart: 'start',
-                overviewMeetingEnd: 'end',
-                overviewMeetingLocation: 'location',
-                overviewMeetingContent: 'content'
-            };
-            Object.keys(fields).forEach(function (id) {
-                document.getElementById(id).textContent =
-                    trigger.getAttribute('data-meeting-' + fields[id]) || 'Chưa có thông tin';
+            external.forEach(function (item) {
+                var labelWidth = Math.max(14, (item.label.textContent || '').length * 6.5);
+                var anchor = item.side === 'right' ? 'start' : 'end';
+                var x = item.x;
+                var rightLimit = Math.max(gridWidth, element.clientWidth) + 20;
+                if (anchor === 'start' && x + labelWidth > rightLimit) {
+                    x = rightLimit - labelWidth;
+                } else if (anchor === 'end' && x - labelWidth < 6) {
+                    x = 6;
+                    anchor = 'start';
+                }
+                var lineEndX = x + (anchor === 'start' ? -3 : 3);
+                var startX = centerX + item.xDirection * (radius + 2);
+                var startY = centerY + item.yDirection * (radius + 2);
+                var bendX = centerX + item.xDirection * (radius + 10);
+                var bendY = centerY + item.yDirection * (radius + 10);
+                var connector = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+                connector.setAttribute('data-dashboard-pie-connector', 'true');
+                connector.setAttribute('class', 'dashboard-pie-external-connector');
+                connector.setAttribute('d', 'M ' + startX + ' ' + startY
+                    + ' L ' + bendX + ' ' + bendY
+                    + ' L ' + lineEndX + ' ' + item.y);
+                connector.setAttribute('fill', 'none');
+                connector.setAttribute('stroke', item.color);
+                connector.setAttribute('stroke-width', '1.25');
+                connector.setAttribute('stroke-linecap', 'round');
+                item.label.parentNode.insertBefore(connector, item.label);
+                item.label.setAttribute('x', x);
+                item.label.setAttribute('y', item.y);
+                item.label.setAttribute('text-anchor', anchor);
+                item.label.style.fill = '#45546a';
+                item.label.classList.add('dashboard-pie-external-label');
             });
-            document.getElementById('overviewMeetingLink').href =
-                trigger.getAttribute('data-meeting-url') || '#';
-        });
-    }
-
-    bindAttentionTasksModal();
-    bindMeetingModal();
-
-    var statusChart;
-    function renderStatusChart() {
-        var element = document.getElementById('overviewStatusChart');
-        if (!element) return;
-        var buttons = document.querySelectorAll('.dashboard-status-legend-button');
-        var entries = Array.prototype.map.call(buttons, function (button) {
-            return {
-                label: button.getAttribute('data-status-label') || '',
-                count: Number(button.getAttribute('data-status-count')) || 0
-            };
-        });
-        var total = entries.reduce(function (sum, entry) { return sum + entry.count; }, 0);
-        if (!total) {
-            element.innerHTML = '<p class="text-muted text-center py-5 mb-0">Chưa có dự án để thống kê.</p>';
-            return;
         }
-        if (typeof ApexCharts === 'undefined') {
-            element.innerHTML = '<p class="text-muted text-center py-5 mb-0">Không tải được biểu đồ.</p>';
-            return;
-        }
-        statusChart = new ApexCharts(element, {
-            chart: {
-                type: 'donut', height: 220, toolbar: { show: false },
-                events: {
-                    dataPointSelection: function (event, chartContext, config) {
-                        var button = buttons[config.dataPointIndex];
-                        if (button) button.click();
+
+        function renderProjectMiniChart(id, labels, colors, unit, isMoney) {
+            var element = document.getElementById(id);
+            if (!element) return;
+            var layout = element.parentNode.parentNode;
+            var values = (element.getAttribute('data-values') || '').split(',').map(function (value) {
+                return Number(value) || 0;
+            });
+            var total = values.reduce(function (sum, value) { return sum + value; }, 0);
+            var isResourceChart = id === 'overviewAllResourceChart' || id === 'overviewProjectResourceChart';
+            var chartHeight = isResourceChart ? 220 : 250;
+            var legend = layout.querySelector('.dashboard-project-chart-legend');
+            var buttons = legend ? legend.querySelectorAll('button') : [];
+            if (!total) {
+                layout.classList.add('is-empty');
+                element.innerHTML = '<div class="dashboard-project-chart-empty"><i class="bx bx-info-circle" aria-hidden="true"></i><span>'
+                    + (isMoney ? 'Chưa có dữ liệu thu tiền' : 'Chưa có dữ liệu') + '</span></div>';
+                return;
+            }
+            if (typeof ApexCharts === 'undefined') {
+                layout.classList.add('is-empty');
+                element.innerHTML = '<div class="dashboard-project-chart-empty"><i class="bx bx-error-circle" aria-hidden="true"></i><span>Không tải được biểu đồ</span></div>';
+                return;
+            }
+            var chart = new ApexCharts(element, {
+                chart: {
+                    type: 'donut', height: chartHeight, toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (event, context, config) {
+                            if (buttons[config.dataPointIndex]) buttons[config.dataPointIndex].click();
+                        },
+                        mounted: function (context) { scheduleSmallPieLabels(element, context, values, colors); },
+                        updated: function (context) { scheduleSmallPieLabels(element, context, values, colors); },
+                        resized: function (context) { scheduleSmallPieLabels(element, context, values, colors); }
                     }
-                }
-            },
-            labels: entries.map(function (entry) { return entry.label; }),
-            series: entries.map(function (entry) { return entry.count; }),
-            colors: ['#7896b6', '#368ed8', '#e6a32e', '#37aa80', '#9066c4'],
-            stroke: { width: 2, colors: ['#fff'] },
-            legend: { show: false },
-            dataLabels: {
-                enabled: true,
-                style: { colors: ['#18273f'], fontSize: '12px', fontWeight: 700 },
-                dropShadow: { enabled: false },
-                formatter: function (value, options) {
-                    return entries[options.seriesIndex].count;
-                }
-            },
-            tooltip: { y: { formatter: function (value) { return value + ' dự án'; } } },
-            plotOptions: {
-                pie: {
-                    expandOnClick: false,
-                    dataLabels: { minAngleToShowLabel: 8 },
-                    donut: {
-                        size: '62%',
-                        labels: {
-                            show: true,
-                            value: {
-                                formatter: function (value) { return value + ' dự án'; }
-                            },
-                            total: {
-                                show: true, showAlways: true,
-                                label: 'Tổng dự án',
-                                formatter: function () { return total; }
-                            }
+                },
+                series: values,
+                labels: labels,
+                colors: colors,
+                stroke: { width: 2, colors: ['#fff'] },
+                legend: { show: false },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (percentage) { return formatChartShare(percentage); },
+                    style: { fontSize: '10px', fontWeight: 800, colors: ['#fff'] },
+                    dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: '#1b293e', opacity: .55 }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function (value) {
+                            return isMoney ? new Intl.NumberFormat('vi-VN').format(value) + ' đ' : value + ' ' + unit;
                         }
                     }
-                }
-            },
-            states: { active: { filter: { type: 'none' } } }
-        });
-        statusChart.render();
-    }
-    var projectModal = document.getElementById('overviewProjectsModal');
-    if (projectModal) {
-        projectModal.addEventListener('hidden.bs.modal', function () {
-            if (!statusChart) return;
-            statusChart.destroy();
-            statusChart = null;
-            document.getElementById('overviewStatusChart').innerHTML = '';
+                },
+                plotOptions: {
+                    pie: {
+                        expandOnClick: false,
+                        customScale: isResourceChart ? 0.88 : 1,
+                        dataLabels: { offset: isResourceChart ? -6 : 0, minAngleToShowLabel: 0 },
+                        donut: { size: '64%', labels: { show: false } }
+                    }
+                },
+                states: { active: { filter: { type: 'none' } } }
+            });
+            chart.render().then(function () {
+                scheduleSmallPieLabels(element, chart, values, colors);
+            });
+        }
+
+        function renderFinanceBreakdownChart(id) {
+            var element = document.getElementById(id);
+            if (!element) return;
+            var layout = element.parentNode;
+            var legend = layout.querySelector('.dashboard-finance-chart-legend');
+            var buttons = legend ? legend.querySelectorAll('button') : [];
+            var values = (element.getAttribute('data-values') || '').split(',').map(function (value) {
+                return Number(value) || 0;
+            });
+            while (values.length < 4) values.push(0);
+            var receivedTotal = values[0] + values[1];
+            var costTotal = values[2] + values[3];
+            var total = receivedTotal + costTotal;
+            if (!total) {
+                layout.classList.add('is-empty');
+                element.innerHTML = '<div class="dashboard-finance-chart-empty"><i class="bx bx-info-circle" aria-hidden="true"></i><span>Chưa có dữ liệu thu chi</span></div>';
+                return;
+            }
+            if (typeof ApexCharts === 'undefined') {
+                layout.classList.add('is-empty');
+                element.innerHTML = '<div class="dashboard-finance-chart-empty"><i class="bx bx-error-circle" aria-hidden="true"></i><span>Không tải được biểu đồ</span></div>';
+                return;
+            }
+
+            var shares = [
+                receivedTotal ? values[0] / receivedTotal * 100 : 0,
+                receivedTotal ? values[1] / receivedTotal * 100 : 0,
+                costTotal ? values[2] / costTotal * 100 : 0,
+                costTotal ? values[3] / costTotal * 100 : 0
+            ];
+            var colors = ['#35a875', '#e2a52e', '#518cdd', '#e45d53'];
+            var names = ['Đã thu', 'Còn phải thu', 'Chi đã duyệt', 'Chi chờ duyệt'];
+            var chart = new ApexCharts(element, {
+                chart: {
+                    type: 'bar',
+                    height: 160,
+                    stacked: true,
+                    stackType: '100%',
+                    toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (event, context, config) {
+                            if (buttons[config.seriesIndex]) buttons[config.seriesIndex].click();
+                        }
+                    }
+                },
+                series: [
+                    { name: names[0], data: [shares[0], 0] },
+                    { name: names[1], data: [shares[1], 0] },
+                    { name: names[2], data: [0, shares[2]] },
+                    { name: names[3], data: [0, shares[3]] }
+                ],
+                colors: colors,
+                plotOptions: {
+                    bar: { horizontal: true, barHeight: '48%', borderRadius: 4 }
+                },
+                dataLabels: { enabled: false },
+                xaxis: {
+                    categories: ['Thu', 'Chi'],
+                    min: 0,
+                    max: 100,
+                    tickAmount: 4,
+                    labels: {
+                        formatter: function (value) { return Math.round(value) + '%'; },
+                        style: { colors: '#64748b', fontSize: '11px' }
+                    }
+                },
+                yaxis: { labels: { style: { colors: '#475569', fontSize: '12px', fontWeight: 600 } } },
+                grid: { borderColor: '#e8edf4', strokeDashArray: 3, padding: { left: 4, right: 8, top: -8, bottom: -8 } },
+                legend: { show: false },
+                tooltip: {
+                    shared: false,
+                    intersect: true,
+                    custom: function (options) {
+                        var seriesIndex = options.seriesIndex;
+                        var categoryIndex = options.dataPointIndex;
+                        var amount = values[seriesIndex] || 0;
+                        var share = shares[seriesIndex] || 0;
+                        if (!amount || !share) return '';
+                        var category = categoryIndex === 0 ? 'Thu' : 'Chi';
+                        var money = new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+                        return '<div class="dashboard-finance-tooltip"><strong>' + category + ' · '
+                            + names[seriesIndex] + '</strong><span>' + money + '</span><small>'
+                            + formatChartShare(share) + ' trong tổng ' + category.toLocaleLowerCase()
+                            + '</small></div>';
+                    }
+                },
+                states: { active: { filter: { type: 'none' } } }
+            });
+            chart.render();
+        }
+
+        function renderProjectMiniCharts() {
+            var task = document.getElementById('overviewProjectTasksChart');
+            if (task) {
+                renderProjectMiniChart('overviewProjectTasksChart',
+                    ['Hoàn thành', 'Đang làm', 'Chưa bắt đầu'],
+                    ['#35a875', '#518cdd', '#8592a6'],
+                    'công việc', false);
+            }
+            var finance = document.getElementById('overviewProjectFinanceChart');
+            if (finance) {
+                renderFinanceBreakdownChart('overviewProjectFinanceChart');
+            }
+            var resource = document.getElementById('overviewProjectResourceChart');
+            if (resource) {
+                renderProjectMiniChart('overviewProjectResourceChart',
+                    ['Chưa được giao việc', 'Còn khả năng nhận thêm việc', 'Phân công phù hợp', 'Quá tải'],
+                    ['#8592a6', '#38a99b', '#e2a52e', '#e45d53'],
+                    'nhân sự', false);
+            }
+            renderProjectMiniChart('overviewAllTasksChart',
+                ['Hoàn thành', 'Đang làm', 'Chưa bắt đầu'],
+                ['#35a875', '#518cdd', '#8592a6'],
+                'công việc', false);
+            renderFinanceBreakdownChart('overviewAllFinanceChart');
+            renderProjectMiniChart('overviewAllResourceChart',
+                ['Chưa được giao việc', 'Còn khả năng nhận thêm việc', 'Phân công phù hợp', 'Quá tải'],
+                ['#8592a6', '#38a99b', '#e2a52e', '#e45d53'],
+                'nhân sự', false);
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderProjectMiniCharts);
+        } else {
+            renderProjectMiniCharts();
+        }
+
+        function bindAttentionTasksModal() {
+            var modal = document.getElementById('overviewAttentionTasksModal');
+            if (!modal) return;
+            var input = document.getElementById('overviewAttentionTasksSearch');
+            var rows = modal.querySelectorAll('.overview-attention-task-row');
+            var projectId = '';
+            var overdueDays = 0;
+            var projectTitle = document.getElementById('overviewAttentionTasksProject');
+            var count = document.getElementById('overviewAttentionTasksCount');
+            var empty = document.getElementById('overviewAttentionTasksEmpty');
+            var projectLink = document.getElementById('overviewAttentionProjectLink');
+            var table = modal.querySelector('.dashboard-attention-task-table');
+            function refresh() {
+                var query = (input.value || '').trim().toLowerCase();
+                var visible = 0;
+                var total = 0;
+                var taskCount = 0;
+                var issueCount = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var belongs = row.getAttribute('data-project-id') === projectId;
+                    if (belongs) total++;
+                    var show = belongs && (row.getAttribute('data-search') || '').indexOf(query) >= 0;
+                    row.classList.toggle('d-none', !show);
+                    if (show) {
+                        visible++;
+                        if (row.getAttribute('data-attention-kind') === 'issue') issueCount++;
+                        else taskCount++;
+                    }
+                });
+                count.textContent = taskCount + ' công việc quá hạn · '
+                    + issueCount + ' vấn đề đang xử lý';
+                empty.textContent = total === 0
+                    ? 'Dự án trễ hạn dự kiến ' + overdueDays + ' ngày; không có công việc quá hạn hoặc vấn đề ảnh hưởng cao đang xử lý.'
+                    : 'Không có mục phù hợp với từ khóa.';
+                empty.classList.toggle('d-none', visible > 0);
+                table.classList.toggle('d-none', visible === 0);
+            }
+            modal.addEventListener('show.bs.modal', function (event) {
+                var trigger = event.relatedTarget;
+                if (!trigger) return;
+                projectId = trigger.getAttribute('data-project-id') || '';
+                overdueDays = Number(trigger.getAttribute('data-project-overdue-days')) || 0;
+                projectTitle.textContent = trigger.getAttribute('data-project-title') || '';
+                projectLink.href = trigger.getAttribute('data-project-url') || '#';
+                input.value = '';
+                refresh();
+            });
+            input.addEventListener('input', refresh);
+        }
+
+        function bindMeetingModal() {
+            var modal = document.getElementById('overviewMeetingModal');
+            if (!modal) return;
+            modal.addEventListener('show.bs.modal', function (event) {
+                var trigger = event.relatedTarget;
+                if (!trigger) return;
+                var fields = {
+                    overviewMeetingTitle: 'title',
+                    overviewMeetingProject: 'project',
+                    overviewMeetingStart: 'start',
+                    overviewMeetingEnd: 'end',
+                    overviewMeetingLocation: 'location',
+                    overviewMeetingContent: 'content'
+                };
+                Object.keys(fields).forEach(function (id) {
+                    document.getElementById(id).textContent =
+                        trigger.getAttribute('data-meeting-' + fields[id]) || 'Chưa có thông tin';
+                });
+                document.getElementById('overviewMeetingLink').href =
+                    trigger.getAttribute('data-meeting-url') || '#';
+            });
+        }
+
+        bindAttentionTasksModal();
+        bindMeetingModal();
+
+        var statusChart;
+        function renderStatusChart() {
+            var element = document.getElementById('overviewStatusChart');
+            if (!element) return;
+            var buttons = document.querySelectorAll('.dashboard-status-legend-button');
+            var entries = Array.prototype.map.call(buttons, function (button) {
+                return {
+                    statusCode: Number(button.getAttribute('data-status-code')) || 0,
+                    label: button.getAttribute('data-status-label') || '',
+                    count: Number(button.getAttribute('data-status-count')) || 0
+                };
+            });
+            var statusColors = { 1: '#368ed8', 2: '#e6a32e', 3: '#37aa80', 4: '#9066c4' };
+            var total = entries.reduce(function (sum, entry) { return sum + entry.count; }, 0);
+            if (!total) {
+                element.innerHTML = '<p class="text-muted text-center py-5 mb-0">Chưa có dự án để thống kê.</p>';
+                return;
+            }
+            if (typeof ApexCharts === 'undefined') {
+                element.innerHTML = '<p class="text-muted text-center py-5 mb-0">Không tải được biểu đồ.</p>';
+                return;
+            }
+            statusChart = new ApexCharts(element, {
+                chart: {
+                    type: 'donut', height: 270, toolbar: { show: false },
+                    events: {
+                        dataPointSelection: function (event, chartContext, config) {
+                            var button = buttons[config.dataPointIndex];
+                            if (button) button.click();
+                        },
+                        mounted: function (context) { scheduleSmallPieLabels(element, context, entries.map(function (entry) { return entry.count; }), entries.map(function (entry) { return statusColors[entry.statusCode] || '#7896b6'; })); },
+                        updated: function (context) { scheduleSmallPieLabels(element, context, entries.map(function (entry) { return entry.count; }), entries.map(function (entry) { return statusColors[entry.statusCode] || '#7896b6'; })); },
+                        resized: function (context) { scheduleSmallPieLabels(element, context, entries.map(function (entry) { return entry.count; }), entries.map(function (entry) { return statusColors[entry.statusCode] || '#7896b6'; })); }
+                    }
+                },
+                labels: entries.map(function (entry) { return entry.label; }),
+                series: entries.map(function (entry) { return entry.count; }),
+                colors: entries.map(function (entry) { return statusColors[entry.statusCode] || '#7896b6'; }),
+                stroke: { width: 2, colors: ['#fff'] },
+                legend: { show: false },
+                dataLabels: {
+                    enabled: true,
+                    style: { colors: ['#fff'], fontSize: '11px', fontWeight: 800 },
+                    dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: '#1b293e', opacity: .55 },
+                    formatter: function (value) { return formatChartShare(value); }
+                },
+                tooltip: { y: { formatter: function (value) { return value + ' dự án'; } } },
+                plotOptions: {
+                    pie: {
+                        expandOnClick: false,
+                        dataLabels: { minAngleToShowLabel: 0 },
+                        donut: { size: '64%', labels: { show: false } }
+                    }
+                },
+                states: { active: { filter: { type: 'none' } } }
+            });
+            statusChart.render().then(function () {
+                scheduleSmallPieLabels(element, statusChart,
+                    entries.map(function (entry) { return entry.count; }),
+                    entries.map(function (entry) { return statusColors[entry.statusCode] || '#7896b6'; }));
+            });
+        }
+        var projectModal = document.getElementById('overviewProjectsModal');
+        if (projectModal) {
+            projectModal.addEventListener('hidden.bs.modal', function () {
+                if (!statusChart) return;
+                statusChart.destroy();
+                statusChart = null;
+                document.getElementById('overviewStatusChart').innerHTML = '';
+                renderStatusChart();
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderStatusChart);
+        } else {
             renderStatusChart();
-        });
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderStatusChart);
-    } else {
-        renderStatusChart();
-    }
-})();
+        }
+    })();
 </script>

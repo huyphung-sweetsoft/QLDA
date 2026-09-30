@@ -44,6 +44,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public int NoLoadEmployeeCount { get; set; }
 
+        public int NormalEmployeeCount { get; set; }
+
         public int UnderloadedEmployeeCount { get; set; }
 
         public int BalancedEmployeeCount { get; set; }
@@ -138,6 +140,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public int OverloadDayCount { get; set; }
 
+        public int PeakDailyTaskCount { get; set; }
+
         public decimal OverAllocatedDays { get; set; }
 
         public ResourceLoadStatus Status { get; set; }
@@ -170,6 +174,14 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public int OverloadWeekCount { get; set; }
 
+        public int NoLoadDayCount { get; set; }
+
+        public int NormalDayCount { get; set; }
+
+        public int OverloadedDayCount { get; set; }
+
+        public int PeakDailyTaskCount { get; set; }
+
         public ResourceLoadStatus Status { get; set; }
 
         public List<ResourceWeeklyLoad> WeeklyLoads { get; set; }
@@ -199,6 +211,14 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public decimal OverAllocatedDays { get; set; }
 
         public int OverlapDayCount { get; set; }
+
+        public int NoLoadDayCount { get; set; }
+
+        public int NormalDayCount { get; set; }
+
+        public int OverloadedDayCount { get; set; }
+
+        public int PeakDailyTaskCount { get; set; }
 
         public ResourceLoadStatus Status { get; set; }
 
@@ -266,6 +286,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public bool IsWorkingDay { get; set; }
 
         public bool IsHoliday { get; set; }
+
+        public bool IsWeekend { get; set; }
 
         public string HolidayName { get; set; }
 

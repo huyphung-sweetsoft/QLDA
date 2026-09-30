@@ -2,12 +2,13 @@
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Managers;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Web.UI;
-using SweetSoft.QLDA.Core.ResourceTexts;
-using SweetSoft.QLDA.Core.Managers;
+using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fGanttCharts
 {
@@ -239,7 +240,19 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
                 rptIssues.DataSource = dtTaskIssues;
                 rptIssues.DataBind();
             }
+
+            // Hàm Load này được dùng để mở Popup 1.
             modalIssues.OpenModal(true);
+        }
+
+        // HÀM NÀY SẼ CHỊU TRÁCH NHIỆM BẬT POPUP 2 LÊN
+        protected void btnTriggerViewIssue_Click(object sender, EventArgs e)
+        {
+            Guid issueId = Guid.Empty;
+            if (Guid.TryParse(hdfIssueIdToView.Value, out issueId))
+            {
+                CtrlViewIssueDetail1.OpenModal(issueId);
+            }
         }
 
         #region Helpers dùng cho file ASPX
@@ -301,14 +314,16 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
 
         protected string GetIssueStatusText(int status)
         {
-            if (status == 1) return "Đang xử lý";
-            else return "Đã xử lý";
+            if (status == 0) return "Đang xử lý";
+            if (status == 1) return "Đã xử lý";
+
+            return "Chưa xác định";
         }
 
         protected string GetIssueStatusBadge(int status)
         {
-            if (status == 1) return "gantt-badge-doing";
-            if (status == 2) return "gantt-badge-done";
+            if (status == 0) return "gantt-badge-doing";
+            if (status == 1) return "gantt-badge-done";
             return "gantt-badge-todo";
         }
         #endregion

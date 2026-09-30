@@ -40,6 +40,30 @@ namespace SweetSoft.QLDA.Core.Functions
         {
             return _repository.IsFunctionCodeExisted(functionCode);
         }
+        public bool CanAccessSigningInbox(Guid userId, bool process = false)
+        {
+            if (userId == Guid.Empty) return false;
+            var user = AspnetUser.FetchByID(userId);
+            if (user == null || user.IsActivated != true || user.IsDeleted == true) return false;
+            if (!_repository.GetAllAspnetFunctions().Any(f =>
+                f.FunctionCode == ModuleKeys.DocumentSigningInbox.ToString())) return false;
+            if (UserManager.Instance.IsAdministrator(userId)) return true;
+            // Read current grants, including active role/permission flags. Do not
+            // reuse session rights after a group administrator revokes access.
+            string sql = string.Format(@"
+                SELECT COUNT(DISTINCT p.PermissionKey)
+                FROM dbo.aspnet_UsersInRoles ur
+                JOIN dbo.aspnet_Roles r ON r.RoleId=ur.RoleId AND r.IsActivated=1 AND r.IsDeleted=0
+                JOIN dbo.aspnet_AssignRoles a ON a.RoleId=r.RoleId AND a.IsAllowed=1
+                JOIN dbo.aspnet_Permission p ON p.PermissionKey=a.PermissionKey
+                    AND p.IsActivated=1 AND p.IsDeleted=0
+                JOIN dbo.aspnet_Functions f ON f.Id=p.FunctionId
+                    AND f.FunctionCode='DocumentSigningInbox' AND f.IsActivated=1
+                WHERE ur.UserId='{0}' AND (p.PermissionKey='DocumentSigningInbox.View'
+                    OR ({1}=1 AND p.PermissionKey='DocumentSigningInbox.Update'))",
+                userId, process ? 1 : 0);
+            return new SubSonic.InlineQuery().ExecuteScalar<int>(sql) == (process ? 2 : 1);
+        }
         public List<string> GetPermissionByUserId(Guid userId)
         {
             List<string> permissions = null;
@@ -108,15 +132,13 @@ namespace SweetSoft.QLDA.Core.Functions
                     "fDocument", StringComparison.OrdinalIgnoreCase));
             }
 
-            // Signing assignments are per-account and independent of the
-            // dossier permissions. Put the inbox under the dossier menu for
-            // every signed-in account; the page only returns/processes files
-            // assigned to that user.
+            // Recheck group access instead of trusting a cached menu entry.
+            // Assignment checks still restrict the inbox to the user's files.
             visible.RemoveAll(module => string.Equals(
                 module.FunctionCode,
                 ModuleKeys.DocumentSigningInbox.ToString(),
                 StringComparison.OrdinalIgnoreCase));
-            if (userId != Guid.Empty)
+            if (CanAccessSigningInbox(userId))
             {
                 AspnetFunction documentMenu = visible.FirstOrDefault(module =>
                     string.Equals(module.FunctionCode, "fDocument",
@@ -151,19 +173,13 @@ namespace SweetSoft.QLDA.Core.Functions
                     StringComparison.OrdinalIgnoreCase));
                 visible.Add(documentMenu);
 
-                visible.Add(new AspnetFunction
-                {
-                    Id = Guid.NewGuid(),
-                    FunctionCode = ModuleKeys.DocumentSigningInbox.ToString(),
-                    ParentCode = "fDocument",
-                    FunctionName = "SIGNING_INBOX",
-                    PageUrl = "/fDocuments/SigningInbox.aspx",
-                    DisplayOrder = 16,
-                    Icon = "fas fa-file-signature",
-                    IsActivated = true,
-                    OfProject = false
-                });
+                visible.Add(_repository.GetAllAspnetFunctions().First(module =>
+                    module.FunctionCode == ModuleKeys.DocumentSigningInbox.ToString()));
             }
+            if (!visible.Any(module => module.OfProject != true
+                && string.Equals(module.ParentCode, "fDocument", StringComparison.OrdinalIgnoreCase)))
+                visible.RemoveAll(module => string.Equals(module.FunctionCode,
+                    "fDocument", StringComparison.OrdinalIgnoreCase));
             return visible;
         }
 

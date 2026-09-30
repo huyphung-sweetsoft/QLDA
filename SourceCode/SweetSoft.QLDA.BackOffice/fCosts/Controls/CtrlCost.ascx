@@ -1,6 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlCost.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fCosts.Controls.CtrlCost" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Assembly="SweetSoft.QLDA.Controls" Namespace="SweetSoft.QLDA.Controls" TagPrefix="SweetSoft" %>
+<%@ Register Src="~/fCosts/Controls/CtrlViewCostDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewCostDetail" %>
 
 <style>
     /* =========================================================
@@ -25,7 +26,19 @@
         font-size: 11px;
         font-weight: 700;
     }
-    .cost-name { color: #334155; font-weight: 600; line-height: 1.45; }
+    .cost-name-link {
+        color: #7c3aed !important;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.45;
+        text-decoration: none !important;
+        transition: color .15s ease, font-weight .15s ease;
+    }
+    .cost-name-link:hover {
+        color: #2563eb !important;
+        font-weight: 500;
+        text-decoration: none !important;
+    }
     .cost-number { font-variant-numeric: tabular-nums; white-space: nowrap; }
     .cost-total { color: #111827; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
@@ -356,11 +369,17 @@
                 DataKeyNames="IdChiPhi" ValueField="IdChiPhi" DataNameField="TenKhoanChi" GridLines="None"
                 IsEnableSelectColumn="false" OnNeedDataSource="grvData_NeedDataSource" OnRowCommand="grvData_RowCommand">
                 <Columns>
-                    <asp:TemplateField HeaderText="CostCode" SortExpression="MaChiPhi" HeaderStyle-Width="105px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
-                        <ItemTemplate><span class="cost-code"><%# Eval("MaChiPhi") != DBNull.Value ? Eval("MaChiPhi") : "—" %></span></ItemTemplate>
-                    </asp:TemplateField>
                     <asp:TemplateField HeaderText="CostName" SortExpression="TenKhoanChi">
-                        <ItemTemplate><div class="cost-name"><%# Eval("TenKhoanChi") != DBNull.Value ? Eval("TenKhoanChi") : "—" %></div></ItemTemplate>
+                        <ItemTemplate>
+                            <asp:LinkButton runat="server"
+                                ID="lbtCostName"
+                                CommandName="ITEM_DETAIL"
+                                CommandArgument='<%# Eval("IdChiPhi") %>'
+                                CausesValidation="false"
+                                CssClass="cost-name-link">
+                                <%# Eval("TenKhoanChi") != DBNull.Value ? Eval("TenKhoanChi") : "—" %>
+                            </asp:LinkButton>
+                        </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Price" SortExpression="DonGia" HeaderStyle-Width="120px" HeaderStyle-CssClass="text-end" ItemStyle-CssClass="text-end">
                         <ItemTemplate><span class="cost-number"><%# Eval("DonGia") != DBNull.Value ? Convert.ToDecimal(Eval("DonGia")).ToString("N0") : "0" %></span></ItemTemplate>
@@ -417,9 +436,9 @@
                                     <i class="fas fa-folder-open"></i>
                                 </asp:LinkButton>
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
-                                    ID="lbtDetail" CommandName="ITEM_DETAIL" CssClass="btn-grid-action"
+                                    ID="lbtDetail" CommandName='<%# this.IsEdit ? "ITEM_EDIT" : "ITEM_DETAIL" %>' CssClass="btn-grid-action"
                                     ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
-                                    ButtonIcon='<%# this.IsView ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
+                                    ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
                                 </SweetSoft:SmartLinkButton>
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
                                     ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-danger"
@@ -519,3 +538,4 @@
         </div>
     </div>
 </div>
+<SweetSoft:CtrlViewCostDetail runat="server" ID="CtrlViewCostDetail1" />
