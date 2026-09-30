@@ -104,7 +104,17 @@ namespace SweetSoft.QLDA.BackOffice.Controls
             {
                 Guid idLoai = Guid.Parse(grvData.DataKeys[e.RowIndex].Value.ToString());
                 var txtTenLoaiEdit = (ExtraTextBox)grvData.Rows[e.RowIndex].FindControl("txtTenLoaiEdit");
-                
+
+                if (txtTenLoaiEdit != null)
+                {
+                    string postValue = Request.Form[txtTenLoaiEdit.UniqueID];
+                    string controlValue = txtTenLoaiEdit.Text;
+
+                    System.Diagnostics.Debug.WriteLine("UniqueID: [" + txtTenLoaiEdit.UniqueID + "]");
+                    System.Diagnostics.Debug.WriteLine("Request.Form: [" + postValue + "]");
+                    System.Diagnostics.Debug.WriteLine("TextBox.Text: [" + controlValue + "]");
+                }
+
                 if (txtTenLoaiEdit != null)
                 {
                     string newTen = txtTenLoaiEdit.Text;
