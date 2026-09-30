@@ -36,15 +36,12 @@
 
                                             <SweetSoft:BootstrapDropdown
                                                 runat="server"
-                                                ID="ddlSearchNhom" Visible="false"
-                                                Text="Nhóm tài liệu"
+                                                ID="ddlSearchScope"
+                                                Text="Phạm vi hồ sơ"
+                                                ClearText="Tất cả phạm vi"
                                                 AllowClear="true"
                                                 AutoPostBack="true"
-                                                EnableSearch="true"
-                                                ValueIsOfTypeGUID="true"
-                                                SearchColumn="IdNhomTaiLieu"
-                                                SearchPlaceholder="Tìm kiếm nhóm tài liệu..."
-                                                NoResultsText="Không tìm thấy nhóm tài liệu"
+                                                SearchColumn="PhamViHoSo"
                                                 CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
                                                 OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                                             </SweetSoft:BootstrapDropdown>
@@ -55,18 +52,10 @@
                                     <%-- Tìm kiếm từ khóa --%>
                                     <div class="input-group max-w-500">
 
-                                        <a
-                                            class="btn btn-info font-mobile-small btn-search-filter"
-                                            onclick="CMSMasterJs.ShowOffcanvasSearch();"
-                                            href="javascript:;">
-                                            <i class="fas fa-filter me-1"></i>
-                                            <%= GetResourceText(BackEndResourceKeys.FILTER) %>
-                                        </a>
-
                                         <SweetSoft:ExtraTextBox
                                             runat="server"
                                             ID="txtSearch"
-                                            CssClass="border-primary input-search-filter"
+                                            CssClass="border-primary border-top-left-radius-1 border-bottom-left-radius-1"
                                             PlaceHolder="Nhập tên hoặc mô tả">
                                         </SweetSoft:ExtraTextBox>
 
@@ -74,7 +63,7 @@
                                             runat="server"
                                             ID="btnSearch"
                                             OnClick="btnSearch_Click"
-                                            CssClass="btn-outline-primary btn-search-filter"
+                                            CssClass="btn-outline-primary"
                                             IsCustomClass="false"
                                             ButtonIcon="Search">
                                         </SweetSoft:ExtraButton>
@@ -132,7 +121,7 @@
                                             HeaderText="Nhóm tài liệu"
                                             SortExpression="TenNhom" />
 
-                                        <asp:TemplateField HeaderText="Phạm vi">
+                                        <asp:TemplateField HeaderText="Phạm vi hồ sơ">
                                             <ItemTemplate><%#: Convert.ToString(Eval("PhamViHoSo")) == "DU_AN" ? "Hồ sơ dự án" : "Hồ sơ chung" %></ItemTemplate>
                                         </asp:TemplateField>
                                         <asp:TemplateField Visible="false"
@@ -228,11 +217,15 @@
                     </ContentTemplate>
                 </asp:UpdatePanel>
 
+    <style>
+        #<%= dlDetail.ClientID %> .modal-dialog { max-width: min(760px, calc(100vw - 24px)); }
+        #<%= dlDetail.ClientID %> .js-document-type-form .mb-3 { margin-bottom: .8rem !important; }
+    </style>
     <SweetSoft:ExtraModal
         runat="server"
         ID="dlDetail"
         Type="Primary"
-        Size="ExtraLarge"
+        Size="Large"
         DefaultButton="btnSave"
         FooterButtonClose="false">
 
@@ -247,13 +240,6 @@
                     ID="hdfIdLoaiTaiLieu" />
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label label-valid">Phạm vi áp dụng</label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTypeScope" SimpleInit="true">
-                            <asp:ListItem Value="DU_AN" Text="Hồ sơ dự án" />
-                            <asp:ListItem Value="CHUNG" Text="Hồ sơ chung" />
-                        </SweetSoft:ExtraDropdown>
-                    </div>
                     <div class="col-md-6 mb-3" runat="server" visible="false">
                         <label class="form-label label-valid">
                             <%= GetResourceText(BackEndResourceKeys.DOCUMENT_GROUP) %>
@@ -269,7 +255,7 @@
                         </SweetSoft:ExtraDropdown>
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-12 mb-3">
                         <label class="form-label label-valid">
                             <%= "Tên loại hồ sơ" %>
                         </label>
@@ -282,25 +268,21 @@
                         </SweetSoft:ExtraTextBox>
                     </div>
 
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label label-valid">Phạm vi áp dụng</label>
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlTypeScope" SimpleInit="true">
+                            <asp:ListItem Value="DU_AN" Text="Hồ sơ dự án" />
+                            <asp:ListItem Value="CHUNG" Text="Hồ sơ chung" />
+                        </SweetSoft:ExtraDropdown>
+                    </div>
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Nơi lưu trữ mặc định (không bắt buộc)</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlDefaultStorage" SimpleInit="true" />
                     </div>
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label">
-                            <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
-                        </label>
+                    <%-- Preserve existing descriptions in ViewState without exposing an edit field. --%>
+                    <SweetSoft:ExtraTextBox runat="server" ID="txtMoTa" Visible="false" />
 
-                        <SweetSoft:ExtraTextBox
-                            runat="server"
-                            ID="txtMoTa"
-                            TextMode="MultiLine"
-                            Rows="3"
-                            MaxLength="500">
-                        </SweetSoft:ExtraTextBox>
-                    </div>
-
-                    <div class="col-md-2 mb-3">
+                    <div class="col-sm-6 mb-3">
                         <label class="form-label label-valid">
                             <%= GetResourceText(BackEndResourceKeys.DISPLAY_ORDER) %>
                         </label>
@@ -314,7 +296,7 @@
                         </SweetSoft:ExtraTextBox>
                     </div>
 
-                    <div class="col-md-2 mb-3">
+                    <div class="col-sm-6 mb-3">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.STATUS) %>
                         </label>
@@ -412,159 +394,6 @@
             </div>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
-
-    <div
-        class="offcanvas offcanvas-end offcanvas-form-search"
-        id="search-offcanvas"
-        aria-hidden="true">
-
-        <div class="offcanvas-header">
-
-            <div class="d-flex flex-column flex-md-row align-items-center gap-3">
-
-                <h5 class="offcanvas-title">
-                    <%= GetResourceText(BackEndResourceKeys.ADVANCED_SEARCH) %>
-                </h5>
-
-                <div class="d-flex align-items-center gap-1">
-
-                    <SweetSoft:ExtraButton
-                        runat="server"
-                        ID="btnSearchAdvanced"
-                        OnClick="btnSearchAdvanced_Click"
-                        CssClass="flex-btn"
-                        ButtonStyle="Primary"
-                        ButtonIcon="Search">
-                    </SweetSoft:ExtraButton>
-
-                    <SweetSoft:ExtraButton
-                        runat="server"
-                        ID="btnResetSearch"
-                        OnClick="btnResetSearch_Click"
-                        CssClass="flex-btn"
-                        ButtonStyle="OutLineSecondary"
-                        ButtonIcon="Refresh">
-                    </SweetSoft:ExtraButton>
-
-                </div>
-            </div>
-
-            <button
-                class="btn-close"
-                type="button"
-                data-bs-dismiss="offcanvas"
-                aria-label="Close">
-            </button>
-
-        </div>
-
-        <div class="offcanvas-body pt-0">
-            <div class="card shadow-none card-body text-muted mb-0">
-
-                <asp:UpdatePanel
-                    runat="server"
-                    ID="pnlSearch"
-                    UpdateMode="Conditional">
-
-                    <ContentTemplate>
-
-                        <asp:Panel
-                            runat="server"
-                            ID="pnlSearchPopup">
-
-                            <div class="row">
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">
-                                        <%= "Tên loại hồ sơ" %>
-                                    </label>
-
-                                    <SweetSoft:ExtraTextBox
-                                        runat="server"
-                                        ID="txtSearchTenLoai"
-                                        SearchColumn="TenLoai"
-                                        PlaceHolder="Nhập tên loại hồ sơ">
-                                    </SweetSoft:ExtraTextBox>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">
-                                        <%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %>
-                                    </label>
-
-                                    <SweetSoft:ExtraTextBox
-                                        runat="server"
-                                        ID="txtSearchMoTa"
-                                        SearchColumn="MoTa"
-                                        PlaceHolder="Nhập nội dung mô tả">
-                                    </SweetSoft:ExtraTextBox>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">
-                                        <%= GetResourceText(BackEndResourceKeys.ALLOW_SIGNING) %>
-                                    </label>
-
-                                    <SweetSoft:ExtraDropdown
-                                        runat="server"
-                                        ID="ddlSearchCanTrinhKy"
-                                        SearchColumn="CanTrinhKy"
-                                        SimpleInit="true"
-                                        AlowClear="true">
-                                    </SweetSoft:ExtraDropdown>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">
-                                        <%= GetResourceText(BackEndResourceKeys.DEFAULT_SIGNING_METHOD) %>
-                                    </label>
-
-                                    <SweetSoft:ExtraDropdown
-                                        runat="server"
-                                        ID="ddlSearchHinhThucKy"
-                                        SearchColumn="HinhThucKyMacDinh"
-                                        SimpleInit="true"
-                                        AlowClear="true">
-                                    </SweetSoft:ExtraDropdown>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">
-                                        <%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_CUSTOMER) %>
-                                    </label>
-
-                                    <SweetSoft:ExtraDropdown
-                                        runat="server"
-                                        ID="ddlSearchCanGuiKhachHang"
-                                        SearchColumn="CanGuiKhachHang"
-                                        SimpleInit="true"
-                                        AlowClear="true">
-                                    </SweetSoft:ExtraDropdown>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">
-                                        <%= GetResourceText(BackEndResourceKeys.ALLOW_PHYSICAL_STORAGE) %>
-                                    </label>
-
-                                    <SweetSoft:ExtraDropdown
-                                        runat="server"
-                                        ID="ddlSearchCanLuuVatLy"
-                                        SearchColumn="CanLuuVatLy"
-                                        SimpleInit="true"
-                                        AlowClear="true">
-                                    </SweetSoft:ExtraDropdown>
-                                </div>
-
-                            </div>
-                        </asp:Panel>
-
-                    </ContentTemplate>
-                </asp:UpdatePanel>
-
-            </div>
-        </div>
-    </div>
 
     <script type="text/javascript">
         function toggleDocumentSigningMethod() {

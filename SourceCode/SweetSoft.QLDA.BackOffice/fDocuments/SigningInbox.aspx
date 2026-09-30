@@ -12,6 +12,17 @@
         .signing-inbox .signing-file-table > :not(caption) > * > * { border-color: var(--bs-border-color); }
         .signing-inbox .signing-file-table th { color: var(--bs-primary); text-align: center; white-space: normal; }
         .signing-inbox .signing-file-table td { vertical-align: middle; }
+        .signing-result-upload { border: 1px solid var(--bs-border-color); border-radius: .375rem; padding: 1rem; }
+        .signing-result-upload .file-box.file-box-single .control,
+        .signing-result-upload .file-actions,
+        .signing-result-upload .item[data-ar="00000000-0000-0000-0000-000000000000"] { display: none !important; }
+        .signing-result-upload .file-box.file-box-single .uploaded-content { margin: 0; }
+        .signing-result-upload .file-box.file-box-single .uploaded-content .item { max-width: none; margin: .75rem 0 0; }
+        .signing-result-upload .file-box .item .bg-body { background: var(--bs-light) !important; border: 1px solid var(--bs-border-color); padding: .5rem; }
+        .signing-result-upload .file-box.file-box-single .uploaded-content .img-container { width: 80px; height: 80px; margin: 0 auto; }
+        .signing-result-upload .file-box.file-box-single .uploaded-content .img-container > img { max-height: 60px; max-width: 80px; object-fit: contain; }
+        .signing-result-upload .file-box.file-box-single .uploaded-content .img-control.right { display: block; opacity: 1; }
+        .signing-result-upload .file-box.file-box-single .uploaded-content .item .title { display: block; width: 100%; text-align: center; border: 0; background: transparent; text-overflow: ellipsis; }
     </style>
 </asp:Content>
 
@@ -141,6 +152,8 @@
                                                 <div class="d-flex flex-wrap align-items-center gap-2">
                                                     <i class="fas fa-file-alt text-muted"></i>
                                                     <asp:HyperLink runat="server" CssClass="fw-semibold text-break" Target="_blank"
+                                                        ToolTip="Xem trước file được giao ký" data-path='<%# FileUrl(Eval("FileNguonUrl")) %>'
+                                                        onclick="FilesBox.LayoutFilePopUp(this); return false;"
                                                         NavigateUrl='<%# FileUrl(Eval("FileNguonUrl")) %>'
                                                         Text='<%# System.Web.HttpUtility.HtmlEncode(FileName(Eval("TenFileNguonGoc"), Eval("TenFileNguon"))) %>' />
                                                 </div>
@@ -151,6 +164,11 @@
                                         </td>
                                         <td>
                                         <div class="d-flex flex-wrap justify-content-center gap-1 py-1">
+                                            <asp:HyperLink runat="server" CssClass="btn btn-sm btn-outline-primary"
+                                                Text="<i class='fas fa-eye me-1'></i>Xem trước"
+                                                NavigateUrl='<%# FileUrl(Eval("FileNguonUrl")) %>'
+                                                data-path='<%# FileUrl(Eval("FileNguonUrl")) %>'
+                                                onclick="FilesBox.LayoutFilePopUp(this); return false;" />
                                             <asp:HyperLink runat="server" CssClass="btn btn-sm btn-outline-primary"
                                                 Target="_blank" Text="<i class='fas fa-download me-1'></i>Tải file ký"
                                                 NavigateUrl='<%# FileUrl(Eval("FileNguonUrl")) %>' />
@@ -193,8 +211,22 @@
         <ContentTemplate>
             <asp:HiddenField runat="server" ID="hdfResultDocumentId" />
             <asp:HiddenField runat="server" ID="hdfResultFileId" />
-            <p class="small text-muted">Tải bản đã ký (PDF, JPG hoặc PNG), rồi bấm Xác nhận đã ký.</p>
-            <SweetSoft:FilesBox runat="server" ID="fbSigningResult" IsMultiple="false" />
+            <div class="mb-3">
+                <div class="small text-muted mb-1">File được giao ký</div>
+                <asp:HyperLink runat="server" ID="lnkResultSource" CssClass="fw-semibold text-break"
+                    ToolTip="Xem trước file được giao ký" onclick="FilesBox.LayoutFilePopUp(this); return false;" />
+            </div>
+            <div class="signing-result-upload">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div><div class="fw-semibold">Bản đã ký</div><div class="small text-muted">Word, PDF, JPG hoặc PNG · 1 file, tối đa 1 MB.</div></div>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                        onclick="FilesBox.FocusFileBox(this.closest('.signing-result-upload').querySelector('.file-box')); FilesBox.AddFile();">
+                        <i class="fas fa-upload me-1" aria-hidden="true"></i>Chọn / thay file
+                    </button>
+                </div>
+                <SweetSoft:FilesBox runat="server" ID="fbSigningResult" IsMultiple="false" />
+            </div>
+            <div class="small text-muted mt-2">Kiểm tra bản đã ký trước khi bấm Xác nhận đã ký.</div>
             <div class="mt-3">
                 <label class="form-label">Ghi chú (nếu có)</label>
                 <asp:TextBox runat="server" ID="txtResultNote" TextMode="MultiLine"

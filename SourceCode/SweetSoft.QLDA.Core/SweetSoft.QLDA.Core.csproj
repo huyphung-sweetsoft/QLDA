@@ -296,6 +296,7 @@
     <Compile Include="Managers\LoaiManager.cs" />
     <Compile Include="Managers\MeetManager.cs" />
     <Compile Include="Managers\LichBieuChungManager.cs" />
+    <Compile Include="Managers\NhacViecLichCongViecManager.cs" />
     <Compile Include="Managers\NhanVienManager.cs" />
     <Compile Include="Managers\NotificationJob.cs" />
     <Compile Include="Managers\PhongBanManager.cs" />
@@ -346,6 +347,7 @@
     <Compile Include="Respositories\LoaiRepository.cs" />
     <Compile Include="Respositories\MeetRepository.cs" />
     <Compile Include="Respositories\LichNgoaiLeRepository.cs" />
+    <Compile Include="Respositories\NhacViecLichCongViecRepository.cs" />
     <Compile Include="Respositories\NhanVienRepository.cs" />
     <Compile Include="Respositories\PhongBanRepository.cs" />
     <Compile Include="Respositories\ProjectReportRepository.cs" />

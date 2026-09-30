@@ -20,6 +20,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public EventHandler NewTaskHandlerCallback;
         public EventHandler<Guid> NewSubTaskHandlerCallback;
         public EventHandler EditTaskHandlerCallback;
+        public EventHandler ConfigHeSoHandlerCallback;
+        public EventHandler<Guid> ReminderHandlerCallback;
         public Guid ProjectId
         {
             get
@@ -81,6 +83,59 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             int overdueCount = 0;
             string searchValue = txtSearchSingle.Text.Trim();
             (dtTasks, _dictTaskCodes, overdueCount) = TaskManager.Instance.GetDictTasksAndCountOverdue(this.ProjectId, searchValue, IsPM || IsAdministrator);
+            // =========================================================
+            // REMINDER: lấy số reminder Pending của từng task
+            // =========================================================
+            if (dtTasks != null && dtTasks.Rows.Count > 0)
+            {
+                if (!dtTasks.Columns.Contains("ReminderCount"))
+                    dtTasks.Columns.Add("ReminderCount", typeof(int));
+
+                foreach (DataRow row in dtTasks.Rows)
+                    row["ReminderCount"] = 0;
+
+                Guid currentUserId = SweetContext.Current != null? SweetContext.Current.UserId  : Guid.Empty;
+
+                if (this.ProjectId != Guid.Empty && currentUserId != Guid.Empty)
+                {
+                    DataTable reminderSummary =
+                        NhacViecLichCongViecManager.Instance.GetPendingTaskSummary(
+                            this.ProjectId,
+                            currentUserId);
+
+                    if (reminderSummary != null && reminderSummary.Rows.Count > 0)
+                    {
+                        Dictionary<Guid, int> reminderCounts =
+                            new Dictionary<Guid, int>();
+
+                        foreach (DataRow reminderRow in reminderSummary.Rows)
+                        {
+                            if (!Guid.TryParse(
+                                    reminderRow["IdCongViec"]?.ToString(),
+                                    out Guid taskId))
+                                continue;
+
+                            int count = 0;
+
+                            if (reminderRow["ReminderCount"] != DBNull.Value)
+                                count = Convert.ToInt32(reminderRow["ReminderCount"]);
+
+                            reminderCounts[taskId] = count;
+                        }
+
+                        foreach (DataRow taskRow in dtTasks.Rows)
+                        {
+                            if (!Guid.TryParse(
+                                    taskRow["IdCongViec"]?.ToString(),
+                                    out Guid taskId))
+                                continue;
+
+                            if (reminderCounts.TryGetValue(taskId, out int count))
+                                taskRow["ReminderCount"] = count;
+                        }
+                    }
+                }
+            }
             lblOverdueCount.InnerText = overdueCount.ToString();
             if (dtTasks == null || dtTasks.Rows.Count == 0)
             {
@@ -151,6 +206,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
             switch (e.CommandName)
             {
+                case "REMINDER":
+                    if (Guid.TryParse(e.CommandArgument?.ToString(), out Guid reminderTaskId))
+                    {
+                        ReminderHandlerCallback?.Invoke(this, reminderTaskId);
+                    }
+                    break;
                 case "ASSIGN_TASK":
                     if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
                     {
@@ -665,9 +726,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ShowNotify(ex.Message, MSGType.Error);
             }
         }
-        protected void lbtSwapPhase_Click(object sender, EventArgs e)
+        protected void lbtConfigHeSo_Click(object sender, EventArgs e)
         {
-            CtrlSwapPhase1.OpenModal(this.ProjectId);
+            // Bắn sự kiện ra Trang Chính (TaskList.aspx) để nó mở Popup
+            if (ConfigHeSoHandlerCallback != null)
+                ConfigHeSoHandlerCallback(sender, e);
         }
         #endregion
     }

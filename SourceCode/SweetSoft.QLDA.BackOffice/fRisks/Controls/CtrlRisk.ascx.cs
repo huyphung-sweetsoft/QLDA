@@ -19,6 +19,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
     {
         public EventHandler NewRiskHandlerCallback;
         public EventHandler EditRiskHandlerCallback;
+        public EventHandler ConfigHeSoHandlerCallback;
         private readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         public Guid ProjectId

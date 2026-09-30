@@ -3,6 +3,7 @@
     CodeBehind="CtrlDocumentDetail.ascx.cs"
     Inherits="SweetSoft.QLDA.BackOffice.fDocuments.Controls.CtrlDocumentDetail" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/fDocuments/Controls/CtrlDocuments.ascx" TagPrefix="SweetSoft" TagName="DocumentEditor" %>
 <%@ Register Src="~/fFilesBox/FilesBox.ascx"
     TagPrefix="SweetSoft"
     TagName="FilesBox" %>
@@ -37,46 +38,52 @@
     }
 
     .document-detail__identity {
-        align-items: flex-start;
+        align-items: center;
         display: flex;
-        gap: .9rem;
+        gap: .75rem;
         min-width: 0;
     }
+
+    .document-detail__identity > div:last-child { min-width: 0; }
 
     .document-detail__icon {
         align-items: center;
         background: var(--document-purple-soft);
-        border-radius: 14px;
+        border-radius: 8px;
         color: var(--document-purple);
         display: flex;
-        flex: 0 0 48px;
-        font-size: 1.25rem;
-        height: 48px;
+        flex: 0 0 40px;
+        font-size: 1.1rem;
+        height: 40px;
         justify-content: center;
     }
 
     .document-detail__title {
         color: #1f2937;
-        font-size: 1.35rem;
-        font-weight: 700;
-        line-height: 1.35;
-        margin: .15rem 0 .45rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+        line-height: 1.4;
+        margin: 0 0 .35rem;
+        overflow-wrap: anywhere;
     }
 
     .document-detail__meta {
         align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: .45rem;
+        gap: .4rem .75rem;
     }
 
     .document-detail__scope {
-        background: #eef2ff;
-        border-radius: 999px;
-        color: #4338ca;
+        background: var(--document-purple-soft);
+        border-radius: 4px;
+        color: var(--document-purple);
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
         font-size: .75rem;
         font-weight: 600;
-        padding: .28rem .65rem;
+        padding: .2rem .5rem;
     }
 
     .document-detail__code {
@@ -293,14 +300,14 @@
                 <i class="fas fa-file-alt"></i>
             </div>
             <div>
-                <span class="document-detail__scope">
-                    <i class="<%= DocumentScopeIconCss %>"></i>
-                    <%= DocumentScopeText %>
-                </span>
                 <h2 class="document-detail__title">
                     <asp:Label runat="server" ID="lblDocumentName" />
                 </h2>
                 <div class="document-detail__meta">
+                    <span class="document-detail__scope">
+                        <i class="<%= DocumentScopeIconCss %>"></i>
+                        <%= DocumentScopeText %>
+                    </span>
                     <span class="document-detail__code">
                         <%= GetResourceText(BackEndResourceKeys.DOCUMENT_CODE) %>:
                         <asp:Label runat="server" ID="lblDocumentCode" />
@@ -311,6 +318,8 @@
         </div>
 
         <div class="document-detail__actions">
+            <asp:Button runat="server" ID="btnEditDocumentInfo" Text="Chỉnh sửa thông tin" Visible="false"
+                CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="btnEditDocumentInfo_Click" />
             <asp:Button runat="server" ID="btnDocumentPermissions" Text="Cấp quyền" Visible="false"
                 CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="btnDocumentPermissions_Click" />
             <SweetSoft:ExtraButton
@@ -595,7 +604,7 @@
                         ID="rptVersions"
                         OnItemCommand="rptVersions_ItemCommand">
                         <ItemTemplate>
-                            <article class="document-file-history__item">
+                            <article class="document-file-history__item" style='<%# Container.ItemIndex >= 5 ? "display:none" : "" %>'>
                                 <div class="document-file-history__dot"></div>
                                 <div class="document-file-history__card">
                                     <div class="document-file-history__head">
@@ -653,6 +662,14 @@
                                 </div>
                             </article>
                         </ItemTemplate>
+                        <FooterTemplate>
+                            <div class="text-center mt-2" runat="server" Visible='<%# rptVersions.Items.Count > 5 %>'>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                    onclick="var items = this.closest('.document-file-history').querySelectorAll('article.document-file-history__item'); var shown = 0; var remaining = 0; for (var i = 0; i &lt; items.length; i++) { if (items[i].style.display === 'none') { if (shown &lt; 5) { items[i].style.display = ''; shown++; } else { remaining++; } } } if (!remaining) this.parentElement.style.display = 'none';">
+                                    Xem thêm 5 lần thay đổi
+                                </button>
+                            </div>
+                        </FooterTemplate>
                     </asp:Repeater>
                 </asp:Panel>
             </div>
@@ -854,24 +871,36 @@
             </div>
         </asp:PlaceHolder>
 
+        <asp:UpdatePanel runat="server" ID="upActivity" UpdateMode="Conditional" ChildrenAsTriggers="false">
+        <ContentTemplate>
         <div class="mb-3" id="document-activity" role="tabpanel">
+            <style>
+                #document-activity .document-activity-table { width:100%; table-layout:fixed; margin-bottom:0; }
+                #document-activity .document-activity-table th,
+                #document-activity .document-activity-table td { white-space:normal; overflow-wrap:anywhere; vertical-align:middle; }
+            </style>
             <div class="document-detail__section">
                 <div class="document-detail__section-title"><%= GetResourceText(BackEndResourceKeys.DOCUMENT_ACTIVITY_HISTORY) %></div>
+                <asp:Panel runat="server" ID="pnlActivityContent">
+                <div class="d-flex justify-content-end mb-2">
+                    <asp:LinkButton runat="server" ID="btnRefreshActivity" Text="Làm mới" CssClass="btn btn-sm btn-outline-secondary" CausesValidation="false" OnClick="btnRefreshActivity_Click" />
+                </div>
                 <asp:Panel runat="server" ID="pnlNoActivity" CssClass="document-detail__empty">
                     <i class="fas fa-history"></i>
                     <%= GetResourceText(BackEndResourceKeys.NO_DOCUMENT_ACTIVITY) %>
                 </asp:Panel>
                 <asp:Panel runat="server" ID="pnlActivity" CssClass="table-responsive">
-                    <table class="table table-bordered table-hover document-detail__table">
-                        <thead><tr>
-                            <th><%= GetResourceText(BackEndResourceKeys.DATE) %></th>
+                    <table class="extra-gridview table table-bordered table-hover align-middle document-activity-table">
+                        <colgroup><col style="width:16%" /><col style="width:15%" /><col style="width:17%" /><col style="width:40%" /><col style="width:12%" /></colgroup>
+                        <thead class="text-center"><tr>
+                            <th scope="col">Thời gian</th>
                             <th><%= GetResourceText(BackEndResourceKeys.ACTION_TYPE) %></th>
-                            <th><%= GetResourceText(BackEndResourceKeys.RESPONSIBLE_EMPLOYEE) %></th>
+                            <th scope="col">Người thực hiện</th>
                             <th><%= GetResourceText(BackEndResourceKeys.DESCRIPTION) %></th>
                             <th><%= GetResourceText(BackEndResourceKeys.REFERENCE_TYPE) %></th>
                         </tr></thead>
                         <tbody><asp:Repeater runat="server" ID="rptActivity"><ItemTemplate><tr>
-                            <td><%#: FormatDate(Eval("NgayTao")) %></td>
+                            <td class="text-center"><%#: FormatDate(Eval("NgayTao")) %></td>
                             <td><%#: GetActivityTypeText(Eval("LoaiHanhDong")) %></td>
                             <td><%#: GetActorText(Eval("TenNguoiThucHien"), Eval("NguoiTao")) %></td>
                             <td><%#: GetActivityDescription(Eval("MoTa"), Eval("NoiDungThayDoi")) %></td>
@@ -879,8 +908,14 @@
                         </tr></ItemTemplate></asp:Repeater></tbody>
                     </table>
                 </asp:Panel>
+                <div class="text-center mt-2">
+                    <asp:LinkButton runat="server" ID="btnMoreActivity" Text="Xem thêm 20 hoạt động" CssClass="btn btn-sm btn-outline-primary" CausesValidation="false" OnClientClick="window.documentActivityScrollY = window.scrollY;" OnClick="btnMoreActivity_Click" />
+                </div>
+                </asp:Panel>
             </div>
         </div>
+        </ContentTemplate>
+        </asp:UpdatePanel>
     </div>
 </div>
     </ContentTemplate>
@@ -899,7 +934,7 @@
             <asp:HiddenField runat="server" ID="hdfSubmitSigningSigner" />
             <div class="border rounded p-2 mb-3">
                 <div class="small text-muted">File trình ký</div>
-                <asp:Label runat="server" ID="lblSubmitSigningVersion" CssClass="fw-semibold" />
+                <asp:Label runat="server" ID="lblSubmitSigningVersion" CssClass="fw-semibold signing-selection-count" />
                 <span class="mx-1">·</span>
                 <asp:Label runat="server" ID="lblSubmitSigningMethod" CssClass="fw-semibold" />
             </div>
@@ -909,7 +944,8 @@
                     runat="server"
                     ID="cblSubmitSigningFiles"
                     RepeatDirection="Vertical"
-                    RepeatLayout="Flow"
+                    RepeatLayout="UnorderedList"
+                    onchange="this.closest('.validationEngineContainer').querySelector('.signing-selection-count').textContent = this.querySelectorAll('input[type=checkbox]:checked').length + ' file đã chọn';"
                     CssClass="document-signing-file-list" />
             </div>
             <div class="mb-3">
@@ -959,15 +995,15 @@
     EnsureChildControlsOnPostback="true">
     <ContentTemplate>
         <style type="text/css">
-            .document-permission-intro { background: linear-gradient(135deg,#f6f3ff,#f5fbff); border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; color: #475467; }
+            .document-permission-intro { background: var(--bs-light); border: 1px solid var(--bs-border-color); border-radius: 4px; padding: 10px 12px; color: #475467; }
             .document-permission-intro strong { color: #4c1d95; }
             .document-permission-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin: 14px 0 10px; }
             .document-permission-toolbar__title { font-weight: 700; color:#344054; }
             .document-permission-toolbar__hint { color:#667085; font-size:.82rem; }
-            .document-permission-list { max-height:55vh; overflow:auto; display:grid; gap:10px; padding-right:4px; }
-            .document-permission-card { border:1px solid #e4e7ec; border-radius:12px; background:#fff; overflow:hidden; box-shadow:0 2px 7px rgba(16,24,40,.04); }
-            .document-permission-card[open] { border-color:#b692f6; box-shadow:0 4px 14px rgba(105,56,239,.12); }
-            .document-permission-card__summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:12px; padding:12px 14px; }
+            .document-permission-list { max-height:55vh; overflow:auto; display:grid; gap:6px; padding-right:4px; }
+            .document-permission-card { border:1px solid var(--bs-border-color); border-radius:4px; background:#fff; overflow:hidden; }
+            .document-permission-card[open] { border-color:var(--bs-primary); }
+            .document-permission-card__summary { cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px; padding:8px 12px; background:var(--bs-light); }
             .document-permission-card__summary::-webkit-details-marker { display:none; }
             .document-permission-card__avatar { width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; background:#ede9fe; color:#5b21b6; font-weight:700; flex:0 0 auto; }
             .document-permission-card__name { font-weight:600; color:#344054; flex:1 1 auto; min-width:0; }
@@ -975,12 +1011,23 @@
             .document-permission-card__chevron { color:#98a2b3; transition:transform .15s ease; }
             .document-permission-card[open] .document-permission-card__chevron { transform:rotate(180deg); }
             .document-permission-card__body { padding:0 14px 14px; border-top:1px solid #f0f2f5; }
-            .document-permission-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:8px; padding-top:12px; }
-            .document-permission-item { border:1px solid #eaecf0; border-radius:9px; padding:9px 10px; background:#fcfcfd; }
-            .document-permission-item .form-check { margin:0; }
-            .document-permission-item small { display:block; color:#667085; margin-left:24px; margin-top:2px; line-height:1.25; }
-            .document-permission-item.is-view { background:#f5f3ff; border-color:#ddd6fe; }
-            .document-permission-item.is-danger { background:#fff7f7; border-color:#fecaca; }
+            .document-permission-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding-top:12px; }
+            .document-permission-item { position:relative; border:1px solid #dce1e8; border-radius:6px; padding:12px; background:#fff; transition:border-color .15s,background-color .15s; }
+            .document-permission-item .form-check { margin:0; padding:0; min-height:20px; }
+            .document-permission-item .form-check > span { display:flex; align-items:center; gap:9px; }
+            .document-permission-item input[type=checkbox] { appearance:auto; width:18px; height:18px; margin:0; flex:0 0 18px; accent-color:var(--bs-primary); cursor:pointer; }
+            .document-permission-item label { margin:0; font-weight:600; font-size:.9rem; line-height:1.4; cursor:pointer; color:#344054; }
+            .document-permission-item small { display:block; color:#667085; margin-left:27px; margin-top:5px; font-size:.78rem; line-height:1.45; }
+            .document-permission-item:has(input:checked) { background:#f5f2fc; border-color:#b8a1df; }
+            .document-permission-item:has(input:focus-visible) { outline:2px solid var(--bs-primary); outline-offset:2px; }
+            .document-permission-item:has(input:not(:disabled)):hover { border-color:var(--bs-primary); }
+            .document-permission-item:has(input:disabled) { background:#f8f9fa; border-color:#e5e7eb; }
+            .document-permission-item input:disabled, .document-permission-item input:disabled + label { cursor:not-allowed; }
+            .document-permission-item input:disabled + label { color:#8993a1; }
+            .document-permission-item.is-danger label { color:#dc3545; }
+            .document-permission-item.is-danger:has(input:checked) { background:#fff5f5; border-color:#edb4ba; }
+            @media (max-width:767.98px) { .document-permission-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+            @media (max-width:479.98px) { .document-permission-grid { grid-template-columns:1fr; } }
             .document-permission-locked { color:#98a2b3; font-size:.78rem; margin-top:10px; }
             .document-permission-scope { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:11px 13px; margin-top:14px; border:1px solid #d0d5dd; border-radius:11px; background:linear-gradient(180deg,#fff 0%,#fbfaff 100%); box-shadow:0 2px 8px rgba(16,24,40,.04); }
             .document-permission-scope__copy { min-width:0; }
@@ -1001,11 +1048,7 @@
             @media (max-width:575.98px) { .document-permission-scope { display:block; } .document-permission-scope__switch { margin-top:9px; justify-content:flex-end; } }
         </style>
         <div class="document-permission-intro">
-            <div class="mb-1"><strong>Phân quyền theo từng hồ sơ</strong></div>
-            Chọn một nhân viên rồi bấm mở rộng để cấp đúng thao tác cần thiết.
-            <strong>Xem</strong> bao gồm mở hồ sơ và tải file hiện có xuống;
-            các quyền sửa còn lại được tách riêng. Nhóm người dùng cần có quyền
-            <strong>Xem</strong> và <strong>Cập nhật</strong> thì mới nhận được quyền thao tác trên từng hồ sơ.
+            Chọn thành viên trong dự án và tích các quyền cần cấp cho hồ sơ này.
         </div>
         <asp:Panel runat="server" ID="pnlGrantExternalUsers" CssClass="document-permission-scope">
             <div class="document-permission-scope__copy">
@@ -1023,7 +1066,7 @@
             </div>
         </asp:Panel>
         <div class="document-permission-toolbar">
-            <div class="document-permission-toolbar__title"><i class="fas fa-users me-1"></i> Nhân viên được cấp quyền</div>
+            <div class="document-permission-toolbar__title"><i class="fas fa-users me-1"></i> Thành viên dự án</div>
             <div class="document-permission-toolbar__hint">Bấm vào từng tên để mở danh sách quyền</div>
         </div>
         <div class="document-permission-list">
@@ -1082,7 +1125,7 @@
                                     <div class="form-check"><asp:CheckBox runat="server" ID="grantDelete"
                                         Enabled='<%# Convert.ToBoolean(Eval("MaxView")) &amp;&amp; Convert.ToBoolean(Eval("MaxDelete")) %>'
                                         Checked='<%# Convert.ToBoolean(Eval("CanDelete")) &amp;&amp; Convert.ToBoolean(Eval("MaxDelete")) %>' Text="Xóa hồ sơ" /></div>
-                                    <small>Xóa mềm hồ sơ theo chính sách hệ thống</small>
+                                    <small>Gỡ hồ sơ khỏi danh sách sử dụng</small>
                                 </div>
                             </div>
                             <asp:Label runat="server" Visible='<%# Convert.ToBoolean(Eval("IsResponsibleDefault")) %>' CssClass="document-permission-locked" Text="Người phụ trách mặc định được xem và sửa thông tin chung nếu nhóm có quyền Xem và Cập nhật. Các thao tác khác vẫn cần tích riêng." />
@@ -1117,12 +1160,22 @@
                                 <%#: FormatFileSize(Eval("FileSize")) %>
                             </div>
                         </div>
-                        <asp:HyperLink runat="server"
-                            Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
-                            NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
-                            Text="Xem file"
-                            Target="_blank"
-                            CssClass="btn btn-sm btn-outline-primary" />
+                        <div class="d-flex gap-2 flex-shrink-0">
+                            <asp:HyperLink runat="server"
+                                Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
+                                NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
+                                data-path='<%# GetFileUrl(Eval("FileUrl")) %>'
+                                onclick="FilesBox.LayoutFilePopUp(this); return false;"
+                                ToolTip="Xem trước" aria-label="Xem trước"
+                                Text="<i class='fas fa-eye' aria-hidden='true'></i>"
+                                CssClass="btn btn-sm btn-outline-primary" />
+                            <asp:HyperLink runat="server"
+                                Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
+                                NavigateUrl='<%# GetWorkspaceDownloadUrl(Eval("FileUrl")) %>'
+                                ToolTip="Tải về" aria-label="Tải về"
+                                Text="<i class='fas fa-download' aria-hidden='true'></i>"
+                                CssClass="btn btn-sm btn-outline-primary" />
+                        </div>
                         <asp:Label runat="server"
                             Visible='<%# HasValue(Eval("IdFile")) && !CanOpenFile(Eval("FileUrl")) %>'
                             Text="Không còn tệp vật lý"
@@ -1139,10 +1192,37 @@
 </SweetSoft:ExtraModal>
 
 <style type="text/css">
-    .document-signing-file-list { display: grid; gap: .45rem; }
-    .document-signing-file-list label { margin-left: .35rem; margin-bottom: 0; }
+    .document-signing-file-list { list-style:none; padding:0; margin:0; max-height:280px; overflow-y:auto; border:1px solid var(--bs-border-color,#dee2e6); border-radius:4px; }
+    .document-signing-file-list > li { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; margin:0; border-bottom:1px solid var(--bs-border-color,#dee2e6); }
+    .document-signing-file-list > li:last-child { border-bottom:0; }
+    .document-signing-file-list > li:has(input:checked) { background:var(--bs-light,#f8f9fa); }
+    .document-signing-file-list input[type=checkbox] { flex:0 0 17px; width:17px; height:17px; margin:3px 0 0; accent-color:var(--bs-primary); cursor:pointer; }
+    .document-signing-file-list label { flex:1; min-width:0; margin:0; white-space:normal; overflow-wrap:anywhere; text-align:left; line-height:1.5; cursor:pointer; }
+    .document-signing-file-list input:focus-visible { outline:2px solid var(--bs-primary); outline-offset:2px; }
 </style>
 
+<style>
+    #<%= mdlCustomerDelivery.ClientID %> .modal-dialog { max-width:min(900px,calc(100vw - 24px)); height:calc(100vh - 32px); height:calc(100dvh - 32px); min-height:0; margin:16px auto; }
+    #<%= mdlCustomerDelivery.ClientID %> .modal-dialog > div,
+    #<%= mdlCustomerDelivery.ClientID %> .modal-content { display:flex; flex-direction:column; width:100%; max-width:100%; max-height:100%; min-width:0; min-height:0; }
+    #<%= mdlCustomerDelivery.ClientID %> .modal-content { overflow:hidden; }
+    #<%= mdlCustomerDelivery.ClientID %> .modal-header,
+    #<%= mdlCustomerDelivery.ClientID %> .modal-footer { flex:0 0 auto; }
+    #<%= mdlCustomerDelivery.ClientID %> .modal-body { min-width:0; min-height:0; max-width:100%; overflow-x:hidden; overflow-y:auto; }
+    #<%= mdlCustomerDelivery.ClientID %> .modal-body > div,
+    #<%= mdlCustomerDelivery.ClientID %> .validationEngineContainer { min-width:0; max-width:100%; }
+    #<%= mdlCustomerDelivery.ClientID %> .validationEngineContainer > .row { margin-left:0; margin-right:0; }
+    #<%= mdlCustomerDelivery.ClientID %> .row > div { min-width:0; }
+    #<%= mdlCustomerDelivery.ClientID %> .modal-header .btn-close { transform:none; flex-shrink:0; }
+    #<%= mdlCustomerDelivery.ClientID %> .mb-3 { margin-bottom:.65rem!important; }
+    #<%= mdlCustomerDelivery.ClientID %> .delivery-files { width:100%; }
+    #<%= mdlCustomerDelivery.ClientID %> .delivery-file-list { list-style:none; padding:0; margin:0; max-height:170px; overflow-y:auto; border:1px solid var(--bs-border-color,#dee2e6); border-radius:4px; }
+    #<%= mdlCustomerDelivery.ClientID %> .delivery-file-list li { display:flex; align-items:flex-start; gap:.6rem; padding:.5rem .75rem; border-bottom:1px solid #eee; }
+    #<%= mdlCustomerDelivery.ClientID %> .delivery-file-list li:last-child { border-bottom:0; }
+    #<%= mdlCustomerDelivery.ClientID %> .delivery-file-list input { flex-shrink:0; margin-top:.3rem; width:16px; height:16px; }
+    #<%= mdlCustomerDelivery.ClientID %> .delivery-file-list label { flex:1; margin:0; min-width:0; white-space:normal; overflow-wrap:anywhere; cursor:pointer; }
+</style>
+<SweetSoft:DocumentEditor runat="server" ID="documentInfoEditor" EditOnly="true" />
 <SweetSoft:ExtraModal
     runat="server"
     ID="mdlCustomerDelivery"
@@ -1162,12 +1242,13 @@
                 <%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_RECORD_NOTICE) %>
             </div>
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">File chuẩn bị gửi</label>
-                    <asp:Literal runat="server" ID="litWorkspaceDeliveryFiles" />
+                <div class="col-12 mb-3 delivery-files">
+                    <label class="form-label">File chuẩn bị gửi — bỏ tích file không muốn gửi</label>
+                    <asp:Literal runat="server" ID="litWorkspaceDeliveryFiles" Visible="false" />
+                    <asp:CheckBoxList runat="server" ID="cblCustomerDeliveryFiles" RepeatLayout="UnorderedList" RepeatDirection="Vertical" CssClass="delivery-file-list" />
                     <SweetSoft:ExtraDropdown
                         runat="server"
-                        ID="ddlCustomerDeliveryVersion" style="display:none"
+                        ID="ddlCustomerDeliveryVersion" Visible="false"
                         ValueIsOfTypeGUID="true"
                         SimpleInit="true" />
                 </div>
@@ -1211,16 +1292,12 @@
                         Opens="Left"
                         Drops="Down" />
                 </div>
-                <div class="col-12 mb-3">
+                <div class="col-md-6 mb-3">
                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.ALLOW_SEND_BEFORE_SIGNING) %></label>
                     <div class="mt-2">
                         <SweetSoft:ExtraCheckbox
                             runat="server"
                             ID="chkCustomerDeliveryBeforeSigning" />
-                    </div>
-                    <div class="form-text text-warning">
-                        <i class="fas fa-exclamation-triangle me-1"></i>
-                        <%= GetResourceText(BackEndResourceKeys.SEND_BEFORE_SIGNING_NOTICE) %>
                     </div>
                 </div>
                 <div class="col-12 mb-1">
@@ -1229,7 +1306,7 @@
                         runat="server"
                         ID="txtCustomerDeliveryNote"
                         TextMode="MultiLine"
-                        Rows="3"
+                        Rows="2"
                         MaxLength="500" />
                 </div>
             </div>
@@ -1504,13 +1581,41 @@
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 
+<style>
+    /* ExtraModal's UpdatePanel sits between dialog and content; constrain it too. */
+    #<%= mdlWorkspaceFile.ClientID %> .modal-dialog {
+        height: calc(100vh - 32px);
+        height: calc(100dvh - 32px);
+        min-height: 0;
+        margin: 16px auto;
+        max-width: min(1000px, calc(100vw - 24px));
+    }
+    #<%= mdlWorkspaceFile.ClientID %> .modal-dialog > div {
+        display: flex; flex-direction: column; width: 100%;
+        max-height: 100%; min-height: 0;
+    }
+    #<%= mdlWorkspaceFile.ClientID %> .modal-content {
+        display: flex; flex-direction: column;
+        max-height: 100%; min-height: 0; overflow: hidden;
+    }
+    #<%= mdlWorkspaceFile.ClientID %> .modal-header,
+    #<%= mdlWorkspaceFile.ClientID %> .modal-footer { flex: 0 0 auto; }
+    #<%= mdlWorkspaceFile.ClientID %> .modal-body {
+        flex: 1 1 auto; min-height: 0; overflow-y: auto;
+        overflow-wrap: anywhere;
+    }
+    #<%= mdlWorkspaceFile.ClientID %> .modal-body th,
+    #<%= mdlWorkspaceFile.ClientID %> .modal-body td { white-space: normal; }
+</style>
 <SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceFile" Title="Chi tiết file" Size="Large"
     Position="modal-dialog-centered modal-dialog-scrollable" EnsureChildControlsOnPostback="true">
     <ContentTemplate>
         <asp:Label runat="server" ID="lblWorkspaceFileName" CssClass="fw-semibold d-block mb-2" />
         <div class="d-flex flex-wrap gap-2 mb-3">
-            <asp:HyperLink runat="server" ID="lnkWorkspaceView" Text="Xem / tải bản hiện tại" Target="_blank" CssClass="btn btn-outline-primary" />
-            <asp:HyperLink runat="server" ID="lnkWorkspaceSigned" Text="Xem / tải bản đã ký" Target="_blank" CssClass="btn btn-outline-success" />
+            <asp:HyperLink runat="server" ID="lnkWorkspaceView" Text="Xem bản hiện tại" onclick="FilesBox.LayoutFilePopUp(this); return false;" CssClass="btn btn-outline-primary" />
+            <asp:HyperLink runat="server" ID="lnkWorkspaceDownload" Text="Tải về" CssClass="btn btn-outline-primary" />
+            <asp:HyperLink runat="server" ID="lnkWorkspaceSigned" Text="Xem bản đã ký" onclick="FilesBox.LayoutFilePopUp(this); return false;" CssClass="btn btn-outline-success" />
+            <asp:HyperLink runat="server" ID="lnkWorkspaceSignedDownload" Text="Tải bản đã ký" CssClass="btn btn-outline-success" />
             <asp:Button runat="server" ID="btnWorkspaceReplace" Text="Tải bản mới" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnWorkspaceReplace_Click" />
             <asp:Button runat="server" ID="btnWorkspaceRemove" Text="Gỡ file" CssClass="btn btn-outline-danger" CausesValidation="false" UseSubmitBehavior="false" OnClick="btnWorkspaceRemove_Click" />
         </div>
@@ -1531,7 +1636,8 @@
                 <asp:TemplateField HeaderText="Thời gian"><ItemTemplate><%#: FormatDate(Eval("NgayTao")) %></ItemTemplate></asp:TemplateField>
                 <asp:TemplateField HeaderText="File">
                     <ItemTemplate>
-                        <asp:HyperLink runat="server" NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>' Text="Xem / tải" Target="_blank" CssClass="btn btn-sm btn-outline-primary" Visible='<%# HasValue(Eval("FileUrl")) %>' />
+                        <asp:HyperLink runat="server" NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>' data-path='<%# GetFileUrl(Eval("FileUrl")) %>' onclick="FilesBox.LayoutFilePopUp(this); return false;" Text="Xem" CssClass="btn btn-sm btn-outline-primary" Visible='<%# HasValue(Eval("FileUrl")) %>' />
+                        <asp:HyperLink runat="server" NavigateUrl='<%# GetWorkspaceDownloadUrl(Eval("FileUrl")) %>' Text="Tải về" CssClass="btn btn-sm btn-outline-primary" Visible='<%# HasValue(Eval("FileUrl")) %>' />
                         <asp:LinkButton runat="server" Text="Khôi phục" CommandName="RESTORE_FILE" CommandArgument='<%# Eval("IdFile") %>'
                             CausesValidation="false" CssClass="btn btn-sm btn-outline-warning"
                             Visible='<%# WorkspaceCanRestore(Eval("IdFile")) %>' />
@@ -1547,8 +1653,10 @@
                     <span class="ms-2"><%#: GetValueText(Eval("TenNguoiKyHienThi")) %></span>
                     <div class="small text-muted">Gửi lúc <%#: FormatDate(Eval("NgayGui")) %> · Xử lý lúc <%#: FormatDate(Eval("NgayNhanLai")) %></div>
                     <div class="small text-break"><%#: GetValueText(Eval("GhiChu")) %></div>
-                    <asp:HyperLink runat="server" Text="Xem bản đã ký" Target="_blank" CssClass="text-success"
+                    <asp:HyperLink runat="server" Text="Xem bản đã ký" data-path='<%# GetFileUrl(Eval("FileSauKyUrl")) %>' onclick="FilesBox.LayoutFilePopUp(this); return false;" CssClass="text-success me-2"
                         NavigateUrl='<%# GetFileUrl(Eval("FileSauKyUrl")) %>' Visible='<%# HasValue(Eval("FileSauKyUrl")) %>' />
+                    <asp:HyperLink runat="server" Text="Tải bản đã ký" CssClass="text-success"
+                        NavigateUrl='<%# GetWorkspaceDownloadUrl(Eval("FileSauKyUrl")) %>' Visible='<%# HasValue(Eval("FileSauKyUrl")) %>' />
                 </div>
             </ItemTemplate></asp:Repeater>
         </asp:Panel>

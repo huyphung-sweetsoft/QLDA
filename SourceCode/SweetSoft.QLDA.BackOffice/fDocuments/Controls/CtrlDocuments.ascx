@@ -109,7 +109,7 @@
                         <asp:TemplateField
                             HeaderText="Mã hồ sơ"
                             SortExpression="MaTaiLieu"
-                            HeaderStyle-Width="150px"
+                            HeaderStyle-Width="200px"
                             HeaderStyle-CssClass="document-list-code-column text-center"
                             ItemStyle-CssClass="document-list-code-column">
                             <ItemTemplate>
@@ -127,12 +127,18 @@
                         <asp:TemplateField
                             HeaderText="Phạm vi"
                             SortExpression="TenDuAn"
-                            HeaderStyle-Width="180px"
+                            HeaderStyle-Width="230px"
                             HeaderStyle-CssClass="document-list-scope-column text-center"
                             ItemStyle-CssClass="document-list-scope-column">
                             <ItemTemplate>
-                                <span class="text-body">
-                                    <i class='<%# GetDocumentScopeIcon(Eval("IdDuAn")) %>'></i>
+                                <a runat="server" Visible='<%# !IsCompanyDocument(Eval("IdDuAn")) %>'
+                                    href='<%# GetProjectDocumentsUrl(Eval("IdDuAn")) %>'
+                                    class="document-list-project" title="Mở hồ sơ của dự án">
+                                    <span class="text-primary"><i class="fas fa-project-diagram me-1" aria-hidden="true"></i><%#: Eval("MaDuAn") %></span>
+                                    <span class="document-list-project-name"><%#: Eval("TenDuAn") %></span>
+                                </a>
+                                <span runat="server" Visible='<%# IsCompanyDocument(Eval("IdDuAn")) %>'>
+                                    <i class="fas fa-building me-1" aria-hidden="true"></i>
                                     <%#: GetDocumentScopeText(Eval("IdDuAn"), Eval("MaDuAn"), Eval("TenDuAn")) %>
                                 </span>
                             </ItemTemplate>
@@ -298,10 +304,21 @@
 </asp:UpdatePanel>
 
 <style>
-    .document-list-grid thead th,
-    .document-list-grid tbody td { white-space: normal !important; overflow-wrap: anywhere; }
-    .document-list-grid .document-list-code-column { width: 150px; }
-    .document-list-grid .document-list-scope-column { width: 180px; }
+    /* Keep the shared grid spacing; only textual content may wrap. */
+    .document-list-grid td.document-list-code-column,
+    .document-list-grid td.document-list-name-column,
+    .document-list-grid td.document-list-scope-column,
+    .document-list-grid td.document-list-type-column,
+    .document-list-grid td.document-list-responsible-column { white-space: normal !important; overflow-wrap: anywhere; }
+    .document-list-grid tr > th:first-child,
+    .document-list-grid tr > td:first-child { width: 40px; min-width: 40px; white-space: nowrap !important; overflow-wrap: normal; word-break: normal; text-align: center; }
+    .document-list-grid .document-list-code-column { width: 200px; }
+    .document-list-grid .document-list-project { display: flex; flex-direction: column; gap: .1rem; color: inherit; font-weight: normal; text-decoration: none; }
+    .document-list-grid .document-list-project:hover .document-list-project-name,
+    .document-list-grid .document-list-project:focus .document-list-project-name { text-decoration: underline; }
+    .document-list-grid .document-list-type-column { width: 180px; }
+    .document-list-grid .document-list-responsible-column { width: 200px; }
+    .document-list-grid .document-list-scope-column { width: 230px; }
     .document-list-grid .document-list-actions { width: 1%; white-space: nowrap !important; }
     .document-list-grid .document-list-actions .document-row-actions { display: flex; align-items: center; justify-content: center; gap: .25rem; flex-wrap: nowrap; white-space: nowrap; }
     .document-list-secondary-column { display: none !important; }
@@ -316,7 +333,7 @@
         height: calc(100dvh - 24px);
         min-height: 0;
         margin: 12px auto;
-        max-width: min(960px, calc(100vw - 24px));
+        max-width: min(1120px, calc(100vw - 24px));
     }
     #<%= dlDetail.ClientID %> .modal-dialog > div {
         display: flex;
@@ -341,6 +358,15 @@
         overflow-x: hidden;
     }
     #<%= dlDetail.ClientID %> .document-content-editor { min-width: 0; }
+    #<%= dlDetail.ClientID %> .js-document-form > .row > .mb-3 { margin-bottom: .65rem !important; }
+    #<%= dlDetail.ClientID %> .document-scope-options {
+        display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+        list-style: none; padding: 0; margin: 0; min-height: 38px;
+    }
+    #<%= dlDetail.ClientID %> .document-scope-options li { display: flex; align-items: center; gap: .4rem; }
+    #<%= dlDetail.ClientID %> .document-scope-options input { margin: 0; flex-shrink: 0; }
+    #<%= dlDetail.ClientID %> .document-scope-options label { margin: 0; cursor: pointer; }
+    #<%= dlDetail.ClientID %> .document-file-selected-list { max-height: 170px; overflow-y: auto; }
     #<%= dlDetail.ClientID %> .cke { max-width: 100%; }
     #<%= dlDetail.ClientID %> .document-file-picker { min-width: 0; }
     #<%= dlDetail.ClientID %> .document-file-picker-input {
@@ -371,6 +397,7 @@
     runat="server"
     ID="dlDetail"
     Type="Primary"
+    EnsureChildControlsOnPostback="true"
     Size="Large"
     Position="modal-dialog-centered modal-dialog-scrollable"
     BodyClass="document-modal-body"
@@ -390,15 +417,15 @@
 
                 <div class="row">
 
-                    <asp:Panel runat="server" ID="pnlCreateScope" CssClass="col-12 mb-3">
+                    <asp:Panel runat="server" ID="pnlCreateScope" CssClass="col-lg-7 mb-3">
                         <label class="form-label">Phạm vi hồ sơ</label>
-                        <asp:RadioButtonList runat="server" ID="rblCreateScope" RepeatDirection="Horizontal"
-                            CssClass="form-check-inline" AutoPostBack="true" OnSelectedIndexChanged="rblCreateScope_SelectedIndexChanged">
+                        <asp:RadioButtonList runat="server" ID="rblCreateScope" RepeatDirection="Vertical"
+                            RepeatLayout="UnorderedList" CssClass="document-scope-options" AutoPostBack="true" OnSelectedIndexChanged="rblCreateScope_SelectedIndexChanged">
                             <asp:ListItem Value="CHUNG" Text="Hồ sơ chung (không thuộc dự án)" />
                             <asp:ListItem Value="DU_AN" Text="Hồ sơ dự án" Selected="true" />
                         </asp:RadioButtonList>
                     </asp:Panel>
-                    <asp:Panel runat="server" ID="pnlCreateProject" CssClass="col-12 mb-3">
+                    <asp:Panel runat="server" ID="pnlCreateProject" CssClass="col-lg-5 mb-3">
                         <label class="form-label">Dự án</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlCreateProject"
                             ValueIsOfTypeGUID="true" SimpleInit="true" AlowClear="true" />
@@ -411,6 +438,7 @@
                         </asp:Panel>
                     </asp:Panel>
 
+                    <div class="w-100"></div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">
                             <%= GetResourceText(BackEndResourceKeys.DOCUMENT_CODE) %>
@@ -482,20 +510,18 @@
                         </SweetSoft:ExtraDropdown>
                     </div>
 
-                    <SweetSoft:ExtraTextBox runat="server" ID="txtMoTa" Visible="false" TextMode="MultiLine" MaxLength="1000" />
-                    <div class="col-12 mb-3 document-content-editor">
-                        <label class="form-label">Nội dung hồ sơ</label>
-                        <p class="text-muted small">Có thể soạn nội dung tại đây mà không cần tải file. File đính kèm được quản lý riêng trong bộ hồ sơ.</p>
-                        <asp:HiddenField runat="server" ID="hdfDocumentContent" />
-                        <textarea id="<%= ClientID %>_contentEditor" class="form-control" rows="8" aria-label="Nội dung hồ sơ"></textarea>
-                        <div class="text-muted small mt-1">Có thể định dạng chữ, màu sắc, căn lề, danh sách và bảng. Ảnh/tài liệu đưa vào bộ file đính kèm.</div>
-                    </div>
-
-                    <div class="col-12 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label">Nơi lưu trữ bản cứng</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlDocumentStorage" SimpleInit="true" Placeholder="Chưa xác định" />
                     </div>
-                    <asp:Panel runat="server" ID="pnlInitialFileUpload" CssClass="col-12 mb-3">
+                    <SweetSoft:ExtraTextBox runat="server" ID="txtMoTa" Visible="false" TextMode="MultiLine" MaxLength="1000" />
+                    <div class="col-lg-8 mb-3 document-content-editor">
+                        <label class="form-label">Nội dung hồ sơ</label>
+                        <asp:HiddenField runat="server" ID="hdfDocumentContent" />
+                        <textarea id="<%= ClientID %>_contentEditor" class="form-control" rows="8" aria-label="Nội dung hồ sơ"></textarea>
+                    </div>
+
+                    <asp:Panel runat="server" ID="pnlInitialFileUpload" CssClass="col-lg-4 mb-3">
                         <label class="form-label">File hồ sơ</label>
                         <div class="document-file-picker border rounded p-3">
                         <asp:FileUpload runat="server" ID="fuInitialFiles" AllowMultiple="true"
@@ -1041,7 +1067,7 @@
         element.addEventListener('input', syncDocumentContentEditor);
         if (!window.CKEDITOR) return;
         CKEDITOR.replace(id, {
-            customConfig: '', height: 200, width: '100%', resize_enabled: false,
+            customConfig: '', height: 140, width: '100%', resize_enabled: false,
             language: 'vi', entities: false, basicEntities: true,
             allowedContent: 'p div span strong b em i u s sub sup ul ol li blockquote h1 h2 h3 h4 h5 h6 table thead tbody tfoot tr th td br hr pre code{text-align,margin-left,font-family,font-size,color,background-color}; td th[colspan,rowspan]; a[!href]',
             toolbar: [
