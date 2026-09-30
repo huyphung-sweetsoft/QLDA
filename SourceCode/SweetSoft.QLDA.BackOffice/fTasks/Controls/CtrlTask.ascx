@@ -789,7 +789,7 @@
                                         </asp:LinkButton>
                                     </asp:PlaceHolder>
                                     <asp:LinkButton runat="server" ID="lbtTaskName" 
-                                        CommandName="ITEM_DETAIL" 
+                                        CommandName="ITEM_VIEW" 
                                         CommandArgument='<%# Eval("IdCongViec") %>'
                                         CssClass="text-decoration-none text-dark fw-semibold"
                                         Visible='<%# this.IsView || this.IsEdit %>'>
@@ -908,13 +908,13 @@
                         <ItemStyle Width="130px"/>
                         <ItemTemplate>
                             <SweetSoft:SmartLinkButton runat="server" 
-                                VisibleConditionKey='<%# this.IsView %>'
-                                ID="lbtDetail" 
-                                CommandName="ITEM_DETAIL" 
-                                CssClass="btn-grid-action text-decoration-underline me-1"
-                                ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
-                                ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
-                            </SweetSoft:SmartLinkButton>
+                                 VisibleConditionKey='<%# this.IsView || this.IsEdit %>'
+                                 ID="lbtDetail" 
+                                 CommandName='<%# this.IsEdit ? "ITEM_DETAIL" : "ITEM_VIEW" %>' 
+                                 CssClass="btn-grid-action text-decoration-underline me-1"
+                                 ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>'
+                                 ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
+                             </SweetSoft:SmartLinkButton>
                           
                             <SweetSoft:SmartLinkButton runat="server" 
                                 VisibleConditionKey='<%# this.IsDelete %>'

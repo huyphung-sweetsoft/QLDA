@@ -1,90 +1,179 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
-using SweetSoft.QLDA.Core.EnumHelper;
+﻿using SubSonic;
+using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.Controls;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
 
 namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 {
     public partial class CtrlViewTaskDetail : BaseAdminUserControl
     {
-        private readonly ControlHelpers _controlHelpers = new ControlHelpers();
-
-        public void OpenModal(Guid projectId, Guid taskId)
+        public void OpenModal(Guid taskId)
         {
-            TblCongViec task = TaskManager.Instance.FetchById(taskId);
+            if (taskId == Guid.Empty) return;
+
+            TblCongViec task = TblCongViec.FetchByID(taskId);
             if (task == null || task.DaXoa == true) return;
 
-            bool isPhase = !task.IdCongViecCha.HasValue;
-            mdlViewTask.Title = isPhase ? "Chi tiết Giai đoạn" : "Chi tiết Công việc con";
-
-            // 1. Header
-            ltrMaCV.Text = $"MÃ CV: {task.MaCongViec}";
-            ltrTenCV.Text = task.TenCongViec;
-
-            string phaseName = TaskManager.Instance.GetRootPhaseName(projectId, task.IdCongViecCha);
-            ltrGiaiDoan.Text = string.IsNullOrEmpty(phaseName) ? "Giai đoạn gốc" : $"Thuộc Giai đoạn: <strong>{phaseName}</strong>";
-
-            // Ưu tiên (Đưa lên header)
-            if (task.IdDoUuTien.HasValue)
-            {
-                var priority = TaskManager.Instance.GetPriorityById(task.IdDoUuTien.Value);
-                ltrDoUuTien.Text = priority != null ? _controlHelpers.GetTaskPriorityBadge(priority.TenDoUuTien, priority.DiemUuTien) : "<span class='empty-val'>—</span>";
-            }
-            else ltrDoUuTien.Text = "<span class='empty-val'>—</span>";
-
-            // 2. Thời gian & Công việc cha (Hàng 1)
-            ltrNgayBatDau.Text = task.NgayBatDau.HasValue ? task.NgayBatDau.Value.ToString("dd/MM/yyyy") : "<span class='empty-val'>—</span>";
-
-            if (task.IdCongViecCha.HasValue)
-            {
-                var parent = TaskManager.Instance.FetchById(task.IdCongViecCha.Value);
-                ltrCongViecCha.Text = parent != null ? $"[{parent.MaCongViec}] {parent.TenCongViec}" : "<span class='empty-val'>—</span>";
-            }
-            else ltrCongViecCha.Text = "<span class='empty-val text-muted'>Lớp gốc (Không có cha)</span>";
-
-            // 3. Thời hạn & Phụ thuộc (Hàng 2)
-            ltrThoiHan.Text = task.ThoiHanNgay.HasValue ? $"<strong style='font-size:18px;'>{task.ThoiHanNgay.Value}</strong> ngày" : "<span class='empty-val'>—</span>";
-
-            if (task.IdCongViecPhuThuoc.HasValue)
-            {
-                var dep = TaskManager.Instance.FetchById(task.IdCongViecPhuThuoc.Value);
-                ltrPhuThuoc.Text = dep != null ? $"[{dep.MaCongViec}] {dep.TenCongViec}" : "<span class='empty-val'>—</span>";
-            }
-            else ltrPhuThuoc.Text = "<span class='empty-val'>— Không phụ thuộc —</span>";
-
-            // 4. Ngày kết thúc & Trạng thái (Hàng 3)
-            ltrNgayKetThuc.Text = task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "--/--/----";
-
-            if (task.NgayHoanThanhThucTe.HasValue)
-                ltrNgayHoanThanhThucTe.Text = task.NgayHoanThanhThucTe.Value.ToString("dd/MM/yyyy");
-            else
-                ltrNgayHoanThanhThucTe.Text = "<span style='font-size: 13.5px; font-weight: 500; color: #94a3b8;'>Đang chờ...</span>";
-
-            ltrTrangThai.Text = GetTaskStatusBadge(task.TrangThai);
-
-            // 5. Mô tả
-            ltrMoTa.Text = !string.IsNullOrWhiteSpace(task.MoTa) ? task.MoTa : "<span class='empty-val'>Chưa có mô tả chi tiết cho công việc này.</span>";
-
-            upViewTask.Update();
-            mdlViewTask.OpenModal(true);
+            BindTask(task);
+            upTaskView.Update();
+            mdlTaskView.OpenModal(true);
         }
 
-        private string GetTaskStatusBadge(byte status)
+        private void BindTask(TblCongViec task)
         {
-            TrangThaiCongViec enumStatus = (TrangThaiCongViec)status;
-            string resourceKey = TaskManager.Instance.GetValueForTrangThaiCongViec(enumStatus);
-            string statusText = GetResourceText(resourceKey);
+            // 1. Gộp Mã và Tên công việc lên Tiêu đề
+            string maCv = HttpUtility.HtmlEncode(task.MaCongViec ?? "");
+            string tenCv = HttpUtility.HtmlEncode(task.TenCongViec ?? "");
+            lblTaskName.Text = string.IsNullOrEmpty(maCv) ? tenCv : $"{maCv}. {tenCv}";
 
-            // ĐÃ SỬA: Đưa html về cấu trúc thẳng tắp để ăn css làm to chữ (như trong ảnh bác yêu cầu)
-            switch (status)
+            // 2. Thuộc giai đoạn (Lấy tên từ bảng TblGiaiDoanDuAn)
+            lblPhaseName.Text = "—";
+            if (task.IdGiaiDoanDuAn.HasValue)
             {
-                case 1: return $"<div class='w-100 text-center'><span class=\"badge-pill-custom badge-status-doing\">{statusText}</span></div>";
-                case 2: return $"<div class='w-100 text-center'><span class=\"badge-pill-custom badge-status-done\">{statusText}</span></div>";
-                case 3: return $"<div class='w-100 text-center'><span class=\"badge-pill-custom badge-status-done\">{statusText}</span><span class='late-label' style='display:block; color:#dc2626; font-weight:800;'>({GetResourceText(BackEndResourceKeys.OVERDUE)})</span></div>";
-                case 0: default: return $"<div class='w-100 text-center'><span class=\"badge-pill-custom badge-status-todo\">{statusText}</span></div>";
+                TblCongViec phase = TblCongViec.FetchByID(task.IdGiaiDoanDuAn.Value);
+                if (phase != null && !string.IsNullOrWhiteSpace(phase.TenCongViec))
+                {
+                    lblPhaseName.Text = HttpUtility.HtmlEncode(phase.TenCongViec);
+                }
             }
+
+            lblStatus.Text = GetTaskStatusText(task.TrangThai);
+
+            // Độ ưu tiên
+            if (task.IdDoUuTien.HasValue)
+            {
+                TblDoUuTien priority = TblDoUuTien.FetchByID(task.IdDoUuTien.Value);
+                lblPriority.Text = priority != null ? HttpUtility.HtmlEncode(priority.TenDoUuTien) : "—";
+            }
+            else lblPriority.Text = "—";
+
+            // 3. Xếp ô vuông vức: Ngày bắt đầu - Thời hạn - Ngày kết thúc - Hoàn thành TT
+            lblStartDate.Text = task.NgayBatDau.HasValue ? task.NgayBatDau.Value.ToString("dd/MM/yyyy") : "—";
+            lblDuration.Text = task.ThoiHanNgay.HasValue ? $"{task.ThoiHanNgay.Value} ngày" : "—";
+            lblEndDate.Text = task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "—";
+            lblActualEndDate.Text = task.NgayHoanThanhThucTe.HasValue ? task.NgayHoanThanhThucTe.Value.ToString("dd/MM/yyyy HH:mm") : "—";
+
+            // 4. Nếu có Lý do trễ thì mới hiện Box đỏ ra
+            if (!string.IsNullOrWhiteSpace(task.LyDoTre))
+            {
+                divDelayReason.Visible = true;
+                lblDelayReason.Text = HttpUtility.HtmlEncode(task.LyDoTre);
+            }
+            else
+            {
+                divDelayReason.Visible = false;
+            }
+
+            ltrDescription.Text = ToDisplayHtml(task.MoTa);
+
+            BindAssignees(task.IdCongViec);
+        }
+
+        private void BindAssignees(Guid taskId)
+        {
+            List<TblCongViecNhanVien> assignments = new Select()
+                .From(TblCongViecNhanVien.Schema)
+                .Where(TblCongViecNhanVien.Columns.IdCongViec).IsEqualTo(taskId)
+                .ExecuteTypedList<TblCongViecNhanVien>();
+
+            List<Guid> assignedIds = assignments
+                .Select(x => x.IdNhanVien)
+                .Where(x => x != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            List<AspnetUser> assignedUsers = new List<AspnetUser>();
+            foreach (Guid userId in assignedIds)
+            {
+                AspnetUser user = UserManager.Instance.GetUserById(userId);
+                if (user != null) assignedUsers.Add(user);
+            }
+
+            assignedUsers = assignedUsers
+                .OrderBy(x => string.IsNullOrWhiteSpace(x.DisplayName) ? x.UserName : x.DisplayName)
+                .ToList();
+
+            List<object> result = new List<object>();
+            for (int i = 0; i < assignedUsers.Count; i++)
+            {
+                AspnetUser user = assignedUsers[i];
+                string displayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName : user.DisplayName;
+                string email = GetUserEmail(user.UserName);
+
+                result.Add(new
+                {
+                    DisplayName = displayName,
+                    Email = string.IsNullOrWhiteSpace(email) ? "Chưa cập nhật email" : email,
+                    AvatarHtml = GetAvatarHtml(displayName, user.Avatar, i)
+                });
+            }
+
+            rptAssignees.DataSource = result;
+            rptAssignees.DataBind();
+            pnlNoAssignees.Visible = result.Count == 0;
+        }
+
+        private string GetTaskStatusText(object statusObj)
+        {
+            if (statusObj == null || statusObj == DBNull.Value) return "Chưa bắt đầu";
+            int status = Convert.ToInt32(statusObj);
+            if (status == 1) return "Đang làm";
+            if (status == 2) return "Hoàn thành";
+            if (status == 3) return "Hoàn thành (Trễ hạn)";
+            return "Chưa bắt đầu";
+        }
+
+        private string GetUserEmail(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName)) return "";
+            try
+            {
+                MembershipUser user = Membership.GetUser(userName);
+                return user != null ? user.Email : "";
+            }
+            catch { return ""; }
+        }
+
+        private string GetAvatarHtml(string displayName, string avatar, int index)
+        {
+            string[] colors = { "#7c3aed", "#2563eb", "#059669", "#d97706", "#db2777" };
+            string color = colors[index % colors.Length];
+            string safeName = HttpUtility.HtmlEncode(displayName ?? "");
+            string initials = HttpUtility.HtmlEncode(GetInitials(displayName));
+            bool isDefaultAvatar = string.IsNullOrWhiteSpace(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultAvatar)
+            {
+                string avatarUrl = avatar.StartsWith("~", StringComparison.Ordinal) ? Page.ResolveUrl(avatar) : avatar;
+                avatarUrl = HttpUtility.HtmlAttributeEncode(avatarUrl);
+                string fallbackHtml = $"<div class='task-person-avatar' style='background:{color};'>{initials}</div>";
+                return $"<img src='{avatarUrl}' class='task-person-avatar' alt='{safeName}' title='{safeName}' onerror=\"this.onerror=null;this.outerHTML='{HttpUtility.JavaScriptStringEncode(fallbackHtml)}';\" />";
+            }
+            return $"<div class='task-person-avatar' style='background:{color};' title='{safeName}'>{initials}</div>";
+        }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "?";
+            string[] parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+        }
+
+        private string ToDisplayHtml(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return "<span class='text-muted'>—</span>";
+            return HttpUtility.HtmlEncode(value).Replace("\r\n", "<br />").Replace("\n", "<br />");
         }
     }
 }

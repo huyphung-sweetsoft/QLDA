@@ -7,173 +7,182 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SweetSoft.QLDA.BackOffice.fGanttCharts
+namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
 {
 
 
-    public partial class Gantts
+    public partial class CtrlViewCostDetail
     {
 
         /// <summary>
-        /// Navigation1 control.
+        /// upCostView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb Navigation1;
+        protected global::System.Web.UI.UpdatePanel upCostView;
 
         /// <summary>
-        /// CtrlProjectTabs1 control.
+        /// mdlCostView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlCostView;
 
         /// <summary>
-        /// rptTaskNames control.
+        /// lblCostName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptTaskNames;
+        protected global::System.Web.UI.WebControls.Literal lblCostName;
 
         /// <summary>
-        /// rptChartTracks control.
+        /// lblUnitPrice control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptChartTracks;
+        protected global::System.Web.UI.WebControls.Literal lblUnitPrice;
 
         /// <summary>
-        /// upIssues control.
+        /// lblQuantity control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upIssues;
+        protected global::System.Web.UI.WebControls.Literal lblQuantity;
 
         /// <summary>
-        /// hdfSelectedTaskId control.
+        /// lblTotal control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hdfSelectedTaskId;
+        protected global::System.Web.UI.WebControls.Literal lblTotal;
 
         /// <summary>
-        /// hdfSelectedTaskCode control.
+        /// ltrRequesterAvatar control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hdfSelectedTaskCode;
+        protected global::System.Web.UI.WebControls.Literal ltrRequesterAvatar;
 
         /// <summary>
-        /// btnLoadIssues control.
+        /// lblRequesterName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnLoadIssues;
+        protected global::System.Web.UI.WebControls.Literal lblRequesterName;
 
         /// <summary>
-        /// modalIssues control.
+        /// lblRequesterEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal modalIssues;
+        protected global::System.Web.UI.WebControls.Literal lblRequesterEmail;
 
         /// <summary>
-        /// h6TaskTitle control.
+        /// lblStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl h6TaskTitle;
+        protected global::System.Web.UI.WebControls.Literal lblStatus;
 
         /// <summary>
-        /// rptTaskInfo control.
+        /// ltrCreatorAvatar control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptTaskInfo;
+        protected global::System.Web.UI.WebControls.Literal ltrCreatorAvatar;
 
         /// <summary>
-        /// phHasIssues control.
+        /// lblCreatorName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phHasIssues;
+        protected global::System.Web.UI.WebControls.Literal lblCreatorName;
 
         /// <summary>
-        /// rptIssues control.
+        /// lblCreatorEmail control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptIssues;
+        protected global::System.Web.UI.WebControls.Literal lblCreatorEmail;
 
         /// <summary>
-        /// phNoIssues control.
+        /// lblCreatedDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phNoIssues;
+        protected global::System.Web.UI.WebControls.Literal lblCreatedDate;
 
         /// <summary>
-        /// upViewIssueTrigger control.
+        /// pnlReject control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upViewIssueTrigger;
+        protected global::System.Web.UI.WebControls.Panel pnlReject;
 
         /// <summary>
-        /// hdfIssueIdToView control.
+        /// lblRejectReason control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hdfIssueIdToView;
+        protected global::System.Web.UI.WebControls.Literal lblRejectReason;
 
         /// <summary>
-        /// btnTriggerViewIssue control.
+        /// ltrDescription control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnTriggerViewIssue;
+        protected global::System.Web.UI.WebControls.Literal ltrDescription;
 
         /// <summary>
-        /// CtrlViewIssueDetail1 control.
+        /// ddlStatusSource control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fIssues.Controls.CtrlViewIssueDetail CtrlViewIssueDetail1;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlStatusSource;
+
+        /// <summary>
+        /// btnCloseCostView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCloseCostView;
     }
 }
