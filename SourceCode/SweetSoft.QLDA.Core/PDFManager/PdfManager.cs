@@ -34,7 +34,7 @@ namespace SweetSoft.QLDA.Core.Managers
             try
             {
                 var htmlToPdf = new HtmlToPdfConverter();
-
+                htmlToPdf.PdfToolPath = System.IO.Path.GetTempPath();
                 htmlToPdf.Size = PageSize.A4;
 
                 htmlToPdf.Margins = new PageMargins { Top = 15, Bottom = 15, Left = 15, Right = 15 };
@@ -70,6 +70,7 @@ namespace SweetSoft.QLDA.Core.Managers
             try
             {
                 var htmlToPdf = new HtmlToPdfConverter();
+                htmlToPdf.PdfToolPath = System.IO.Path.GetTempPath();
                 htmlToPdf.Size = PageSize.A4;
                 htmlToPdf.Margins = new PageMargins { Top = 15, Bottom = 15, Left = 15, Right = 15 };
 
