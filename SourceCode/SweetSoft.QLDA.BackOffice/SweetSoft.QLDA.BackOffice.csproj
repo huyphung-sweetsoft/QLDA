@@ -502,6 +502,13 @@
     <Compile Include="fIssues\Controls\CtrlIssue.ascx.designer.cs">
       <DependentUpon>CtrlIssue.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fIssues\Controls\CtrlViewIssueDetail.ascx.cs">
+      <DependentUpon>CtrlViewIssueDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fIssues\Controls\CtrlViewIssueDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewIssueDetail.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fIssues\IssueList.aspx.cs">
       <DependentUpon>IssueList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -529,6 +536,13 @@
     </Compile>
     <Compile Include="fMeets\Controls\CtrlMeet.ascx.designer.cs">
       <DependentUpon>CtrlMeet.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.cs">
+      <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.cs">
       <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
@@ -620,6 +634,13 @@
     </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.cs">
+      <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\Controls\CtrlAddPhase.ascx.cs">
       <DependentUpon>CtrlAddPhase.ascx</DependentUpon>
@@ -875,10 +896,12 @@
     <Content Include="favicon.ico" />
     <Content Include="fGanttCharts\Gantts.aspx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
+    <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
+    <Content Include="fMeets\Controls\CtrlViewMeetDetail.ascx" />
     <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
@@ -889,6 +912,7 @@
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fRisks\Controls\CtrlViewRiskDetail.ascx" />
     <Content Include="fTasks\Controls\CtrlAddPhase.ascx" />
     <Content Include="fTasks\Controls\CtrlAddSubTask.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
@@ -1977,12 +2001,6 @@
     <Content Include="Web.config" />
     <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
     <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng__1__20260924_073456_O046R1.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng__1__20260924_074129_GKNG9B.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\BanCamKet_HoangDuyAn_20260924_104912_R1XA2M.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\CamKetDuLieu_20260924_100508_NOBB18.pdf" />
-    <Content Include="Uploads\ProjectContract\2026\09\Lab_4_20260924_100728_YD9MWR.pdf" />
-    <Content Include="Uploads\ProjectContract\2026\09\TB_07_chuyen_xe_Xuan_YT_20260924_102219_ZLRIZ1.pdf" />
     <Content Include="Uploads\ProjectContractPdf\2026\09\HopDongThucHien_72eb428e6ec4408eab07bc851dc3ab9f.pdf" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
@@ -2208,6 +2226,7 @@
     <Folder Include="Data\" />
     <Folder Include="obj\Debug\TempPE\" />
     <Folder Include="Uploads\DocumentSigningResult\2026\09\" />
+    <Folder Include="Uploads\ProjectContract\2026\09\" />
     <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>

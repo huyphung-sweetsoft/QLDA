@@ -415,6 +415,13 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PERSONNEL_WARNING = "PERSONNEL_WARNING";
         public const string DOING_X_TASKS = "DOING_X_TASKS";
         public const string WARNING_REMOVE_ACTIVE_MEMBERS_MSG = "WARNING_REMOVE_ACTIVE_MEMBERS_MSG";
+        public const string CONTRACT_NAME = "CONTRACT_NAME";
+        public const string CONTRACT_INFORMATION = "CONTRACT_INFORMATION";
+        public const string CONTRACT_CONTENT = "CONTRACT_CONTENT";
+        public const string PHASE_MANAGEMENT = "PHASE_MANAGEMENT";
+        public const string PHASE_NAME = "PHASE_NAME";
+        public const string PHASE_LIST = "PHASE_LIST";
+        public const string END = "END";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
