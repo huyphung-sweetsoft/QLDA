@@ -355,7 +355,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                 </ul>
                                                  <div class="wrapperRight">
                                                      <%-- Icon chuông thông báo --%>
-                                                     <div class="dropdown" id="bellDropdownWrapper">
+                                                     <div class="dropdown m-3" id="bellDropdownWrapper">
                                                          <a href="javascript:void(0)"
                                                             class="dropdown-notification dropdown-toggle position-relative ignore"
                                                             id="bellToggle"
@@ -363,7 +363,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                             data-bs-auto-close="outside"
                                                             aria-expanded="false"
                                                             title="Thông báo">
-                                                             <i class="fas fa-bell font-size-22 text-secondary"></i>
+                                                             <i class="fas fa-bell font-size-22 text-warning"></i>
                                                              <span id="badgeUnread"
                                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                                                                    style="display:none; font-size:10px;">0</span>
