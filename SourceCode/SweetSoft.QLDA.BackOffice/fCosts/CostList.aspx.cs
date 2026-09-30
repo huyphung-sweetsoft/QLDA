@@ -11,6 +11,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Web;
+using System.Web.Security;
 
 namespace SweetSoft.QLDA.BackOffice.fCosts
 {
@@ -31,8 +33,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             CtrlCost1.NewCostHandlerCallback += NewCostAction;
             CtrlCost1.EditCostHandlerCallback += EditCostAction;
             CtrlCost1.OpenCostFilesHandlerCallback += OpenCostFilesAction;
-            fbCostFiles.CurrentFileIdResolver = (recordId, refType) =>
-                ProjectRecordFileAccess.GetLinkedFileId(recordId, refType.ToString());
             fbCostFiles.FileMutationValidator = (recordId, refType, fileId) =>
                 ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId,
                     recordId, refType.ToString(), true)
@@ -77,33 +77,24 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(CurrentProjectId);
             bool isPM = pmId.HasValue && pmId.Value == SweetContext.Current.UserId;
 
-            if (isPM)
-            {
-                txtNhanVienYeuCau.Visible = false;
-                ddlNhanVienYeuCau.Visible = true;
+            // Requester is now rendered as a person card (avatar + name + email).
+            // Keep the hidden dropdown populated so the existing save flow remains intact.
+            txtNhanVienYeuCau.Visible = false;
+            ddlNhanVienYeuCau.Visible = false;
+            ddlNhanVienYeuCau.Items.Clear();
 
+            if (isPM)
                 _control.BindProjectMembers(ddlNhanVienYeuCau, CurrentProjectId, null);
 
-                if (idNhanVienDeNghi.HasValue)
-                    ddlNhanVienYeuCau.SelectedValue = idNhanVienDeNghi.Value.ToString();
-                else
-                    ddlNhanVienYeuCau.SelectedValue = SweetContext.Current.UserId.ToString();
-            }
-            else
+            Guid requesterId = idNhanVienDeNghi ?? SweetContext.Current.UserId;
+            if (ddlNhanVienYeuCau.Items.Count > 0)
             {
-                txtNhanVienYeuCau.Visible = true;
-                ddlNhanVienYeuCau.Visible = false;
-
-                if (idNhanVienDeNghi.HasValue)
-                {
-                    var user = UserManager.Instance.GetUserById(idNhanVienDeNghi.Value);
-                    txtNhanVienYeuCau.Text = user != null ? user.DisplayName : "—";
-                }
-                else
-                {
-                    txtNhanVienYeuCau.Text = SweetContext.Current.UserName;
-                }
+                string requesterValue = requesterId.ToString();
+                if (ddlNhanVienYeuCau.Items.FindByValue(requesterValue) != null)
+                    ddlNhanVienYeuCau.SelectedValue = requesterValue;
             }
+
+            BindRequesterInfo(requesterId);
 
             if (isPM)
             {
@@ -113,10 +104,82 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             {
                 ddlTrangThai.Enabled = false;
                 if (isNew)
-                {
                     ddlTrangThai.SelectedValue = "0";
+            }
+        }
+
+        private void BindRequesterInfo(Guid requesterId)
+        {
+            string displayName = "—";
+            string email = "Chưa cập nhật email";
+            string avatar = "";
+
+            try
+            {
+                var user = UserManager.Instance.GetUserById(requesterId);
+                if (user != null)
+                {
+                    displayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName : user.DisplayName;
+                    email = GetUserEmail(user.UserName);
+                    if (string.IsNullOrWhiteSpace(email))
+                        email = "Chưa cập nhật email";
+                    avatar = user.Avatar;
                 }
             }
+            catch
+            {
+                // Keep the fallback display values.
+            }
+
+            litRequesterName.Text = HttpUtility.HtmlEncode(displayName);
+            litRequesterEmail.Text = HttpUtility.HtmlEncode(email);
+            litRequesterAvatar.Text = GetAvatarHtml(displayName, avatar, 0);
+        }
+
+        private string GetUserEmail(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+                return "";
+            try
+            {
+                MembershipUser user = Membership.GetUser(userName);
+                return user != null ? user.Email : "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private string GetAvatarHtml(string displayName, string avatar, int index)
+        {
+            string[] colors = { "#7c3aed", "#2563eb", "#059669", "#d97706", "#db2777" };
+            string color = colors[index % colors.Length];
+            string safeName = HttpUtility.HtmlAttributeEncode(displayName ?? "");
+            string initials = HttpUtility.HtmlEncode(GetInitials(displayName));
+            bool isDefaultAvatar = string.IsNullOrWhiteSpace(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
+            if (!isDefaultAvatar)
+            {
+                string avatarUrl = avatar.StartsWith("~", StringComparison.Ordinal) ? Page.ResolveUrl(avatar) : avatar;
+                avatarUrl = HttpUtility.HtmlAttributeEncode(avatarUrl);
+                string fallbackHtml = $"<div class='cost-person-avatar' style='background:{color};'>{initials}</div>";
+                return $"<img src='{avatarUrl}' class='cost-person-avatar' alt='{safeName}' title='{safeName}' onerror=\"this.onerror=null;this.outerHTML='{HttpUtility.JavaScriptStringEncode(fallbackHtml)}';\" />";
+            }
+
+            return $"<div class='cost-person-avatar' style='background:{color};' title='{safeName}'>{initials}</div>";
+        }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+                return "?";
+
+            string[] parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1)
+                return parts[0].Substring(0, 1).ToUpper();
+
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
 
         private void OpenCostFilesAction(object sender, EventArgs e)
@@ -142,7 +205,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 return;
             }
 
-            fbCostFiles.IsMultiple = false;
+            fbCostFiles.IsMultiple = true;
             fbCostFiles.IsEnabled = ProjectRecordFileAccess.CanAccess(
                 SweetContext.Current.UserId, idChiPhi,
                 FileUploadTypes.CostAttachment.ToString(), true);
@@ -201,7 +264,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 if (cost.TrangThai == 2)
                 {
                     txtLyDoTuChoi.Text = cost.LyDoTuChoi;
-                    divLyDoTuChoi.Style["display"] = "block"; 
+                    divLyDoTuChoi.Style["display"] = "block";
                 }
                 else
                 {
@@ -230,8 +293,11 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         {
             txtTenKhoanChi.Text = txtDonGia.Text = txtSoLuong.Text = txtTongTien.Text = txtMoTaChiTiet.Text = txtNgayTao.Text = txtNguoiTao.Text = "";
             txtLyDoTuChoi.Text = "";
-            divLyDoTuChoi.Style["display"] = "none"; // CẬP NHẬT: Ẩn mặc định
+            divLyDoTuChoi.Style["display"] = "none";
 
+            litRequesterName.Text = "";
+            litRequesterEmail.Text = "";
+            litRequesterAvatar.Text = "";
             ddlNhanVienYeuCau.Items.Clear();
             if (ddlTrangThai.Items.Count > 0) ddlTrangThai.SelectedIndex = 0;
             lbtSubmit.Visible = false;

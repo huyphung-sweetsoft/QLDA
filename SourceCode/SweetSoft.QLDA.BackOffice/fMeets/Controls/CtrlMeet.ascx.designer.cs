@@ -132,6 +132,24 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
 
         /// <summary>
+        /// btnRefreshMeetingStatuses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnRefreshMeetingStatuses;
+
+        /// <summary>
+        /// CtrlViewMeetDetail1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlViewMeetDetail CtrlViewMeetDetail1;
+
+        /// <summary>
         /// CtrlXemNhanVienMeet1 control.
         /// </summary>
         /// <remarks>

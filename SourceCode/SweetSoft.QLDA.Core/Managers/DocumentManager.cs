@@ -940,10 +940,10 @@ DocumentSigningOperationResult result =
             return result;
         }
 
-        public DataTable GetDocumentActivityHistory(Guid idTaiLieu)
+        public DataTable GetDocumentActivityHistory(Guid idTaiLieu, int skip = 0, int? take = null, DateTime? until = null)
         {
             EnsureDocumentAccess(idTaiLieu,ActionKeys.View);
-            return _repository.GetDocumentActivityHistory(idTaiLieu);
+            return _repository.GetDocumentActivityHistory(idTaiLieu, skip, take, until);
         }
 
         public string GetDocumentContent(Guid documentId)

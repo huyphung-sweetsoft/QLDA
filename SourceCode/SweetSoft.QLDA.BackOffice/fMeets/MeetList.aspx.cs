@@ -17,25 +17,28 @@ using System.Linq;
 using System.Transactions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 namespace SweetSoft.QLDA.BackOffice.fMeets
 {
     public partial class MeetList : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Meet;
         private ControlHelpers _control = new ControlHelpers();
+
         private Guid MeetId
         {
             get => ViewState["MeetId"] != null ? (Guid)ViewState["MeetId"] : Guid.Empty;
             set => ViewState["MeetId"] = value;
         }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlMeet1.NewMeetingHandlerCallback += NewMeetingAction;
             CtrlMeet1.EditMeetingHandlerCallback += EditMeetingAction;
             CtrlMeet1.OpenMeetingFilesHandlerCallback += OpenMeetingFilesAction;
-            fbMeetingFiles.CurrentFileIdResolver = (recordId, refType) => ProjectRecordFileAccess.GetLinkedFileId(recordId, refType.ToString());
             fbMeetingFiles.FileMutationValidator = (recordId, refType, fileId) => ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId, recordId, refType.ToString(), true) && ProjectRecordFileAccess.BelongsToRecord(recordId, refType.ToString(), fileId);
+
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -56,6 +59,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 CtrlMeet1.InitControls();
             }
         }
+
         private void ApplyControlsText()
         {
             ddlTrangThai.PlaceHolder = "--";
@@ -69,6 +73,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtNgayBatDau.PlaceHolder = "Ngày...";
             dlChonNhanVien.Title = GetResourceText(BackEndResourceKeys.SELECT_EMPLOYEE);
         }
+
         private void SetRecommendedMeetingStart()
         {
             DateTime now = DateTime.Now;
@@ -79,6 +84,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtGioBatDau.Text = recommended.ToString("HH:mm");
             txtThoiLuong.Text = "60";
         }
+
         private void OpenMeetingFilesAction(object sender, EventArgs e)
         {
             Guid idLichHop = sender is Guid ? (Guid)sender : Guid.Empty;
@@ -98,11 +104,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowAccessDeniedNotify();
                 return;
             }
-            fbMeetingFiles.IsMultiple = false;
+            fbMeetingFiles.IsMultiple = true;
+            fbMeetingFiles.AcceptType = "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/x-wav,audio/ogg,application/ogg";
             fbMeetingFiles.IsEnabled = ProjectRecordFileAccess.CanAccess(SweetContext.Current.UserId, idLichHop, FileUploadTypes.MeetingAttachment.ToString(), true);
             fbMeetingFiles.LoadFile(idLichHop, FileUploadTypes.MeetingAttachment);
             dlMeetingFiles.OpenModal(true);
         }
+
         private void NewMeetingAction(object sender, EventArgs e)
         {
             RefreshMeetingInfo();
@@ -112,6 +120,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
             dlDetail.OpenModal(true);
         }
+
         private void EditMeetingAction(object sender, EventArgs e)
         {
             if (sender == null || (Guid)sender == Guid.Empty)
@@ -119,42 +128,63 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowInvalidDataError();
                 return;
             }
+
             Guid idLichHop = (Guid)sender;
             RefreshMeetingInfo();
             lbtSubmit.Visible = this.IsEdit;
+
             TblLichHop meet = TblLichHop.FetchByID(idLichHop);
             if (meet == null || meet.DaXoa == true)
             {
                 Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), false);
                 return;
             }
+
             this.MeetId = meet.IdLichHop;
             txtTenCuocHop.Text = meet.TenCuocHop;
             txtNoiDungCuocHop.Text = meet.NoiDungCuocHop;
             txtDiaDiemHop.Text = meet.DiaDiemHop;
+
             _control.BindNhanVienThamGiaLichHop(meet.IdLichHop, hdfNhanVienIds, txtNhanVienThamGia);
-            if (meet.ThoiGianBatDau != DateTime.MinValue)
-            {
-                TimeSpan offset = TimeZoneInfo.Local.GetUtcOffset(meet.ThoiGianBatDau);
-                DateTime localStart = meet.ThoiGianBatDau.Subtract(offset);
-                txtNgayBatDau.DateValue = localStart.Date;
-                txtGioBatDau.Text = localStart.ToString("HH:mm");
-            }
+            BindSelectedNhanVienDisplay();
+
             if (meet.ThoiGianKetThuc != DateTime.MinValue)
             {
-                txtThoiGianKetThuc.Text = meet.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm");
+                // Lấy thời gian kết thúc làm mốc chính.
+                DateTime endDateTime = meet.ThoiGianKetThuc;
+
+                // Hiển thị thời gian kết thúc vào TextBox.
+                txtThoiGianKetThuc.Text = endDateTime.ToString("dd/MM/yyyy HH:mm");
+
+                // Tính thời lượng từ thời gian bắt đầu cũ và thời gian kết thúc.
+                int thoiLuong = 0;
+
                 if (meet.ThoiGianBatDau != DateTime.MinValue)
                 {
-                    int thoiLuong = (int)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes;
+                    thoiLuong = (int)(meet.ThoiGianKetThuc - meet.ThoiGianBatDau).TotalMinutes;
+                }
+
+                if (thoiLuong > 0)
+                {
                     txtThoiLuong.Text = thoiLuong.ToString();
+
+                    // Tính lại thời gian bắt đầu:
+                    // Thời gian bắt đầu = Thời gian kết thúc - Thời lượng
+                    DateTime startDateTime = endDateTime.AddMinutes(-thoiLuong);
+
+                    txtNgayBatDau.DateValue = startDateTime.Date;
+                    txtGioBatDau.Text = startDateTime.ToString("HH:mm");
                 }
             }
+
             if (meet.TrangThai != null)
                 ddlTrangThai.SelectedValue = meet.TrangThai.ToString();
+
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT) ?? "Thông tin cuộc họp";
             dlDetail.OpenModal(true, IsPostBack ? 0 : 1000);
         }
+
         private void RefreshMeetingInfo()
         {
             ControlHelpers controlHelpers = new ControlHelpers();
@@ -166,59 +196,75 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtThoiGianKetThuc.Text = "";
             txtNhanVienThamGia.Text = "";
             hdfNhanVienIds.Value = "";
+            ClearSelectedNhanVienDisplay();
             lbtSubmit.Visible = false;
             if (ddlTrangThai.Items.Count > 0)
                 ddlTrangThai.SelectedIndex = 0;
             this.MeetId = Guid.Empty;
         }
+
         protected void lbtSubmit_Click(object sender, EventArgs e)
         {
             try
             {
                 ValidationEngine validationEngine = ValidationEngine.Instance(this.Page);
                 validationEngine.CheckValidControls(dlDetail.Controls);
+
                 if (!validationEngine.IsValid)
                 {
                     validationEngine.ShowErrorPrompt();
                     return;
                 }
+
                 TblLichHop meetDto = new TblLichHop();
                 bool isNew = this.MeetId == Guid.Empty;
+
                 if (!isNew)
                     meetDto.IdLichHop = this.MeetId;
+
                 meetDto.IdDuAn = CtrlMeet1.ProjectId;
                 meetDto.TenCuocHop = txtTenCuocHop.Text.Trim();
-                meetDto.NoiDungCuocHop = !string.IsNullOrEmpty(txtNoiDungCuocHop.Text.Trim()) ? txtNoiDungCuocHop.Text.Trim() : null;
+                meetDto.NoiDungCuocHop = !string.IsNullOrEmpty(txtNoiDungCuocHop.Text.Trim())
+                    ? txtNoiDungCuocHop.Text.Trim()
+                    : null;
                 meetDto.DiaDiemHop = txtDiaDiemHop.Text.Trim();
-                if (!txtNgayBatDau.DateValue.HasValue)
+
+                if (!DateTime.TryParseExact(
+                    txtThoiGianKetThuc.Text.Trim(),
+                    "dd/MM/yyyy HH:mm",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out DateTime endDateTime))
                 {
-                    ShowNotify("Vui lòng chọn ngày bắt đầu!", MSGType.Error);
+                    ShowNotify("Vui lòng nhập thời gian kết thúc hợp lệ!", MSGType.Error);
                     return;
                 }
-                if (!TimeSpan.TryParseExact(txtGioBatDau.Text.Trim(), @"hh\:mm", CultureInfo.InvariantCulture, out TimeSpan startTime) || startTime.TotalMinutes < 0 || startTime.TotalMinutes >= 1440)
-                {
-                    ShowNotify("Vui lòng chọn giờ bắt đầu hợp lệ!", MSGType.Error);
-                    return;
-                }
+
                 if (!int.TryParse(txtThoiLuong.Text.Trim(), out int thoiLuong) || thoiLuong <= 0)
                 {
                     ShowNotify("Thời lượng phải lớn hơn 0.", MSGType.Error);
                     return;
                 }
-                DateTime startDateTime = txtNgayBatDau.DateValue.Value.Date.Add(startTime);
-                DateTime endDateTime = startDateTime.AddMinutes(thoiLuong);
+
+                DateTime startDateTime = endDateTime.AddMinutes(-thoiLuong);
+
                 meetDto.ThoiGianBatDau = startDateTime;
                 meetDto.ThoiGianKetThuc = endDateTime;
+
                 string nhanVienIds = hdfNhanVienIds.Value;
+
                 TblLichHop savedMeet = MeetManager.Instance.CreateOrUpdate(meetDto, nhanVienIds);
+
                 if (savedMeet == null)
                 {
                     ShowInvalidDataError();
                     return;
                 }
+
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
+
                 if (isNew && this.IsEdit)
                     OpenMeetingFilesAction(savedMeet.IdLichHop, EventArgs.Empty);
             }
@@ -227,10 +273,12 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 ShowNotify("Lưu thất bại: " + exc.Message, MSGType.Error);
             }
         }
+
         protected void btnMoPopupNhanVien_Click(object sender, EventArgs e)
         {
             DataTable dtUsers = ThanhVienDuAnManager.Instance.GetThanhVienDuAnDetail(CtrlMeet1.ProjectId);
             var list = new List<object>();
+
             for (int i = 0; i < dtUsers.Rows.Count; i++)
             {
                 DataRow row = dtUsers.Rows[i];
@@ -238,18 +286,31 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 string displayName = row["DisplayName"] != DBNull.Value ? row["DisplayName"].ToString() : "";
                 string email = row["Email"] != DBNull.Value ? row["Email"].ToString() : "";
                 string avatar = row["Avatar"] != DBNull.Value ? row["Avatar"].ToString() : "";
-                list.Add(new { UserId = userId, DisplayName = displayName, Email = email, AvatarHtml = GetSingleAvatarHtml(displayName, avatar, i) });
+
+                list.Add(new
+                {
+                    UserId = userId,
+                    DisplayName = displayName,
+                    Email = email,
+                    AvatarHtml = GetSingleAvatarHtml(displayName, avatar, i)
+                });
             }
+
             rptNhanVien.DataSource = list;
             rptNhanVien.DataBind();
+            // Giữ txtNhanVienThamGia chỉ là text thuần để không bị request validation
+            // khi postback; phần card avatar được cập nhật riêng bằng JavaScript.
+            BindSelectedNhanVienDisplay();
             dlChonNhanVien.OpenModal(true);
         }
+
         protected void rptNhanVien_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
                 HiddenField hdfUserId = (HiddenField)e.Item.FindControl("hdfUserId");
                 CheckBox chkSelect = (CheckBox)e.Item.FindControl("chkSelect");
+
                 if (hdfUserId != null && chkSelect != null)
                 {
                     string[] selectedIds = hdfNhanVienIds.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -258,6 +319,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 }
             }
         }
+
         protected void btnXacNhanNhanVien_Click(object sender, EventArgs e)
         {
             List<string> ids = new List<string>();
@@ -278,13 +340,79 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             string strIds = string.Join(",", ids);
             string strNames = string.Join(", ", names);
             hdfNhanVienIds.Value = strIds;
+            // TextBox chỉ lưu text thuần. Không đưa HTML vào đây vì ASP.NET Request Validation
+            // sẽ chặn HTML ở postback tiếp theo (đây chính là nguyên nhân popup bị 500).
             txtNhanVienThamGia.Text = strNames;
+            BindSelectedNhanVienDisplay();
             string safeIds = System.Web.HttpUtility.JavaScriptStringEncode(strIds);
-            string safeNames = System.Web.HttpUtility.JavaScriptStringEncode(strNames);
-            string script = $@"setTimeout(function() {{ $('#{hdfNhanVienIds.ClientID}').val('{safeIds}'); $('#{txtNhanVienThamGia.ClientID}').val('{safeNames}'); }}, 100);";
-            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "UpdateUI_NhanVien", script, true);
+            string script = $@"setTimeout(function() {{ $('#{hdfNhanVienIds.ClientID}').val('{safeIds}'); }}, 100);";
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "UpdateNhanVienIds", script, true);
             dlChonNhanVien.CloseModal();
         }
+
+        private void BindSelectedNhanVienDisplay()
+        {
+            string selectedEmployeeIds = hdfNhanVienIds.Value ?? string.Empty;
+            DataTable dtUsers = ThanhVienDuAnManager.Instance.GetThanhVienDuAnDetail(CtrlMeet1.ProjectId);
+            HashSet<Guid> selectedIds = new HashSet<Guid>();
+
+            foreach (string rawId in selectedEmployeeIds.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                Guid id;
+                if (Guid.TryParse(rawId.Trim(), out id) && id != Guid.Empty)
+                    selectedIds.Add(id);
+            }
+
+            List<string> memberHtml = new List<string>();
+            int avatarIndex = 0;
+
+            for (int i = 0; i < dtUsers.Rows.Count; i++)
+            {
+                DataRow row = dtUsers.Rows[i];
+                if (row["UserId"] == DBNull.Value)
+                    continue;
+
+                Guid userId;
+                if (!Guid.TryParse(row["UserId"].ToString(), out userId) || !selectedIds.Contains(userId))
+                    continue;
+
+                string displayName = row["DisplayName"] != DBNull.Value ? row["DisplayName"].ToString() : string.Empty;
+                string email = row["Email"] != DBNull.Value ? row["Email"].ToString() : string.Empty;
+                string avatar = row["Avatar"] != DBNull.Value ? row["Avatar"].ToString() : string.Empty;
+                string avatarHtml = GetSingleAvatarHtml(displayName, avatar, avatarIndex++);
+
+                string safeName = System.Web.HttpUtility.HtmlEncode(displayName);
+                string safeEmail = System.Web.HttpUtility.HtmlEncode(email);
+
+                memberHtml.Add(
+                    "<div class='selected-meeting-member-row'>" +
+                    "<div class='selected-meeting-member-avatar'>" + avatarHtml + "</div>" +
+                    "<div class='selected-meeting-member-info'>" +
+                    "<div class='selected-meeting-member-name'>" + safeName + "</div>" +
+                    "<div class='selected-meeting-member-email'>" + safeEmail + "</div>" +
+                    "</div>" +
+                    "</div>");
+            }
+
+            string content = memberHtml.Count == 0
+                ? "<div class='selected-meeting-members-empty'><i class='fas fa-user-friends'></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>"
+                : "<div class='selected-meeting-members-list'>" + string.Join(string.Empty, memberHtml) + "</div>";
+
+            string safeHtml = System.Web.HttpUtility.JavaScriptStringEncode(content);
+            string script = $@"setTimeout(function() {{ var display = $('#selectedMeetingMembers'); if (display.length) display.html('{safeHtml}'); }}, 50);";
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "UpdateSelectedMeetingMembers", script, true);
+        }
+
+        private void ClearSelectedNhanVienDisplay()
+        {
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                this.Page.GetType(),
+                "ClearSelectedMeetingMembers",
+                "setTimeout(function(){ var display = $('#selectedMeetingMembers'); if(display.length) display.html(\"<div class='selected-meeting-members-empty'><i class='fas fa-user-friends'></i><span>Chưa có nhân viên tham gia cuộc họp.</span></div>\"); }, 50);",
+                true);
+        }
+
         private string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "";
@@ -292,19 +420,27 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
             return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
+
         private string GetSingleAvatarHtml(string name, string avatar, int index)
         {
             string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
             string color = colors[index % colors.Length];
             bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
+
             if (!isDefaultAvatar)
             {
                 string avatarUrl = avatar.StartsWith("~") ? Page.ResolveUrl(avatar) : avatar;
-                string fallbackHtml = $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
-                return $"<img src='{avatarUrl}' class='single-avatar-circle' style='object-fit: cover;' onerror=\"this.onerror=null; this.outerHTML='{fallbackHtml}';\" />";
+                string safeName = System.Web.HttpUtility.HtmlAttributeEncode(name ?? string.Empty);
+                string safeInitials = System.Web.HttpUtility.HtmlEncode(GetInitials(name));
+                string fallbackHtml = $"<div class='single-avatar-circle' style='background-color: {color};' title='{safeName}'>{safeInitials}</div>";
+                string fallbackJs = System.Web.HttpUtility.JavaScriptStringEncode(fallbackHtml);
+                string safeAvatarUrl = System.Web.HttpUtility.HtmlAttributeEncode(avatarUrl);
+                return $"<img src='{safeAvatarUrl}' class='single-avatar-circle' style='object-fit: cover;' title='{safeName}' onerror=\"this.onerror=null;this.outerHTML='{fallbackJs}';\" />";
             }
+
             return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
         }
+
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlMeet1.ConfirmRequest(e);

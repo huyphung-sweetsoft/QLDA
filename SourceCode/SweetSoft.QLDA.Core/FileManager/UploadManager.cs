@@ -280,7 +280,11 @@ namespace SweetSoft.QLDA.Core.FileManager
             if (item == null)
                 return null;
             EnsureDocumentFileWrite(item);
-            item.Save();
+            if (item.RefType == "DocumentSigningResult")
+                new DocumentRepository(null).SaveDraftSigningUpload(
+                    SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.UserId, item);
+            else
+                item.Save();
             Task.Run(async () =>
             {
                 try

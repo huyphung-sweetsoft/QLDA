@@ -33,7 +33,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ViewState["GrantStamp"]=stamp;
                 bool canGrantOutside = DocumentManager.Instance
                     .CanGrantDocumentOutsideProject(id);
-                pnlGrantExternalUsers.Visible = canGrantOutside;
+                pnlGrantExternalUsers.Visible = false;
                 chkGrantExternalUsers.Checked = false;
                 ViewState["GrantIncludeExternal"] = false;
                 BindDocumentPermissionRows(id, false);
@@ -53,8 +53,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             var members = DocumentManager.Instance
                 .GetDocumentGrantMembers(
                     documentId,
-                    includeExternalUsers,
-                    includeExternalUsers);
+                    false,
+                    false);
             rptDocumentPermissions.DataSource = members;
             rptDocumentPermissions.DataBind();
         }
@@ -77,7 +77,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
                 bool canGrantOutside = DocumentManager.Instance
                     .CanGrantDocumentOutsideProject(id);
-                pnlGrantExternalUsers.Visible = canGrantOutside;
+                pnlGrantExternalUsers.Visible = false;
                 bool includeExternalUsers = chkGrantExternalUsers.Checked
                     && canGrantOutside;
                 chkGrantExternalUsers.Checked = includeExternalUsers;
@@ -402,7 +402,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             {
                 fbSigningResult.IsMultiple = false;
                 fbSigningResult.AcceptType =
-                    "application/pdf,image/jpeg,image/jpg,image/png";
+                    "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             }
         }
 
@@ -650,8 +650,6 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 .GetPhysicalStorageHistory(idTaiLieu);
             DataRow storage = storageHistory.AsEnumerable().FirstOrDefault(r => Convert.ToBoolean(r["LaViTriHienTai"]));
             lblWorkspaceStorage.Text = HttpUtility.HtmlEncode(storage == null ? "Chưa chọn" : Convert.ToString(storage["TenNoiLuuTru"]));
-            DataTable activityHistory = DocumentManager.Instance
-                .GetDocumentActivityHistory(idTaiLieu);
 
             bool requiresSigning = true;
             bool requiresCustomer = true;
@@ -672,6 +670,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             OfficialFileId = GetGuid(document, "IdFileBanChinhThuc");
 
             btnDocumentPermissions.Visible = IsProjectContext && DocumentManager.Instance.CanManageDocument(idTaiLieu);
+            btnEditDocumentInfo.Visible = DocumentManager.Instance.CanAccessDocument(idTaiLieu, DocumentPermissionKeys.UpdateInfo);
             BindHeader(document);
             BindOverview(document);
             BindOfficialFile(document);
@@ -728,11 +727,10 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 pnlNoStorage,
                 storageHistory);
 
-            BindRepeater(
-                rptActivity,
-                pnlActivity,
-                pnlNoActivity,
-                activityHistory);
+            if (ViewState["LoadedActivity"] == null)
+                LoadActivityPage(true, false);
+            else
+                BindLoadedActivity();
 
             btnBack.NavigateUrl = IsProjectContext
                 ? RewriteURLHelper.ProjectDocuments(ProjectId)
@@ -1167,7 +1165,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 foreach (ListItem option in cblSubmitSigningFiles.Items.Cast<ListItem>().ToList())
                     if (!selectedIds.Contains(Guid.Parse(option.Value))) cblSubmitSigningFiles.Items.Remove(option);
                 ViewState["WorkspaceSigningFiles"] = selectedIds;
-                cblSubmitSigningFiles.Enabled = false;
+                cblSubmitSigningFiles.Enabled = true;
                 if (cblSubmitSigningFiles.Items.Count == 0)
                 {
                     ShowNotify(
@@ -1267,12 +1265,19 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             try
             {
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.Signing);
-                List<Guid> selectedFileIds = ViewState["WorkspaceSigningFiles"] as List<Guid> ?? new List<Guid>();
+                var allowedFileIds = ViewState["WorkspaceSigningFiles"] as List<Guid> ?? new List<Guid>();
+                List<Guid> selectedFileIds = cblSubmitSigningFiles.Items.Cast<ListItem>()
+                    .Where(item => item.Selected)
+                    .Select(item => Guid.Parse(item.Value))
+                    .Where(id => allowedFileIds.Contains(id))
+                    .Distinct().ToList();
+                lblSubmitSigningVersion.Text = selectedFileIds.Count + " file đã chọn";
                 if (selectedFileIds.Count == 0)
                 {
                     ShowNotify(
                         "Vui lòng chọn ít nhất một file để trình ký.",
                         MSGType.Warning);
+                    OpenSigningModal(mdlSubmitSigning, "SigningFilesRequired");
                     return;
                 }
 
@@ -1406,7 +1411,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             fbSigningResult.IsEnabled = true;
             fbSigningResult.IsMultiple = false;
             fbSigningResult.AcceptType =
-                "application/pdf,image/jpeg,image/jpg,image/png";
+                "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             fbSigningResult.SaveDataCallbackKey =
                 SigningResultSavedCallbackKey;
             fbSigningResult.BeforeSaveDataCallbackKey = null;
@@ -1635,9 +1640,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 if (fileRows.Count != ids.Count) throw new InvalidOperationException("File đã thay đổi. Hãy tải lại trang.");
                 ViewState["WorkspaceDeliveryFiles"] = fileRows.ToDictionary(r => (Guid)r["IdFile"],
                     r => Convert.ToString(r["TrangThai"]) == DocumentSigningStatusKeys.Signed && r["IdFileSauKy"] != DBNull.Value ? (Guid)r["IdFileSauKy"] : (Guid)r["IdFile"]);
-                litWorkspaceDeliveryFiles.Text = "<ul class='list-group mb-3'>" + string.Join("", fileRows.Select(r =>
-                    "<li class='list-group-item'>" + HttpUtility.HtmlEncode(Convert.ToString(r["TenFile"])) +
-                    " · v" + r["FileVersion"] + " · " + (Convert.ToString(r["TrangThai"]) == DocumentSigningStatusKeys.Signed ? "Bản đã ký" : "Bản chưa ký") + "</li>")) + "</ul>";
+                cblCustomerDeliveryFiles.Items.Clear();
+                foreach (var row in fileRows)
+                    cblCustomerDeliveryFiles.Items.Add(new ListItem(
+                        HttpUtility.HtmlEncode(Convert.ToString(row["TenFile"]) + " · v" + row["FileVersion"]
+                        + " · " + (Convert.ToString(row["TrangThai"]) == DocumentSigningStatusKeys.Signed ? "Bản đã ký" : "Bản chưa ký")),
+                        Convert.ToString(row["IdFile"])) { Selected = true });
                 BindCustomerDeliveryDropdowns();
                 var versionId = DocumentManager.Instance.GetCurrentDocumentFileSet(idTaiLieu).VersionId.Value;
                 ddlCustomerDeliveryVersion.Items.Clear();
@@ -1735,6 +1743,18 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
                 isSubmissionReserved = true;
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.CustomerDelivery);
+                var allowedFiles = ViewState["WorkspaceDeliveryFiles"] as Dictionary<Guid, Guid>;
+                var selectedFiles = new Dictionary<Guid, Guid>();
+                foreach (ListItem item in cblCustomerDeliveryFiles.Items)
+                {
+                    if (!item.Selected) continue;
+                    Guid fileId;
+                    if (!Guid.TryParse(item.Value, out fileId) || allowedFiles == null || !allowedFiles.ContainsKey(fileId))
+                        throw new InvalidOperationException("Danh sách file không hợp lệ. Vui lòng mở lại biểu mẫu gửi.");
+                    selectedFiles[fileId] = allowedFiles[fileId];
+                }
+                if (selectedFiles.Count == 0)
+                    throw new InvalidOperationException("Vui lòng tích ít nhất một file để gửi khách hàng.");
                 CreateRequestDocumentManager().SendDocumentToCustomer(
                     idTaiLieu,
                     idPhienBanTaiLieu,
@@ -1745,7 +1765,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     dtCustomerDeliveryDeadline.DateValue,
                     chkCustomerDeliveryBeforeSigning.Checked,
                     txtCustomerDeliveryNote.Text,
-                    ViewState["WorkspaceDeliveryFiles"] as Dictionary<Guid, Guid>);
+                    selectedFiles);
                 hasCreatedCustomerDelivery = true;
                 RefreshCustomerDeliveryDetail(idTaiLieu);
                 CloseCustomerDeliveryModal();

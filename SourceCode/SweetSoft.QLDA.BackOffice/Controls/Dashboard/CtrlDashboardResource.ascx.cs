@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Web;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using SweetSoft.QLDA.BackOffice.Common;
@@ -21,15 +22,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=2")
+                        "/Controls/Dashboard/dashboard-style.css?v=27")
                 };
 
                 List<string> jsLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Styles/plugins/apexcharts/apexcharts.min.js"),
-                    CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-resource.js?v=2")
+                        "/Controls/Dashboard/dashboard-resource.js?v=11")
                 };
 
                 return new RegisterCSSAndJS(
@@ -42,11 +41,22 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected DashboardResourceModel Model { get; private set; }
 
-        protected string TrendChartData { get; private set; }
-
         protected string ResourceDetailData { get; private set; }
 
         protected string DashboardTextsJson { get; private set; }
+
+        protected string InitialDetailJson { get; private set; }
+
+        protected bool IsProjectDashboard
+        {
+            get
+            {
+                Guid projectId;
+                return Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out projectId);
+            }
+        }
 
         private DateTime AnchorWeekStart
         {
@@ -60,6 +70,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             set { ViewState["ResourceAnchorWeekStart"] = value.Date; }
         }
 
+        private DateTime AnchorMonthStart
+        {
+            get
+            {
+                object value = ViewState["ResourceAnchorMonthStart"];
+                return value == null
+                    ? new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
+                    : (DateTime)value;
+            }
+            set { ViewState["ResourceAnchorMonthStart"] =
+                new DateTime(value.Year, value.Month, 1); }
+        }
+
+        protected bool IsMonthlyView
+        {
+            get { return ddlWeekCount.SelectedValue == "month"; }
+        }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -68,25 +96,52 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            ddlWeekCount.AutoPostBack = true;
+            ddlProjectFilter.AutoPostBack = true;
+
             btnPreviousWeek.ToolTip = GetResourceText(
-                BackEndResourceKeys.DASHBOARD_PREVIOUS_WEEK);
+                IsMonthlyView
+                    ? BackEndResourceKeys.DASHBOARD_PREVIOUS_MONTH
+                    : BackEndResourceKeys.DASHBOARD_PREVIOUS_WEEK);
             btnCurrentWeek.Text = GetResourceText(
-                BackEndResourceKeys.DASHBOARD_CURRENT_WEEK);
+                IsMonthlyView
+                    ? BackEndResourceKeys.DASHBOARD_CURRENT_MONTH
+                    : BackEndResourceKeys.DASHBOARD_CURRENT_WEEK);
             btnNextWeek.ToolTip = GetResourceText(
-                BackEndResourceKeys.DASHBOARD_NEXT_WEEK);
+                IsMonthlyView
+                    ? BackEndResourceKeys.DASHBOARD_NEXT_MONTH
+                    : BackEndResourceKeys.DASHBOARD_NEXT_WEEK);
 
             if (!IsPostBack)
             {
-                AnchorWeekStart = GetMonday(DateTime.Today);
-                btnApplyResourceFilter.Text =
-                    GetResourceText(BackEndResourceKeys.APPLY);
-                LoadProjectFilter();
+                DateTime requestedWeek;
+                AnchorWeekStart = DateTime.TryParseExact(
+                    Page.Request.QueryString["resourceWeek"],
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out requestedWeek)
+                    ? GetMonday(requestedWeek)
+                    : GetMonday(DateTime.Today);
+                AnchorMonthStart = DateTime.Today;
+                if (!IsProjectDashboard)
+                {
+                    LoadProjectFilter();
+                }
+
                 LoadWeekCountFilter();
                 InitDashboard(BuildResourceFilter());
             }
         }
 
-        protected void btnApplyResourceFilter_Click(
+        protected void ddlProjectFilter_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
+        {
+            InitDashboard(BuildResourceFilter());
+        }
+
+        protected void ddlWeekCount_SelectedIndexChanged(
             object sender,
             EventArgs e)
         {
@@ -95,19 +150,40 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected void btnPreviousWeek_Click(object sender, EventArgs e)
         {
-            AnchorWeekStart = AnchorWeekStart.AddDays(-7);
+            if (IsMonthlyView)
+            {
+                AnchorMonthStart = AnchorMonthStart.AddMonths(-1);
+            }
+            else
+            {
+                AnchorWeekStart = AnchorWeekStart.AddDays(-7);
+            }
             InitDashboard(BuildResourceFilter());
         }
 
         protected void btnCurrentWeek_Click(object sender, EventArgs e)
         {
-            AnchorWeekStart = GetMonday(DateTime.Today);
+            if (IsMonthlyView)
+            {
+                AnchorMonthStart = DateTime.Today;
+            }
+            else
+            {
+                AnchorWeekStart = GetMonday(DateTime.Today);
+            }
             InitDashboard(BuildResourceFilter());
         }
 
         protected void btnNextWeek_Click(object sender, EventArgs e)
         {
-            AnchorWeekStart = AnchorWeekStart.AddDays(7);
+            if (IsMonthlyView)
+            {
+                AnchorMonthStart = AnchorMonthStart.AddMonths(1);
+            }
+            else
+            {
+                AnchorWeekStart = AnchorWeekStart.AddDays(7);
+            }
             InitDashboard(BuildResourceFilter());
         }
 
@@ -128,6 +204,70 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             }
         }
 
+        protected string GetEmployeeStatusText(ResourceEmployeeLoad employee)
+        {
+            return employee.AllocatedDays <= 0
+                ? GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD)
+                : GetStatusText(employee.Status);
+        }
+
+        protected string GetEmployeeStatusKey(ResourceEmployeeLoad employee)
+        {
+            return employee.AllocatedDays <= 0
+                ? "noload"
+                : employee.Status.ToString().ToLowerInvariant();
+        }
+
+        protected string GetEmployeeStatusBadgeCss(ResourceEmployeeLoad employee)
+        {
+            return employee.AllocatedDays <= 0
+                ? "bg-secondary-subtle text-secondary"
+                : GetStatusBadgeCss(employee.Status);
+        }
+
+        protected string GetEmployeeStatusLoadCss(ResourceEmployeeLoad employee)
+        {
+            return employee.AllocatedDays <= 0
+                ? "resource-load-none"
+                : GetStatusLoadCss(employee.Status);
+        }
+
+        protected ResourceMonthlyLoad GetFocusMonthLoad(
+            ResourceEmployeeLoad employee)
+        {
+            DateTime monthStart = Model.Months.First().StartDate;
+            return employee.MonthlyLoads.First(x =>
+                x.MonthStart == monthStart);
+        }
+
+        protected string GetFocusMonthStatusKey(ResourceEmployeeLoad employee)
+        {
+            ResourceMonthlyLoad load = GetFocusMonthLoad(employee);
+            return load.AllocatedDays <= 0
+                ? "noload"
+                : load.Status.ToString().ToLowerInvariant();
+        }
+
+        protected int GetFocusMonthCount(string statusKey)
+        {
+            return Model.EmployeeLoads.Count(employee =>
+                GetFocusMonthStatusKey(employee) == statusKey);
+        }
+
+        protected string GetWeekLoadText(decimal allocationPercent)
+        {
+            if (allocationPercent <= 0)
+            {
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD);
+            }
+
+            return GetStatusText(allocationPercent > 100m
+                ? ResourceLoadStatus.Overloaded
+                : allocationPercent >= 80m
+                    ? ResourceLoadStatus.Balanced
+                    : ResourceLoadStatus.Underloaded);
+        }
+
         protected string GetStatusBadgeCss(ResourceLoadStatus status)
         {
             switch (status)
@@ -145,6 +285,11 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetMonthlyStatusText(ResourceMonthlyLoad load)
         {
+            if (load.AllocatedDays <= 0)
+            {
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD);
+            }
+
             if (load.AverageUtilization > 100m)
             {
                 return GetResourceText(
@@ -165,6 +310,11 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetMonthlyStatusBadgeCss(
             ResourceMonthlyLoad load)
         {
+            if (load.AllocatedDays <= 0)
+            {
+                return "bg-secondary-subtle text-secondary";
+            }
+
             return load.AverageUtilization > 100m
                 || load.OverloadWeekCount > 0
                     ? "bg-danger-subtle text-danger"
@@ -199,7 +349,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             if (allocationPercent <= 0)
             {
-                return "resource-load-low";
+                return "resource-load-none";
             }
 
             if (allocationPercent < 80)
@@ -228,21 +378,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetCellText(decimal allocationPercent)
         {
-            return allocationPercent <= 0
-                ? "—"
-                : allocationPercent.ToString("0", CultureInfo.InvariantCulture)
-                    + "%";
-        }
-
-        protected string GetAllocatedDaysText(ResourceWeeklyLoad load)
-        {
-            return load.AllocationPercent <= 0
-                ? GetResourceText(BackEndResourceKeys.DASHBOARD_NO_SCHEDULE)
-                : string.Format(
-                    GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_ALLOCATED_CAPACITY),
-                    load.AllocatedDays.ToString("0.#"),
-                    load.CapacityDays.ToString("0"));
+            return allocationPercent.ToString("0", CultureInfo.InvariantCulture)
+                + "%";
         }
 
         protected string GetEmployeeMeta(ResourceEmployeeLoad employee)
@@ -265,25 +402,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetAttentionText(ResourceEmployeeLoad employee)
         {
-            if (employee.Status == ResourceLoadStatus.Overloaded)
-            {
-                string text = string.Format(
-                    GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_OVERLOAD_DETAIL),
-                    employee.AllocatedDays.ToString("0.#") + "/"
-                        + employee.CapacityDays.ToString("0"),
-                    employee.OverAllocatedDays.ToString("0.#"));
-                if (employee.OverloadDayCount > 0)
-                {
-                    text += string.Format(
-                        GetResourceText(
-                            BackEndResourceKeys.DASHBOARD_OVERLAP_DAYS),
-                        employee.OverloadDayCount);
-                }
-
-                return text;
-            }
-
             if (employee.AllocatedDays <= 0)
             {
                 return GetResourceText(
@@ -291,9 +409,9 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             }
 
             return string.Format(
-                GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_LOW_WEEKLY_UTILIZATION),
-                employee.AverageUtilization.ToString("0.#"));
+                GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_DAYS_COMPARISON),
+                employee.AllocatedDays.ToString("0.#"),
+                employee.CapacityDays.ToString("0"));
         }
 
         protected string GetProjectDetailUrl(Guid projectId)
@@ -306,15 +424,33 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectTasks);
         }
 
-        protected string GetEmployeeDetailUrl(Guid employeeId)
+        protected string GetProjectTaskDetailUrl(Guid projectId, Guid taskId)
         {
-            if (employeeId == Guid.Empty)
+            string tasksUrl = GetProjectTasksUrl(projectId);
+            return string.IsNullOrEmpty(tasksUrl)
+                ? string.Empty
+                : tasksUrl + "?taskId=" + taskId.ToString("D");
+        }
+
+        private string GetResourceWeekUrl(Guid employeeId, DateTime weekStart)
+        {
+            var query = HttpUtility.ParseQueryString(Page.Request.Url.Query);
+            query["resourceWeek"] = weekStart.ToString("yyyy-MM-dd");
+            query["resourceEmployee"] = employeeId.ToString("D");
+
+            Guid selectedProjectId;
+            if (!IsProjectDashboard
+                && Guid.TryParse(ddlProjectFilter.SelectedValue,
+                    out selectedProjectId))
             {
-                return string.Empty;
+                query["resourceProject"] = selectedProjectId.ToString("D");
+            }
+            else
+            {
+                query.Remove("resourceProject");
             }
 
-            return CURRENT_PAGE.GetRelativeClientPath(
-                RewriteURLHelper.ViewDetailEmp(employeeId));
+            return Page.Request.Url.AbsolutePath + "?" + query;
         }
 
         private string GetProjectUrl(
@@ -335,15 +471,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             Model = DashboardResourceManager.Instance
                 .GetResourceDashboard(filter);
 
-            TrendChartData = ToSafeJson(
-                Model.TrendStatistics.Select(x => new
-                {
-                    label = x.Label,
-                    start = x.WeekStart.ToString("dd/MM"),
-                    end = x.WeekEnd.ToString("dd/MM"),
-                    utilization = x.Utilization,
-                    forecast = x.IsForecast
-                }));
+            Guid requestedEmployee;
+            InitialDetailJson = ToSafeJson(!Page.IsPostBack
+                && Guid.TryParse(Page.Request.QueryString["resourceEmployee"],
+                    out requestedEmployee)
+                && Model.EmployeeLoads.Any(x =>
+                    x.EmployeeId == requestedEmployee)
+                    ? (object)new
+                    {
+                        person = requestedEmployee,
+                        week = Model.AnchorWeekStart.ToString("yyyy-MM-dd")
+                    }
+                    : null);
 
             ResourceDetailData = ToSafeJson(
                 Model.EmployeeLoads.Select(employee => new
@@ -353,59 +492,67 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     userName = employee.UserName,
                     department = employee.DepartmentName,
                     jobTitle = employee.JobTitleName,
-                    weeks = employee.WeeklyLoads.Select(week => new
+                    weeks = IsMonthlyView ? null : employee.WeeklyLoads.Select(week => new
                     {
                         start = week.WeekStart.ToString("yyyy-MM-dd"),
                         end = week.WeekEnd.ToString("yyyy-MM-dd"),
                         label = week.Label,
                         displayRange = week.WeekStart.ToString("dd/MM")
-                            + "–" + week.WeekEnd.ToString("dd/MM/yyyy"),
+                            + "–" + week.WeekStart.AddDays(6)
+                                .ToString("dd/MM/yyyy"),
                         allocation = week.AllocationPercent,
                         allocatedDays = week.AllocatedDays,
                         capacityDays = week.CapacityDays,
-                        overAllocatedDays = week.OverAllocatedDays,
-                        overlapDayCount = week.OverlapDayCount,
-                        projects = week.Projects.Select(project => new
-                        {
-                            detailUrl = GetProjectDetailUrl(project.ProjectId),
-                            code = project.ProjectCode,
-                            name = project.ProjectName,
-                            taskCount = project.TaskCount,
-                            allocatedDays = project.AllocatedDays,
-                            allocation = project.AllocationPercent
-                        }),
-                        tasks = week.Tasks.Select(task => new
-                        {
-                            tasksUrl = GetProjectTasksUrl(task.ProjectId),
-                            code = task.TaskCode,
-                            name = task.TaskName,
-                            projectCode = task.ProjectCode,
-                            projectName = task.ProjectName,
-                            allocation = task.AllocationPercent,
-                            allocatedDays = task.AllocatedDays,
-                            activeDates = task.ActiveDates.Select(date =>
-                                GetDayLabel(date) + " "
-                                    + date.ToString("dd/MM")),
-                            start = task.StartDate.HasValue
-                                ? task.StartDate.Value.ToString("dd/MM/yyyy")
-                                : "-",
-                            end = task.EndDate.HasValue
-                                ? task.EndDate.Value.ToString("dd/MM/yyyy")
-                                : "-"
-                        }),
                         days = week.DailyLoads.Select(day => new
                         {
                             date = day.Date.ToString("yyyy-MM-dd"),
                             displayDate = GetDayLabel(day.Date)
                                 + " " + day.Date.ToString("dd/MM"),
+                            isWorkingDay = day.IsWorkingDay,
+                            isHoliday = day.IsHoliday,
+                            holidayName = day.HolidayName,
                             allocation = day.AllocationPercent,
-                            taskCount = day.Tasks.Count
+                            tasks = day.Tasks.Select(task => new
+                            {
+                                tasksUrl = GetProjectTaskDetailUrl(task.ProjectId, task.TaskId),
+                                code = task.TaskCode,
+                                name = task.TaskName,
+                                projectCode = task.ProjectCode,
+                                projectName = task.ProjectName
+                            })
                         })
-                    })
+                    }),
+                    months = IsMonthlyView ? employee.MonthlyLoads.Select(month => new
+                    {
+                        start = month.MonthStart.ToString("yyyy-MM-dd"),
+                        label = month.Label,
+                        allocation = month.AverageUtilization,
+                        allocatedDays = month.AllocatedDays,
+                        capacityDays = month.CapacityDays,
+                        status = GetMonthlyStatusText(month),
+                        hasOverload = month.OverloadWeekCount > 0,
+                        weeks = month.WeeklyLoads.Select(week => new
+                        {
+                            start = week.WeekStart.ToString("yyyy-MM-dd"),
+                            displayRange = week.WeekStart.ToString("dd/MM")
+                                + "–" + week.WeekStart.AddDays(6)
+                                    .ToString("dd/MM/yyyy"),
+                            allocation = week.AllocationPercent,
+                            allocatedDays = week.AllocatedDays,
+                            capacityDays = week.CapacityDays,
+                            taskCount = week.Tasks.Count,
+                            status = GetWeekLoadText(week.AllocationPercent),
+                            statusCss = GetHeatmapCss(week.AllocationPercent),
+                            detailUrl = GetResourceWeekUrl(
+                                employee.EmployeeId, week.WeekStart)
+                        })
+                    }) : null
                 }));
 
             DashboardTextsJson = ToSafeJson(new
             {
+                employeeLabel = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EMPLOYEE_LABEL),
                 pastAssignment = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_PAST_ASSIGNMENT),
                 futurePlan = GetResourceText(
@@ -426,10 +573,55 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_EXCESS),
                 overlapDaysFormat = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_SCHEDULE_OVERLAP_DAYS),
+                formula = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEKLY_LOAD_FORMULA),
+                monthFormula = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_FORMULA),
+                loadCalculationNote = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_LOAD_CALCULATION_NOTE),
+                noWorkingDaysLoad = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_WORKING_DAYS_LOAD),
+                date = GetResourceText(BackEndResourceKeys.DATE),
+                status = GetResourceText(BackEndResourceKeys.STATUS),
+                workingDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WORKING_DAY),
+                nonWorkingDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NON_WORKING_DAY),
+                holidayDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_HOLIDAY_DAY),
+                holidayDaysFormat = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_HOLIDAY_DAYS),
+                weekScheduleChange = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_SCHEDULE_CHANGE),
+                weekScheduleChanged = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_SCHEDULE_CHANGED),
+                weekExceptionOffNote = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_EXCEPTION_OFF_NOTE),
+                weekScheduledOffNote = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_SCHEDULED_OFF_NOTE),
+                weekWeekendWorkNote = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_WEEKEND_WORK_NOTE),
+                noAssignmentWeek = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_ASSIGNMENT_WEEK),
+                noTasksOnDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_NO_TASKS_ON_DAY),
                 noProjectAllocation = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_WEEK_PROJECT_ALLOCATION),
                 noTasks = GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_NO_WEEK_TASKS)
+                    BackEndResourceKeys.DASHBOARD_NO_WEEK_TASKS),
+                noLoad = GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD),
+                underloaded = GetResourceText(BackEndResourceKeys.DASHBOARD_UNDERLOADED),
+                balanced = GetResourceText(BackEndResourceKeys.DASHBOARD_BALANCED_LOAD),
+                overloaded = GetResourceText(BackEndResourceKeys.DASHBOARD_OVERLOADED),
+                weekDaysComparison = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_DAYS_COMPARISON),
+                selectWeek = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MONTH_SELECT_WEEK_DESC),
+                viewWeek = GetResourceText(BackEndResourceKeys.DASHBOARD_VIEW_WEEK),
+                monthSummary = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MONTHLY_LOAD_SUMMARY),
+                weekDetail = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_WEEK_ALLOCATION_DETAIL)
             });
         }
 
@@ -449,35 +641,47 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     project.MaDuAn + " - " + project.TenDuAn,
                     project.IdDuAn.ToString()));
             }
+
+            SelectProjectFromQuery();
+        }
+
+        private void SelectProjectFromQuery()
+        {
+            Guid projectId;
+            if (!Guid.TryParse(
+                Page.Request.QueryString["project"]
+                    ?? Page.Request.QueryString["resourceProject"],
+                out projectId))
+            {
+                return;
+            }
+
+            ListItem item = ddlProjectFilter.Items.FindByValue(
+                projectId.ToString());
+            if (item != null)
+            {
+                ddlProjectFilter.SelectedValue = item.Value;
+            }
         }
 
         private void LoadWeekCountFilter()
         {
             ddlWeekCount.Items.Clear();
             ddlWeekCount.Items.Add(new ListItem(
-                string.Format(
-                    GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_COUNT),
-                    2),
-                "2"));
-            ListItem fourWeeks = new ListItem(
-                string.Format(
-                    GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_COUNT),
-                    4),
-                "4");
-            fourWeeks.Selected = true;
-            ddlWeekCount.Items.Add(fourWeeks);
+                GetResourceText(BackEndResourceKeys.DASHBOARD_VIEW_BY_WEEK),
+                "week"));
             ddlWeekCount.Items.Add(new ListItem(
-                string.Format(
-                    GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_COUNT),
-                    6),
-                "6"));
+                GetResourceText(BackEndResourceKeys.DASHBOARD_VIEW_BY_MONTH),
+                "month"));
         }
 
         private DashboardResourceFilter BuildResourceFilter()
         {
             Guid? projectId = null;
             Guid parsedProjectId;
-            if (!string.IsNullOrEmpty(ddlProjectFilter.SelectedValue)
+            if (!IsProjectDashboard
+                && ddlProjectFilter != null
+                && !string.IsNullOrEmpty(ddlProjectFilter.SelectedValue)
                 && Guid.TryParse(
                     ddlProjectFilter.SelectedValue,
                     out parsedProjectId))
@@ -485,17 +689,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 projectId = parsedProjectId;
             }
 
-            int weekCount;
-            if (!int.TryParse(ddlWeekCount.SelectedValue, out weekCount))
+            if (!projectId.HasValue)
             {
-                weekCount = 4;
+                Guid queryProjectId;
+                if (Guid.TryParse(
+                    Page.Request.QueryString["project"],
+                    out queryProjectId))
+                {
+                    projectId = queryProjectId;
+                }
             }
 
             return new DashboardResourceFilter
             {
                 ProjectId = projectId,
                 AnchorWeekStart = AnchorWeekStart,
-                WeekCount = weekCount
+                WeekCount = 4,
+                MonthStart = AnchorMonthStart,
+                MonthCount = IsMonthlyView ? 4 : 0
             };
         }
 

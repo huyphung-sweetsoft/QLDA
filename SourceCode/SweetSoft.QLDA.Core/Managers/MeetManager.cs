@@ -77,6 +77,10 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return (byte)TrangThaiCuocHopEnum.Scheduled;
         }
+        public List<TblLichHop> GetMeetingsByProject(Guid projectId)
+        {
+            return _repository.GetMeetingsByProject(projectId);
+        }
         public string GetValueForTrangThaiCuoHop(object status)
         {
             switch (status)

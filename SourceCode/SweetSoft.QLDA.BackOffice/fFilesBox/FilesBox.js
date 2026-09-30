@@ -5,6 +5,9 @@ FilesBox.ValidatedFile = [];
 // Temporary identifiers used client-side only until the server returns the UUIDv7 id.
 FilesBox.PendingUploadIds = [];
 FilesBox.DisableFocusFileBox = false;
+// State used by simple upload controls that submit through the owning form.
+FilesBox.UploadInProgress = false;
+FilesBox.SimpleUploadComplete = null;
 // State for the current asynchronous upload batch. A failed request must
 // finish the batch as well; otherwise the automatic postback never happens
 // and the page looks stuck with files that are not yet in a document version.
@@ -157,7 +160,7 @@ FilesBox.LayoutFilePopUp = function (el) {
     var extension = cleanUrl.substring(cleanUrl.lastIndexOf('.') + 1);
     var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
     var videoExtensions = ['mp4', 'webm', 'm4v'];
-    var audioExtensions = ['mp3', 'wav', 'ogg'];
+    var audioExtensions = ['mp3', 'm4a', 'wav', 'ogg'];
     var isSameOrigin = resolvedUrl.origin === window.location.origin;
 
     function showDownloadFallback(message) {
@@ -463,7 +466,7 @@ FilesBox.SelectedFile = function (elm) {
         if (!file)
             return true;
 
-        var isVideo = FilesBox.IsVideo(file.name);
+        var isVideo = FilesBox.IsVideo(file.name) || /\.(webm|mp3|m4a|wav|ogg)$/i.test(file.name);
         var isDoc = FilesBox.IsDoc(file.name);
         var isExcel = FilesBox.IsExcel(file.name);
         var isPDF = FilesBox.IsPDF(file.name);
@@ -708,6 +711,28 @@ FilesBox.GetPermission = function () {
     console.log(filePers);
 };
 
+/**
+ * Start a pending upload for a lightweight file picker. The owning form can
+ * provide a callback and continue its normal postback after all files finish.
+ */
+FilesBox.SaveSimpleUpload = function (box) {
+    box = $(box);
+    if (box.length === 0 || FilesBox.ValidatedFile.length === 0)
+        return true;
+
+    $('.file-box.active').removeClass('active');
+    box.addClass('active');
+
+    var refType = box.attr('data-ref-type');
+    var refId = box.attr('data-ref-id');
+    if (!refType || !refId) {
+        FilesBox.ShowError('Không xác định được nơi lưu tệp đính kèm.');
+        return false;
+    }
+
+    return FilesBox.SaveFile(refType, refId);
+};
+
 FilesBox.SaveFile = function (refType, refId) {
     if (FilesBox.ValidatedFile.length === 0)
         return true;
@@ -715,6 +740,7 @@ FilesBox.SaveFile = function (refType, refId) {
     if ($('.file-box.active.file-box-single').length === 0)
         $('#UpdateProgress1').show();
 
+    FilesBox.UploadInProgress = true;
     FilesBox.UploadBatch = {
         total: FilesBox.ValidatedFile.length,
         completed: 0,
@@ -817,7 +843,14 @@ FilesBox.ValidateUploadParameters = function (file, refType, refId, title, ar) {
     }
 
     // Check file size (client-side validation)
-    var maxSize = FilesBox.Config.MaxFileSize || (10 * 1024 * 1024); // 10MB default
+    // Use the owning control's policy, just as SelectedFile does. Different
+    // pages can allow different formats/sizes without changing global defaults.
+    var input = FilesBox.FindItemByKey(ar).closest('.file-box').find('.ipfFile');
+    if (!input.length)
+        input = $('.file-box.active .ipfFile');
+    var configuredSize = parseInt(input.attr('data-max-size'), 10);
+    var maxSize = configuredSize > 0 ? configuredSize
+        : FilesBox.Config.MaxFileSize || (10 * 1024 * 1024);
     if (file.size > maxSize) {
         var maxSizeMB = Math.round(maxSize / (1024 * 1024));
         FilesBox.ShowError("File size exceeds " + maxSizeMB + "MB limit", ar);
@@ -825,14 +858,18 @@ FilesBox.ValidateUploadParameters = function (file, refType, refId, title, ar) {
     }
 
     // Check file type (client-side validation)
-    var allowedTypes = FilesBox.Config.AllowedTypes || [
+    var accept = input.attr('accept');
+    var allowedTypes = accept ? accept.split(',').map(function (type) { return type.trim().toLowerCase(); }) : FilesBox.Config.AllowedTypes || [
         'image/jpeg', 'image/png', 'application/pdf',
         'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'audio/mpeg', 'video/mp4', 'video/avi'
     ];
 
-    if (allowedTypes.indexOf(file.type) === -1) {
+    var mime = (file.type || '').toLowerCase();
+    var allowed = allowedTypes.indexOf(mime) !== -1
+        || (mime.indexOf('image/') === 0 && allowedTypes.indexOf('image/*') !== -1);
+    if (!allowed) {
         FilesBox.ShowError("File type not allowed: " + file.type, ar);
         return false;
     }
@@ -1241,6 +1278,8 @@ FilesBox.OnAllUploadsComplete = function () {
     $('#UpdateProgress1').hide();
 
     var batch = FilesBox.UploadBatch;
+    FilesBox.UploadBatch = null;
+    FilesBox.UploadInProgress = false;
     if (batch && Object.keys(batch.failedKeys).length > 0) {
         // Remove failed temporary items from the submitted form. Successful
         // files remain visible and can be saved after the user re-selects the
@@ -1251,9 +1290,17 @@ FilesBox.OnAllUploadsComplete = function () {
                 item.remove();
             }
         });
-        FilesBox.UploadBatch = null;
+        FilesBox.SimpleUploadComplete = null;
         FilesBox.ShowError(
             "Có tệp tải lên không thành công. Vui lòng chọn lại tệp lỗi rồi bấm Lưu.");
+        return;
+    }
+
+    // Simple upload controls submit through their owning form after uploads succeed.
+    if (typeof FilesBox.SimpleUploadComplete === 'function') {
+        var complete = FilesBox.SimpleUploadComplete;
+        FilesBox.SimpleUploadComplete = null;
+        complete();
         return;
     }
 

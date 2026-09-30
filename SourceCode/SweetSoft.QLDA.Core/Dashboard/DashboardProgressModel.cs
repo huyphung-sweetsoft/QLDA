@@ -12,6 +12,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
             ProjectTaskStatistics = new List<ProjectTaskProgressStatistic>();
             TaskProgressDetails = new List<TaskProgressDetail>();
             AttentionTasks = new List<ProgressTaskInfo>();
+            ProjectStages = new List<DashboardProjectStage>();
         }
 
         public bool IsSingleProject { get; set; }
@@ -45,11 +46,44 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public List<TaskProgressDetail> TaskProgressDetails { get; set; }
 
         public List<ProgressTaskInfo> AttentionTasks { get; set; }
+
+        public List<DashboardProjectStage> ProjectStages { get; set; }
+    }
+
+    public class DashboardProjectStage
+    {
+        public DashboardProjectStage()
+        {
+            Tasks = new List<DashboardStageTask>();
+        }
+
+        public Guid StageId { get; set; }
+        public Guid ProjectId { get; set; }
+        public string Name { get; set; }
+        public int Order { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? ExpectedEndDate { get; set; }
+        public DateTime? ActualEndDate { get; set; }
+        public bool IsOverdue { get; set; }
+        public int DaysOverdue { get; set; }
+        public int CompletedTaskCount { get; set; }
+        public List<DashboardStageTask> Tasks { get; set; }
+    }
+
+    public class DashboardStageTask
+    {
+        public Guid TaskId { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public DateTime? Deadline { get; set; }
+        public bool IsCompleted { get; set; }
     }
 
     public class TaskProgressStatusStatistic
     {
         public string Status { get; set; }
+
+        public int StatusCode { get; set; }
 
         public int Count { get; set; }
     }
@@ -118,6 +152,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public int PriorityScore { get; set; }
 
+        public DateTime? StartDate { get; set; }
+
         public DateTime? Deadline { get; set; }
 
         public int Progress { get; set; }
@@ -151,9 +187,13 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public int StatusCode { get; set; }
 
+        public DateTime? StartDate { get; set; }
+
         public DateTime? Deadline { get; set; }
 
         public int? DaysToDeadline { get; set; }
+
+        public bool IsDueSoon { get; set; }
     }
 
     public enum ProjectScheduleHealth

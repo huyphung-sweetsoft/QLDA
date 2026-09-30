@@ -17,22 +17,72 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 {
     public partial class CtrlDocumentDetail
     {
-        protected Button btnWorkspaceAdd,btnWorkspaceSign,btnWorkspaceSend,btnWorkspaceFilter,btnWorkspaceReplace,btnWorkspaceRemove,btnWorkspaceUpload;
-        protected GridView grdWorkspace,grdFileTimeline;
-        protected ExtraDropdown ddlWorkspaceStatus;
-        protected TextBox txtWorkspaceSearch;
-        protected Label lblWorkspaceCount,lblWorkspaceFileName,lblWorkspaceLocked,lblWorkspaceUploadHint,lblWorkspaceStorage;
-        protected HyperLink lnkWorkspaceView,lnkWorkspaceSigned;
-        protected Literal litWorkspaceDeliveryFiles;
-        protected ExtraModal mdlWorkspaceFile,mdlWorkspaceUpload;
-        protected CheckBox chkWorkspaceRecall;
-        protected FileUpload fuWorkspaceFiles;
-        protected Panel pnlWorkspaceConfirm;
-        protected Panel pnlWorkspaceSigningHistory;
-        protected Repeater rptWorkspaceSigningHistory;
-        protected Label lblWorkspaceConfirm;
-        protected LinkButton btnWorkspaceConfirm,btnWorkspaceCancelConfirm;
-        protected System.Web.UI.HtmlControls.HtmlGenericControl pnlWorkspaceContent;
+        protected UpdatePanel upActivity;
+        protected Button btnEditDocumentInfo;
+        protected CtrlDocuments documentInfoEditor;
+
+        protected void btnEditDocumentInfo_Click(object sender, EventArgs e)
+        {
+            Guid documentId;
+            if (!Guid.TryParse(hdfIdTaiLieu.Value, out documentId)) return;
+            documentInfoEditor.ProjectId = ProjectId;
+            documentInfoEditor.OpenDocumentEditor(documentId);
+        }
+        protected CheckBoxList cblCustomerDeliveryFiles;
+        protected void btnMoreActivity_Click(object sender, EventArgs e) { LoadActivityPage(false); }
+        protected void btnRefreshActivity_Click(object sender, EventArgs e) { LoadActivityPage(true); }
+
+        private void LoadActivityPage(bool reset, bool userAction = true)
+        {
+            if (userAction) KeepActivityHistoryOpen();
+            try
+            {
+                DataTable loaded = reset ? null : ViewState["LoadedActivity"] as DataTable;
+                DateTime until = reset || ViewState["ActivityUntil"] == null
+                    ? DateTime.UtcNow : (DateTime)ViewState["ActivityUntil"];
+                var page = DocumentManager.Instance.GetDocumentActivityHistory(
+                    WorkspaceDocumentId, loaded == null ? 0 : loaded.Rows.Count, 21, until);
+                bool more = page.Rows.Count > 20;
+                if (more) page.Rows.RemoveAt(20);
+                if (loaded == null) loaded = page;
+                else foreach (DataRow row in page.Rows) loaded.ImportRow(row);
+                ViewState["LoadedActivity"] = loaded;
+                ViewState["ActivityUntil"] = until;
+                ViewState["ActivityHasMore"] = more;
+                pnlActivityContent.Visible = true;
+                BindLoadedActivity();
+                if (userAction) upActivity.Update();
+            }
+            catch (Exception)
+            {
+                ShowNotify("Không tải được nhật ký. Vui lòng thử lại.", MSGType.Warning);
+            }
+        }
+
+        private void KeepActivityHistoryOpen()
+        {
+            ScriptManager.RegisterStartupScript(this, GetType(), "KeepActivityHistoryOpen",
+                "(function(){ var section=document.getElementById('workspaceHistories'); " +
+                "if(section) section.classList.add('show'); " +
+                "var y=window.documentActivityScrollY; delete window.documentActivityScrollY; " +
+                "if(typeof y==='number') window.requestAnimationFrame(function(){window.scrollTo(0,y);}); })();", true);
+        }
+
+        private void BindLoadedActivity()
+        {
+            var loaded = ViewState["LoadedActivity"] as DataTable;
+            rptActivity.DataSource = loaded;
+            rptActivity.DataBind();
+            pnlActivity.Visible = loaded != null && loaded.Rows.Count > 0;
+            pnlNoActivity.Visible = loaded != null && loaded.Rows.Count == 0;
+            btnMoreActivity.Visible = loaded != null && (bool?)ViewState["ActivityHasMore"] == true;
+        }
+
+        protected string GetWorkspaceDownloadUrl(object value)
+        {
+            string url = GetFileUrl(value);
+            return string.IsNullOrWhiteSpace(url) ? url : url + (url.Contains("?") ? "&" : "?") + "download=1";
+        }
         private Guid WorkspaceDocumentId { get { return Guid.Parse(hdfIdTaiLieu.Value); } }
         private Guid WorkspaceFileId { get { return (Guid)(ViewState["WorkspaceFileId"]??Guid.Empty); } set { ViewState["WorkspaceFileId"]=value; } }
         private Guid WorkspaceRootId { get { return (Guid)(ViewState["WorkspaceRootId"]??Guid.Empty); } set { ViewState["WorkspaceRootId"]=value; } }
@@ -43,7 +93,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             var script=ScriptManager.GetCurrent(Page);
             if(script==null)return;
             foreach(Control control in new Control[]{grdWorkspace,grdFileTimeline,btnWorkspaceAdd,btnWorkspaceSign,btnWorkspaceSend,
-                btnWorkspaceFilter,btnWorkspaceReplace,btnWorkspaceRemove,ddlWorkspaceStatus,btnWorkspaceConfirm,btnWorkspaceCancelConfirm})
+                btnWorkspaceFilter,btnWorkspaceReplace,btnWorkspaceRemove,ddlWorkspaceStatus,btnWorkspaceConfirm,btnWorkspaceCancelConfirm,
+                btnMoreActivity,btnRefreshActivity,btnEditDocumentInfo})
                 script.RegisterAsyncPostBackControl(control);
             // FileUpload needs multipart full postback; the other commands do not.
             script.RegisterPostBackControl(btnWorkspaceUpload);
@@ -127,7 +178,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             WorkspaceLocked=Convert.ToBoolean(row["DaKhoa"]);
             lblWorkspaceFileName.Text=HttpUtility.HtmlEncode(Convert.ToString(row["TenFile"]));
             lnkWorkspaceView.NavigateUrl=GetFileUrl(row["FileUrl"]);
+            lnkWorkspaceView.Attributes["data-path"] = lnkWorkspaceView.NavigateUrl;
+            lnkWorkspaceDownload.NavigateUrl = GetWorkspaceDownloadUrl(row["FileUrl"]);
             lnkWorkspaceSigned.NavigateUrl=GetFileUrl(row["SignedFileUrl"]);
+            lnkWorkspaceSigned.Attributes["data-path"] = lnkWorkspaceSigned.NavigateUrl;
+            lnkWorkspaceSignedDownload.NavigateUrl = GetWorkspaceDownloadUrl(row["SignedFileUrl"]);
+            lnkWorkspaceSignedDownload.Visible = HasValue(row["SignedFileUrl"]);
             lnkWorkspaceSigned.Visible=HasValue(row["SignedFileUrl"]);
             btnWorkspaceReplace.Visible=btnWorkspaceRemove.Visible=!WorkspaceLocked&&CanManageFiles();
             lblWorkspaceLocked.Visible=WorkspaceLocked;

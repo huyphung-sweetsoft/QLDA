@@ -486,10 +486,13 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 hdfResultDocumentId.Value = documentId.ToString();
                 hdfResultFileId.Value = signingFileId.ToString();
                 txtResultNote.Text = string.Empty;
+                lnkResultSource.Text = HttpUtility.HtmlEncode(FileName(row["TenFileNguonGoc"], row["TenFileNguon"]));
+                lnkResultSource.NavigateUrl = FileUrl(row["FileNguonUrl"]);
+                lnkResultSource.Attributes["data-path"] = lnkResultSource.NavigateUrl;
                 fbSigningResult.IsEnabled = true;
                 fbSigningResult.IsMultiple = false;
                 fbSigningResult.AcceptType =
-                    "application/pdf,image/jpeg,image/jpg,image/png";
+                    "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
                 fbSigningResult.SaveDataCallbackKey = ResultSavedCallbackKey;
                 fbSigningResult.LoadFile(signingFileId,
                     FileUploadTypes.DocumentSigningResult);

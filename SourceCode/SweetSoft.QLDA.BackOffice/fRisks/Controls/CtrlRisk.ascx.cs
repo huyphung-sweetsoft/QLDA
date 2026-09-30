@@ -128,6 +128,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
                 GetResourceText(BackEndResourceKeys.PROBABILITY),
                 GetResourceText(BackEndResourceKeys.RISK_LEVEL),
                 GetResourceText(BackEndResourceKeys.MONITOR),
+                GetResourceText(BackEndResourceKeys.CREATED_DATE),
                 GetResourceText(BackEndResourceKeys.ACTION),
             };
             grvData.HeaderTexts = lstTableHeader;
@@ -212,6 +213,34 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         {
             switch (e.CommandName)
             {
+                case "ITEM_VIEW":
+                    if (!this.CURRENT_PAGE.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid viewRiskId = Guid.Empty;
+                    if (e.CommandSource is LinkButton lbtView && !string.IsNullOrEmpty(lbtView.CommandArgument))
+                    {
+                        Guid.TryParse(lbtView.CommandArgument, out viewRiskId);
+                    }
+                    else
+                    {
+                        int rowIdxView = 0;
+                        if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                            rowIdxView = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
+                        else
+                            rowIdxView = Convert.ToInt32(e.CommandArgument);
+
+                        Guid.TryParse(grvData.DataKeys[rowIdxView].Value.ToString(), out viewRiskId);
+                    }
+
+                    if (viewRiskId != Guid.Empty)
+                    {
+                        CtrlViewRiskDetail1.OpenModal(viewRiskId);
+                    }
+                    break;
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
@@ -387,18 +416,67 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
             return GetResourceText(RiskManager.Instance.GetValueForMucDoAnhHuong(mucDo));
         }
 
-        protected string GetMucDoRuiRoText(object value)
+        public string GetMucDoRuiRoText(object xacSuatValue, object mucDoAnhHuongValue, object diemRuiRoValue)
         {
-            if (value == null || value == DBNull.Value) return "—";
+            if ((xacSuatValue == null || xacSuatValue == DBNull.Value) &&
+                (mucDoAnhHuongValue == null || mucDoAnhHuongValue == DBNull.Value) &&
+                (diemRuiRoValue == null || diemRuiRoValue == DBNull.Value))
+                return "—";
 
-            decimal score = Convert.ToDecimal(value);
-            string textMucDo = "";
-            if (score < 1.0m) textMucDo = GetResourceText(BackEndResourceKeys.VERY_LOW);
-            else if (score >= 1.0m && score < 2.0m) textMucDo = GetResourceText(BackEndResourceKeys.LOW);
-            else if (score >= 2.0m && score < 3.5m) textMucDo = GetResourceText(BackEndResourceKeys.MEDIUM);
-            else if (score >= 3.5m && score < 4.5m) textMucDo = GetResourceText(BackEndResourceKeys.HIGH);
-            else textMucDo = GetResourceText(BackEndResourceKeys.VERY_HIGH);
-            return $"{textMucDo}";
+            decimal xacSuat = 0m;
+            int mucDoAnhHuong = 0;
+            decimal score = 0m;
+
+            if (xacSuatValue != null && xacSuatValue != DBNull.Value)
+                decimal.TryParse(xacSuatValue.ToString(), out xacSuat);
+
+            if (mucDoAnhHuongValue != null && mucDoAnhHuongValue != DBNull.Value)
+                int.TryParse(mucDoAnhHuongValue.ToString(), out mucDoAnhHuong);
+
+            if (diemRuiRoValue != null && diemRuiRoValue != DBNull.Value)
+            {
+                score = Convert.ToDecimal(diemRuiRoValue);
+            }
+            else
+            {
+                score = (xacSuat / 100m) * mucDoAnhHuong;
+            }
+
+            if (score <= 0)
+                return "--";
+
+            string textMucDoRuiRo;
+
+            if (xacSuat >= 75m || mucDoAnhHuong >= 4)
+            {
+                if (score >= 4.5m)
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.VERY_HIGH);
+                else
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.HIGH);
+            }
+            else
+            {
+                if (score < 1.0m)
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.VERY_LOW);
+                else if (score < 2.0m)
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.LOW);
+                else if (score < 3.5m)
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.MEDIUM);
+                else if (score < 4.5m)
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.HIGH);
+                else
+                    textMucDoRuiRo = GetResourceText(BackEndResourceKeys.VERY_HIGH);
+            }
+
+            return $"{textMucDoRuiRo} ({score:0.##})";
+        }
+        protected string GetXacSuatRuiRoText(object value)
+        {
+            return RiskManager.Instance.GetXacSuatRuiRoText(value);
+        }
+        protected string GetFormattedDate(object value)
+        {
+            return _controlHelpers.FormatDateTime(value);
         }
     }
 }

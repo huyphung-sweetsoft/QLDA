@@ -54,6 +54,17 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
                 };
                 ApplyControlsText();
                 CtrlRisk1.InitControls();
+
+                Guid riskId;
+                if (Guid.TryParse(Request.QueryString["riskId"], out riskId))
+                {
+                    TblRuiRoDuAn risk = TblRuiRoDuAn.FetchByID(riskId);
+                    if (risk != null && risk.DaXoa != true
+                        && risk.IdDuAn == CurrentProjectId)
+                    {
+                        EditRiskAction(riskId, EventArgs.Empty);
+                    }
+                }
             }
         }
 
@@ -110,7 +121,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
                 ddlMucDoAnhHuong.SelectedValue = risk.MucDoAnhHuong.ToString();
 
             if (risk.DiemRuiRo != null)
-                txtMucDoRuiRo.Text = risk.DiemRuiRo.ToString();
+                txtMucDoRuiRo.Text = CtrlRisk1.GetMucDoRuiRoText(risk.XacSuatXayRa, risk.MucDoAnhHuong, risk.DiemRuiRo);
 
             txtKeHoachPhongNgua.Text = risk.KeHoachPhongNgua != GetResourceText(BackEndResourceKeys.NOT_ENTERED) ? risk.KeHoachPhongNgua : "";
             txtKeHoachUngPho.Text = risk.KeHoachUngPho != GetResourceText(BackEndResourceKeys.NOT_ENTERED) ? risk.KeHoachUngPho : "";

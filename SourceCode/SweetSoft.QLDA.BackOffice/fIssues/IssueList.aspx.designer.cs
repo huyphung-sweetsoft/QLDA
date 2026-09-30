@@ -60,6 +60,24 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenVanDe;
 
         /// <summary>
+        /// divTrangThaiVanDe control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divTrangThaiVanDe;
+
+        /// <summary>
+        /// ddlTrangThaiVanDe control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTrangThaiVanDe;
+
+        /// <summary>
         /// ddlMucDoAnhHuong control.
         /// </summary>
         /// <remarks>
@@ -78,15 +96,6 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNguonGocVanDe;
 
         /// <summary>
-        /// ddlCongViecBiAnhHuong control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecBiAnhHuong;
-
-        /// <summary>
         /// ddlCongViecPhatSinh control.
         /// </summary>
         /// <remarks>
@@ -96,13 +105,31 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecPhatSinh;
 
         /// <summary>
-        /// txtNhanVien control.
+        /// ddlCongViecBiAnhHuong control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNhanVien;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlCongViecBiAnhHuong;
+
+        /// <summary>
+        /// rptNhanVienXuLy control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptNhanVienXuLy;
+
+        /// <summary>
+        /// pnlNoNhanVienXuLy control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoNhanVienXuLy;
 
         /// <summary>
         /// txtMoTaChiTiet control.
