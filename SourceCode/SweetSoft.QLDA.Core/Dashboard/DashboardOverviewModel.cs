@@ -121,6 +121,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public string TaskName { get; set; }
         public string Status { get; set; }
         public int StatusCode { get; set; }
+        /// <summary>Trạng thái vòng đời, không xét quá hạn (0/1/2).</summary>
+        public int LifecycleStatusCode { get; set; }
         public DateTime? Deadline { get; set; }
         public int Progress { get; set; }
         public bool IsCompleted { get; set; }
@@ -132,8 +134,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
     public class DashboardOverviewSummary
     {
         public DateTime GeneratedAt { get; set; }
+        public int ActiveCustomerCount { get; set; }
+        public List<OverviewActiveCustomer> ActiveCustomers { get; set; }
         public List<OverviewProjectItem> Projects { get; set; }
         public List<DashboardTaskSummary> Tasks { get; set; }
+        public List<DashboardTaskSummary> CurrentTasks { get; set; }
+        public OverviewFinanceSummary FinanceSummary { get; set; }
         public List<UpcomingMeetingSummary> Meetings { get; set; }
         public List<ProjectStatusStatistic> Statuses { get; set; }
         public List<OverviewPendingCostItem> PendingCosts { get; set; }
@@ -176,6 +182,39 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public string CostCode { get; set; }
         public string CostName { get; set; }
         public decimal Amount { get; set; }
+    }
+
+    public class OverviewFinanceSummary
+    {
+        public OverviewFinanceSummary()
+        {
+            Projects = new List<OverviewProjectFinanceItem>();
+        }
+
+        public decimal ReceivedPayment { get; set; }
+        public decimal OutstandingPayment { get; set; }
+        public decimal ApprovedCost { get; set; }
+        public decimal PendingApprovalCost { get; set; }
+        public int ProjectsWithActivityCount { get; set; }
+        public List<OverviewProjectFinanceItem> Projects { get; set; }
+    }
+
+    public class OverviewProjectFinanceItem
+    {
+        public Guid ProjectId { get; set; }
+        public string ProjectCode { get; set; }
+        public string ProjectName { get; set; }
+        public decimal ReceivedPayment { get; set; }
+        public decimal OutstandingPayment { get; set; }
+        public decimal ApprovedCost { get; set; }
+        public decimal PendingApprovalCost { get; set; }
+    }
+
+    public class OverviewActiveCustomer
+    {
+        public Guid CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public int ProjectCount { get; set; }
     }
 
     public class OverviewProjectItem

@@ -305,11 +305,19 @@
             ? "pointer"
             : "default";
 
+        var values = data.values.map(function (value) { return Number(value) || 0; });
+        var colors = ["#34c38f", "#50a5f1", "#74788d", "#f46a6a"];
+        var centerLabel = texts.totalTasks || "Công việc";
+        function positionLabels(context) {
+            DashboardDonut.schedule(element, context, values, colors, String(total), centerLabel);
+        }
+
         taskStatusChart = new ApexCharts(element, {
             chart: {
                 type: "donut",
                 height: 330,
                 toolbar: { show: false },
+                animations: { enabled: false },
                 events: {
                     dataPointSelection: function (event, chartContext, config) {
                         var statusCode = (data.statusCodes || [])[config.dataPointIndex];
@@ -324,25 +332,19 @@
                                 data.labels[config.dataPointIndex] || texts.totalTasks || "");
                             trigger.click();
                         }
-                    }
+                    },
+                    mounted: positionLabels,
+                    updated: positionLabels,
+                    resized: positionLabels
                 }
             },
             plotOptions: {
                 pie: {
                     expandOnClick: false,
-                    dataLabels: { minAngleToShowLabel: 8 },
+                    dataLabels: { minAngleToShowLabel: 0 },
                     donut: {
-                        size: "68%",
-                        labels: {
-                            show: true,
-                            total: {
-                                show: true,
-                                label: texts.totalTasks || "",
-                                formatter: function () {
-                                    return total;
-                                }
-                            }
-                        }
+                        size: "64%",
+                        labels: { show: false }
                     }
                 }
             },
@@ -350,21 +352,18 @@
                 active: { filter: { type: "none" } }
             },
             labels: data.labels,
-            series: data.values.map(function (value) {
-                return Number(value) || 0;
-            }),
-            colors: ["#34c38f", "#50a5f1", "#74788d", "#f46a6a"],
+            series: values,
+            colors: colors,
             legend: { position: "bottom" },
             dataLabels: {
                 enabled: true,
-                formatter: function (percentage, opts) {
-                    return Number(data.values[opts.seriesIndex]) || 0;
-                },
-                style: { fontSize: "12px", fontWeight: 700, colors: ["#18273f"] },
-                dropShadow: { enabled: false }
-            }
+                formatter: DashboardDonut.share,
+                style: { fontSize: "11px", fontWeight: 800, colors: ["#fff"] },
+                dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: "#1b293e", opacity: .55 }
+            },
+            tooltip: { y: { formatter: function (value) { return value + " công việc"; } } }
         });
-        taskStatusChart.render();
+        taskStatusChart.render().then(function () { positionLabels(taskStatusChart); });
     }
 
     function bindTaskStatusChartReset() {

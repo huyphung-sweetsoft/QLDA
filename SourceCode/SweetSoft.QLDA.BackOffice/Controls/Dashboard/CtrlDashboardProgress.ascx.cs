@@ -25,7 +25,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=27")
+                        "/Controls/Dashboard/dashboard-style.css?v=44")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -33,9 +33,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
+                        "/Controls/Dashboard/dashboard-donut.js?v=1"),
+                    CURRENT_PAGE.GetRelativeClientPath(
                         "/Controls/Dashboard/dashboard-project-groups.js?v=1"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-progress.js?v=17")
+                        "/Controls/Dashboard/dashboard-progress.js?v=18"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                        "/Controls/Dashboard/dashboard-modals.js?v=1")
                 };
 
                 return new RegisterCSSAndJS(
