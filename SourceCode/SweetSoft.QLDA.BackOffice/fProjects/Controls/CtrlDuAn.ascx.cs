@@ -1,6 +1,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -92,7 +93,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 GetResourceText(BackEndResourceKeys.PROJECT_CODE),
                 GetResourceText(BackEndResourceKeys.PROJECT_NAME),
                 GetResourceText(BackEndResourceKeys.CUSTOMER),
-                GetResourceText(BackEndResourceKeys.PROJECT_MANAGER)
+                GetResourceText(BackEndResourceKeys.PROJECT_MANAGER),
+                GetResourceText(BackEndResourceKeys.STATUS)
             };
             grvData.HeaderTexts = lstTableHeader;
         }
@@ -151,7 +153,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 //--------------------------------------------
                 DataTable dt = null;
                 Dictionary<string, object> keyValueSearchs = GetProjectSearchParameters();
-                dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows);
+                bool isAdmin = UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
+                dt = DuAnManager.Instance.SearchDuAns(txtSearchSingle.Text, keyValueSearchs, $"{grid.CurrentSortExpression} {grid.CurrentSortDerection}", rowIndex, pageSize, out totalRows, SweetContext.Current.UserId, isAdmin);
 
                 if (dt == null || dt.Rows.Count == 0)
                 {
@@ -343,6 +346,37 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             {
                 ShowNotify(exc.Message, MSGType.Error);
             }
+        }
+
+        protected string GetStatusBadgeClass(object value)
+        {
+            if (value == null || value == DBNull.Value)
+                return "badge bg-secondary";
+
+            switch ((DuAnStatus)Convert.ToByte(value))
+            {
+                case DuAnStatus.HoanThanh:
+                    return "badge bg-success";
+                case DuAnStatus.DangThucHien:
+                    return "badge bg-info";
+                case DuAnStatus.ChuaBatDau:
+                    return "badge bg-secondary";
+                case DuAnStatus.TamDung:
+                    return "badge bg-warning text-dark";
+                case DuAnStatus.KetThuc:
+                    return "badge bg-danger";
+                default:
+                    return "badge bg-secondary";
+            }
+        }
+
+        protected string GetStatusText(object value)
+        {
+            if (value == null || value == DBNull.Value)
+                return "Không xác định";
+
+            return SweetSoft.QLDA.Core.EnumHelper.EnumHelpers.GetERenderText(
+                typeof(DuAnStatus), (DuAnStatus)Convert.ToByte(value));
         }
 
         public override void ConfirmRequest(ConfirmResult e)

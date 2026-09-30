@@ -132,7 +132,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 string detailReason = $"Thay đổi cấu hình tuần: Chuyển {dayName} từ '{oldStatus}' thành '{newStatus}'.";
 
                 System.Threading.Tasks.Task.Run(() => {
-                    TaskManager.Instance.NotifyPMsOnScheduleChange(DateTime.Today, null, detailReason);
+                    TaskManager.Instance.NotifyPMsOnScheduleChange(DateTime.Today, null, detailReason, "CAU_HINH_TUAN", item.IdCauHinh, null);
                 });
             }
             return result;
@@ -211,7 +211,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 System.Threading.Tasks.Task.Run(() => {
                     // Truyền tDenNgay vào hàm nhận DateTime? vẫn hoàn toàn hợp lệ (implicit conversion)
-                    TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, detailReason);
+                    TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, detailReason,"LICH_NGOAI_LE", null,resultItem.IdNgoaiLe);
                 });
             }
             return resultItem;
@@ -242,7 +242,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                     // [THAY THẾ HÀM CŨ]: Bắn thông báo ngầm
                     System.Threading.Tasks.Task.Run(() => {
-                        TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, reason);
+                        TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, reason,"LICH_NGOAI_LE", null, item.IdNgoaiLe);
                     });
                 }
                 return isDeleted;

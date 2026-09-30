@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using SweetSoft.QLDA.Core.Managers;
-
+using SubSonic;
 namespace SweetSoft.QLDA.Core.ScheduleManager
 {
     public class LichTrinhManager : BaseManager
@@ -27,14 +27,13 @@ namespace SweetSoft.QLDA.Core.ScheduleManager
             _tuanRepository = new CauHinhTuanLamViecRepository(_auditManager);
             _ngoaiLeRepository = new LichNgoaiLeRepository(_auditManager);
         }
-
         public List<ThongTinLichNgay> LayLichTrinhNhanVien(Guid idNhanVien, DateTime startDate, DateTime endDate)
         {
             List<ThongTinLichNgay> ketQua = new List<ThongTinLichNgay>();
 
             // 1. Lấy dữ liệu cấu hình Lịch chung (Ngoại lệ & Mặc định)
             var lichNgoaiLes = _ngoaiLeRepository.GetExceptionsInRange(startDate, endDate);
-            var lichTuanMacDinh = _tuanRepository.GetAll().ToDictionary(x => x.NgayTrongTuan, x => x.LaNgayLamViec);
+            var lichTuanMacDinh = _tuanRepository.GetAll().ToDictionary(x => x.NgayTrongTuan, x => x);
 
             // 2. Lấy danh sách Task của nhân viên trong khoảng thời gian này
             DataTable dtTasks = TaskManager.Instance.GetActiveTasksByNhanVienInRange(idNhanVien, startDate, endDate);
@@ -48,7 +47,7 @@ namespace SweetSoft.QLDA.Core.ScheduleManager
                 var ngoaiLe = lichNgoaiLes?.FirstOrDefault(x => date >= x.NgayBatDau.Date && date <= x.NgayKetThuc.Date);
 
                 bool isWorkingDay = false;
-
+                TblCauHinhTuanLamViec configTuan = null;
                 if (ngoaiLe != null)
                 {
                     isWorkingDay = ngoaiLe.LaNgayLamViec;
@@ -65,9 +64,9 @@ namespace SweetSoft.QLDA.Core.ScheduleManager
                     byte dayOfWeek = (byte)date.DayOfWeek;
                     if (lichTuanMacDinh.ContainsKey(dayOfWeek))
                     {
-                        isWorkingDay = lichTuanMacDinh[dayOfWeek];
+                        configTuan = lichTuanMacDinh[dayOfWeek];
+                        isWorkingDay = configTuan.LaNgayLamViec;
                     }
-
                     if (!isWorkingDay)
                     {
                         info.TrangThaiLich = "weekend";
@@ -80,8 +79,30 @@ namespace SweetSoft.QLDA.Core.ScheduleManager
                 {
                     // Lọc các Task đè lên ngày hiện tại
                     var tasksInDay = dtTasks?.AsEnumerable().Where(r =>
-                        Convert.ToDateTime(r["NgayBatDau"]).Date <= date &&
-                        Convert.ToDateTime(r["NgayKetThuc"]).Date >= date).ToList();
+                    {
+                        bool namTrongKhoangTask =
+                            Convert.ToDateTime(r["NgayBatDau"]).Date <= date &&
+                            Convert.ToDateTime(r["NgayKetThuc"]).Date >= date;
+
+                        if (!namTrongKhoangTask)
+                            return false;
+
+                        if (date.DayOfWeek == DayOfWeek.Saturday && configTuan != null && configTuan.LaNgayLamViec)
+                        {
+                            Guid idCongViec = Guid.Parse(r["IdCongViec"].ToString());
+
+                            TblCongViec task = TaskManager.Instance.FetchById(idCongViec);
+
+                            if (task != null &&
+                                configTuan.NgayCapNhat.HasValue &&
+                                task.NgayTao < configTuan.NgayCapNhat.Value)
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    }).ToList();
 
                     if (tasksInDay != null && tasksInDay.Count > 0)
                     {

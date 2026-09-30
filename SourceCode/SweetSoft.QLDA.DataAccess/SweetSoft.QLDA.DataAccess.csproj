@@ -168,6 +168,8 @@
     <Compile Include="TblLuuTruVatLyController.cs" />
     <Compile Include="TblMauTaiLieu.cs" />
     <Compile Include="TblMauTaiLieuController.cs" />
+    <Compile Include="TblNhacViecLichCongViec.cs" />
+    <Compile Include="TblNhacViecLichCongViecController.cs" />
     <Compile Include="TblNhanVien.cs" />
     <Compile Include="TblNhanVienController.cs" />
     <Compile Include="TblNhanVienPartial.cs" />

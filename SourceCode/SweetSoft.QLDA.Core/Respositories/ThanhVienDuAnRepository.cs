@@ -232,7 +232,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                            CASE WHEN NULLIF(LTRIM(RTRIM(gd.TenGiaiDoanTuyChinh)), N'') IS NOT NULL THEN gd.TenGiaiDoanTuyChinh ELSE root.TenCongViec END AS TenPhase,
                            parent.MaCongViec AS MaTaskCha, parent.TenCongViec AS TenTaskCha,
                            cv.IdCongViec AS IdTask, cv.MaCongViec AS MaTask, cv.TenCongViec AS TenTask,
-                           cv.NgayBatDau, cv.NgayKetThuc, cv.NgayHoanThanhThucTe, cv.ThoiHanNgay, cv.TrangThai AS TrangThaiTask,
+                           cv.NgayBatDau, cv.NgayKetThuc, cv.NgayHoanThanhThucTe, cv.ThoiHanNgay, cv.TrangThai AS TrangThaiTask, cv.LyDoTre,
                            ISNULL(ut.DiemUuTien, 1) AS DiemUuTien, ISNULL(ut.TenDoUuTien, N'Thấp') AS TenDoUuTien, hsProject.HeSoDongGop AS HeSoDongGop
                     FROM TblCongViec cv
                     INNER JOIN RelevantPhases rp ON cv.IdDuAn = rp.IdDuAn AND cv.IdGiaiDoanDuAn = rp.IdGiaiDoanDuAn
@@ -253,7 +253,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 )
                 SELECT mp.IdDuAn, mp.MaDuAn, mp.TenDuAn, mp.VaiTro, mp.TrangThaiDuAn, mp.ProjectStartDate, mp.ProjectEndDate,
                        t.IdPhase, t.MaPhase, t.TenPhase, t.MaTaskCha, t.TenTaskCha, t.IdTask, t.MaTask, t.TenTask,
-                       t.NgayBatDau, t.NgayKetThuc, t.NgayHoanThanhThucTe, t.ThoiHanNgay, t.DiemUuTien, t.TenDoUuTien, t.TrangThaiTask, t.HeSoDongGop,
+                       t.NgayBatDau, t.NgayKetThuc, t.NgayHoanThanhThucTe, t.ThoiHanNgay, t.DiemUuTien, t.TenDoUuTien, t.TrangThaiTask, t.HeSoDongGop, t.LyDoTre,
                        ISNULL(ta.AssigneeCount, 0) AS AssigneeCount, ISNULL(ta.IsMyTask, 0) AS IsMyTask
                 FROM MyProject mp
                 LEFT JOIN AllLeafTasks t ON mp.IdDuAn = t.IdDuAn
@@ -336,6 +336,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .Where(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(idNhanVien)
                 .And(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(idDuAn)
                 .And(TblThanhVienDuAn.IdVaiTroDuAnColumn).IsEqualTo(idVaiTro)
+                .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblThanhVienDuAn>();
+        }
+
+        public TblThanhVienDuAn GetNhanVienIsActiveInDuAn(Guid idNhanVien, Guid idDuAn)
+        {
+            return new Select()
+                .From(TblThanhVienDuAn.Schema)
+                .Where(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(idNhanVien)
+                .And(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(idDuAn)
                 .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
                 .ExecuteSingle<TblThanhVienDuAn>();
         }

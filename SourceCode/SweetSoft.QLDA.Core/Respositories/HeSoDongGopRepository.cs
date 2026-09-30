@@ -44,7 +44,8 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             return new Select()
                 .From(TblHeSoDongGop.Schema)
-                .Where(TblHeSoDongGop.IdDoUuTienColumn).IsEqualTo(idDoUuTien)
+                // THÊM .ToString() VÀO ĐÂY:
+                .Where(TblHeSoDongGop.IdDoUuTienColumn).IsEqualTo(idDoUuTien.ToString())
                 .And(TblHeSoDongGop.IdDuAnColumn).IsNull()
                 .And(TblHeSoDongGop.DaXoaColumn).IsEqualTo(false)
                 .ExecuteSingle<TblHeSoDongGop>();
@@ -85,8 +86,9 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             return new Select()
                 .From(TblHeSoDongGop.Schema)
-                .Where(TblHeSoDongGop.IdDuAnColumn).IsEqualTo(idDuAn)
-                .And(TblHeSoDongGop.IdDoUuTienColumn).IsEqualTo(idDoUuTien)
+                // THÊM .ToString() VÀO 2 CHỖ NÀY:
+                .Where(TblHeSoDongGop.IdDuAnColumn).IsEqualTo(idDuAn.ToString())
+                .And(TblHeSoDongGop.IdDoUuTienColumn).IsEqualTo(idDoUuTien.ToString())
                 .And(TblHeSoDongGop.DaXoaColumn).IsEqualTo(false)
                 .ExecuteSingle<TblHeSoDongGop>();
         }
@@ -97,11 +99,24 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public TblHeSoDongGop InsertHeSoDongGop(TblHeSoDongGop item, string description = null)
         {
-            if (item == null)
-                return null;
+            if (item == null) return null;
 
             Guid id = Guid.Parse(item.GetColumnValue("IdHeSoDongGop").ToString());
-            item.Save();
+
+            string sql = @"INSERT INTO TblHeSoDongGop (IdHeSoDongGop, IdDuAn, IdDoUuTien, HeSoDongGop, DaXoa, NguoiTao, NgayTao)
+                           VALUES (@IdHeSoDongGop, @IdDuAn, @IdDoUuTien, @HeSoDongGop, 0, @NguoiTao, @NgayTao)";
+
+            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
+            cmd.AddParameter("@IdHeSoDongGop", item.IdHeSoDongGop, DbType.Guid);
+            cmd.AddParameter("@IdDuAn", item.IdDuAn.HasValue ? (object)item.IdDuAn.Value : DBNull.Value, DbType.Guid);
+            cmd.AddParameter("@IdDoUuTien", item.IdDoUuTien, DbType.Guid);
+            cmd.AddParameter("@HeSoDongGop", item.HeSoDongGop, DbType.Decimal);
+
+            // [THÊM CHỐNG NULL]: An toàn tuyệt đối cho Database
+            cmd.AddParameter("@NguoiTao", string.IsNullOrEmpty(item.NguoiTao) ? (object)DBNull.Value : item.NguoiTao, DbType.String);
+            cmd.AddParameter("@NgayTao", item.NgayTao ?? DateTime.Now, DbType.DateTime);
+
+            DataService.ExecuteQuery(cmd);
 
             Task.Run(async () =>
             {
@@ -128,17 +143,32 @@ namespace SweetSoft.QLDA.Core.Respositories
                 return null;
 
             Guid id = Guid.Parse(item.GetColumnValue("IdHeSoDongGop").ToString());
-            TblHeSoDongGop itemOld = GetById(id);
-            item.Save();
+            TblHeSoDongGop itemOld = new Select()
+            .From(TblHeSoDongGop.Schema)
+            .Where("IdHeSoDongGop").IsEqualTo(id.ToString())
+            .ExecuteSingle<TblHeSoDongGop>();
+
+            // [SỬA LỖI]: Bỏ item.Save(), dùng QueryCommand để ép kiểu
+            string sql = @"UPDATE TblHeSoDongGop 
+                           SET HeSoDongGop = @HeSoDongGop, 
+                               DaXoa = @DaXoa,
+                               NguoiCapNhat = @NguoiCapNhat, 
+                               NgayCapNhat = @NgayCapNhat 
+                           WHERE IdHeSoDongGop = @IdHeSoDongGop";   
+            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
+            cmd.AddParameter("@HeSoDongGop", item.HeSoDongGop, DbType.Decimal);
+            cmd.AddParameter("@DaXoa", item.DaXoa, DbType.Boolean);
+            cmd.AddParameter("@NguoiCapNhat", item.NguoiCapNhat, DbType.String);
+            cmd.AddParameter("@NgayCapNhat", item.NgayCapNhat ?? DateTime.Now, DbType.DateTime);
+            cmd.AddParameter("@IdHeSoDongGop", item.IdHeSoDongGop, DbType.Guid);
+            DataService.ExecuteQuery(cmd);
 
             string updatedBy = string.Empty;
             try
             {
                 updatedBy = item.GetColumnValue("NguoiCapNhat")?.ToString();
             }
-            catch
-            {
-            }
+            catch { }
 
             Task.Run(async () =>
             {

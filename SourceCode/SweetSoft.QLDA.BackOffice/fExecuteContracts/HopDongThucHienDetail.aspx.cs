@@ -1,4 +1,7 @@
-﻿using Mammoth;
+﻿using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using HtmlToOpenXml;
+using Mammoth;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
@@ -12,10 +15,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 {
@@ -93,6 +96,8 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
                 ApplyControlsText();
                 lbtExportPdf.Visible = this.QueryId != Guid.Empty;
+                lbtExportDocx.Visible = this.QueryId != Guid.Empty;
+                lbtResetContent.Visible = this.IsEdit;
                 InitContractFileUploader();
 
                 if (this.QueryId == Guid.Empty)
@@ -117,6 +122,141 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             ExportContractPdf();
         }
 
+        protected void lbtExportDocx_Click(object sender, EventArgs e)
+        {
+            RegisterAsyncTask(new PageAsyncTask(ExportContractDocxAsync));
+        }
+
+        protected void lbtResetContent_Click(object sender, EventArgs e)
+        {
+            if (!this.IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid refId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
+            TblUploadFile file = GetContractFile(refId);
+
+            if (file == null)
+            {
+                ShowNotify("Không tìm thấy file gốc của hợp đồng.", MSGType.Warning);
+                return;
+            }
+
+            try
+            {
+                string html = string.Empty;
+
+                if (IsDocxFile(file))
+                {
+                    html = ConvertDocxToHtml(file);
+                }
+                else if (IsPdfFile(file))
+                {
+                    string physicalPath = GetContractFilePhysicalPath(file);
+                    html = PdfManager.Instance.ConvertPdfToHtml(physicalPath);
+                }
+                else
+                {
+                    ShowNotify("Định dạng file này chưa hỗ trợ khôi phục nội dung.", MSGType.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(html))
+                {
+                    ShowNotify("Không trích xuất được nội dung từ file gốc.", MSGType.Warning);
+                    return;
+                }
+
+                ClearContractContent = false;
+                txtNoiDungHopDong.Text = html;
+                SetNoiDungHopDongToEditor(html);
+
+                ShowNotify("Đã khôi phục nội dung từ file gốc.", MSGType.Success);
+            }
+            catch (Exception ex)
+            {
+                ShowNotify("Không thể khôi phục nội dung từ file gốc: " + ex.Message, MSGType.Error);
+            }
+        }
+
+        private async Task ExportContractDocxAsync()
+        {
+            if (!this.IsView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (QueryId == Guid.Empty)
+            {
+                ShowNotify("Hợp đồng chưa được tạo.", MSGType.Warning);
+                return;
+            }
+
+            string htmlContent = txtNoiDungHopDong.Text;
+
+            if (string.IsNullOrWhiteSpace(htmlContent))
+            {
+                ShowNotify("Hợp đồng chưa có nội dung để xuất DOCX.", MSGType.Warning);
+                return;
+            }
+
+            try
+            {
+                byte[] docxBytes;
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    using (WordprocessingDocument package = WordprocessingDocument.Create(
+                        stream,
+                        DocumentFormat.OpenXml.WordprocessingDocumentType.Document,
+                        true))
+                    {
+                        MainDocumentPart mainPart = package.AddMainDocumentPart();
+                        mainPart.Document = new Document(new Body());
+
+                        HtmlConverter converter = new HtmlConverter(mainPart);
+                        await converter.ParseBody(htmlContent);
+
+                        // Khổ giấy A4, lề 15mm.
+                        mainPart.Document.Body.Append(new SectionProperties(
+                            new PageSize { Width = 11906U, Height = 16838U },
+                            new PageMargin
+                            {
+                                Top = 850,
+                                Bottom = 850,
+                                Left = 850,
+                                Right = 850,
+                                Header = 567,
+                                Footer = 567,
+                                Gutter = 0
+                            }));
+
+                        mainPart.Document.Save();
+                    }
+
+                    docxBytes = stream.ToArray();
+                }
+
+                Response.Clear();
+                Response.Buffer = true;
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                Response.AddHeader(
+                    "Content-Disposition",
+                    "attachment; filename=HopDongThucHien_" + QueryId.ToString("N") + ".docx");
+                Response.Cache.SetCacheability(HttpCacheability.NoCache);
+                Response.BinaryWrite(docxBytes);
+                Response.Flush();
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            catch (Exception ex)
+            {
+                ShowNotify("Không thể xuất file DOCX: " + ex.Message, MSGType.Error);
+            }
+        }
+
         public void HandleFileCallback(string key)
         {
             if (key == ContractFileBeforeSaveCallbackKey)
@@ -127,7 +267,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             Guid refId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
             fbHopDong.LoadFile(refId, FileUploadTypes.ProjectContract);
-            BindContractFiles(refId);
 
             TblUploadFile file = GetContractFile(refId);
 
@@ -172,24 +311,29 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                     );
                 }
             }
-            else if (IsPdfFile(file) && !string.IsNullOrWhiteSpace(txtNoiDungHopDong.Text))
+            else if (IsPdfFile(file))
             {
-                ConfirmResult result = new ConfirmResult
+                try
                 {
-                    CommandName = ContractClearContentConfirmCommand,
-                    Value = null
-                };
+                    string physicalPath = GetContractFilePhysicalPath(file);
+                    string html = PdfManager.Instance.ConvertPdfToHtml(physicalPath);
 
-                this.CurrentConfirmResult = result;
+                    if (string.IsNullOrWhiteSpace(html))
+                    {
+                        ShowNotify(
+                            "Không trích xuất được nội dung văn bản từ file PDF. File có thể là bản scan hoặc không chứa lớp văn bản.",
+                            MSGType.Warning
+                        );
+                        return;
+                    }
 
-                MessageBox msg = new MessageBox(
-                    GetResourceText(BackEndResourceKeys.NOTIFICATION),
-                    "File PDF mới đã được tải lên. Bạn có muốn xóa nội dung soạn thảo hiện tại không?",
-                    MSGButton.DeleteCancel,
-                    MSGIcon.Warning
-                );
-
-                OpenMessageBox(msg, result, false, false);
+                    txtNoiDungHopDong.Text = html;
+                    SetNoiDungHopDongToEditor(html);
+                }
+                catch (Exception ex)
+                {
+                    ShowNotify("Không thể đọc nội dung file PDF: " + ex.Message, MSGType.Error);
+                }
             }
         }
 
@@ -287,7 +431,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
 
             fbHopDong.LoadFile(hopDong.IdHopDongThucHien, FileUploadTypes.ProjectContract);
-            BindContractFiles(hopDong.IdHopDongThucHien);
         }
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
@@ -456,78 +599,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 refId,
                 FileUploadTypes.ProjectContract);
         }
-        private List<TblUploadFile> GetContractFiles(Guid refId)
-        {
-            if (refId == Guid.Empty)
-                return new List<TblUploadFile>();
-
-            UploadManager fileManager = new UploadManager(
-                SweetContext.Current,
-                refId,
-                FileUploadTypes.ProjectContract);
-
-            return fileManager.TblUploadFiles ?? new List<TblUploadFile>();
-        }
-
-        private void BindContractFiles(Guid refId)
-        {
-            List<TblUploadFile> files = GetContractFiles(refId);
-
-            rptContractFiles.DataSource = files;
-            rptContractFiles.DataBind();
-
-            pnlNoContractFiles.Visible = files.Count == 0;
-        }
-
-        protected string GetContractFileIcon(object value)
-        {
-            string ext = value == null ? string.Empty : value.ToString().ToLowerInvariant();
-
-            switch (ext)
-            {
-                case ".pdf":
-                    return "fas fa-file-pdf text-danger";
-                case ".doc":
-                case ".docx":
-                    return "fas fa-file-word text-primary";
-                case ".xls":
-                case ".xlsx":
-                    return "fas fa-file-excel text-success";
-                case ".jpg":
-                case ".jpeg":
-                case ".png":
-                    return "fas fa-file-image text-info";
-                default:
-                    return "fas fa-file text-secondary";
-            }
-        }
-
-        protected bool IsContractFileEditable(object value)
-        {
-            string ext = value == null ? string.Empty : value.ToString();
-
-            return string.Equals(ext, ".docx", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase);
-        }
-
-        protected string FormatFileSize(object value)
-        {
-            if (value == null || value == DBNull.Value)
-                return "-";
-
-            long size;
-
-            if (!long.TryParse(value.ToString(), out size))
-                return "-";
-
-            if (size < 1024)
-                return size + " B";
-
-            if (size < 1024 * 1024)
-                return (size / 1024.0).ToString("0.##") + " KB";
-
-            return (size / (1024.0 * 1024.0)).ToString("0.##") + " MB";
-        }
 
         private string GetContractFilePhysicalPath(TblUploadFile file)
         {
@@ -580,6 +651,8 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             return result.Value;
         }
 
+
+
         private void SetNoiDungHopDongToEditor(string html)
         {
             string encodedHtml = HttpUtility.JavaScriptStringEncode(html ?? string.Empty);
@@ -609,7 +682,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             byte[] pdfBytes = PdfManager.Instance.GeneratePdf(htmlContent);
             string fileName = string.Format("HopDongThucHien_{0}.pdf", Guid.NewGuid().ToString("N"));
-            string refType = FileUploadTypes.ProjectContract.ToString();
+            string refType = FileUploadTypes.ProjectContractPdf.ToString();
             string relativeDirectory = string.Format("/Uploads/{0}/{1:yyyy/MM}/", refType, DateTime.Now);
             string relativePath = relativeDirectory + fileName;
             string physicalDirectory = HostingEnvironment.MapPath(relativeDirectory);
@@ -651,12 +724,12 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
         private void DeleteGeneratedContractPdf(Guid contractId)
         {
-            TblUploadFile file = UploadManager.Instance.GetUploadFileByRefIdAndRefType(contractId, FileUploadTypes.ProjectContract);
+            TblUploadFile file = UploadManager.Instance.GetUploadFileByRefIdAndRefType(contractId, FileUploadTypes.ProjectContractPdf);
 
             if (file == null)
                 return;
 
-            UploadManager.Instance.RemoveFiles(new List<Guid> { file.Id }, FileUploadTypes.ProjectContract);
+            UploadManager.Instance.RemoveFiles(new List<Guid> { file.Id }, FileUploadTypes.ProjectContractPdf);
         }
 
         private void ExportContractPdf()
@@ -699,118 +772,5 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 ShowNotify(ex.Message, MSGType.Error);
             }
         }
-
-        protected void rptContractFiles_ItemCommand(object source, RepeaterCommandEventArgs e)
-        {
-            Guid fileId;
-
-            if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out fileId) || fileId == Guid.Empty)
-                return;
-
-            UploadManager fileManager = new UploadManager(SweetContext.Current, fileId);
-            TblUploadFile file = fileManager.File;
-
-            if (file == null || file.IsDeleted)
-            {
-                ShowNotify("Không tìm thấy file.", MSGType.Warning);
-                return;
-            }
-
-            if (file.RefType != FileUploadTypes.ProjectContract.ToString())
-            {
-                ShowNotify("File không thuộc hợp đồng này.", MSGType.Warning);
-                return;
-            }
-
-            if (file.RefId != QueryId && file.RefId != TempContractFileRefId)
-            {
-                ShowNotify("File không thuộc hợp đồng này.", MSGType.Warning);
-                return;
-            }
-
-            if (string.Equals(e.CommandName, "Download", StringComparison.OrdinalIgnoreCase))
-            {
-                DownloadContractFile(file);
-                return;
-            }
-
-            if (string.Equals(e.CommandName, "Edit", StringComparison.OrdinalIgnoreCase))
-            {
-                EditContractFile(file);
-                return;
-            }
-
-            if (string.Equals(e.CommandName, "Delete", StringComparison.OrdinalIgnoreCase))
-            {
-                DeleteContractFile(file);
-            }
-        }
-
-        private void DownloadContractFile(TblUploadFile file)
-        {
-            string physicalPath = GetContractFilePhysicalPath(file);
-
-            if (string.IsNullOrWhiteSpace(physicalPath) || !File.Exists(physicalPath))
-            {
-                ShowNotify("Không tìm thấy file trên hệ thống.", MSGType.Warning);
-                return;
-            }
-
-            Response.Clear();
-            Response.ContentType = string.IsNullOrWhiteSpace(file.MimeType)
-                ? "application/octet-stream"
-                : file.MimeType;
-            Response.AddHeader(
-                "Content-Disposition",
-                "attachment;filename=\"" + HttpUtility.UrlEncode(file.OriginalFileName) + "\"");
-            Response.Cache.SetCacheability(HttpCacheability.NoCache);
-            Response.TransmitFile(physicalPath);
-            Response.End();
-        }
-
-        private void DeleteContractFile(TblUploadFile file)
-        {
-            if (!this.IsEdit)
-            {
-                ShowAccessDeniedNotify();
-                return;
-            }
-
-            UploadManager.Instance.RemoveFiles(
-                new List<Guid> { file.Id },
-                FileUploadTypes.ProjectContract);
-
-            BindContractFiles(QueryId == Guid.Empty ? TempContractFileRefId : QueryId);
-
-            ShowNotify("Đã xóa file.", MSGType.Success);
-        }
-
-        private void EditContractFile(TblUploadFile file)
-{
-    if (!IsContractFileEditable(file.Ext))
-        return;
-
-    if (IsDocxFile(file))
-    {
-        try
-        {
-            string html = ConvertDocxToHtml(file);
-
-            txtNoiDungHopDong.Text = html;
-            SetNoiDungHopDongToEditor(html);
-        }
-        catch (Exception ex)
-        {
-            ShowNotify("Không thể đọc nội dung file DOCX: " + ex.Message, MSGType.Error);
-        }
-
-        return;
-    }
-
-    if (IsPdfFile(file))
-    {
-        ShowNotify("Chức năng chỉnh sửa PDF sẽ xử lý ở bước tiếp theo.", MSGType.Warning);
-    }
-}
     }
 }

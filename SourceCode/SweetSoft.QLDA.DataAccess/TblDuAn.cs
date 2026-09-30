@@ -514,6 +514,25 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
+		private SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection colTblNhacViecLichCongViecRecords;
+		public SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection TblNhacViecLichCongViecRecords()
+		{
+			if(colTblNhacViecLichCongViecRecords == null)
+			{
+				colTblNhacViecLichCongViecRecords = new SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection().Where(TblNhacViecLichCongViec.Columns.IdDuAn, IdDuAn).Load();
+				colTblNhacViecLichCongViecRecords.ListChanged += new ListChangedEventHandler(colTblNhacViecLichCongViecRecords_ListChanged);
+			}
+			return colTblNhacViecLichCongViecRecords;
+		}
+				
+		void colTblNhacViecLichCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblNhacViecLichCongViecRecords[e.NewIndex].IdDuAn = IdDuAn;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
 		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
 		{
@@ -1053,6 +1072,17 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
+                if (colTblNhacViecLichCongViecRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViec item in colTblNhacViecLichCongViecRecords)
+                    {
+                        if (item.IdDuAn != IdDuAn)
+                        {
+                            item.IdDuAn = IdDuAn;
+                        }
+                    }
+               }
+		
                 if (colTblChiPhiRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
@@ -1193,6 +1223,11 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
+                if (colTblNhacViecLichCongViecRecords != null)
+                {
+                    colTblNhacViecLichCongViecRecords.SaveAll();
+               }
+		
                 if (colTblChiPhiRecords != null)
                 {
                     colTblChiPhiRecords.SaveAll();
