@@ -150,6 +150,33 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
 
         /// <summary>
+        /// hdfSelectedContractFileId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfSelectedContractFileId;
+
+        /// <summary>
+        /// hdfSubmitAfterFileApply control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfSubmitAfterFileApply;
+
+        /// <summary>
+        /// lbtLoadContractFile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtLoadContractFile;
+
+        /// <summary>
         /// fbHopDong control.
         /// </summary>
         /// <remarks>

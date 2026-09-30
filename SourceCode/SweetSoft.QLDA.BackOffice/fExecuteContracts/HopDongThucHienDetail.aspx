@@ -392,8 +392,8 @@
                 if (!$box.length)
                     return;
 
-                var refType = "<%= SweetSoft.QLDA.Core.FileManager.FileUploadTypes.ProjectContract %>";
-            var refId = "<%= QueryId == Guid.Empty ? TempContractFileRefId : QueryId %>";
+          <%--      var refType = "<%= SweetSoft.QLDA.Core.FileManager.FileUploadTypes.ProjectContract %>"; --%>
+          <%--  var refId = "<%= QueryId == Guid.Empty ? TempContractFileRefId : QueryId %>"; --%>
 
             contractFileUploadStarted = true;
 

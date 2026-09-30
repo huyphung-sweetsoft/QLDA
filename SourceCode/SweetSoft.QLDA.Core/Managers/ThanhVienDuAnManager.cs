@@ -208,7 +208,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public TblThanhVienDuAn GetByNhanVienAndDuAn(Guid idNhanVien, Guid idDuAn)
         {
-            return _repository.GetNhanVienIsActiveInDuAn(idNhanVien, idDuAn, Guid.Empty);
+            return _repository.GetNhanVienIsActiveInDuAn(idNhanVien, idDuAn);
         }
     }
 }
