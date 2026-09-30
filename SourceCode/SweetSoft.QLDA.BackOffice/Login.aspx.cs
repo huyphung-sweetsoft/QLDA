@@ -40,9 +40,23 @@ namespace SweetSoft.QLDA.BackOffice
 
                 if (SweetContext.Current.User != null)
                 {
-                    Response.Redirect(GetRelativeClientPath("Home/Overview"));
+                    // [SỬA Ở ĐÂY]: Kiểm tra quyền trước khi redirect
+                    bool isAdmin = UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
+
+                    // Lưu ý: Đổi "ModuleKeys.Overview" thành Enum đúng của trang Overview bên ông
+                    bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.Dashboard);
+
+                    if (canViewOverview)
+                    {
+                        Response.Redirect(GetRelativeClientPath("Home/Overview"));
+                    }
+                    else
+                    {
+                        // Lưu ý: Đổi "RewriteURLHelper.Project" thành thuộc tính trỏ tới Danh sách dự án của ông
+                        Response.Redirect(RewriteURLHelper.Projects);
+                    }
                     return;
-                }    
+                }
 
                 SetMetaTagsOgTags(GetResourceText(BackEndResourceKeys.LOGIN));
                 ApplyControlText();
@@ -234,7 +248,25 @@ namespace SweetSoft.QLDA.BackOffice
                 return;
             }
             else
-                Response.Redirect(RewriteURLHelper.DashboardOverview, false);
+            {
+                // [SỬA Ở ĐÂY]: Bẻ lái dựa trên quyền của user
+                bool isAdmin = UserManager.Instance.IsAdministrator(aspnetUser.UserId);
+
+                // Vì SweetContext đã được set ở đầu hàm AllowLogin nên this.IsUserRight sẽ hoạt động chính xác
+                // Lưu ý: Đổi "ModuleKeys.Overview" cho chuẩn
+                bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.Dashboard);
+
+                if (canViewOverview)
+                {
+                    Response.Redirect(RewriteURLHelper.DashboardOverview, false);
+                }
+                else
+                {
+                    // Nhảy thẳng vào trang danh sách dự án nếu bị cấm xem Overview
+                    // Lưu ý: Đổi "RewriteURLHelper.Project" cho chuẩn
+                    Response.Redirect(RewriteURLHelper.Projects, false);
+                }
+            }
         }
 
         protected void ChangeLanguage(object sender, EventArgs e)
