@@ -1,6 +1,7 @@
 using Newtonsoft.Json.Linq;
 using SubSonic;
 using SweetSoft.QLDA.Core.FileManager;
+using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.SysManager.Models;
@@ -162,6 +163,7 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public bool CanProcessSigningResult(Guid userId, Guid refId)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(userId, true)) return false;
             if (userId == Guid.Empty || refId == Guid.Empty)
                 return false;
 
@@ -227,6 +229,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         public bool CanProcessAssignedSigningFile(
             Guid userId, Guid documentId, Guid signingFileId)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(userId, true)) return false;
             if (userId == Guid.Empty || documentId == Guid.Empty
                 || signingFileId == Guid.Empty)
                 return false;
@@ -265,6 +268,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         // to the dossier or its other files.
         public bool CanReadAssignedSigningFile(Guid userId, Guid uploadFileId)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(userId)) return false;
             if (userId == Guid.Empty || uploadFileId == Guid.Empty)
                 return false;
 
@@ -878,11 +882,13 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .And(AspnetUser.IsActivatedColumn).IsEqualTo(true)
                 .And(AspnetUser.LaNhanVienColumn).IsEqualTo(true)
                 .OrderAsc(AspnetUser.Columns.DisplayName)
-                .ExecuteTypedList<AspnetUser>();
+                .ExecuteTypedList<AspnetUser>()
+                .Where(user => FunctionManager.Instance.CanAccessSigningInbox(user.UserId, true)).ToList();
         }
 
         public AspnetUser GetAvailableSigningUser(Guid userId)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(userId, true)) return null;
             if (userId == Guid.Empty)
                 return null;
 
@@ -1807,6 +1813,8 @@ namespace SweetSoft.QLDA.Core.Respositories
             string currentUserName,
             DateTime currentDate)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(idNguoiKy, true))
+                throw new InvalidOperationException("Người nhận ký cần được cấp quyền Xem và Cập nhật Hồ sơ trình ký.");
             if (idTaiLieu == Guid.Empty)
                 throw new InvalidOperationException(
                     "Không xác định được hồ sơ cần trình ký.");
@@ -2176,6 +2184,8 @@ string configuredMethod = Convert.ToString(
             string currentUserName,
             DateTime currentDate)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(currentUserId, true))
+                throw new UnauthorizedAccessException("Bạn không có quyền cập nhật hồ sơ trình ký.");
             if (idTaiLieu == Guid.Empty || idTrinhKyTaiLieu == Guid.Empty)
                 throw new InvalidOperationException(
                     "Không xác định được lần trình ký.");
@@ -2342,6 +2352,8 @@ string configuredMethod = Convert.ToString(
             string currentUserName,
             DateTime currentDate)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(currentUserId, true))
+                throw new UnauthorizedAccessException("Bạn không có quyền cập nhật hồ sơ trình ký.");
             if (idTaiLieu == Guid.Empty || idTrinhKyTaiLieu == Guid.Empty)
                 throw new InvalidOperationException(
                     "Không xác định được lần trình ký.");
@@ -2539,6 +2551,8 @@ string configuredMethod = Convert.ToString(
             string currentUserName,
             DateTime currentDate)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(currentUserId, true))
+                throw new UnauthorizedAccessException("Bạn không có quyền cập nhật hồ sơ trình ký.");
             if (idTaiLieu == Guid.Empty
                 || idTrinhKyTaiLieuFile == Guid.Empty
                 || currentUserId == Guid.Empty)
@@ -2677,6 +2691,8 @@ string configuredMethod = Convert.ToString(
             string currentUserName,
             DateTime currentDate)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(currentUserId, true))
+                throw new UnauthorizedAccessException("Bạn không có quyền cập nhật hồ sơ trình ký.");
             if (idTaiLieu == Guid.Empty
                 || idTrinhKyTaiLieuFile == Guid.Empty
                 || currentUserId == Guid.Empty)
@@ -2958,6 +2974,8 @@ string configuredMethod = Convert.ToString(
         public DataTable GetAssignedSigningFiles(
             Guid userId, Guid? signingId)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(userId))
+                throw new UnauthorizedAccessException("Bạn không có quyền xem hồ sơ trình ký.");
             if (userId == Guid.Empty)
                 return new DataTable();
 

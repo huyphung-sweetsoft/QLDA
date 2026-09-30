@@ -78,8 +78,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtSearchMoTa.SearchTagItemText = GetResourceText(
                 BackEndResourceKeys.DESCRIPTION);
 
-            btnSearch.ToolTip = btnSearch.Text = GetResourceText(
-                BackEndResourceKeys.SEARCH);
+            btnSearch.ToolTip = GetResourceText(BackEndResourceKeys.SEARCH);
+            btnSearch.Text = string.Empty;
             btnAdd.ToolTip = btnAdd.Text = GetResourceText(
                 BackEndResourceKeys.ADD_NEW);
             btnSave.ToolTip = btnSave.Text = GetResourceText(

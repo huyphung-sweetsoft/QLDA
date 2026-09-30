@@ -110,11 +110,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         {
             base.OnInit(e);
             ddlSigningStatus.ClearItems();
-            ddlSigningStatus.AddItem("Tất cả trạng thái", "ALL");
-            ddlSigningStatus.AddItem("Chờ ký", "PENDING");
-            ddlSigningStatus.AddItem("Đã ký", "SIGNED");
-            ddlSigningStatus.AddItem("Yêu cầu chỉnh sửa", "CHANGES");
-            ddlSigningStatus.AddItem("Đã thu hồi", "RECALLED");
+            ddlSigningStatus.AddItem("Cần tôi xử lý", "PENDING");
+            ddlSigningStatus.AddItem("Tất cả hồ sơ", "ALL");
             txtSigningSearch.EnterSubmitClientID = btnApplyFilters.ClientID;
             // Recreate the same command controls before loading their state
             // and dispatching the postback event.
@@ -173,6 +170,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             pnlDetail.Visible = detail;
             pnlDetailHeader.Visible = detail;
             ddlProject.Visible = !detail;
+            pnlStatusFilter.Visible = !detail;
             lnkBackToInbox.NavigateUrl = "SigningInbox.aspx?q=" + HttpUtility.UrlEncode(Request.QueryString["q"])
                 + "&status=" + HttpUtility.UrlEncode(QueryValueOrDefault("status", "PENDING"))
                 + "&project=" + HttpUtility.UrlEncode(QueryValueOrDefault("project", "ALL"))
@@ -185,8 +183,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
             string keyword = ReadAppliedValue(
                 hdfAppliedKeyword, detail ? "" : Request.QueryString["q"] ?? "", readPostedSnapshot).Trim();
-            string statusFilter = NormalizeStatusFilter(ReadAppliedValue(
-                hdfAppliedStatus, detail ? "ALL" : QueryValueOrDefault("status", "PENDING"), readPostedSnapshot));
+            string statusFilter = detail ? "ALL" : NormalizeStatusFilter(ReadAppliedValue(
+                hdfAppliedStatus, QueryValueOrDefault("status", "PENDING"), readPostedSnapshot));
             string projectFilter = ReadAppliedValue(hdfAppliedProject, detail ? "ALL" : QueryValueOrDefault("project", "ALL"),readPostedSnapshot);
             if (string.IsNullOrWhiteSpace(projectFilter)) projectFilter = "ALL";
             int assignedCount = rows.Count;
@@ -201,22 +199,25 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 .Select(group =>
                 {
                     DataRowView first = group.First();
-                    List<DataRowView> matchingFiles = group
-                        .Where(row => MatchesStatusFilter(
-                            row["TrangThai"], statusFilter))
-                        .ToList();
+                    if (!detail && statusFilter == "PENDING"
+                        && !group.Any(row => IsPending(row["TrangThai"])))
+                        return null;
+
+                    List<DataRowView> matchingFiles = group.ToList();
 
                     bool documentMatches = string.IsNullOrEmpty(keyword)
                         || ContainsText(first["TenTaiLieu"], keyword)
                         || ContainsText(first["MaTaiLieu"], keyword);
                     if (!string.IsNullOrEmpty(keyword) && !documentMatches)
                     {
-                        matchingFiles = matchingFiles.Where(row =>
+                        List<DataRowView> filesWithKeyword = matchingFiles.Where(row =>
                             ContainsText(row["TenFileNguonGoc"], keyword)
                             || ContainsText(row["TenFileNguon"], keyword)
                             || ContainsText(row["GhiChuYeuCau"], keyword)
                             || ContainsText(row["GhiChu"], keyword))
                             .ToList();
+                        if (detail || filesWithKeyword.Count == 0)
+                            matchingFiles = filesWithKeyword;
                     }
 
                     if (matchingFiles.Count == 0)
@@ -303,6 +304,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
             rptAssignedDocuments.DataBind();
             grvDocumentList.CurrentPageIndex = pageIndex;
             grvDocumentList.CurrentPageSize = pageSize;
+            grvDocumentList.HeaderTexts = new List<string> { "STT", "Mã hồ sơ", "Tên hồ sơ", "Dự án", "Cần xử lý", "Lần gửi gần nhất", "Hành động" };
             grvDocumentList.DataSource = detail ? null : pageDocuments;
             grvDocumentList.DataBind();
         }
@@ -356,24 +358,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         {
             if (string.Equals(value, "PENDING", StringComparison.OrdinalIgnoreCase))
                 return "PENDING";
-            if (string.Equals(value, "SIGNED", StringComparison.OrdinalIgnoreCase))
-                return "SIGNED";
-            if (string.Equals(value, "CHANGES", StringComparison.OrdinalIgnoreCase))
-                return "CHANGES";
-            if (string.Equals(value, "RECALLED", StringComparison.OrdinalIgnoreCase)) return "RECALLED";
             return "ALL";
-        }
-
-        private static bool MatchesStatusFilter(object status, string filter)
-        {
-            switch (filter)
-            {
-                case "PENDING": return IsPending(status);
-                case "SIGNED": return IsSigned(status);
-                case "CHANGES": return IsChangesRequested(status);
-                case "RECALLED": return Convert.ToString(status)=="THU_HOI";
-                default: return true;
-            }
         }
 
         private static bool ContainsText(object value, string keyword)
@@ -452,6 +437,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
 
         private DataRow GetAssignedPendingFile(Guid signingFileId)
         {
+            if (!FunctionManager.Instance.CanAccessSigningInbox(SweetContext.Current.UserId, true))
+                return null;
             // A notification opens the dossier's batches, not only the batch
             // in its URL. Authorization still comes from the assigned-user query.
             return RequestManager.GetAssignedSigningFiles(null)

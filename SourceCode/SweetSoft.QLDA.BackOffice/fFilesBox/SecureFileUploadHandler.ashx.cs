@@ -1,4 +1,5 @@
 ﻿using SweetSoft.QLDA.Core.FileManager;
+using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Utils;
@@ -734,6 +735,21 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
             if (ProjectRecordFileAccess.IsRecordAttachment(refType))
                 return user != null && ProjectRecordFileAccess.CanAccess(
                     SweetContext.Current.UserId, refId, refType, true);
+            if (refType == FileUploadTypes.ProjectContract.ToString())
+            {
+                if (user == null || refId == Guid.Empty)
+                    return false;
+                TblHopDongThucHien contract = TblHopDongThucHien.FetchByID(refId);
+                if (contract != null)
+                    return contract.DaXoa != true && FunctionManager.Instance.IsActionKeyExisted(
+                        SweetContext.Current.UserId, ModuleKeys.Contract, ActionKeys.Update);
+
+                object draftOwner = HttpContext.Current.Session[
+                    "ContractFileDraft:" + refId.ToString("N")];
+                return draftOwner is Guid && (Guid)draftOwner == SweetContext.Current.UserId
+                    && FunctionManager.Instance.IsActionKeyExisted(
+                        SweetContext.Current.UserId, ModuleKeys.Contract, ActionKeys.Create);
+            }
             if(refType=="DocumentVersion" || refType=="DocumentSigningResult") {
                 if(user==null) return false;
                 var repository=new SweetSoft.QLDA.Core.Respositories.DocumentRepository(null);
