@@ -116,7 +116,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             var rows=table.AsEnumerable();
             string search=(txtWorkspaceSearch.Text??"").Trim();
             if(search.Length>0)rows=rows.Where(r=>Convert.ToString(r["TenFile"]).IndexOf(search,StringComparison.CurrentCultureIgnoreCase)>=0);
-            if(!string.IsNullOrEmpty(ddlWorkspaceStatus.SelectedValue))rows=rows.Where(r=>Convert.ToString(r["TrangThai"])==ddlWorkspaceStatus.SelectedValue);
+            string status = ddlWorkspaceStatus.SelectedValue;
+            if(!string.IsNullOrEmpty(status) && status != "ALL")rows=rows.Where(r=>Convert.ToString(r["TrangThai"])==status);
             var filtered=table.Clone();
             foreach(var row in rows)filtered.ImportRow(row);
             if(grdWorkspace.PageIndex*grdWorkspace.PageSize>=filtered.Rows.Count)grdWorkspace.PageIndex=0;

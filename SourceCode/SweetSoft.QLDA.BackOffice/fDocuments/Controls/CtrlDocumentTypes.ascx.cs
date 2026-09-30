@@ -62,7 +62,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             txtSearch.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             ddlSearchStatus.SearchTagItemText = GetResourceText(BackEndResourceKeys.STATUS);
             ddlSearchScope.SearchTagItemText = GetResourceText(BackEndResourceKeys.DOCUMENT_SCOPE);
-            btnSearch.ToolTip = btnSearch.Text = GetResourceText(BackEndResourceKeys.SEARCH);
+            btnSearch.ToolTip = GetResourceText(BackEndResourceKeys.SEARCH);
+            btnSearch.Text = string.Empty;
             btnAdd.ToolTip = btnAdd.Text = GetResourceText(BackEndResourceKeys.ADD_NEW);
             btnSave.ToolTip = btnSave.Text = GetResourceText(BackEndResourceKeys.SAVE);
             btnCancel.ToolTip = btnCancel.Text = GetResourceText(BackEndResourceKeys.CANCEL);
