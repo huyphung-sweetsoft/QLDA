@@ -102,7 +102,7 @@
                     <div class="form-check form-switch form-switch-md" dir="ltr">
                         <input class="form-check-input" type="checkbox" id="chkEnableAccount" runat="server" onclick="ToggleAccountInfo(this);">
                         <label class="form-check-label fw-bold text-primary fs-5" for="<%= chkEnableAccount.ClientID %>">
-                            <i class="fas fa-key me-1"></i> Cấp quyền truy cập phần mềm cho nhân sự này
+                            <i class="fas fa-key me-1"></i> Cấp tài khoản cho nhân viên này
                         </label>
                     </div>
                 </div>
