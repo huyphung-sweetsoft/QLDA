@@ -136,7 +136,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
             List<string> lstTableHeader = new List<string>
             {
                 GetResourceText(BackEndResourceKeys.INDEX),
-                GetResourceText(BackEndResourceKeys.COST_CODE),
                 GetResourceText(BackEndResourceKeys.COST_NAME),
                 GetResourceText(BackEndResourceKeys.PRICE),
                 GetResourceText(BackEndResourceKeys.QUANTITY),
@@ -275,18 +274,37 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
                     break;
 
                 case "ITEM_DETAIL":
+                    if (!this.CURRENT_PAGE.IsView)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    int rowIndex = e.CommandSource.GetType() != typeof(GridviewExtension)
+                        ? ((GridViewRow)((LinkButton)e.CommandSource).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
+
+                    if (Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out Guid costId))
+                    {
+                        CtrlViewCostDetail viewControl = FindControl("CtrlViewCostDetail1") as CtrlViewCostDetail;
+                        if (viewControl != null)
+                            viewControl.OpenModal(costId);
+                    }
+                    break;
+
+                case "ITEM_EDIT":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
 
-                    int rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ?
-                        ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                    int rowIndexEdit = e.CommandSource.GetType() != typeof(GridviewExtension)
+                        ? ((GridViewRow)((LinkButton)e.CommandSource).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
 
-                    Guid costId = Guid.Empty;
-                    if (Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out costId) && EditCostHandlerCallback != null)
-                        EditCostHandlerCallback(costId, EventArgs.Empty);
+                    if (Guid.TryParse(grvData.DataKeys[rowIndexEdit].Value.ToString(), out Guid costIdEdit) && EditCostHandlerCallback != null)
+                        EditCostHandlerCallback(costIdEdit, EventArgs.Empty);
                     break;
 
                 case "ITEM_DELETE":

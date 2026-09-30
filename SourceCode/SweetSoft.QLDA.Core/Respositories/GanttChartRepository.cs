@@ -70,7 +70,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         public DataTable GetTaskIssues(string taskId)
         {
             string sql = $@"
-                SELECT MaVanDe, TenVanDe, TrangThai 
+                SELECT IdVanDe, TenVanDe, TrangThai 
                 FROM TblVanDe 
                 WHERE IdCongViecBiAnhHuong = '{taskId}' 
                   AND (DaXoa = 0 OR DaXoa IS NULL)

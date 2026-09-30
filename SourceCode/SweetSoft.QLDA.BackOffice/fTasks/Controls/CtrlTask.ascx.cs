@@ -372,8 +372,34 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     }
                     CtrlAddSubTask1.OpenModal(this.ProjectId, parentTaskId);
                     break;
+                case "ITEM_VIEW":
+                    if (!this.CURRENT_PAGE.IsView && !this.CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    Guid taskIdView = Guid.Empty;
+                    if (e.CommandArgument != null && Guid.TryParse(e.CommandArgument.ToString(), out taskIdView))
+                    {
+                        CtrlViewTaskDetail1.OpenModal(taskIdView);
+                    }
+                    else
+                    {
+                        int rowIndexView = 0;
+                        if (e.CommandSource.GetType() != typeof(GridviewExtension))
+                            rowIndexView = ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex;
+                        else
+                            rowIndexView = Convert.ToInt32(e.CommandArgument);
+
+                        if (Guid.TryParse(grvData.DataKeys[rowIndexView].Value.ToString(), out taskIdView))
+                        {
+                            CtrlViewTaskDetail1.OpenModal(taskIdView);
+                        }
+                    }
+                    break;
                 case "ITEM_DETAIL":
-                    if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
+                    if (!this.CURRENT_PAGE.IsEdit)
                     {
                         ShowAccessDeniedNotify();
                         return;
@@ -389,17 +415,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowInvalidDataError();
                         return;
                     }
-                    if (this.CURRENT_PAGE.IsEdit)
+                    if (EditTaskHandlerCallback != null)
                     {
-                        if (EditTaskHandlerCallback != null)
-                            EditTaskHandlerCallback(taskId, EventArgs.Empty);
-                    }
-                    else if (this.CURRENT_PAGE.IsView)
-                    {
-                        CtrlViewTaskDetail1.OpenModal(this.ProjectId, taskId);
+                        EditTaskHandlerCallback(taskId, EventArgs.Empty);
                     }
                     break;
-
                 case "FAST_COMPLETE":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {

@@ -257,6 +257,13 @@
     <Compile Include="fCosts\Controls\CtrlCost.ascx.designer.cs">
       <DependentUpon>CtrlCost.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fCosts\Controls\CtrlViewCostDetail.ascx.cs">
+      <DependentUpon>CtrlViewCostDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fCosts\Controls\CtrlViewCostDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewCostDetail.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fCosts\CostList.aspx.cs">
       <DependentUpon>CostList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -874,6 +881,7 @@
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
+    <Content Include="fCosts\Controls\CtrlViewCostDetail.ascx" />
     <Content Include="fCosts\CostList.aspx" />
     <Content Include="fCustomers\Controls\CtrlKhachHang.ascx" />
     <Content Include="fCustomers\Controls\CtrlKhachHangForm.ascx" />
