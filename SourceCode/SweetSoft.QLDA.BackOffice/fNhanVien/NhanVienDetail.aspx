@@ -489,7 +489,12 @@
                                                             <tr class="task-row" data-status='<%# Eval("TrangThaiTask") %>'>
                                                                 <td><strong><%# Eval("MaTask") %></strong></td>
                                                                 <td>
-                                                                    <span class="d-block fw-bold text-dark"><%# Eval("TenTask") %></span>
+                                                                   <a href='<%# GetTaskListUrl() %>' target="_blank"
+                                                                       class="d-block fw-bold text-primary" style="text-decoration: none;" 
+                                                                       onmouseover="this.style.textDecoration='underline';" 
+                                                                       onmouseout="this.style.textDecoration='none';">
+                                                                        <%# Eval("TenTask") %>
+                                                                    </a>
                                                                     <asp:PlaceHolder runat="server" Visible='<%# Eval("TenTaskCha") != null && !string.IsNullOrEmpty(Eval("TenTaskCha").ToString()) && Eval("TenTaskCha").ToString() != Eval("TenPhaseGoc").ToString() %>'>
                                                                         <div class="text-muted mt-1" style="font-size:11.5px;">
                                                                             <i class="fas fa-level-up-alt fa-rotate-90 me-1 text-secondary"></i>

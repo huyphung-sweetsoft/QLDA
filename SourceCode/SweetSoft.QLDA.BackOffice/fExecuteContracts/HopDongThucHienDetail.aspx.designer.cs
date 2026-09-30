@@ -150,6 +150,42 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
 
         /// <summary>
+        /// lbtRestoreContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtRestoreContent;
+
+        /// <summary>
+        /// dlContractFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlContractFiles;
+
+        /// <summary>
+        /// pnlImportContractContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlImportContractContent;
+
+        /// <summary>
+        /// ddlContractContentFile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlContractContentFile;
+
+        /// <summary>
         /// fbHopDong control.
         /// </summary>
         /// <remarks>

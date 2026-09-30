@@ -479,8 +479,8 @@
         </div>
         <div class="d-flex flex-wrap gap-2 mb-3">
             <div style="width:220px;max-width:100%">
-            <SweetSoft:ExtraDropdown runat="server" ID="ddlWorkspaceStatus" PlaceHolder="Tất cả trạng thái" SimpleInit="true" AutoPostBack="true" OnSelectedIndexChanged="WorkspaceFilterChanged">
-                <asp:ListItem Value="" Text="Tất cả trạng thái" />
+            <SweetSoft:ExtraDropdown runat="server" ID="ddlWorkspaceStatus" PlaceHolder="Tất cả trạng thái" EmptyItemValue="-1" SimpleInit="true" AutoPostBack="true" OnSelectedIndexChanged="WorkspaceFilterChanged">
+                <asp:ListItem Value="ALL" Text="Tất cả trạng thái" />
                 <asp:ListItem Value="CHUA_TRINH" Text="Chưa trình ký" />
                 <asp:ListItem Value="DANG_TRINH" Text="Chờ ký" />
                 <asp:ListItem Value="YEU_CAU_DIEU_CHINH" Text="Yêu cầu chỉnh sửa" />

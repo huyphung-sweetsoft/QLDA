@@ -14,6 +14,7 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -32,7 +33,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
     {
         private const string ContractFileBeforeSaveCallbackKey = "HopDongThucHienBeforeSave";
         private const string ContractFileSavedCallbackKey = "HopDongThucHienFileSaved";
-        private const string ContractClearContentConfirmCommand = "CONTRACT_CLEAR_CONTENT";
 
         public override ModuleKeys PAGE_FUNCTION_CODE
         {
@@ -70,14 +70,31 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             }
         }
 
-        private bool ClearContractContent
+        private Guid? ImportedContentFileId
         {
-            get { return ViewState["ClearContractContent"] != null && (bool)ViewState["ClearContractContent"]; }
-            set { ViewState["ClearContractContent"] = value; }
+            get
+            {
+                object value = ViewState["ImportedContentFileId"];
+                return value is Guid ? (Guid?) (Guid)value : null;
+            }
+            set { ViewState["ImportedContentFileId"] = value.HasValue ? (object)value.Value : null; }
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            UpdateRestoreButtonVisibility();
+            fbHopDong.FileMutationValidator = (recordId, refType, fileId) =>
+            {
+                Guid currentRefId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
+                TblUploadFile file = TblUploadFile.FetchByID(fileId);
+                return refType == FileUploadTypes.ProjectContract
+                    && recordId == currentRefId
+                    && (QueryId == Guid.Empty ? IsAdd : IsEdit)
+                    && file != null && file.IsDeleted != true
+                    && file.RefId == recordId
+                    && file.RefType == FileUploadTypes.ProjectContract.ToString()
+                    && (QueryId != Guid.Empty || file.OwnerId == SweetContext.Current.UserId);
+            };
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -97,7 +114,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 ApplyControlsText();
                 lbtExportPdf.Visible = this.QueryId != Guid.Empty;
                 lbtExportDocx.Visible = this.QueryId != Guid.Empty;
-                lbtResetContent.Visible = this.IsEdit;
+                pnlImportContractContent.Visible = this.QueryId == Guid.Empty ? this.IsAdd : this.IsEdit;
                 InitContractFileUploader();
 
                 if (this.QueryId == Guid.Empty)
@@ -129,18 +146,74 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
         protected void lbtResetContent_Click(object sender, EventArgs e)
         {
-            if (!this.IsEdit)
+            if (!(QueryId == Guid.Empty ? this.IsAdd : this.IsEdit))
             {
                 ShowAccessDeniedNotify();
                 return;
             }
 
+            Guid fileId;
+            if (!Guid.TryParse(ddlContractContentFile.SelectedValue, out fileId))
+            {
+                ShowNotify("Hãy chọn file PDF hoặc DOCX trong danh sách đính kèm.", MSGType.Warning);
+                dlContractFiles.OpenModal(true);
+                return;
+            }
+
+            ApplyContractFileContent(fileId, false);
+        }
+
+        protected void lbtRestoreContent_Click(object sender, EventArgs e)
+        {
+            if (!(QueryId == Guid.Empty ? this.IsAdd : this.IsEdit))
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid fileId;
+            if (ImportedContentFileId.HasValue)
+            {
+                fileId = ImportedContentFileId.Value;
+            }
+            else
+            {
+                Guid refId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
+                List<TblUploadFile> sourceFiles = GetContractFiles(refId)
+                    .Where(item => item.IsDeleted != true && (IsDocxFile(item) || IsPdfFile(item)))
+                    .ToList();
+                if (sourceFiles.Count != 1)
+                {
+                    ShowNotify(sourceFiles.Count == 0
+                        ? "Chưa có file PDF hoặc DOCX để khôi phục nội dung."
+                        : "Có nhiều file đính kèm. Hãy chọn đúng file gốc trong danh sách để khôi phục nội dung.",
+                        MSGType.Warning);
+                    if (sourceFiles.Count > 1)
+                        dlContractFiles.OpenModal(true);
+                    return;
+                }
+                fileId = sourceFiles[0].Id;
+            }
+
+            ApplyContractFileContent(fileId, true);
+        }
+
+        private void ApplyContractFileContent(Guid fileId, bool isRestore)
+        {
             Guid refId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
-            TblUploadFile file = GetContractFile(refId);
+            TblUploadFile file = GetContractFiles(refId)
+                .FirstOrDefault(item => item.Id == fileId && item.IsDeleted != true);
 
             if (file == null)
             {
-                ShowNotify("Không tìm thấy file gốc của hợp đồng.", MSGType.Warning);
+                ShowNotify("Không tìm thấy file gốc để khôi phục nội dung.", MSGType.Warning);
+                if (isRestore)
+                {
+                    ImportedContentFileId = null;
+                    BindContractContentFiles(refId);
+                }
+                else
+                    dlContractFiles.OpenModal(true);
                 return;
             }
 
@@ -169,11 +242,15 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                     return;
                 }
 
-                ClearContractContent = false;
                 txtNoiDungHopDong.Text = html;
                 SetNoiDungHopDongToEditor(html);
+                ImportedContentFileId = fileId;
+                UpdateRestoreButtonVisibility();
 
-                ShowNotify("Đã khôi phục nội dung từ file gốc.", MSGType.Success);
+                ShowNotify(isRestore
+                    ? "Đã khôi phục nội dung từ file gốc. Bấm Lưu hợp đồng để ghi nhận."
+                    : "Đã đưa nội dung file vào trình soạn thảo. Bấm Lưu hợp đồng để ghi nhận.",
+                    MSGType.Success);
             }
             catch (Exception ex)
             {
@@ -267,74 +344,8 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
             Guid refId = QueryId == Guid.Empty ? TempContractFileRefId : QueryId;
             fbHopDong.LoadFile(refId, FileUploadTypes.ProjectContract);
-
-            TblUploadFile file = GetContractFile(refId);
-
-            if (file == null)
-            {
-                if (!string.IsNullOrWhiteSpace(txtNoiDungHopDong.Text))
-                {
-                    ConfirmResult result = new ConfirmResult
-                    {
-                        CommandName = ContractClearContentConfirmCommand,
-                        Value = null
-                    };
-
-                    this.CurrentConfirmResult = result;
-
-                    MessageBox msg = new MessageBox(
-                        GetResourceText(BackEndResourceKeys.NOTIFICATION),
-                        "File hợp đồng đã bị xóa. Bạn có muốn xóa luôn nội dung soạn thảo hiện tại không?",
-                        MSGButton.DeleteCancel,
-                        MSGIcon.Warning
-                    );
-
-                    OpenMessageBox(msg, result, false, false);
-                }
-
-                return;
-            }
-
-            if (IsDocxFile(file))
-            {
-                try
-                {
-                    string html = ConvertDocxToHtml(file);
-                    txtNoiDungHopDong.Text = html;
-                    SetNoiDungHopDongToEditor(html);
-                }
-                catch (Exception ex)
-                {
-                    ShowNotify(
-                        "Không thể đọc nội dung file DOCX: " + ex.Message,
-                        MSGType.Error
-                    );
-                }
-            }
-            else if (IsPdfFile(file))
-            {
-                try
-                {
-                    string physicalPath = GetContractFilePhysicalPath(file);
-                    string html = PdfManager.Instance.ConvertPdfToHtml(physicalPath);
-
-                    if (string.IsNullOrWhiteSpace(html))
-                    {
-                        ShowNotify(
-                            "Không trích xuất được nội dung văn bản từ file PDF. File có thể là bản scan hoặc không chứa lớp văn bản.",
-                            MSGType.Warning
-                        );
-                        return;
-                    }
-
-                    txtNoiDungHopDong.Text = html;
-                    SetNoiDungHopDongToEditor(html);
-                }
-                catch (Exception ex)
-                {
-                    ShowNotify("Không thể đọc nội dung file PDF: " + ex.Message, MSGType.Error);
-                }
-            }
+            BindContractContentFiles(refId);
+            dlContractFiles.OpenModal(true);
         }
 
         public override void DataCallback(string key, object value, object valueText)
@@ -342,30 +353,55 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             HandleFileCallback(key);
         }
 
-        public override void ConfirmRequest(ConfirmResult e)
-        {
-            if (e == null || !e.Submit || string.IsNullOrEmpty(e.CommandName))
-                return;
-
-            if (e.CommandName == ContractClearContentConfirmCommand)
-            {
-                ClearContractContent = true;
-                txtNoiDungHopDong.Text = string.Empty;
-                SetNoiDungHopDongToEditor(string.Empty);
-            }
-        }
-
         private void InitContractFileUploader()
         {
-            fbHopDong.IsMultiple = false;
-            fbHopDong.IsEnabled = this.IsAdd || this.IsEdit;
-            fbHopDong.SingleFilePathType = FileTypes.Internal;
+            fbHopDong.IsMultiple = true;
+            fbHopDong.IsEnabled = this.QueryId == Guid.Empty ? this.IsAdd : this.IsEdit;
             fbHopDong.BeforeSaveDataCallbackKey = ContractFileBeforeSaveCallbackKey;
             fbHopDong.SaveDataCallbackKey = ContractFileSavedCallbackKey;
 
-            fbHopDong.LoadFile(
-                this.QueryId == Guid.Empty ? TempContractFileRefId : this.QueryId,
-                FileUploadTypes.ProjectContract);
+            Guid refId = this.QueryId == Guid.Empty ? TempContractFileRefId : this.QueryId;
+            if (this.QueryId == Guid.Empty && this.IsAdd)
+                Session["ContractFileDraft:" + refId.ToString("N")] = SweetContext.Current.UserId;
+            fbHopDong.LoadFile(refId, FileUploadTypes.ProjectContract);
+            BindContractContentFiles(refId);
+        }
+
+        private List<TblUploadFile> GetContractFiles(Guid refId)
+        {
+            if (refId == Guid.Empty)
+                return new List<TblUploadFile>();
+
+            return new UploadManager(SweetContext.Current, refId, FileUploadTypes.ProjectContract)
+                .TblUploadFiles ?? new List<TblUploadFile>();
+        }
+
+        private void BindContractContentFiles(Guid refId)
+        {
+            string selectedId = ddlContractContentFile.SelectedValue;
+            ddlContractContentFile.Items.Clear();
+            ddlContractContentFile.Items.Add(new System.Web.UI.WebControls.ListItem("Chọn file PDF hoặc DOCX", ""));
+            foreach (TblUploadFile file in GetContractFiles(refId)
+                .Where(item => item.IsDeleted != true && (IsPdfFile(item) || IsDocxFile(item)))
+                .OrderBy(item => item.DisplayOrder).ThenBy(item => item.CreatedDate))
+            {
+                ddlContractContentFile.Items.Add(new System.Web.UI.WebControls.ListItem(
+                    string.IsNullOrWhiteSpace(file.OriginalFileName) ? file.Name : file.OriginalFileName,
+                    file.Id.ToString()));
+            }
+            if (ddlContractContentFile.Items.FindByValue(selectedId) != null)
+                ddlContractContentFile.SelectedValue = selectedId;
+            UpdateRestoreButtonVisibility();
+        }
+
+        private void UpdateRestoreButtonVisibility()
+        {
+            lbtRestoreContent.Visible = ddlContractContentFile.Items.Count > 1
+                && (QueryId == Guid.Empty ? IsAdd : IsEdit);
+            lbtRestoreContent.OnClientClick = ImportedContentFileId.HasValue
+                || ddlContractContentFile.Items.Count == 2
+                ? "return confirm('Khôi phục nội dung từ file gốc? Các chỉnh sửa chưa lưu trong trình soạn thảo sẽ bị mất.');"
+                : string.Empty;
         }
 
         private void ApplyControlsText()
@@ -389,7 +425,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
             txtTenHopDong.Enabled = true;
 
             txtNoiDungHopDong.Text = string.Empty;
-            ClearContractContent = false;
         }
 
         private void LoadHopDong(Guid idHopDongThucHien)
@@ -431,6 +466,7 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
 
             fbHopDong.LoadFile(hopDong.IdHopDongThucHien, FileUploadTypes.ProjectContract);
+            BindContractContentFiles(hopDong.IdHopDongThucHien);
         }
 
         protected void lbtSubmit_Click(object sender, EventArgs e)
@@ -520,26 +556,8 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
 
                 hopDong.MoTa = string.IsNullOrWhiteSpace(txtMoTa.Text) ? null : txtMoTa.Text.Trim();
 
-                if (ClearContractContent)
-                {
-                    hopDong.NoiDungHopDong = null;
-                }
-                else if (hopDong.LoaiNoiDungHopDong == LoaiNoiDungHopDong.SOAN_THAO)
-                {
-                    hopDong.NoiDungHopDong = txtNoiDungHopDong.Text;
-                }
-                else
-                {
-                    TblUploadFile file = GetContractFile(
-                        this.QueryId == Guid.Empty ? TempContractFileRefId : this.QueryId);
-
-                    if (IsDocxFile(file))
-                        hopDong.NoiDungHopDong = txtNoiDungHopDong.Text;
-                    else if (IsPdfFile(file))
-                        hopDong.NoiDungHopDong = txtNoiDungHopDong.Text;
-                    else
-                        hopDong.NoiDungHopDong = null;
-                }
+                hopDong.NoiDungHopDong = txtNoiDungHopDong.Text;
+                hopDong.LoaiNoiDungHopDong = LoaiNoiDungHopDong.SOAN_THAO;
 
                 hopDong = HopDongThucHienManager.Instance.CreateOrUpdate(hopDong);
 
@@ -550,9 +568,11 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 }
 
                 if (isAdd)
+                {
                     LinkContractFiles(TempContractFileRefId, hopDong.IdHopDongThucHien);
+                    Session.Remove("ContractFileDraft:" + TempContractFileRefId.ToString("N"));
+                }
 
-                ClearContractContent = false;
 
                 if (isAdd)
                 {
@@ -588,16 +608,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
                 .Where(TblUploadFile.Columns.RefId).IsEqualTo(tempRefId)
                 .And(TblUploadFile.Columns.RefType).IsEqualTo(FileUploadTypes.ProjectContract.ToString())
                 .Execute();
-        }
-
-        private TblUploadFile GetContractFile(Guid refId)
-        {
-            if (refId == Guid.Empty)
-                return null;
-
-            return UploadManager.Instance.GetUploadFileByRefIdAndRefType(
-                refId,
-                FileUploadTypes.ProjectContract);
         }
 
         private string GetContractFilePhysicalPath(TblUploadFile file)

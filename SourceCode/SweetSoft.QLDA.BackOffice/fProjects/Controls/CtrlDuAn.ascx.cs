@@ -94,7 +94,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                 GetResourceText(BackEndResourceKeys.PROJECT_NAME),
                 GetResourceText(BackEndResourceKeys.CUSTOMER),
                 GetResourceText(BackEndResourceKeys.PROJECT_MANAGER),
-                GetResourceText(BackEndResourceKeys.STATUS)
+                GetResourceText(BackEndResourceKeys.STATUS),
+                GetResourceText(BackEndResourceKeys.ACTION)
             };
             grvData.HeaderTexts = lstTableHeader;
         }

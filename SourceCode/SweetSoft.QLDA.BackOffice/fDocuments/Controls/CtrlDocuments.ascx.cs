@@ -253,8 +253,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             dtSearchNgayTao.SearchTagItemText =
                 GetResourceText(BackEndResourceKeys.CREATED_DATE);
 
-            btnSearch.ToolTip = btnSearch.Text =
-                GetResourceText(BackEndResourceKeys.SEARCH);
+            btnSearch.ToolTip = GetResourceText(BackEndResourceKeys.SEARCH);
+            btnSearch.Text = string.Empty;
             btnAdd.ToolTip = btnAdd.Text =
                 GetAddDocumentText();
             btnSave.ToolTip = btnSave.Text =
