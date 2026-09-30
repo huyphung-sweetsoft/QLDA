@@ -105,7 +105,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
             if (HasDateRange(filter))
             {
                 AddDateRangeParameters(parameters, filter);
-                sql.Append(" AND r.NgayTao < @ToDateExclusive");
+                sql.Append(
+                    " AND r.NgayTao >= @FromDate" +
+                    " AND r.NgayTao < @ToDateExclusive");
             }
 
             return ExecuteList<TblRuiRoDuAn>(sql, parameters);
@@ -121,7 +123,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
             if (HasDateRange(filter))
             {
                 AddDateRangeParameters(parameters, filter);
-                sql.Append(" AND i.NgayTao < @ToDateExclusive");
+                sql.Append(
+                    " AND i.NgayTao >= @FromDate" +
+                    " AND i.NgayTao < @ToDateExclusive");
             }
 
             return ExecuteList<TblVanDe>(sql, parameters);
@@ -230,6 +234,41 @@ namespace SweetSoft.QLDA.Core.Dashboard
             return ExecuteList<AspnetUser>(
                 sql,
                 new Dictionary<string, object>());
+        }
+
+        public List<OverviewActiveCustomer> GetActiveCustomers()
+        {
+            const string sql =
+                "SELECT c.IdKhachHang, c.TenKhachHang," +
+                " COUNT(p.IdDuAn) AS ProjectCount" +
+                " FROM TblKhachHang c" +
+                " LEFT JOIN TblDuAn p ON p.IdKhachHang = c.IdKhachHang" +
+                " AND p.DaXoa = 0" +
+                " WHERE c.DaXoa = 0 AND c.KichHoat = 1" +
+                " GROUP BY c.IdKhachHang, c.TenKhachHang" +
+                " ORDER BY c.TenKhachHang";
+
+            List<OverviewActiveCustomer> customers =
+                new List<OverviewActiveCustomer>();
+            using (IDataReader reader = ExecuteReader(
+                sql,
+                new Dictionary<string, object>()))
+            {
+                while (reader != null && reader.Read())
+                {
+                    customers.Add(new OverviewActiveCustomer
+                    {
+                        CustomerId = reader["IdKhachHang"] == DBNull.Value
+                            ? Guid.Empty : (Guid)reader["IdKhachHang"],
+                        CustomerName = Convert.ToString(
+                            reader["TenKhachHang"]),
+                        ProjectCount = reader["ProjectCount"] == DBNull.Value
+                            ? 0 : Convert.ToInt32(reader["ProjectCount"])
+                    });
+                }
+            }
+
+            return customers;
         }
 
         public List<TblCongViecNhanVien> GetTaskAssignments(

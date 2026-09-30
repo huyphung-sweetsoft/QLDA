@@ -50,7 +50,6 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTenHopDong;
 
-
         /// <summary>
         /// ddlKhachHang control.
         /// </summary>
@@ -106,22 +105,85 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtMoTa;
 
         /// <summary>
-        /// rptContractFiles control.
+        /// lbtResetContent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptContractFiles;
+        protected global::System.Web.UI.WebControls.LinkButton lbtResetContent;
 
         /// <summary>
-        /// pnlNoContractFiles control.
+        /// lbtExportPdf control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoContractFiles;
+        protected global::System.Web.UI.WebControls.LinkButton lbtExportPdf;
+
+        /// <summary>
+        /// lbtExportDocx control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtExportDocx;
+
+        /// <summary>
+        /// lbtCancel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtCancel;
+
+        /// <summary>
+        /// lbtSubmit control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
+
+        /// <summary>
+        /// lbtRestoreContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtRestoreContent;
+
+        /// <summary>
+        /// dlContractFiles control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal dlContractFiles;
+
+        /// <summary>
+        /// pnlImportContractContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlImportContractContent;
+
+        /// <summary>
+        /// ddlContractContentFile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlContractContentFile;
 
         /// <summary>
         /// fbHopDong control.
@@ -149,32 +211,5 @@ namespace SweetSoft.QLDA.BackOffice.fExecuteContracts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::CKEditor.NET.CKEditorControl txtNoiDungHopDong;
-
-        /// <summary>
-        /// lbtCancel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtCancel;
-
-        /// <summary>
-        /// lbtExportPdf control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton lbtExportPdf;
-
-        /// <summary>
-        /// lbtSubmit control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSubmit;
     }
 }

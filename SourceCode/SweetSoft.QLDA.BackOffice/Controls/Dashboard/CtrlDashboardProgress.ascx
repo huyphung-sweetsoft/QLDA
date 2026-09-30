@@ -261,7 +261,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><%= GetResourceText(BackEndResourceKeys.CLOSE) %></button>
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="bx bx-x"></i><%= GetResourceText(BackEndResourceKeys.CLOSE) %></button>
                 </div>
             </div>
         </div>
@@ -325,7 +325,7 @@
                     <% } %>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><%= GetResourceText(BackEndResourceKeys.CLOSE) %></button>
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="bx bx-x"></i><%= GetResourceText(BackEndResourceKeys.CLOSE) %></button>
                 </div>
             </div>
         </div>

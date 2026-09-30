@@ -31,7 +31,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             get { return ViewState["IdNhanVien"] != null ? (Guid)ViewState["IdNhanVien"] : Guid.Empty; }
             set { ViewState["IdNhanVien"] = value; }
         }
-
+        protected Guid CurrentDetailProjectId { get; set; }
         public override bool IsLogin { get { return true; } }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -259,7 +259,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         private void LoadProjectDetail(Guid idDuAn)
         {
             if (idDuAn == Guid.Empty) return;
-
+            CurrentDetailProjectId = idDuAn;
             NhanVienProjectDTO project = ThanhVienDuAnManager.Instance.GetChiTietDuAnCuaNhanVien(CurrentIdNhanVien, idDuAn);
 
             if (project == null)
@@ -427,7 +427,11 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             if (!Guid.TryParse(idDuAn.ToString(), out projectId)) return "#";
             return GetRelativeClientPath(RewriteURLHelper.ProjectDetail(projectId));
         }
-
+        protected string GetTaskListUrl()
+        {
+            if (CurrentDetailProjectId == Guid.Empty) return "javascript:void(0);";
+            return $"/fTasks/TaskList.aspx?ProjectId={CurrentDetailProjectId}";
+        }
         protected readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         protected string GetTaskPriorityBadge(object tenDoUuTien, object diemDoUuTien)

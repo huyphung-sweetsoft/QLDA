@@ -2,6 +2,7 @@
     "use strict";
 
     var texts = window.dashboardResourceTexts || {};
+    var activeEmployee = null;
 
     function formatText(template) {
         var values = Array.prototype.slice.call(arguments, 1);
@@ -10,26 +11,143 @@
         });
     }
 
-    function formatPercent(value) {
-        var number = Number(value) || 0;
-        return number.toFixed(1).replace(".0", "") + "%";
-    }
-
     function appendText(parent, tagName, className, value) {
         var element = document.createElement(tagName);
-        if (className) {
-            element.className = className;
-        }
+        if (className) { element.className = className; }
         element.textContent = value || "";
         parent.appendChild(element);
         return element;
+    }
+
+    function renderLoadShares() {
+        var donut = document.querySelector(".dashboard-resource .resource-load-donut");
+        if (!donut) { return; }
+        var values = (donut.getAttribute("data-resource-values") || "").split(",")
+            .map(function (value) { return Number(value) || 0; });
+        var total = values.reduce(function (sum, value) { return sum + value; }, 0);
+        if (!total) { return; }
+        var size = donut.clientWidth;
+        var radius = size / 2;
+        var colors = ["#36a778", "#efb63e", "#ef6d63"];
+        var names = ["Rảnh", "Bình thường", "Quá tải"];
+        var sweep = 0;
+        var outside = [];
+        donut.querySelectorAll(".resource-load-share, .resource-load-connector").forEach(function (node) {
+            node.parentNode.removeChild(node);
+        });
+        values.forEach(function (value, index) {
+            if (value <= 0) { return; }
+            var degrees = value * 360 / total;
+            var angle = (sweep + degrees / 2 - 90) * Math.PI / 180;
+            var external = degrees < 14;
+            var distance = external ? radius + 17 : radius - 11;
+            var label = appendText(donut, "span",
+                "resource-load-share" + (external ? " is-external" : ""),
+                String(value));
+            label.setAttribute("aria-hidden", "true");
+            label.title = names[index] + ": " + value + " nhân sự";
+            label.style.left = (radius + Math.cos(angle) * distance) + "px";
+            label.style.top = (radius + Math.sin(angle) * distance) + "px";
+            if (external) {
+                outside.push({ label: label, angle: angle, x: radius + Math.cos(angle) * distance,
+                    y: radius + Math.sin(angle) * distance, color: colors[index] });
+            }
+            sweep += degrees;
+        });
+        outside.forEach(function (item) {
+            var line = document.createElement("span");
+            line.className = "resource-load-connector";
+            line.setAttribute("aria-hidden", "true");
+            var startX = radius + Math.cos(item.angle) * (radius + 2);
+            var startY = radius + Math.sin(item.angle) * (radius + 2);
+            var dx = item.x - startX;
+            var dy = item.y - startY;
+            line.style.left = startX + "px";
+            line.style.top = startY + "px";
+            line.style.width = Math.sqrt(dx * dx + dy * dy) + "px";
+            line.style.transform = "rotate(" + Math.atan2(dy, dx) + "rad)";
+            line.style.backgroundColor = item.color;
+            donut.appendChild(line);
+        });
+    }
+
+    function bindLoadDonutInteractions() {
+        var donut = document.querySelector(".dashboard-resource .resource-load-donut");
+        if (!donut || donut.__resourceLoadInteractionsBound) { return; }
+        donut.__resourceLoadInteractionsBound = true;
+
+        var highlight = appendText(donut, "span", "resource-load-slice-highlight", "");
+        highlight.setAttribute("aria-hidden", "true");
+        var tooltip = appendText(donut, "span", "resource-load-slice-tooltip", "");
+        tooltip.setAttribute("role", "tooltip");
+        tooltip.setAttribute("aria-hidden", "true");
+
+        function getSliceAt(event) {
+            var rect = donut.getBoundingClientRect();
+            var radius = Math.min(rect.width, rect.height) / 2;
+            var x = event.clientX - rect.left - rect.width / 2;
+            var y = event.clientY - rect.top - rect.height / 2;
+            var distance = Math.sqrt(x * x + y * y);
+            var padding = parseFloat(window.getComputedStyle(donut).paddingLeft) || 0;
+            if (distance < radius - padding || distance > radius) { return -1; }
+
+            var angle = (Math.atan2(y, x) * 180 / Math.PI + 90 + 360) % 360;
+            var values = (donut.getAttribute("data-resource-values") || "").split(",")
+                .map(function (value) { return Number(value) || 0; });
+            var total = values.reduce(function (sum, value) { return sum + value; }, 0);
+            if (!total) { return -1; }
+            var start = 0;
+            for (var index = 0; index < values.length; index++) {
+                var sweep = values[index] * 360 / total;
+                if (values[index] > 0 && angle >= start && angle < start + sweep) {
+                    return { index: index, start: start, sweep: sweep, value: values[index] };
+                }
+                start += sweep;
+            }
+            return -1;
+        }
+
+        function clearHover() {
+            highlight.classList.remove("is-visible");
+            tooltip.classList.remove("is-visible");
+            tooltip.setAttribute("aria-hidden", "true");
+        }
+
+        donut.addEventListener("mousemove", function (event) {
+            var slice = getSliceAt(event);
+            if (slice === -1) { clearHover(); return; }
+            var values = (donut.getAttribute("data-resource-values") || "").split(",");
+            var filter = ["free", "normal", "overloaded"][slice.index];
+            var legendItem = document.querySelector(
+                '.dashboard-resource .resource-load-legend-item[data-resource-filter="' + filter + '"]');
+            var label = legendItem && legendItem.getAttribute("data-resource-title") || "";
+            var rect = donut.getBoundingClientRect();
+            highlight.style.setProperty("--resource-hover-start", slice.start + "deg");
+            highlight.style.setProperty("--resource-hover-sweep", slice.sweep + "deg");
+            highlight.classList.add("is-visible");
+            tooltip.textContent = label + " · " + values[slice.index] + " nhân sự";
+            tooltip.style.left = (event.clientX - rect.left) + "px";
+            tooltip.style.top = (event.clientY - rect.top - 8) + "px";
+            tooltip.classList.add("is-visible");
+            tooltip.setAttribute("aria-hidden", "false");
+        });
+        donut.addEventListener("mouseleave", clearHover);
+        donut.addEventListener("click", function (event) {
+            var slice = getSliceAt(event);
+            if (slice === -1) { return; }
+            event.preventDefault();
+            event.stopPropagation();
+            var filter = ["free", "normal", "overloaded"][slice.index];
+            var trigger = document.querySelector(
+                '.dashboard-resource .resource-load-legend-item[data-resource-filter="' + filter + '"]');
+            if (trigger) { trigger.click(); }
+        });
     }
 
     function findEmployee(employeeId) {
         var employees = window.dashboardResourceDetailData || [];
         var normalizedId = String(employeeId || "").toLowerCase();
         var result = null;
-
         employees.some(function (employee) {
             if (String(employee.id || "").toLowerCase() === normalizedId) {
                 result = employee;
@@ -37,11 +155,11 @@
             }
             return false;
         });
-
         return result;
     }
 
     function findWeek(employee, weekStart) {
+        if (!employee) { return null; }
         var result = null;
         (employee.weeks || []).some(function (week) {
             if (week.start === weekStart) {
@@ -50,10 +168,22 @@
             }
             return false;
         });
+        if (result) { return result; }
+        (employee.months || []).some(function (month) {
+            (month.weeks || []).some(function (week) {
+                if (week.start === weekStart) {
+                    result = week;
+                    return true;
+                }
+                return false;
+            });
+            return !!result;
+        });
         return result;
     }
 
     function findMonth(employee, monthStart) {
+        if (!employee) { return null; }
         var result = null;
         (employee.months || []).some(function (month) {
             if (month.start === monthStart) {
@@ -65,527 +195,275 @@
         return result;
     }
 
-    function loadStatus(value) {
-        var percent = Number(value) || 0;
-        if (percent <= 0) { return { text: texts.noLoad, css: "resource-load-none" }; }
-        if (percent < 80) { return { text: texts.underloaded, css: "resource-load-low" }; }
-        if (percent <= 100) { return { text: texts.balanced, css: "resource-load-balanced" }; }
-        return { text: texts.overloaded, css: "resource-load-over" };
-    }
-
-    function renderSummary(container, allocation, allocatedDays, capacityDays, overrideStatus) {
-        container.textContent = "";
-        var status = overrideStatus || loadStatus(allocation);
-        appendText(container, "strong", "resource-drawer-percent", formatPercent(allocation));
-        appendText(container, "span", "resource-drawer-status " + status.css, status.text);
-        appendText(container, "span", "resource-drawer-days", formatText(
-            texts.weekDaysComparison, formatNumber(allocatedDays), formatNumber(capacityDays)));
-    }
-
-    function renderWeekScheduleNote(container, week) {
-        if (!container || Number(week.capacityDays) === 5) { return; }
-
-        var changes = [];
-        (week.days || []).forEach(function (day) {
-            var date = new Date(String(day.date || "") + "T00:00:00Z");
-            if (isNaN(date.getTime())) { return; }
-            var weekday = date.getUTCDay();
-            var usualWorkday = weekday >= 1 && weekday <= 5;
-            var label = day.displayDate || day.date;
-
-            if (usualWorkday && !day.isWorkingDay) {
-                if (day.isHoliday) {
-                    changes.push(formatText(texts.weekExceptionOffNote, label,
-                        day.holidayName ? " (" + day.holidayName + ")" : ""));
-                } else {
-                    changes.push(formatText(texts.weekScheduledOffNote, label));
+    function findDay(employee, date) {
+        if (!employee) { return null; }
+        var result = null;
+        (employee.weeks || []).some(function (week) {
+            (week.days || []).some(function (day) {
+                if (day.date === date) {
+                    result = day;
+                    return true;
                 }
-            } else if (!usualWorkday && day.isWorkingDay) {
-                changes.push(formatText(texts.weekWeekendWorkNote, label));
-            }
+                return false;
+            });
+            return !!result;
         });
-
-        appendText(container, "div", "resource-drawer-calendar-note",
-            changes.length
-                ? formatText(texts.weekScheduleChange, changes.join("; "))
-                : texts.weekScheduleChanged || "");
+        if (result) { return result; }
+        (employee.months || []).some(function (month) {
+            (month.weeks || []).some(function (week) {
+                (week.days || []).some(function (day) {
+                    if (day.date === date) {
+                        result = day;
+                        return true;
+                    }
+                    return false;
+                });
+                return !!result;
+            });
+            return !!result;
+        });
+        return result;
     }
 
-    function formatDays(value) {
-        var number = Number(value) || 0;
-        return formatText(
-            texts.dayFormat,
-            number.toFixed(1).replace(".0", ""));
+    function openDrawer() {
+        var drawer = document.getElementById("resource-detail-drawer");
+        if (!drawer || !window.bootstrap || !window.bootstrap.Modal) { return; }
+        window.bootstrap.Modal.getOrCreateInstance(drawer).show();
     }
 
-    function formatNumber(value) {
-        var number = Number(value) || 0;
-        return number.toFixed(1).replace(".0", "");
+    function setDrawerHeading(employee, kicker, subtitle) {
+        document.getElementById("resource-detail-title").textContent = employee.name;
+        document.getElementById("resource-detail-subtitle").textContent = subtitle || "";
+        document.getElementById("resource-detail-kicker").textContent = kicker || "";
+        activeEmployee = employee;
     }
 
-    function renderLoadFormula(container, allocation, allocatedDays, capacityDays, template) {
-        if (!container) { return; }
-        container.textContent = "";
-
-        if (Number(capacityDays) <= 0) {
-            appendText(container, "div", "fw-semibold", texts.noWorkingDaysLoad || "");
-            return;
-        }
-
-        appendText(container, "div", "fw-semibold text-dark", formatText(
-            template,
-            formatNumber(allocatedDays),
-            formatNumber(capacityDays),
-            formatPercent(allocation)));
-        appendText(container, "div", "small text-muted mt-1", texts.loadCalculationNote || "");
+    function clearSummary() {
+        var summary = document.getElementById("resource-detail-summary");
+        var formula = document.getElementById("resource-detail-formula");
+        summary.textContent = "";
+        formula.textContent = "";
+        return { summary: summary, formula: formula };
     }
 
-    function renderProject(container, project) {
-        var card = document.createElement(project.detailUrl ? "a" : "div");
-        card.className = "resource-drawer-project" +
-            (project.detailUrl ? " d-block text-decoration-none text-reset" : "");
-        if (project.detailUrl) {
-            card.href = project.detailUrl;
-        }
-
-        var heading = document.createElement("div");
-        heading.className = "resource-drawer-project-heading";
-        appendText(
-            heading,
-            "div",
-            "fw-semibold",
-            (project.code || texts.project || "") +
-                (project.name ? " · " + project.name : ""));
-        appendText(
-            heading,
-            "strong",
-            Number(project.allocation) > 100
-                ? "text-danger text-nowrap"
-                : "text-primary text-nowrap",
-            formatPercent(project.allocation));
-        card.appendChild(heading);
-
-        appendText(
-            card,
-            "div",
-            "small text-muted mt-1",
-            formatDays(project.allocatedDays) + " · " +
-                formatText(
-                    texts.taskCountFormat,
-                    Number(project.taskCount) || 0));
-        container.appendChild(card);
+    function appendBadge(parent, css, label) {
+        return appendText(parent, "span", "resource-drawer-status " + (css || ""), label || "");
     }
 
     function renderTask(container, task) {
-        var card = document.createElement(task.tasksUrl ? "a" : "div");
-        card.className = "resource-drawer-task" +
-            (task.tasksUrl ? " d-block text-decoration-none text-reset" : "");
-        if (task.tasksUrl) {
-            card.href = task.tasksUrl;
-        }
-
-        appendText(
-            card,
-            "div",
-            "resource-drawer-task-project",
-            (task.projectCode || texts.project || "") +
-                (task.projectName ? " · " + task.projectName : ""));
-        appendText(
-            card,
-            "div",
-            "fw-semibold mt-1",
-            (task.code || texts.task || "") +
-                (task.name ? " - " + task.name : ""));
-
-        var meta = document.createElement("div");
-        meta.className = "resource-drawer-task-meta";
-        appendText(
-            meta,
-            "span",
-            "",
-            formatDays(task.allocatedDays) + " · " +
-                (task.activeDates || []).join(", "));
-        appendText(
-            meta,
-            "strong",
-            "text-primary text-nowrap",
-            formatPercent(task.allocation));
-        card.appendChild(meta);
-        container.appendChild(card);
-    }
-
-    function renderDailyTask(container, task) {
         var item = document.createElement(task.tasksUrl ? "a" : "div");
-        item.className = "resource-day-task" +
-            (task.tasksUrl ? " d-block text-decoration-none text-reset" : "");
-        if (task.tasksUrl) {
-            item.href = task.tasksUrl;
-        }
+        item.className = "resource-drawer-task" + (task.tasksUrl ? " d-block text-decoration-none text-reset" : "");
+        if (task.tasksUrl) { item.href = task.tasksUrl; }
 
-        appendText(
-            item,
-            "div",
-            "fw-semibold",
-            (task.code || texts.task || "") +
-                (task.name ? " - " + task.name : ""));
-        appendText(
-            item,
-            "div",
-            "small text-muted",
+        appendText(item, "div", "resource-drawer-task-project",
             (task.projectCode || texts.project || "") +
                 (task.projectName ? " · " + task.projectName : ""));
+        appendText(item, "div", "fw-semibold mt-1",
+            (task.code || texts.task || "") + (task.name ? " - " + task.name : ""));
+        if (task.startDate || task.endDate) {
+            appendText(item, "div", "small text-muted mt-1",
+                (task.startDate || "") + (task.endDate ? " – " + task.endDate : ""));
+        }
         container.appendChild(item);
     }
 
-    function getDayStatus(day) {
-        if (day.isHoliday) {
-            return {
-                text: formatText(
-                    texts.holidayDay,
-                    day.holidayName || texts.nonWorkingDay || ""),
-                css: "resource-day-holiday"
-            };
-        }
-
-        if (!day.isWorkingDay) {
-            return {
-                text: texts.nonWorkingDay || "",
-                css: "resource-day-non-working"
-            };
-        }
-
-        return {
-            text: texts.workingDay || "",
-            css: "resource-day-working"
-        };
-    }
-
-    function renderDailyAllocation(container, days) {
-        container.textContent = "";
-        days = days || [];
-        if (days.length === 0) {
-            appendText(
-                container,
-                "div",
-                "resource-drawer-empty",
-                texts.noTasks || "");
-            return;
-        }
-
-        var wrapper = document.createElement("div");
-        wrapper.className = "table-responsive";
-        var table = document.createElement("table");
-        table.className = "table dashboard-data-table table-bordered table-sm resource-drawer-day-table mb-0";
-        var head = document.createElement("thead");
-        var headRow = document.createElement("tr");
-        [texts.date || "Date", texts.status || "Status",
-            texts.task || "Task", texts.utilization || "Utilization"]
-            .forEach(function (label) {
-                appendText(headRow, "th", "", label);
-            });
-        head.appendChild(headRow);
-        table.appendChild(head);
-
-        var body = document.createElement("tbody");
-        days.forEach(function (day) {
-            var status = getDayStatus(day);
-            var row = document.createElement("tr");
-            if (day.isHoliday) {
-                row.className = "resource-day-holiday-row";
-            } else if (!day.isWorkingDay) {
-                row.className = "resource-day-non-working-row";
-            }
-
-            appendText(row, "td", "resource-day-date", day.displayDate || day.date);
-            appendText(row, "td", "resource-day-status " + status.css, status.text);
-
-            var taskCell = document.createElement("td");
-            if (!day.tasks || day.tasks.length === 0) {
-                appendText(
-                    taskCell,
-                    "span",
-                    "small text-muted",
-                    texts.noTasksOnDay || texts.noTasks || "");
-            } else {
-                day.tasks.forEach(function (task) {
-                    renderDailyTask(taskCell, task);
-                });
-            }
-            row.appendChild(taskCell);
-
-            appendText(
-                row,
-                "td",
-                "text-center text-nowrap resource-day-load",
-                formatPercent(day.allocation));
-            body.appendChild(row);
-        });
-
-        table.appendChild(body);
-        wrapper.appendChild(table);
-        container.appendChild(wrapper);
-    }
-
-    function renderWeekStatus(container, week, days) {
-        container.textContent = "";
-        days = days || [];
-        var workingDays = days.filter(function (day) {
-            return day.isWorkingDay;
-        });
-
-        if (workingDays.length > 0 && Number(week.allocatedDays) <= 0) {
-            appendText(
-                container,
-                "span",
-                "badge resource-week-status resource-week-no-assignment",
-                texts.noAssignmentWeek || "");
-        }
-    }
-
-    function openDrawer(employeeId, weekStart) {
-        var drawer = document.getElementById("resource-detail-drawer");
-        var backdrop = document.getElementById("resource-detail-backdrop");
-        var title = document.getElementById("resource-detail-title");
-        var subtitle = document.getElementById("resource-detail-subtitle");
-        var dayContainer = document.getElementById("resource-detail-days");
-        var kicker = document.getElementById("resource-detail-kicker");
-        var summary = document.getElementById("resource-detail-summary");
-        var formula = document.getElementById("resource-detail-formula");
-        var employee = findEmployee(employeeId);
-        var week = employee ? findWeek(employee, weekStart) : null;
-
-        if (!drawer || !backdrop || !title || !subtitle ||
-            !employee || !week || !dayContainer) {
-            return;
-        }
-
-        title.textContent = employee.name;
-        subtitle.textContent = week.label + " · " + week.displayRange +
+    function renderDay(employee, day) {
+        if (!employee || !day) { return; }
+        var subtitle = (day.displayDate || day.date) +
             (employee.jobTitle ? " · " + employee.jobTitle : "") +
             (employee.department ? " · " + employee.department : "");
-        if (kicker) { kicker.textContent = texts.weekDetail || ""; }
-        if (summary) {
-            renderSummary(summary, week.allocation, week.allocatedDays, week.capacityDays);
-            renderWeekScheduleNote(summary, week);
-        }
-        renderLoadFormula(formula, week.allocation, week.allocatedDays,
-            week.capacityDays, texts.formula);
-        renderDailyAllocation(dayContainer, week.days || []);
+        setDrawerHeading(employee, texts.dailyDetail || texts.task || "", subtitle);
 
-        showDrawer(drawer, backdrop);
-    }
+        var parts = clearSummary();
+        appendBadge(parts.summary, "resource-drawer-status-primary " + (day.statusCss || ""), day.status);
+        var summarySecondary = appendText(parts.summary, "div", "resource-drawer-summary-secondary", "");
+        appendText(summarySecondary, "span", "resource-drawer-summary-type " + (day.dayTypeCss || ""), day.dayType);
+        appendText(summarySecondary, "span", "resource-drawer-summary-count",
+            formatText(texts.taskCountFormat, day.taskCount));
+        appendText(parts.formula, "div", "small text-muted", texts.resourceLoadRules || "");
 
-    function openMonthDrawer(employeeId, monthStart) {
-        var drawer = document.getElementById("resource-detail-drawer");
-        var backdrop = document.getElementById("resource-detail-backdrop");
-        var title = document.getElementById("resource-detail-title");
-        var subtitle = document.getElementById("resource-detail-subtitle");
-        var kicker = document.getElementById("resource-detail-kicker");
-        var summary = document.getElementById("resource-detail-summary");
-        var formula = document.getElementById("resource-detail-formula");
         var content = document.getElementById("resource-detail-days");
-        var employee = findEmployee(employeeId);
-        var month = employee ? findMonth(employee, monthStart) : null;
-        if (!drawer || !backdrop || !title || !subtitle || !content || !month) { return; }
-
-        title.textContent = employee.name;
-        subtitle.textContent = month.label +
-            (employee.jobTitle ? " · " + employee.jobTitle : "") +
-            (employee.department ? " · " + employee.department : "");
-        if (kicker) { kicker.textContent = texts.monthSummary || ""; }
-        if (summary) {
-            renderSummary(summary, month.allocation, month.allocatedDays, month.capacityDays,
-                { text: month.status, css: month.hasOverload ? "resource-load-over" : loadStatus(month.allocation).css });
-        }
-        renderLoadFormula(formula, month.allocation, month.allocatedDays,
-            month.capacityDays, texts.monthFormula);
         content.textContent = "";
-        appendText(content, "h6", "mb-2", texts.selectWeek || "");
-        (month.weeks || []).forEach(function (week) {
-            var link = document.createElement("a");
-            link.className = "resource-month-week-link";
-            link.href = week.detailUrl || "#";
-            var left = document.createElement("span");
-            left.className = "resource-month-week-info";
-            appendText(left, "strong", "resource-month-week-range", week.displayRange);
-            appendText(left, "small", "resource-month-week-meta", formatText(
-                texts.weekDaysComparison,
-                formatNumber(week.allocatedDays),
-                formatNumber(week.capacityDays)) + " · " + formatText(
-                    texts.taskCountFormat, week.taskCount));
-            link.appendChild(left);
-            var right = document.createElement("span");
-            right.className = "resource-month-week-load";
-            appendText(right, "strong", "", formatPercent(week.allocation));
-            appendText(right, "small", "resource-drawer-status " +
-                (week.statusCss || ""), week.status || "");
-            appendText(right, "small", "resource-month-week-action", texts.viewWeek || "");
-            link.appendChild(right);
-            content.appendChild(link);
-        });
-        showDrawer(drawer, backdrop);
-    }
-
-    function showDrawer(drawer, backdrop) {
-
-        backdrop.hidden = false;
-        window.setTimeout(function () {
-            backdrop.classList.add("is-open");
-            drawer.classList.add("is-open");
-            drawer.setAttribute("aria-hidden", "false");
-        }, 0);
-        document.body.classList.add("resource-drawer-open");
-    }
-
-    function closeDrawer() {
-        var drawer = document.getElementById("resource-detail-drawer");
-        var backdrop = document.getElementById("resource-detail-backdrop");
-        if (!drawer || !backdrop) {
-            return;
+        appendText(content, "h6", "resource-drawer-section-title",
+            formatText(texts.tasksForDate || "{0}", day.displayDate || day.date));
+        if (!day.tasks || day.tasks.length === 0) {
+            appendText(content, "div", "resource-drawer-empty", texts.noTasksOnDay || "");
+        } else {
+            day.tasks.forEach(function (task) { renderTask(content, task); });
         }
+        openDrawer();
+    }
 
-        drawer.classList.remove("is-open");
-        backdrop.classList.remove("is-open");
-        drawer.setAttribute("aria-hidden", "true");
-        document.body.classList.remove("resource-drawer-open");
-        window.setTimeout(function () {
-            if (!backdrop.classList.contains("is-open")) {
-                backdrop.hidden = true;
-            }
-        }, 200);
+    function buildDayButton(employee, day) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "resource-drawer-day-link";
+        button.setAttribute("data-drawer-date", day.date);
+        appendText(button, "strong", "", day.displayDate || day.date);
+        appendBadge(button, "resource-drawer-status-primary " + (day.statusCss || ""), day.status);
+        var secondary = appendText(button, "span", "resource-drawer-day-secondary", "");
+        appendText(secondary, "span", "resource-drawer-day-type " + (day.dayTypeCss || ""), day.dayType);
+        appendText(secondary, "span", "resource-drawer-day-count",
+            formatText(texts.taskCountFormat, day.taskCount));
+        return button;
+    }
+
+    function renderWeek(employee, week) {
+        if (!employee || !week) { return; }
+        setDrawerHeading(employee, texts.weekDetail || "",
+            (week.label ? week.label + " · " : "") + (week.displayRange || ""));
+        var parts = clearSummary();
+        appendBadge(parts.summary, "resource-drawer-status-primary " + (week.statusCss || ""), week.status);
+        appendText(parts.summary, "span", "resource-drawer-summary-count",
+            formatText(texts.taskCountFormat, week.taskCount));
+        appendText(parts.formula, "div", "small text-muted", texts.resourceLoadRules || "");
+
+        var content = document.getElementById("resource-detail-days");
+        content.textContent = "";
+        appendText(content, "h6", "resource-drawer-section-title", texts.selectDay || "");
+        (week.days || []).forEach(function (day) {
+            content.appendChild(buildDayButton(employee, day));
+        });
+        openDrawer();
+    }
+
+    function renderMonth(employee, month) {
+        if (!employee || !month) { return; }
+        setDrawerHeading(employee, texts.monthSummary || "", month.label || "");
+        var parts = clearSummary();
+        appendBadge(parts.summary, "resource-drawer-status-primary " + (month.statusCss || ""), month.status);
+        appendText(parts.summary, "span", "resource-drawer-month-counts",
+            formatText(texts.monthDailyCounts,
+                month.noLoadDayCount, month.normalDayCount, month.overloadedDayCount));
+        appendText(parts.formula, "div", "small text-muted", texts.monthlyCalculation || "");
+
+        var content = document.getElementById("resource-detail-days");
+        content.textContent = "";
+        appendText(content, "h6", "resource-drawer-section-title", texts.selectWeek || "");
+        (month.weeks || []).forEach(function (week) {
+            var button = document.createElement("button");
+            button.type = "button";
+            button.className = "resource-month-week-link resource-drawer-open-week";
+            button.setAttribute("data-drawer-week", week.start);
+            appendText(button, "strong", "", week.displayRange);
+            appendText(button, "span", "resource-month-week-meta",
+                formatText(texts.taskCountFormat, week.taskCount) + " · " + (week.status || ""));
+            content.appendChild(button);
+        });
+        openDrawer();
     }
 
     function bindEmployeeQuickList() {
         var modal = document.getElementById("resourceEmployeesModal");
         var listBody = document.getElementById("resourceEmployeeListBody");
         var search = document.getElementById("resourceEmployeeSearch");
+        var statusSelect = document.getElementById("resourceEmployeeStatus");
         var emptyRow = document.getElementById("resourceEmployeeSearchEmpty");
         var count = document.getElementById("resourceEmployeeListCount");
+        if (!modal || !listBody || !search || !statusSelect) { return; }
 
-        if (!modal || !listBody || !search) {
-            return;
+        var rows = Array.prototype.slice.call(listBody.querySelectorAll("tr[data-resource-status]"));
+        var selectedFilter = "all";
+        var title = document.getElementById("resourceEmployeesModalTitle");
+        var allTitle = document.querySelector(".dashboard-resource .resource-load-donut-center[data-resource-title]");
+        allTitle = allTitle ? allTitle.getAttribute("data-resource-title") : "";
+
+        function selectFilter(filter) {
+            statusSelect.value = filter;
+            if (!statusSelect.value) { statusSelect.value = "all"; }
+            selectedFilter = statusSelect.value;
+            if (title) {
+                title.textContent = selectedFilter === "all" ? allTitle : statusSelect.options[statusSelect.selectedIndex].text;
+            }
+            applyFilter();
         }
 
-        var rows = Array.prototype.slice.call(
-            listBody.querySelectorAll("tr[data-resource-status]")
-        );
-        var selectedFilter = "all";
-
         function applyFilter() {
-            var query = (search.value || "")
-                .trim()
-                .toLocaleLowerCase();
+            var query = (search.value || "").trim().toLocaleLowerCase();
             var visibleCount = 0;
-
             rows.forEach(function (row) {
                 var status = row.getAttribute("data-resource-status");
-                var matchesCategory = selectedFilter === "all"
-                    || (selectedFilter === "attention" && status !== "balanced")
-                    || status === selectedFilter;
-                var matchesQuery = !query || row.textContent
-                    .toLocaleLowerCase()
-                    .indexOf(query) >= 0;
+                var matchesCategory = selectedFilter === "all" ||
+                    (selectedFilter === "attention" && (status === "free" || status === "overloaded")) ||
+                    status === selectedFilter;
+                var matchesQuery = !query || row.textContent.toLocaleLowerCase().indexOf(query) >= 0;
                 var visible = matchesCategory && matchesQuery;
-
                 row.classList.toggle("d-none", !visible);
-                if (visible) {
-                    visibleCount += 1;
-                }
+                if (visible) { visibleCount += 1; }
             });
-
-            if (emptyRow && rows.length > 0) {
-                emptyRow.classList.toggle("d-none", visibleCount > 0);
-            }
-            if (count) {
-                count.textContent = visibleCount + " " + (texts.employeeLabel || "");
-            }
+            if (emptyRow && rows.length > 0) { emptyRow.classList.toggle("d-none", visibleCount > 0); }
+            if (count) { count.textContent = visibleCount + " " + (texts.employeeLabel || ""); }
         }
 
         modal.addEventListener("show.bs.modal", function (event) {
             var trigger = event.relatedTarget;
-            var title = document.getElementById(
-                "resourceEmployeesModalTitle");
-
-            selectedFilter = trigger
-                ? trigger.getAttribute("data-resource-filter") || "all"
-                : "all";
-            if (trigger && title) {
-                title.textContent = trigger.getAttribute(
-                    "data-resource-title") || title.textContent;
-            }
-
             search.value = "";
-            applyFilter();
+            selectFilter(trigger ? trigger.getAttribute("data-resource-filter") || "all" : "all");
         });
-
+        statusSelect.addEventListener("change", function () { selectFilter(statusSelect.value); });
         search.addEventListener("input", applyFilter);
         listBody.addEventListener("click", function (event) {
-            var trigger = event.target.closest(
-                ".resource-list-open-week, .resource-list-open-month");
+            var trigger = event.target.closest(".resource-list-open-week, .resource-list-open-month");
             if (!trigger) { return; }
-            var employeeId = trigger.getAttribute("data-resource-person");
-            var weekStart = trigger.getAttribute("data-resource-week");
-            var monthStart = trigger.getAttribute("data-resource-month");
+            var employee = findEmployee(trigger.getAttribute("data-resource-person"));
+            var week = findWeek(employee, trigger.getAttribute("data-resource-week"));
+            var month = findMonth(employee, trigger.getAttribute("data-resource-month"));
             function openSelected() {
-                if (monthStart) { openMonthDrawer(employeeId, monthStart); }
-                else { openDrawer(employeeId, weekStart); }
+                if (month) { renderMonth(employee, month); }
+                else { renderWeek(employee, week); }
             }
             var modalInstance = window.bootstrap && window.bootstrap.Modal
                 ? window.bootstrap.Modal.getInstance(modal) : null;
             if (modalInstance) {
-                modal.addEventListener("hidden.bs.modal", openSelected,
-                    { once: true });
+                modal.addEventListener("hidden.bs.modal", openSelected, { once: true });
                 modalInstance.hide();
-            } else {
-                openSelected();
-            }
+            } else { openSelected(); }
         });
     }
 
     function bindDrawer() {
         var dashboard = document.querySelector(".dashboard-resource");
-        var closeButton = document.getElementById("resource-detail-close");
-        var backdrop = document.getElementById("resource-detail-backdrop");
-
-        if (!dashboard) {
-            return;
-        }
+        var drawer = document.getElementById("resource-detail-drawer");
+        if (!dashboard) { return; }
 
         dashboard.addEventListener("click", function (event) {
-            var target = event.target;
-            target = target.closest(".resource-open-week, .resource-open-month");
+            var target = event.target.closest(".resource-open-day, .resource-open-week, .resource-open-month");
             if (!target || !dashboard.contains(target)) { return; }
-            if (target.classList.contains("resource-open-week")) {
-                openDrawer(
-                    target.getAttribute("data-resource-person"),
-                    target.getAttribute("data-resource-week"));
+            var employee = findEmployee(target.getAttribute("data-resource-person"));
+            if (target.classList.contains("resource-open-day")) {
+                renderDay(employee, findDay(employee, target.getAttribute("data-resource-day")));
+            } else if (target.classList.contains("resource-open-week")) {
+                renderWeek(employee, findWeek(employee, target.getAttribute("data-resource-week")));
             } else {
-                openMonthDrawer(
-                    target.getAttribute("data-resource-person"),
-                    target.getAttribute("data-resource-month"));
+                renderMonth(employee, findMonth(employee, target.getAttribute("data-resource-month")));
             }
         });
 
-        if (closeButton) {
-            closeButton.addEventListener("click", closeDrawer);
+        if (drawer) {
+            drawer.addEventListener("click", function (event) {
+                var dayButton = event.target.closest("[data-drawer-date]");
+                if (dayButton && activeEmployee) {
+                    renderDay(activeEmployee, findDay(activeEmployee, dayButton.getAttribute("data-drawer-date")));
+                    return;
+                }
+                var weekButton = event.target.closest("[data-drawer-week]");
+                if (weekButton && activeEmployee) {
+                    renderWeek(activeEmployee, findWeek(activeEmployee, weekButton.getAttribute("data-drawer-week")));
+                }
+            });
         }
-        if (backdrop) {
-            backdrop.addEventListener("click", closeDrawer);
-        }
-        document.addEventListener("keydown", function (event) {
-            if (event.key === "Escape") {
-                closeDrawer();
-            }
-        });
     }
 
     function initialize() {
+        renderLoadShares();
+        bindLoadDonutInteractions();
         bindEmployeeQuickList();
         bindDrawer();
         var initial = window.dashboardResourceInitialDetail;
         if (initial && initial.person && initial.week) {
-            openDrawer(initial.person, initial.week);
+            renderWeek(findEmployee(initial.person), findWeek(findEmployee(initial.person), initial.week));
         }
+        window.addEventListener("resize", renderLoadShares);
     }
 
     if (document.readyState === "loading") {

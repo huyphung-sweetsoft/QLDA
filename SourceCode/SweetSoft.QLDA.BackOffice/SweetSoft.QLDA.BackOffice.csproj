@@ -48,12 +48,21 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp, Version=1.5.0.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.1.5.0\lib\net472\AngleSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CKEditor.NET, Version=3.6.6.2, Culture=neutral, PublicKeyToken=e379cdf2f8354999, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\CKEditor.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=3.5.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.3.5.1\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml.Framework, Version=3.5.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.Framework.3.5.1\lib\net46\DocumentFormat.OpenXml.Framework.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus, Version=6.0.6.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.6.0.6\lib\net35\EPPlus.dll</HintPath>
@@ -73,6 +82,9 @@
     <Reference Include="Hangfire.SqlServer, Version=1.8.25.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hangfire.SqlServer.1.8.25\lib\net451\Hangfire.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlToOpenXml, Version=3.5.0.0, Culture=neutral, PublicKeyToken=6ad79d83e2b60e63, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlToOpenXml.dll.3.5.0\lib\net462\HtmlToOpenXml.dll</HintPath>
+    </Reference>
     <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\ImageResizer.dll</HintPath>
@@ -84,11 +96,26 @@
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.9\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\Libraries\Microsoft.Practices.EnterpriseLibrary.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Data, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\Libraries\Microsoft.Practices.EnterpriseLibrary.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ObjectBuilder2, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\Libraries\Microsoft.Practices.ObjectBuilder2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=9.0.0.9, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.9.0.9\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=9.0.0.9, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.9.0.9\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.3.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
@@ -117,7 +144,7 @@
       <HintPath>..\packages\Quartz.3.13.1\lib\net472\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="SubSonic">
-      <HintPath>..\..\..\SubSonic2.2\SubCommander\SubSonic.dll</HintPath>
+      <HintPath>..\Libraries\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -142,6 +169,7 @@
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
@@ -152,6 +180,9 @@
     </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Text.Encoding.CodePages, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.8.0.0\lib\net462\System.Text.Encoding.CodePages.dll</HintPath>
+    </Reference>
     <Reference Include="System.Text.Encodings.Web, Version=9.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.9.0.9\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
@@ -206,6 +237,19 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\NotificationHelper.cs" />
     <Compile Include="Common\SettingDateTimeConverter.cs" />
+    <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.cs">
+      <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.designer.cs">
+      <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx.cs</DependentUpon>
+    </Compile>
     <Compile Include="fCosts\Controls\CtrlCost.ascx.cs">
       <DependentUpon>CtrlCost.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -384,13 +428,6 @@
     <Compile Include="Controls\Dashboard\CtrlDashboardResource.ascx.designer.cs">
       <DependentUpon>CtrlDashboardResource.ascx</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.cs">
-      <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.designer.cs">
-      <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
-    </Compile>
     <Compile Include="Dashboard.aspx.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -512,6 +549,13 @@
     <Compile Include="fMeets\Controls\CtrlMeet.ascx.designer.cs">
       <DependentUpon>CtrlMeet.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.cs">
+      <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx.cs">
       <DependentUpon>CtrlXemNhanVienMeet.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -533,19 +577,19 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
-    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
-      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
-      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fNhanVien\LichCaNhan.aspx.cs">
       <DependentUpon>LichCaNhan.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fNhanVien\LichCaNhan.aspx.designer.cs">
       <DependentUpon>LichCaNhan.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
     </Compile>
     <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -609,6 +653,13 @@
     </Compile>
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.cs">
+      <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.designer.cs">
+      <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\Controls\CtrlAddPhase.ascx.cs">
       <DependentUpon>CtrlAddPhase.ascx</DependentUpon>
@@ -701,19 +752,19 @@
     <Compile Include="fTasks\Controls\CtrlChonNhanVienTask.ascx.designer.cs">
       <DependentUpon>CtrlChonNhanVienTask.ascx</DependentUpon>
     </Compile>
-    <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
-      <DependentUpon>CtrlTask.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
-      <DependentUpon>CtrlTask.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.cs">
       <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.designer.cs">
       <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\TaskList.aspx.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
@@ -728,13 +779,6 @@
     </Compile>
     <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.designer.cs">
       <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.cs">
-      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.designer.cs">
-      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -756,6 +800,13 @@
     </Compile>
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.designer.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -814,9 +865,11 @@
     <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
     <Content Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx" />
     <Content Include="Controls\Dashboard\dashboard-overview.js" />
-    <Content Include="Controls\Dashboard\dashboard-project-groups.js" />
+    <Content Include="Controls\Dashboard\dashboard-modals.js" />
     <Content Include="Controls\Dashboard\dashboard-cost.js" />
+    <Content Include="Controls\Dashboard\dashboard-donut.js" />
     <Content Include="Controls\Dashboard\dashboard-progress.js" />
+    <Content Include="Controls\Dashboard\dashboard-project-groups.js" />
     <Content Include="Controls\Dashboard\dashboard-resource.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
@@ -876,17 +929,18 @@
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
-    <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\Controls\CtrlViewMeetDetail.ascx" />
+    <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
-    <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\LichCaNhan.aspx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
+    <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fRisks\Controls\CtrlViewRiskDetail.ascx" />
     <Content Include="fTasks\Controls\CtrlAddPhase.ascx" />
     <Content Include="fTasks\Controls\CtrlAddSubTask.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
@@ -962,6 +1016,22 @@
     <Content Include="Styles\video\video-trang-chu.mp4" />
     <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
     <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260820.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260828.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260916.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260917.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260922.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_07092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_11092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_12092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_13092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_15092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_16092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_17092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_21092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_22092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_23092026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -1960,12 +2030,10 @@
     <Content Include="Web.config" />
     <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
     <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng__1__20260924_073456_O046R1.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng__1__20260924_074129_GKNG9B.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\BanCamKet_HoangDuyAn_20260924_104912_R1XA2M.docx" />
-    <Content Include="Uploads\ProjectContract\2026\09\CamKetDuLieu_20260924_100508_NOBB18.pdf" />
-    <Content Include="Uploads\ProjectContract\2026\09\Lab_4_20260924_100728_YD9MWR.pdf" />
-    <Content Include="Uploads\ProjectContract\2026\09\TB_07_chuyen_xe_Xuan_YT_20260924_102219_ZLRIZ1.pdf" />
+    <Content Include="Uploads\ProjectContractPdf\2026\09\HopDongThucHien_72eb428e6ec4408eab07bc851dc3ab9f.pdf" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\_ViewStart.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -2186,6 +2254,8 @@
     <Folder Include="Controllers\" />
     <Folder Include="Data\" />
     <Folder Include="obj\Debug\TempPE\" />
+    <Folder Include="Uploads\DocumentSigningResult\2026\09\" />
+    <Folder Include="Uploads\ProjectContract\2026\09\" />
     <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
   </ItemGroup>
@@ -2298,11 +2368,17 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>del /f /q "$(TargetDir)Microsoft.Practices.EnterpriseLibrary.Data.dll"
-del /f /q "$(TargetDir)System.Data.SQLite"
+    <PostBuildEvent>del /f /q "$(TargetDir)System.Data.SQLite"
 del "$(TargetDir)System.Data.SQLite"
 </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets" Condition="Exists('..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\build\Microsoft.Extensions.Logging.Abstractions.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

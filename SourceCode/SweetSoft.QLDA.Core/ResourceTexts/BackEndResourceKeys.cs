@@ -415,6 +415,13 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PERSONNEL_WARNING = "PERSONNEL_WARNING";
         public const string DOING_X_TASKS = "DOING_X_TASKS";
         public const string WARNING_REMOVE_ACTIVE_MEMBERS_MSG = "WARNING_REMOVE_ACTIVE_MEMBERS_MSG";
+        public const string CONTRACT_NAME = "CONTRACT_NAME";
+        public const string CONTRACT_INFORMATION = "CONTRACT_INFORMATION";
+        public const string CONTRACT_CONTENT = "CONTRACT_CONTENT";
+        public const string PHASE_MANAGEMENT = "PHASE_MANAGEMENT";
+        public const string PHASE_NAME = "PHASE_NAME";
+        public const string PHASE_LIST = "PHASE_LIST";
+        public const string END = "END";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";
@@ -976,6 +983,15 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DASHBOARD_BALANCED_LOAD = "DASHBOARD_BALANCED_LOAD";
         public const string DASHBOARD_OVERLOADED = "DASHBOARD_OVERLOADED";
         public const string DASHBOARD_NO_LOAD = "DASHBOARD_NO_LOAD";
+        public const string DASHBOARD_RESOURCE_FREE = "DASHBOARD_RESOURCE_FREE";
+        public const string DASHBOARD_RESOURCE_NORMAL = "DASHBOARD_RESOURCE_NORMAL";
+        public const string DASHBOARD_RESOURCE_WEEKEND = "DASHBOARD_RESOURCE_WEEKEND";
+        public const string DASHBOARD_RESOURCE_LOAD_RULES = "DASHBOARD_RESOURCE_LOAD_RULES";
+        public const string DASHBOARD_MONTH_DAILY_COUNTS = "DASHBOARD_MONTH_DAILY_COUNTS";
+        public const string DASHBOARD_MAX_TASKS_IN_DAY = "DASHBOARD_MAX_TASKS_IN_DAY";
+        public const string DASHBOARD_TASKS_FOR_DATE = "DASHBOARD_TASKS_FOR_DATE";
+        public const string DASHBOARD_SELECT_DAY = "DASHBOARD_SELECT_DAY";
+        public const string DASHBOARD_DAILY_TASKS_DETAIL = "DASHBOARD_DAILY_TASKS_DETAIL";
         public const string DASHBOARD_TOTAL_EMPLOYEES = "DASHBOARD_TOTAL_EMPLOYEES";
         public const string DASHBOARD_VIEW_MONTH_WEEKS = "DASHBOARD_VIEW_MONTH_WEEKS";
         public const string DASHBOARD_MONTH_KPI_TITLE = "DASHBOARD_MONTH_KPI_TITLE";
@@ -990,6 +1006,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string DASHBOARD_NO_MONTHLY_EMPLOYEES = "DASHBOARD_NO_MONTHLY_EMPLOYEES";
         public const string DASHBOARD_EMPLOYEES_NEED_ATTENTION = "DASHBOARD_EMPLOYEES_NEED_ATTENTION";
         public const string DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC = "DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC";
+        public const string DASHBOARD_OVERLOADED_ON_DAYS = "DASHBOARD_OVERLOADED_ON_DAYS";
+        public const string DASHBOARD_RESOURCE_LOAD_DISTRIBUTION = "DASHBOARD_RESOURCE_LOAD_DISTRIBUTION";
         public const string DASHBOARD_NO_RESOURCE_WARNINGS = "DASHBOARD_NO_RESOURCE_WARNINGS";
         public const string DASHBOARD_RESOURCE_LOAD_TREND = "DASHBOARD_RESOURCE_LOAD_TREND";
         public const string DASHBOARD_RESOURCE_LOAD_TREND_DESC = "DASHBOARD_RESOURCE_LOAD_TREND_DESC";

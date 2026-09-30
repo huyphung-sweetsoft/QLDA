@@ -339,6 +339,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
                 .ExecuteSingle<TblThanhVienDuAn>();
         }
+
+        public TblThanhVienDuAn GetNhanVienIsActiveInDuAn(Guid idNhanVien, Guid idDuAn)
+        {
+            return new Select()
+                .From(TblThanhVienDuAn.Schema)
+                .Where(TblThanhVienDuAn.IdNhanVienColumn).IsEqualTo(idNhanVien)
+                .And(TblThanhVienDuAn.IdDuAnColumn).IsEqualTo(idDuAn)
+                .And(TblThanhVienDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblThanhVienDuAn>();
+        }
         //THêm mới 3 hàm sau
         //1. Hàm này dùng đến lấy danh sách dựa vào id dự án và vai trò và có ngoại lệ (except 1 đứa), //mục đích là lấy danh sách với vai trò là PM để tiến hành cho chức năng đỏi PM từ nhân viên A sang nv B
         //Mỗi dự án chỉ có 1 PM nên hàm này nếu viết dạng lấy 1 cũng được nhưng viết list cho chắc để tránh trường hợp db lỗi 

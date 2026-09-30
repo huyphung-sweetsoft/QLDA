@@ -5,6 +5,13 @@
 
 <asp:Content ID="ContentStyles" ContentPlaceHolderID="cpHead" runat="server">
     <style>
+        .signing-inbox .signing-document-grid th { color: var(--bs-primary); text-align: center; }
+        .signing-inbox .signing-document-grid td { vertical-align: middle; }
+        .signing-inbox .signing-document-grid tr > :first-child { width: 50px; min-width: 50px; white-space: nowrap; text-align: center; }
+        .signing-inbox .signing-document-grid .signing-document-text { white-space: normal; overflow-wrap: anywhere; }
+        .signing-inbox .signing-document-grid .signing-document-name { color: inherit; font-weight: normal; }
+        .signing-inbox .signing-document-grid .signing-document-name:hover { color: var(--bs-primary); text-decoration: underline; }
+        @media (max-width: 991.98px) { .signing-inbox .signing-document-grid { min-width: 960px; } }
         .signing-inbox .signing-batch > summary { cursor: pointer; list-style: none; }
         .signing-inbox .signing-batch > summary::-webkit-details-marker { display: none; }
         .signing-inbox .signing-batch:not([open]) .signing-chevron { transform: rotate(-90deg); }
@@ -49,7 +56,7 @@
                         <asp:HyperLink runat="server" ID="lnkBackToInbox" Text="Quay lại danh sách" CssClass="btn btn-sm btn-outline-primary" />
                     </div>
                 </asp:Panel>
-                <asp:Panel runat="server" ID="pnlFilters" CssClass="card-header">
+                <asp:Panel runat="server" ID="pnlFilters" CssClass="card-header mb-2">
                     <div class="d-flex flex-column flex-xl-row align-items-xl-start gap-3">
                         <div class="d-flex flex-wrap flex-shrink-0 align-items-start">
                             <div class="flex-shrink-0">
@@ -59,7 +66,7 @@
                             </div>
                             <asp:Panel runat="server" ID="pnlStatusFilter" CssClass="flex-shrink-0">
                                 <SweetSoft:BootstrapDropdown runat="server" ID="ddlSigningStatus"
-                                    Text="Trạng thái trình ký" AutoPostBack="true"
+                                    Text="Hồ sơ cần xử lý" AutoPostBack="true"
                                     CssClass="text-nowrap border-top-right-radius-1 border-bottom-right-radius-1"
                                     OnSelectedValueChanged="ddlSigningStatus_SelectedValueChanged" />
                             </asp:Panel>
@@ -92,22 +99,25 @@
                 <asp:Panel runat="server" ID="pnlDocumentList" CssClass="card-body p-0">
                     <SweetSoft:GridviewExtension runat="server" ID="grvDocumentList"
                         AutoGenerateColumns="false" AllowSorting="false" AllowPaging="false"
-                        IsEnableSelectColumn="false" IsFixedLastColumn="false" GridLines="None"
-                        CssClass="table-bordered table-hover align-middle" style="table-layout:fixed">
+                        IsEnableSelectColumn="false" IsFixedLastColumn="true" GridLines="None"
+                        CssClass="table-bordered table-hover align-middle signing-document-grid" style="table-layout:fixed">
                         <Columns>
-                            <asp:TemplateField HeaderText="Hồ sơ" HeaderStyle-CssClass="text-center">
-                                <ItemTemplate><a href='<%# DetailUrl(Eval("Id")) %>' class="fw-semibold text-primary"><%#: Eval("TenTaiLieu") %></a><div class="small text-muted"><%#: Eval("MaTaiLieu") %></div></ItemTemplate>
+                            <asp:TemplateField HeaderText="Mã hồ sơ" HeaderStyle-Width="180px" ItemStyle-CssClass="signing-document-text">
+                                <ItemTemplate><a href='<%# DetailUrl(Eval("Id")) %>' class="fw-bold text-primary"><%#: Eval("MaTaiLieu") %></a></ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Dự án" HeaderStyle-Width="23%" HeaderStyle-CssClass="text-center">
+                            <asp:TemplateField HeaderText="Tên hồ sơ" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="signing-document-text">
+                                <ItemTemplate><a href='<%# DetailUrl(Eval("Id")) %>' class="signing-document-name"><%#: Eval("TenTaiLieu") %></a></ItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Dự án" HeaderStyle-Width="23%" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="signing-document-text">
                                 <ItemTemplate><%#: Eval("ProjectName") %></ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Cần xử lý" HeaderStyle-Width="18%" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                            <asp:TemplateField HeaderText="Cần xử lý" HeaderStyle-Width="180px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center signing-document-text">
                                 <ItemTemplate><%#: Convert.ToInt32(Eval("PendingCount")) > 0 ? Eval("PendingBatches") + " đợt · " + Eval("PendingCount") + " file chờ ký" : "Không có file chờ ký" %></ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Lần gửi gần nhất" HeaderStyle-Width="18%" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-end">
+                            <asp:TemplateField HeaderText="Lần gửi gần nhất" HeaderStyle-Width="200px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center signing-document-text">
                                 <ItemTemplate><%#: FormatDate(Eval("LastSent")) %></ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Hành động" HeaderStyle-Width="9%" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                            <asp:TemplateField HeaderText="Hành động" HeaderStyle-Width="110px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                                 <ItemTemplate><a class="btn btn-sm btn-outline-primary" href='<%# DetailUrl(Eval("Id")) %>' title='<%# Convert.ToInt32(Eval("PendingCount")) > 0 ? "Xử lý trình ký" : "Xem các đợt trình ký" %>' aria-label='<%# Convert.ToInt32(Eval("PendingCount")) > 0 ? "Xử lý trình ký" : "Xem các đợt trình ký" %>'><i class="fas fa-folder-open" aria-hidden="true"></i></a></ItemTemplate>
                             </asp:TemplateField>
                         </Columns>
@@ -143,7 +153,7 @@
                             </summary>
                             <div class="border-top">
                             <asp:Panel runat="server" CssClass="small text-muted p-2 border-bottom" Visible='<%# HasText(Eval("Note")) %>'><%#: Eval("Note") %></asp:Panel>
-                            <div class="table-rep-plugin"><div class="table-responsive"><table class="signing-file-table extra-gridview table w-100 table-bordered table-hover align-middle mb-0" style="table-layout:fixed"><colgroup><col style="width:38%" /><col style="width:24%" /><col style="width:38%" /></colgroup><thead><tr><th>File được giao ký</th><th>Trạng thái / phản hồi</th><th>Hành động</th></tr></thead><tbody>
+                            <div class="table-rep-plugin"><div class="table-responsive"><table class="signing-file-table extra-gridview table w-100 table-bordered table-hover align-middle mb-0" style="table-layout:fixed"><colgroup><col style="width:38%" /><col style="width:24%" /><col style="width:38%" /></colgroup><thead><tr><th>File được giao ký</th><th>Trạng thái</th><th>Hành động</th></tr></thead><tbody>
                             <asp:Repeater runat="server" ID="rptAssignedFiles" OnItemCommand="rptAssignedFiles_ItemCommand">
                                 <ItemTemplate>
                                     <tr>
@@ -177,11 +187,11 @@
                                                 Visible='<%# HasText(Eval("FileSauKyUrl")) %>'
                                                 NavigateUrl='<%# FileUrl(Eval("FileSauKyUrl")) %>' />
                                             <asp:LinkButton runat="server" CssClass="btn btn-sm btn-primary"
-                                                Visible='<%# IsPending(Eval("TrangThai")) %>'
+                                                Visible='<%# IsEdit && IsPending(Eval("TrangThai")) %>'
                                                 CommandName="UPLOAD_RESULT" CommandArgument='<%# Eval("IdTrinhKyTaiLieuFile") %>'
                                                 CausesValidation="false" Text="<i class='fas fa-upload me-1'></i>Tải bản đã ký lên" />
                                             <asp:LinkButton runat="server" CssClass="btn btn-sm btn-outline-warning"
-                                                Visible='<%# IsPending(Eval("TrangThai")) %>'
+                                                Visible='<%# IsEdit && IsPending(Eval("TrangThai")) %>'
                                                 CommandName="REQUEST_CHANGES" CommandArgument='<%# Eval("IdTrinhKyTaiLieuFile") %>'
                                                 CausesValidation="false" Text="<i class='fas fa-comment-dots me-1'></i>Yêu cầu chỉnh sửa" />
                                         </div>
