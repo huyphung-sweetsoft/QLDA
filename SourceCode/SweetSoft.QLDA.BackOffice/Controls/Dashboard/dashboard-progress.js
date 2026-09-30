@@ -199,13 +199,7 @@
                     fontWeight: 600
                 }
             },
-            legend: {
-                position: "top",
-                horizontalAlign: "right",
-                labels: { colors: "#475467" },
-                markers: { width: 10, height: 10, radius: 3 },
-                itemMargin: { horizontal: 10 }
-            },
+            legend: { show: false },
             tooltip: {
                 shared: false,
                 intersect: true,

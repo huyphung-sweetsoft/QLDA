@@ -25,7 +25,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=44")
+                        "/Controls/Dashboard/dashboard-style.css?v=45")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -37,7 +37,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Controls/Dashboard/dashboard-project-groups.js?v=1"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-progress.js?v=18"),
+                        "/Controls/Dashboard/dashboard-progress.js?v=19"),
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Controls/Dashboard/dashboard-modals.js?v=1")
                 };

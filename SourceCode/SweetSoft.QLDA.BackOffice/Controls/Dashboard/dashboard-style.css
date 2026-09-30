@@ -3136,6 +3136,27 @@ a.resource-day-task:focus-visible {
     width: 100%;
 }
 
+.dashboard-progress .progress-schedule-legend {
+    color: #475467;
+    font-size: 14px;
+}
+
+.dashboard-progress .progress-schedule-legend-marker {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    flex: 0 0 11px;
+}
+
+.dashboard-progress .progress-schedule-legend-planned {
+    background: #c6ceda;
+}
+
+.dashboard-progress .progress-schedule-legend-actual {
+    background: #4a148c;
+}
+
 @media (min-width: 1200px) {
     .dashboard-resource .resource-insights-grid-weekly {
         display: grid !important;

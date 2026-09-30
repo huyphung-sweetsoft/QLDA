@@ -109,14 +109,14 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             decimal absolute = Math.Abs(value);
             if (absolute >= 1000000000m)
             {
-                return (value / 1000000000m).ToString("0.#",
+                return (value / 1000000000m).ToString("0.##",
                     CultureInfo.CurrentCulture) + GetResourceText(
                         BackEndResourceKeys.DASHBOARD_BILLION_SUFFIX);
             }
 
             if (absolute >= 1000000m)
             {
-                return (value / 1000000m).ToString("0.#",
+                return (value / 1000000m).ToString("0.##",
                     CultureInfo.CurrentCulture) + GetResourceText(
                         BackEndResourceKeys.DASHBOARD_MILLION_SUFFIX);
             }
