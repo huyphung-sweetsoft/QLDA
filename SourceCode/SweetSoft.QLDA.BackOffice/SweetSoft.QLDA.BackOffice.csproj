@@ -96,6 +96,18 @@
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.9\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\Libraries\Microsoft.Practices.EnterpriseLibrary.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Data, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\Libraries\Microsoft.Practices.EnterpriseLibrary.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ObjectBuilder2, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <HintPath>..\Libraries\Microsoft.Practices.ObjectBuilder2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=9.0.0.9, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.9.0.9\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
@@ -132,7 +144,7 @@
       <HintPath>..\packages\Quartz.3.13.1\lib\net472\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="SubSonic">
-      <HintPath>..\..\..\SubSonic2.2\SubCommander\SubSonic.dll</HintPath>
+      <HintPath>..\Libraries\SubSonic.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -565,19 +577,19 @@
     <Compile Include="fMeets\MeetList.aspx.designer.cs">
       <DependentUpon>MeetList.aspx</DependentUpon>
     </Compile>
-    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
-      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
-      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fNhanVien\LichCaNhan.aspx.cs">
       <DependentUpon>LichCaNhan.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fNhanVien\LichCaNhan.aspx.designer.cs">
       <DependentUpon>LichCaNhan.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx.designer.cs">
+      <DependentUpon>CtrlNhanVienPopup.ascx</DependentUpon>
     </Compile>
     <Compile Include="fNhanVien\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -740,19 +752,19 @@
     <Compile Include="fTasks\Controls\CtrlChonNhanVienTask.ascx.designer.cs">
       <DependentUpon>CtrlChonNhanVienTask.ascx</DependentUpon>
     </Compile>
-    <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
-      <DependentUpon>CtrlTask.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
-      <DependentUpon>CtrlTask.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.cs">
       <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fTasks\Controls\CtrlXemNhanVienTask.ascx.designer.cs">
       <DependentUpon>CtrlXemNhanVienTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlTask.ascx.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlTask.ascx.designer.cs">
+      <DependentUpon>CtrlTask.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\TaskList.aspx.cs">
       <DependentUpon>TaskList.aspx</DependentUpon>
@@ -767,13 +779,6 @@
     </Compile>
     <Compile Include="fUsers\Controls\CtrlUserDetail.ascx.designer.cs">
       <DependentUpon>CtrlUserDetail.ascx</DependentUpon>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.cs">
-      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.designer.cs">
-      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -795,6 +800,13 @@
     </Compile>
     <Compile Include="fNhanVien\ListNhanVien.aspx.designer.cs">
       <DependentUpon>ListNhanVien.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fUsers\Controls\CtrlUserPopup.ascx.designer.cs">
+      <DependentUpon>CtrlUserPopup.ascx</DependentUpon>
     </Compile>
     <Compile Include="fUsers\NhanVienDetail.aspx.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
@@ -853,7 +865,9 @@
     <Content Include="Controls\Dashboard\CtrlDashboardResource.ascx" />
     <Content Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx" />
     <Content Include="Controls\Dashboard\dashboard-overview.js" />
+    <Content Include="Controls\Dashboard\dashboard-modals.js" />
     <Content Include="Controls\Dashboard\dashboard-cost.js" />
+    <Content Include="Controls\Dashboard\dashboard-donut.js" />
     <Content Include="Controls\Dashboard\dashboard-progress.js" />
     <Content Include="Controls\Dashboard\dashboard-project-groups.js" />
     <Content Include="Controls\Dashboard\dashboard-resource.js" />
@@ -917,13 +931,12 @@
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
     <Content Include="fMeets\Controls\CtrlViewMeetDetail.ascx" />
     <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
-    <Content Include="fMeets\Controls\CtrlViewMeetDetail.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
-    <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fNhanVien\Controls\CtrlNhanViens.ascx" />
     <Content Include="fNhanVien\LichCaNhan.aspx" />
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
+    <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
@@ -2355,8 +2368,7 @@
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
-    <PostBuildEvent>del /f /q "$(TargetDir)Microsoft.Practices.EnterpriseLibrary.Data.dll"
-del /f /q "$(TargetDir)System.Data.SQLite"
+    <PostBuildEvent>del /f /q "$(TargetDir)System.Data.SQLite"
 del "$(TargetDir)System.Data.SQLite"
 </PostBuildEvent>
   </PropertyGroup>

@@ -269,6 +269,22 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 return DashboardTaskState.Overdue;
             }
 
+            return GetTaskLifecycleState(task);
+        }
+
+        /// <summary>
+        /// Trạng thái vòng đời không phụ thuộc hạn: công việc trễ hạn vẫn
+        /// thuộc nhóm đang làm hoặc chưa bắt đầu, không tạo thêm một nhóm
+        /// trạng thái bị chồng lặp trong biểu đồ.
+        /// </summary>
+        internal static DashboardTaskState GetTaskLifecycleState(
+            TblCongViec task)
+        {
+            if (IsTaskCompleted(task))
+            {
+                return DashboardTaskState.Completed;
+            }
+
             // TrangThai là nguồn nghiệp vụ chính:
             // 0 = chưa bắt đầu, 1 = đang thực hiện, 2 = hoàn thành.
             // Phần trăm chỉ dùng làm fallback hiển thị nếu dữ liệu cũ không

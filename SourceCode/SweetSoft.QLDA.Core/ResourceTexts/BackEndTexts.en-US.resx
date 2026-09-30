@@ -2483,7 +2483,7 @@
     <value>Resource allocation dashboard</value>
   </data>
   <data name="DASHBOARD_RESOURCE_DESC" xml:space="preserve">
-    <value>Summarizes workdays from Monday to Friday and identifies employees who are underloaded or assigned beyond weekly capacity.</value>
+    <value>Shows how many tasks each employee is assigned to on every day of the week.</value>
   </data>
   <data name="DASHBOARD_DISPLAY_RANGE" xml:space="preserve">
     <value>Display range</value>
@@ -2519,7 +2519,7 @@
     <value>Next week</value>
   </data>
   <data name="DASHBOARD_WEEKLY_CALCULATION_DESC" xml:space="preserve">
-    <value>Estimated from scheduled tasks: each task on a working day counts as one task-day; overlapping tasks add together. This is not actual hours worked.</value>
+    <value>Each day shows its calendar type and number of assigned active tasks. Free: 0 tasks; Normal: 1 task; Overloaded: more than 1 task on the same day. A task spanning multiple days is counted only on working days in the shared calendar; non-working days are not counted.</value>
   </data>
   <data name="DASHBOARD_WEEKLY_CALCULATION_TITLE" xml:space="preserve">
     <value>How it is estimated</value>
@@ -2563,6 +2563,15 @@
   <data name="DASHBOARD_NO_LOAD" xml:space="preserve">
     <value>No assigned work</value>
   </data>
+  <data name="DASHBOARD_RESOURCE_FREE" xml:space="preserve"><value>Free</value></data>
+  <data name="DASHBOARD_RESOURCE_NORMAL" xml:space="preserve"><value>Normal</value></data>
+  <data name="DASHBOARD_RESOURCE_WEEKEND" xml:space="preserve"><value>Weekend</value></data>
+  <data name="DASHBOARD_RESOURCE_LOAD_RULES" xml:space="preserve"><value>Free: no assigned tasks. Normal: 1 task on a day. Overloaded: more than 1 task on a day.</value></data>
+  <data name="DASHBOARD_MONTH_DAILY_COUNTS" xml:space="preserve"><value>Free {0} days · Normal {1} days · Overloaded {2} days</value></data>
+  <data name="DASHBOARD_MAX_TASKS_IN_DAY" xml:space="preserve"><value>Peak: {0} tasks in one day</value></data>
+  <data name="DASHBOARD_TASKS_FOR_DATE" xml:space="preserve"><value>Tasks for {0}</value></data>
+  <data name="DASHBOARD_SELECT_DAY" xml:space="preserve"><value>Select a day to see its tasks</value></data>
+  <data name="DASHBOARD_DAILY_TASKS_DETAIL" xml:space="preserve"><value>Tasks for the day</value></data>
   <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve">
     <value>Adequately loaded</value>
   </data>
@@ -2573,7 +2582,7 @@
     <value>Planned weekly assignments</value>
   </data>
   <data name="DASHBOARD_RESOURCE_HEATMAP_DESC" xml:space="preserve">
-    <value>Select a cell to see the employee's tasks from Monday to Sunday; select a task to edit it.</value>
+    <value>Each cell shows the day type and number of assigned tasks. Select a day to see its tasks; select a task to open its edit screen.</value>
   </data>
   <data name="DASHBOARD_EMPLOYEE_LABEL" xml:space="preserve">
     <value>Employee</value>
@@ -2588,7 +2597,7 @@
     <value>Planned monthly workload</value>
   </data>
   <data name="DASHBOARD_MONTHLY_LOAD_DESC" xml:space="preserve">
-    <value>Select a month cell to see its weekly load.</value>
+    <value>Select a month cell to see the weekly summary and open each day's task list.</value>
   </data>
   <data name="DASHBOARD_NO_MONTHLY_EMPLOYEES" xml:space="preserve">
     <value>No employees to summarize in the selected scope.</value>
@@ -2597,10 +2606,16 @@
     <value>Employees needing attention</value>
   </data>
   <data name="DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC" xml:space="preserve">
-    <value>Overloaded employees first, followed by underloaded employees.</value>
+    <value>Expand a person to see overloaded days and task counts.</value>
+  </data>
+  <data name="DASHBOARD_OVERLOADED_ON_DAYS" xml:space="preserve">
+    <value>Overloaded on: {0}</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_LOAD_DISTRIBUTION" xml:space="preserve">
+    <value>Personnel workload distribution</value>
   </data>
   <data name="DASHBOARD_NO_RESOURCE_WARNINGS" xml:space="preserve">
-    <value>No employees require a warning this week.</value>
+    <value>No employees are free or overloaded this week.</value>
   </data>
   <data name="DASHBOARD_RESOURCE_LOAD_TREND" xml:space="preserve">
     <value>Resource load trend</value>
