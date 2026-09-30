@@ -440,6 +440,10 @@
                             <% } %>
                         </div>
                     </div>
+                    <div class="progress-schedule-legend d-flex flex-wrap justify-content-end gap-3 mb-2" aria-label="Chú giải biểu đồ tiến độ">
+                        <span class="d-inline-flex align-items-center gap-1"><span class="progress-schedule-legend-marker progress-schedule-legend-planned" aria-hidden="true"></span><%= GetResourceText(BackEndResourceKeys.DASHBOARD_PLANNED_PROGRESS) %></span>
+                        <span class="d-inline-flex align-items-center gap-1"><span class="progress-schedule-legend-marker progress-schedule-legend-actual" aria-hidden="true"></span><%= GetResourceText(BackEndResourceKeys.DASHBOARD_ACTUAL_PROGRESS) %></span>
+                    </div>
                     <div id="progress-schedule-chart-wrapper" class="progress-chart-scroll">
                         <div id="progress-schedule-chart"></div>
                     </div>

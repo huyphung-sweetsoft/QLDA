@@ -41,15 +41,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected int ProjectTasksInProgressCount { get; private set; }
         protected int ProjectTasksCompletedCount { get; private set; }
         protected int ProjectResourceNoLoadCount { get; private set; }
-        protected int ProjectResourceUnderloadedCount { get; private set; }
-        protected int ProjectResourceBalancedCount { get; private set; }
+        protected int ProjectResourceNormalCount { get; private set; }
         protected int ProjectResourceOverloadedCount { get; private set; }
         protected int AllTasksNotStartedCount { get; private set; }
         protected int AllTasksInProgressCount { get; private set; }
         protected int AllTasksCompletedCount { get; private set; }
         protected int AllResourceNoLoadCount { get; private set; }
-        protected int AllResourceUnderloadedCount { get; private set; }
-        protected int AllResourceBalancedCount { get; private set; }
+        protected int AllResourceNormalCount { get; private set; }
         protected int AllResourceOverloadedCount { get; private set; }
         protected int AllFinanceProjectsWithActivityCount
         {
@@ -173,12 +171,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 AllProjectsResourceSummary = resource;
                 AllResourceNoLoadCount = resource.EmployeeLoads.Count(
                     employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 0);
-                AllResourceUnderloadedCount = resource.EmployeeLoads.Count(
+                AllResourceNormalCount = resource.EmployeeLoads.Count(
                     employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 1);
-                AllResourceBalancedCount = resource.EmployeeLoads.Count(
-                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 2);
                 AllResourceOverloadedCount = resource.EmployeeLoads.Count(
-                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 3);
+                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 2);
             }
 
             SelectedProject = filter.ProjectId.HasValue
@@ -203,12 +199,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     });
                 ProjectResourceNoLoadCount = ProjectResourceSummary.EmployeeLoads
                     .Count(employee => GetProjectWeekLoadCode(employee) == 0);
-                ProjectResourceUnderloadedCount = ProjectResourceSummary.EmployeeLoads
+                ProjectResourceNormalCount = ProjectResourceSummary.EmployeeLoads
                     .Count(employee => GetProjectWeekLoadCode(employee) == 1);
-                ProjectResourceBalancedCount = ProjectResourceSummary.EmployeeLoads
-                    .Count(employee => GetProjectWeekLoadCode(employee) == 2);
                 ProjectResourceOverloadedCount = ProjectResourceSummary.EmployeeLoads
-                    .Count(employee => GetProjectWeekLoadCode(employee) == 3);
+                    .Count(employee => GetProjectWeekLoadCode(employee) == 2);
             }
             OverdueProjects = Summary.Projects.Where(p => p.IsOverdue).ToList();
             ProjectsWithOverdueTasks = Summary.Projects
@@ -576,21 +570,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             ResourceWeeklyLoad week = employee.WeeklyLoads.FirstOrDefault(
                 item => item.WeekStart == weekStart);
-            if (week == null || week.AllocatedDays <= 0)
+            if (week == null || week.PeakDailyTaskCount <= 0)
                 return 0;
-            if (week.Status == ResourceLoadStatus.Overloaded)
-                return 3;
-            return week.Status == ResourceLoadStatus.Balanced ? 2 : 1;
+            return week.PeakDailyTaskCount == 1 ? 1 : 2;
         }
 
         protected string GetProjectWeekLoadText(int code)
         {
             switch (code)
             {
-                case 1: return "Còn khả năng nhận thêm việc";
-                case 2: return "Phân công phù hợp";
-                case 3: return "Quá tải";
-                default: return "Chưa được giao việc";
+                case 1: return "Bình thường";
+                case 2: return "Quá tải";
+                default: return "Rảnh";
             }
         }
 

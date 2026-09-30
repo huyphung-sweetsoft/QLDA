@@ -29,7 +29,7 @@
 
         if (absoluteAmount >= 1000000) {
             return (amount / 1000000).toLocaleString(locale, {
-                maximumFractionDigits: 1
+                maximumFractionDigits: 2
             }) + (texts.millionSuffix || "");
         }
 
