@@ -247,16 +247,17 @@
 
                             <ItemTemplate>
                                 <div class="document-row-actions">
-                                <SweetSoft:SmartLinkButton
+                                <asp:LinkButton
                                     runat="server"
                                     ID="btnViewRow"
                                     CommandName="VIEW_ITEM"
                                     CommandArgument='<%# Eval("IdTaiLieu") %>'
                                     CausesValidation="false"
-                                    VisibleConditionKey='<%# CanAccessRow(Eval("IdTaiLieu"), "View") %>'
-                                    ResourceKey='<%# BackEndResourceKeys.VIEW %>'
-                                    ButtonIcon="fas fa-eye">
-                                </SweetSoft:SmartLinkButton>
+                                    Visible='<%# CanAccessRow(Eval("IdTaiLieu"), "View") %>'
+                                    ToolTip="Xem hồ sơ" aria-label="Xem hồ sơ"
+                                    CssClass="btn btn-outline-success btn-sm text-center btn-smart-link">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </asp:LinkButton>
 
                                 <SweetSoft:SmartLinkButton
                                     runat="server"

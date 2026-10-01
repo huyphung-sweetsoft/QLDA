@@ -1798,6 +1798,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object source,
             RepeaterCommandEventArgs e)
         {
+            if (e.CommandName == "VIEW_DELIVERY_FILES")
+            {
+                OpenDeliveryFiles(e.CommandArgument);
+                return;
+            }
             if (!string.Equals(
                     e.CommandName,
                     "UPDATE_CUSTOMER_DELIVERY",
@@ -2267,16 +2272,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
                 if (restoreVersion)
                 {
-                    DocumentFileSet restored = CreateRequestDocumentManager()
-                        .RestoreDocumentFileSet(idTaiLieu, idPhienBanTaiLieu);
-                    InitControls(idTaiLieu);
-                    upDetail.Update();
-                    KeepVersionsTabOpen();
-                    ShowVersionHistoryNotify(
-                        restored.Created
-                            ? "Đã khôi phục phiên bản trước thành bản hiện tại."
-                            : "Bộ file hiện tại đã giống phiên bản này.",
-                        restored.Created ? MSGType.Success : MSGType.Info);
+                    PreviewSnapshotRestore(idPhienBanTaiLieu, null);
                     return;
                 }
 
@@ -2334,6 +2330,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             DataTable fileRows,
             Guid versionId)
         {
+            ViewState["ViewedSnapshotId"] = versionId;
             bool hasFiles = fileRows != null
                 && fileRows.AsEnumerable().Any(row =>
                     Convert.ToInt32(row["FileCount"]) > 0
@@ -2858,8 +2855,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected bool CanRestoreVersion(object isCurrentValue)
         {
-            // Legacy whole-dossier snapshots remain read-only; restore a single file in its history.
-            return false;
+            return !Convert.ToBoolean(isCurrentValue) && CURRENT_PAGE.IsEdit && CanManageFiles();
         }
         protected string GetFileUrl(object value)
         {
@@ -2921,7 +2917,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 && IsOfficialVersion(fileIdValue);
         }
 
-        private bool CanManageFiles()
+        protected bool CanManageFiles()
         {
             Guid idTaiLieu;
             return Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
