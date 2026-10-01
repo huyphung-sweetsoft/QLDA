@@ -284,46 +284,49 @@
             </asp:UpdatePanel>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
-    <!-- POPUP CẤU HÌNH HỆ SỐ ĐÓNG GÓP -->
-<SweetSoft:ExtraModal runat="server" ID="mdlHeSoDongGop" Type="Primary" Title="Cấu hình hệ số đóng góp">
-    <ContentTemplate>
-        <asp:UpdatePanel ID="upHeSoDongGop" runat="server" UpdateMode="Conditional">
-            <ContentTemplate>
-                <div class="p-3">
-                    <div class="alert alert-info" style="font-size:13px; background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;">
-                        <i class="fas fa-info-circle me-1"></i> Các hệ số dưới đây là phiên bản độc lập của riêng dự án này. Việc thay đổi sẽ tự động <strong>áp dụng hồi tố</strong> để tính lại điểm cho toàn bộ công việc.
-                    </div>
+<!-- POPUP CẤU HÌNH HỆ SỐ ĐÓNG GÓP -->
+    <SweetSoft:ExtraModal runat="server" ID="mdlHeSoDongGop" Type="Primary" Title="Cấu hình hệ số đóng góp">
+        <ContentTemplate>
+            <asp:UpdatePanel ID="upHeSoDongGop" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <div class="p-3">
+                        <div class="alert alert-info" style="font-size:13px; background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;">
+                            <i class="fas fa-info-circle me-1"></i> Các hệ số dưới đây là phiên bản độc lập của riêng dự án này. Việc thay đổi sẽ tự động <strong>áp dụng hồi tố</strong> để tính lại điểm cho toàn bộ công việc.
+                        </div>
 
-                    <asp:Repeater ID="rptHeSoDongGop" runat="server">
-                        <ItemTemplate>
-                            <div class="smart-field mb-3">
-                                <label><i class="fas fa-star text-warning"></i>Độ ưu tiên: <%# Eval("TenDoUuTien") %></label>
-                                <div class="input-group">
-                                    <asp:HiddenField ID="hdfIdDoUuTien" runat="server" Value='<%# Eval("IdDoUuTien") %>' />
-                                    <asp:HiddenField ID="hdfIdHeSoDongGop" runat="server" Value='<%# Eval("IdHeSoDongGop") %>' />
-                                    <!-- Chú ý đoạn Text='...' tui đã thêm hàm Replace -->
-                                   <asp:TextBox ID="txtHeSo" runat="server" CssClass="form-control fw-bold text-primary" TextMode="Number" step="0.01" min="0" 
-                                        Text='<%# Convert.ToDecimal(Eval("HeSoDongGop")).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) %>'>
-                                    </asp:TextBox>
-                                    <span class="input-group-text">Hệ số</span>
-                                </div>
-                            </div>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </div>
-            </ContentTemplate>
-        </asp:UpdatePanel>
-    </ContentTemplate>
-    <FooterTemplate>
-        <asp:UpdatePanel ID="upnlFooterHeSo" runat="server" UpdateMode="Conditional">
-            <ContentTemplate>
-                <asp:LinkButton ID="btnSaveHeSo" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveHeSo_Click">
-                    <i class="fas fa-save me-1"></i> Lưu hệ số
-                </asp:LinkButton>
-            </ContentTemplate>
-        </asp:UpdatePanel>
-    </FooterTemplate>
-</SweetSoft:ExtraModal>
+                        <!-- Cấu trúc HTML y chang Settings.aspx, đã xóa thẻ <i> thừa -->
+                        <div class="row">
+                            <asp:Repeater ID="rptHeSoDongGop" runat="server">
+                                <ItemTemplate>
+                                    <div class="col-lg-4">
+                                        <div class="mt-3">
+                                            <label class="form-label">Hệ số <%# Eval("TenDoUuTien").ToString().ToLower() %></label>
+                                            
+                                            <asp:HiddenField ID="hdfIdDoUuTien" runat="server" Value='<%# Eval("IdDoUuTien") %>' />
+                                            <asp:HiddenField ID="hdfIdHeSoDongGop" runat="server" Value='<%# Eval("IdHeSoDongGop") %>' />
+                                            
+                                            <asp:TextBox ID="txtHeSo" runat="server" CssClass="form-control" TextMode="Number" step="0.01" min="0" 
+                                                Text='<%# Convert.ToDecimal(Eval("HeSoDongGop")).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) %>'>
+                                            </asp:TextBox>
+                                        </div>
+                                    </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </div>
+                    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </ContentTemplate>
+        <FooterTemplate>
+            <asp:UpdatePanel ID="upnlFooterHeSo" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <asp:LinkButton ID="btnSaveHeSo" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveHeSo_Click">
+                        <i class="fas fa-save me-1"></i> Lưu hệ số
+                    </asp:LinkButton>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
     <SweetSoft:ExtraModal runat="server" ID="mdlTaskReminder" Type="Primary">
         <ContentTemplate>
             <asp:UpdatePanel runat="server" ID="upTaskReminder" UpdateMode="Conditional">
