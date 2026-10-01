@@ -81,12 +81,23 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 dto.Save(); 
                 result = dto;
+                if (result != null && result.IdNhanVienXuLy != Guid.Empty)
+                {
+                    ThongBaoManager.Instance.Create
+                        (
+                            userId: result.IdNhanVienXuLy.Value,
+                            tieuDe: $"Bạn được giao chịu trách nhiệm cho rủi ro {result.TenRuiRo}",
+                            noiDung: $"Bạn được giao chịu trách nhiệm cho rủi ro {result.TenRuiRo}",
+                            loaiThongBao: ThongBaoTypes.RuiRo,
+                            idDuAn: dto.IdDuAn
+                        );
+                }
             }
             else
             {
                 TblRuiRoDuAn existingRisk = TblRuiRoDuAn.FetchByID(dto.IdRuiRoDuAn);
                 BusinessValidator.ThrowIfNull(existingRisk, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdRuiRoDuAn), ErrorCodes.NotFound);
-
+                Guid oldNhanVienXuLy = existingRisk.IdNhanVienXuLy.Value;
                 existingRisk.TenRuiRo = dto.TenRuiRo;
                 existingRisk.IdNhanVienXuLy = dto.IdNhanVienXuLy;
                 existingRisk.XacSuatXayRa = dto.XacSuatXayRa;
@@ -100,6 +111,17 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 existingRisk.Save();
                 result = existingRisk;
+                if (oldNhanVienXuLy != result.IdNhanVienXuLy)
+                {
+                    ThongBaoManager.Instance.Create
+                        (
+                            userId: result.IdNhanVienXuLy.Value,
+                            tieuDe: $"Bạn được giao chịu trách nhiệm cho rủi ro {result.TenRuiRo}",
+                            noiDung: $"Bạn được giao chịu trách nhiệm cho rủi ro {result.TenRuiRo}",
+                            loaiThongBao: ThongBaoTypes.RuiRo,
+                            idDuAn: dto.IdDuAn
+                        );
+                }
             }
 
             return result;

@@ -292,7 +292,6 @@
     <Compile Include="Managers\HopDongThucHienManager.cs" />
     <Compile Include="Managers\IssueManager.cs" />
     <Compile Include="Managers\KhachHangManager.cs" />
-    <Compile Include="Managers\LichSuDuAnManager.cs" />
     <Compile Include="Managers\LoaiManager.cs" />
     <Compile Include="Managers\MeetManager.cs" />
     <Compile Include="Managers\LichBieuChungManager.cs" />
@@ -342,7 +341,6 @@
     <Compile Include="Respositories\HopDongThucHienRepository.cs" />
     <Compile Include="Respositories\IssueRepository.cs" />
     <Compile Include="Respositories\KhachHangRepository.cs" />
-    <Compile Include="Respositories\LichSuDuAnRepository.cs" />
     <Compile Include="Respositories\LoaiRepository.cs" />
     <Compile Include="Respositories\MeetRepository.cs" />
     <Compile Include="Respositories\LichNgoaiLeRepository.cs" />
