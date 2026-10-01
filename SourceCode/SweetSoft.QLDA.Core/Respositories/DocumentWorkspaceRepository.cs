@@ -9,6 +9,72 @@ namespace SweetSoft.QLDA.Core.Respositories
 {
     public partial class DocumentRepository
     {
+        // Derive per-file events from snapshots so a whole-set restore is also
+        // visible in every affected file's timeline, without synthetic versions.
+        private const string FileTransitionsSql = @"
+            WITH Snapshots AS (
+                SELECT * FROM dbo.TblPhienBanTaiLieu WHERE IdTaiLieu=@D AND DaXoa=0
+            ), Members AS (
+                SELECT p.IdPhienBanTaiLieu, TRY_CONVERT(uniqueidentifier,j.value) IdFile,
+                    COALESCE(root.IdChuoiFile,TRY_CONVERT(uniqueidentifier,j.value)) IdChuoiFile
+                FROM Snapshots p
+                CROSS APPLY OPENJSON(COALESCE(p.DanhSachFileJson,
+                    CASE WHEN p.IdFileNoiDung IS NULL THEN N'[]' ELSE N'[""'+CONVERT(nvarchar(36),p.IdFileNoiDung)+N'""]' END)) j
+                OUTER APPLY (SELECT TOP 1 e.IdChuoiFile FROM Snapshots e
+                    WHERE e.IdFileThayDoi=TRY_CONVERT(uniqueidentifier,j.value) AND e.IdChuoiFile IS NOT NULL
+                    ORDER BY e.NgayTao,e.IdPhienBanTaiLieu) root
+            ), Roots AS (SELECT DISTINCT IdChuoiFile FROM Members), States AS (
+                SELECT p.IdPhienBanTaiLieu,p.NgayTao,p.NguoiTao,p.NguonTao,r.IdChuoiFile,m.IdFile,
+                    TRY_CONVERT(decimal(18,4),p.SoPhienBan) ThuTu,
+                    LAG(CONVERT(nvarchar(36),m.IdFile)) OVER (PARTITION BY r.IdChuoiFile
+                        ORDER BY p.NgayTao,TRY_CONVERT(decimal(18,4),p.SoPhienBan),p.IdPhienBanTaiLieu) PreviousFile
+                FROM Snapshots p CROSS JOIN Roots r LEFT JOIN Members m
+                    ON m.IdPhienBanTaiLieu=p.IdPhienBanTaiLieu AND m.IdChuoiFile=r.IdChuoiFile
+            ), FileChanges AS (
+                SELECT *,ROW_NUMBER() OVER(PARTITION BY IdChuoiFile ORDER BY NgayTao,ThuTu,IdPhienBanTaiLieu) FileVersion
+                FROM States WHERE ISNULL(CONVERT(nvarchar(36),IdFile),'')<>ISNULL(PreviousFile,'')
+            ) ";
+
+        public DocumentFileSet PlanSnapshotRestore(Guid documentId, Guid versionId, Guid? selectedFile)
+        {
+            if (GetDocumentVersionById(documentId, versionId) == null)
+                throw new InvalidOperationException("Mốc lịch sử không tồn tại hoặc không thuộc hồ sơ.");
+            var source = GetDocumentVersionFileIds(documentId, versionId);
+            var current = GetCurrentDocumentFileSet(documentId);
+            var desired = source;
+            if (selectedFile.HasValue)
+            {
+                if (!source.Contains(selectedFile.Value)) throw new InvalidOperationException("File không thuộc mốc lịch sử đã chọn.");
+                Guid root = FileRoot(documentId, selectedFile.Value);
+                desired = current.FileIds.Where(f => FileRoot(documentId, f) != root).ToList();
+                desired.Add(selectedFile.Value);
+            }
+            if (desired.Select(f => FileRoot(documentId, f)).Distinct().Count() != desired.Count)
+                throw new InvalidOperationException("Mốc này có nhiều bản thuộc cùng một dòng file. Hãy khôi phục từng file.");
+            // Preview is read-only: pending requests are never recalled implicitly.
+            // SaveDocumentFileSet repeats these guards under the dossier lock.
+            foreach (Guid removed in current.FileIds.Except(desired))
+                ValidateFileRemoval(documentId, removed, false, string.Empty, DateTime.UtcNow);
+            return new DocumentFileSet { VersionId = current.VersionId, FileIds = desired };
+        }
+
+        public DocumentFileSet RestoreSnapshot(Guid documentId, Guid versionId, Guid? selectedFile,
+            Guid? expectedVersion, string user, DateTime now)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.Required, TimeSpan.FromMinutes(2)))
+            {
+                ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblTaiLieu WITH(UPDLOCK,HOLDLOCK) WHERE IdTaiLieu=@D AND DaXoa=0",
+                    new Dictionary<string,object>{{"@D",documentId}});
+                var plan = PlanSnapshotRestore(documentId, versionId, selectedFile);
+                if (plan.VersionId != expectedVersion)
+                    throw new InvalidOperationException("Bộ file đã thay đổi sau khi xem xác nhận. Hãy mở lại thao tác khôi phục.");
+                var saved = SaveDocumentFileSet(documentId, expectedVersion, plan.FileIds, user, now,
+                    (selectedFile.HasValue ? "Khôi phục file" : "Khôi phục bộ file") + " từ mốc " + versionId, "KHOI_PHUC");
+                scope.Complete();
+                return saved;
+            }
+        }
+
         private Guid FileRoot(Guid documentId, Guid fileId)
         {
             object root = ExecuteScalarObject(@"SELECT TOP 1 IdChuoiFile FROM dbo.TblPhienBanTaiLieu
@@ -20,10 +86,10 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public DataTable GetWorkspaceFiles(Guid documentId)
         {
-            return ExecuteDataTable(@"
+            return ExecuteDataTable(FileTransitionsSql + @"
                 SELECT u.Id AS IdFile,COALESCE(lineage.IdChuoiFile,u.Id) AS IdChuoiFile,
                     COALESCE(NULLIF(u.OriginalFileName,N''),u.Name) AS TenFile,u.FileUrl,u.FileSize,
-                    ISNULL(history.VersionCount,0)+1 AS FileVersion,
+                    ISNULL(history.VersionCount,1) AS FileVersion,
                     COALESCE(history.LastDate,u.CreatedDate) AS NgayCapNhat,
                     ISNULL(signing.TrangThai,'CHUA_TRINH') AS TrangThai,
                     signing.IdFileSauKy,resultFile.FileUrl AS SignedFileUrl,
@@ -36,8 +102,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                 OUTER APPLY(SELECT TOP 1 e.IdChuoiFile FROM dbo.TblPhienBanTaiLieu e
                     WHERE e.IdTaiLieu=@D AND e.IdFileThayDoi=u.Id AND e.IdChuoiFile IS NOT NULL AND e.DaXoa=0
                     ORDER BY e.NgayTao,e.IdPhienBanTaiLieu) lineage
-                OUTER APPLY(SELECT COUNT(*) VersionCount,MAX(e.NgayTao) LastDate FROM dbo.TblPhienBanTaiLieu e
-                    WHERE e.IdTaiLieu=@D AND e.IdChuoiFile=COALESCE(lineage.IdChuoiFile,u.Id) AND e.DaXoa=0) history
+                OUTER APPLY(SELECT MAX(e.FileVersion) VersionCount,MAX(e.NgayTao) LastDate FROM FileChanges e
+                    WHERE e.IdChuoiFile=COALESCE(lineage.IdChuoiFile,u.Id)) history
                 OUTER APPLY(SELECT TOP 1 f.TrangThai,f.IdFileSauKy FROM dbo.TblTrinhKyTaiLieuFile f
                     JOIN dbo.TblTrinhKyTaiLieu s ON s.IdTrinhKyTaiLieu=f.IdTrinhKyTaiLieu AND s.DaXoa=0
                     WHERE f.IdFileNguon=u.Id AND f.DaXoa=0
@@ -55,27 +121,15 @@ namespace SweetSoft.QLDA.Core.Respositories
 
         public DataTable GetFileTimeline(Guid documentId, Guid root)
         {
-            return ExecuteDataTable(@"
-                WITH Changes AS(
-                    SELECT TOP 1 p.IdPhienBanTaiLieu,@Root AS IdFile,p.NgayTao,p.NguoiTao,N'Tải file lần đầu' AS HanhDong,
-                        TRY_CONVERT(decimal(18,4),p.SoPhienBan) AS ThuTu
-                    FROM dbo.TblPhienBanTaiLieu p
-                    CROSS APPLY OPENJSON(COALESCE(p.DanhSachFileJson,
-                        CASE WHEN p.IdFileNoiDung IS NULL THEN N'[]' ELSE N'[""' + CONVERT(nvarchar(36),p.IdFileNoiDung) + N'""]' END)) j
-                    WHERE p.IdTaiLieu=@D AND p.DaXoa=0 AND TRY_CONVERT(uniqueidentifier,j.value)=@Root
-                    ORDER BY p.NgayTao,TRY_CONVERT(decimal(18,4),p.SoPhienBan),p.IdPhienBanTaiLieu
-                ), Events AS(
-                    SELECT * FROM Changes
-                    UNION ALL SELECT p.IdPhienBanTaiLieu,p.IdFileThayDoi,p.NgayTao,p.NguoiTao,
-                        CASE WHEN p.IdFileThayDoi IS NULL THEN N'Gỡ file' WHEN p.NguonTao='KHOI_PHUC' THEN N'Khôi phục' ELSE N'Tải bản mới' END,
-                        TRY_CONVERT(decimal(18,4),p.SoPhienBan)
-                    FROM dbo.TblPhienBanTaiLieu p WHERE p.IdTaiLieu=@D AND p.IdChuoiFile=@Root AND p.DaXoa=0
-                )
-                SELECT e.*,ROW_NUMBER() OVER(ORDER BY e.NgayTao,e.ThuTu,e.IdPhienBanTaiLieu) AS FileVersion,
+            return ExecuteDataTable(FileTransitionsSql + @"
+                SELECT e.*,
+                    CASE WHEN e.IdFile IS NULL THEN N'Gỡ file' WHEN e.NguonTao='KHOI_PHUC' THEN N'Khôi phục'
+                        WHEN e.FileVersion=1 THEN N'Tải file lần đầu' ELSE N'Tải bản mới' END AS HanhDong,
                     COALESCE(NULLIF(u.OriginalFileName,N''),u.Name) AS TenFile,u.FileUrl,
                     COALESCE(NULLIF(a.DisplayName,N''),e.NguoiTao) AS NguoiThucHien
-                FROM Events e LEFT JOIN dbo.TblUploadFile u ON u.Id=e.IdFile AND u.RefId=@D AND u.IsDeleted=0
+                FROM FileChanges e LEFT JOIN dbo.TblUploadFile u ON u.Id=e.IdFile AND u.RefId=@D AND u.IsDeleted=0
                 LEFT JOIN dbo.aspnet_Users a ON a.UserName=e.NguoiTao
+                WHERE e.IdChuoiFile=@Root
                 ORDER BY e.NgayTao DESC,e.ThuTu DESC,e.IdPhienBanTaiLieu DESC;",
                 new Dictionary<string,object>{{"@D",documentId},{"@Root",root}});
         }

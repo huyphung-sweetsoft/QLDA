@@ -174,7 +174,7 @@
                                         </td>
                                         <td>
                                         <div class="d-flex flex-wrap justify-content-center gap-1 py-1">
-                                            <asp:HyperLink runat="server" CssClass="btn btn-sm btn-outline-primary"
+                                            <asp:HyperLink runat="server" CssClass="btn btn-sm btn-outline-success"
                                                 Text="<i class='fas fa-eye me-1'></i>Xem trước"
                                                 NavigateUrl='<%# FileUrl(Eval("FileNguonUrl")) %>'
                                                 data-path='<%# FileUrl(Eval("FileNguonUrl")) %>'
