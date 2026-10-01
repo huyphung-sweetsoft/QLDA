@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel runat="server" ID="upnlMain" UpdateMode="Conditional">
     <ContentTemplate>
-        <SweetSoft:ExtraModal runat="server" ID="mdlQuanLyLoai" Type="Primary" Size="Large" FooterButtonClose="true" DefaultButton="btnSaveNew">
+        <SweetSoft:ExtraModal runat="server" ID="mdlQuanLyLoai" Type="Primary" Size="Large" FooterButtonClose="true">
             <ContentTemplate>
                 <div class="row">
                     <!-- Form thêm mới ở đầu Modal -->
