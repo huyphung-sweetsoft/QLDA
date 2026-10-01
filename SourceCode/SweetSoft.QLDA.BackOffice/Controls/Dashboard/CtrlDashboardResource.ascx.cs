@@ -22,13 +22,17 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=27")
+                        "/Controls/Dashboard/dashboard-style.css?v=49")
                 };
 
                 List<string> jsLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-resource.js?v=11")
+                        "/Controls/Dashboard/dashboard-donut.js?v=1"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                        "/Controls/Dashboard/dashboard-resource.js?v=19"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                        "/Controls/Dashboard/dashboard-modals.js?v=1")
                 };
 
                 return new RegisterCSSAndJS(
@@ -187,49 +191,67 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             InitDashboard(BuildResourceFilter());
         }
 
-        protected string GetStatusText(ResourceLoadStatus status)
-        {
-            switch (status)
-            {
-                case ResourceLoadStatus.Underloaded:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_UNDERLOADED);
-                case ResourceLoadStatus.Balanced:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_BALANCED_LOAD);
-                case ResourceLoadStatus.Overloaded:
-                    return GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_OVERLOADED);
-                default: return "-";
-            }
-        }
-
         protected string GetEmployeeStatusText(ResourceEmployeeLoad employee)
         {
-            return employee.AllocatedDays <= 0
-                ? GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD)
-                : GetStatusText(employee.Status);
+            return GetTaskCountStatusText(employee.PeakDailyTaskCount);
         }
 
         protected string GetEmployeeStatusKey(ResourceEmployeeLoad employee)
         {
-            return employee.AllocatedDays <= 0
-                ? "noload"
-                : employee.Status.ToString().ToLowerInvariant();
+            return GetTaskCountStatusKey(employee.PeakDailyTaskCount);
         }
 
         protected string GetEmployeeStatusBadgeCss(ResourceEmployeeLoad employee)
         {
-            return employee.AllocatedDays <= 0
-                ? "bg-secondary-subtle text-secondary"
-                : GetStatusBadgeCss(employee.Status);
+            return GetTaskCountStatusBadgeCss(employee.PeakDailyTaskCount);
         }
 
         protected string GetEmployeeStatusLoadCss(ResourceEmployeeLoad employee)
         {
-            return employee.AllocatedDays <= 0
-                ? "resource-load-none"
-                : GetStatusLoadCss(employee.Status);
+            return GetTaskCountStatusCss(employee.PeakDailyTaskCount);
+        }
+
+        protected int GetResourceLoadCount(string statusKey)
+        {
+            if (IsMonthlyView)
+            {
+                return GetFocusMonthCount(statusKey);
+            }
+
+            switch (statusKey)
+            {
+                case "free":
+                    return Model.NoLoadEmployeeCount;
+                case "normal":
+                    return Model.NormalEmployeeCount;
+                case "overloaded":
+                    return Model.OverloadedEmployeeCount;
+                default:
+                    return 0;
+            }
+        }
+
+        protected string GetResourceLoadChartStyle()
+        {
+            int freeCount = GetResourceLoadCount("free");
+            int normalCount = GetResourceLoadCount("normal");
+            int overloadedCount = GetResourceLoadCount("overloaded");
+            int totalCount = freeCount + normalCount + overloadedCount;
+
+            if (totalCount == 0)
+            {
+                return "background: conic-gradient(#e9edf2 0% 100%);";
+            }
+
+            decimal freeEnd = freeCount * 100m / totalCount;
+            decimal normalEnd = (freeCount + normalCount) * 100m / totalCount;
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "background: conic-gradient(#36a778 0% {0:0.##}%, "
+                    + "#efb63e {0:0.##}% {1:0.##}%, "
+                    + "#ef6d63 {1:0.##}% 100%);",
+                freeEnd,
+                normalEnd);
         }
 
         protected ResourceMonthlyLoad GetFocusMonthLoad(
@@ -243,9 +265,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected string GetFocusMonthStatusKey(ResourceEmployeeLoad employee)
         {
             ResourceMonthlyLoad load = GetFocusMonthLoad(employee);
-            return load.AllocatedDays <= 0
-                ? "noload"
-                : load.Status.ToString().ToLowerInvariant();
+            return GetTaskCountStatusKey(load.PeakDailyTaskCount);
         }
 
         protected int GetFocusMonthCount(string statusKey)
@@ -254,132 +274,116 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 GetFocusMonthStatusKey(employee) == statusKey);
         }
 
-        protected string GetWeekLoadText(decimal allocationPercent)
+        protected string GetTaskCountStatusText(int taskCount)
         {
-            if (allocationPercent <= 0)
-            {
-                return GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD);
-            }
-
-            return GetStatusText(allocationPercent > 100m
-                ? ResourceLoadStatus.Overloaded
-                : allocationPercent >= 80m
-                    ? ResourceLoadStatus.Balanced
-                    : ResourceLoadStatus.Underloaded);
+            return GetResourceText(GetTaskCountStatusResourceKey(taskCount));
         }
 
-        protected string GetStatusBadgeCss(ResourceLoadStatus status)
+        protected string GetTaskCountStatusKey(int taskCount)
         {
-            switch (status)
-            {
-                case ResourceLoadStatus.Underloaded:
-                    return "bg-success-subtle text-success";
-                case ResourceLoadStatus.Balanced:
-                    return "bg-warning-subtle text-warning";
-                case ResourceLoadStatus.Overloaded:
-                    return "bg-danger-subtle text-danger";
-                default:
-                    return "bg-secondary-subtle text-secondary";
-            }
+            return taskCount <= 0 ? "free" : taskCount == 1 ? "normal" : "overloaded";
+        }
+
+        private string GetTaskCountStatusResourceKey(int taskCount)
+        {
+            return taskCount <= 0
+                ? BackEndResourceKeys.DASHBOARD_RESOURCE_FREE
+                : taskCount == 1
+                    ? BackEndResourceKeys.DASHBOARD_RESOURCE_NORMAL
+                    : BackEndResourceKeys.DASHBOARD_OVERLOADED;
+        }
+
+        protected string GetTaskCountStatusBadgeCss(int taskCount)
+        {
+            return taskCount <= 0
+                ? "bg-success-subtle text-success"
+                : taskCount == 1
+                    ? "bg-warning-subtle text-warning"
+                    : "bg-danger-subtle text-danger";
+        }
+
+        protected string GetTaskCountStatusCss(int taskCount)
+        {
+            return taskCount <= 0
+                ? "resource-load-none"
+                : taskCount == 1
+                    ? "resource-load-normal"
+                    : "resource-load-over";
         }
 
         protected string GetMonthlyStatusText(ResourceMonthlyLoad load)
         {
-            if (load.AllocatedDays <= 0)
-            {
-                return GetResourceText(BackEndResourceKeys.DASHBOARD_NO_LOAD);
-            }
-
-            if (load.AverageUtilization > 100m)
-            {
-                return GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_MONTH_OVERLOADED);
-            }
-
-            if (load.OverloadWeekCount > 0)
-            {
-                return string.Format(
-                    GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_OVERLOADED_WEEK_COUNT),
-                    load.OverloadWeekCount);
-            }
-
-            return GetStatusText(load.Status);
+            return GetTaskCountStatusText(load.PeakDailyTaskCount);
         }
 
-        protected string GetMonthlyStatusBadgeCss(
-            ResourceMonthlyLoad load)
+        protected string GetMonthlyStatusBadgeCss(ResourceMonthlyLoad load)
         {
-            if (load.AllocatedDays <= 0)
-            {
-                return "bg-secondary-subtle text-secondary";
-            }
-
-            return load.AverageUtilization > 100m
-                || load.OverloadWeekCount > 0
-                    ? "bg-danger-subtle text-danger"
-                    : GetStatusBadgeCss(load.Status);
+            return GetTaskCountStatusBadgeCss(load.PeakDailyTaskCount);
         }
 
         protected string GetMonthlySummaryCss(ResourceMonthlyLoad load)
         {
-            return load.OverloadWeekCount > 0
+            return load.OverloadedDayCount > 0
                 ? "resource-month-has-overload"
                 : string.Empty;
         }
 
         protected string GetMonthlyStatusTitle(ResourceMonthlyLoad load)
         {
-            List<string> overloadWeeks = load.WeeklyLoads
-                .Where(x => x.Status == ResourceLoadStatus.Overloaded)
-                .Select(x => x.Label + " "
-                    + x.AllocationPercent.ToString("0.#") + "%")
-                .ToList();
+            return string.Format(
+                GetResourceText(BackEndResourceKeys.DASHBOARD_MONTH_DAILY_COUNTS),
+                load.NoLoadDayCount,
+                load.NormalDayCount,
+                load.OverloadedDayCount);
+        }
 
-            return overloadWeeks.Count == 0
-                ? GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_NO_OVERLOADED_WEEKS)
+        protected string GetDayTypeText(ResourceDailyLoad day)
+        {
+            if (day.IsHoliday)
+            {
+                return string.Format(
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_HOLIDAY_DAY),
+                    string.IsNullOrWhiteSpace(day.HolidayName)
+                        ? GetResourceText(BackEndResourceKeys.DASHBOARD_NON_WORKING_DAY)
+                        : day.HolidayName);
+            }
+
+            if (day.IsWeekend)
+            {
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_WEEKEND);
+            }
+
+            return GetResourceText(day.IsWorkingDay
+                ? BackEndResourceKeys.DASHBOARD_WORKING_DAY
+                : BackEndResourceKeys.DASHBOARD_NON_WORKING_DAY);
+        }
+
+        protected string GetDayTypeCss(ResourceDailyLoad day)
+        {
+            return day.IsHoliday
+                ? "resource-day-holiday"
+                : day.IsWeekend || !day.IsWorkingDay
+                    ? "resource-day-non-working"
+                    : "resource-day-working";
+        }
+
+        protected string GetDayLoadText(ResourceDailyLoad day)
+        {
+            return day.Tasks.Count + " · " + GetTaskCountStatusText(day.Tasks.Count);
+        }
+
+        protected string GetDayLoadCss(ResourceDailyLoad day)
+        {
+            return GetTaskCountStatusCss(day.Tasks.Count);
+        }
+
+        protected string GetPeakTaskCountText(int taskCount)
+        {
+            return taskCount <= 0
+                ? GetResourceText(BackEndResourceKeys.DASHBOARD_NO_TASKS_ON_DAY)
                 : string.Format(
-                    GetResourceText(
-                        BackEndResourceKeys.DASHBOARD_OVERLOADED_WEEKS),
-                    string.Join(", ", overloadWeeks));
-        }
-
-        protected string GetHeatmapCss(decimal allocationPercent)
-        {
-            if (allocationPercent <= 0)
-            {
-                return "resource-load-none";
-            }
-
-            if (allocationPercent < 80)
-            {
-                return "resource-load-low";
-            }
-
-            if (allocationPercent <= 100)
-            {
-                return "resource-load-balanced";
-            }
-
-            return "resource-load-over";
-        }
-
-        protected string GetStatusLoadCss(ResourceLoadStatus status)
-        {
-            switch (status)
-            {
-                case ResourceLoadStatus.Underloaded: return "resource-load-low";
-                case ResourceLoadStatus.Balanced: return "resource-load-balanced";
-                case ResourceLoadStatus.Overloaded: return "resource-load-over";
-                default: return "resource-load-low";
-            }
-        }
-
-        protected string GetCellText(decimal allocationPercent)
-        {
-            return allocationPercent.ToString("0", CultureInfo.InvariantCulture)
-                + "%";
+                    GetResourceText(BackEndResourceKeys.DASHBOARD_MAX_TASKS_IN_DAY),
+                    taskCount);
         }
 
         protected string GetEmployeeMeta(ResourceEmployeeLoad employee)
@@ -402,16 +406,36 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetAttentionText(ResourceEmployeeLoad employee)
         {
-            if (employee.AllocatedDays <= 0)
+            if (employee.PeakDailyTaskCount <= 0)
             {
                 return GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_FOCUS_WEEK_TASKS);
             }
 
+            string overloadedDays = string.Join(
+                ", ",
+                GetOverloadedDays(employee)
+                    .Select(day => GetLocalizedDayName(day.Date))
+                    .Distinct());
             return string.Format(
-                GetResourceText(BackEndResourceKeys.DASHBOARD_WEEK_DAYS_COMPARISON),
-                employee.AllocatedDays.ToString("0.#"),
-                employee.CapacityDays.ToString("0"));
+                GetResourceText(BackEndResourceKeys.DASHBOARD_OVERLOADED_ON_DAYS),
+                overloadedDays);
+        }
+
+        protected List<ResourceDailyLoad> GetOverloadedDays(
+            ResourceEmployeeLoad employee)
+        {
+            return employee.DailyLoads
+                .Where(day => day.Tasks.Count > 1)
+                .OrderBy(day => day.Date)
+                .ToList();
+        }
+
+        protected string GetLocalizedDayName(DateTime date)
+        {
+            string dayName = CultureInfo.CurrentUICulture.DateTimeFormat
+                .GetDayName(date.DayOfWeek);
+            return CultureInfo.CurrentUICulture.TextInfo.ToTitleCase(dayName);
         }
 
         protected string GetProjectDetailUrl(Guid projectId)
@@ -500,51 +524,36 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         displayRange = week.WeekStart.ToString("dd/MM")
                             + "–" + week.WeekStart.AddDays(6)
                                 .ToString("dd/MM/yyyy"),
-                        allocation = week.AllocationPercent,
-                        allocatedDays = week.AllocatedDays,
-                        capacityDays = week.CapacityDays,
-                        days = week.DailyLoads.Select(day => new
-                        {
-                            date = day.Date.ToString("yyyy-MM-dd"),
-                            displayDate = GetDayLabel(day.Date)
-                                + " " + day.Date.ToString("dd/MM"),
-                            isWorkingDay = day.IsWorkingDay,
-                            isHoliday = day.IsHoliday,
-                            holidayName = day.HolidayName,
-                            allocation = day.AllocationPercent,
-                            tasks = day.Tasks.Select(task => new
-                            {
-                                tasksUrl = GetProjectTaskDetailUrl(task.ProjectId, task.TaskId),
-                                code = task.TaskCode,
-                                name = task.TaskName,
-                                projectCode = task.ProjectCode,
-                                projectName = task.ProjectName
-                            })
-                        })
+                        taskCount = week.DailyLoads.SelectMany(x => x.Tasks)
+                            .Select(x => x.TaskId).Distinct().Count(),
+                        days = week.DailyLoads.Select(GetDailyDetailData)
                     }),
                     months = IsMonthlyView ? employee.MonthlyLoads.Select(month => new
                     {
                         start = month.MonthStart.ToString("yyyy-MM-dd"),
                         label = month.Label,
-                        allocation = month.AverageUtilization,
-                        allocatedDays = month.AllocatedDays,
-                        capacityDays = month.CapacityDays,
                         status = GetMonthlyStatusText(month),
-                        hasOverload = month.OverloadWeekCount > 0,
+                        statusKey = GetTaskCountStatusKey(month.PeakDailyTaskCount),
+                        statusCss = GetTaskCountStatusCss(month.PeakDailyTaskCount),
+                        noLoadDayCount = month.NoLoadDayCount,
+                        normalDayCount = month.NormalDayCount,
+                        overloadedDayCount = month.OverloadedDayCount,
                         weeks = month.WeeklyLoads.Select(week => new
                         {
                             start = week.WeekStart.ToString("yyyy-MM-dd"),
                             displayRange = week.WeekStart.ToString("dd/MM")
                                 + "–" + week.WeekStart.AddDays(6)
                                     .ToString("dd/MM/yyyy"),
-                            allocation = week.AllocationPercent,
-                            allocatedDays = week.AllocatedDays,
-                            capacityDays = week.CapacityDays,
-                            taskCount = week.Tasks.Count,
-                            status = GetWeekLoadText(week.AllocationPercent),
-                            statusCss = GetHeatmapCss(week.AllocationPercent),
-                            detailUrl = GetResourceWeekUrl(
-                                employee.EmployeeId, week.WeekStart)
+                            taskCount = week.DailyLoads.SelectMany(x => x.Tasks)
+                                .Select(x => x.TaskId).Distinct().Count(),
+                            noLoadDayCount = week.NoLoadDayCount,
+                            normalDayCount = week.NormalDayCount,
+                            overloadedDayCount = week.OverloadedDayCount,
+                            peakDailyTaskCount = week.PeakDailyTaskCount,
+                            status = GetTaskCountStatusText(week.PeakDailyTaskCount),
+                            statusKey = GetTaskCountStatusKey(week.PeakDailyTaskCount),
+                            statusCss = GetTaskCountStatusCss(week.PeakDailyTaskCount),
+                            days = week.DailyLoads.Select(GetDailyDetailData)
                         })
                     }) : null
                 }));
@@ -567,6 +576,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 task = GetResourceText(BackEndResourceKeys.DASHBOARD_TASK),
                 taskCountFormat = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_TASK_COUNT),
+                resourceLoadRules = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_RESOURCE_LOAD_RULES),
+                monthDailyCounts = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MONTH_DAILY_COUNTS),
+                monthlyCalculation = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_MONTHLY_CALCULATION_DESC),
+                tasksForDate = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TASKS_FOR_DATE),
+                dailyDetail = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_DAILY_TASKS_DETAIL),
+                selectDay = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_SELECT_DAY),
                 capacityFormat = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_CAPACITY),
                 excessFormat = GetResourceText(
@@ -589,6 +610,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_NON_WORKING_DAY),
                 holidayDay = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_HOLIDAY_DAY),
+                weekend = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_RESOURCE_WEEKEND),
+                normal = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_RESOURCE_NORMAL),
+                free = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_RESOURCE_FREE),
                 holidayDaysFormat = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_HOLIDAY_DAYS),
                 weekScheduleChange = GetResourceText(
@@ -623,6 +650,40 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 weekDetail = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_WEEK_ALLOCATION_DETAIL)
             });
+        }
+
+        private object GetDailyDetailData(ResourceDailyLoad day)
+        {
+            return new
+            {
+                date = day.Date.ToString("yyyy-MM-dd"),
+                displayDate = GetDayLabel(day.Date)
+                    + " " + day.Date.ToString("dd/MM/yyyy"),
+                isWorkingDay = day.IsWorkingDay,
+                isHoliday = day.IsHoliday,
+                isWeekend = day.IsWeekend,
+                holidayName = day.HolidayName,
+                dayType = GetDayTypeText(day),
+                dayTypeCss = GetDayTypeCss(day),
+                taskCount = day.Tasks.Count,
+                statusKey = GetTaskCountStatusKey(day.Tasks.Count),
+                status = GetTaskCountStatusText(day.Tasks.Count),
+                statusCss = GetTaskCountStatusCss(day.Tasks.Count),
+                tasks = day.Tasks.Select(task => new
+                {
+                    tasksUrl = GetProjectTaskDetailUrl(task.ProjectId, task.TaskId),
+                    code = task.TaskCode,
+                    name = task.TaskName,
+                    projectCode = task.ProjectCode,
+                    projectName = task.ProjectName,
+                    startDate = task.StartDate.HasValue
+                        ? task.StartDate.Value.ToString("dd/MM/yyyy")
+                        : string.Empty,
+                    endDate = task.EndDate.HasValue
+                        ? task.EndDate.Value.ToString("dd/MM/yyyy")
+                        : string.Empty
+                })
+            };
         }
 
         private void LoadProjectFilter()
@@ -704,7 +765,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             {
                 ProjectId = projectId,
                 AnchorWeekStart = AnchorWeekStart,
-                WeekCount = 4,
+                WeekCount = IsMonthlyView ? 4 : 1,
                 MonthStart = AnchorMonthStart,
                 MonthCount = IsMonthlyView ? 4 : 0
             };

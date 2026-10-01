@@ -157,14 +157,16 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 AssignedEmployeeCount = employeeLoads.Count(x =>
                     x.AllocatedDays > 0),
                 NoLoadEmployeeCount = employeeLoads.Count(x =>
-                    x.AllocatedDays <= 0),
+                    x.PeakDailyTaskCount == 0),
+                NormalEmployeeCount = employeeLoads.Count(x =>
+                    x.PeakDailyTaskCount == 1),
                 UnderloadedEmployeeCount = employeeLoads.Count(x =>
                     x.Status == ResourceLoadStatus.Underloaded
                         && x.AllocatedDays > 0),
                 BalancedEmployeeCount = employeeLoads.Count(x =>
                     x.Status == ResourceLoadStatus.Balanced),
                 OverloadedEmployeeCount = employeeLoads.Count(x =>
-                    x.Status == ResourceLoadStatus.Overloaded),
+                    x.PeakDailyTaskCount > 1),
                 AverageUtilization = totalCapacity == 0
                     ? 0
                     : Math.Round(totalAllocated / totalCapacity * 100m, 1),
@@ -199,9 +201,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DashboardResourceFilter filter)
         {
             int weekCount = filter == null ? 4 : filter.WeekCount;
-            if (weekCount != 2 && weekCount != 4 && weekCount != 6)
+            if (weekCount != 1 && weekCount != 2
+                && weekCount != 4 && weekCount != 6)
             {
-                weekCount = 4;
+                weekCount = 1;
             }
 
             DateTime anchor = filter == null
@@ -363,7 +366,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     AverageUtilization = averageUtilization,
                     MaxDailyLoad = maxDailyLoad,
                     ActiveTaskCount = anchorLoad.Tasks.Count,
-                    OverloadDayCount = anchorLoad.OverlapDayCount,
+                    OverloadDayCount = anchorLoad.OverloadedDayCount,
+                    PeakDailyTaskCount = anchorLoad.PeakDailyTaskCount,
                     OverAllocatedDays = anchorLoad.OverAllocatedDays,
                     Status = anchorLoad.Status,
                     DailyLoads = dailyLoads,
@@ -373,8 +377,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
             }
 
             return result
-                .OrderByDescending(x => x.Status == ResourceLoadStatus.Overloaded)
-                .ThenByDescending(x => x.AverageUtilization)
+                .OrderByDescending(x => x.PeakDailyTaskCount > 1)
+                .ThenByDescending(x => x.PeakDailyTaskCount)
                 .ThenBy(x => x.DisplayName)
                 .ToList();
         }
@@ -386,16 +390,16 @@ namespace SweetSoft.QLDA.Core.Dashboard
             DashboardWorkingCalendar calendar)
         {
             bool isWorkingDay = calendar.IsWorkingDay(day);
-            List<TblCongViec> activeTasks = isWorkingDay
-                ? tasks
-                    .Where(x => IsTaskActiveOn(x, day, calendar))
-                    .ToList()
-                : new List<TblCongViec>();
+            List<TblCongViec> activeTasks = tasks
+                .Where(x => IsTaskActiveOn(x, day, calendar))
+                .ToList();
             ResourceDailyLoad load = new ResourceDailyLoad
             {
                 Date = day,
                 IsWorkingDay = isWorkingDay,
                 IsHoliday = calendar.IsHoliday(day),
+                IsWeekend = day.DayOfWeek == DayOfWeek.Saturday
+                    || day.DayOfWeek == DayOfWeek.Sunday,
                 HolidayName = calendar.GetHolidayName(day),
                 AllocationPercent = activeTasks.Count
                     * TaskDailyAllocationPercent
@@ -531,6 +535,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         allocatedDays - capacityDays),
                     OverlapDayCount = workingDays.Count(x =>
                         x.AllocationPercent > 100m),
+                    NoLoadDayCount = weekDays.Count(x => x.Tasks.Count == 0),
+                    NormalDayCount = weekDays.Count(x => x.Tasks.Count == 1),
+                    OverloadedDayCount = weekDays.Count(x => x.Tasks.Count > 1),
+                    PeakDailyTaskCount = weekDays.Count == 0
+                        ? 0
+                        : weekDays.Max(x => x.Tasks.Count),
                     Status = GetStatus(allocationPercent),
                     Projects = weeklyProjects,
                     Tasks = weeklyTasks,
@@ -553,7 +563,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 month.EndDate,
                 anchorStart,
                 calendar);
-            List<DateTime> calculationDays = calendar.GetWorkingDays(
+            List<DateTime> calculationDays = GetCalendarDays(
                 monthWeeks.First().StartDate,
                 monthWeeks.Last().EndDate);
             List<ResourceDailyLoad> dailyLoads = calculationDays
@@ -568,8 +578,13 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 monthWeeks);
             decimal allocatedDays = dailyLoads
                 .Where(x => x.Date >= month.StartDate
-                    && x.Date <= month.EndDate)
+                    && x.Date <= month.EndDate
+                    && x.IsWorkingDay)
                 .Sum(x => x.AllocationPercent / 100m);
+            List<ResourceDailyLoad> monthDayLoads = dailyLoads
+                .Where(x => x.Date >= month.StartDate
+                    && x.Date <= month.EndDate)
+                .ToList();
             decimal capacityDays = calendar.GetWorkingDays(
                 month.StartDate,
                 month.EndDate).Count;
@@ -589,6 +604,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 AverageUtilization = utilization,
                 OverloadWeekCount = weeklyLoads.Count(x =>
                     x.Status == ResourceLoadStatus.Overloaded),
+                NoLoadDayCount = monthDayLoads.Count(x => x.Tasks.Count == 0),
+                NormalDayCount = monthDayLoads.Count(x => x.Tasks.Count == 1),
+                OverloadedDayCount = monthDayLoads.Count(x => x.Tasks.Count > 1),
+                PeakDailyTaskCount = monthDayLoads.Count == 0
+                    ? 0
+                    : monthDayLoads.Max(x => x.Tasks.Count),
                 Status = GetStatus(utilization),
                 WeeklyLoads = weeklyLoads
             };
@@ -712,12 +733,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<ResourceEmployeeLoad> employeeLoads)
         {
             return employeeLoads
-                .Where(x => x.Status == ResourceLoadStatus.Overloaded
-                    || x.Status == ResourceLoadStatus.Underloaded)
-                .OrderByDescending(x =>
-                    x.Status == ResourceLoadStatus.Overloaded)
-                .ThenBy(x => x.AllocatedDays > 0 ? 1 : 0)
-                .ThenByDescending(x => x.MaxDailyLoad)
+                .Where(x => x.PeakDailyTaskCount == 0
+                    || x.PeakDailyTaskCount > 1)
+                .OrderByDescending(x => x.PeakDailyTaskCount > 1)
+                .ThenByDescending(x => x.PeakDailyTaskCount)
                 .ThenBy(x => x.DisplayName)
                 .Take(10)
                 .ToList();

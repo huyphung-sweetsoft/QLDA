@@ -2162,7 +2162,7 @@
     <value>Dự kiến</value>
   </data>
   <data name="DASHBOARD_COST_TITLE" xml:space="preserve">
-    <value>Tài chính dự án · Lũy kế hiện tại</value>
+    <value>Thống kê tài chính dự án</value>
   </data>
   <data name="DASHBOARD_PROJECTS_IN_SCOPE" xml:space="preserve">
     <value>Dự án trong phạm vi</value>
@@ -2357,7 +2357,7 @@
     <value>Thống kê phân bổ nguồn lực</value>
   </data>
   <data name="DASHBOARD_RESOURCE_DESC" xml:space="preserve">
-    <value>Tổng hợp ngày công từ thứ Hai đến thứ Sáu, phát hiện nhân sự chưa đủ tải hoặc được giao vượt quá năng lực của tuần.</value>
+    <value>Theo dõi số công việc mỗi nhân sự được giao theo từng ngày trong tuần.</value>
   </data>
   <data name="DASHBOARD_DISPLAY_RANGE" xml:space="preserve">
     <value>Khoảng hiển thị</value>
@@ -2393,7 +2393,7 @@
     <value>Tuần sau</value>
   </data>
   <data name="DASHBOARD_WEEKLY_CALCULATION_DESC" xml:space="preserve">
-    <value>Ước tính từ lịch giao việc: mỗi công việc trong một ngày tính 1 ngày công; các việc trùng ngày được cộng dồn. Đây không phải giờ làm thực tế.</value>
+    <value>Mỗi ngày hiển thị loại ngày và số công việc được giao còn hiệu lực. Rảnh: 0 việc; Bình thường: 1 việc; Quá tải: từ 2 việc trở lên trong cùng ngày. Công việc kéo dài nhiều ngày chỉ được tính vào các ngày làm việc theo Lịch biểu chung; ngày nghỉ không tính việc.</value>
   </data>
   <data name="DASHBOARD_WEEKLY_CALCULATION_TITLE" xml:space="preserve">
     <value>Cách ước tính</value>
@@ -2437,6 +2437,15 @@
   <data name="DASHBOARD_NO_LOAD" xml:space="preserve">
     <value>Chưa có việc</value>
   </data>
+  <data name="DASHBOARD_RESOURCE_FREE" xml:space="preserve"><value>Rảnh</value></data>
+  <data name="DASHBOARD_RESOURCE_NORMAL" xml:space="preserve"><value>Bình thường</value></data>
+  <data name="DASHBOARD_RESOURCE_WEEKEND" xml:space="preserve"><value>Cuối tuần</value></data>
+  <data name="DASHBOARD_RESOURCE_LOAD_RULES" xml:space="preserve"><value>Rảnh: chưa được giao việc. Bình thường: 1 công việc trong ngày. Quá tải: nhiều hơn 1 công việc trong ngày.</value></data>
+  <data name="DASHBOARD_MONTH_DAILY_COUNTS" xml:space="preserve"><value>Rảnh {0} ngày · Bình thường {1} ngày · Quá tải {2} ngày</value></data>
+  <data name="DASHBOARD_MAX_TASKS_IN_DAY" xml:space="preserve"><value>Nhiều nhất {0} công việc trong một ngày</value></data>
+  <data name="DASHBOARD_TASKS_FOR_DATE" xml:space="preserve"><value>Công việc ngày {0}</value></data>
+  <data name="DASHBOARD_SELECT_DAY" xml:space="preserve"><value>Chọn một ngày để xem công việc</value></data>
+  <data name="DASHBOARD_DAILY_TASKS_DETAIL" xml:space="preserve"><value>Công việc trong ngày</value></data>
   <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve">
     <value>Đủ tải</value>
   </data>
@@ -2447,7 +2456,7 @@
     <value>Phân công dự kiến theo tuần</value>
   </data>
   <data name="DASHBOARD_RESOURCE_HEATMAP_DESC" xml:space="preserve">
-    <value>Chọn một ô để xem nhân sự làm gì từ thứ Hai đến Chủ nhật; chọn công việc để mở màn hình sửa.</value>
+    <value>Mỗi ô cho biết loại ngày và số công việc được giao. Bấm vào ngày để xem danh sách công việc; bấm công việc để mở màn hình sửa.</value>
   </data>
   <data name="DASHBOARD_EMPLOYEE_LABEL" xml:space="preserve">
     <value>Nhân sự</value>
@@ -2462,7 +2471,7 @@
     <value>Mức tải dự kiến theo tháng</value>
   </data>
   <data name="DASHBOARD_MONTHLY_LOAD_DESC" xml:space="preserve">
-    <value>Chọn một ô tháng để xem mức tải từng tuần.</value>
+    <value>Chọn một ô tháng để xem tình hình theo tuần và mở danh sách công việc của từng ngày.</value>
   </data>
   <data name="DASHBOARD_NO_MONTHLY_EMPLOYEES" xml:space="preserve">
     <value>Không có nhân sự để tổng hợp trong phạm vi đã chọn.</value>
@@ -2471,10 +2480,16 @@
     <value>Nhân sự cần chú ý</value>
   </data>
   <data name="DASHBOARD_EMPLOYEES_NEED_ATTENTION_DESC" xml:space="preserve">
-    <value>Ưu tiên nhân sự quá tải, sau đó đến nhóm thiếu tải.</value>
+    <value>Mở rộng từng nhân sự để xem ngày quá tải và số công việc.</value>
+  </data>
+  <data name="DASHBOARD_OVERLOADED_ON_DAYS" xml:space="preserve">
+    <value>Quá tải vào: {0}</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_LOAD_DISTRIBUTION" xml:space="preserve">
+    <value>Phân bố mức tải nhân sự</value>
   </data>
   <data name="DASHBOARD_NO_RESOURCE_WARNINGS" xml:space="preserve">
-    <value>Không có nhân sự cần cảnh báo trong tuần.</value>
+    <value>Tuần này không có nhân sự rảnh hoặc quá tải.</value>
   </data>
   <data name="DASHBOARD_RESOURCE_LOAD_TREND" xml:space="preserve">
     <value>Xu hướng mức tải nguồn lực</value>

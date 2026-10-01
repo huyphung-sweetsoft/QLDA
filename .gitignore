@@ -25,3 +25,4 @@ packages/
 
 # Bỏ qua tất cả các file Log hệ thống, không đẩy lên Git
 SourceCode/SweetSoft.QLDA.BackOffice/Uploads/_Logs/
+/SourceCode/SweetSoft.QLDA.BackOffice/Properties/PublishProfiles

@@ -28,7 +28,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public DashboardOverviewSummary GetSimpleOverview(
             DashboardFilter filter, bool includeFinance = false,
-            bool includeIssues = false, bool includeRisks = false)
+            bool includeIssues = false, bool includeRisks = false,
+            bool includeCustomers = false)
         {
             DateTime now = DateTime.Now;
             DateTime today = now.Date;
@@ -41,6 +42,14 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .Where(p => p.TrangThai != (byte)DuAnStatus.HoanThanh
                     && p.TrangThai != (byte)DuAnStatus.KetThuc)
                 .Select(p => p.IdDuAn));
+            DashboardFilter currentIssuesFilter = new DashboardFilter
+            {
+                ProjectId = filter == null ? null : filter.ProjectId
+            };
+            DashboardFilter upcomingMeetingsFilter = new DashboardFilter
+            {
+                ProjectId = filter == null ? null : filter.ProjectId
+            };
             List<OverviewImportantIssue> openIssues = includeIssues
                 ? _repository.GetIssues(filter)
                     .Where(i => projectIds.Contains(i.IdDuAn)
@@ -58,6 +67,23 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     })
                     .OrderByDescending(i => i.ImpactLevel)
                     .ThenBy(i => i.IssueCode)
+                    .ToList()
+                : new List<OverviewImportantIssue>();
+            List<OverviewImportantIssue> currentOpenIssues = includeIssues
+                ? _repository.GetIssues(currentIssuesFilter)
+                    .Where(i => projectIds.Contains(i.IdDuAn)
+                        && i.TrangThai == (byte)TrangThaiVanDeEnum.Processing)
+                    .Select(i => new OverviewImportantIssue
+                    {
+                        ProjectId = i.IdDuAn,
+                        ProjectCode = projectById[i.IdDuAn].MaDuAn,
+                        ProjectName = projectById[i.IdDuAn].TenDuAn,
+                        IssueId = i.IdVanDe,
+                        IssueCode = i.MaVanDe,
+                        IssueName = i.TenVanDe,
+                        HandlingPlan = i.KeHoachXuLy,
+                        ImpactLevel = i.MucDoAnhHuong ?? 0
+                    })
                     .ToList()
                 : new List<OverviewImportantIssue>();
             List<OverviewRecordedRisk> recordedRisks = includeRisks
@@ -81,7 +107,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     .ThenBy(r => r.RiskName)
                     .ToList()
                 : new List<OverviewRecordedRisk>();
-            List<OverviewImportantIssue> importantIssues = openIssues
+            List<OverviewImportantIssue> importantIssues = currentOpenIssues
                 .Where(i => openProjectIds.Contains(i.ProjectId)
                     && i.ImpactLevel >= (int)MucDoAnhHuonEnum.High
                     && i.ImpactLevel <= (int)MucDoAnhHuonEnum.VeryHigh)
@@ -89,12 +115,10 @@ namespace SweetSoft.QLDA.Core.Dashboard
             Dictionary<Guid, int> issueCountByProject = importantIssues
                 .GroupBy(i => i.ProjectId)
                 .ToDictionary(g => g.Key, g => g.Count());
-            List<OverviewPendingCostItem> pendingCosts =
-                new List<OverviewPendingCostItem>();
-            if (includeFinance)
-            {
-                pendingCosts = _repository
-                    .GetPendingApprovalCostsForProjects(projectIds)
+            List<TblChiPhi> pendingCostRecords = includeFinance
+                ? _repository.GetPendingApprovalCostsForProjects(projectIds)
+                : new List<TblChiPhi>();
+            List<OverviewPendingCostItem> pendingCosts = pendingCostRecords
                     .Select(cost =>
                     {
                         TblDuAn project = projectById[cost.IdDuAn];
@@ -110,11 +134,17 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     })
                     .OrderByDescending(cost => cost.Amount)
                     .ToList();
-            }
-            List<TblCongViec> tasks = DashboardProgressCalculator
+            List<TblCongViec> allTasks = DashboardProgressCalculator
                 .ExcludeStageRootTasksWithChildren(_repository.GetTasks(filter, false)
                     .Where(t => projectIds.Contains(t.IdDuAn)).ToList());
-            var tasksByProject = tasks.GroupBy(t => t.IdDuAn)
+            List<TblCongViec> periodTasks = filter != null
+                && filter.FromDate > DateTime.MinValue
+                && filter.ToDate > DateTime.MinValue
+                ? DashboardProgressCalculator.ExcludeStageRootTasksWithChildren(
+                    _repository.GetTasks(filter, true)
+                        .Where(t => projectIds.Contains(t.IdDuAn)).ToList())
+                : allTasks;
+            var tasksByProject = allTasks.GroupBy(t => t.IdDuAn)
                 .ToDictionary(g => g.Key, g => g.ToList());
             List<OverviewProjectItem> items = projects.Select(project =>
             {
@@ -123,7 +153,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     projectTasks = new List<TblCongViec>();
                 bool isOpen = project.TrangThai != (byte)DuAnStatus.HoanThanh
                     && project.TrangThai != (byte)DuAnStatus.KetThuc;
-                int overdueDays = isOpen && project.NgayDuKienHoanThanh.Date < today
+                int overdueDays = project.TrangThai == (byte)DuAnStatus.DangThucHien
+                    && project.NgayDuKienHoanThanh.Date < today
                     ? (today - project.NgayDuKienHoanThanh.Date).Days : 0;
                 return new OverviewProjectItem
                 {
@@ -147,13 +178,23 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 };
             }).OrderBy(p => p.ProjectCode).ToList();
 
+            List<OverviewActiveCustomer> activeCustomers = includeCustomers
+                ? _repository.GetActiveCustomers()
+                : new List<OverviewActiveCustomer>();
+
             return new DashboardOverviewSummary
             {
                 GeneratedAt = now,
+                ActiveCustomerCount = activeCustomers.Count,
+                ActiveCustomers = activeCustomers,
                 Projects = items,
-                Tasks = GetTaskSummaries(tasks, projects, today),
+                Tasks = GetTaskSummaries(periodTasks, projects, today),
+                CurrentTasks = GetTaskSummaries(allTasks, projects, today),
+                FinanceSummary = includeFinance
+                    ? GetOverviewFinanceSummary(projects, pendingCostRecords)
+                    : null,
                 Meetings = GetUpcomingMeetingSummaries(
-                    _repository.GetMeetings(filter)
+                    _repository.GetMeetings(upcomingMeetingsFilter)
                         .Where(m => projectIds.Contains(m.IdDuAn)).ToList(),
                     projects, now),
                 Statuses = GetProjectStatusStatistics(projects),
@@ -185,8 +226,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
                     today);
             List<TblRuiRoDuAn> risks = _repository.GetRisks(filter);
             List<TblVanDe> issues = _repository.GetIssues(filter);
+            DashboardFilter upcomingMeetingsFilter = new DashboardFilter
+            {
+                ProjectId = filter == null ? null : filter.ProjectId
+            };
             List<TblLichHop> meetings = _repository
-                .GetMeetings(filter)
+                .GetMeetings(upcomingMeetingsFilter)
                 .Where(x => projectIds.Contains(x.IdDuAn))
                 .ToList();
 
@@ -431,6 +476,8 @@ namespace SweetSoft.QLDA.Core.Dashboard
                                 today)),
                         StatusCode = (int)DashboardProgressCalculator
                             .GetTaskState(task, today),
+                        LifecycleStatusCode = (int)DashboardProgressCalculator
+                            .GetTaskLifecycleState(task),
                         Deadline = task.NgayKetThuc,
                         Progress =
                             DashboardProgressCalculator.GetTaskActualProgress(
@@ -445,6 +492,93 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .ThenBy(task => task.ProjectCode)
                 .ThenBy(task => task.TaskCode)
                 .ToList();
+        }
+
+        private OverviewFinanceSummary GetOverviewFinanceSummary(
+            List<TblDuAn> projects,
+            List<TblChiPhi> pendingCostRecords)
+        {
+            // Giữ cùng phạm vi với Dashboard Chi phí: chỉ dự án Hoàn thành.
+            List<TblDuAn> completedProjects = projects
+                .Where(project => project.TrangThai == (byte)DuAnStatus.HoanThanh)
+                .ToList();
+            List<Guid> projectIds = completedProjects
+                .Select(project => project.IdDuAn).ToList();
+            HashSet<Guid> completedProjectIds = new HashSet<Guid>(projectIds);
+            List<TblChiPhi> approvedCosts =
+                _repository.GetApprovedCostsForProjects(projectIds);
+            List<TblThanhToan> payments =
+                _repository.GetPaymentsForProjects(projectIds);
+            Dictionary<Guid, TblHopDongThucHien> contractsById = _repository
+                .GetContractsForProjects(projectIds)
+                .GroupBy(contract => contract.IdHopDongThucHien)
+                .ToDictionary(group => group.Key, group => group.First());
+            Dictionary<Guid, List<TblThanhToan>> paymentsByProject = payments
+                .GroupBy(payment => payment.IdDuAn)
+                .ToDictionary(group => group.Key, group => group.ToList());
+            Dictionary<Guid, decimal> approvedCostByProject = approvedCosts
+                .GroupBy(cost => cost.IdDuAn)
+                .ToDictionary(group => group.Key, group => group.Sum(cost => cost.SoTien));
+            Dictionary<Guid, decimal> pendingCostByProject = pendingCostRecords
+                .Where(cost => completedProjectIds.Contains(cost.IdDuAn))
+                .GroupBy(cost => cost.IdDuAn)
+                .ToDictionary(group => group.Key, group => group.Sum(cost => cost.SoTien));
+
+            OverviewFinanceSummary summary = new OverviewFinanceSummary();
+            foreach (TblDuAn project in completedProjects)
+            {
+                TblHopDongThucHien contract = null;
+                if (project.IdHopDongThucHien.HasValue)
+                {
+                    contractsById.TryGetValue(
+                        project.IdHopDongThucHien.Value,
+                        out contract);
+                }
+                decimal contractValue = contract == null
+                    ? 0m : contract.GiaTriHopDong ?? 0m;
+                List<TblThanhToan> projectPayments;
+                if (!paymentsByProject.TryGetValue(project.IdDuAn, out projectPayments))
+                    projectPayments = new List<TblThanhToan>();
+                decimal receivedPayment = projectPayments
+                    .Where(payment => payment.NgayThanhToanThucTe.HasValue)
+                    .Sum(payment => payment.SoTien);
+                decimal outstandingPayment = contractValue > 0m
+                    ? Math.Max(0m, contractValue - receivedPayment)
+                    : projectPayments
+                        .Where(payment => !payment.NgayThanhToanThucTe.HasValue)
+                        .Sum(payment => payment.SoTien);
+                decimal approvedCost;
+                decimal pendingCost;
+                if (!approvedCostByProject.TryGetValue(project.IdDuAn, out approvedCost))
+                    approvedCost = 0m;
+                if (!pendingCostByProject.TryGetValue(project.IdDuAn, out pendingCost))
+                    pendingCost = 0m;
+
+                summary.Projects.Add(new OverviewProjectFinanceItem
+                {
+                    ProjectId = project.IdDuAn,
+                    ProjectCode = project.MaDuAn,
+                    ProjectName = project.TenDuAn,
+                    ReceivedPayment = receivedPayment,
+                    OutstandingPayment = outstandingPayment,
+                    ApprovedCost = approvedCost,
+                    PendingApprovalCost = pendingCost
+                });
+                summary.ReceivedPayment += receivedPayment;
+                summary.OutstandingPayment += outstandingPayment;
+                summary.ApprovedCost += approvedCost;
+                summary.PendingApprovalCost += pendingCost;
+                if (receivedPayment > 0m || outstandingPayment > 0m
+                    || approvedCost > 0m || pendingCost > 0m)
+                {
+                    summary.ProjectsWithActivityCount++;
+                }
+            }
+
+            summary.Projects = summary.Projects
+                .OrderBy(project => project.ProjectCode)
+                .ToList();
+            return summary;
         }
 
         private static List<ProjectEmployeeSummary> GetProjectEmployeeSummaries(

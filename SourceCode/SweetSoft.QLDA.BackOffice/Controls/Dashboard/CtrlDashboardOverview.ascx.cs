@@ -27,35 +27,45 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         protected List<DashboardTaskSummary> OverdueProjectTasks { get; private set; }
         protected List<DashboardTaskSummary> DueSoonProjectTasks { get; private set; }
         protected OverviewProjectItem SelectedProject { get; private set; }
-        protected List<ResourceEmployeeLoad> OverloadedEmployees { get; private set; }
-        protected DateTime ResourceWeekStart { get; private set; }
         protected bool ShowFinanceSignal { get; private set; }
         protected bool ShowResourceSignal { get; private set; }
+        protected bool ShowCustomerSignal { get; private set; }
         protected bool ShowIssueSignal { get; private set; }
         protected bool ShowRiskSignal { get; private set; }
         protected bool ShowProjectCostSummary { get; private set; }
         protected bool ShowProjectResourceSummary { get; private set; }
         protected DashboardCostModel ProjectCostSummary { get; private set; }
         protected DashboardResourceModel ProjectResourceSummary { get; private set; }
-        protected DashboardCostModel AllProjectsCostSummary { get; private set; }
         protected DashboardResourceModel AllProjectsResourceSummary { get; private set; }
         protected int ProjectTasksNotStartedCount { get; private set; }
         protected int ProjectTasksInProgressCount { get; private set; }
         protected int ProjectTasksCompletedCount { get; private set; }
-        protected int ProjectTasksOverdueCount { get; private set; }
         protected int ProjectResourceNoLoadCount { get; private set; }
-        protected int ProjectResourceUnderloadedCount { get; private set; }
-        protected int ProjectResourceBalancedCount { get; private set; }
+        protected int ProjectResourceNormalCount { get; private set; }
         protected int ProjectResourceOverloadedCount { get; private set; }
         protected int AllTasksNotStartedCount { get; private set; }
         protected int AllTasksInProgressCount { get; private set; }
         protected int AllTasksCompletedCount { get; private set; }
-        protected int AllTasksOverdueCount { get; private set; }
         protected int AllResourceNoLoadCount { get; private set; }
-        protected int AllResourceUnderloadedCount { get; private set; }
-        protected int AllResourceBalancedCount { get; private set; }
+        protected int AllResourceNormalCount { get; private set; }
         protected int AllResourceOverloadedCount { get; private set; }
-        protected int AllFinanceProjectsWithAmountsCount { get; private set; }
+        protected int AllFinanceProjectsWithActivityCount
+        {
+            get
+            {
+                return Summary == null || Summary.FinanceSummary == null
+                    ? 0 : Summary.FinanceSummary.ProjectsWithActivityCount;
+            }
+        }
+        protected decimal PendingCostTotal
+        {
+            get
+            {
+                return Summary == null || Summary.PendingCosts == null
+                    ? 0m
+                    : Summary.PendingCosts.Sum(cost => cost.Amount);
+            }
+        }
 
         protected bool IsProjectDashboard
         {
@@ -71,8 +81,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             get
             {
                 int count = 2;
-                if (ShowProjectCostSummary && ProjectCostSummary != null)
-                    count++;
                 if (ShowProjectResourceSummary && ProjectResourceSummary != null)
                     count++;
                 return "row-cols-xl-" + count;
@@ -84,24 +92,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             base.OnLoad(e);
             new RegisterCSSAndJS("cpHeadVendor", "cpVendorScript",
                 new List<string> { CURRENT_PAGE.GetRelativeClientPath(
-                    "/Controls/Dashboard/dashboard-style.css?v=34") },
+                    "/Controls/Dashboard/dashboard-style.css?v=44") },
                 new List<string> { CURRENT_PAGE.GetRelativeClientPath(
                     "/Styles/plugins/apexcharts/apexcharts.min.js"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                    "/Controls/Dashboard/dashboard-project-groups.js?v=1") }).Register();
+                    "/Controls/Dashboard/dashboard-project-groups.js?v=1"),
+                    CURRENT_PAGE.GetRelativeClientPath(
+                    "/Controls/Dashboard/dashboard-modals.js?v=1") }).Register();
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack && !IsProjectDashboard)
-                LoadProjectFilter();
-
-            Guid projectId;
-            var filter = new DashboardFilter
             {
-                ProjectId = Guid.TryParse(Page.Request.QueryString["project"], out projectId)
-                    ? (Guid?)projectId : null
-            };
+                LoadProjectFilter();
+                LoadDateRangeFilter();
+            }
+
+            DashboardFilter filter = BuildOverviewFilter();
             Guid userId = SweetContext.Current.UserId;
             ShowFinanceSignal = !IsProjectDashboard
                 && (DashboardMenuOptions.ShowAllForTesting
@@ -111,6 +119,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 && (DashboardMenuOptions.ShowAllForTesting
                     || SweetContext.Current.CheckFunctionPermission(
                         userId, ModuleKeys.DashboardResource));
+            ShowCustomerSignal = !IsProjectDashboard
+                && (DashboardMenuOptions.ShowAllForTesting
+                    || SweetContext.Current.CheckFunctionPermission(
+                        userId, ModuleKeys.Customer));
             ShowIssueSignal = CURRENT_PAGE != null && CURRENT_PAGE.IsUserRight(
                 ActionKeys.View, ModuleKeys.Issue);
             ShowRiskSignal = CURRENT_PAGE != null && CURRENT_PAGE.IsUserRight(
@@ -124,34 +136,30 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     || SweetContext.Current.CheckFunctionPermission(
                         userId, ModuleKeys.DashboardResource));
             Summary = DashboardOverviewManager.Instance.GetSimpleOverview(
-                filter, ShowFinanceSignal, ShowIssueSignal, ShowRiskSignal);
+                filter, ShowFinanceSignal, ShowIssueSignal, ShowRiskSignal,
+                ShowCustomerSignal);
             Summary.Projects = Summary.Projects ?? new List<OverviewProjectItem>();
+            Summary.ActiveCustomers = Summary.ActiveCustomers
+                ?? new List<OverviewActiveCustomer>();
             Summary.Tasks = Summary.Tasks ?? new List<DashboardTaskSummary>();
+            Summary.CurrentTasks = Summary.CurrentTasks
+                ?? new List<DashboardTaskSummary>();
             Summary.Meetings = Summary.Meetings ?? new List<UpcomingMeetingSummary>();
             Summary.Statuses = Summary.Statuses ?? new List<ProjectStatusStatistic>();
             Summary.PendingCosts = Summary.PendingCosts ?? new List<OverviewPendingCostItem>();
             Summary.OpenIssues = Summary.OpenIssues ?? new List<OverviewImportantIssue>();
             Summary.ImportantIssues = Summary.ImportantIssues ?? new List<OverviewImportantIssue>();
             Summary.RecordedRisks = Summary.RecordedRisks ?? new List<OverviewRecordedRisk>();
-
             if (!IsProjectDashboard)
             {
-                AllTasksNotStartedCount = Summary.Tasks.Count(t => t.StatusCode == 0);
-                AllTasksInProgressCount = Summary.Tasks.Count(t => t.StatusCode == 1);
-                AllTasksCompletedCount = Summary.Tasks.Count(t => t.StatusCode == 2);
-                AllTasksOverdueCount = Summary.Tasks.Count(t => t.StatusCode == 3);
-                if (ShowFinanceSignal)
-                {
-                    AllProjectsCostSummary = DashboardCostManager.Instance
-                        .GetCostDashboard(new DashboardCostFilter());
-                    AllFinanceProjectsWithAmountsCount = AllProjectsCostSummary
-                        .ProjectStatistics.Count(project =>
-                            project.ReceivedPayment > 0
-                            || project.OutstandingPayment > 0);
-                }
+                AllTasksNotStartedCount = Summary.Tasks.Count(
+                    t => t.LifecycleStatusCode == 0);
+                AllTasksInProgressCount = Summary.Tasks.Count(
+                    t => t.LifecycleStatusCode == 1);
+                AllTasksCompletedCount = Summary.Tasks.Count(
+                    t => t.LifecycleStatusCode == 2);
             }
 
-            OverloadedEmployees = new List<ResourceEmployeeLoad>();
             if (ShowResourceSignal)
             {
                 DashboardResourceModel resource = DashboardResourceManager.Instance
@@ -160,19 +168,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         AnchorWeekStart = DateTime.Today,
                         WeekCount = 2
                     });
-                ResourceWeekStart = resource.AnchorWeekStart;
                 AllProjectsResourceSummary = resource;
                 AllResourceNoLoadCount = resource.EmployeeLoads.Count(
                     employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 0);
-                AllResourceUnderloadedCount = resource.EmployeeLoads.Count(
+                AllResourceNormalCount = resource.EmployeeLoads.Count(
                     employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 1);
-                AllResourceBalancedCount = resource.EmployeeLoads.Count(
-                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 2);
                 AllResourceOverloadedCount = resource.EmployeeLoads.Count(
-                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 3);
-                OverloadedEmployees = resource.EmployeeLoads
-                    .Where(employee => employee.Status == ResourceLoadStatus.Overloaded)
-                    .ToList();
+                    employee => GetWeekLoadCode(employee, resource.AnchorWeekStart) == 2);
             }
 
             SelectedProject = filter.ProjectId.HasValue
@@ -197,12 +199,10 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     });
                 ProjectResourceNoLoadCount = ProjectResourceSummary.EmployeeLoads
                     .Count(employee => GetProjectWeekLoadCode(employee) == 0);
-                ProjectResourceUnderloadedCount = ProjectResourceSummary.EmployeeLoads
+                ProjectResourceNormalCount = ProjectResourceSummary.EmployeeLoads
                     .Count(employee => GetProjectWeekLoadCode(employee) == 1);
-                ProjectResourceBalancedCount = ProjectResourceSummary.EmployeeLoads
-                    .Count(employee => GetProjectWeekLoadCode(employee) == 2);
                 ProjectResourceOverloadedCount = ProjectResourceSummary.EmployeeLoads
-                    .Count(employee => GetProjectWeekLoadCode(employee) == 3);
+                    .Count(employee => GetProjectWeekLoadCode(employee) == 2);
             }
             OverdueProjects = Summary.Projects.Where(p => p.IsOverdue).ToList();
             ProjectsWithOverdueTasks = Summary.Projects
@@ -221,10 +221,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 .ThenByDescending(p => p.OverdueDays)
                 .ThenBy(p => p.ProjectCode).ToList();
             ProjectTasks = Summary.Tasks;
-            ProjectTasksNotStartedCount = ProjectTasks.Count(t => t.StatusCode == 0);
-            ProjectTasksInProgressCount = ProjectTasks.Count(t => t.StatusCode == 1);
-            ProjectTasksCompletedCount = ProjectTasks.Count(t => t.StatusCode == 2);
-            ProjectTasksOverdueCount = ProjectTasks.Count(t => t.StatusCode == 3);
+            ProjectTasksNotStartedCount = ProjectTasks.Count(
+                t => t.LifecycleStatusCode == 0);
+            ProjectTasksInProgressCount = ProjectTasks.Count(
+                t => t.LifecycleStatusCode == 1);
+            ProjectTasksCompletedCount = ProjectTasks.Count(
+                t => t.LifecycleStatusCode == 2);
             CompletedProjectTasks = Summary.Tasks.Where(t => t.IsCompleted).ToList();
             bool isOpenProject = SelectedProject != null
                 && SelectedProject.StatusCode != (byte)DuAnStatus.HoanThanh
@@ -273,6 +275,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 RewriteURLHelper.ProjectDetail(projectId));
         }
 
+        protected string GetCustomerDetailUrl(Guid customerId)
+        {
+            return CURRENT_PAGE.GetRelativeClientPath(
+                RewriteURLHelper.CustomerDetail(customerId));
+        }
+
         protected string GetProjectTasksUrl(Guid projectId)
         {
             return CURRENT_PAGE.GetRelativeClientPath(
@@ -301,6 +309,117 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             return CURRENT_PAGE.GetRelativeClientPath(
                 RewriteURLHelper.ProjectIssues(projectId));
+        }
+
+        private void LoadDateRangeFilter()
+        {
+            ddlDateRange.Items.Clear();
+            ddlDateRange.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_WEEK),
+                ((int)DashboardDateRange.ThisWeek).ToString(
+                    CultureInfo.InvariantCulture)));
+
+            ListItem thisMonth = new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_MONTH),
+                ((int)DashboardDateRange.ThisMonth).ToString(
+                    CultureInfo.InvariantCulture));
+            thisMonth.Selected = true;
+            ddlDateRange.Items.Add(thisMonth);
+
+            ddlDateRange.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_QUARTER),
+                ((int)DashboardDateRange.ThisQuarter).ToString(
+                    CultureInfo.InvariantCulture)));
+            ddlDateRange.Items.Add(new ListItem(
+                GetResourceText(BackEndResourceKeys.THIS_YEAR),
+                ((int)DashboardDateRange.ThisYear).ToString(
+                    CultureInfo.InvariantCulture)));
+        }
+
+        private DashboardFilter BuildOverviewFilter()
+        {
+            Guid projectId;
+            var filter = new DashboardFilter
+            {
+                ProjectId = Guid.TryParse(
+                    Page.Request.QueryString["project"], out projectId)
+                    ? (Guid?)projectId : null
+            };
+
+            if (!IsProjectDashboard)
+            {
+                DashboardDateRange dateRange = DashboardDateRange.ThisMonth;
+                int parsedDateRange;
+                if (ddlDateRange != null
+                    && int.TryParse(
+                        ddlDateRange.SelectedValue,
+                        out parsedDateRange)
+                    && Enum.IsDefined(
+                        typeof(DashboardDateRange), parsedDateRange))
+                {
+                    dateRange = (DashboardDateRange)parsedDateRange;
+                }
+
+                filter.DateRange = dateRange;
+                filter.FromDate = GetFromDate(dateRange);
+                filter.ToDate = GetToDate(dateRange);
+            }
+
+            return filter;
+        }
+
+        protected string SelectedDateRangeText
+        {
+            get
+            {
+                return ddlDateRange != null && ddlDateRange.SelectedItem != null
+                    ? ddlDateRange.SelectedItem.Text
+                    : GetResourceText(BackEndResourceKeys.THIS_MONTH);
+            }
+        }
+
+        private static DateTime GetFromDate(DashboardDateRange dateRange)
+        {
+            DateTime today = DateTime.Today;
+            switch (dateRange)
+            {
+                case DashboardDateRange.ThisWeek:
+                    int daysSinceMonday = (7 + (int)today.DayOfWeek
+                        - (int)DayOfWeek.Monday) % 7;
+                    return today.AddDays(-daysSinceMonday);
+                case DashboardDateRange.ThisQuarter:
+                    int firstQuarterMonth = ((today.Month - 1) / 3) * 3 + 1;
+                    return new DateTime(today.Year, firstQuarterMonth, 1);
+                case DashboardDateRange.ThisYear:
+                    return new DateTime(today.Year, 1, 1);
+                default:
+                    return new DateTime(today.Year, today.Month, 1);
+            }
+        }
+
+        private static DateTime GetToDate(DashboardDateRange dateRange)
+        {
+            DateTime today = DateTime.Today;
+            switch (dateRange)
+            {
+                case DashboardDateRange.ThisWeek:
+                    int daysSinceMonday = (7 + (int)today.DayOfWeek
+                        - (int)DayOfWeek.Monday) % 7;
+                    return today.AddDays(-daysSinceMonday).AddDays(6);
+                case DashboardDateRange.ThisQuarter:
+                    int lastQuarterMonth = ((today.Month - 1) / 3) * 3 + 3;
+                    return new DateTime(
+                        today.Year,
+                        lastQuarterMonth,
+                        DateTime.DaysInMonth(today.Year, lastQuarterMonth));
+                case DashboardDateRange.ThisYear:
+                    return new DateTime(today.Year, 12, 31);
+                default:
+                    return new DateTime(
+                        today.Year,
+                        today.Month,
+                        DateTime.DaysInMonth(today.Year, today.Month));
+            }
         }
 
         protected string GetProjectRisksUrl(Guid projectId)
@@ -394,10 +513,25 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 costSummary.ReceivedPayment / total * 100m, 0);
         }
 
-        protected IEnumerable<ProjectCostStatistic> GetAllProjectsFinanceRows()
+        protected IEnumerable<OverviewProjectFinanceItem> GetAllProjectsFinanceRows()
         {
-            return AllProjectsCostSummary.ProjectStatistics
+            return Summary.FinanceSummary.Projects
                 .OrderBy(project => project.ProjectCode);
+        }
+
+        protected string GetTaskLifecycleStatusText(DashboardTaskSummary task)
+        {
+            if (task == null)
+                return string.Empty;
+            switch (task.LifecycleStatusCode)
+            {
+                case 2:
+                    return "Hoàn thành";
+                case 1:
+                    return "Đang làm";
+                default:
+                    return "Chưa bắt đầu";
+            }
         }
 
         protected ResourceWeeklyLoad GetProjectWeekLoad(ResourceEmployeeLoad employee)
@@ -436,21 +570,18 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             ResourceWeeklyLoad week = employee.WeeklyLoads.FirstOrDefault(
                 item => item.WeekStart == weekStart);
-            if (week == null || week.AllocatedDays <= 0)
+            if (week == null || week.PeakDailyTaskCount <= 0)
                 return 0;
-            if (week.Status == ResourceLoadStatus.Overloaded)
-                return 3;
-            return week.Status == ResourceLoadStatus.Balanced ? 2 : 1;
+            return week.PeakDailyTaskCount == 1 ? 1 : 2;
         }
 
         protected string GetProjectWeekLoadText(int code)
         {
             switch (code)
             {
-                case 1: return "Thiếu tải";
-                case 2: return "Đủ tải";
-                case 3: return "Quá tải";
-                default: return "Không tải";
+                case 1: return "Bình thường";
+                case 2: return "Quá tải";
+                default: return "Rảnh";
             }
         }
 
@@ -476,8 +607,12 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetEmployeeResourceUrl(Guid employeeId)
         {
+            DashboardResourceModel resource = IsProjectDashboard
+                ? ProjectResourceSummary : AllProjectsResourceSummary;
+            DateTime weekStart = resource == null
+                ? DateTime.Today : resource.AnchorWeekStart;
             return GetResourceDashboardUrl()
-                + "?resourceWeek=" + ResourceWeekStart.ToString("yyyy-MM-dd")
+                + "?resourceWeek=" + weekStart.ToString("yyyy-MM-dd")
                 + "&resourceEmployee=" + employeeId.ToString("D");
         }
 

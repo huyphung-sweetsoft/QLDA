@@ -15,129 +15,147 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
     {
 
         /// <summary>
-        /// mdlViewTask control.
+        /// upTaskView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlViewTask;
+        protected global::System.Web.UI.UpdatePanel upTaskView;
 
         /// <summary>
-        /// upViewTask control.
+        /// mdlTaskView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upViewTask;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlTaskView;
 
         /// <summary>
-        /// ltrMaCV control.
+        /// lblTaskName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrMaCV;
+        protected global::System.Web.UI.WebControls.Label lblTaskName;
 
         /// <summary>
-        /// ltrDoUuTien control.
+        /// lblPhaseName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrDoUuTien;
+        protected global::System.Web.UI.WebControls.Label lblPhaseName;
 
         /// <summary>
-        /// ltrTenCV control.
+        /// lblStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrTenCV;
+        protected global::System.Web.UI.WebControls.Label lblStatus;
 
         /// <summary>
-        /// ltrGiaiDoan control.
+        /// lblPriority control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrGiaiDoan;
+        protected global::System.Web.UI.WebControls.Label lblPriority;
 
         /// <summary>
-        /// ltrNgayBatDau control.
+        /// lblStartDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrNgayBatDau;
+        protected global::System.Web.UI.WebControls.Label lblStartDate;
 
         /// <summary>
-        /// ltrCongViecCha control.
+        /// lblDuration control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCongViecCha;
+        protected global::System.Web.UI.WebControls.Label lblDuration;
 
         /// <summary>
-        /// ltrThoiHan control.
+        /// lblEndDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrThoiHan;
+        protected global::System.Web.UI.WebControls.Label lblEndDate;
 
         /// <summary>
-        /// ltrPhuThuoc control.
+        /// lblActualEndDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrPhuThuoc;
+        protected global::System.Web.UI.WebControls.Label lblActualEndDate;
 
         /// <summary>
-        /// ltrNgayKetThuc control.
+        /// divDelayReason control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrNgayKetThuc;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divDelayReason;
 
         /// <summary>
-        /// ltrNgayHoanThanhThucTe control.
+        /// lblDelayReason control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrNgayHoanThanhThucTe;
+        protected global::System.Web.UI.WebControls.Label lblDelayReason;
 
         /// <summary>
-        /// ltrTrangThai control.
+        /// rptAssignees control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrTrangThai;
+        protected global::System.Web.UI.WebControls.Repeater rptAssignees;
 
         /// <summary>
-        /// ltrMoTa control.
+        /// pnlNoAssignees control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrMoTa;
+        protected global::System.Web.UI.WebControls.Panel pnlNoAssignees;
+
+        /// <summary>
+        /// ltrDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDescription;
+
+        /// <summary>
+        /// btnCloseTaskView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCloseTaskView;
     }
 }

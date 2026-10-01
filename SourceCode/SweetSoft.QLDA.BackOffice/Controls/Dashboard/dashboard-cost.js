@@ -29,7 +29,7 @@
 
         if (absoluteAmount >= 1000000) {
             return (amount / 1000000).toLocaleString(locale, {
-                maximumFractionDigits: 1
+                maximumFractionDigits: 2
             }) + (texts.millionSuffix || "");
         }
 
@@ -115,12 +115,19 @@
             return;
         }
 
+        var values = [received, outstanding];
+        var colors = ["#34c38f", "#f1b44c"];
+        function positionLabels(context) {
+            DashboardDonut.schedule(element, context, values, colors,
+                formatMoney(total), texts.contractValue || "");
+        }
         element.style.cursor = "pointer";
-        new ApexCharts(element, {
+        var chart = new ApexCharts(element, {
             chart: {
                 type: "donut",
                 height: 300,
                 toolbar: { show: false },
+                animations: { enabled: false },
                 events: {
                     dataPointSelection: function (event, context, config) {
                         var filter = config.dataPointIndex === 0
@@ -128,12 +135,15 @@
                         openCostModal("costPaymentProjectsModal",
                             filter === "received" ? texts.received : texts.outstanding,
                             { paymentFilter: filter });
-                    }
+                    },
+                    mounted: positionLabels,
+                    updated: positionLabels,
+                    resized: positionLabels
                 }
             },
             labels: [texts.received || "", texts.outstanding || ""],
-            series: [received, outstanding],
-            colors: ["#34c38f", "#f1b44c"],
+            series: values,
+            colors: colors,
             legend: {
                 position: "bottom",
                 formatter: function (name, options) {
@@ -142,12 +152,9 @@
             },
             dataLabels: {
                 enabled: true,
-                formatter: function (percentage) {
-                    return percentage > 0 && percentage < 1
-                        ? "<1%" : Math.round(percentage) + "%";
-                },
-                style: { fontSize: "12px", fontWeight: 700, colors: ["#18273f"] },
-                dropShadow: { enabled: false }
+                formatter: DashboardDonut.share,
+                style: { fontSize: "11px", fontWeight: 800, colors: ["#fff"] },
+                dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: "#1b293e", opacity: .55 }
             },
             tooltip: {
                 y: {
@@ -159,26 +166,18 @@
             plotOptions: {
                 pie: {
                     expandOnClick: false,
-                    dataLabels: { minAngleToShowLabel: 8 },
+                    dataLabels: { minAngleToShowLabel: 0 },
                     donut: {
-                        size: "62%",
-                        labels: {
-                            show: true,
-                            total: {
-                                show: true,
-                                label: texts.contractValue || "",
-                                formatter: function () {
-                                    return formatMoney(total);
-                                }
-                            }
-                        }
+                        size: "64%",
+                        labels: { show: false }
                     }
                 }
             },
             states: {
                 active: { filter: { type: "none" } }
             }
-        }).render();
+        });
+        chart.render().then(function () { positionLabels(chart); });
     }
 
     function renderApprovalChart() {
@@ -192,24 +191,34 @@
             return;
         }
 
+        var values = [approved, pending];
+        var colors = ["#ef6b72", "#f1b44c"];
+        function positionLabels(context) {
+            DashboardDonut.schedule(element, context, values, colors,
+                formatMoney(approved + pending), texts.totalRecordedCost || "");
+        }
         element.style.cursor = "pointer";
-        new ApexCharts(element, {
+        var chart = new ApexCharts(element, {
             chart: {
                 type: "donut",
                 height: 300,
                 toolbar: { show: false },
+                animations: { enabled: false },
                 events: {
                     dataPointSelection: function (event, context, config) {
                         var approvedSlice = config.dataPointIndex === 0;
                         openCostModal(
                             approvedSlice ? "costApprovedItemsModal" : "costPendingApprovalModal",
                             approvedSlice ? texts.approvedCost : texts.pendingCost);
-                    }
+                    },
+                    mounted: positionLabels,
+                    updated: positionLabels,
+                    resized: positionLabels
                 }
             },
             labels: [texts.approvedCost || "", texts.pendingCost || ""],
-            series: [approved, pending],
-            colors: ["#ef6b72", "#f1b44c"],
+            series: values,
+            colors: colors,
             legend: {
                 position: "bottom",
                 formatter: function (name, options) {
@@ -218,33 +227,24 @@
             },
             dataLabels: {
                 enabled: true,
-                formatter: function (percentage) {
-                    return percentage > 0 && percentage < 1
-                        ? "<1%" : Math.round(percentage) + "%";
-                },
-                style: { fontSize: "12px", fontWeight: 700, colors: ["#18273f"] },
-                dropShadow: { enabled: false }
+                formatter: DashboardDonut.share,
+                style: { fontSize: "11px", fontWeight: 800, colors: ["#fff"] },
+                dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: "#1b293e", opacity: .55 }
             },
             tooltip: { y: { formatter: formatMoney } },
             plotOptions: {
                 pie: {
                     expandOnClick: false,
-                    dataLabels: { minAngleToShowLabel: 8 },
+                    dataLabels: { minAngleToShowLabel: 0 },
                     donut: {
-                        size: "62%",
-                        labels: {
-                            show: true,
-                            total: {
-                                show: true,
-                                label: texts.totalRecordedCost || "",
-                                formatter: function () { return formatMoney(approved + pending); }
-                            }
-                        }
+                        size: "64%",
+                        labels: { show: false }
                     }
                 }
             },
             states: { active: { filter: { type: "none" } } }
-        }).render();
+        });
+        chart.render().then(function () { positionLabels(chart); });
     }
     function openCostModal(id, title, filter) {
         var modal = document.getElementById(id);
