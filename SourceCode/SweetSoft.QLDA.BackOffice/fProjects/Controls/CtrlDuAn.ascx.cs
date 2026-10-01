@@ -212,6 +212,26 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                         ShowInvalidDataError();
                         return;
                     }
+                    TblDuAn duAn = DuAnManager.Instance.GetDuAnById(idDuAn);
+                    if (duAn == null)
+                    {
+                        ShowInvalidNotFoundData();
+                        return;
+                    }
+
+                    DuAnStatus status = (DuAnStatus)Convert.ToByte(duAn.TrangThai);
+
+                    if (status == DuAnStatus.HoanThanh)
+                    {
+                        ShowNotify("Dự án đã hoàn thành, không thể chỉnh sửa.", MSGType.Error);
+                        return;
+                    }
+
+                    if (status == DuAnStatus.KetThuc)
+                    {
+                        ShowNotify("Dự án đã kết thúc, không thể chỉnh sửa.", MSGType.Error);
+                        return;
+                    }
                     if (EditProjectHandlerCallBack != null)
                     {
                         EditProjectHandlerCallBack(idDuAn, EventArgs.Empty);
@@ -253,7 +273,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                         ShowInvalidDataError();
                         return;
                     }
-                    TblDuAn duAn = DuAnManager.Instance.GetDuAnById(idDuAn);
+                    duAn = DuAnManager.Instance.GetDuAnById(idDuAn);
                     if (duAn == null)
                     {
                         ShowInvalidNotFoundData();
@@ -453,6 +473,36 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             if (ManageProjectTypeHandlerCallBack != null)
                 ManageProjectTypeHandlerCallBack(this, EventArgs.Empty);
+        }
+
+        protected bool IsProjectLocked(object value)
+        {
+            if (value == null || value == DBNull.Value)
+                return false;
+
+            DuAnStatus status = (DuAnStatus)Convert.ToByte(value);
+            return status == DuAnStatus.HoanThanh || status == DuAnStatus.KetThuc;
+        }
+
+        protected string GetEditButtonIcon(object value)
+        {
+            return IsProjectLocked(value) ? "fas fa-lock" : "fas fa-pencil-alt";
+        }
+
+        protected string GetEditButtonToolTip(object value)
+        {
+            if (value == null || value == DBNull.Value)
+                return "Sửa dự án";
+
+            DuAnStatus status = (DuAnStatus)Convert.ToByte(value);
+
+            if (status == DuAnStatus.HoanThanh)
+                return "Dự án đã hoàn thành, không thể chỉnh sửa.";
+
+            if (status == DuAnStatus.KetThuc)
+                return "Dự án đã kết thúc, không thể chỉnh sửa.";
+
+            return "Sửa dự án";
         }
 
         public void ReloadProjectTypeDropdown()
