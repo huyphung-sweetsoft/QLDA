@@ -2162,7 +2162,7 @@
     <value>Dự kiến</value>
   </data>
   <data name="DASHBOARD_COST_TITLE" xml:space="preserve">
-    <value>Thống kê tài chính dự án</value>
+    <value>Tổng quan tài chính</value>
   </data>
   <data name="DASHBOARD_PROJECTS_IN_SCOPE" xml:space="preserve">
     <value>Dự án trong phạm vi</value>
@@ -2234,7 +2234,64 @@
     <value>So sánh giá trị hợp đồng và tổng chi phí đã duyệt của từng dự án đã hoàn thành.</value>
   </data>
   <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve">
-    <value>Tình hình thanh toán</value>
+    <value>Chi tiết các đợt thanh toán</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_COUNT_CHART" xml:space="preserve">
+    <value>Thanh toán theo giá trị</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_COUNT_CHART_DESC" xml:space="preserve">
+    <value>Phân bổ số tiền theo trạng thái các đợt; bấm vào phần biểu đồ để xem danh sách tương ứng.</value>
+  </data>
+  <data name="DASHBOARD_COST_COUNT_CHART" xml:space="preserve">
+    <value>Chi phí theo trạng thái duyệt</value>
+  </data>
+  <data name="DASHBOARD_COST_COUNT_CHART_DESC" xml:space="preserve">
+    <value>Phân bổ số tiền đã duyệt, chờ duyệt và bị từ chối; bấm vào phần biểu đồ để xem danh sách.</value>
+  </data>
+  <data name="DASHBOARD_SEARCH_PROJECTS" xml:space="preserve">
+    <value>Tìm dự án...</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_NOT_DUE" xml:space="preserve">
+    <value>Chưa đến hạn</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_NO_DUE_DATE" xml:space="preserve">
+    <value>Thiếu hạn thanh toán</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_DUE_TODAY" xml:space="preserve">
+    <value>Đến hạn hôm nay</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_PAID_LATE" xml:space="preserve">
+    <value>Đã thanh toán trễ hạn</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_PAID_LATE_STATUS" xml:space="preserve">
+    <value>Đã thanh toán trễ {0} ngày</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_OVERDUE_UNPAID" xml:space="preserve">
+    <value>Quá hạn chưa thanh toán</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_UNIT" xml:space="preserve">
+    <value>đợt</value>
+  </data>
+  <data name="DASHBOARD_COST_UNIT" xml:space="preserve">
+    <value>khoản</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_PAYMENT_COUNT" xml:space="preserve">
+    <value>Tổng giá trị các đợt</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_COST_COUNT" xml:space="preserve">
+    <value>Tổng tiền các khoản chi</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_LIST_DESC" xml:space="preserve">
+    <value>Các đợt chưa thanh toán; khoản quá hạn được xếp lên trước.</value>
+  </data>
+  <data name="DASHBOARD_PENDING_COST_LIST_DESC" xml:space="preserve">
+    <value>Các khoản đang chờ duyệt; khoản chờ lâu nhất được xếp lên trước.</value>
+  </data>
+  <data name="DASHBOARD_WAITING_DAYS" xml:space="preserve">
+    <value>Đã chờ {0} ngày</value>
+  </data>
+  <data name="DASHBOARD_REJECTED_COST" xml:space="preserve">
+    <value>Chi phí từ chối</value>
   </data>
   <data name="DASHBOARD_APPROVED_COST" xml:space="preserve">
     <value>Chi phí đã duyệt</value>
@@ -2246,28 +2303,82 @@
     <value>Tình hình chi phí</value>
   </data>
   <data name="DASHBOARD_COST_APPROVAL_CHART_DESC" xml:space="preserve">
-    <value>Chi phí đã duyệt và chờ duyệt của các dự án đã hoàn thành; chọn phần biểu đồ để xem các khoản chi.</value>
+    <value>Số khoản chi theo trạng thái duyệt; chọn phần biểu đồ để xem danh sách.</value>
   </data>
   <data name="DASHBOARD_TOTAL_RECORDED_COST" xml:space="preserve">
     <value>Tổng chi phí ghi nhận</value>
   </data>
   <data name="DASHBOARD_COST_BY_PROJECT" xml:space="preserve">
-    <value>Chi phí theo dự án</value>
+    <value>Giá trị hợp đồng, chi phí và hiệu quả theo dự án</value>
   </data>
-  <data name="DASHBOARD_COST_BY_PROJECT_DESC" xml:space="preserve">
-    <value>Hiển thị {0} dự án đã hoàn thành có chi phí đã duyệt cao nhất; chọn cột để xem các khoản chi.</value>
+  <data name="DASHBOARD_PROJECT_COST_EXPECTED" xml:space="preserve">
+    <value>Dự kiến (giá trị hợp đồng)</value>
   </data>
-  <data name="DASHBOARD_COST_BY_PROJECT_DESC_EMPTY" xml:space="preserve">
-    <value>Chưa có dự án đã hoàn thành phát sinh chi phí đã duyệt.</value>
+  <data name="DASHBOARD_PROJECT_COST_ACTUAL" xml:space="preserve">
+    <value>Thực tế (chi phí đã duyệt)</value>
   </data>
-  <data name="DASHBOARD_COST_BY_PROJECT_DESC_SINGLE" xml:space="preserve">
-    <value>Chi phí đã duyệt của dự án đã hoàn thành; chọn cột để xem các khoản chi.</value>
+  <data name="DASHBOARD_PROJECT_COST_VARIANCE" xml:space="preserve">
+    <value>Chênh lệch (dự kiến − thực tế)</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_VARIANCE_PERCENT" xml:space="preserve">
+    <value>Lệch (%)</value>
+  </data>
+  <data name="DASHBOARD_EXPECTED_GROSS_PROFIT" xml:space="preserve">
+    <value>Lãi/lỗ dự kiến</value>
+  </data>
+  <data name="DASHBOARD_EXPECTED_PROFIT_MARGIN" xml:space="preserve">
+    <value>Tỷ suất lãi/lỗ dự kiến</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_OVER" xml:space="preserve">
+    <value>Vượt chi phí dự kiến</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_UNDER" xml:space="preserve">
+    <value>Thấp hơn chi phí dự kiến</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_EQUAL" xml:space="preserve">
+    <value>Đúng bằng chi phí dự kiến</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_NO_CONTRACT" xml:space="preserve">
+    <value>Chưa có giá trị hợp đồng</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_TOTAL_DEVIATION" xml:space="preserve">
+    <value>Tổng độ lệch</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_AVERAGE_DEVIATION" xml:space="preserve">
+    <value>Độ lệch trung bình/dự án</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_NO_COMPARABLE_DATA" xml:space="preserve">
+    <value>Chưa có dự án hoàn thành có giá trị hợp đồng để so sánh.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_TOTAL_OVERRUN" xml:space="preserve">
+    <value>Tổng tiền vượt</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_TOTAL_SAVING" xml:space="preserve">
+    <value>Tổng thấp hơn</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_PROJECT_COUNT" xml:space="preserve">
+    <value>Dự án hoàn thành</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_UNIT" xml:space="preserve">
+    <value>dự án</value>
+  </data>
+  <data name="DASHBOARD_BUDGET_COMPARISON_EMPTY" xml:space="preserve">
+    <value>Chưa có dự án hoàn thành trong phạm vi lọc.</value>
+  </data>
+  <data name="DASHBOARD_CLEAR_FILTER" xml:space="preserve">
+    <value>Bỏ lọc</value>
   </data>
   <data name="DASHBOARD_PAYMENT_SITUATION_DESC" xml:space="preserve">
-    <value>Tiền đã thu và còn phải thu của các dự án đã hoàn thành; chọn phần biểu đồ để xem dự án liên quan.</value>
+    <value>Số đợt thanh toán theo trạng thái; chọn phần biểu đồ để xem danh sách tương ứng.</value>
   </data>
   <data name="DASHBOARD_COLLECTION_RATE" xml:space="preserve">
     <value>Tỷ lệ thu tiền: {0}%</value>
+  </data>
+  <data name="DASHBOARD_COLLECTION_RATE_LABEL" xml:space="preserve">
+    <value>Tỷ lệ thu tiền</value>
+  </data>
+  <data name="DASHBOARD_OVER_BUDGET_PROJECTS" xml:space="preserve">
+    <value>Dự án vượt chi phí dự kiến</value>
   </data>
   <data name="DASHBOARD_COST_TREND" xml:space="preserve">
     <value>Xu hướng phát sinh chi phí</value>
@@ -2276,7 +2387,7 @@
     <value>Tổng chi phí đã duyệt theo tháng trong toàn bộ vòng đời của các dự án đã hoàn thành thuộc phạm vi lọc.</value>
   </data>
   <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve">
-    <value>Hiệu quả tài chính theo dự án</value>
+    <value>Giá trị hợp đồng, chi phí và hiệu quả theo dự án</value>
   </data>
   <data name="DASHBOARD_GROSS_PROFIT_FORMULA" xml:space="preserve">
     <value>Lợi nhuận gộp = giá trị hợp đồng − chi phí thực tế.</value>
@@ -2342,7 +2453,7 @@
     <value>Không có dự án đã hoàn thành để so sánh.</value>
   </data>
   <data name="DASHBOARD_NO_CONTRACT_OR_PAYMENT" xml:space="preserve">
-    <value>Chưa có giá trị hợp đồng hoặc thanh toán.</value>
+    <value>Chưa có đợt thanh toán phù hợp với bộ lọc.</value>
   </data>
   <data name="DASHBOARD_OUTSTANDING_PAYMENT" xml:space="preserve">
     <value>Còn phải thu</value>

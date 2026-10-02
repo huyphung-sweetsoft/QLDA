@@ -112,29 +112,24 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             DashboardFilter filter = BuildOverviewFilter();
             Guid userId = SweetContext.Current.UserId;
             ShowFinanceSignal = !IsProjectDashboard
-                && (DashboardMenuOptions.ShowAllForTesting
-                    || SweetContext.Current.CheckFunctionPermission(
-                        userId, ModuleKeys.DashboardCost));
+                && SweetContext.Current.CheckFunctionPermission(
+                    userId, ModuleKeys.DashboardCost);
             ShowResourceSignal = !IsProjectDashboard
-                && (DashboardMenuOptions.ShowAllForTesting
-                    || SweetContext.Current.CheckFunctionPermission(
-                        userId, ModuleKeys.DashboardResource));
+                && SweetContext.Current.CheckFunctionPermission(
+                    userId, ModuleKeys.DashboardResource);
             ShowCustomerSignal = !IsProjectDashboard
-                && (DashboardMenuOptions.ShowAllForTesting
-                    || SweetContext.Current.CheckFunctionPermission(
-                        userId, ModuleKeys.Customer));
+                && SweetContext.Current.CheckFunctionPermission(
+                    userId, ModuleKeys.Customer);
             ShowIssueSignal = CURRENT_PAGE != null && CURRENT_PAGE.IsUserRight(
                 ActionKeys.View, ModuleKeys.Issue);
             ShowRiskSignal = CURRENT_PAGE != null && CURRENT_PAGE.IsUserRight(
                 ActionKeys.View, ModuleKeys.Risk);
             ShowProjectCostSummary = IsProjectDashboard
-                && (DashboardMenuOptions.ShowAllForTesting
-                    || SweetContext.Current.CheckFunctionPermission(
-                        userId, ModuleKeys.DashboardCost));
+                && SweetContext.Current.CheckFunctionPermission(
+                    userId, ModuleKeys.DashboardCost);
             ShowProjectResourceSummary = IsProjectDashboard
-                && (DashboardMenuOptions.ShowAllForTesting
-                    || SweetContext.Current.CheckFunctionPermission(
-                        userId, ModuleKeys.DashboardResource));
+                && SweetContext.Current.CheckFunctionPermission(
+                    userId, ModuleKeys.DashboardResource);
             Summary = DashboardOverviewManager.Instance.GetSimpleOverview(
                 filter, ShowFinanceSignal, ShowIssueSignal, ShowRiskSignal,
                 ShowCustomerSignal);

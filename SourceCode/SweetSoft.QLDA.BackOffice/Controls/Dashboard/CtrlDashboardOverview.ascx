@@ -118,7 +118,6 @@
                 <asp:DropDownList ID="ddlDateRange" runat="server"
                     CssClass="form-select dashboard-overview-date-range"
                     AutoPostBack="true" />
-                <small class="form-text">Lọc công việc, lịch họp, vấn đề và rủi ro; KPI hiện tại giữ nguyên.</small>
             </div>
         </div>
         <% } %>
@@ -130,27 +129,6 @@
             </span>
         </div>
     </div>
-
-    <%-- TẠM THỜI: Chú thích cách hiểu số liệu để nhóm kiểm tra; xóa cả khối này khi đã chốt nội dung. --%>
-    <details class="alert alert-light border mb-3" open>
-        <summary class="fw-semibold" style="cursor: pointer">Chú thích số liệu (tạm thời)</summary>
-        <ul class="small mb-0 mt-2 ps-3">
-            <% if (!IsProjectDashboard) { %>
-            <li><strong>Dự án trễ hạn:</strong> chỉ dự án đang thực hiện và ngày hiện tại đã qua ngày kết thúc dự kiến.</li>
-            <li><strong>Đến hạn trong 7 ngày tới:</strong> dự án đang thực hiện, có hạn dự kiến từ hôm nay đến hết 7 ngày tới.</li>
-            <li><strong>Khoản chi chờ duyệt:</strong> đếm các khoản chi chưa được duyệt, không phải số tiền đã chi.</li>
-            <li><strong>Thu chi:</strong> chỉ tổng hợp từ các dự án đã Hoàn thành, cùng phạm vi với Dashboard Chi phí.</li>
-            <li><strong>Tình hình phân công công việc:</strong> căn cứ số việc nhiều nhất trong một ngày của tuần: 0 là Rảnh, 1 là Bình thường, từ 2 là Quá tải. Đây là lịch giao việc dự kiến, không phải giờ làm thực tế.</li>
-            <li><strong>Dự án cần xử lý:</strong> dự án trễ hạn, có công việc quá hạn hoặc có vấn đề ảnh hưởng cao. Một dự án chỉ được đếm một lần.</li>
-            <% } else { %>
-            <li><strong>Công việc quá hạn:</strong> chưa hoàn thành và đã qua ngày kết thúc dự kiến. <strong>Đến hạn trong 7 ngày:</strong> chưa hoàn thành, hạn từ hôm nay đến hết 7 ngày tới.</li>
-            <li><strong>Chi phí chờ duyệt:</strong> tổng tiền của các khoản chi chưa được duyệt; chưa tính vào “Chi phí đã duyệt”.</li>
-            <li><strong>Còn phải thu:</strong> giá trị hợp đồng trừ tiền đã thu; nếu chưa có giá trị hợp đồng, dùng tổng các đợt thanh toán chưa thu.</li>
-            <li><strong>Thu chi:</strong> chỉ có số liệu khi dự án đã Hoàn thành, cùng phạm vi với Dashboard Chi phí.</li>
-            <li><strong>Tình hình phân công công việc:</strong> căn cứ số việc nhiều nhất trong một ngày của tuần thuộc dự án: 0 là Rảnh, 1 là Bình thường, từ 2 là Quá tải; không phải giờ làm thực tế.</li>
-            <% } %>
-        </ul>
-    </details>
 
     <% if (!IsProjectDashboard) { %>
     <div class="row row-cols-1 row-cols-sm-2 <%= ShowCustomerSignal ? "row-cols-xl-4" : "row-cols-xl-3" %> g-3 mb-3 dashboard-overview-kpis">
@@ -362,24 +340,65 @@
     <div class="row g-3 mb-3 dashboard-overview-signal-row">
         <% if (ShowIssueSignal) { %>
         <div class="col-12 <%= ShowRiskSignal && ShowResourceSignal ? "col-lg-4" : (ShowRiskSignal || ShowResourceSignal ? "col-lg-6" : "col-lg-12") %>">
-            <button type="button" class="card h-100 w-100 text-start dashboard-project-issue-card dashboard-overview-signal-card"
-                data-bs-toggle="modal" data-bs-target="#overviewAllIssuesModal">
-                <span class="card-body d-flex align-items-center justify-content-between gap-3">
-                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-error-circle" aria-hidden="true"></i> Vấn đề đang xử lý</strong><small class="text-muted">Trong kỳ <%= SelectedDateRangeText %> · Bấm để xem danh sách</small></span>
-                    <strong class="dashboard-project-issue-count"><%= Summary.OpenIssues.Count %></strong>
-                </span>
-            </button>
+            <section class="card h-100 dashboard-project-issue-card dashboard-overview-record-card">
+                <div class="card-header dashboard-overview-record-header">
+                    <h5 class="dashboard-overview-section-title"><i class="bx bx-error-circle" aria-hidden="true"></i> Vấn đề đang xử lý <span class="dashboard-project-issue-count"><%= Summary.OpenIssues.Count %></span></h5>
+                </div>
+                <div class="card-body">
+                    <% if (Summary.OpenIssues.Count == 0) { %>
+                    <p class="text-muted mb-0 py-3">Chưa có vấn đề đang xử lý.</p>
+                    <% } else { %>
+                    <div class="dashboard-overview-records" tabindex="0" aria-label="Danh sách vấn đề đang xử lý">
+                        <% foreach (var issue in Summary.OpenIssues) { %>
+                        <button type="button" class="dashboard-overview-record-item" data-bs-toggle="modal" data-bs-target="#overviewIssueDetailModal"
+                            data-issue-code="<%: issue.IssueCode %>" data-issue-name="<%: issue.IssueName %>"
+                            data-issue-project="<%: issue.ProjectCode + " · " + issue.ProjectName %>"
+                            data-issue-impact="<%: GetIssueImpactText(issue.ImpactLevel) %>"
+                            data-issue-description="<%: issue.Description %>" data-issue-plan="<%: issue.HandlingPlan %>">
+                            <span class="dashboard-overview-record-copy">
+                                <strong><%: issue.IssueCode %> · <%: issue.IssueName %></strong>
+                                <small><%: issue.ProjectCode %> · <%: issue.ProjectName %></small>
+                                <% if (!string.IsNullOrWhiteSpace(issue.HandlingPlan)) { %><small class="text-muted">Hướng xử lý: <%: issue.HandlingPlan %></small><% } %>
+                            </span>
+                            <span class="badge bg-warning-subtle text-dark flex-shrink-0"><%: GetIssueImpactText(issue.ImpactLevel) %></span>
+                        </button>
+                        <% } %>
+                    </div>
+                    <% } %>
+                </div>
+            </section>
         </div>
         <% } %>
         <% if (ShowRiskSignal) { %>
         <div class="col-12 <%= ShowIssueSignal && ShowResourceSignal ? "col-lg-4" : (ShowIssueSignal || ShowResourceSignal ? "col-lg-6" : "col-lg-12") %>">
-            <button type="button" class="card h-100 w-100 text-start dashboard-project-issue-card dashboard-project-risk-card dashboard-overview-signal-card"
-                data-bs-toggle="modal" data-bs-target="#overviewRisksModal">
-                <span class="card-body d-flex align-items-center justify-content-between gap-3">
-                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-shield" aria-hidden="true"></i> Rủi ro đã ghi nhận</strong><small class="text-muted">Trong kỳ <%= SelectedDateRangeText %> · Bấm để xem danh sách</small></span>
-                    <strong class="dashboard-project-issue-count dashboard-project-risk-count"><%= Summary.RecordedRisks.Count %></strong>
-                </span>
-            </button>
+            <section class="card h-100 dashboard-project-issue-card dashboard-project-risk-card dashboard-overview-record-card">
+                <div class="card-header dashboard-overview-record-header">
+                    <h5 class="dashboard-overview-section-title"><i class="bx bx-shield" aria-hidden="true"></i> Rủi ro đã ghi nhận <span class="dashboard-project-issue-count dashboard-project-risk-count"><%= Summary.RecordedRisks.Count %></span></h5>
+                </div>
+                <div class="card-body">
+                    <% if (Summary.RecordedRisks.Count == 0) { %>
+                    <p class="text-muted mb-0 py-3">Chưa có rủi ro được ghi nhận.</p>
+                    <% } else { %>
+                    <div class="dashboard-overview-records" tabindex="0" aria-label="Danh sách rủi ro đã ghi nhận">
+                        <% foreach (var risk in Summary.RecordedRisks) { %>
+                        <button type="button" class="dashboard-overview-record-item" data-bs-toggle="modal" data-bs-target="#overviewRiskDetailModal"
+                            data-risk-name="<%: risk.RiskName %>" data-risk-project="<%: risk.ProjectCode + " · " + risk.ProjectName %>"
+                            data-risk-probability="<%: GetRiskProbabilityText(risk.Probability) %>"
+                            data-risk-impact="<%: risk.ImpactLevel.HasValue ? GetIssueImpactText(risk.ImpactLevel.Value) : "—" %>"
+                            data-risk-score="<%: risk.RiskScore.HasValue ? risk.RiskScore.Value.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture) : "—" %>"
+                            data-risk-prevention="<%: risk.PreventionPlan %>" data-risk-response="<%: risk.ResponsePlan %>">
+                            <span class="dashboard-overview-record-copy">
+                                <strong><%: risk.RiskName %></strong>
+                                <small><%: risk.ProjectCode %> · <%: risk.ProjectName %></small>
+                                <small class="text-muted">Xác suất: <%: GetRiskProbabilityText(risk.Probability) %> · Ảnh hưởng: <%: risk.ImpactLevel.HasValue ? GetIssueImpactText(risk.ImpactLevel.Value) : "—" %></small>
+                            </span>
+                            <i class="bx bx-chevron-right text-muted" aria-hidden="true"></i>
+                        </button>
+                        <% } %>
+                    </div>
+                    <% } %>
+                </div>
+            </section>
         </div>
         <% } %>
         <% if (ShowResourceSignal && AllProjectsResourceSummary != null) { %>
@@ -623,7 +642,7 @@
         <% } %>
     </div>
     <div class="row g-3 mb-3 dashboard-project-glance-row">
-        <div class="col-12 <%= ShowProjectCostSummary && ProjectCostSummary != null ? "col-lg-4" : "col-lg-12" %>">
+        <div class="col-12 <%= ShowProjectCostSummary && ProjectCostSummary != null && ShowProjectResourceSummary && ProjectResourceSummary != null ? "col-lg-4" : (ShowProjectCostSummary && ProjectCostSummary != null || ShowProjectResourceSummary && ProjectResourceSummary != null ? "col-lg-6" : "col-lg-12") %>">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-progress">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-task"></i> Tiến độ công việc</h5>
@@ -644,7 +663,7 @@
             </div>
         </div>
         <% if (ShowProjectCostSummary && ProjectCostSummary != null) { %>
-        <div class="col-12 col-lg-4">
+        <div class="col-12 <%= ShowProjectResourceSummary && ProjectResourceSummary != null ? "col-lg-4" : "col-lg-6" %>">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
@@ -664,7 +683,7 @@
         </div>
         <% } %>
         <% if (ShowProjectResourceSummary && ProjectResourceSummary != null) { %>
-        <div class="col-12 col-lg-4">
+        <div class="col-12 <%= ShowProjectCostSummary && ProjectCostSummary != null ? "col-lg-4" : "col-lg-6" %>">
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-resource">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-group"></i> Tình hình phân công công việc <small>tuần này</small></h5>
@@ -689,24 +708,64 @@
     <div class="row g-3 mb-3 dashboard-overview-signal-row">
         <% if (ShowIssueSignal) { %>
         <div class="col-12 <%= ShowRiskSignal ? "col-lg-4" : "col-lg-6" %>">
-            <button type="button" class="card h-100 w-100 text-start dashboard-project-issue-card"
-                data-bs-toggle="modal" data-bs-target="#overviewOpenIssuesModal">
-                <span class="card-body d-flex align-items-center justify-content-between gap-3">
-                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-error-circle" aria-hidden="true"></i> Vấn đề đang xử lý</strong><small class="text-muted">Bấm để xem danh sách</small></span>
-                    <strong class="dashboard-project-issue-count"><%= Summary.OpenIssues.Count(i => i.ProjectId == SelectedProject.ProjectId) %></strong>
-                </span>
-            </button>
+            <section class="card h-100 dashboard-project-issue-card dashboard-overview-record-card">
+                <div class="card-header dashboard-overview-record-header">
+                    <h5 class="dashboard-overview-section-title"><i class="bx bx-error-circle" aria-hidden="true"></i> Vấn đề đang xử lý <span class="dashboard-project-issue-count"><%= Summary.OpenIssues.Count(i => i.ProjectId == SelectedProject.ProjectId) %></span></h5>
+                </div>
+                <div class="card-body">
+                    <% if (!Summary.OpenIssues.Any(i => i.ProjectId == SelectedProject.ProjectId)) { %>
+                    <p class="text-muted mb-0 py-3">Chưa có vấn đề đang xử lý.</p>
+                    <% } else { %>
+                    <div class="dashboard-overview-records" tabindex="0" aria-label="Danh sách vấn đề đang xử lý của dự án">
+                        <% foreach (var issue in Summary.OpenIssues.Where(i => i.ProjectId == SelectedProject.ProjectId)) { %>
+                        <button type="button" class="dashboard-overview-record-item" data-bs-toggle="modal" data-bs-target="#overviewIssueDetailModal"
+                            data-issue-code="<%: issue.IssueCode %>" data-issue-name="<%: issue.IssueName %>"
+                            data-issue-project="<%: issue.ProjectCode + " · " + issue.ProjectName %>"
+                            data-issue-impact="<%: GetIssueImpactText(issue.ImpactLevel) %>"
+                            data-issue-description="<%: issue.Description %>" data-issue-plan="<%: issue.HandlingPlan %>">
+                            <span class="dashboard-overview-record-copy">
+                                <strong><%: issue.IssueCode %> · <%: issue.IssueName %></strong>
+                                <small>Mức ảnh hưởng: <%: GetIssueImpactText(issue.ImpactLevel) %></small>
+                                <% if (!string.IsNullOrWhiteSpace(issue.HandlingPlan)) { %><small class="text-muted">Hướng xử lý: <%: issue.HandlingPlan %></small><% } %>
+                            </span>
+                            <i class="bx bx-chevron-right text-muted" aria-hidden="true"></i>
+                        </button>
+                        <% } %>
+                    </div>
+                    <% } %>
+                </div>
+            </section>
         </div>
         <% } %>
         <% if (ShowRiskSignal) { %>
         <div class="col-12 <%= ShowIssueSignal ? "col-lg-4" : "col-lg-6" %>">
-            <button type="button" class="card h-100 w-100 text-start dashboard-project-issue-card dashboard-project-risk-card"
-                data-bs-toggle="modal" data-bs-target="#overviewRisksModal">
-                <span class="card-body d-flex align-items-center justify-content-between gap-3">
-                    <span><strong class="d-flex align-items-center gap-2"><i class="bx bx-shield" aria-hidden="true"></i> Rủi ro đã ghi nhận</strong><small class="text-muted">Bấm để xem danh sách</small></span>
-                    <strong class="dashboard-project-issue-count dashboard-project-risk-count"><%= Summary.RecordedRisks.Count(r => r.ProjectId == SelectedProject.ProjectId) %></strong>
-                </span>
-            </button>
+            <section class="card h-100 dashboard-project-issue-card dashboard-project-risk-card dashboard-overview-record-card">
+                <div class="card-header dashboard-overview-record-header">
+                    <h5 class="dashboard-overview-section-title"><i class="bx bx-shield" aria-hidden="true"></i> Rủi ro đã ghi nhận <span class="dashboard-project-issue-count dashboard-project-risk-count"><%= Summary.RecordedRisks.Count(r => r.ProjectId == SelectedProject.ProjectId) %></span></h5>
+                </div>
+                <div class="card-body">
+                    <% if (!Summary.RecordedRisks.Any(r => r.ProjectId == SelectedProject.ProjectId)) { %>
+                    <p class="text-muted mb-0 py-3">Chưa có rủi ro được ghi nhận.</p>
+                    <% } else { %>
+                    <div class="dashboard-overview-records" tabindex="0" aria-label="Danh sách rủi ro đã ghi nhận của dự án">
+                        <% foreach (var risk in Summary.RecordedRisks.Where(r => r.ProjectId == SelectedProject.ProjectId)) { %>
+                        <button type="button" class="dashboard-overview-record-item" data-bs-toggle="modal" data-bs-target="#overviewRiskDetailModal"
+                            data-risk-name="<%: risk.RiskName %>" data-risk-project="<%: risk.ProjectCode + " · " + risk.ProjectName %>"
+                            data-risk-probability="<%: GetRiskProbabilityText(risk.Probability) %>"
+                            data-risk-impact="<%: risk.ImpactLevel.HasValue ? GetIssueImpactText(risk.ImpactLevel.Value) : "—" %>"
+                            data-risk-score="<%: risk.RiskScore.HasValue ? risk.RiskScore.Value.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture) : "—" %>"
+                            data-risk-prevention="<%: risk.PreventionPlan %>" data-risk-response="<%: risk.ResponsePlan %>">
+                            <span class="dashboard-overview-record-copy">
+                                <strong><%: risk.RiskName %></strong>
+                                <small>Xác suất: <%: GetRiskProbabilityText(risk.Probability) %> · Ảnh hưởng: <%: risk.ImpactLevel.HasValue ? GetIssueImpactText(risk.ImpactLevel.Value) : "—" %></small>
+                            </span>
+                            <i class="bx bx-chevron-right text-muted" aria-hidden="true"></i>
+                        </button>
+                        <% } %>
+                    </div>
+                    <% } %>
+                </div>
+            </section>
         </div>
         <% } %>
         <div class="col-12 <%= ShowIssueSignal && ShowRiskSignal ? "col-lg-4" : (ShowIssueSignal || ShowRiskSignal ? "col-lg-6" : "col-lg-12") %>">
@@ -819,33 +878,6 @@
         </div></div>
     </div>
     <% } %>
-    <% if (ShowIssueSignal) { %>
-    <div class="modal fade" id="overviewOpenIssuesModal" tabindex="-1" aria-labelledby="overviewOpenIssuesModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title" id="overviewOpenIssuesModalTitle">Vấn đề đang xử lý</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
-            <div class="modal-body">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                    <strong class="dashboard-list-count" id="overviewOpenIssuesCount"></strong>
-                    <input type="search" class="form-control dashboard-attention-search" id="overviewOpenIssuesSearch"
-                        placeholder="Tìm mã hoặc tên vấn đề" aria-label="Tìm vấn đề" />
-                </div>
-                <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
-                    <thead><tr><th>Vấn đề</th><th>Mức ảnh hưởng</th><th>Hướng xử lý</th><th>Chi tiết</th></tr></thead><tbody>
-                    <% foreach (var issue in Summary.OpenIssues.Where(i => i.ProjectId == SelectedProject.ProjectId)) { %>
-                    <tr class="overview-open-issue-row" data-search="<%: (issue.IssueCode + " " + issue.IssueName + " " + issue.HandlingPlan).ToLowerInvariant() %>">
-                        <td><strong><%: issue.IssueCode %></strong><br /><small><%: issue.IssueName %></small></td>
-                        <td><%: GetIssueImpactText(issue.ImpactLevel) %></td>
-                        <td><%: string.IsNullOrWhiteSpace(issue.HandlingPlan) ? "—" : issue.HandlingPlan %></td>
-                        <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetProjectIssueDetailUrl(issue.ProjectId, issue.IssueId) %>">Xem chi tiết</a></td>
-                    </tr>
-                    <% } %>
-                    </tbody></table></div>
-                <p class="text-muted mb-0 py-3 d-none" id="overviewOpenIssuesEmpty">Không có vấn đề đang xử lý.</p>
-            </div>
-        </div></div>
-    </div>
-    <% } %>
     <% } else { %>
     <div class="alert alert-warning mb-0">Không tìm thấy dự án trong phạm vi đang xem.</div>
     <% } %>
@@ -865,65 +897,40 @@
             </div>
         </div></div>
     </div>
-    <% if (!IsProjectDashboard && ShowIssueSignal) { %>
-    <div class="modal fade" id="overviewAllIssuesModal" tabindex="-1" aria-labelledby="overviewAllIssuesModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title" id="overviewAllIssuesModalTitle">Vấn đề đang xử lý</h5>
+    <% if (ShowIssueSignal) { %>
+    <div class="modal fade" id="overviewIssueDetailModal" tabindex="-1" aria-labelledby="overviewIssueDetailTitle" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="overviewIssueDetailTitle">Chi tiết vấn đề</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                    <strong class="dashboard-list-count" id="overviewAllIssuesCount"></strong>
-                    <input type="search" class="form-control dashboard-attention-search" id="overviewAllIssuesSearch"
-                        placeholder="Tìm dự án, mã hoặc tên vấn đề" aria-label="Tìm vấn đề" />
-                </div>
-                <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
-                    <thead><tr><th>Dự án</th><th>Vấn đề</th><th>Mức ảnh hưởng</th><th>Hướng xử lý</th><th>Chi tiết</th></tr></thead>
-                    <tbody id="overviewAllIssuesBody">
-                    <% foreach (var issue in Summary.OpenIssues) { %>
-                    <tr class="overview-all-issue-row" data-group-project-id="<%= issue.ProjectId %>"
-                        data-group-project-code="<%: issue.ProjectCode %>" data-group-project-name="<%: issue.ProjectName %>"
-                        data-search="<%: (issue.ProjectCode + " " + issue.ProjectName + " " + issue.IssueCode + " " + issue.IssueName + " " + issue.HandlingPlan).ToLowerInvariant() %>">
-                        <td><strong><%: issue.ProjectCode %></strong><br /><small><%: issue.ProjectName %></small></td>
-                        <td><strong><%: issue.IssueCode %></strong><br /><small><%: issue.IssueName %></small></td>
-                        <td><%: GetIssueImpactText(issue.ImpactLevel) %></td>
-                        <td><%: string.IsNullOrWhiteSpace(issue.HandlingPlan) ? "—" : issue.HandlingPlan %></td>
-                        <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetProjectIssueDetailUrl(issue.ProjectId, issue.IssueId) %>">Xem chi tiết</a></td>
-                    </tr>
-                    <% } %>
-                    </tbody></table></div>
-                <p class="text-muted mb-0 py-3 d-none" id="overviewAllIssuesEmpty">Không có vấn đề đang xử lý.</p>
+                <h6 id="overviewIssueDetailName" class="mb-3"></h6>
+                <dl class="dashboard-meeting-details dashboard-overview-detail-list mb-0">
+                    <dt>Mã vấn đề</dt><dd id="overviewIssueDetailCode"></dd>
+                    <dt>Dự án</dt><dd id="overviewIssueDetailProject"></dd>
+                    <dt>Trạng thái</dt><dd>Đang xử lý</dd>
+                    <dt>Mức ảnh hưởng</dt><dd id="overviewIssueDetailImpact"></dd>
+                    <dt>Mô tả</dt><dd id="overviewIssueDetailDescription"></dd>
+                    <dt>Hướng xử lý</dt><dd id="overviewIssueDetailPlan"></dd>
+                </dl>
             </div>
         </div></div>
     </div>
     <% } %>
     <% if (ShowRiskSignal) { %>
-    <div class="modal fade" id="overviewRisksModal" tabindex="-1" aria-labelledby="overviewRisksModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title" id="overviewRisksModalTitle">Rủi ro đã ghi nhận</h5>
+    <div class="modal fade" id="overviewRiskDetailModal" tabindex="-1" aria-labelledby="overviewRiskDetailTitle" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="overviewRiskDetailTitle">Chi tiết rủi ro</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                    <strong class="dashboard-list-count" id="overviewRisksCount"></strong>
-                    <input type="search" class="form-control dashboard-attention-search" id="overviewRisksSearch"
-                        placeholder="Tìm dự án hoặc tên rủi ro" aria-label="Tìm rủi ro" />
-                </div>
-                <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
-                    <thead><tr><th>Dự án</th><th>Rủi ro</th><th>Xác suất xảy ra</th><th>Mức ảnh hưởng</th><th>Phòng ngừa / ứng phó</th><th>Chi tiết</th></tr></thead>
-                    <tbody id="overviewRisksBody">
-                    <% foreach (var risk in Summary.RecordedRisks) { %>
-                    <tr class="overview-recorded-risk-row" data-group-project-id="<%= risk.ProjectId %>"
-                        data-group-project-code="<%: risk.ProjectCode %>" data-group-project-name="<%: risk.ProjectName %>"
-                        data-search="<%: (risk.ProjectCode + " " + risk.ProjectName + " " + risk.RiskName + " " + risk.PreventionPlan + " " + risk.ResponsePlan).ToLowerInvariant() %>">
-                        <td><strong><%: risk.ProjectCode %></strong><br /><small><%: risk.ProjectName %></small></td>
-                        <td><%: risk.RiskName %></td>
-                        <td><%: GetRiskProbabilityText(risk.Probability) %></td>
-                        <td><%: risk.ImpactLevel.HasValue ? GetIssueImpactText(risk.ImpactLevel.Value) : "—" %></td>
-                        <td><%: GetRiskPlanText(risk) %></td>
-                        <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetProjectRiskDetailUrl(risk.ProjectId, risk.RiskId) %>">Xem chi tiết</a></td>
-                    </tr>
-                    <% } %>
-                    </tbody></table></div>
-                <p class="text-muted mb-0 py-3 d-none" id="overviewRisksEmpty">Chưa có rủi ro được ghi nhận.</p>
+                <h6 id="overviewRiskDetailName" class="mb-3"></h6>
+                <dl class="dashboard-meeting-details dashboard-overview-detail-list mb-0">
+                    <dt>Dự án</dt><dd id="overviewRiskDetailProject"></dd>
+                    <dt>Xác suất xảy ra</dt><dd id="overviewRiskDetailProbability"></dd>
+                    <dt>Mức ảnh hưởng</dt><dd id="overviewRiskDetailImpact"></dd>
+                    <dt>Điểm rủi ro</dt><dd id="overviewRiskDetailScore"></dd>
+                    <dt>Kế hoạch phòng ngừa</dt><dd id="overviewRiskDetailPrevention"></dd>
+                    <dt>Kế hoạch ứng phó</dt><dd id="overviewRiskDetailResponse"></dd>
+                </dl>
             </div>
         </div></div>
     </div>
@@ -1088,62 +1095,19 @@
             input.addEventListener('input', refresh);
         }
 
-        function bindOpenIssuesModal() {
-            var modal = document.getElementById('overviewOpenIssuesModal');
-            if (!modal) return;
-            var input = document.getElementById('overviewOpenIssuesSearch');
-            var count = document.getElementById('overviewOpenIssuesCount');
-            var empty = document.getElementById('overviewOpenIssuesEmpty');
-            var rows = modal.querySelectorAll('.overview-open-issue-row');
-            function refresh() {
-                var query = (input.value || '').trim().toLocaleLowerCase();
-                var visible = 0;
-                Array.prototype.forEach.call(rows, function (row) {
-                    var show = (row.getAttribute('data-search') || '').indexOf(query) >= 0;
-                    row.classList.toggle('d-none', !show);
-                    if (show) visible++;
-                });
-                count.textContent = visible + ' vấn đề';
-                empty.classList.toggle('d-none', visible > 0);
-            }
-            modal.addEventListener('show.bs.modal', function () {
-                input.value = '';
-                refresh();
-            });
-            input.addEventListener('input', refresh);
-        }
-
-        function bindGroupedRecordModal(modalId, inputId, countId, emptyId, bodyId, rowSelector, unit) {
+        function bindRecordDetailModal(modalId, fields) {
             var modal = document.getElementById(modalId);
             if (!modal) return;
-            var input = document.getElementById(inputId);
-            var count = document.getElementById(countId);
-            var empty = document.getElementById(emptyId);
-            var body = document.getElementById(bodyId);
-            var rows = modal.querySelectorAll(rowSelector);
-            var groups = body && window.DashboardProjectGroups
-                ? window.DashboardProjectGroups.create(body) : null;
-
-            function refresh() {
-                var query = (input.value || '').trim().toLocaleLowerCase();
-                var visible = 0;
-                Array.prototype.forEach.call(rows, function (row) {
-                    var searchText = (row.getAttribute('data-search') || '').toLocaleLowerCase();
-                    var show = searchText.indexOf(query) >= 0;
-                    row.classList.toggle('d-none', !show);
-                    if (show) visible++;
+            modal.addEventListener('show.bs.modal', function (event) {
+                var trigger = event.relatedTarget;
+                if (!trigger) return;
+                fields.forEach(function (field) {
+                    var target = document.getElementById(field.id);
+                    if (!target) return;
+                    var value = trigger.getAttribute(field.attribute);
+                    target.textContent = value && value.trim() ? value : '—';
                 });
-                if (groups) groups.refresh(Boolean(query));
-                count.textContent = visible + ' ' + unit;
-                empty.classList.toggle('d-none', visible > 0);
-            }
-
-            modal.addEventListener('show.bs.modal', function () {
-                input.value = '';
-                if (groups) groups.reset();
-                refresh();
             });
-            input.addEventListener('input', refresh);
         }
 
         function bindProjectFinanceModal() {
@@ -1256,13 +1220,23 @@
 
         bindProjectModal();
         bindTaskModal();
-        bindOpenIssuesModal();
-        bindGroupedRecordModal('overviewAllIssuesModal', 'overviewAllIssuesSearch',
-            'overviewAllIssuesCount', 'overviewAllIssuesEmpty', 'overviewAllIssuesBody',
-            '.overview-all-issue-row', 'vấn đề');
-        bindGroupedRecordModal('overviewRisksModal', 'overviewRisksSearch',
-            'overviewRisksCount', 'overviewRisksEmpty', 'overviewRisksBody',
-            '.overview-recorded-risk-row', 'rủi ro');
+        bindRecordDetailModal('overviewIssueDetailModal', [
+            { id: 'overviewIssueDetailCode', attribute: 'data-issue-code' },
+            { id: 'overviewIssueDetailName', attribute: 'data-issue-name' },
+            { id: 'overviewIssueDetailProject', attribute: 'data-issue-project' },
+            { id: 'overviewIssueDetailImpact', attribute: 'data-issue-impact' },
+            { id: 'overviewIssueDetailDescription', attribute: 'data-issue-description' },
+            { id: 'overviewIssueDetailPlan', attribute: 'data-issue-plan' }
+        ]);
+        bindRecordDetailModal('overviewRiskDetailModal', [
+            { id: 'overviewRiskDetailName', attribute: 'data-risk-name' },
+            { id: 'overviewRiskDetailProject', attribute: 'data-risk-project' },
+            { id: 'overviewRiskDetailProbability', attribute: 'data-risk-probability' },
+            { id: 'overviewRiskDetailImpact', attribute: 'data-risk-impact' },
+            { id: 'overviewRiskDetailScore', attribute: 'data-risk-score' },
+            { id: 'overviewRiskDetailPrevention', attribute: 'data-risk-prevention' },
+            { id: 'overviewRiskDetailResponse', attribute: 'data-risk-response' }
+        ]);
         bindProjectFinanceModal();
         bindProjectResourceModal();
         bindAllProjectsBreakdown('overviewAllTasksModal', '.overview-all-task-row', 'data-task-lifecycle',

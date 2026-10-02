@@ -70,20 +70,6 @@
         </div>
     </div>
 
-    <%-- TẠM THỜI: Chú thích cách hiểu số liệu để nhóm kiểm tra; xóa cả khối này khi đã chốt nội dung. --%>
-    <details class="alert alert-light border mb-3" open>
-        <summary class="fw-semibold" style="cursor: pointer">Chú thích số liệu (tạm thời)</summary>
-        <ul class="small mb-0 mt-2 ps-3">
-            <li><strong>Phạm vi công việc:</strong> khi lọc theo thời gian dự án, các KPI đếm toàn bộ công việc của những dự án giao với khoảng đã chọn; công việc gốc chỉ dùng để nhóm giai đoạn không bị đếm thêm khi đã có việc con.</li>
-            <li><strong>Công việc quá hạn:</strong> chưa hoàn thành và đã qua ngày kết thúc dự kiến.</li>
-            <% if (!Model.IsSingleProject) { %>
-            <li><strong>Dự án cần chú ý:</strong> dự án quá hạn, tiến độ thực tế thấp hơn kế hoạch trên 5 điểm phần trăm, hoặc có công việc quá hạn. Mỗi dự án chỉ đếm một lần.</li>
-            <% } %>
-            <li><strong>Tiến độ thực tế:</strong> trung bình % hoàn thành công việc; dự án có trạng thái hoàn thành được tính 100%. <strong>Kế hoạch:</strong> tỷ lệ thời gian đã qua từ ngày bắt đầu đến hạn dự kiến, theo lịch làm việc nếu có cấu hình, nếu không thì theo ngày lịch.</li>
-            <li><strong>Độ lệch tiến độ:</strong> % thực tế trừ % kế hoạch, tính bằng điểm phần trăm; số âm nghĩa là thực tế đang chậm hơn kế hoạch. Biểu đồ “Trạng thái công việc” đếm số việc, không cộng các tỷ lệ %.</li>
-        </ul>
-    </details>
-
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 <%= Model.IsSingleProject ? "row-cols-xl-4 dashboard-kpi-grid-four" : "row-cols-xl-5" %> g-3 mb-4 progress-kpi-grid">
         <div class="col">
             <a href="#progressTaskDetailsModal" class="d-block h-100 text-decoration-none text-reset dashboard-kpi-trigger"

@@ -31,6 +31,9 @@ namespace SweetSoft.QLDA.Core.Dashboard
             LargestCostItems = new List<CostItemInfo>();
             ApprovedCostItems = new List<CostItemInfo>();
             PendingApprovalCostItems = new List<CostItemInfo>();
+            RejectedCostItems = new List<CostItemInfo>();
+            PaymentItems = new List<PaymentItemInfo>();
+            PendingPaymentItems = new List<PaymentItemInfo>();
             OverduePayments = new List<OverduePaymentInfo>();
         }
 
@@ -46,7 +49,15 @@ namespace SweetSoft.QLDA.Core.Dashboard
         /// </summary>
         public decimal PendingApprovalCost { get; set; }
 
+        public decimal RejectedCost { get; set; }
+
         public int PendingApprovalCostItemCount { get; set; }
+
+        public int ApprovedCostItemCount { get; set; }
+
+        public int RejectedCostItemCount { get; set; }
+
+        public int CostItemCount { get; set; }
 
         public decimal GrossProfit { get; set; }
 
@@ -59,6 +70,22 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public decimal OverduePaymentAmount { get; set; }
 
         public int OverduePaymentCount { get; set; }
+
+        public int PaidPaymentCount { get; set; }
+
+        public int PaidLatePaymentCount { get; set; }
+
+        public int PaidOnTimePaymentCount { get; set; }
+
+        public int DueTodayPaymentCount { get; set; }
+
+        public int OutstandingPaymentCount { get; set; }
+
+        public int UpcomingPaymentCount { get; set; }
+
+        public int PaymentWithoutDueDateCount { get; set; }
+
+        public int PaymentCount { get; set; }
 
         public decimal PaymentCollectionRate { get; set; }
 
@@ -75,6 +102,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public List<CostItemInfo> ApprovedCostItems { get; set; }
 
         public List<CostItemInfo> PendingApprovalCostItems { get; set; }
+
+        public List<CostItemInfo> RejectedCostItems { get; set; }
+
+        public List<PaymentItemInfo> PaymentItems { get; set; }
+
+        public List<PaymentItemInfo> PendingPaymentItems { get; set; }
 
         public List<OverduePaymentInfo> OverduePayments { get; set; }
     }
@@ -93,7 +126,16 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public decimal ContractValue { get; set; }
 
+        public bool HasContractValue { get; set; }
+
         public decimal ActualCost { get; set; }
+
+        /// <summary>Contract value minus approved actual costs; negative means over budget.</summary>
+        public decimal? CostVariance { get; set; }
+
+        public decimal? CostVariancePercent { get; set; }
+
+        public string CostComparisonStatus { get; set; }
 
         public decimal ReceivedPayment { get; set; }
 
@@ -129,7 +171,52 @@ namespace SweetSoft.QLDA.Core.Dashboard
 
         public DateTime OccurredDate { get; set; }
 
+        public string RequesterName { get; set; }
+
+        public int DaysWaiting { get; set; }
+
+        public byte Status { get; set; }
+
         public decimal Amount { get; set; }
+    }
+
+    public class PaymentItemInfo
+    {
+        public Guid PaymentId { get; set; }
+
+        public Guid ProjectId { get; set; }
+
+        public string PaymentCode { get; set; }
+
+        public string PaymentName { get; set; }
+
+        public string ProjectCode { get; set; }
+
+        public string ProjectName { get; set; }
+
+        public decimal Amount { get; set; }
+
+        public DateTime? DueDate { get; set; }
+
+        public DateTime? ActualPaymentDate { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public bool IsPaid { get; set; }
+
+        public bool IsPaidLate { get; set; }
+
+        public bool IsOverdue { get; set; }
+
+        public bool HasDueDate { get; set; }
+
+        public int DaysOverdue { get; set; }
+
+        public int DaysLate { get; set; }
+
+        public int DaysUntilDue { get; set; }
+
+        public string StatusCategory { get; set; }
     }
 
     public class OverduePaymentInfo
