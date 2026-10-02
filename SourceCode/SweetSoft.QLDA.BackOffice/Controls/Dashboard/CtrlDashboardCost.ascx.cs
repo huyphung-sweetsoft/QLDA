@@ -21,7 +21,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=44")
+                        "/Controls/Dashboard/dashboard-style.css?v=47")
                 };
 
                 List<string> jsLinks = new List<string>
@@ -33,7 +33,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Controls/Dashboard/dashboard-project-groups.js?v=1"),
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-cost.js?v=10"),
+                        "/Controls/Dashboard/dashboard-cost.js?v=19"),
                     CURRENT_PAGE.GetRelativeClientPath(
                         "/Controls/Dashboard/dashboard-modals.js?v=1")
                 };
@@ -104,6 +104,74 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_CURRENCY_SUFFIX);
         }
 
+        protected int OverBudgetProjectCount
+        {
+            get
+            {
+                return Model == null || Model.ProjectStatistics == null
+                    ? 0
+                    : Model.ProjectStatistics.Count(x =>
+                        x.CostComparisonStatus == "over");
+            }
+        }
+
+        protected string FormatSignedMoney(decimal value)
+        {
+            return (value > 0 ? "+" : string.Empty) + FormatMoney(value);
+        }
+
+        protected string FormatSignedMoneySummary(decimal value)
+        {
+            string sign = value > 0 ? "+" : value < 0 ? "-" : string.Empty;
+            return sign + FormatMoneySummary(Math.Abs(value));
+        }
+
+        protected string FormatSignedPercent(decimal? value)
+        {
+            if (!value.HasValue)
+            {
+                return "-";
+            }
+
+            return (value.Value > 0 ? "+" : string.Empty)
+                + value.Value.ToString("0.##", CultureInfo.CurrentCulture)
+                + "%";
+        }
+
+        protected string GetProjectCostStatusCss(string status)
+        {
+            switch (status)
+            {
+                case "over":
+                    return "bg-danger-subtle text-danger";
+                case "under":
+                    return "bg-success-subtle text-success";
+                case "equal":
+                    return "bg-primary-subtle text-primary";
+                default:
+                    return "bg-secondary-subtle text-secondary";
+            }
+        }
+
+        protected string GetProjectCostStatusText(string status)
+        {
+            switch (status)
+            {
+                case "over":
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_PROJECT_COST_OVER);
+                case "under":
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_PROJECT_COST_UNDER);
+                case "equal":
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_PROJECT_COST_EQUAL);
+                default:
+                    return GetResourceText(
+                        BackEndResourceKeys.DASHBOARD_PROJECT_COST_NO_CONTRACT);
+            }
+        }
+
         protected string FormatMoneySummary(decimal value)
         {
             decimal absolute = Math.Abs(value);
@@ -154,27 +222,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
             return "bg-secondary-subtle text-secondary";
         }
 
-        protected string GetCostByProjectDescription()
-        {
-            if (ProjectComparisonCount == 0)
-            {
-                return GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT_DESC_EMPTY);
-            }
-
-            if (ProjectComparisonCount == 1)
-            {
-                return GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT_DESC_SINGLE);
-            }
-
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                GetResourceText(
-                    BackEndResourceKeys.DASHBOARD_COST_BY_PROJECT_DESC),
-                ProjectComparisonCount);
-        }
-
         protected string GetProjectDetailUrl(Guid projectId)
         {
             return GetProjectUrl(projectId, RewriteURLHelper.ProjectDetail);
@@ -207,33 +254,86 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
         {
             Model = DashboardCostManager.Instance.GetCostDashboard(filter);
 
-            var comparisonProjects = Model.ProjectStatistics
-                .Where(x => x.ActualCost > 0)
-                .OrderByDescending(x => x.ActualCost)
-                .Take(8)
-                .ToList();
+            List<ProjectCostStatistic> comparisonProjects =
+                Model.ProjectStatistics ?? new List<ProjectCostStatistic>();
             ProjectComparisonCount = comparisonProjects.Count;
 
             ProjectComparisonChartData = JsonConvert.SerializeObject(
-                comparisonProjects.Select(x => new
+                new
                 {
-                    projectId = x.ProjectId,
-                    code = x.ProjectCode,
-                    name = x.ProjectName,
-                    actualCost = x.ActualCost
-                })).Replace("</", "<\\/");
+                    projects = comparisonProjects.Select(x => new
+                    {
+                        code = x.ProjectCode,
+                        name = x.ProjectName,
+                        hasContractValue = x.HasContractValue,
+                        status = x.CostComparisonStatus,
+                        variance = x.CostVariance
+                    }).ToList()
+                }).Replace("</", "<\\/");
 
             CostApprovalChartData = JsonConvert.SerializeObject(new
             {
-                approved = Model.ActualCost,
-                pending = Model.PendingApprovalCost
+                approved = new
+                {
+                    amount = Model.ActualCost,
+                    count = Model.ApprovedCostItemCount
+                },
+                pending = new
+                {
+                    amount = Model.PendingApprovalCost,
+                    count = Model.PendingApprovalCostItemCount
+                },
+                rejected = new
+                {
+                    amount = Model.RejectedCost,
+                    count = Model.RejectedCostItemCount
+                },
+                totalAmount = Model.ActualCost + Model.PendingApprovalCost
+                    + Model.RejectedCost,
+                totalCount = Model.CostItemCount
             });
 
             PaymentChartData = JsonConvert.SerializeObject(new
             {
-                received = Model.ReceivedPayment,
-                outstanding = Model.OutstandingPayment,
-                totalContractValue = Model.TotalContractValue
+                paid = new
+                {
+                    amount = Model.PaymentItems.Where(x => x.IsPaid
+                        && !x.IsPaidLate).Sum(x => x.Amount),
+                    count = Model.PaymentItems.Count(x => x.IsPaid
+                        && !x.IsPaidLate)
+                },
+                paidLate = new
+                {
+                    amount = Model.PaymentItems.Where(x => x.IsPaidLate)
+                        .Sum(x => x.Amount),
+                    count = Model.PaidLatePaymentCount
+                },
+                dueToday = new
+                {
+                    amount = Model.PaymentItems.Where(x =>
+                        x.StatusCategory == "due-today").Sum(x => x.Amount),
+                    count = Model.DueTodayPaymentCount
+                },
+                upcoming = new
+                {
+                    amount = Model.PaymentItems.Where(x =>
+                        x.StatusCategory == "upcoming").Sum(x => x.Amount),
+                    count = Model.UpcomingPaymentCount
+                },
+                overdue = new
+                {
+                    amount = Model.PaymentItems.Where(x => x.IsOverdue)
+                        .Sum(x => x.Amount),
+                    count = Model.OverduePaymentCount
+                },
+                noDueDate = new
+                {
+                    amount = Model.PaymentItems.Where(x =>
+                        x.StatusCategory == "no-date").Sum(x => x.Amount),
+                    count = Model.PaymentWithoutDueDateCount
+                },
+                totalAmount = Model.PaymentItems.Sum(x => x.Amount),
+                totalCount = Model.PaymentItems.Count
             });
 
             DashboardTextsJson = JsonConvert.SerializeObject(new
@@ -251,10 +351,74 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                     BackEndResourceKeys.DASHBOARD_APPROVED_COST),
                 pendingCost = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_PENDING_COST),
+                rejectedCost = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_REJECTED_COST),
                 noContractOrPayment = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_NO_CONTRACT_OR_PAYMENT),
                 received = GetResourceText(
                     BackEndResourceKeys.RECEIVED_PAYMENT),
+                paid = GetResourceText(
+                    BackEndResourceKeys.PAYMENT_PAID),
+                paidLate = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_PAID_LATE),
+                paidLateStatus = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_PAID_LATE_STATUS),
+                dueToday = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_DUE_TODAY),
+                upcoming = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_NOT_DUE),
+                noDueDate = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_NO_DUE_DATE),
+                overdue = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_OVERDUE_UNPAID),
+                paymentUnit = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_UNIT),
+                costUnit = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COST_UNIT),
+                totalPayments = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TOTAL_PAYMENT_COUNT),
+                totalCosts = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TOTAL_COST_COUNT),
+                totalProjects = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_TOTAL_PROJECT_COUNT),
+                projectUnit = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_UNIT),
+                projectCostOver = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_OVER),
+                projectCostUnder = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_UNDER),
+                projectCostEqual = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_EQUAL),
+                projectCostNoContract = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_NO_CONTRACT),
+                projectCostTotalDeviation = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_TOTAL_DEVIATION),
+                projectCostAverageDeviation = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_AVERAGE_DEVIATION),
+                projectCostNoComparableData = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_NO_COMPARABLE_DATA),
+                totalOverrun = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_TOTAL_OVERRUN),
+                totalSaving = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_TOTAL_SAVING),
+                budgetComparisonEmpty = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_BUDGET_COMPARISON_EMPTY),
+                projectCostExpected = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_EXPECTED),
+                projectCostActual = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_ACTUAL),
+                projectCostVariance = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_VARIANCE),
+                projectCostVariancePercent = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PROJECT_COST_VARIANCE_PERCENT),
+                expectedProfit = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EXPECTED_GROSS_PROFIT),
+                expectedProfitMargin = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_EXPECTED_PROFIT_MARGIN),
+                paymentCountChart = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_PAYMENT_COUNT_CHART),
+                costCountChart = GetResourceText(
+                    BackEndResourceKeys.DASHBOARD_COST_COUNT_CHART),
                 outstanding = GetResourceText(
                     BackEndResourceKeys.DASHBOARD_OUTSTANDING_PAYMENT),
                 contractValue = GetResourceText(

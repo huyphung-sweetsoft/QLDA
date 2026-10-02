@@ -3,6 +3,7 @@ using SubSonic;
 using SweetSoft.QLDA.Core.Caches;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.ExceptionHelpers;
+using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Helpers;
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -365,6 +366,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
                 scope.Complete();
             }
+                if (resultUser != null)
+                    FunctionManager.Instance.InvalidateUserPermissionCache(resultUser.UserId);
                 // TRẠM 4: Gửi Email bất đồng bộ 
                 if (sendMailRequired && resultUser != null && !string.IsNullOrEmpty(finalUserNameToSend))
                 {
@@ -392,7 +395,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         { "[[PASSWORD]]", passwordToSend },
                         { "[[EMAIL]]", emailToSend },
                         { "[[SUPPORT_EMAIL]]", "hotro@sweetsoft.vn" },
-                        { "[[LOGIN_URL]]", "http://qlda.local/Login" }
+                        { "[[LOGIN_URL]]", "https://qlda.dev.sweetsoft.co/Login" }
                     };
 
                             // CHỐT 2: Dùng chung template "TemplateAccountInformation" cho cả tạo mới và đổi pass

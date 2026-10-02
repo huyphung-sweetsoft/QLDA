@@ -33,6 +33,7 @@ namespace SweetSoft.QLDA.Core.Infrastructure
         private const string CurrentUserIdKey = "CURRENT_USER_ID";
         private const string CurrentUserAgentKey = "CURRENT_USER_AGENT";
         private const string CurrentUserFunctionsPrefix = "CURRENT_USER_FUNCTIONS_";
+        private const string CurrentUserFunctionsVersionPrefix = "CURRENT_USER_FUNCTIONS_VERSION_";
         private const string CurrentFunctionsPrefix = "CURRENT_FUNCTIONS_";
         private const string ApplicationIdCacheKey = SecurityUtilities.ApplicationName + ".ApplicationId";
 
@@ -211,12 +212,30 @@ namespace SweetSoft.QLDA.Core.Infrastructure
                     return true;
                 }
 
-                var currentUserFunctions = CurrentUserFunctions;
-                if (currentUserFunctions == null || currentUserFunctions.Count == 0)
+                bool isCurrentUser = userId == UserId;
+                var currentUserFunctions = isCurrentUser ? CurrentUserFunctions : null;
+                string permissionVersion = FunctionManager.Instance
+                    .GetUserPermissionVersion(userId);
+                string sessionPermissionVersion = isCurrentUser
+                    ? GetSessionValue(CurrentUserFunctionsVersionPrefix + userId) as string
+                    : null;
+
+                if (!isCurrentUser
+                    || currentUserFunctions == null
+                    || !string.Equals(
+                        sessionPermissionVersion,
+                        permissionVersion,
+                        StringComparison.Ordinal))
                 {
                     var isDevelopment = AppSettingHelpers.GetSetting<bool>("IsDevelopment");
                     currentUserFunctions = FunctionManager.Instance.GetAllModules(userId, isDevelopment);
-                    CurrentUserFunctions = currentUserFunctions;
+                    if (isCurrentUser)
+                    {
+                        CurrentUserFunctions = currentUserFunctions;
+                        SetSessionValue(
+                            CurrentUserFunctionsVersionPrefix + userId,
+                            permissionVersion);
+                    }
                 }
 
                 return currentUserFunctions != null && currentUserFunctions.Contains(module.ToString());

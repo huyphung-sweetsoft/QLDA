@@ -100,6 +100,18 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             if (task == null) return null;
             DuAnManager.Instance.EnsureCanModifyStructure(task.IdDuAn);
+            List<Guid> nhanVienIds = _repository.GetAssignedNhanVienIds(task.IdCongViec);
+            foreach(Guid id in nhanVienIds)
+            {
+                ThongBaoManager.Instance.Create
+                    (
+                        userId: id,
+                        tieuDe: $"Công việc {task.TenCongViec} đã bị xóa",
+                        noiDung: $"Công việc {task.TenCongViec} được giao cho bạn đã bị xóa khỏi dự án",
+                        loaiThongBao: ThongBaoTypes.CongViec,
+                        idCongViec: task.IdCongViec
+                    );
+            }
             _repository.DeleteTask(task);
             if (!string.IsNullOrEmpty(task.MaCongViec))
             {
@@ -1279,13 +1291,13 @@ namespace SweetSoft.QLDA.Core.Managers
                         TblDuAn d = DuAnManager.Instance.GetDuAnById(idDuAn);
                         string tenDuAn = d != null ? d.TenDuAn : "Dự án";
 
-                        //ThongBaoManager.Instance.Create(
-                        //    userId: id,
-                        //    tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
-                        //    noiDung: $"Dự án: {tenDuAn}",
-                        //    loaiThongBao: ThongBaoTypes.DuAn,
-                        //    idDuAn: idDuAn
-                        //);
+                        ThongBaoManager.Instance.Create(
+                            userId: id,
+                            tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
+                            noiDung: $"Dự án: {tenDuAn}",
+                            loaiThongBao: ThongBaoTypes.DuAn,
+                            idDuAn: idDuAn
+                        );
                     }
 
                     // Thông báo: gửi cho nhân viên vừa được giao công việc
@@ -1299,13 +1311,13 @@ namespace SweetSoft.QLDA.Core.Managers
                             {
                                 string tieuDe = $"Bạn được giao công việc: {congViec.TenCongViec}";
 
-                                //ThongBaoManager.Instance.Create(
-                                //    userId          : assigneeUserId,
-                                //    tieuDe          : tieuDe,
-                                //    loaiThongBao    : ThongBaoTypes.CongViec,
-                                //    idCongViec      : idCongViec,
-                                //    idDuAn          : idDuAn
-                                //);
+                                ThongBaoManager.Instance.Create(
+                                    userId: assigneeUserId,
+                                    tieuDe: tieuDe,
+                                    loaiThongBao: ThongBaoTypes.CongViec,
+                                    idCongViec: idCongViec,
+                                    idDuAn: idDuAn
+                                );
                             }
                             catch (Exception ex)
                             {

@@ -238,6 +238,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             txtMaDuAn.Text = DuAnManager.Instance.GenerateProjectCode();
             lbtSubmit.Visible = this.IsAdd;
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.SAVE);
+            ddlTrangThai.Enabled = true;
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
             dlDetail.OpenModal(true);
         }
@@ -274,7 +275,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             ddlKhachHang.SelectedValue = duAn.IdKhachHang.ToString();
             ddlNhanVienQuanLy.SelectedValue = duAn.IdNhanVienQuanLy.ToString();
             ddlTrangThai.SelectedValue = duAn.TrangThai.ToString();
-
+            ddlTrangThai.Enabled = false;
             dtNgayBatDau.DateValue = duAn.NgayBatDau;
             dtNgayKetThuc.DateValue = duAn.NgayDuKienHoanThanh;
 
@@ -452,6 +453,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             ddlKhachHang.SelectedIndex = -1;
             ddlLoaiDuAn.SelectedIndex = -1;
             ddlNhanVienQuanLy.SelectedIndex = -1;
+            ddlTrangThai.Enabled = true;
             this.IdHopDongThucHien = Guid.Empty;
             txtSoHopDong.Text = "";
             pnlHopDongInfo.Visible = false;
