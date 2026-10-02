@@ -1760,6 +1760,16 @@ a.resource-day-task:focus-visible {
     background: #e9edf2;
     color: #59677a;
 }
+.dashboard-resource .resource-load-weekend {
+    background: #e9edf2;
+    color: #59677a;
+}
+.dashboard-resource .resource-load-button.resource-load-weekend .resource-day-type {
+    color: #59677a;
+    font-size: 14px;
+    font-weight: 750;
+    opacity: 1;
+}
 .dashboard-resource .resource-month-button {
     display: flex;
     flex-direction: column;
@@ -2834,6 +2844,12 @@ a.resource-day-task:focus-visible {
     display: flex;
 }
 
+.dashboard-overview-simple .dashboard-overview-signal-row .dashboard-project-glance-resource {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+}
+
 .dashboard-overview-simple .dashboard-project-issue-count {
     border-radius: 999px;
     min-width: 2rem;
@@ -3782,7 +3798,15 @@ a.resource-day-task:focus-visible {
 
 .dashboard-resource #resource-detail-drawer .resource-detail-close-button {
     flex: 0 0 2rem;
+    margin: 0 0 0 auto;
     color: #4b148c;
+    transform: none !important;
+}
+
+.dashboard-resource #resource-detail-drawer .resource-detail-close-button:hover,
+.dashboard-resource #resource-detail-drawer .resource-detail-close-button:focus-visible,
+.dashboard-resource #resource-detail-drawer .resource-detail-close-button:active {
+    transform: none !important;
 }
 
 .dashboard-resource #resource-detail-drawer .resource-detail-close-button::before {
