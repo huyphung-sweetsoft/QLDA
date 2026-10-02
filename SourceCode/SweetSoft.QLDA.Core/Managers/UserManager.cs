@@ -392,7 +392,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         { "[[PASSWORD]]", passwordToSend },
                         { "[[EMAIL]]", emailToSend },
                         { "[[SUPPORT_EMAIL]]", "hotro@sweetsoft.vn" },
-                        { "[[LOGIN_URL]]", "http://qlda.local/Login" }
+                        { "[[LOGIN_URL]]", "https://qlda.dev.sweetsoft.co/Login" }
                     };
 
                             // CHỐT 2: Dùng chung template "TemplateAccountInformation" cho cả tạo mới và đổi pass
