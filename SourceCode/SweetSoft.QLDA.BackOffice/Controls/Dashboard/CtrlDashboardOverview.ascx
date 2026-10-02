@@ -227,7 +227,6 @@
                             <% } %>
                         </div>
                     </div>
-                    <p class="small text-muted mb-0 mt-2">Chọn một phần biểu đồ để xem danh sách dự án. Quá hạn được theo dõi riêng.</p>
                 </div>
             </div>
         </div>
