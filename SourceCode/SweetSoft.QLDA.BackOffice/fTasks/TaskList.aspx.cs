@@ -236,7 +236,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 .ToList();
             if (reminderIds.Count == 0)
                 return;
-            NhacViecLichCongViecManager.Instance.MarkAsProcessed(reminderIds);
+            int processedCount = NhacViecLichCongViecManager.Instance.MarkAsProcessed(reminderIds);
+            if (processedCount > 0)
+            {
+                ShowNotify("Đã xử lý nhắc việc thành công!", MSGType.Success);
+            }
+            else
+            {
+                ShowNotify("Không thể xử lý nhắc việc.", MSGType.Error);
+            }
             hdfSelectedReminderIds.Value = string.Empty;
             List<TblNhacViecLichCongViec> reminders =
                 NhacViecLichCongViecManager.Instance.GetPendingByTask(

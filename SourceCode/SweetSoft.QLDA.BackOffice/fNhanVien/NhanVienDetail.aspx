@@ -514,8 +514,8 @@
                                                                    <!-- NÚT XEM LÝ DO TRỄ HẠN -->
                                                                     <asp:PlaceHolder runat="server" Visible='<%# IsTaskCompletedLate(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>'>
                                                                         <div class="mt-1">
-                                                                            <a href="javascript:void(0);" 
-                                                                               onclick='<%# "showDelayReason(\"" + Eval("MaTask") + "\", " + HttpUtility.JavaScriptStringEncode(Convert.ToString(Eval("LyDoTreHan")), true) + ")" %>' 
+                                                                           <a href="javascript:void(0);" 
+                                                                               onclick='<%# string.Format("showDelayReason(\"{0}\", {1}, {2})", Eval("MaTask"), System.Web.HttpUtility.JavaScriptStringEncode(Convert.ToString(Eval("TenTask")), true), System.Web.HttpUtility.JavaScriptStringEncode(Convert.ToString(Eval("LyDoTreHan")), true)) %>' 
                                                                                class="text-danger" style="font-size: 11px; text-decoration: underline; font-weight: 600;">
                                                                                 <i class="fas fa-info-circle"></i> Xem lý do
                                                                             </a>
@@ -656,9 +656,11 @@
                 renderEmployeeMonthCalendar();
             });
         }
-        function showDelayReason(taskCode, reason) {
-            // Nạp data vào ExtraModal
-            $('#delayTaskCode').text('Công việc: [' + taskCode + ']');
+        function showDelayReason(taskCode, taskName, reason) {
+            // Ghép cả Mã và Tên task vào Header của Popup
+            $('#delayTaskCode').html('<span class="text-primary">[' + taskCode + ']</span> ' + taskName);
+
+            // Render lý do
             $('#delayTaskReason').text(reason || 'Không có lý do được ghi nhận.');
 
             // Gọi popup bằng ClientID của ExtraModal
@@ -670,11 +672,26 @@
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
     <SweetSoft:CtrlNhanVienPopup runat="server" ID="CtrlNhanVienPopup1" />
-    <SweetSoft:ExtraModal runat="server" ID="mdlDelayReason" Type="Primary" Title="Lý do trễ hạn">
+    
+    <SweetSoft:ExtraModal runat="server" ID="mdlDelayReason" Type="Primary" Title="Lí do hoàn thành trễ hạn">
         <ContentTemplate>
-            <div class="p-3">
-                <div class="fw-bold text-dark mb-2" id="delayTaskCode" style="font-size: 13px;"></div>
-                <div class="text-muted p-2 bg-light rounded border" id="delayTaskReason" style="font-size: 13px; white-space: pre-wrap; line-height: 1.5; max-height: 250px; overflow-y: auto;"></div>
+            <div class="p-4">
+                <!-- Khu vực Header của Popup: Có Icon nổi bật và Tên Task -->
+                <div class="d-flex align-items-center gap-3 mb-3 pb-3" style="border-bottom: 1px dashed #e2e8f0;">
+                    <div style="width: 48px; height: 48px; background-color: #fee2e2; color: #ef4444; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <span class="d-block text-muted fw-bold" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Phát sinh từ công việc</span>
+                        <div class="fw-bolder text-dark mt-1" id="delayTaskCode" style="font-size: 16px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Khu vực Nội dung: Khung nổi, chữ bự, có viền đỏ cảnh báo bên trái -->
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #ef4444; border-radius: 8px; padding: 18px;">
+                    <label class="fw-bold d-block mb-2" style="font-size: 11.5px; color: #64748b; text-transform: uppercase;">Lí do:</label>
+                    <div id="delayTaskReason" class="text-dark fw-medium" style="font-size: 15px; white-space: pre-wrap; line-height: 1.6; max-height: 300px; overflow-y: auto;"></div>
+                </div>
             </div>
         </ContentTemplate>
     </SweetSoft:ExtraModal>
