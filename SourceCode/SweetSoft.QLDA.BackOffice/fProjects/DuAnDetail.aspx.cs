@@ -347,6 +347,10 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
                 case nameof(TblHopDongThucHien): return "hợp đồng thực hiện";
 
+                case nameof(TblRuiRoDuAn): return "rủi ro";
+
+                case nameof(TblChiPhi): return "khoản chi";
+
                 default: return "thông tin";
             }
         }

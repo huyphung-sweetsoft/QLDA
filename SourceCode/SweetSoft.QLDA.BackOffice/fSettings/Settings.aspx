@@ -166,7 +166,7 @@
                                                 <fieldset class="fieldset-box">
                                                     <legend class="text-primary fw-bold">Cấu hình mã dự án</legend>
                                                     <div class="row">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-12">
                                                             <div class="mt-3">
                                                                 <label class="form-label">Tiền tố mã dự án</label>
                                                                 <SweetSoft:ExtraTextBox runat="server"
@@ -174,16 +174,7 @@
                                                                     PlaceHolder="PRJ">
                                                                 </SweetSoft:ExtraTextBox>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="mt-3">
-                                                                <label class="form-label">Số thứ tự bắt đầu</label>
-                                                                <SweetSoft:ExtraTextBox runat="server"
-                                                                    ID="txtProjectCodeStartNumber"
-                                                                    PlaceHolder="1">
-                                                                </SweetSoft:ExtraTextBox>
-                                                            </div>
-                                                        </div>
+                                                        </div>  
                                                     </div>
                                                 </fieldset>
                                             </div>

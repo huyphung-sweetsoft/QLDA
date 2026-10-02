@@ -37,6 +37,9 @@ namespace SweetSoft.QLDA.Core.Managers
 
         /// <summary>Rủi ro được yêu cầu giám sát</summary>
         public const string RuiRo = "RUI_RO";
+
+        /// <summary>Khoản chi cần duyệt/đã duyệt</summary>
+        public const string ChiPhi = "CHI_PHI";
     }
 
     /// <summary>

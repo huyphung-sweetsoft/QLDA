@@ -45,7 +45,12 @@ namespace SweetSoft.QLDA.BackOffice.Common
                         return RewriteURLHelper.ProjectRisks(idDuAn.Value);
                     }
                     return RewriteURLHelper.Projects;
-                    
+                case ThongBaoTypes.ChiPhi:
+                    if (idDuAn.HasValue && idDuAn.Value != Guid.Empty)
+                    {
+                        return RewriteURLHelper.ProjectCosts(idDuAn.Value);
+                    }
+                    return RewriteURLHelper.Projects;
                 // Có thể mở rộng cho Lịch họp, Vấn đề, Tài liệu sau khi có route tương ứng
             }
 

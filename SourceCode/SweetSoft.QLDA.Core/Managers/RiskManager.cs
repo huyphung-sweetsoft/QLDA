@@ -79,9 +79,9 @@ namespace SweetSoft.QLDA.Core.Managers
                 dto.NgayCapNhat = DateTime.Now;
                 dto.NguoiCapNhat = currentUser;
 
-                dto.Save(); 
+                dto = _repository.Insert(dto);
                 result = dto;
-                if (result != null && result.IdNhanVienXuLy != Guid.Empty)
+                if (result != null && result.IdNhanVienXuLy != Guid.Empty && result.IdNhanVienXuLy != null)
                 {
                     ThongBaoManager.Instance.Create
                         (
@@ -97,7 +97,9 @@ namespace SweetSoft.QLDA.Core.Managers
             {
                 TblRuiRoDuAn existingRisk = TblRuiRoDuAn.FetchByID(dto.IdRuiRoDuAn);
                 BusinessValidator.ThrowIfNull(existingRisk, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdRuiRoDuAn), ErrorCodes.NotFound);
-                Guid oldNhanVienXuLy = existingRisk.IdNhanVienXuLy.Value;
+                Guid oldNhanVienXuLy = Guid.Empty;
+                if (existingRisk.IdNhanVienXuLy != Guid.Empty && existingRisk.IdNhanVienXuLy != null)
+                    oldNhanVienXuLy = existingRisk.IdNhanVienXuLy.Value;
                 existingRisk.TenRuiRo = dto.TenRuiRo;
                 existingRisk.IdNhanVienXuLy = dto.IdNhanVienXuLy;
                 existingRisk.XacSuatXayRa = dto.XacSuatXayRa;
@@ -109,9 +111,9 @@ namespace SweetSoft.QLDA.Core.Managers
                 existingRisk.NgayCapNhat = DateTime.Now;
                 existingRisk.NguoiCapNhat = currentUser;
 
-                existingRisk.Save();
+                existingRisk = _repository.Update(existingRisk);
                 result = existingRisk;
-                if (oldNhanVienXuLy != result.IdNhanVienXuLy)
+                if (oldNhanVienXuLy != result.IdNhanVienXuLy && result.IdNhanVienXuLy != null && result.IdNhanVienXuLy != Guid.Empty)
                 {
                     ThongBaoManager.Instance.Create
                         (

@@ -73,6 +73,12 @@ namespace SweetSoft.QLDA.Core.Managers
             BusinessValidator.ThrowIf(dto.IdDuAn == Guid.Empty || dto.IdDuAn == null, BackEndResourceKeys.INVALID_DATA, nameof(dto.IdDuAn));
 
             Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
+            TblDuAn duan = DuAnManager.Instance.GetDuAnById(dto.IdDuAn);
+            Guid nhanVienQuanLy = Guid.Empty;
+            if (duan != null && duan.IdNhanVienQuanLy != null && duan.IdNhanVienQuanLy != Guid.Empty)
+            {
+                nhanVienQuanLy = duan.IdNhanVienQuanLy.Value;
+            }
             bool isInsert = (dto.IdChiPhi == Guid.Empty);
             TblChiPhi result = null;
 
@@ -87,16 +93,27 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 dto.MaChiPhi = GenerateMaChiPhi(dto.IdDuAn);
 
-                if (dto.TrangThai == null) dto.TrangThai = 0;
+                //if (dto.TrangThai == null) dto.TrangThai = 0;
 
-                dto.Save();
+                dto = _repository.Insert(dto);
                 result = dto;
+
+                if (nhanVienQuanLy != null && nhanVienQuanLy != Guid.Empty)
+                {
+                    ThongBaoManager.Instance.Create
+                    (
+                        userId: nhanVienQuanLy,
+                        tieuDe: "Có khoản chi mới cần bạn duyệt",
+                        noiDung: $"Khoản chi {result.TenKhoanChi} của dự án {duan.TenDuAn} cần bạn duyệt",
+                        loaiThongBao: ThongBaoTypes.ChiPhi,
+                        idDuAn: duan.IdDuAn
+                    );
+                }
             }
             else
             {
                 TblChiPhi existingCost = TblChiPhi.FetchByID(dto.IdChiPhi);
                 BusinessValidator.ThrowIfNull(existingCost, BackEndResourceKeys.NOT_FOUND, nameof(dto.IdChiPhi), ErrorCodes.NotFound);
-
                 existingCost.TenKhoanChi = dto.TenKhoanChi;
                 existingCost.MoTaChiTiet = dto.MoTaChiTiet;
                 existingCost.DonGia = dto.DonGia;
@@ -104,8 +121,25 @@ namespace SweetSoft.QLDA.Core.Managers
                 existingCost.SoTien = dto.SoTien;
                 existingCost.TrangThai = dto.TrangThai;
 
-                existingCost.Save();
+                existingCost = _repository.Update(existingCost);
                 result = existingCost;
+
+                if (result != null && result.IdNhanVienDeNghi != null && result.IdNhanVienDeNghi != Guid.Empty)
+                {
+                    string tieuDe = "";
+                    if (result.TrangThai == 1)
+                        tieuDe = $"Khoản chi {result.TenKhoanChi} đã được duyệt";
+                    if (result.TrangThai == 2)
+                        tieuDe = $"Khoản chi {result.TenKhoanChi} đã bị từ chối";
+                    ThongBaoManager.Instance.Create
+                    (
+                        userId: nhanVienQuanLy,
+                        tieuDe: tieuDe,
+                        noiDung: tieuDe,
+                        loaiThongBao: ThongBaoTypes.ChiPhi,
+                        idDuAn: duan.IdDuAn
+                    );
+                }
             }
 
             return result;
