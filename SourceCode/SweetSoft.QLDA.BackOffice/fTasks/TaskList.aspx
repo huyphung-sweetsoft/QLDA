@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="TaskList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.TaskList" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" MaintainScrollPositionOnPostBack="true" CodeBehind="TaskList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.TaskList" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fTasks/Controls/CtrlTask.ascx" TagPrefix="SweetSoft" TagName="CtrlTask" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
@@ -69,95 +69,440 @@
     .badge-code { min-width: 38px; display: inline-flex; justify-content: center; align-items: center; padding: 5px 10px; background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 7px; color: #5b21b6; font-size: 15px; font-weight: 800; line-height: 1.2; }
 
     /* ===================================================================
-       HEADER DROPDOWN - MÀU SẮC ĐỘNG VÀ CĂN CHỈNH
+       TASK HEADER / PRIORITY / STATUS - CUSTOM DROPDOWN
+       Không dùng native <select> cho 2 control đầu vì popup native của
+       browser/Windows không thể style đồng bộ với giao diện.
        =================================================================== */
-    .header-dropdown-box { min-height: 38px; display: flex; align-items: center; padding: 0 10px 0 12px; border: 1px solid #d1d5db; border-radius: 8px; transition: border-color .18s ease, box-shadow .18s ease; }
-    .header-dropdown-box:hover { border-color: #a78bfa; }
-    .header-dropdown-label {
-        margin-right: 6px;
-        color: #6b7280;
-        font-size: 10.5px;
-        font-weight: 800;
-        letter-spacing: .35px;
-        text-transform: uppercase;
-        white-space: nowrap !important;
-        flex-shrink: 0 !important;
+    .task-context-card {
+        padding: 16px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #6d28d9;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
     }
 
-    .header-select {
-        width: auto !important;
-        min-width: max-content !important;
-        height: 30px !important;
-        margin: 0 !important;
-        padding: 0 19px 0 0 !important;
-        border: none !important;
-        background-color: transparent !important;
-        box-shadow: none !important;
-        color: #1f2937 !important;
-        font-size: 13px !important;
-        font-weight: 750 !important;
-        outline: none !important;
+    .task-context-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-width: 0;
+    }
+
+    .task-context-identity,
+    .task-context-phase {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .task-context-identity { gap: 10px; }
+    .task-context-phase { gap: 9px; }
+
+    .task-context-kicker {
+        display: block;
+        margin-bottom: 3px;
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .55px;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .task-context-phase i {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 30px;
+        border-radius: 8px;
+        background: #f5f3ff;
+        color: #7c3aed;
+        font-size: 12px;
+    }
+
+    .task-context-phase-value {
+        min-width: 0;
+        color: #374151;
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .task-context-divider {
+        height: 1px;
+        margin: 14px 0;
+        background: #eef2f7;
+    }
+
+    .task-meta-controls {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        gap: 12px;
+    }
+
+    .task-meta-shell {
+        position: relative;
+        min-width: 0;
+    }
+
+    .task-meta-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 6px 1px;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .55px;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .task-meta-label i {
+        width: 14px;
+        color: #94a3b8 !important;
+        text-align: center;
+        font-size: 11px;
+    }
+
+    .task-dropdown {
+        position: relative;
+        min-width: 0;
+    }
+
+    .task-native-select {
+        display: none !important;
+    }
+
+    .task-dropdown-toggle {
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 12px;
+        border: 1px solid #dbe1ea;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #1f2937;
+        text-align: left;
+        font-size: 13.5px;
+        font-weight: 750;
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.035);
+        transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
         cursor: pointer;
     }
-    .header-select:focus { border: none !important; outline: none !important; box-shadow: none !important; }
-    .header-select:disabled {
-        padding-right: 0 !important;
-        background-color: transparent !important;
-        background-image: none !important;
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        -moz-appearance: none !important;
-        opacity: 1 !important;
-        cursor: default !important;
-        -webkit-text-fill-color: inherit !important;
-    }
-    .header-dropdown-box:has(select:disabled) { cursor: default; }
 
-    /* LÀM ĐẸP DANH SÁCH DROPDOWN BÊN TRONG */
-    .header-select option {
-        padding: 8px 12px !important;
-        background-color: #ffffff;
-        color: #1e293b;
+    .task-dropdown-toggle:hover {
+        border-color: #c7d2fe;
+        background: #fcfcff;
+    }
+
+    .task-dropdown-toggle:focus-visible {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, .10);
+    }
+
+    .task-dropdown-toggle:disabled {
+        background: #f8fafc;
+        color: #94a3b8;
+        cursor: default;
+        box-shadow: none;
+    }
+
+    .task-dropdown.open .task-dropdown-toggle {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, .09);
+    }
+
+    .task-meta-value {
+        min-width: 0;
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .task-dropdown-chevron {
+        flex: 0 0 auto;
+        margin-left: auto;
+        color: #94a3b8;
+        font-size: 10px;
+        transition: transform .18s ease;
+    }
+
+    .task-dropdown.open .task-dropdown-chevron {
+        transform: rotate(180deg);
+    }
+
+    .task-status-dot {
+        width: 9px;
+        height: 9px;
+        flex: 0 0 9px;
+        border-radius: 50%;
+        background: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
+    }
+
+    .task-dropdown-menu {
+        position: absolute;
+        z-index: 2000;
+        top: calc(100% + 6px);
+        left: 0;
+        min-width: 100%;
+        max-height: 230px;
+        overflow-y: auto;
+        padding: 5px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, .14), 0 2px 8px rgba(15, 23, 42, .06);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-3px);
+        transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
+    }
+
+    .task-dropdown-menu.drop-up {
+        top: auto;
+        bottom: calc(100% + 6px);
+        transform: translateY(3px);
+    }
+
+    .task-dropdown.open .task-dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .task-dropdown-item {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 9px;
+        border-radius: 7px;
+        color: #334155;
+        font-size: 13.5px;
         font-weight: 600;
-        font-size: 14px;
-        text-indent: 5px;
+        line-height: 1.25;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color .12s ease, color .12s ease;
     }
 
-    /* MÀU ĐỘNG ƯU TIÊN */
-    .priority-default { background: #f8fafc; border-color: #cbd5e1; }
-    .priority-default .label-priority { color: #64748b; }
-    .priority-default .header-select { color: #334155 !important; }
-    .priority-default:focus-within { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(100, 116, 139, .08); }
-    .priority-low { background: #f0f9ff; border-color: #bae6fd; }
-    .priority-low .label-priority { color: #0284c7; }
-    .priority-low .header-select { color: #0369a1 !important; }
-    .priority-low:focus-within { border-color: #7dd3fc; box-shadow: 0 0 0 3px rgba(2, 132, 199, .08); }
-    .priority-med { background: #fffbeb; border-color: #fde68a; }
-    .priority-med .label-priority { color: #d97706; }
-    .priority-med .header-select { color: #b45309 !important; }
-    .priority-med:focus-within { border-color: #fcd34d; box-shadow: 0 0 0 3px rgba(217, 119, 6, .08); }
-    .priority-high { background: #fef2f2; border-color: #fecaca; }
-    .priority-high .label-priority { color: #dc2626; }
-    .priority-high .header-select { color: #b91c1c !important; }
-    .priority-high:focus-within { border-color: #fca5a5; box-shadow: 0 0 0 3px rgba(220, 38, 38, .08); }
+    .task-dropdown-item:hover {
+        background: #f8fafc;
+        color: #111827;
+    }
 
-    /* MÀU ĐỘNG TRẠNG THÁI */
-    .status-box-0 { background: #f8fafc; border-color: #cbd5e1; }
-    .status-box-0 .label-status { color: #64748b; }
-    .status-box-0 .header-select { color: #334155 !important; }
-    .status-box-0:focus-within { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(100, 116, 139, .08); }
-    .status-box-1 { background: #eff6ff; border-color: #bfdbfe; }
-    .status-box-1 .label-status { color: #2563eb; }
-    .status-box-1 .header-select { color: #1d4ed8 !important; }
-    .status-box-1:focus-within { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(37, 99, 235, .08); }
-    .status-box-2 { background: #f0fdf4; border-color: #bbf7d0; }
-    .status-box-2 .label-status { color: #16a34a; }
-    .status-box-2 .header-select { color: #15803d !important; }
-    .status-box-2:focus-within { border-color: #4ade80; box-shadow: 0 0 0 3px rgba(22, 163, 74, .08); }
-    .status-box-3 { background: #fef2f2; border-color: #fecaca; }
-    .status-box-3 .label-status { color: #dc2626; }
-    .status-box-3 .header-select { color: #b91c1c !important; }
-    .status-box-3:focus-within { border-color: #f87171; box-shadow: 0 0 0 3px rgba(220, 38, 38, .08); }
+    .task-dropdown-item.active {
+        background: #f8fafc;
+        color: #334155;
+    }
+
+    .task-dropdown-item .task-check {
+        margin-left: auto;
+        color: #7c3aed;
+        font-size: 11px;
+    }
+
+    /* ===================================================================
+       MÀU CHO VALUE ĐANG CHỌN
+       Chỉ áp dụng cho nút đang hiển thị, tránh ảnh hưởng các item trong menu.
+       =================================================================== */
+    .priority-low .task-dropdown-toggle .task-status-dot,
+    .dot-low {
+        background: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
+    }
+    .priority-low .task-dropdown-toggle .task-meta-value { color: #0369a1; }
+
+    .priority-med .task-dropdown-toggle .task-status-dot,
+    .dot-medium {
+        background: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, .12);
+    }
+    .priority-med .task-dropdown-toggle .task-meta-value { color: #b45309; }
+
+    .priority-high .task-dropdown-toggle .task-status-dot,
+    .dot-high {
+        background: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
+    }
+    .priority-high .task-dropdown-toggle .task-meta-value { color: #b91c1c; }
+
+    .priority-default .task-dropdown-toggle .task-status-dot,
+    .dot-default {
+        background: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
+    }
+    .priority-default .task-dropdown-toggle .task-meta-value { color: #334155; }
+
+    /* Status colors cho value đang chọn */
+    .status-box-0 .task-dropdown-toggle .task-status-dot,
+    .status-default .task-dropdown-toggle .task-status-dot,
+    .dot-status-0 {
+        background: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
+    }
+    .status-box-0 .task-dropdown-toggle .task-meta-value,
+    .status-default .task-dropdown-toggle .task-meta-value { color: #475569; }
+
+    .status-box-1 .task-dropdown-toggle .task-status-dot,
+    .status-running .task-dropdown-toggle .task-status-dot,
+    .dot-status-1 {
+        background: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
+    }
+    .status-box-1 .task-dropdown-toggle .task-meta-value,
+    .status-running .task-dropdown-toggle .task-meta-value { color: #1d4ed8; }
+
+    .status-box-2 .task-dropdown-toggle .task-status-dot,
+    .status-done .task-dropdown-toggle .task-status-dot,
+    .dot-status-2 {
+        background: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, .12);
+    }
+    .status-box-2 .task-dropdown-toggle .task-meta-value,
+    .status-done .task-dropdown-toggle .task-meta-value { color: #15803d; }
+
+    .status-box-3 .task-dropdown-toggle .task-status-dot,
+    .status-error .task-dropdown-toggle .task-status-dot,
+    .dot-status-3 {
+        background: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
+    }
+    .status-box-3 .task-dropdown-toggle .task-meta-value,
+    .status-error .task-dropdown-toggle .task-meta-value { color: #b91c1c; }
+
+    /* ===================================================================
+       MÀU TỪNG OPTION TRONG MENU
+       Mỗi mức có màu riêng, item được chọn chỉ dùng nền rất nhạt tương ứng.
+       =================================================================== */
+    .task-dropdown-item.priority-option-low,
+    .task-dropdown-item.status-option-not-started {
+        --option-color: #3b82f6;
+        --option-text: #0369a1;
+        --option-bg: #eff6ff;
+    }
+
+    .task-dropdown-item.priority-option-medium {
+        --option-color: #f59e0b;
+        --option-text: #b45309;
+        --option-bg: #fffbeb;
+    }
+
+    .task-dropdown-item.priority-option-high {
+        --option-color: #ef4444;
+        --option-text: #b91c1c;
+        --option-bg: #fef2f2;
+    }
+
+    .task-dropdown-item.status-option-running {
+        --option-color: #3b82f6;
+        --option-text: #1d4ed8;
+        --option-bg: #eff6ff;
+    }
+
+    .task-dropdown-item.status-option-done {
+        --option-color: #22c55e;
+        --option-text: #15803d;
+        --option-bg: #f0fdf4;
+    }
+
+    .task-dropdown-item.status-option-other {
+        --option-color: #ef4444;
+        --option-text: #b91c1c;
+        --option-bg: #fef2f2;
+    }
+
+    .task-dropdown-item.priority-option-low .task-status-dot,
+    .task-dropdown-item.status-option-running .task-status-dot {
+        background: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, .12) !important;
+    }
+
+    .task-dropdown-item.priority-option-medium .task-status-dot {
+        background: #f59e0b !important;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, .12) !important;
+    }
+
+    .task-dropdown-item.priority-option-high .task-status-dot {
+        background: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12) !important;
+    }
+
+    .task-dropdown-item.status-option-not-started .task-status-dot {
+        background: #94a3b8 !important;
+        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12) !important;
+    }
+
+    .task-dropdown-item.status-option-done .task-status-dot {
+        background: #22c55e !important;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, .12) !important;
+    }
+
+    .task-dropdown-item.status-option-other .task-status-dot {
+        background: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12) !important;
+    }
+
+    .task-dropdown-item[class*="option-"] > span:not(.task-status-dot) {
+        color: #334155;
+    }
+
+    .task-dropdown-item[class*="option-"].active {
+        background: var(--option-bg, #f8fafc) !important;
+        color: var(--option-text, #334155) !important;
+    }
+
+    .task-dropdown-item[class*="option-"].active > span:not(.task-status-dot) {
+        color: var(--option-text, #334155) !important;
+        font-weight: 750;
+    }
+
+    .task-dropdown-item[class*="option-"].active .task-check {
+        color: var(--option-color, #7c3aed) !important;
+    }
+
+    .task-dropdown-item[class*="option-"]:hover {
+        background: var(--option-bg, #f8fafc);
+    }
+
+    .task-context-breadcrumb {
+        display: none;
+    }
+
+    #divRollUpNotice .badge { display: inline-flex; align-items: center; padding: 6px 9px !important; background: #fff7ed !important; border: 1px solid #fed7aa; border-radius: 7px; color: #9a3412 !important; font-size: 11px !important; font-weight: 700; }
+    #divRollUpNotice .badge i { color: #ea580c !important; }
+
+    @media (min-width: 768px) {
+        #<%= mdlEditTask.ClientID %> .modal-dialog {
+            width: 92% !important;
+            max-width: 800px !important;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .task-context-card { padding: 13px; }
+        .task-context-top { align-items: flex-start; flex-direction: column; gap: 12px; }
+        .task-context-phase { width: 100%; }
+        .task-meta-controls { grid-template-columns: 1fr; }
+        #rowUuTienTrangThai { width: 100%; }
+        .end-date-locked { min-height: 72px; }
+        .task-edit-date-row > [class*="col-"] { display: block; }
+        .task-edit-date-row .smart-field, .task-edit-date-row .end-date-locked { min-height: 72px; height: auto; }
+    }
+
     #divRollUpNotice .badge { display: inline-flex; align-items: center; padding: 6px 9px !important; background: #fff7ed !important; border: 1px solid #fed7aa; border-radius: 7px; color: #9a3412 !important; font-size: 11px !important; font-weight: 700; }
     #divRollUpNotice .badge i { color: #ea580c !important; }
     @media (min-width: 768px) { #<%= mdlEditTask.ClientID %> .modal-dialog { width: 92% !important; max-width: 760px !important; } }
@@ -185,27 +530,52 @@
                     <div class="p-3">
                         <asp:HiddenField ID="hfEditTaskId" runat="server" />
                         <div class="task-context-card mb-4" id="divContextCard" runat="server">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="text-muted fw-bold" style="font-size:11px;">MÃ CV:</span>
-                                    <asp:Label ID="lblEditMaCv" runat="server" CssClass="badge-code"></asp:Label>
-                                    <asp:TextBox ID="txtEditMaCv" runat="server" style="display:none;"></asp:TextBox>
-                                </div>
-                                <div class="d-flex gap-2 flex-wrap" id="rowUuTienTrangThai" runat="server">
-                                    <div class="header-dropdown-box priority-default" id="boxUuTien" runat="server">
-                                        <span class="header-dropdown-label label-priority">ƯU TIÊN:</span>
-                                        <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="form-select header-select" onchange="updatePriorityColor(this)"></asp:DropDownList>
+                            <div class="task-context-top">
+                                <div class="task-context-identity">
+                                    <div>
+                                        <span class="task-context-kicker">MÃ CÔNG VIỆC</span>
+                                        <asp:Label ID="lblEditMaCv" runat="server" CssClass="badge-code"></asp:Label>
+                                        <asp:TextBox ID="txtEditMaCv" runat="server" style="display:none;"></asp:TextBox>
                                     </div>
-                                    <div class="header-dropdown-box status-box-0" id="boxTrangThai" runat="server">
-                                        <span class="header-dropdown-label label-status">TRẠNG THÁI:</span>
-                                        <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="form-select header-select" onchange="updateStatusColor(this)"></asp:DropDownList>
+                                </div>
+                                <div class="task-context-phase" id="rowBreadcrumb" runat="server">
+                                    <i class="fas fa-layer-group"></i>
+                                    <div>
+                                        <span class="task-context-kicker">GIAI ĐOẠN</span>
+                                        <asp:Label ID="lblEditGiaiDoan" runat="server" CssClass="task-context-phase-value"></asp:Label>
+                                        <asp:TextBox ID="txtEditGiaiDoan" runat="server" style="display:none;"></asp:TextBox>
                                     </div>
                                 </div>
                             </div>
-                            <div class="task-context-breadcrumb" id="rowBreadcrumb" runat="server">
-                                <i class="fas fa-layer-group"></i>
-                                <asp:Label ID="lblEditGiaiDoan" runat="server" CssClass="text-dark fw-bold"></asp:Label>
-                                <asp:TextBox ID="txtEditGiaiDoan" runat="server" style="display:none;"></asp:TextBox>
+
+                            <div class="task-context-divider"></div>
+
+                            <div class="task-meta-controls" id="rowUuTienTrangThai" runat="server">
+                                <div class="task-meta-shell header-dropdown-box priority-default" id="boxUuTien" runat="server">
+                                    <div class="task-meta-label"><i class="fas fa-flag"></i> ƯU TIÊN</div>
+                                    <div class="task-dropdown priority-default" data-select-id="<%= ddlEditDoUuTien.ClientID %>">
+                                        <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="task-native-select" onchange="updatePriorityColor(this)"></asp:DropDownList>
+                                        <button type="button" class="task-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+                                            <span class="task-status-dot"></span>
+                                            <span class="task-meta-value">Đang tải...</span>
+                                            <i class="fas fa-chevron-down task-dropdown-chevron"></i>
+                                        </button>
+                                        <div class="task-dropdown-menu" role="listbox"></div>
+                                    </div>
+                                </div>
+
+                                <div class="task-meta-shell header-dropdown-box status-box-0" id="boxTrangThai" runat="server">
+                                    <div class="task-meta-label"><i class="fas fa-check-circle"></i> TRẠNG THÁI</div>
+                                    <div class="task-dropdown status-default" data-select-id="<%= ddlEditTrangThai.ClientID %>">
+                                        <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="task-native-select" onchange="updateStatusColor(this)"></asp:DropDownList>
+                                        <button type="button" class="task-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
+                                            <span class="task-status-dot"></span>
+                                            <span class="task-meta-value">Đang tải...</span>
+                                            <i class="fas fa-chevron-down task-dropdown-chevron"></i>
+                                        </button>
+                                        <div class="task-dropdown-menu" role="listbox"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
@@ -381,26 +751,211 @@
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
 <script type="text/javascript">
+    function closeAllTaskDropdowns(exceptDropdown) {
+        $('.task-dropdown.open').each(function () {
+            if (!exceptDropdown || this !== exceptDropdown) {
+                $(this).removeClass('open');
+                $(this).find('.task-dropdown-toggle').attr('aria-expanded', 'false');
+            }
+        });
+    }
+
+    function getPriorityClass(text) {
+        text = (text || '').toLowerCase();
+        if (text.indexOf('cao') > -1) return 'priority-high';
+        if (text.indexOf('trung bình') > -1) return 'priority-med';
+        if (text.indexOf('thấp') > -1) return 'priority-low';
+        return 'priority-default';
+    }
+
+    function getStatusClass(text, value) {
+        text = (text || '').toLowerCase();
+        if (text.indexOf('hoàn thành') > -1) return 'status-done';
+        if (text.indexOf('đang thực hiện') > -1) return 'status-running';
+        if (value === '3') return 'status-error';
+        if (value === '2') return 'status-done';
+        if (value === '1') return 'status-running';
+        return 'status-default';
+    }
+
+    function getPriorityDotClass(text) {
+        return getPriorityClass(text)
+            .replace('priority-med', 'dot-medium')
+            .replace('priority-low', 'dot-low')
+            .replace('priority-high', 'dot-high')
+            .replace('priority-default', 'dot-default');
+    }
+
+    function getStatusDotClass(text, value) {
+        var cls = getStatusClass(text, value);
+        if (cls === 'status-running') return 'dot-status-1';
+        if (cls === 'status-done') return 'dot-status-2';
+        if (cls === 'status-error') return 'dot-status-3';
+        return 'dot-status-0';
+    }
+
+    function getPriorityOptionClass(text) {
+        text = (text || '').toLowerCase();
+        if (text.indexOf('cao') > -1) return 'priority-option-high';
+        if (text.indexOf('trung bình') > -1) return 'priority-option-medium';
+        if (text.indexOf('thấp') > -1) return 'priority-option-low';
+        return 'priority-option-low';
+    }
+
+    function getStatusOptionClass(text, value) {
+        text = (text || '').toLowerCase();
+        if (text.indexOf('chưa bắt đầu') > -1 || text.indexOf('chua bat dau') > -1) return 'status-option-not-started';
+        if (text.indexOf('đang thực hiện') > -1 || text.indexOf('dang thuc hien') > -1) return 'status-option-running';
+        if (text.indexOf('hoàn thành') > -1 || text.indexOf('hoan thanh') > -1) return 'status-option-done';
+        if (value === '1') return 'status-option-running';
+        if (value === '2') return 'status-option-done';
+        return 'status-option-other';
+    }
+
+    function syncTaskDropdown(selectElement) {
+        if (!selectElement) return;
+
+        var $select = $(selectElement);
+        var $dropdown = $('.task-dropdown[data-select-id="' + selectElement.id + '"]');
+        if (!$dropdown.length) return;
+
+        var value = $select.val();
+        var $selectedOption = $select.find('option:selected');
+        var text = $selectedOption.text() || 'Chưa chọn';
+        var isPriority = $select.attr('id') === '<%= ddlEditDoUuTien.ClientID %>';
+        var valueClass = isPriority ? getPriorityClass(text) : getStatusClass(text, value);
+        var dotClass = isPriority ? getPriorityDotClass(text) : getStatusDotClass(text, value);
+        var menuHtml = '';
+
+        $select.find('option').each(function () {
+            var optionText = $(this).text().trim();
+            var optionValue = $(this).val();
+            var optionSelected = this.selected;
+            var optionDotClass = isPriority
+                ? getPriorityDotClass(optionText)
+                : getStatusDotClass(optionText, optionValue);
+            var optionTypeClass = isPriority
+                ? getPriorityOptionClass(optionText)
+                : getStatusOptionClass(optionText, optionValue);
+
+            menuHtml += '<div class="task-dropdown-item ' + optionTypeClass + (optionSelected ? ' active' : '') + '" role="option" aria-selected="' + optionSelected + '" data-value="' + $('<div/>').text(optionValue).html() + '">';
+            menuHtml += '<span class="task-status-dot ' + optionDotClass + '"></span>';
+            menuHtml += '<span>' + $('<div/>').text(optionText).html() + '</span>';
+            if (optionSelected) {
+                menuHtml += '<i class="fas fa-check task-check"></i>';
+            }
+            menuHtml += '</div>';
+        });
+
+        var $shell = $dropdown.closest('.task-meta-shell');
+        $shell.removeClass('priority-default priority-low priority-med priority-high status-box-0 status-box-1 status-box-2 status-box-3 status-default status-running status-done status-error');
+        $shell.addClass(valueClass);
+
+        $dropdown.removeClass('priority-default priority-low priority-med priority-high status-box-0 status-box-1 status-box-2 status-box-3 status-default status-running status-done status-error');
+        $dropdown.addClass(valueClass);
+
+        $dropdown.find('.task-meta-value').text(text);
+        $dropdown.find('.task-status-dot').removeClass('dot-low dot-medium dot-high dot-default dot-status-0 dot-status-1 dot-status-2 dot-status-3').addClass(dotClass);
+        $dropdown.find('.task-dropdown-menu').html(menuHtml);
+
+        var $toggle = $dropdown.find('.task-dropdown-toggle');
+        $toggle.prop('disabled', $select.prop('disabled'));
+        $toggle.attr('aria-disabled', $select.prop('disabled') ? 'true' : 'false');
+    }
+
+    function initTaskHeaderDropdown(selectElement) {
+        if (!selectElement) return;
+        syncTaskDropdown(selectElement);
+    }
+
+    function initAllTaskHeaderDropdowns() {
+        var prioritySelect = document.getElementById('<%= ddlEditDoUuTien.ClientID %>');
+        var statusSelect = document.getElementById('<%= ddlEditTrangThai.ClientID %>');
+        initTaskHeaderDropdown(prioritySelect);
+        initTaskHeaderDropdown(statusSelect);
+    }
+
     function updateStatusColor(selectElement) {
-        var box = $(selectElement).closest('.header-dropdown-box');
-        var val = $(selectElement).val();
-        box.removeClass('status-box-0 status-box-1 status-box-2 status-box-3');
-        box.addClass('status-box-' + val);
+        syncTaskDropdown(selectElement);
     }
 
     function updatePriorityColor(selectElement) {
-        var box = $(selectElement).closest('.header-dropdown-box');
-        var text = $(selectElement).find("option:selected").text().toLowerCase();
-        box.removeClass('priority-default priority-low priority-med priority-high');
-        if (text.indexOf('cao') > -1) {
-            box.addClass('priority-high');
-        } else if (text.indexOf('trung bình') > -1) {
-            box.addClass('priority-med');
-        } else if (text.indexOf('thấp') > -1) {
-            box.addClass('priority-low');
-        } else {
-            box.addClass('priority-default');
+        syncTaskDropdown(selectElement);
+    }
+
+    $(document).off('click.taskHeaderToggle').on('click.taskHeaderToggle', '.task-dropdown-toggle', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var dropdown = $(this).closest('.task-dropdown')[0];
+        if (!dropdown || $(this).prop('disabled')) return;
+
+        var isOpen = $(dropdown).hasClass('open');
+        closeAllTaskDropdowns(dropdown);
+
+        if (!isOpen) {
+            $(dropdown).addClass('open');
+            $(this).attr('aria-expanded', 'true');
+
+            var menu = $(dropdown).find('.task-dropdown-menu')[0];
+            if (menu) {
+                $(menu).removeClass('drop-up');
+                var rect = dropdown.getBoundingClientRect();
+                var estimatedMenuHeight = Math.min(menu.scrollHeight || 180, 230);
+                var spaceBelow = window.innerHeight - rect.bottom;
+                if (spaceBelow < estimatedMenuHeight + 18 && rect.top > estimatedMenuHeight + 18) {
+                    $(menu).addClass('drop-up');
+                }
+            }
         }
+    });
+
+    $(document).off('click.taskHeaderItem').on('click.taskHeaderItem', '.task-dropdown-item', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var $item = $(this);
+        var $dropdown = $item.closest('.task-dropdown');
+        var selectId = $dropdown.attr('data-select-id');
+        var select = document.getElementById(selectId);
+        var value = $item.attr('data-value');
+
+        if (!select) return;
+
+        select.value = value;
+        $(select).trigger('change');
+
+        $dropdown.removeClass('open');
+        $dropdown.find('.task-dropdown-toggle').attr('aria-expanded', 'false');
+    });
+
+    $(document).off('click.taskHeaderOutside').on('click.taskHeaderOutside', function () {
+        closeAllTaskDropdowns();
+    });
+
+    $(document).off('keydown.taskHeaderEscape').on('keydown.taskHeaderEscape', function (e) {
+        if (e.key === 'Escape') {
+            closeAllTaskDropdowns();
+        }
+    });
+
+    $(document).off('change.taskHeaderSync').on('change.taskHeaderSync', '.task-native-select', function () {
+        syncTaskDropdown(this);
+    });
+
+    $(window).off('resize.taskHeader').on('resize.taskHeader', function () {
+        closeAllTaskDropdowns();
+    });
+
+    $(function () {
+        initAllTaskHeaderDropdowns();
+    });
+
+    if (window.Sys && Sys.Application) {
+        Sys.Application.add_load(function () {
+            closeAllTaskDropdowns();
+            initAllTaskHeaderDropdowns();
+        });
     }
 
     $(document).on('change keyup', '#<%= txtEditNgayBatDau.ClientID %>, #<%= txtEditThoiHan.ClientID %>', function () {

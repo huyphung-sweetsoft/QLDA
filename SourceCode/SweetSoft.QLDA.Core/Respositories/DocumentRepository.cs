@@ -2989,6 +2989,7 @@ string configuredMethod = Convert.ToString(
                         g.EmailNguoiNhan,
                         g.KenhGui,
                         g.TrangThai,
+                        g.NgayGui,
                         g.HanPhanHoi,
                         g.GhiChu
                     FROM TblGuiNhanKhachHang g

@@ -16,7 +16,7 @@
                         ValueIsOfTypeGUID="False"
                         SearchPlaceholder="Tìm năm..."
                         NoResultsText="Không tìm thấy"
-                        CssClass="border-radius me-2" 
+                        CssClass="border-top-left-radius-1 border-bottom-left-radius-1 border-top-right-radius-1 border-bottom-right-radius-1"
                         OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                     </SweetSoft:BootstrapDropdown>
                 </asp:Panel>

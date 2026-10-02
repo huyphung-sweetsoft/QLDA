@@ -96,6 +96,33 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.TextBox txtEditMaCv;
 
         /// <summary>
+        /// rowBreadcrumb control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl rowBreadcrumb;
+
+        /// <summary>
+        /// lblEditGiaiDoan control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEditGiaiDoan;
+
+        /// <summary>
+        /// txtEditGiaiDoan control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEditGiaiDoan;
+
+        /// <summary>
         /// rowUuTienTrangThai control.
         /// </summary>
         /// <remarks>
@@ -139,33 +166,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlEditTrangThai;
-
-        /// <summary>
-        /// rowBreadcrumb control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl rowBreadcrumb;
-
-        /// <summary>
-        /// lblEditGiaiDoan control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEditGiaiDoan;
-
-        /// <summary>
-        /// txtEditGiaiDoan control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditGiaiDoan;
 
         /// <summary>
         /// txtEditTenCv control.
