@@ -339,6 +339,11 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetDayTypeText(ResourceDailyLoad day)
         {
+            if (day.IsWeekend)
+            {
+                return GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_WEEKEND);
+            }
+
             if (day.IsHoliday)
             {
                 return string.Format(
@@ -348,11 +353,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                         : day.HolidayName);
             }
 
-            if (day.IsWeekend)
-            {
-                return GetResourceText(BackEndResourceKeys.DASHBOARD_RESOURCE_WEEKEND);
-            }
-
             return GetResourceText(day.IsWorkingDay
                 ? BackEndResourceKeys.DASHBOARD_WORKING_DAY
                 : BackEndResourceKeys.DASHBOARD_NON_WORKING_DAY);
@@ -360,11 +360,13 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
 
         protected string GetDayTypeCss(ResourceDailyLoad day)
         {
-            return day.IsHoliday
-                ? "resource-day-holiday"
-                : day.IsWeekend || !day.IsWorkingDay
-                    ? "resource-day-non-working"
-                    : "resource-day-working";
+            return day.IsWeekend
+                ? "resource-day-non-working"
+                : day.IsHoliday
+                    ? "resource-day-holiday"
+                    : !day.IsWorkingDay
+                        ? "resource-day-non-working"
+                        : "resource-day-working";
         }
 
         protected string GetDayLoadText(ResourceDailyLoad day)

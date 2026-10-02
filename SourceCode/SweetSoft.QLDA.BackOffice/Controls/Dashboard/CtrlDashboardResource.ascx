@@ -36,7 +36,7 @@
                 </div>
                 <% } %>
 
-                <div class="col-7 col-md-3 col-xl-2 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
+                <div class="d-none col-7 col-md-3 col-xl-2 <%= IsProjectDashboard ? "ms-auto" : string.Empty %>">
                     <label class="form-label mb-1 text-nowrap <%= IsProjectDashboard ? "d-none" : string.Empty %>"><%= GetResourceText(BackEndResourceKeys.DASHBOARD_DISPLAY_RANGE) %></label>
                     <SweetSoft:ExtraDropdown
                         ID="ddlWeekCount"
@@ -92,15 +92,7 @@
             ? string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_MONTH_KPI_TITLE), Model.Months.First().StartDate.ToString("MM/yyyy"))
             : GetResourceText(BackEndResourceKeys.DASHBOARD_WEEKLY_RESOURCE_HEATMAP) + " · " + Model.AnchorWeekStart.ToString("dd/MM") + "–" + Model.AnchorWeekEnd.ToString("dd/MM/yyyy") %>
         </h5>
-        <button type="button" class="btn btn-link btn-sm resource-help-toggle" data-bs-toggle="collapse" data-bs-target="#resourceLoadHelp" aria-expanded="false" aria-controls="resourceLoadHelp">
-            <i class="bx bx-info-circle" aria-hidden="true"></i> <%= GetResourceText(BackEndResourceKeys.DASHBOARD_WEEKLY_CALCULATION_TITLE) %>
-        </button>
     </div>
-    <div id="resourceLoadHelp" class="collapse mb-3"><div class="resource-method-note rounded p-2 small">
-        <%= GetResourceText(IsMonthlyView
-            ? BackEndResourceKeys.DASHBOARD_MONTHLY_CALCULATION_DESC
-            : BackEndResourceKeys.DASHBOARD_WEEKLY_CALCULATION_DESC) %>
-    </div></div>
     <div class="row g-3 mb-3 align-items-stretch resource-insights-grid <%= IsMonthlyView ? string.Empty : "resource-insights-grid-weekly" %>">
         <div class="<%= IsMonthlyView ? "col-12" : "col-12 col-xl-5" %> d-flex flex-column">
             <div class="card border-0 shadow-sm h-100 resource-load-distribution-card">
@@ -254,13 +246,15 @@
                             <td class="resource-load-cell <%= dayInfo.IsToday ? "resource-today-column" : string.Empty %>">
                                 <button
                                     type="button"
-                                    class="resource-load-button resource-open-day <%= GetDayLoadCss(load) %>"
+                                    class="resource-load-button resource-open-day <%= load.IsWeekend ? "resource-load-weekend" : GetDayLoadCss(load) %>"
                                     data-resource-person="<%= employee.EmployeeId %>"
                                     data-resource-day="<%= load.Date.ToString("yyyy-MM-dd") %>"
-                                    aria-label="<%: employee.DisplayName + " · " + load.Date.ToString("dd/MM/yyyy") + " · " + GetDayTypeText(load) + " · " + load.Tasks.Count + " " + GetTaskCountStatusText(load.Tasks.Count) %>">
+                                    aria-label="<%: employee.DisplayName + " · " + load.Date.ToString("dd/MM/yyyy") + " · " + GetDayTypeText(load) + (load.IsWeekend ? string.Empty : " · " + load.Tasks.Count + " " + GetTaskCountStatusText(load.Tasks.Count)) %>">
                                     <span class="resource-day-type <%= GetDayTypeCss(load) %>"><%: GetDayTypeText(load) %></span>
+                                    <% if (!load.IsWeekend) { %>
                                     <span class="resource-day-status"><%: GetTaskCountStatusText(load.Tasks.Count) %></span>
                                     <span class="resource-day-task-count"><%: string.Format(GetResourceText(BackEndResourceKeys.DASHBOARD_TASK_COUNT), load.Tasks.Count) %></span>
+                                    <% } %>
                                 </button>
                             </td>
                             <% } %>
