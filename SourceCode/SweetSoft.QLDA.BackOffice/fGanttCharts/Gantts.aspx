@@ -2,11 +2,21 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <%@ Register Src="~/fIssues/Controls/CtrlViewIssueDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewIssueDetail" %>
-
+<%@ Register Src="~/fTasks/Controls/CtrlViewTaskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewTaskDetail" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
+        /* CSS cho link tên công việc trong Popup */
+    .task-name-link {
+        color: #542e88 !important; /* Màu tím mặc định */
+        text-decoration: none !important;
+        font-weight: 500 !important; /* Bỏ in đậm (fw-bold), để mỏng vừa phải */
+        transition: color 0.15s ease;
+    }
+    .task-name-link:hover {
+        color: #3b82f6 !important; /* Đổi màu xanh dương khi di chuột vào */
+    }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
         .gantt { background: #fff; border: 1px solid #ccc; border-radius: 6px; animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 65vh; overflow: auto; position: relative; }
@@ -212,7 +222,11 @@
                                                 </div>
                                             </td>
                                             
-                                            <td><%# Eval("TenCongViec") %></td>
+                                            <td>
+                                                <a href="javascript:;" onclick="openTaskDetail('<%# Eval("IdCongViec") %>'); return false;" class="task-name-link">
+                                                    <%# Eval("TenCongViec") %>
+                                                </a>
+                                            </td>
                                             <td class="text-center fw-bold"><%# Convert.ToDateTime(Eval("NgayKetThuc")).ToString("dd/MM/yyyy") %></td>
                                             <td class="text-center">
                                                 <span class="badge <%# GetTaskStatusBadge(Convert.ToInt32(Eval("TrangThai") != DBNull.Value ? Eval("TrangThai") : 0)) %>">
@@ -283,14 +297,33 @@
     </asp:UpdatePanel>
 
     <SweetSoft:CtrlViewIssueDetail runat="server" ID="CtrlViewIssueDetail1" />
+    <asp:UpdatePanel ID="upViewTaskTrigger" runat="server" UpdateMode="Conditional">
+        <ContentTemplate>
+            <asp:HiddenField ID="hdfTaskIdToView" runat="server" />
+            <asp:Button ID="btnTriggerViewTask" runat="server" CssClass="d-none" OnClick="btnTriggerViewTask_Click" />
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <SweetSoft:CtrlViewTaskDetail runat="server" ID="CtrlViewTaskDetail1" />
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script>
-        var shouldReopenTaskInfo = false;
+var shouldReopenTaskInfo = false;
+        function openTaskDetail(taskId) {
+            shouldReopenTaskInfo = true;
 
+            // Ép Bootstrap TẮT Popup 1 ngay lập tức
+            $('#<%= modalIssues.ClientID %>').modal('hide');
+
+            // Chờ 350ms cho hiệu ứng tắt xong xuôi rồi gọi Server bật Popup Task
+            setTimeout(function() {
+                document.getElementById('<%= hdfTaskIdToView.ClientID %>').value = taskId;
+                document.getElementById('<%= btnTriggerViewTask.ClientID %>').click();
+                    }, 350);
+        }
         function openIssueDetail(issueId) {
             shouldReopenTaskInfo = true;
             
@@ -313,13 +346,12 @@
             $(document).on('hidden.bs.modal.ganttReopen', '.modal', function (e) {
                 // Ta soi xem: Nếu cái Modal vừa bị đóng là thằng Popup 2 (CtrlViewIssueDetail) 
                 // VÀ cờ shouldReopenTaskInfo đang bật
-                if (e.target.id.indexOf('mdlIssueView') !== -1) {
+                if (e.target.id.indexOf('mdlIssueView') !== -1 || e.target.id.indexOf('mdlTaskView') !== -1) {
                     if (shouldReopenTaskInfo) {
                         shouldReopenTaskInfo = false;
-                        
-                        // Thì ta ra lệnh: Bấm lại nút Load để bung Popup 1 lên như cũ!
+
                         var btnLoad = document.getElementById('<%= btnLoadIssues.ClientID %>');
-                        if(btnLoad) btnLoad.click();
+                        if (btnLoad) btnLoad.click();
                     }
                 }
             });

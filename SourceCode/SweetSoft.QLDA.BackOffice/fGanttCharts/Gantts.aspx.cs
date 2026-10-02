@@ -254,7 +254,15 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
                 CtrlViewIssueDetail1.OpenModal(issueId);
             }
         }
-
+        // HÀM NÀY SẼ CHỊU TRÁCH NHIỆM BẬT POPUP XEM CHI TIẾT CÔNG VIỆC LÊN
+        protected void btnTriggerViewTask_Click(object sender, EventArgs e)
+        {
+            Guid taskId = Guid.Empty;
+            if (Guid.TryParse(hdfTaskIdToView.Value, out taskId))
+            {
+                CtrlViewTaskDetail1.OpenModal(taskId);
+            }
+        }
         #region Helpers dùng cho file ASPX
 
         protected int GetTaskLevel(object maCvObj)

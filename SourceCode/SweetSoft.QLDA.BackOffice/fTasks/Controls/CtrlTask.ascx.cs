@@ -83,9 +83,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             int overdueCount = 0;
             string searchValue = txtSearchSingle.Text.Trim();
             (dtTasks, _dictTaskCodes, overdueCount) = TaskManager.Instance.GetDictTasksAndCountOverdue(this.ProjectId, searchValue, IsPM || IsAdministrator);
-            // =========================================================
-            // REMINDER: lấy số reminder Pending của từng task
-            // =========================================================
             if (dtTasks != null && dtTasks.Rows.Count > 0)
             {
                 if (!dtTasks.Columns.Contains("ReminderCount"))
@@ -102,27 +99,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         NhacViecLichCongViecManager.Instance.GetPendingTaskSummary(
                             this.ProjectId,
                             currentUserId);
-
                     if (reminderSummary != null && reminderSummary.Rows.Count > 0)
                     {
                         Dictionary<Guid, int> reminderCounts =
                             new Dictionary<Guid, int>();
-
                         foreach (DataRow reminderRow in reminderSummary.Rows)
                         {
                             if (!Guid.TryParse(
                                     reminderRow["IdCongViec"]?.ToString(),
                                     out Guid taskId))
                                 continue;
-
                             int count = 0;
-
                             if (reminderRow["ReminderCount"] != DBNull.Value)
                                 count = Convert.ToInt32(reminderRow["ReminderCount"]);
-
                             reminderCounts[taskId] = count;
                         }
-
                         foreach (DataRow taskRow in dtTasks.Rows)
                         {
                             if (!Guid.TryParse(

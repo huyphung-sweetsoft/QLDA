@@ -175,5 +175,41 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fIssues.Controls.CtrlViewIssueDetail CtrlViewIssueDetail1;
+
+        /// <summary>
+        /// upViewTaskTrigger control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upViewTaskTrigger;
+
+        /// <summary>
+        /// hdfTaskIdToView control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfTaskIdToView;
+
+        /// <summary>
+        /// btnTriggerViewTask control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnTriggerViewTask;
+
+        /// <summary>
+        /// CtrlViewTaskDetail1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlViewTaskDetail CtrlViewTaskDetail1;
     }
 }

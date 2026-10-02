@@ -47,7 +47,30 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 }
             }
 
-            lblStatus.Text = GetTaskStatusText(task.TrangThai);
+            // =========================================================
+            // CẬP NHẬT TRẠNG THÁI + ĐỔI MÀU GIAO DIỆN BẰNG JAVASCRIPT
+            // =========================================================
+            string bgColor, borderColor, textColor;
+            lblStatus.Text = GetTaskStatusText(task.TrangThai, out bgColor, out borderColor, out textColor);
+
+            string jsColor = $@"
+                setTimeout(function() {{
+                    var lbl = document.getElementById('{lblStatus.ClientID}');
+                    if (lbl) {{
+                        var box = lbl.closest('.task-meta-item');
+                        if (box) {{
+                            box.style.backgroundColor = '{bgColor}';
+                            box.style.borderColor = '{borderColor}';
+                            
+                            // Ép nhãn 'TRẠNG THÁI' về màu xám đen mặc định
+                            var metaLabel = box.querySelector('.meta-label');
+                            if (metaLabel) metaLabel.style.color = '#475569';
+                        }}
+                        lbl.style.color = '{textColor}';
+                    }}
+                }}, 50);";
+            ScriptManager.RegisterStartupScript(this, GetType(), "ColorStatusBox", jsColor, true);
+            // =========================================================
 
             // Độ ưu tiên
             if (task.IdDoUuTien.HasValue)
@@ -123,13 +146,32 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             pnlNoAssignees.Visible = result.Count == 0;
         }
 
-        private string GetTaskStatusText(object statusObj)
+        private string GetTaskStatusText(object statusObj, out string bgColor, out string borderColor, out string textColor)
         {
-            if (statusObj == null || statusObj == DBNull.Value) return "Chưa bắt đầu";
+            if (statusObj == null || statusObj == DBNull.Value)
+            {
+                bgColor = "#f1f5f9"; borderColor = "#cbd5e1"; textColor = "#475569"; // Xám
+                return "Chưa bắt đầu";
+            }
             int status = Convert.ToInt32(statusObj);
-            if (status == 1) return "Đang làm";
-            if (status == 2) return "Hoàn thành";
-            if (status == 3) return "Hoàn thành (Trễ hạn)";
+            if (status == 1)
+            {
+                bgColor = "#e0f2fe"; borderColor = "#7dd3fc"; textColor = "#0369a1"; // Xanh biển
+                return "Đang thực hiện";
+            }
+            if (status == 2)
+            {
+                bgColor = "#dcfce7"; borderColor = "#86efac"; textColor = "#15803d"; // Xanh lá
+                return "Hoàn thành";
+            }
+            if (status == 3)
+            {
+                bgColor = "#dcfce7"; borderColor = "#86efac"; textColor = "#15803d"; // Khung xanh lá
+                // Trả về HTML: chữ "Hoàn thành" màu xanh lá (kế thừa), chữ "(Trễ hạn)" màu đỏ
+                return "Hoàn thành <span style='color: #dc2626; font-weight: bold;'>(Trễ hạn)</span>";
+            }
+
+            bgColor = "#f1f5f9"; borderColor = "#cbd5e1"; textColor = "#475569"; // Mặc định xám
             return "Chưa bắt đầu";
         }
 
