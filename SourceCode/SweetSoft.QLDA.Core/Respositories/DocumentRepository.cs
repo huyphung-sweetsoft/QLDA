@@ -392,7 +392,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         {
             return ExecuteDataTable(@"SELECT DISTINCT
                     u.UserId,
-                    ISNULL(u.DisplayName,u.UserName) AS DisplayName,
+                    COALESCE(NULLIF(u.DisplayName,N''),u.UserName) AS DisplayName,
                     CASE WHEN m.IdNhanVien IS NULL THEN 0 ELSE 1 END AS IsProjectMember,
                     CASE WHEN t.IdNhanVienPhuTrach=u.UserId THEN 1 ELSE 0 END AS IsResponsibleDefault,
                     CASE
@@ -479,14 +479,19 @@ namespace SweetSoft.QLDA.Core.Respositories
                 return Convert.ToBase64String(hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(values)));
         }
 
-        public void SaveGrants(Guid actor, Guid documentId, IEnumerable<DocumentGrant> grants, string expectedStamp)
+        public string SaveGrants(Guid actor, Guid documentId, IEnumerable<DocumentGrant> grants, string expectedStamp)
         {
             var items=grants.ToList();
+            var changes = new List<string>();
             if(items.Select(x=>x.UserId).Distinct().Count()!=items.Count) throw new InvalidOperationException("Nhân viên bị trùng.");
             using(var scope=new TransactionScope(TransactionScopeOption.Required,TimeSpan.FromMinutes(2))) {
                 ExecuteScalarInt("SELECT COUNT(*) FROM dbo.TblTaiLieu WITH(UPDLOCK,HOLDLOCK) WHERE IdTaiLieu=@Id",new Dictionary<string,object>{{"@Id",documentId}});
                 if(!CanAccess(actor,documentId,"Manage")) throw new UnauthorizedAccessException("Bạn không được cấp quyền hồ sơ này.");
                 if(GetGrantStamp(documentId)!=expectedStamp) throw new InvalidOperationException("Quyền đã thay đổi. Hãy đóng và mở lại popup.");
+                // Compare stored individual grants, not effective/default rights of the responsible employee.
+                var previous = ExecuteDataTable(@"SELECT UserId,CanView,CanUpdateInfo,CanManageFiles,CanSigning,
+                    CanCustomerDelivery,CanPhysicalStorage,CanUpdate,CanDelete FROM dbo.TblTaiLieuQuyen WHERE IdTaiLieu=@Id",
+                    new Dictionary<string,object>{{"@Id",documentId}}).AsEnumerable().ToDictionary(r => (Guid)r["UserId"]);
                 var members=GetGrantMembers(documentId, false)
                     .AsEnumerable()
                     .ToDictionary(r=>(Guid)r["UserId"]);
@@ -511,6 +516,20 @@ namespace SweetSoft.QLDA.Core.Respositories
                         || (item.CanPhysicalStorage&&!Convert.ToBoolean(member["MaxPhysicalStorage"]))
                         || (item.CanDelete&&!Convert.ToBoolean(member["MaxDelete"])))
                         throw new InvalidOperationException("Quyền cấp vượt quyền nhóm hiện tại. Hãy mở lại popup.");
+                    DataRow oldRow;
+                    previous.TryGetValue(item.UserId, out oldRow);
+                    var before = oldRow == null ? new DocumentGrant { UserId = item.UserId } : new DocumentGrant {
+                        UserId = item.UserId, CanView = Convert.ToBoolean(oldRow["CanView"]),
+                        CanUpdateInfo = Convert.ToBoolean(oldRow["CanUpdateInfo"]), CanManageFiles = Convert.ToBoolean(oldRow["CanManageFiles"]),
+                        CanSigning = Convert.ToBoolean(oldRow["CanSigning"]), CanCustomerDelivery = Convert.ToBoolean(oldRow["CanCustomerDelivery"]),
+                        CanPhysicalStorage = Convert.ToBoolean(oldRow["CanPhysicalStorage"]), CanUpdate = Convert.ToBoolean(oldRow["CanUpdate"]),
+                        CanDelete = Convert.ToBoolean(oldRow["CanDelete"])
+                    };
+                    item.CanUpdate = false; // The SQL below clears the obsolete broad update flag.
+                    string name = Convert.ToString(member["DisplayName"]);
+                    if (string.IsNullOrWhiteSpace(name)) name = "Tài khoản " + item.UserId;
+                    string change = DescribeGrantChanges(before, item, name);
+                    if (!string.IsNullOrEmpty(change)) changes.Add(change);
                     ExecuteNonQuery(@"UPDATE dbo.TblTaiLieuQuyen
                         SET CanView=@V,CanUpdateInfo=@I,CanManageFiles=@F,CanSigning=@S,
                             CanCustomerDelivery=@C,CanPhysicalStorage=@P,CanUpdate=0,
@@ -527,6 +546,24 @@ namespace SweetSoft.QLDA.Core.Respositories
                 }
                 scope.Complete();
             }
+            return string.Join(Environment.NewLine, changes);
+        }
+
+        private static string DescribeGrantChanges(DocumentGrant before, DocumentGrant after, string name)
+        {
+            var rights = new Dictionary<string, Func<DocumentGrant, bool>> {
+                { "xem hồ sơ", g => g.CanView }, { "chỉnh sửa thông tin chung", g => g.CanUpdateInfo },
+                { "quản lý file", g => g.CanManageFiles }, { "trình ký", g => g.CanSigning },
+                { "gửi khách", g => g.CanCustomerDelivery }, { "lưu bản cứng", g => g.CanPhysicalStorage },
+                { "chỉnh sửa (quyền cũ)", g => g.CanUpdate }, { "xóa hồ sơ", g => g.CanDelete }
+            };
+            var added = rights.Where(r => !r.Value(before) && r.Value(after)).Select(r => r.Key).ToList();
+            var removed = rights.Where(r => r.Value(before) && !r.Value(after)).Select(r => r.Key).ToList();
+            if (added.Count == 0 && removed.Count == 0) return string.Empty;
+            var parts = new List<string>();
+            if (added.Count > 0) parts.Add("thêm quyền " + string.Join(", ", added));
+            if (removed.Count > 0) parts.Add("bỏ quyền " + string.Join(", ", removed));
+            return name + ": " + string.Join("; ", parts) + ".";
         }
 
         public DataTable SearchDocuments(
@@ -3924,6 +3961,7 @@ string configuredMethod = Convert.ToString(
 
                 foreach (AuditLogDto auditLog in auditLogs)
                     AddDocumentAuditHistoryRow(history, auditLog);
+                NormalizeDocumentActivityFileNames(history, idTaiLieu);
             }
             catch (Exception exception)
             {
@@ -3935,6 +3973,51 @@ string configuredMethod = Convert.ToString(
             }
 
             return history;
+        }
+
+        private void NormalizeDocumentActivityFileNames(DataTable history, Guid documentId)
+        {
+            if (history.Rows.Count == 0) return;
+            // Include removed uploads so historical events keep their original names.
+            var files = new Select().From(TblUploadFile.Schema)
+                .Where(TblUploadFile.RefIdColumn).IsEqualTo(documentId)
+                .And(TblUploadFile.RefTypeColumn).IsEqualTo(FileUploadTypes.DocumentVersion.ToString())
+                .ExecuteTypedList<TblUploadFile>();
+            var names = files.ToDictionary(file => file.Id,
+                file => string.IsNullOrWhiteSpace(file.OriginalFileName) ? file.Name : file.OriginalFileName);
+            NormalizeDocumentActivityFileNames(history, names);
+        }
+
+        private static void NormalizeDocumentActivityFileNames(DataTable history, IDictionary<Guid, string> names)
+        {
+            Func<string, string> replaceIds = value => System.Text.RegularExpressions.Regex.Replace(
+                value, @"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b",
+                match => {
+                    string name;
+                    return names.TryGetValue(Guid.Parse(match.Value), out name) && !string.IsNullOrWhiteSpace(name)
+                        ? name : "File không còn thông tin";
+                });
+            foreach (DataRow row in history.Rows)
+            {
+                string changes = Convert.ToString(row["NoiDungThayDoi"]);
+                if (changes.StartsWith("Danh sách file: ", StringComparison.Ordinal))
+                    changes = replaceIds(changes);
+                else if (changes.StartsWith("File cũ: ", StringComparison.Ordinal))
+                {
+                    int separator = changes.IndexOf("; file mới: ", StringComparison.Ordinal);
+                    string oldFile = separator < 0 ? changes.Substring(9) : changes.Substring(9, separator - 9);
+                    string newFile = separator < 0 ? string.Empty : changes.Substring(separator + 12).Trim();
+                    changes = newFile.Length == 0 ? "File đã gỡ: " + replaceIds(oldFile)
+                        : "File trước: " + replaceIds(oldFile) + "; File mới: " + replaceIds(newFile);
+                }
+                else if (changes.StartsWith("Mốc nguồn: ", StringComparison.Ordinal))
+                {
+                    int fileIndex = changes.IndexOf("; File: ", StringComparison.Ordinal);
+                    string file = fileIndex < 0 ? string.Empty : changes.Substring(fileIndex + 8).Trim();
+                    changes = file.Length == 0 ? string.Empty : "File: " + replaceIds(file);
+                }
+                row["NoiDungThayDoi"] = changes;
+            }
         }
 
         public void InsertDocumentVersion(TblPhienBanTaiLieu item)
@@ -4038,7 +4121,8 @@ string configuredMethod = Convert.ToString(
                     "SELECT Id, Title, ReferenceId, TableName, RecordId, ActionType, Changes, UserId, ChangedBy, ChangedAt FROM dbo.[" + table + "] "
                     + "WHERE TableName='TblTaiLieu' AND RecordId=@DocumentId AND ChangedAt>=@FromUtc AND ChangedAt<=@ToUtc"));
                 var command = new QueryCommand(
-                    "SELECT * FROM (" + union + ") history ORDER BY ChangedAt DESC, Id DESC"
+                    "SELECT history.*, actor.UserName AS ResolvedUserName FROM (" + union
+                    + ") history LEFT JOIN dbo.aspnet_Users actor ON actor.UserId=history.UserId ORDER BY history.ChangedAt DESC, history.Id DESC"
                     + (take.HasValue ? " OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY" : ""), provider);
                 if (take.HasValue)
                 {
@@ -4062,7 +4146,8 @@ string configuredMethod = Convert.ToString(
                             ActionType = Convert.ToString(reader["ActionType"]),
                             Changes = Convert.ToString(reader["Changes"]),
                             UserId = reader["UserId"] as Guid?,
-                            ChangedBy = Convert.ToString(reader["ChangedBy"]),
+                            ChangedBy = string.IsNullOrWhiteSpace(Convert.ToString(reader["ResolvedUserName"]))
+                                ? Convert.ToString(reader["ChangedBy"]) : Convert.ToString(reader["ResolvedUserName"]),
                             ChangedAt = DateTime.SpecifyKind((DateTime)reader["ChangedAt"], DateTimeKind.Utc)
                         });
                     }

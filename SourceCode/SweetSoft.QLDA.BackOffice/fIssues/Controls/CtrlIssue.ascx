@@ -75,23 +75,82 @@
 </div>
 
 <SweetSoft:CtrlViewIssueDetail ID="CtrlViewIssueDetail1" runat="server" />
-
 <style>
     .issue-name-link { 
-        color: #542e88 !important; /* Màu tím đặc trưng chuẩn theo ảnh */
+        color: #542e88 !important; 
         font-size: 16px; 
-        font-weight: 500; /* Nét thanh vừa phải, không bị cục mịch */
+        font-weight: 500; 
         text-decoration: none !important; 
         transition: color 0.15s ease; 
     }
     
     .issue-name-link:hover { 
-        color: #3b82f6 !important; /* Vẫn giữ hiệu ứng hover màu xanh dương */
+        color: #3b82f6 !important; 
         text-decoration: none !important; 
     }
-    .issue-status-button { position: relative; display: inline-flex !important; align-items: center; justify-content: center; min-width: 115px; padding: 5px 10px !important; border: 1px solid #bfdbfe !important; border-radius: 999px !important; background: #eff6ff !important; color: #1d4ed8 !important; font-weight: 600; line-height: 1.3; text-decoration: none !important; transition: all .15s ease; overflow: hidden; }
-    .issue-status-button:hover { background: #16a34a !important; border-color: #15803d !important; color: transparent !important; box-shadow: 0 3px 8px rgba(22, 163, 74, .2); transform: translateY(-1px); }
-    .issue-status-button:hover::after { content: "✓  Đã xử lý"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; }
-    .issue-status-view-doing { display: inline-flex; align-items: center; justify-content: center; min-width: 105px; padding: 5px 10px; border: 1px solid #bfdbfe; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-weight: 600; line-height: 1.3; cursor: default; }
-    .issue-status-done { display: inline-flex; align-items: center; justify-content: center; min-width: 105px; padding: 5px 10px; border: 1px solid #86efac; border-radius: 999px; background: #dcfce7; color: #15803d; font-weight: 700; line-height: 1.3; cursor: default; }
+
+    /* --- DÙNG CHUNG CHO CẢ 3 NHÃN --- */
+    .issue-status-button,
+    .issue-status-view-doing,
+    .issue-status-done {
+        display: inline-flex !important; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 2px 6px !important; /* Đã giảm padding để nhãn gọn hơn */
+        border-radius: 999px !important; 
+        line-height: 1.3; 
+        font-size: 13px !important; 
+        min-width: 95px !important; /* Gắn cứng 1 chiều rộng chung để các nhãn bằng nhau */
+        box-sizing: border-box; /* Đảm bảo padding không làm phình kích thước */
+    }
+
+    /* --- TRẠNG THÁI: ĐANG XỬ LÝ --- */
+    .issue-status-button,
+    .issue-status-view-doing {
+        background: #eff6ff !important; 
+        border: 1px solid #bfdbfe !important; 
+        color: #1d4ed8 !important; 
+        font-weight: 600;
+    }
+
+    .issue-status-button {
+        position: relative; 
+        text-decoration: none !important; 
+        transition: all .15s ease; 
+        overflow: hidden; 
+    }
+
+    .issue-status-view-doing {
+        cursor: default; 
+    }
+
+    /* --- TRẠNG THÁI: ĐÃ XỬ LÝ --- */
+    .issue-status-done {
+        background: #dcfce7 !important; 
+        border: 1px solid #86efac !important; 
+        color: #15803d !important; 
+        font-weight: 700; 
+        cursor: default; 
+    }
+
+    /* --- HOVER CHO NÚT ĐANG XỬ LÝ --- */
+    .issue-status-button:hover { 
+        background: #16a34a !important; 
+        border-color: #15803d !important; 
+        color: transparent !important; 
+        box-shadow: 0 3px 8px rgba(22, 163, 74, .2); 
+        transform: translateY(-1px); 
+    }
+    
+    .issue-status-button:hover::after { 
+        content: "✓  Đã xử lý"; 
+        position: absolute; 
+        inset: 0; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        color: #fff; 
+        font-weight: 700; 
+        font-size: 13px !important;
+    }
 </style>

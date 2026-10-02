@@ -42,31 +42,13 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         protected global::System.Web.UI.WebControls.Label lblIssueName;
 
         /// <summary>
-        /// lblOrigin control.
+        /// ltrCreatedAvatar control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblOrigin;
-
-        /// <summary>
-        /// lblStatus control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblStatus;
-
-        /// <summary>
-        /// lblImpact control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblImpact;
+        protected global::System.Web.UI.WebControls.Literal ltrCreatedAvatar;
 
         /// <summary>
         /// lblCreatedBy control.
@@ -78,6 +60,15 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         protected global::System.Web.UI.WebControls.Label lblCreatedBy;
 
         /// <summary>
+        /// lblCreatedEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatedEmail;
+
+        /// <summary>
         /// lblCreatedDate control.
         /// </summary>
         /// <remarks>
@@ -85,6 +76,33 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblCreatedDate;
+
+        /// <summary>
+        /// lblOrigin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblOrigin;
+
+        /// <summary>
+        /// lblImpact control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblImpact;
+
+        /// <summary>
+        /// lblStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblStatus;
 
         /// <summary>
         /// ltrOriginTask control.
@@ -139,14 +157,5 @@ namespace SweetSoft.QLDA.BackOffice.fIssues.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal ltrPlan;
-
-        /// <summary>
-        /// btnCloseIssueView control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCloseIssueView;
     }
 }

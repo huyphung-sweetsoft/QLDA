@@ -284,8 +284,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                 var memUser = System.Web.Security.Membership.GetUser(item.UserName);
                 if (memUser != null)
                 {
-                    // Gắn cờ 'deleted' vào email để giải phóng email gốc thật sự
-                    memUser.Email = $"deleted_{id.ToString().Substring(0, 8)}@no-email.local";
+                    string originalEmail = memUser.Email;
+
+                    if (!string.IsNullOrWhiteSpace(originalEmail))
+                    {
+                        string deletedEmail = $"deleted_{item.UserName}_{originalEmail}";
+
+                        memUser.Email = deletedEmail;
+                    }
                     memUser.IsApproved = false; // Khóa luôn không cho đăng nhập
                     System.Web.Security.Membership.UpdateUser(memUser);
                 }

@@ -40,22 +40,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
             set => ViewState["ProjectId"] = value;
         }
 
-        protected bool IsPM
-        {
-            get
-            {
-                try
-                {
-                    Guid? pmId = DuAnManager.Instance.LayIdNhanVienQuanLy(this.ProjectId);
-                    return pmId.HasValue && pmId.Value == SweetContext.Current.UserId;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-        }
-
+        protected bool IsPM => this.CURRENT_PAGE.IsPM;
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
         protected bool IsDelete => this.CURRENT_PAGE.IsDelete;

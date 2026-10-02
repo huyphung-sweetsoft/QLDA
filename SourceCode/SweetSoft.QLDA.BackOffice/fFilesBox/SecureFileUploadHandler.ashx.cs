@@ -334,6 +334,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
         #endregion
 
         #region File Validation
+        public const int DocumentSigningResultMaxFileSizeBytes = 20 * 1024 * 1024;
+
         private UploadResult ValidateFile(HttpPostedFile file, string refType = null)
         {
             if (file == null || file.ContentLength == 0)
@@ -348,7 +350,8 @@ namespace SweetSoft.QLDA.BackOffice.fFilesBox
 
             // Validate file size
             bool meeting = refType == FileUploadTypes.MeetingAttachment.ToString();
-            long maxSize = meeting ? 100L * 1024 * 1024 : _config.MaxFileSize;
+            long maxSize = refType == "DocumentSigningResult" ? DocumentSigningResultMaxFileSizeBytes
+                : meeting ? 100L * 1024 * 1024 : _config.MaxFileSize;
             if (file.ContentLength > maxSize)
             {
                 return new UploadResult
