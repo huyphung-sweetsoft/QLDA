@@ -441,6 +441,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (fbSigningResult != null)
             {
                 fbSigningResult.IsMultiple = false;
+                fbSigningResult.MaxFileSizeBytes = SecureFileUploadHandler.DocumentSigningResultMaxFileSizeBytes;
                 fbSigningResult.AcceptType =
                     "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             }
