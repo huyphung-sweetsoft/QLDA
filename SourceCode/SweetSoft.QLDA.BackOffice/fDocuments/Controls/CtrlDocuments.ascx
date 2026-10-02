@@ -429,7 +429,7 @@
                     <asp:Panel runat="server" ID="pnlCreateProject" CssClass="col-lg-5 mb-3">
                         <label class="form-label">Dự án</label>
                         <SweetSoft:ExtraDropdown runat="server" ID="ddlCreateProject"
-                            ValueIsOfTypeGUID="true" SimpleInit="true" AlowClear="true" />
+                            ValueIsOfTypeGUID="true" SimpleInit="true" MinimumResultsForSearch="0" AlowClear="true" />
 
                         <asp:Panel runat="server" ID="pnlCreateUnavailable"
                             CssClass="border border-info rounded p-2 mt-2 mb-0" Visible="false">
@@ -492,6 +492,7 @@
                             Required="true"
                             ValueIsOfTypeGUID="true"
                             SimpleInit="true"
+                            MinimumResultsForSearch="0"
                             AutoPostBack="true"
                             OnSelectedIndexChanged="ddlLoaiTaiLieu_SelectedIndexChanged">
                         </SweetSoft:ExtraDropdown>
@@ -507,13 +508,14 @@
                             ID="ddlNguoiPhuTrach"
                             ValueIsOfTypeGUID="true"
                             SimpleInit="true"
+                            MinimumResultsForSearch="0"
                             AlowClear="true">
                         </SweetSoft:ExtraDropdown>
                     </div>
 
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Nơi lưu trữ bản cứng</label>
-                        <SweetSoft:ExtraDropdown runat="server" ID="ddlDocumentStorage" SimpleInit="true" Placeholder="Chưa xác định" />
+                        <SweetSoft:ExtraDropdown runat="server" ID="ddlDocumentStorage" SimpleInit="true" MinimumResultsForSearch="0" Placeholder="Chưa xác định" />
                     </div>
                     <SweetSoft:ExtraTextBox runat="server" ID="txtMoTa" Visible="false" TextMode="MultiLine" MaxLength="1000" />
                     <div class="col-lg-8 mb-3 document-content-editor">

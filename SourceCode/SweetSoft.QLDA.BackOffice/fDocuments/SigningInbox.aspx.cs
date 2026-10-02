@@ -693,7 +693,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         protected string FormatDate(object value)
         {
             return value == DBNull.Value || value == null
-                ? "—" : ConvertDateTimeToString(value);
+                ? "—" : SweetSoft.QLDA.Controls.Helpers.DateTimeHelper.ConvertUTCToSettingTime(Convert.ToDateTime(value))
+                    .ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

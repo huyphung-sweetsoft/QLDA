@@ -222,16 +222,25 @@ namespace SweetSoft.QLDA.Core.Managers
 
     public partial class DocumentManager : BaseManager
     {
-        private static readonly Lazy<DocumentManager> _instance =
-            new Lazy<DocumentManager>(() => new DocumentManager());
-
         private readonly DocumentRepository _repository;
         private readonly DocumentTypeRepository _documentTypeRepository;
         private readonly DocumentTemplateRepository _documentTemplateRepository;
 
         public static DocumentManager Instance
         {
-            get { return _instance.Value; }
+            get
+            {
+                // Never retain a previous request's account/session in a singleton.
+                var request = System.Web.HttpContext.Current;
+                if (request == null) return new DocumentManager();
+                var manager = request.Items[typeof(DocumentManager)] as DocumentManager;
+                if (manager == null)
+                {
+                    manager = new DocumentManager();
+                    request.Items[typeof(DocumentManager)] = manager;
+                }
+                return manager;
+            }
         }
 
         public DocumentManager(IAppContext applicationContext = null)
@@ -430,9 +439,10 @@ namespace SweetSoft.QLDA.Core.Managers
         public void SaveDocumentGrants(Guid id, IEnumerable<DocumentGrant> grants, string expectedStamp)
         {
             var list=grants.ToList();
-            _repository.SaveGrants(SweetContext.Current.UserId,id,list,expectedStamp);
-            WriteDocumentAudit(id,DocumentActivityTypeKeys.UpdateDocument,DocumentActivityReferenceKeys.Document,id,
-                Newtonsoft.Json.JsonConvert.SerializeObject(list),"Đã cập nhật quyền truy cập hồ sơ.");
+            string changes = _repository.SaveGrants(GetCurrentUserId(),id,list,expectedStamp);
+            if (!string.IsNullOrWhiteSpace(changes))
+                WriteDocumentAudit(id,DocumentActivityTypeKeys.UpdateDocument,DocumentActivityReferenceKeys.Document,id,
+                    changes,"Đã cập nhật quyền truy cập hồ sơ.");
         }
 
         /// <summary>

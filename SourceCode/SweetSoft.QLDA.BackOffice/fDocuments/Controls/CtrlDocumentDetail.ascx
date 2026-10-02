@@ -9,6 +9,12 @@
     TagName="FilesBox" %>
 
 <style>
+    .document-workspace-pager td { padding: 1rem .5rem !important; background: #fff; }
+    .document-workspace-pager__controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .4rem; }
+    .document-workspace-pager__controls .btn { min-width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: .35rem .65rem; }
+    .document-workspace-pager__controls .aspNetDisabled { opacity: .4; pointer-events: none; }
+    .document-workspace-pager__current { min-width: 80px; text-align: center; background: var(--document-purple); color: white; border-radius: .25rem; padding: .5rem .7rem; font-size: .875rem; }
+    .document-workspace-selection { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: .5rem .75rem; margin-bottom: .75rem; background: var(--document-purple-soft); border-radius: .35rem; }
     .document-file-set .sorting-control,
     .document-file-set .sort-item,
     .document-file-set .file-actions { display: none !important; }
@@ -513,13 +519,27 @@
                 <asp:Button runat="server" ID="btnWorkspaceFilter" Text="Tìm kiếm" CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="WorkspaceFilterChanged" />
             </div>
         </div>
+        <div class="document-workspace-selection">
+            <asp:Label runat="server" ID="lblWorkspaceSelection" CssClass="text-primary small" aria-live="polite" />
+            <asp:LinkButton runat="server" ID="btnClearWorkspaceSelection" Text="Bỏ chọn tất cả" CssClass="btn btn-sm btn-outline-primary" CausesValidation="false" OnClick="btnClearWorkspaceSelection_Click" />
+            <span class="text-muted small">Lựa chọn được giữ khi đổi trang hoặc lọc.</span>
+        </div>
         <asp:GridView runat="server" ID="grdWorkspace" AutoGenerateColumns="false" DataKeyNames="IdFile,IdChuoiFile"
             GridLines="None" CssClass="table table-bordered table-hover w-100" AllowPaging="true" PageSize="10"
             OnPageIndexChanging="grdWorkspace_PageIndexChanging" OnRowCommand="grdWorkspace_RowCommand"
-            EmptyDataText="Chưa có file phù hợp." ShowHeaderWhenEmpty="true" PagerStyle-CssClass="text-center">
+            EmptyDataText="Chưa có file phù hợp." ShowHeaderWhenEmpty="true" PagerStyle-CssClass="document-workspace-pager">
+            <PagerTemplate>
+                <nav class="document-workspace-pager__controls" aria-label="Phân trang file hồ sơ">
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="First" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang đầu" aria-label="Trang đầu" Enabled='<%# grdWorkspace.PageIndex > 0 %>'><i class="fas fa-angle-double-left" aria-hidden="true"></i></asp:LinkButton>
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="Prev" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang trước" aria-label="Trang trước" Enabled='<%# grdWorkspace.PageIndex > 0 %>'><i class="fas fa-angle-left" aria-hidden="true"></i></asp:LinkButton>
+                    <span class="document-workspace-pager__current" aria-current="page">Trang <%# grdWorkspace.PageIndex + 1 %> / <%# grdWorkspace.PageCount %></span>
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="Next" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang sau" aria-label="Trang sau" Enabled='<%# grdWorkspace.PageIndex + 1 < grdWorkspace.PageCount %>'><i class="fas fa-angle-right" aria-hidden="true"></i></asp:LinkButton>
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="Last" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang cuối" aria-label="Trang cuối" Enabled='<%# grdWorkspace.PageIndex + 1 < grdWorkspace.PageCount %>'><i class="fas fa-angle-double-right" aria-hidden="true"></i></asp:LinkButton>
+                </nav>
+            </PagerTemplate>
             <Columns>
                 <asp:TemplateField HeaderStyle-Width="40px">
-                    <HeaderTemplate><input type="checkbox" aria-label="Chọn các file trên trang" onclick="var selected=this.checked;this.closest('table').querySelectorAll('tbody input[type=checkbox]').forEach(function(c){if(!c.disabled)c.checked=selected;});" /></HeaderTemplate>
+                    <HeaderTemplate><input type="checkbox" data-workspace-select-page="true" aria-label="Chọn các file trên trang" onchange="var selected=this.checked;this.closest('table').querySelectorAll('[data-workspace-select] input[type=checkbox], input[type=checkbox][data-workspace-select]').forEach(function(c){if(!c.disabled)c.checked=selected;});" /></HeaderTemplate>
                     <ItemTemplate><asp:CheckBox runat="server" ID="chkWorkspaceFile" data-workspace-select="true" /></ItemTemplate>
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Tên file">
@@ -532,13 +552,20 @@
                             NavigateUrl='<%# GetFileUrl(Eval("SignedFileUrl")) %>' Visible='<%# HasValue(Eval("SignedFileUrl")) %>' />
                     </ItemTemplate>
                 </asp:TemplateField>
-                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản" HeaderStyle-Width="95px" ItemStyle-CssClass="text-center" />
+                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản file" HeaderStyle-Width="110px" ItemStyle-CssClass="text-center" />
                 <asp:TemplateField HeaderText="Trạng thái ký" HeaderStyle-Width="170px">
                     <ItemTemplate><span class='<%# GetSigningStatusCss(Eval("TrangThai")) %>'><%#: WorkspaceStatusText(Eval("TrangThai")) %></span></ItemTemplate>
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Cập nhật" HeaderStyle-Width="170px"><ItemTemplate><%#: FormatDate(Eval("NgayCapNhat")) %></ItemTemplate></asp:TemplateField>
-                <asp:TemplateField HeaderText="Thao tác" HeaderStyle-Width="90px" ItemStyle-CssClass="text-center">
-                    <ItemTemplate><asp:LinkButton runat="server" CommandName="FILE_DETAIL" CommandArgument='<%# Eval("IdFile") %>' CausesValidation="false" CssClass="btn btn-sm btn-outline-success" ToolTip="Chi tiết và lịch sử"><i class="fas fa-eye"></i></asp:LinkButton></ItemTemplate>
+                <asp:TemplateField HeaderText="Thao tác" HeaderStyle-Width="120px" ItemStyle-CssClass="text-center">
+                    <ItemTemplate>
+                        <div class="d-flex justify-content-center gap-1">
+                            <asp:LinkButton runat="server" CommandName="FILE_DETAIL" CommandArgument='<%# Eval("IdFile") %>' CausesValidation="false" CssClass="btn btn-sm btn-outline-success" ToolTip="Chi tiết và lịch sử"><i class="fas fa-eye" aria-hidden="true"></i></asp:LinkButton>
+                            <asp:LinkButton runat="server" CommandName="REMOVE_FILE" CommandArgument='<%# Eval("IdFile") %>'
+                                CausesValidation="false" CssClass="btn btn-sm btn-outline-danger" ToolTip="Gỡ file khỏi hồ sơ" aria-label="Gỡ file khỏi hồ sơ"
+                                Visible='<%# WorkspaceCanRemove(Eval("DaKhoa")) %>'><i class="fas fa-trash" aria-hidden="true"></i></asp:LinkButton>
+                        </div>
+                    </ItemTemplate>
                 </asp:TemplateField>
             </Columns>
         </asp:GridView>
@@ -630,15 +657,14 @@
                                     <div class="document-file-history__head">
                                         <div>
                                             <div class="document-file-history__version">
-                                                <%#: FormatDate(Eval("NgayTao")) %>
+                                                Bộ file được lưu lúc: <%#: FormatDate(Eval("NgayTao")) %>
                                                 <asp:Label runat="server"
                                                     Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
                                                     Text="Hiện tại"
                                                     CssClass="badge bg-success ms-1" />
                                             </div>
                                             <div class="document-file-history__meta">
-                                                <%#: FormatDate(Eval("NgayTao")) %>
-                                                · <%#: GetValueText(Eval("TenNguoiTao")) %>
+                                                <%#: GetValueText(Eval("TenNguoiTao")) %>
                                                 · <%#: GetVersionSourceText(Eval("NguonTao")) %>
                                             </div>
                                         </div>
@@ -822,7 +848,7 @@
                                     <span class="document-delivery__meta">Người nhận: <%#: GetValueText(Eval("TenNguoiNhan")) %></span>
                                     <span class="document-delivery__meta"><%#: Convert.ToString(Eval("EmailNguoiNhan")) %></span>
                                 </td>
-                                <td data-label="Thông tin gửi"><%#: FormatDate(Eval("NgayGui")) %>
+                                <td data-label="Thông tin gửi"><span class="small text-muted d-block">Lần gửi khách</span><%#: FormatDate(Eval("NgayGui")) %>
                                     <span class="document-delivery__meta">Kênh: <%#: GetCustomerDeliveryChannelText(Eval("KenhGui")) %></span>
                                     <span class="document-delivery__meta">Người gửi: <%#: GetValueText(Eval("TenNguoiThucHien")) %></span>
                                 </td>
@@ -847,6 +873,10 @@
                                 </div></td>
                             </tr></ItemTemplate></asp:Repeater></tbody>
                         </table>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+                            <asp:Label runat="server" ID="lblCustomerHistoryCount" CssClass="text-muted small" />
+                            <asp:Button runat="server" ID="btnMoreCustomerHistory" Text="Xem thêm 5 lần gửi" CssClass="btn btn-outline-primary btn-sm" CausesValidation="false" OnClick="btnMoreCustomerHistory_Click" />
+                        </div>
                     </asp:Panel>
                 </div>
             </div>
@@ -929,10 +959,10 @@
                             <th><%= GetResourceText(BackEndResourceKeys.REFERENCE_TYPE) %></th>
                         </tr></thead>
                         <tbody><asp:Repeater runat="server" ID="rptActivity"><ItemTemplate><tr>
-                            <td class="text-center"><%#: FormatDate(Eval("NgayTao")) %></td>
-                            <td><%#: GetActivityTypeText(Eval("LoaiHanhDong")) %></td>
+                            <td class="text-center"><%#: FormatActivityDate(Eval("NgayTao")) %></td>
+                            <td><%#: GetActivityTypeText(Eval("LoaiHanhDong"), Eval("MoTa")) %></td>
                             <td><%#: GetActorText(Eval("TenNguoiThucHien"), Eval("NguoiTao")) %></td>
-                            <td><%#: GetActivityDescription(Eval("MoTa"), Eval("NoiDungThayDoi")) %></td>
+                            <td style="white-space:pre-line;overflow-wrap:anywhere"><%#: GetActivityDescription(Eval("MoTa"), Eval("NoiDungThayDoi")) %></td>
                             <td><%#: GetActivityReferenceText(Eval("LoaiThamChieu")) %></td>
                         </tr></ItemTemplate></asp:Repeater></tbody>
                     </table>
@@ -984,6 +1014,7 @@
                     ID="ddlSubmitSigningSigner"
                     ValueIsOfTypeGUID="true"
                     SimpleInit="true"
+                    MinimumResultsForSearch="0"
                     CssClass="form-select" />
             </div>
             <div class="mb-1">
@@ -1163,7 +1194,7 @@
                 </ItemTemplate>
             </asp:Repeater>
         </div>
-        <p class="text-muted small mt-3 mb-0">Quyền nhóm là mức trần. Khi chọn một quyền thao tác, hệ thống tự yêu cầu quyền xem; bỏ toàn bộ quyền sẽ thu hồi cấp riêng trên hồ sơ.</p>
+        <p class="text-muted small mt-3 mb-0">Quyền nhóm là mức trần. Chọn quyền thao tác sẽ tự tích Xem hồ sơ. Muốn bỏ quyền Xem, hãy bỏ các quyền thao tác trước; bỏ toàn bộ quyền sẽ thu hồi cấp riêng trên hồ sơ.</p>
     </ContentTemplate>
     <FooterTemplate>
         <asp:Button runat="server" ID="btnSaveDocumentPermissions" Text="Lưu quyền" CssClass="btn btn-primary"
@@ -1291,7 +1322,7 @@
                         runat="server"
                         ID="ddlCustomerDeliveryCustomer"
                         ValueIsOfTypeGUID="true"
-                        SimpleInit="true" />
+                        SimpleInit="true" MinimumResultsForSearch="0" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.RECIPIENT) %></label>
@@ -1480,7 +1511,7 @@
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatusId" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatus" />
             <div class="border rounded p-2 mb-3">
-                <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_VERSION) %></div>
+                <div class="small text-muted">Lần gửi khách</div>
                 <asp:Label runat="server" ID="lblCustomerDeliveryStatusVersion" CssClass="fw-semibold" />
                 <span class="mx-1">·</span>
                 <asp:Label runat="server" ID="lblCustomerDeliveryStatusCustomer" CssClass="fw-semibold" />
@@ -1659,11 +1690,11 @@
             <asp:LinkButton runat="server" ID="btnWorkspaceConfirm" Text="Xác nhận" CssClass="btn btn-warning btn-sm" CausesValidation="false" OnClick="btnWorkspaceConfirm_Click" />
             <asp:LinkButton runat="server" ID="btnWorkspaceCancelConfirm" Text="Hủy" CssClass="btn btn-outline-secondary btn-sm" CausesValidation="false" OnClick="btnWorkspaceCancelConfirm_Click" />
         </asp:Panel>
-        <h6>Lịch sử phiên bản</h6>
+        <h6>Lịch sử phiên bản file</h6>
         <asp:GridView runat="server" ID="grdFileTimeline" AutoGenerateColumns="false" GridLines="None"
             CssClass="table table-bordered table-hover" OnRowCommand="grdFileTimeline_RowCommand">
             <Columns>
-                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản" />
+                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản file" />
                 <asp:BoundField DataField="HanhDong" HeaderText="Thao tác" />
                 <asp:BoundField DataField="NguoiThucHien" HeaderText="Người thực hiện" />
                 <asp:TemplateField HeaderText="Thời gian"><ItemTemplate><%#: FormatDate(Eval("NgayTao")) %></ItemTemplate></asp:TemplateField>
@@ -1789,6 +1820,23 @@
     <FooterTemplate>
         <asp:Button runat="server" ID="btnSnapshotRestoreConfirm" Text="Xác nhận khôi phục" CssClass="btn btn-primary"
             CausesValidation="false" UseSubmitBehavior="false" OnClick="btnSnapshotRestoreConfirm_Click" />
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceRemove" Title="Gỡ file khỏi hồ sơ" Size="Normal" Type="Primary"
+    Position="modal-dialog-centered" EnsureChildControlsOnPostback="true" FooterButtonClose="true">
+    <ContentTemplate>
+        <div class="d-flex gap-3 align-items-start mb-3">
+            <i class="fas fa-trash text-danger mt-1" aria-hidden="true"></i>
+            <asp:Label runat="server" ID="lblWorkspaceRemoveName" CssClass="fw-semibold" style="overflow-wrap:anywhere" />
+        </div>
+        <p class="mb-3">Chỉ gỡ khỏi danh sách hiện tại; lịch sử và bản đã gửi khách vẫn được giữ.</p>
+        <asp:CheckBox runat="server" ID="chkWorkspaceRemoveRecall" CssClass="d-block alert alert-warning"
+            Text="File đang chờ ký. Tôi đồng ý thu hồi yêu cầu ký của file này trước khi gỡ." />
+        <asp:Label runat="server" ID="lblWorkspaceRemoveError" CssClass="d-block text-danger small" aria-live="polite" />
+    </ContentTemplate>
+    <FooterTemplate>
+        <asp:Button runat="server" ID="btnWorkspaceRemoveConfirm" Text="Xác nhận gỡ file" CssClass="btn btn-danger"
+            CausesValidation="false" UseSubmitBehavior="false" OnClick="btnWorkspaceRemoveConfirm_Click" />
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 <SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceUpload" Title="Tải file" Size="Normal" Type="Primary"
