@@ -24,7 +24,7 @@
                             ValueIsOfTypeGUID="True"
                             SearchPlaceholder="Tìm kiếm nhóm người dùng..."
                             NoResultsText="Không tìm thấy nhóm người dùng"
-                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                            CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
                             OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                         </SweetSoft:BootstrapDropdown>
                      

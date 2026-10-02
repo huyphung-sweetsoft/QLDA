@@ -305,6 +305,7 @@
     <Compile Include="Managers\ThanhToanManager.cs" />
     <Compile Include="Managers\ThanhVienDuAnManager.cs" />
     <Compile Include="Managers\ThongBaoManager.cs" />
+    <Compile Include="Managers\UserDisplayInfoManager.cs" />
     <Compile Include="Managers\VaiTroDuAnManager.cs" />
     <Compile Include="Managers\DocumentGroupManager.cs" />
     <Compile Include="Managers\DocumentManager.cs" />
