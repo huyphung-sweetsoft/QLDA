@@ -156,6 +156,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
         public Guid IssueId { get; set; }
         public string IssueCode { get; set; }
         public string IssueName { get; set; }
+        public string Description { get; set; }
         public string HandlingPlan { get; set; }
         public int ImpactLevel { get; set; }
     }

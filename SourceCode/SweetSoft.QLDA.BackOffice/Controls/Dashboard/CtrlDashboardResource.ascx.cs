@@ -22,7 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls.Dashboard
                 List<string> cssLinks = new List<string>
                 {
                     CURRENT_PAGE.GetRelativeClientPath(
-                        "/Controls/Dashboard/dashboard-style.css?v=49")
+                        "/Controls/Dashboard/dashboard-style.css?v=55")
                 };
 
                 List<string> jsLinks = new List<string>

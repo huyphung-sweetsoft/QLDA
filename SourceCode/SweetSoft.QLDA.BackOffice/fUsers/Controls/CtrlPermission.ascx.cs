@@ -443,14 +443,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             foreach (AspnetUsersInRole member in new AspnetUsersInRoleCollection()
                 .Where(AspnetUsersInRole.Columns.RoleId, roleId).Load())
             {
-                Guid userId = member.UserId;
-                AppCache.Remove($"ModuleByUserId_{userId}");
-                AppCache.Remove($"PermissionByUserId_{userId}");
-                AppCache.Remove($"USER_HAS_RIGHTS_{userId}");
-                AppCache.Remove($"MENU_LEFT_CMS_{userId}_1");
-                AppCache.Remove($"MENU_LEFT_CMS_{userId}_2");
-                if (userId == SweetContext.Current.UserId)
-                    SweetContext.Current.CurrentUserFunctions = null;
+                FunctionManager.Instance.InvalidateUserPermissionCache(member.UserId);
             }
             return true;
         }

@@ -450,6 +450,15 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 false);
         }
 
+        public List<TblChiPhi> GetRejectedCostsForProjects(
+            IEnumerable<Guid> projectIds)
+        {
+            return GetCostsForProjects(
+                projectIds,
+                TrangThaiChiPhi.Rejected,
+                false);
+        }
+
         private static List<TblChiPhi> GetCostsForProjects(
             IEnumerable<Guid> projectIds,
             TrangThaiChiPhi costStatus,

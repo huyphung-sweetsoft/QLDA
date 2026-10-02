@@ -123,7 +123,7 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
         {
             try
             {
-                string MENU_CACHE_KEY = $"MENU_LEFT_CMS_{SweetContext.Current.UserId}_{SweetContext.Current.CurrentLanguageId}_{DashboardMenuOptions.ShowAllForTesting}";
+                string MENU_CACHE_KEY = $"MENU_LEFT_CMS_{SweetContext.Current.UserId}_{SweetContext.Current.CurrentLanguageId}";
                 string menuCache = AppCache.Get(MENU_CACHE_KEY) as string;
                 if (string.IsNullOrEmpty(menuCache))
                 {
@@ -136,62 +136,6 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
                     // NULL là dữ liệu cấu hình cũ; coi như chức năng hệ thống
                     // để không làm mất menu khi tạo module theo luồng cũ.
                     aspnetFunctions = aspnetFunctions.Where(s => s.OfProject != true).ToList();
-                    if (DashboardMenuOptions.ShowAllForTesting)
-                    {
-                        // Thử đủ bốn trang trong menu, không cấp thêm quyền function.
-                        var configuredFunctions = FunctionManager.Instance
-                            .GetAspnetFunction() ?? new List<AspnetFunction>();
-                        string dashboardParentCode = configuredFunctions
-                            .FirstOrDefault(f => f != null && f.FunctionCode == ModuleKeys.DashboardOverview.ToString())
-                            ?.ParentCode;
-                        if (string.IsNullOrWhiteSpace(dashboardParentCode))
-                            dashboardParentCode = ModuleKeys.Dashboard.ToString();
-                        string[] dashboardCodes =
-                        {
-                            dashboardParentCode,
-                            ModuleKeys.DashboardOverview.ToString(),
-                            ModuleKeys.DashboardProgress.ToString(),
-                            ModuleKeys.DashboardCost.ToString(),
-                            ModuleKeys.DashboardResource.ToString()
-                        };
-                        var existingCodes = new HashSet<string>(
-                            aspnetFunctions.Select(f => f.FunctionCode),
-                            StringComparer.OrdinalIgnoreCase);
-                        foreach (AspnetFunction function in configuredFunctions
-                            .Where(f => f != null && f.OfProject != true
-                                && dashboardCodes.Contains(f.FunctionCode)))
-                        {
-                            if (existingCodes.Add(function.FunctionCode))
-                                aspnetFunctions.Add(function);
-                        }
-                        // Database thử nghiệm có thể chưa khai báo đủ bốn
-                        // function. Chỉ bổ sung mục điều hướng, không gán quyền.
-                        var menuFallbacks = new[]
-                        {
-                            new { Code = dashboardParentCode, Parent = "", Name = BackEndResourceKeys.DASHBOARD, Url = "", Order = 900 },
-                            new { Code = ModuleKeys.DashboardOverview.ToString(), Parent = dashboardParentCode, Name = BackEndResourceKeys.DASHBOARD_OVERVIEW, Url = RewriteURLHelper.DashboardOverview, Order = 1 },
-                            new { Code = ModuleKeys.DashboardProgress.ToString(), Parent = dashboardParentCode, Name = BackEndResourceKeys.DASHBOARD_PROGRESS, Url = RewriteURLHelper.DashboardProgress, Order = 2 },
-                            new { Code = ModuleKeys.DashboardCost.ToString(), Parent = dashboardParentCode, Name = BackEndResourceKeys.DASHBOARD_COST, Url = RewriteURLHelper.DashboardCost, Order = 3 },
-                            new { Code = ModuleKeys.DashboardResource.ToString(), Parent = dashboardParentCode, Name = BackEndResourceKeys.DASHBOARD_RESOURCE, Url = RewriteURLHelper.DashboardResource, Order = 4 }
-                        };
-                        foreach (var item in menuFallbacks)
-                        {
-                            if (!existingCodes.Add(item.Code))
-                                continue;
-                            aspnetFunctions.Add(new AspnetFunction
-                            {
-                                Id = Guid.NewGuid(),
-                                FunctionCode = item.Code,
-                                ParentCode = item.Parent,
-                                FunctionName = item.Name,
-                                PageUrl = item.Url,
-                                DisplayOrder = item.Order,
-                                Icon = "fas fa-chart-bar",
-                                IsActivated = true,
-                                OfProject = false
-                            });
-                        }
-                    }
                     var subMenus = aspnetFunctions.Where(f => !string.IsNullOrEmpty(f.ParentCode)).ToList();
 
                     if (subMenus.Count < 1)
