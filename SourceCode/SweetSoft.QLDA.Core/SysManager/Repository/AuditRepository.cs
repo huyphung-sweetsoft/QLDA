@@ -642,163 +642,90 @@ INSERT INTO TblAuditLog_{year} (
 
         public DataTable GetProjectHistory(Guid idDuAn, Guid? userId, DateTime? fromDate, DateTime? toDate, int? numberOfRecords = null)
         {
-            DataTable result =
-                new DataTable();
+            DataTable result = new DataTable();
 
-            if (idDuAn == Guid.Empty)
-                return result;
+            if (idDuAn == Guid.Empty) return result;
 
-            int currentYear =
-                DateTime.UtcNow.Year;
+            int currentYear = DateTime.UtcNow.Year;
 
-            int startYear =
-                fromDate?.Year ??
-                currentYear - 5;
+            int startYear = fromDate?.Year ?? currentYear - 5;
 
-            int endYear =
-                toDate?.Year ??
-                currentYear;
+            int endYear = toDate?.Year ?? currentYear;
 
             if (startYear > endYear)
                 return result;
 
-            List<string> queries =
-                new List<string>();
+            List<string> queries = new List<string>();
 
-            for (int year = startYear;
-                 year <= endYear;
-                 year++)
+            for (int year = startYear; year <= endYear; year++)
             {
-                string tableName =
-                    $"dbo.TblAuditLog_{year}";
+                string tableName = $"dbo.TblAuditLog_{year}";
 
-                string checkTableSql = $@"
-            SELECT CASE
-                WHEN OBJECT_ID(
-                    N'{tableName}',
-                    N'U'
-                ) IS NULL
+                string checkTableSql = $@"SELECT CASE
+                    WHEN OBJECT_ID(
+                        N'{tableName}',
+                        N'U'
+                    ) IS NULL
                     THEN 0
-                ELSE 1
-            END;";
+                    ELSE 1
+                    END;";
 
-                int tableExists =
-                    new InlineQuery(_dataProvider)
-                        .ExecuteScalar<int>(
-                            checkTableSql);
+                int tableExists = new InlineQuery(_dataProvider).ExecuteScalar<int>(checkTableSql);
 
                 if (tableExists == 0)
                     continue;
 
                 queries.Add($@"
-            SELECT
-                Id,
-                Title,
-                CustomerId,
-                ReferenceId,
-                TableName,
-                RecordId,
-                ActionType,
-                Changes,
-                Description,
-                IPAddress,
-                UserAgent,
-                UserId,
-                ChangedBy,
-                ChangedAt
-            FROM {tableName}
-            WHERE ReferenceId = @idDuAn
-              AND Description IS NOT NULL
-              AND
-              (
-                  @userId IS NULL
-                  OR UserId = @userId
-              )
-              AND
-              (
-                  @fromDate IS NULL
-                  OR ChangedAt >= @fromDate
-              )
-              AND
-              (
-                  @toDate IS NULL
-                  OR ChangedAt <
-                     DATEADD(
-                         DAY,
-                         1,
-                         CAST(@toDate AS DATE)
-                     )
-              )");
+                    SELECT
+                        Id,
+                        Title,
+                        CustomerId,
+                        ReferenceId,
+                        TableName,
+                        RecordId,
+                        ActionType,
+                        Changes,
+                        Description,
+                        IPAddress,
+                        UserAgent,
+                        UserId,
+                        ChangedBy,
+                        ChangedAt
+                    FROM {tableName}
+                    WHERE ReferenceId = @idDuAn
+                    AND Description IS NOT NULL
+                    AND(@userId IS NULL OR UserId = @userId)
+                    AND(@fromDate IS NULL OR ChangedAt >= @fromDate)
+                    AND(@toDate IS NULL OR ChangedAt < DATEADD(DAY,1,CAST(@toDate AS DATE)))");
             }
 
             if (queries.Count == 0)
                 return result;
 
-            string idDuAnSql =
-                InlineQueryHelpers.SQLEncode(
-                    idDuAn);
+            string idDuAnSql = InlineQueryHelpers.SQLEncode(idDuAn);
 
-            string userIdSql =
-                userId.HasValue &&
-                userId.Value != Guid.Empty
-                    ? "'" +
-                      InlineQueryHelpers.SQLEncode(
-                          userId.Value) +
-                      "'"
-                    : "NULL";
+            string userIdSql = userId.HasValue && userId.Value != Guid.Empty ? "'" + InlineQueryHelpers.SQLEncode(userId.Value) + "'" : "NULL";
 
-            string fromDateSql =
-                fromDate.HasValue
-                    ? "'" +
-                      fromDate.Value.ToString(
-                          "yyyy-MM-ddTHH:mm:ss.fff") +
-                      "'"
-                    : "NULL";
+            string fromDateSql = fromDate.HasValue ? "'" + fromDate.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "'" : "NULL";
 
-            string toDateSql =
-                toDate.HasValue
-                    ? "'" +
-                      toDate.Value.ToString(
-                          "yyyy-MM-ddTHH:mm:ss.fff") +
-                      "'"
-                    : "NULL";
+            string toDateSql = toDate.HasValue ? "'" + toDate.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff") + "'" : "NULL";
 
-            string topClause =
-                numberOfRecords.HasValue ? $"TOP ({Math.Max(1, numberOfRecords.Value)})"
-                    : string.Empty;
+            string topClause = numberOfRecords.HasValue ? $"TOP ({Math.Max(1, numberOfRecords.Value)})" : string.Empty;
 
-            string sql = $@"
-        DECLARE @idDuAn UNIQUEIDENTIFIER =
-            '{idDuAnSql}';
+            string sql = $@"DECLARE @idDuAn UNIQUEIDENTIFIER ='{idDuAnSql}';
+                            DECLARE @userId UNIQUEIDENTIFIER = {userIdSql};
+                            DECLARE @fromDate DATETIME = {fromDateSql};
+                            DECLARE @toDate DATETIME = {toDateSql};
+                            SELECT {topClause} ProjectHistory.*
+                            FROM
+                            (
+                                {string.Join(Environment.NewLine + "UNION ALL" + Environment.NewLine,queries)}
+                            ) AS ProjectHistory
+                            ORDER BY ProjectHistory.ChangedAt DESC;";
 
-        DECLARE @userId UNIQUEIDENTIFIER =
-            {userIdSql};
-
-        DECLARE @fromDate DATETIME =
-            {fromDateSql};
-
-        DECLARE @toDate DATETIME =
-            {toDateSql};
-
-        SELECT {topClause}
-            ProjectHistory.*
-        FROM
-        (
-            {string.Join(
-                        Environment.NewLine +
-                        "UNION ALL" +
-                        Environment.NewLine,
-                        queries)}
-        ) AS ProjectHistory
-        ORDER BY
-            ProjectHistory.ChangedAt DESC;";
-
-            using (IDataReader reader =
-                new InlineQuery(_dataProvider)
-                    .ExecuteReader(sql))
+            using (IDataReader reader = new InlineQuery(_dataProvider).ExecuteReader(sql))
             {
-                if (reader != null &&
-                    !reader.IsClosed)
+                if (reader != null && !reader.IsClosed)
                 {
                     result.Load(reader);
                 }

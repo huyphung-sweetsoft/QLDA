@@ -245,5 +245,42 @@ namespace SweetSoft.QLDA.Core.Respositories
 
             return true;
         }
+
+        public override TblChiPhi Insert(TblChiPhi item)
+        {
+            item.Save();
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, Guid.Parse(item.GetColumnValue("IdChiPhi").ToString())).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log CREATE action for TblChiPhi");
+                }
+            });
+            return item;
+        }
+
+        public override TblChiPhi Update(TblChiPhi chiPhi)
+        {
+            Guid id = Guid.Parse(chiPhi.GetColumnValue("IdChiPhi").ToString());
+            TblChiPhi itemOld = GetById(id);
+            chiPhi.Save();
+            string updatedBy = SweetContext.Current.UserName;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogChangesAsync(itemOld, chiPhi, _tableName, id, updatedBy).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log changes for TblChiPhi");
+                }
+            });
+            return chiPhi;
+        }
     }
 }

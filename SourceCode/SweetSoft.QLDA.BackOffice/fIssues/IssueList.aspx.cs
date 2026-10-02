@@ -129,7 +129,7 @@ namespace SweetSoft.QLDA.BackOffice.fIssues
                 ddlNguonGocVanDe.SelectedValue = issue.NguonGocVanDe.ToString();
             if (ddlTrangThaiVanDe.Items.Count > 0)
                 ddlTrangThaiVanDe.SelectedValue = issue.TrangThai.ToString();
-            BindNhanVienXuLy(issue.IdCongViecPhatSinh);
+            BindNhanVienXuLy(issue.IdCongViecBiAnhHuong);
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.UPDATE);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.EDIT);
             dlDetail.OpenModal(true, IsPostBack ? 0 : 1000);

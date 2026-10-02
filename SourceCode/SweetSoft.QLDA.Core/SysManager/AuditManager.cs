@@ -497,25 +497,21 @@ namespace SweetSoft.QLDA.Core.SysManager
         {
             switch (tableName)
             {
-                case nameof(TblDuAn): return new[] { "TenDuAn", "MaDuAn"
-            };
+                case nameof(TblDuAn): return new[] { "TenDuAn", "MaDuAn"};
 
-                case nameof(TblGiaiDoanDuAn): return new[] { "TenGiaiDoanTuyChinh", /* * Theo dữ liệu audit bạn gửi, * SubSonic trả tên giai đoạn chung
-                 * trong property TblGiaiDoan.
-                 */ "TblGiaiDoan"
-            };
+                case nameof(TblGiaiDoanDuAn): return new[] { "TenGiaiDoanTuyChinh", "TblGiaiDoan"};
 
-                case nameof(TblCongViec): return new[] { "TenCongViec", "MaCongViec"
-            };
+                case nameof(TblCongViec): return new[] { "TenCongViec", "MaCongViec"};
 
-                case nameof(TblKhachHang): return new[] { "TenKhachHang"
-            };
+                case nameof(TblKhachHang): return new[] { "TenKhachHang"};
 
-                case nameof(TblHopDongThucHien): return new[] { "SoHopDong", "TenHopDong"
-            };
+                case nameof(TblHopDongThucHien): return new[] { "SoHopDong", "TenHopDong"};
 
-                default: return new[] { "Ten", "Name", "Title", "Ma"
-            };
+                case nameof(TblRuiRoDuAn): return new[] { "TenRuiRo" };
+
+                case nameof(TblChiPhi): return new[] { "TenKhoanChi" };
+
+                default: return new[] { "Ten", "Name", "Title", "Ma"};
             }
         }
 

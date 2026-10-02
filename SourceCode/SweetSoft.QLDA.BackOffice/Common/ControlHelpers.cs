@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
+using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -1091,6 +1093,160 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 dropdown.DataBind();
             }
             dropdown.Items.Insert(0, new ListItem("-- --", ""));
+        }
+        public void BindNhanVienDuAnKemAvatar(ExtraDropdown dropdown, Guid projectId)
+        {
+            dropdown.Items.Clear();
+            dropdown.DefaultSearchValue = " ";
+
+            DataTable dt =
+                RiskManager.Instance.GetAllNhanVienDuAnById(projectId);
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                string[] colors =
+                {
+            "#7c3aed",
+            "#2563eb",
+            "#059669",
+            "#d97706",
+            "#db2777"
+        };
+
+                int i = 0;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row["IdNhanVien"] == DBNull.Value)
+                        continue;
+
+                    if (!Guid.TryParse(
+                            Convert.ToString(row["IdNhanVien"]),
+                            out Guid userId) ||
+                        userId == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    string name =
+                        row["TenNhanVien"] != DBNull.Value
+                            ? Convert.ToString(row["TenNhanVien"])
+                            : "";
+
+                    string email =
+                        dt.Columns.Contains("Email") &&
+                        row["Email"] != DBNull.Value
+                            ? Convert.ToString(row["Email"])
+                            : "";
+
+                    string avatar =
+                        dt.Columns.Contains("Avatar") &&
+                        row["Avatar"] != DBNull.Value
+                            ? Convert.ToString(row["Avatar"])
+                            : "";
+
+                    AspnetUser user = null;
+
+                    if (string.IsNullOrWhiteSpace(name) ||
+                        string.IsNullOrWhiteSpace(email) ||
+                        string.IsNullOrWhiteSpace(avatar))
+                    {
+                        user =
+                            UserManager.Instance.GetUserById(userId);
+                    }
+
+                    if (user != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            name =
+                                string.IsNullOrWhiteSpace(user.DisplayName)
+                                    ? user.UserName
+                                    : user.DisplayName;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(email))
+                        {
+                            try
+                            {
+                                MembershipUser membershipUser =
+                                    Membership.GetUser(user.UserName);
+
+                                email =
+                                    membershipUser != null
+                                        ? membershipUser.Email
+                                        : "";
+                            }
+                            catch
+                            {
+                                email = "";
+                            }
+                        }
+
+                        if (string.IsNullOrWhiteSpace(avatar))
+                            avatar = user.Avatar;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(name))
+                        name = "—";
+
+                    if (string.IsNullOrWhiteSpace(email))
+                        email = "Chưa cập nhật email";
+
+                    string initials =
+                        GetInitials(name);
+
+                    string color =
+                        colors[i % colors.Length];
+
+                    ListItem item =
+                        new ListItem(name, userId.ToString());
+
+                    item.Attributes["data-name"] =
+                        name;
+
+                    item.Attributes["data-email"] =
+                        email;
+
+                    item.Attributes["data-initials"] =
+                        initials;
+
+                    item.Attributes["data-color"] =
+                        color;
+
+                    if (!string.IsNullOrWhiteSpace(avatar) &&
+                        !avatar.EndsWith(
+                            "user-icon.png",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (avatar.StartsWith(
+                                "~",
+                                StringComparison.Ordinal))
+                        {
+                            avatar =
+                                VirtualPathUtility.ToAbsolute(avatar);
+                        }
+
+                        item.Attributes["data-avatar"] =
+                            avatar;
+                    }
+
+                    dropdown.Items.Add(item);
+                    i++;
+                }
+            }
+
+            dropdown.Items.Insert(
+                0,
+                new ListItem("-- --", ""));
+        }
+
+        private string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "?";
+            string[] parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
         public void BindNhanVienDuAn(DropDownList dropdown, Guid projectId)
         {

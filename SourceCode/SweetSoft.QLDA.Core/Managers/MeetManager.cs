@@ -129,6 +129,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 dto.IdNguoiTao = currentUserId;
 
                 dto.Save();
+                
                 result = dto;
             }
             else
@@ -154,7 +155,20 @@ namespace SweetSoft.QLDA.Core.Managers
             {
                 UpdateTblLichHopNhanVien(result.IdLichHop, nhanVienIds);
             }
-
+            List<Guid> nhanViens = GetNhanVienCuocHop(result.IdLichHop);
+            if (isInsert)
+            {
+                foreach(Guid nhanVienId in nhanViens)
+                {
+                    ThongBaoManager.Instance.Create
+                        (
+                            userId: nhanVienId,
+                            tieuDe: $"Bạn được mời vào buổi họp {result.TenCuocHop}",
+                            noiDung: $"Cuộc họp sẽ diễn ra vào lúc {result.ThoiGianBatDau}. Vui lòng chú ý!",
+                            loaiThongBao: ThongBaoTypes.LichHop
+                        );
+                }
+            }
             return result;
         }
 

@@ -69,15 +69,25 @@
         width: 100%;
     }
 
+    /* =======================================================
+       CSS TÊN CUỘC HỌP (ĐỒNG BỘ GIỐNG ẢNH: CHỮ TÍM, GỌN GÀNG)
+       ======================================================= */
     .meeting-name-main {
         display: block;
         width: 100%;
-        color: #4c1d95;
+        color: #542e88 !important;
         font-size: 16px;
-        line-height: 1.4;
+        font-weight: 500;
+        line-height: 1.45;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-decoration: none !important;
+        transition: color .15s ease;
+    }
+    .meeting-name-main:hover {
+        color: #3b82f6 !important;
+        text-decoration: none !important;
     }
 
     .meeting-name-sub {
@@ -422,7 +432,6 @@
         if (window.meetStatusAutoRefreshTimer) return;
 
         window.meetStatusAutoRefreshTimer = window.setInterval(function () {
-            // Không phát AJAX khi đang mở modal để không ảnh hưởng popup chọn nhân viên / task / detail.
             if ($('.modal.show:visible, .modal.in:visible').length > 0) return;
 
             var refreshButton = document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');

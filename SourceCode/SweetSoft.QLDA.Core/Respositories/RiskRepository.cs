@@ -119,6 +119,15 @@ namespace SweetSoft.QLDA.Core.Respositories
             dt.Load(iDataReader);
             return dt;
         }
+
+        public override TblRuiRoDuAn GetById(Guid id)
+        {
+            return new Select()
+                .From(TblRuiRoDuAn.Schema)
+                .Where(TblRuiRoDuAn.IdRuiRoDuAnColumn).IsEqualTo(id)
+                .And(TblRuiRoDuAn.DaXoaColumn).IsEqualTo(false)
+                .ExecuteSingle<TblRuiRoDuAn>();
+        }
         public bool DeleteRisk(TblRuiRoDuAn item)
         {
             if (item == null) return false;
@@ -131,5 +140,47 @@ namespace SweetSoft.QLDA.Core.Respositories
             return true;
         }
         #endregion
+
+        public override TblRuiRoDuAn Insert(TblRuiRoDuAn item)
+        {
+            item.Save();
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, Guid.Parse(item.GetColumnValue("IdRuiRo_DuAn").ToString())).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log CREATE action for TblRuiRo_DuAn");
+                }
+            });
+            return item;
+        }
+
+        public override TblRuiRoDuAn Update(TblRuiRoDuAn risk)
+        {
+            Guid id = Guid.Parse(risk.GetColumnValue("IdRuiRo_DuAn").ToString());
+            TblRuiRoDuAn itemOld = GetById(id);
+            risk.Save();
+            string updatedBy = string.Empty;
+            try
+            {
+                updatedBy = risk.GetColumnValue("NguoiCapNhat")?.ToString();
+            }
+            catch { }
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _auditManager.LogChangesAsync(itemOld, risk, _tableName, id, updatedBy).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    SysLogger.LogError(ex, "Failed to log changes for TblRuiRo_DuAn");
+                }
+            });
+            return risk;
+        }
     }
 }
