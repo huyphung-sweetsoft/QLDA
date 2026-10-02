@@ -88,7 +88,7 @@
                             SearchColumn="IdNhanVienQuanLy"
                             SearchPlaceholder="Tìm nhân viên..."
                             NoResultsText="Không tìm thấy nhân viên"
-                            CssClass="border-top-left-radius-1 border-bottom-left-radius-1"
+                            CssClass="border-top-right-radius-1 border-bottom-right-radius-1"
                             OnSelectedValueChanged="bootstrapDropdown_SelectedValueChanged">
                         </SweetSoft:BootstrapDropdown>
                     </div>
