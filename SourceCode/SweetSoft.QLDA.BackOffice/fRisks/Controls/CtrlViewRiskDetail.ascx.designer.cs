@@ -42,13 +42,40 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         protected global::System.Web.UI.WebControls.Label lblRiskName;
 
         /// <summary>
-        /// lblRiskLevel control.
+        /// ltrCreatedAvatar control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRiskLevel;
+        protected global::System.Web.UI.WebControls.Literal ltrCreatedAvatar;
+
+        /// <summary>
+        /// lblCreatedBy control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatedBy;
+
+        /// <summary>
+        /// lblCreatedEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatedEmail;
+
+        /// <summary>
+        /// lblCreatedDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatedDate;
 
         /// <summary>
         /// lblProbability control.
@@ -69,22 +96,13 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         protected global::System.Web.UI.WebControls.Label lblImpact;
 
         /// <summary>
-        /// lblCreatedBy control.
+        /// lblRiskLevel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblCreatedBy;
-
-        /// <summary>
-        /// lblCreatedDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblCreatedDate;
+        protected global::System.Web.UI.WebControls.Label lblRiskLevel;
 
         /// <summary>
         /// rptAssignees control.
@@ -121,14 +139,5 @@ namespace SweetSoft.QLDA.BackOffice.fRisks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal ltrKeHoachUngPho;
-
-        /// <summary>
-        /// btnCloseRiskView control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCloseRiskView;
     }
 }

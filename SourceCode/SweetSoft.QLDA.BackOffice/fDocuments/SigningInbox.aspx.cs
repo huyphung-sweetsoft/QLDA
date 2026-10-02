@@ -478,6 +478,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
                 lnkResultSource.Attributes["data-path"] = lnkResultSource.NavigateUrl;
                 fbSigningResult.IsEnabled = true;
                 fbSigningResult.IsMultiple = false;
+                fbSigningResult.MaxFileSizeBytes = SweetSoft.QLDA.BackOffice.fFilesBox.SecureFileUploadHandler.DocumentSigningResultMaxFileSizeBytes;
                 fbSigningResult.AcceptType =
                     "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
                 fbSigningResult.SaveDataCallbackKey = ResultSavedCallbackKey;
@@ -693,7 +694,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments
         protected string FormatDate(object value)
         {
             return value == DBNull.Value || value == null
-                ? "—" : ConvertDateTimeToString(value);
+                ? "—" : SweetSoft.QLDA.Controls.Helpers.DateTimeHelper.ConvertUTCToSettingTime(Convert.ToDateTime(value))
+                    .ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

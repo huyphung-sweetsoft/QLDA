@@ -39,7 +39,43 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblCostName;
+        protected global::System.Web.UI.WebControls.Label lblCostName;
+
+        /// <summary>
+        /// ltrCreatorAvatar control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrCreatorAvatar;
+
+        /// <summary>
+        /// lblCreatorName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatorName;
+
+        /// <summary>
+        /// lblCreatorEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatorEmail;
+
+        /// <summary>
+        /// lblCreatedDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblCreatedDate;
 
         /// <summary>
         /// lblUnitPrice control.
@@ -105,42 +141,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         protected global::System.Web.UI.WebControls.Literal lblStatus;
 
         /// <summary>
-        /// ltrCreatorAvatar control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCreatorAvatar;
-
-        /// <summary>
-        /// lblCreatorName control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblCreatorName;
-
-        /// <summary>
-        /// lblCreatorEmail control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblCreatorEmail;
-
-        /// <summary>
-        /// lblCreatedDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblCreatedDate;
-
-        /// <summary>
         /// pnlReject control.
         /// </summary>
         /// <remarks>
@@ -175,14 +175,5 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlStatusSource;
-
-        /// <summary>
-        /// btnCloseCostView control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCloseCostView;
     }
 }

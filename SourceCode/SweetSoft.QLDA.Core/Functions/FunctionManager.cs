@@ -202,6 +202,30 @@ namespace SweetSoft.QLDA.Core.Functions
                 return new List<string>();
             return permissions.Select(p => p.FunctionCode).Distinct().ToList();
         }
+
+        public string GetUserPermissionVersion(Guid userId)
+        {
+            return AppCache.Get($"PermissionVersionByUserId_{userId}") as string
+                ?? string.Empty;
+        }
+
+        public void InvalidateUserPermissionCache(Guid userId)
+        {
+            if (userId == Guid.Empty)
+                return;
+
+            AppCache.Remove($"ModuleByUserId_{userId}");
+            AppCache.Remove($"PermissionByUserId_{userId}");
+            AppCache.Remove($"USER_HAS_RIGHTS_{userId}");
+            AppCache.Remove($"MENU_LEFT_CMS_{userId}_1");
+            AppCache.Remove($"MENU_LEFT_CMS_{userId}_2");
+            AppCache.Insert(
+                $"PermissionVersionByUserId_{userId}",
+                Guid.NewGuid().ToString("N"),
+                60 * 60);
+
+        }
+
         public List<AspnetFunction> GetAspnetFunction()
         {
             List<AspnetFunction> modules = null;

@@ -1,3 +1,4 @@
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.Managers;
@@ -10,7 +11,7 @@ using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.Controls
 {
-    public partial class CtrlQuanLyLoai : System.Web.UI.UserControl
+    public partial class CtrlQuanLyLoai : BaseAdminUserControl
     {
         public event EventHandler OnDataChanged;
 
@@ -75,7 +76,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls
                 LoaiManager.Instance.InsertLoai(newLoai);
                 
                 txtTenLoaiNew.Text = string.Empty;
-                ShowSuccess("Thêm mới thành công!");
+                ShowNotify("Thêm mới thành công!", MSGType.Success);
                 BindData();
                 
                 // Notify parent
@@ -121,9 +122,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls
                 Guid idLoai = Guid.Parse(
                     grvData.DataKeys[e.RowIndex].Value.ToString());
 
-                var txtTenLoaiEdit =
-                    (ExtraTextBox)grvData.Rows[e.RowIndex]
-                        .FindControl("txtTenLoaiEdit");
+                var txtTenLoaiEdit = (ExtraTextBox)grvData.Rows[e.RowIndex].FindControl("txtTenLoaiEdit");
 
                 if (txtTenLoaiEdit == null)
                 {
@@ -192,7 +191,7 @@ namespace SweetSoft.QLDA.BackOffice.Controls
 
                 grvData.EditIndex = -1;
 
-                ShowSuccess("Cập nhật thành công!");
+                
                 BindData();
 
                 OnDataChanged?.Invoke(this, EventArgs.Empty);
@@ -209,8 +208,8 @@ namespace SweetSoft.QLDA.BackOffice.Controls
             {
                 Guid idLoai = Guid.Parse(grvData.DataKeys[e.RowIndex].Value.ToString());
                 LoaiManager.Instance.DeleteLoai(idLoai);
-                
-                ShowSuccess("Xóa thành công!");
+                ConfirmResult result = new ConfirmResult();
+                ShowNotify("Xóa thành công!", MSGType.Success);
                 BindData();
                 
                 // Notify parent
@@ -227,13 +226,6 @@ namespace SweetSoft.QLDA.BackOffice.Controls
             lblError.Text = message;
             lblError.Visible = true;
             lblSuccess.Visible = false;
-        }
-
-        private void ShowSuccess(string message)
-        {
-            lblSuccess.Text = message;
-            lblSuccess.Visible = true;
-            lblError.Visible = false;
         }
     }
 }

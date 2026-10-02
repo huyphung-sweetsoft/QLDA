@@ -62,6 +62,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         IssueId = i.IdVanDe,
                         IssueCode = i.MaVanDe,
                         IssueName = i.TenVanDe,
+                        Description = i.MoTaChiTiet,
                         HandlingPlan = i.KeHoachXuLy,
                         ImpactLevel = i.MucDoAnhHuong ?? 0
                     })
@@ -81,6 +82,7 @@ namespace SweetSoft.QLDA.Core.Dashboard
                         IssueId = i.IdVanDe,
                         IssueCode = i.MaVanDe,
                         IssueName = i.TenVanDe,
+                        Description = i.MoTaChiTiet,
                         HandlingPlan = i.KeHoachXuLy,
                         ImpactLevel = i.MucDoAnhHuong ?? 0
                     })

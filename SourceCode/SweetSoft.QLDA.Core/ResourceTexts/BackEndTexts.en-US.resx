@@ -1736,7 +1736,7 @@
     <value>Progress dashboard</value>
   </data>
   <data name="Dashboard_Cost" xml:space="preserve">
-    <value>Cost dashboard</value>
+    <value>Financial statistics</value>
   </data>
   <data name="PROJECT_SCOPE" xml:space="preserve">
     <value>Project scope</value>
@@ -2288,7 +2288,7 @@
     <value>Expected</value>
   </data>
   <data name="DASHBOARD_COST_TITLE" xml:space="preserve">
-    <value>Project finances · Current cumulative totals</value>
+    <value>Financial overview</value>
   </data>
   <data name="DASHBOARD_PROJECTS_IN_SCOPE" xml:space="preserve">
     <value>Projects in scope</value>
@@ -2360,7 +2360,64 @@
     <value>Compare contract value with total approved cost for each completed project.</value>
   </data>
   <data name="DASHBOARD_PAYMENT_SITUATION" xml:space="preserve">
-    <value>Payment overview</value>
+    <value>Payment instalment details</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_COUNT_CHART" xml:space="preserve">
+    <value>Payments by value</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_COUNT_CHART_DESC" xml:space="preserve">
+    <value>Amounts by instalment status; select a chart segment to view the matching list.</value>
+  </data>
+  <data name="DASHBOARD_COST_COUNT_CHART" xml:space="preserve">
+    <value>Costs by approval status</value>
+  </data>
+  <data name="DASHBOARD_COST_COUNT_CHART_DESC" xml:space="preserve">
+    <value>Amounts approved, awaiting approval, or rejected; select a chart segment to view the list.</value>
+  </data>
+  <data name="DASHBOARD_SEARCH_PROJECTS" xml:space="preserve">
+    <value>Search projects...</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_NOT_DUE" xml:space="preserve">
+    <value>Not yet due</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_NO_DUE_DATE" xml:space="preserve">
+    <value>Missing due date</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_DUE_TODAY" xml:space="preserve">
+    <value>Due today</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_PAID_LATE" xml:space="preserve">
+    <value>Paid late</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_PAID_LATE_STATUS" xml:space="preserve">
+    <value>Paid {0} days late</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_OVERDUE_UNPAID" xml:space="preserve">
+    <value>Overdue and unpaid</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_UNIT" xml:space="preserve">
+    <value>instalments</value>
+  </data>
+  <data name="DASHBOARD_COST_UNIT" xml:space="preserve">
+    <value>items</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_PAYMENT_COUNT" xml:space="preserve">
+    <value>Total scheduled payments</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_COST_COUNT" xml:space="preserve">
+    <value>Total recorded costs</value>
+  </data>
+  <data name="DASHBOARD_PAYMENT_LIST_DESC" xml:space="preserve">
+    <value>Unpaid instalments, with overdue items shown first.</value>
+  </data>
+  <data name="DASHBOARD_PENDING_COST_LIST_DESC" xml:space="preserve">
+    <value>Costs awaiting approval, with the longest-waiting items shown first.</value>
+  </data>
+  <data name="DASHBOARD_WAITING_DAYS" xml:space="preserve">
+    <value>Waiting {0} days</value>
+  </data>
+  <data name="DASHBOARD_REJECTED_COST" xml:space="preserve">
+    <value>Rejected cost</value>
   </data>
   <data name="DASHBOARD_APPROVED_COST" xml:space="preserve">
     <value>Approved cost</value>
@@ -2372,28 +2429,82 @@
     <value>Cost overview</value>
   </data>
   <data name="DASHBOARD_COST_APPROVAL_CHART_DESC" xml:space="preserve">
-    <value>Approved and pending costs for completed projects; select a chart segment to view cost items.</value>
+    <value>Cost items by approval status; select a chart segment to view the list.</value>
   </data>
   <data name="DASHBOARD_TOTAL_RECORDED_COST" xml:space="preserve">
     <value>Total recorded cost</value>
   </data>
   <data name="DASHBOARD_COST_BY_PROJECT" xml:space="preserve">
-    <value>Cost by project</value>
+    <value>Contract value, cost and performance by project</value>
   </data>
-  <data name="DASHBOARD_COST_BY_PROJECT_DESC" xml:space="preserve">
-    <value>Showing the top {0} completed projects by approved cost; select a bar to view cost items.</value>
+  <data name="DASHBOARD_PROJECT_COST_EXPECTED" xml:space="preserve">
+    <value>Expected (contract value)</value>
   </data>
-  <data name="DASHBOARD_COST_BY_PROJECT_DESC_EMPTY" xml:space="preserve">
-    <value>No completed projects have approved costs yet.</value>
+  <data name="DASHBOARD_PROJECT_COST_ACTUAL" xml:space="preserve">
+    <value>Actual (approved costs)</value>
   </data>
-  <data name="DASHBOARD_COST_BY_PROJECT_DESC_SINGLE" xml:space="preserve">
-    <value>Approved cost for the completed project; select the bar to view cost items.</value>
+  <data name="DASHBOARD_PROJECT_COST_VARIANCE" xml:space="preserve">
+    <value>Variance (expected − actual)</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_VARIANCE_PERCENT" xml:space="preserve">
+    <value>Variance (%)</value>
+  </data>
+  <data name="DASHBOARD_EXPECTED_GROSS_PROFIT" xml:space="preserve">
+    <value>Estimated profit/loss</value>
+  </data>
+  <data name="DASHBOARD_EXPECTED_PROFIT_MARGIN" xml:space="preserve">
+    <value>Estimated profit/loss margin</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_OVER" xml:space="preserve">
+    <value>Over expected cost</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_UNDER" xml:space="preserve">
+    <value>Below expected cost</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_EQUAL" xml:space="preserve">
+    <value>At expected cost</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_NO_CONTRACT" xml:space="preserve">
+    <value>No contract value</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_TOTAL_DEVIATION" xml:space="preserve">
+    <value>Total variance</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_AVERAGE_DEVIATION" xml:space="preserve">
+    <value>Average variance/project</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_NO_COMPARABLE_DATA" xml:space="preserve">
+    <value>No completed projects with a contract value are available to compare.</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_TOTAL_OVERRUN" xml:space="preserve">
+    <value>Total overrun</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_COST_TOTAL_SAVING" xml:space="preserve">
+    <value>Total under contract value</value>
+  </data>
+  <data name="DASHBOARD_TOTAL_PROJECT_COUNT" xml:space="preserve">
+    <value>Completed projects</value>
+  </data>
+  <data name="DASHBOARD_PROJECT_UNIT" xml:space="preserve">
+    <value>projects</value>
+  </data>
+  <data name="DASHBOARD_BUDGET_COMPARISON_EMPTY" xml:space="preserve">
+    <value>No completed projects in the selected scope.</value>
+  </data>
+  <data name="DASHBOARD_CLEAR_FILTER" xml:space="preserve">
+    <value>Clear filter</value>
   </data>
   <data name="DASHBOARD_PAYMENT_SITUATION_DESC" xml:space="preserve">
-    <value>Received and outstanding payments for completed projects; select a chart segment to view related projects.</value>
+    <value>Payment instalments by status; select a chart segment to view the matching list.</value>
   </data>
   <data name="DASHBOARD_COLLECTION_RATE" xml:space="preserve">
     <value>Collection rate: {0}%</value>
+  </data>
+  <data name="DASHBOARD_COLLECTION_RATE_LABEL" xml:space="preserve">
+    <value>Collection rate</value>
+  </data>
+  <data name="DASHBOARD_OVER_BUDGET_PROJECTS" xml:space="preserve">
+    <value>Projects over expected cost</value>
   </data>
   <data name="DASHBOARD_COST_TREND" xml:space="preserve">
     <value>Cost occurrence trend</value>
@@ -2402,7 +2513,7 @@
     <value>Monthly approved costs across the full lifecycle of completed projects in the selected scope.</value>
   </data>
   <data name="DASHBOARD_PROJECT_FINANCIAL_PERFORMANCE" xml:space="preserve">
-    <value>Financial performance by project</value>
+    <value>Contract value, cost and performance by project</value>
   </data>
   <data name="DASHBOARD_GROSS_PROFIT_FORMULA" xml:space="preserve">
     <value>Gross profit = contract value − actual cost.</value>
@@ -2468,7 +2579,7 @@
     <value>No completed projects to compare.</value>
   </data>
   <data name="DASHBOARD_NO_CONTRACT_OR_PAYMENT" xml:space="preserve">
-    <value>No contract value or payment data.</value>
+    <value>No payment instalments match the selected filter.</value>
   </data>
   <data name="DASHBOARD_OUTSTANDING_PAYMENT" xml:space="preserve">
     <value>Outstanding</value>

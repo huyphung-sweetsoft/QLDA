@@ -56,6 +56,9 @@ namespace SweetSoft.QLDA.Core.Helpers
                 case nameof(TblCongViec): resourceKey = BackEndResourceKeys.HISTORY_ENTITY_TASK; break;
                 case nameof(TblThanhVienDuAn): resourceKey = BackEndResourceKeys.HISTORY_ENTITY_MEMBER; break;
                 case nameof(TblHopDongThucHien): resourceKey = BackEndResourceKeys.HISTORY_ENTITY_CONTRACT; break;
+                case nameof(TblRuiRoDuAn): resourceKey = BackEndResourceKeys.HISTORY_ENTITY_RISK; break;
+
+
                 default: return tableName;
             }
 

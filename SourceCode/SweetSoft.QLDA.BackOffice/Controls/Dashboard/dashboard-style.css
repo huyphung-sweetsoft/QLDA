@@ -373,7 +373,8 @@
 
 .dashboard-progress #progress-task-status-chart,
 .dashboard-cost #cost-payment-chart,
-.dashboard-cost #cost-approval-chart {
+.dashboard-cost #cost-approval-chart,
+.dashboard-cost #cost-project-comparison-chart {
     position: relative;
     overflow: visible;
 }
@@ -381,9 +382,11 @@
 .dashboard-progress #progress-task-status-chart .apexcharts-canvas,
 .dashboard-cost #cost-payment-chart .apexcharts-canvas,
 .dashboard-cost #cost-approval-chart .apexcharts-canvas,
+.dashboard-cost #cost-project-comparison-chart .apexcharts-canvas,
 .dashboard-progress #progress-task-status-chart .apexcharts-svg,
 .dashboard-cost #cost-payment-chart .apexcharts-svg,
-.dashboard-cost #cost-approval-chart .apexcharts-svg {
+.dashboard-cost #cost-approval-chart .apexcharts-svg,
+.dashboard-cost #cost-project-comparison-chart .apexcharts-svg {
     overflow: visible !important;
 }
 
@@ -1572,6 +1575,10 @@ a.resource-day-task:focus-visible {
     white-space: pre-line;
 }
 
+.dashboard-overview-simple .dashboard-overview-detail-list {
+    grid-template-columns: 145px minmax(0, 1fr);
+}
+
 .dashboard-overview-simple .table th {
     white-space: nowrap;
 }
@@ -1808,14 +1815,6 @@ a.resource-day-task:focus-visible {
     font-weight: 600;
 }
 
-.dashboard-overview-simple .dashboard-overview-filter .form-text {
-    display: block;
-    margin-top: .35rem;
-    color: #64748b;
-    font-size: .75rem;
-    line-height: 1.35;
-}
-
 @media (max-width: 767.98px) {
     .dashboard-overview-simple .dashboard-overview-filter {
         flex: 1 1 100%;
@@ -2016,6 +2015,30 @@ a.resource-day-task:focus-visible {
 }
 
 /* Shared visual language for all four project dashboards. */
+:is(.dashboard-progress > .progress-kpi-grid,
+    .dashboard-cost > .cost-kpi-layout,
+    .dashboard-resource > .resource-summary-header) {
+    margin-bottom: 1rem !important;
+}
+
+:is(.dashboard-overview .dashboard-overview-kpis,
+    .dashboard-overview .dashboard-project-alerts,
+    .dashboard-overview .dashboard-overview-three-up,
+    .dashboard-overview .dashboard-project-glance-row,
+    .dashboard-overview .dashboard-overview-signal-row,
+    .dashboard-progress .progress-kpi-grid,
+    .dashboard-progress .progress-summary-row,
+    .dashboard-cost .row.g-3,
+    .dashboard-resource .resource-insights-grid,
+    .dashboard-resource .resource-main-grid) {
+    --bs-gutter-x: .75rem !important;
+    --bs-gutter-y: .75rem !important;
+}
+
+.dashboard-cost .cost-kpi-layout {
+    gap: .75rem;
+}
+
 :is(.dashboard-overview .dashboard-overview-kpis,
     .dashboard-progress .progress-kpi-grid,
     .dashboard-cost .cost-kpi-layout,
@@ -2564,6 +2587,38 @@ a.resource-day-task:focus-visible {
     align-items: stretch;
 }
 
+@media (min-width: 992px) {
+    .dashboard-overview-simple :is(.dashboard-project-glance-row, .dashboard-overview-signal-row) {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-auto-rows: 1fr;
+        align-items: stretch;
+    }
+
+    .dashboard-overview-simple :is(.dashboard-project-glance-row, .dashboard-overview-signal-row) > [class*="col-lg-"] {
+        width: auto;
+        max-width: none;
+        min-width: 0;
+        flex: none;
+    }
+
+    .dashboard-overview-simple :is(.dashboard-project-glance-row, .dashboard-overview-signal-row) > .col-lg-4 {
+        grid-column: span 4;
+    }
+
+    .dashboard-overview-simple :is(.dashboard-project-glance-row, .dashboard-overview-signal-row) > .col-lg-6 {
+        grid-column: span 6;
+    }
+
+    .dashboard-overview-simple .dashboard-project-glance-row > .col-lg-8 {
+        grid-column: span 8;
+    }
+
+    .dashboard-overview-simple :is(.dashboard-project-glance-row, .dashboard-overview-signal-row) > .col-lg-12 {
+        grid-column: span 12;
+    }
+}
+
 .dashboard-overview.dashboard-overview-simple .dashboard-project-alerts {
     width: 100%;
     max-width: none;
@@ -2576,7 +2631,7 @@ a.resource-day-task:focus-visible {
 .dashboard-overview-simple .dashboard-project-glance-row .dashboard-project-glance {
     flex: 1 1 auto;
     width: 100%;
-    height: auto !important;
+    height: 100% !important;
 }
 
 .dashboard-overview-simple .dashboard-project-glance {
@@ -2666,6 +2721,94 @@ a.resource-day-task:focus-visible {
     box-shadow: 0 2px 8px rgba(31, 42, 64, .06);
 }
 
+.dashboard-overview-simple .dashboard-overview-record-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .75rem 1rem;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-header .dashboard-overview-section-title {
+    min-width: 0;
+    margin: 0;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-card .card-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    padding: .5rem 1rem .85rem;
+}
+
+.dashboard-overview-simple .dashboard-overview-records {
+    min-height: 220px;
+    max-height: 280px;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    border: 0;
+    border-bottom: 1px solid #edf0f4;
+    padding: .65rem .1rem;
+    width: 100%;
+    background: transparent;
+    font: inherit;
+    color: #253047;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-item:last-child {
+    border-bottom: 0;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-item:hover,
+.dashboard-overview-simple .dashboard-overview-record-item:focus-visible {
+    color: #4a1387;
+    background: #faf8fd;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-copy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    gap: .15rem;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-copy strong,
+.dashboard-overview-simple .dashboard-overview-record-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-copy strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: .9rem;
+    line-height: 1.35;
+}
+
+.dashboard-overview-simple .dashboard-overview-record-copy small {
+    color: #718096;
+    white-space: nowrap;
+}
+
 .dashboard-overview-simple .dashboard-project-meeting-card {
     flex: 1 1 auto;
     width: 100%;
@@ -2689,23 +2832,6 @@ a.resource-day-task:focus-visible {
 
 .dashboard-overview-simple .dashboard-overview-signal-row > [class*="col-"] {
     display: flex;
-}
-
-.dashboard-overview-simple .dashboard-overview-signal-card {
-    min-height: 5.5rem;
-    border-radius: .7rem;
-    transition: border-color .15s, transform .15s;
-}
-
-.dashboard-overview-simple .dashboard-overview-signal-card:hover,
-.dashboard-overview-simple .dashboard-overview-signal-card:focus-visible {
-    border-color: #9a78c9;
-    transform: translateY(-1px);
-}
-
-.dashboard-overview-simple .dashboard-project-issue-card:hover strong:first-child,
-.dashboard-overview-simple .dashboard-project-issue-card:focus-visible strong:first-child {
-    color: #4a1387;
 }
 
 .dashboard-overview-simple .dashboard-project-issue-count {
@@ -3064,7 +3190,7 @@ a.resource-day-task:focus-visible {
     white-space: nowrap;
 }
 
-/* Keep the three all-project summaries level without forcing unused card height. */
+/* Keep chart proportions consistent across all-project summaries. */
 @media (min-width: 1400px) {
     .dashboard-overview-simple .dashboard-all-projects-glance-row .dashboard-project-mini-chart {
         flex-basis: 48%;
@@ -3160,15 +3286,50 @@ a.resource-day-task:focus-visible {
 @media (min-width: 1200px) {
     .dashboard-resource .resource-insights-grid-weekly {
         display: grid !important;
-        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+        grid-template-rows: minmax(0, 1fr);
         align-items: stretch;
+        width: 100%;
+        height: 350px;
+        margin-right: auto !important;
+        margin-left: auto !important;
     }
 
     .dashboard-resource .resource-insights-grid-weekly > .col-12 {
         width: auto !important;
         max-width: none !important;
         min-width: 0;
+        min-height: 0;
     }
+
+    .dashboard-resource .resource-insights-grid-weekly > .col-12 > .card {
+        min-height: 0;
+    }
+
+    .dashboard-resource .resource-insights-grid-weekly .resource-load-distribution-card > .card-body,
+    .dashboard-resource .resource-insights-grid-weekly .resource-attention-card > .card-body {
+        min-height: 0;
+    }
+
+    .dashboard-resource .resource-insights-grid-weekly .resource-load-distribution {
+        gap: 1.25rem;
+    }
+
+    .dashboard-resource .resource-insights-grid-weekly .resource-load-legend {
+        flex: 0 0 170px;
+        width: 170px;
+    }
+
+    .dashboard-resource .resource-insights-grid-weekly .resource-load-donut {
+        flex-basis: 220px;
+        width: 220px;
+        height: 220px;
+        padding: 30px;
+    }
+}
+
+.dashboard-resource .resource-insights-grid-weekly + .resource-main-grid {
+    margin-top: 1.5rem !important;
 }
 
 .dashboard-resource .resource-load-distribution-card .card-body {
@@ -3642,5 +3803,126 @@ a.resource-day-task:focus-visible {
         width: calc(100% - 1rem);
         margin-right: auto;
         margin-left: auto;
+    }
+}
+
+/* Cost dashboard financial summaries and value-based charts. */
+.dashboard-cost .cost-financial-kpis > .col {
+    min-width: 0;
+}
+
+.dashboard-cost .cost-financial-kpi-card {
+    min-height: 126px;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.dashboard-cost a.cost-financial-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .35rem 1rem rgba(31, 45, 61, .12) !important;
+}
+
+.dashboard-cost .cost-financial-kpi-card .card-body {
+    padding: 1rem 1.1rem;
+}
+
+.dashboard-cost .cost-financial-kpi-value {
+    display: inline-block;
+    font-size: clamp(1.15rem, 1.35vw, 1.55rem);
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.dashboard-cost .cost-summary-chart-layout > [class*="col-"] {
+    min-width: 0;
+}
+
+.dashboard-cost .cost-summary-chart-layout .card {
+    min-height: 380px;
+}
+
+.dashboard-cost #cost-payment-chart,
+.dashboard-cost #cost-approval-chart {
+    display: flex;
+    min-height: 290px;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-cost .cost-project-finance-layout > [class*="col-"] {
+    min-width: 0;
+}
+
+.dashboard-cost .cost-project-finance-layout .card {
+    min-height: 380px;
+}
+
+.dashboard-cost #cost-project-comparison-chart {
+    display: flex;
+    min-height: 330px;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-cost .cost-project-analysis > [class*="col-"] {
+    min-width: 0;
+}
+
+.dashboard-cost .cost-project-donut-panel,
+.dashboard-cost .cost-project-list-panel {
+    height: 100%;
+    min-height: 330px;
+}
+
+.dashboard-cost .cost-project-list-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dashboard-cost .cost-project-list-search {
+    width: clamp(150px, 19vw, 230px);
+}
+
+.dashboard-cost .cost-project-list-scroll {
+    max-height: 340px;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.dashboard-cost .cost-project-list-scroll thead th {
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    background: #f7f8fb;
+}
+
+.dashboard-cost .cost-project-tooltip {
+    min-width: 235px;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-cost .cost-summary-chart-layout .card {
+        min-height: 350px;
+    }
+
+    .dashboard-cost .cost-project-finance-layout .card {
+        min-height: 360px;
+    }
+
+    .dashboard-cost .cost-project-donut-panel {
+        min-height: 300px;
+    }
+
+    .dashboard-cost #cost-project-comparison-chart {
+        min-height: 300px;
+    }
+
+    .dashboard-cost .cost-project-list-panel {
+        min-height: 0;
+    }
+
+    .dashboard-cost .cost-project-list-search {
+        width: min(190px, 46vw);
     }
 }
