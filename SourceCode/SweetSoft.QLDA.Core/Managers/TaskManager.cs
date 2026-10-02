@@ -1098,7 +1098,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     }
                     taskListHtml.Append("</ul>");
 
-                    string bellTitle = $"Tiến độ dự án [{projectGroup.Key.TenDuAn}]";
+                    string bellTitle = $"Cảnh báo lịch biểu chung thay đổi: {count} công việc thuộc [{projectGroup.Key.TenDuAn}] bị ảnh hưởng";
                     string bellContent = $"Có {count} công việc bị ảnh hưởng do {detailReason.ToLower()} Kiểm tra Email để xem chi tiết.";
 
                     TblThongBao notification = ThongBaoManager.Instance.CreateScheduleChangeNotification(

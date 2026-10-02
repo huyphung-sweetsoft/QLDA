@@ -174,7 +174,7 @@
                                         </td>
                                         <td>
                                         <div class="d-flex flex-wrap justify-content-center gap-1 py-1">
-                                            <asp:HyperLink runat="server" CssClass="btn btn-sm btn-outline-primary"
+                                            <asp:HyperLink runat="server" CssClass="btn btn-sm btn-outline-success"
                                                 Text="<i class='fas fa-eye me-1'></i>Xem trước"
                                                 NavigateUrl='<%# FileUrl(Eval("FileNguonUrl")) %>'
                                                 data-path='<%# FileUrl(Eval("FileNguonUrl")) %>'
@@ -228,7 +228,7 @@
             </div>
             <div class="signing-result-upload">
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <div><div class="fw-semibold">Bản đã ký</div><div class="small text-muted">Word, PDF, JPG hoặc PNG · 1 file, tối đa 1 MB.</div></div>
+                    <div><div class="fw-semibold">Bản đã ký</div><div class="small text-muted">Word, PDF, JPG hoặc PNG · 1 file, tối đa 20 MB.</div></div>
                     <button type="button" class="btn btn-sm btn-outline-primary"
                         onclick="FilesBox.FocusFileBox(this.closest('.signing-result-upload').querySelector('.file-box')); FilesBox.AddFile();">
                         <i class="fas fa-upload me-1" aria-hidden="true"></i>Chọn / thay file

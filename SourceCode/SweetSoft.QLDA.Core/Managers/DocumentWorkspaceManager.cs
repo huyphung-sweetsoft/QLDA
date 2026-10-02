@@ -9,6 +9,28 @@ namespace SweetSoft.QLDA.Core.Managers
 {
     public partial class DocumentManager
     {
+        public DocumentFileSet PlanSnapshotRestore(Guid documentId, Guid versionId, Guid? fileId)
+        {
+            EnsureDocumentAccess(documentId, DocumentPermissionKeys.ManageFiles);
+            var plan = _repository.PlanSnapshotRestore(documentId, versionId, fileId);
+            foreach (Guid id in plan.FileIds)
+                if (!IsDocumentFileAvailable(_repository.GetDocumentVersionFileById(documentId, id)))
+                    throw new InvalidOperationException("Không thể khôi phục: có file không còn tồn tại. Hãy kiểm tra danh sách file ở mốc này.");
+            return plan;
+        }
+
+        public DocumentFileSet RestoreSnapshot(Guid documentId, Guid versionId, Guid? fileId, Guid? expectedVersion)
+        {
+            PlanSnapshotRestore(documentId, versionId, fileId);
+            var saved = _repository.RestoreSnapshot(documentId, versionId, fileId, expectedVersion, GetCurrentUserName(), DateTime.UtcNow);
+            if (saved.Created)
+                WriteDocumentAudit(documentId, DocumentActivityTypeKeys.RestoreVersion,
+                    DocumentActivityReferenceKeys.DocumentVersion, saved.VersionId,
+                    "Mốc nguồn: " + versionId + "; File: " + fileId,
+                    fileId.HasValue ? "Khôi phục một dòng file từ lịch sử bộ file." : "Khôi phục toàn bộ danh sách file từ lịch sử.");
+            return saved;
+        }
+
         public DataTable GetWorkspaceFiles(Guid documentId)
         {
             EnsureDocumentAccess(documentId, ActionKeys.View);

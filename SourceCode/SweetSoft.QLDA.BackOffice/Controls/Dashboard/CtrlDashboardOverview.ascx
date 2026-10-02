@@ -139,13 +139,15 @@
             <li><strong>Dự án trễ hạn:</strong> chỉ dự án đang thực hiện và ngày hiện tại đã qua ngày kết thúc dự kiến.</li>
             <li><strong>Đến hạn trong 7 ngày tới:</strong> dự án đang thực hiện, có hạn dự kiến từ hôm nay đến hết 7 ngày tới.</li>
             <li><strong>Khoản chi chờ duyệt:</strong> đếm các khoản chi chưa được duyệt, không phải số tiền đã chi.</li>
-            <li><strong>Tình hình phân công công việc:</strong> phân loại theo lịch giao việc trong tuần — chưa được giao việc, còn khả năng nhận thêm việc, phân công phù hợp hoặc quá tải; đây là tải dự kiến, không phải giờ làm thực tế.</li>
+            <li><strong>Thu chi:</strong> chỉ tổng hợp từ các dự án đã Hoàn thành, cùng phạm vi với Dashboard Chi phí.</li>
+            <li><strong>Tình hình phân công công việc:</strong> căn cứ số việc nhiều nhất trong một ngày của tuần: 0 là Rảnh, 1 là Bình thường, từ 2 là Quá tải. Đây là lịch giao việc dự kiến, không phải giờ làm thực tế.</li>
             <li><strong>Dự án cần xử lý:</strong> dự án trễ hạn, có công việc quá hạn hoặc có vấn đề ảnh hưởng cao. Một dự án chỉ được đếm một lần.</li>
             <% } else { %>
             <li><strong>Công việc quá hạn:</strong> chưa hoàn thành và đã qua ngày kết thúc dự kiến. <strong>Đến hạn trong 7 ngày:</strong> chưa hoàn thành, hạn từ hôm nay đến hết 7 ngày tới.</li>
             <li><strong>Chi phí chờ duyệt:</strong> tổng tiền của các khoản chi chưa được duyệt; chưa tính vào “Chi phí đã duyệt”.</li>
             <li><strong>Còn phải thu:</strong> giá trị hợp đồng trừ tiền đã thu; nếu chưa có giá trị hợp đồng, dùng tổng các đợt thanh toán chưa thu.</li>
-            <li><strong>Tình hình phân công công việc:</strong> chưa có việc được giao, còn khả năng nhận thêm, phân công phù hợp hoặc quá tải theo lịch tuần; không phải giờ làm thực tế.</li>
+            <li><strong>Thu chi:</strong> chỉ có số liệu khi dự án đã Hoàn thành, cùng phạm vi với Dashboard Chi phí.</li>
+            <li><strong>Tình hình phân công công việc:</strong> căn cứ số việc nhiều nhất trong một ngày của tuần thuộc dự án: 0 là Rảnh, 1 là Bình thường, từ 2 là Quá tải; không phải giờ làm thực tế.</li>
             <% } %>
         </ul>
     </details>
@@ -339,7 +341,7 @@
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
-                    <p class="dashboard-project-glance-caption">Tổng hợp thu chi · <%= AllFinanceProjectsWithActivityCount %>/<%= Summary.FinanceSummary.Projects.Count %> dự án có phát sinh</p>
+                    <p class="dashboard-project-glance-caption"><%= Summary.FinanceSummary.Projects.Count == 0 ? "Chưa có dự án hoàn thành trong phạm vi" : "Tổng hợp thu chi · " + AllFinanceProjectsWithActivityCount + "/" + Summary.FinanceSummary.Projects.Count + " dự án hoàn thành có phát sinh" %></p>
                     <div class="dashboard-finance-chart-layout">
                         <div id="overviewAllFinanceChart" class="dashboard-finance-chart"
                             data-values="<%= Summary.FinanceSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.ApprovedCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= Summary.FinanceSummary.PendingApprovalCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
@@ -347,7 +349,7 @@
                             <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="received"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Đã thu</span></button>
                             <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="outstanding"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Còn phải thu</span></button>
                             <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="cost"><i class="dashboard-chart-dot" style="background:#518cdd"></i><span>Chi đã duyệt</span></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewPendingCostsModal" data-finance-filter="pending"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Chi chờ duyệt</span></button>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllFinanceModal" data-finance-filter="pending"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Chi chờ duyệt</span></button>
                         </div>
                     </div>
                 </div>
@@ -389,14 +391,13 @@
                     <div class="dashboard-project-chart-layout">
                         <div class="dashboard-project-mini-chart" style="position:relative!important;">
                             <div id="overviewAllResourceChart" class="dashboard-project-chart-canvas"
-                                data-values="<%= AllResourceNoLoadCount %>,<%= AllResourceUnderloadedCount %>,<%= AllResourceBalancedCount %>,<%= AllResourceOverloadedCount %>"></div>
+                                data-values="<%= AllResourceNoLoadCount %>,<%= AllResourceNormalCount %>,<%= AllResourceOverloadedCount %>"></div>
                             <span class="dashboard-project-chart-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;"><strong><%= AllProjectsResourceSummary.TotalEmployeeCount %></strong><small>nhân sự</small></span>
                         </div>
                         <div class="dashboard-project-chart-legend">
-                            <button type="button" title="Chưa được giao việc" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#8592a6"></i><span>Chưa được giao việc</span></button>
-                            <button type="button" title="Còn khả năng nhận thêm việc" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#38a99b"></i><span>Còn khả năng nhận thêm việc</span></button>
-                            <button type="button" title="Phân công phù hợp" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Phân công phù hợp</span></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="3"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Quá tải</span></button>
+                            <button type="button" title="Rảnh" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Rảnh</span></button>
+                            <button type="button" title="Bình thường" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#efb63e"></i><span>Bình thường</span></button>
+                            <button type="button" title="Quá tải" data-bs-toggle="modal" data-bs-target="#overviewAllResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#ef6d63"></i><span>Quá tải</span></button>
                         </div>
                     </div>
                 </div>
@@ -542,7 +543,7 @@
             <div class="modal-header"><h5 class="modal-title" id="overviewAllFinanceTitle">Thu tiền và chi phí theo dự án</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
-                <p class="small text-muted mb-2">Một dự án đã thu một phần vẫn có thể còn phải thu, nên có thể xuất hiện ở cả hai danh sách.</p>
+                <p class="small text-muted mb-2">Chỉ thống kê dự án đã Hoàn thành. Một dự án đã thu một phần vẫn có thể còn phải thu, nên có thể xuất hiện ở cả hai danh sách.</p>
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                     <input type="search" class="form-control dashboard-attention-search" id="overviewAllFinanceSearch" placeholder="Tìm dự án" aria-label="Tìm dự án" />
                     <strong class="dashboard-list-count" id="overviewAllFinanceCount"></strong>
@@ -551,7 +552,7 @@
                     <thead><tr><th>Dự án</th><th class="text-end">Đã thu</th><th class="text-end">Còn phải thu</th><th class="text-end">Chi phí đã duyệt</th><th class="text-end">Chi phí chờ duyệt</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var project in GetAllProjectsFinanceRows()) { %>
                     <tr class="overview-all-finance-row" data-received="<%= project.ReceivedPayment > 0 ? "1" : "0" %>"
-                        data-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>" data-cost="<%= project.ApprovedCost > 0 ? "1" : "0" %>"
+                        data-outstanding="<%= project.OutstandingPayment > 0 ? "1" : "0" %>" data-cost="<%= project.ApprovedCost > 0 ? "1" : "0" %>" data-pending="<%= project.PendingApprovalCost > 0 ? "1" : "0" %>"
                         data-search="<%: (project.ProjectCode + " " + project.ProjectName).ToLowerInvariant() %>">
                         <td><strong><%: project.ProjectCode %></strong><br /><small><%: project.ProjectName %></small></td>
                         <td class="text-end text-nowrap"><%: FormatProjectMoney(project.ReceivedPayment) %></td>
@@ -572,20 +573,19 @@
             <div class="modal-header"><h5 class="modal-title" id="overviewAllResourceTitle">Tình hình phân công công việc tuần này</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div>
             <div class="modal-body">
-                <p class="small text-muted">Một nhân sự được tính một lần dù tham gia nhiều dự án. Mức tải dự kiến theo lịch giao việc.</p>
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                     <input type="search" class="form-control dashboard-attention-search" id="overviewAllResourceSearch" placeholder="Tìm nhân sự hoặc dự án" aria-label="Tìm nhân sự hoặc dự án" />
                     <strong class="dashboard-list-count" id="overviewAllResourceCount"></strong>
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0">
-                    <thead><tr><th>Nhân sự</th><th>Dự án có việc tuần này</th><th class="text-end">Tình hình phân công</th><th class="text-end">Ngày giao / ngày làm việc</th><th>Chi tiết</th></tr></thead><tbody>
+                    <thead><tr><th>Nhân sự</th><th>Dự án có việc tuần này</th><th class="text-end">Trạng thái</th><th class="text-end">Nhiều việc nhất trong một ngày</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var employee in AllProjectsResourceSummary.EmployeeLoads) { var week = GetAllProjectsWeekLoad(employee); var loadCode = GetAllProjectsWeekLoadCode(employee); var projectNames = GetAllProjectsWeekProjectNames(employee); %>
                     <tr class="overview-all-resource-row" data-load="<%= loadCode %>"
                         data-search="<%: (employee.DisplayName + " " + employee.UserName + " " + projectNames).ToLowerInvariant() %>">
                         <td><strong><%: employee.DisplayName %></strong></td>
                         <td><%: string.IsNullOrEmpty(projectNames) ? "Chưa có việc trong tuần" : projectNames %></td>
-                        <td class="text-end"><%: GetProjectWeekLoadText(loadCode) %> · <%= week == null ? "0" : week.AllocationPercent.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %>%</td>
-                        <td class="text-end text-nowrap"><%= week == null ? "0" : week.AllocatedDays.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %> / <%= week == null ? "0" : week.CapacityDays.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %> ngày</td>
+                        <td class="text-end"><%: GetProjectWeekLoadText(loadCode) %></td>
+                        <td class="text-end text-nowrap"><%= week == null ? 0 : week.PeakDailyTaskCount %> công việc</td>
                         <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetEmployeeResourceUrl(employee.EmployeeId) %>">Xem chi tiết</a></td>
                     </tr><% } %>
                     </tbody></table></div>
@@ -616,7 +616,7 @@
         </button></div>
         <% if (ShowProjectResourceSummary && ProjectResourceSummary != null) { %>
         <div class="col"><button type="button" class="card w-100 h-100 text-start dashboard-simple-kpi dashboard-project-signal"
-            data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="3">
+            data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="2">
             <span class="card-body"><span class="text-muted d-block">Nhân sự quá tải tuần này</span><strong class="fs-3 <%= ProjectResourceOverloadedCount > 0 ? "text-danger" : "text-dark" %>"><%= ProjectResourceOverloadedCount %></strong>
                 <span class="dashboard-kpi-icon bg-danger-subtle text-danger"><i class="bx bx-group"></i></span></span>
         </button></div>
@@ -648,7 +648,7 @@
             <div class="card h-100 dashboard-project-glance dashboard-project-glance-cost">
                 <div class="card-body">
                     <h5 class="dashboard-project-glance-title"><i class="bx bx-money"></i> Thu chi <small>lũy kế</small></h5>
-                    <p class="dashboard-project-glance-caption"><%= ProjectCostSummary.TotalContractValue > 0 ? "Hợp đồng: " + FormatProjectMoney(ProjectCostSummary.TotalContractValue) : "Chưa ghi nhận giá trị hợp đồng" %></p>
+                    <p class="dashboard-project-glance-caption"><%= ProjectCostSummary.ProjectCount == 0 ? "Chỉ thống kê dự án đã hoàn thành" : ProjectCostSummary.TotalContractValue > 0 ? "Hợp đồng: " + FormatProjectMoney(ProjectCostSummary.TotalContractValue) : "Chưa ghi nhận giá trị hợp đồng" %></p>
                     <div class="dashboard-finance-chart-layout">
                         <div id="overviewProjectFinanceChart" class="dashboard-finance-chart"
                             data-values="<%= ProjectCostSummary.ReceivedPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.OutstandingPayment.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.ActualCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>,<%= ProjectCostSummary.PendingApprovalCost.ToString(System.Globalization.CultureInfo.InvariantCulture) %>"></div>
@@ -672,14 +672,13 @@
                     <div class="dashboard-project-chart-layout">
                         <div class="dashboard-project-mini-chart" style="position:relative!important;">
                             <div id="overviewProjectResourceChart" class="dashboard-project-chart-canvas"
-                                data-values="<%= ProjectResourceNoLoadCount %>,<%= ProjectResourceUnderloadedCount %>,<%= ProjectResourceBalancedCount %>,<%= ProjectResourceOverloadedCount %>"></div>
+                                data-values="<%= ProjectResourceNoLoadCount %>,<%= ProjectResourceNormalCount %>,<%= ProjectResourceOverloadedCount %>"></div>
                             <span class="dashboard-project-chart-center" style="position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1!important;pointer-events:none!important;z-index:20!important;"><strong><%= ProjectResourceSummary.TotalEmployeeCount %></strong><small>nhân sự</small></span>
                         </div>
                         <div class="dashboard-project-chart-legend">
-                            <button type="button" title="Chưa được giao việc" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#8592a6"></i><span>Chưa được giao việc</span></button>
-                            <button type="button" title="Còn khả năng nhận thêm việc" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#38a99b"></i><span>Còn khả năng nhận thêm việc</span></button>
-                            <button type="button" title="Phân công phù hợp" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#e2a52e"></i><span>Phân công phù hợp</span></button>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="3"><i class="dashboard-chart-dot" style="background:#e45d53"></i><span>Quá tải</span></button>
+                            <button type="button" title="Rảnh" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="0"><i class="dashboard-chart-dot" style="background:#35a875"></i><span>Rảnh</span></button>
+                            <button type="button" title="Bình thường" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="1"><i class="dashboard-chart-dot" style="background:#efb63e"></i><span>Bình thường</span></button>
+                            <button type="button" title="Quá tải" data-bs-toggle="modal" data-bs-target="#overviewProjectResourceModal" data-load-filter="2"><i class="dashboard-chart-dot" style="background:#ef6d63"></i><span>Quá tải</span></button>
                         </div>
                     </div>
                 </div>
@@ -806,12 +805,12 @@
                     <input type="search" class="form-control dashboard-attention-search" id="overviewProjectResourceSearch" placeholder="Tìm nhân sự" aria-label="Tìm nhân sự" />
                 </div>
                 <div class="table-responsive"><table class="table table-bordered table-hover align-middle dashboard-overview-table mb-0"><thead>
-                    <tr><th>Nhân sự</th><th>Tình hình phân công</th><th>Ngày giao / ngày làm việc</th><th>Chi tiết</th></tr></thead><tbody>
+                    <tr><th>Nhân sự</th><th>Trạng thái</th><th>Nhiều việc nhất trong một ngày</th><th>Chi tiết</th></tr></thead><tbody>
                     <% foreach (var employee in ProjectResourceSummary.EmployeeLoads) { var week = GetProjectWeekLoad(employee); var loadCode = GetProjectWeekLoadCode(employee); %>
                     <tr class="overview-project-resource-row" data-load="<%= loadCode %>" data-search="<%: (employee.DisplayName + " " + employee.UserName).ToLowerInvariant() %>">
                         <td><strong><%: employee.DisplayName %></strong></td>
-                        <td><%: GetProjectWeekLoadText(loadCode) %> · <%= week == null ? "0" : week.AllocationPercent.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %>%</td>
-                        <td><%= week == null ? "0" : week.AllocatedDays.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %> / <%= week == null ? "0" : week.CapacityDays.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) %> ngày</td>
+                        <td><%: GetProjectWeekLoadText(loadCode) %></td>
+                        <td><%= week == null ? 0 : week.PeakDailyTaskCount %> công việc</td>
                         <td><a class="btn btn-outline-primary btn-sm text-nowrap" href="<%: GetProjectResourceEmployeeUrl(employee.EmployeeId) %>">Xem chi tiết</a></td>
                     </tr><% } %>
                 </tbody></table></div>
@@ -1185,7 +1184,7 @@
             var empty = document.getElementById('overviewProjectResourceEmpty');
             var title = document.getElementById('overviewProjectResourceTitle');
             var rows = modal.querySelectorAll('.overview-project-resource-row');
-            var labels = ['Chưa được giao việc', 'Còn khả năng nhận thêm việc', 'Phân công phù hợp', 'Quá tải'];
+            var labels = ['Rảnh', 'Bình thường', 'Quá tải'];
             var filter = 'all';
             function refresh() {
                 var query = (input.value || '').trim().toLocaleLowerCase();
@@ -1274,13 +1273,13 @@
         bindAllProjectsBreakdown('overviewAllFinanceModal', '.overview-all-finance-row', 'data-finance-filter',
             {
                 all: 'Thu tiền và chi phí theo dự án', received: 'Đã thu theo dự án',
-                outstanding: 'Còn phải thu theo dự án', cost: 'Chi phí đã duyệt theo dự án'
+                outstanding: 'Còn phải thu theo dự án', cost: 'Chi phí đã duyệt theo dự án',
+                pending: 'Chi phí chờ duyệt theo dự án'
             }, 'dự án');
         bindAllProjectsBreakdown('overviewAllResourceModal', '.overview-all-resource-row', 'data-load',
             {
-                all: 'Tình hình phân công công việc tuần này', '0': 'Nhân sự chưa được giao việc tuần này',
-                '1': 'Nhân sự còn khả năng nhận thêm việc tuần này', '2': 'Nhân sự được phân công phù hợp tuần này',
-                '3': 'Nhân sự quá tải tuần này'
+                all: 'Tình hình phân công công việc tuần này', '0': 'Nhân sự rảnh tuần này',
+                '1': 'Nhân sự bình thường tuần này', '2': 'Nhân sự quá tải tuần này'
             }, 'nhân sự');
         bindSignalModal('pending-cost');
         bindSignalModal('overloaded-employee');
@@ -1455,7 +1454,11 @@
                 legend: { show: false },
                 dataLabels: {
                     enabled: true,
-                    formatter: function (percentage) { return formatChartShare(percentage); },
+                    formatter: function (percentage, options) {
+                        return isResourceChart
+                            ? String(values[options.seriesIndex] || 0)
+                            : formatChartShare(percentage);
+                    },
                     style: { fontSize: '10px', fontWeight: 800, colors: ['#fff'] },
                     dropShadow: { enabled: true, top: 1, left: 0, blur: 2, color: '#1b293e', opacity: .55 }
                 },
@@ -1587,8 +1590,8 @@
             var resource = document.getElementById('overviewProjectResourceChart');
             if (resource) {
                 renderProjectMiniChart('overviewProjectResourceChart',
-                    ['Chưa được giao việc', 'Còn khả năng nhận thêm việc', 'Phân công phù hợp', 'Quá tải'],
-                    ['#8592a6', '#38a99b', '#e2a52e', '#e45d53'],
+                    ['Rảnh', 'Bình thường', 'Quá tải'],
+                    ['#35a875', '#efb63e', '#ef6d63'],
                     'nhân sự', false);
             }
             renderProjectMiniChart('overviewAllTasksChart',
@@ -1597,8 +1600,8 @@
                 'công việc', false);
             renderFinanceBreakdownChart('overviewAllFinanceChart');
             renderProjectMiniChart('overviewAllResourceChart',
-                ['Chưa được giao việc', 'Còn khả năng nhận thêm việc', 'Phân công phù hợp', 'Quá tải'],
-                ['#8592a6', '#38a99b', '#e2a52e', '#e45d53'],
+                ['Rảnh', 'Bình thường', 'Quá tải'],
+                ['#35a875', '#efb63e', '#ef6d63'],
                 'nhân sự', false);
         }
         if (document.readyState === 'loading') {

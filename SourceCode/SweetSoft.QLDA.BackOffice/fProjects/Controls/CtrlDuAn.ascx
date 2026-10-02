@@ -4,10 +4,10 @@
 
 <style>
 .project-status-badge {
-    min-width: 116px;
-    height: 30px;
-    padding: 0 12px;
-    font-size: 13px;
+    min-width: 100px;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
     font-weight: 500;
     line-height: 1;
     white-space: nowrap;
@@ -174,9 +174,12 @@
                                 ResourceKey='<%# BackEndResourceKeys.DETAIL%>'
                                 ButtonIcon="fas fa-eye"></SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
-                                ID="lbtEdit" CommandName="ITEM_EDIT" CssClass="btn-grid-action text-decoration-underline text-warning"
-                                ResourceKey='<%# BackEndResourceKeys.EDIT%>'
-                                ButtonIcon="fas fa-pencil-alt"></SweetSoft:SmartLinkButton>
+                                ID="lbtEdit" CommandName="ITEM_EDIT"
+                                CssClass='<%# IsProjectLocked(Eval("TrangThai")) ? "btn-grid-action text-decoration-underline text-primary" : "btn-grid-action text-decoration-underline text-warning" %>'
+                                ResourceKey='<%# BackEndResourceKeys.EDIT %>'
+                                ButtonIcon='<%# GetEditButtonIcon(Eval("TrangThai")) %>'
+                                ToolTip='<%# GetEditButtonToolTip(Eval("TrangThai")) %>'>
+                            </SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
                                 ID="SmartLinkButton1" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
                                 ResourceKey='<%# BackEndResourceKeys.DELETE%>'

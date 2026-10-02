@@ -29,6 +29,76 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             documentInfoEditor.OpenDocumentEditor(documentId);
         }
         protected CheckBoxList cblCustomerDeliveryFiles;
+        protected ExtraModal mdlSnapshotRestore;
+        protected Repeater rptSnapshotRestoreChanges;
+        protected Label lblSnapshotRestoreSummary;
+        protected Button btnSnapshotRestoreConfirm;
+
+        protected void rptVersionFiles_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName != "RESTORE_SNAPSHOT_FILE") return;
+            try
+            {
+                Guid fileId;
+                if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out fileId) || ViewState["ViewedSnapshotId"] == null) return;
+                PreviewSnapshotRestore((Guid)ViewState["ViewedSnapshotId"], fileId);
+            }
+            catch (Exception ex) { ShowVersionHistoryNotify(ex.Message, MSGType.Warning); }
+        }
+
+        private void PreviewSnapshotRestore(Guid sourceVersion, Guid? fileId)
+        {
+            if (!CURRENT_PAGE.IsEdit) throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa hồ sơ.");
+            var manager = CreateRequestDocumentManager();
+            var plan = manager.PlanSnapshotRestore(WorkspaceDocumentId, sourceVersion, fileId);
+            var current = manager.GetCurrentDocumentFileSet(WorkspaceDocumentId);
+            if (current.VersionId != plan.VersionId) throw new InvalidOperationException("Bộ file vừa thay đổi. Hãy thử lại.");
+            var added = plan.FileIds.Except(current.FileIds).ToList();
+            var removed = current.FileIds.Except(plan.FileIds).ToList();
+            var changes = new DataTable();
+            changes.Columns.Add("Action"); changes.Columns.Add("Name");
+            var versions = manager.GetDocumentVersions(WorkspaceDocumentId);
+            foreach (Guid id in removed.Concat(added))
+            {
+                var row = versions.AsEnumerable().FirstOrDefault(r => r["IdFile"] != DBNull.Value && (Guid)r["IdFile"] == id);
+                string name = row == null ? id.ToString() : GetFileName(row["TenFileGoc"], row["TenFile"]);
+                changes.Rows.Add(added.Contains(id) ? "Đưa lại vào danh sách" : "Rời danh sách hiện tại", name);
+            }
+            ViewState["RestoreSnapshotSource"] = sourceVersion;
+            ViewState["RestoreSnapshotFile"] = fileId;
+            ViewState["RestoreSnapshotExpected"] = current.VersionId;
+            lblSnapshotRestoreSummary.Text = HttpUtility.HtmlEncode((fileId.HasValue ? "Khôi phục file đã chọn" : "Khôi phục cả bộ file")
+                + ": " + added.Count + " bản file được đưa lại, " + removed.Count + " bản rời danh sách; giữ nguyên "
+                + current.FileIds.Intersect(plan.FileIds).Count() + " file. Sau khôi phục có " + plan.FileIds.Count + " file.");
+            rptSnapshotRestoreChanges.DataSource = changes;
+            rptSnapshotRestoreChanges.DataBind();
+            btnSnapshotRestoreConfirm.Visible = changes.Rows.Count > 0;
+            CloseWorkspaceModal(mdlVersionFiles);
+            KeepVersionsTabOpen();
+            OpenSigningModal(mdlSnapshotRestore, "PreviewSnapshotRestore");
+        }
+
+        protected void btnSnapshotRestoreConfirm_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!CURRENT_PAGE.IsEdit || ViewState["RestoreSnapshotSource"] == null)
+                    throw new InvalidOperationException("Hãy chọn lại mốc lịch sử cần khôi phục.");
+                var result = CreateRequestDocumentManager().RestoreSnapshot(WorkspaceDocumentId,
+                    (Guid)ViewState["RestoreSnapshotSource"], (Guid?)ViewState["RestoreSnapshotFile"],
+                    (Guid?)ViewState["RestoreSnapshotExpected"]);
+                ViewState.Remove("RestoreSnapshotSource");
+                CloseWorkspaceModal(mdlSnapshotRestore);
+                InitControls(WorkspaceDocumentId);
+                BindWorkspace();
+                ShowVersionHistoryNotify(result.Created ? "Đã khôi phục và tạo mốc lịch sử mới." : "Bộ file đã giống mốc đã chọn.", MSGType.Success);
+            }
+            catch (Exception ex)
+            {
+                ShowVersionHistoryNotify(ex.Message, MSGType.Warning);
+                OpenSigningModal(mdlSnapshotRestore, "SnapshotRestoreError");
+            }
+        }
         protected void btnMoreActivity_Click(object sender, EventArgs e) { LoadActivityPage(false); }
         protected void btnRefreshActivity_Click(object sender, EventArgs e) { LoadActivityPage(true); }
 
@@ -94,7 +164,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if(script==null)return;
             foreach(Control control in new Control[]{grdWorkspace,grdFileTimeline,btnWorkspaceAdd,btnWorkspaceSign,btnWorkspaceSend,
                 btnWorkspaceFilter,btnWorkspaceReplace,btnWorkspaceRemove,ddlWorkspaceStatus,btnWorkspaceConfirm,btnWorkspaceCancelConfirm,
-                btnMoreActivity,btnRefreshActivity,btnEditDocumentInfo})
+                btnMoreActivity,btnRefreshActivity,btnEditDocumentInfo,btnSnapshotRestoreConfirm,btnClearWorkspaceSelection,
+                btnWorkspaceRemoveConfirm,btnMoreCustomerHistory})
                 script.RegisterAsyncPostBackControl(control);
             // FileUpload needs multipart full postback; the other commands do not.
             script.RegisterPostBackControl(btnWorkspaceUpload);
@@ -111,8 +182,12 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private void BindWorkspace()
         {
+            CaptureWorkspaceSelection();
             var manager=DocumentManager.Instance;
             var table=manager.GetWorkspaceFiles(WorkspaceDocumentId);
+            var selected = WorkspaceSelection;
+            selected.IntersectWith(table.AsEnumerable().Select(r => (Guid)r["IdFile"]));
+            SaveWorkspaceSelection(selected);
             var rows=table.AsEnumerable();
             string search=(txtWorkspaceSearch.Text??"").Trim();
             if(search.Length>0)rows=rows.Where(r=>Convert.ToString(r["TenFile"]).IndexOf(search,StringComparison.CurrentCultureIgnoreCase)>=0);
@@ -123,7 +198,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if(grdWorkspace.PageIndex*grdWorkspace.PageSize>=filtered.Rows.Count)grdWorkspace.PageIndex=0;
             grdWorkspace.DataSource=filtered;
             grdWorkspace.DataBind();
-            lblWorkspaceCount.Text=filtered.Rows.Count+" file · Trang "+(grdWorkspace.PageIndex+1);
+            foreach (GridViewRow row in grdWorkspace.Rows)
+                ((CheckBox)row.FindControl("chkWorkspaceFile")).Checked = selected.Contains((Guid)grdWorkspace.DataKeys[row.RowIndex]["IdFile"]);
+            int first = filtered.Rows.Count == 0 ? 0 : grdWorkspace.PageIndex * grdWorkspace.PageSize + 1;
+            int last = Math.Min(first + grdWorkspace.Rows.Count - 1, filtered.Rows.Count);
+            lblWorkspaceCount.Text = "Hiển thị " + first + "–" + Math.Max(0, last) + " của " + filtered.Rows.Count + " file";
             btnWorkspaceAdd.Visible=manager.CanAccessDocument(WorkspaceDocumentId,DocumentPermissionKeys.ManageFiles);
             btnWorkspaceSign.Visible=manager.CanAccessDocument(WorkspaceDocumentId,DocumentPermissionKeys.Signing);
             btnWorkspaceSend.Visible=manager.CanAccessDocument(WorkspaceDocumentId,DocumentPermissionKeys.CustomerDelivery);
@@ -132,12 +211,95 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         private List<Guid> SelectedWorkspaceFiles()
         {
-            var ids=new List<Guid>();
-            foreach(GridViewRow row in grdWorkspace.Rows)
-                if(((CheckBox)row.FindControl("chkWorkspaceFile")).Checked)
-                    ids.Add((Guid)grdWorkspace.DataKeys[row.RowIndex]["IdFile"]);
+            CaptureWorkspaceSelection();
+            var ids = WorkspaceSelection.ToList();
             if(ids.Count==0)throw new InvalidOperationException("Tích chọn file trong bảng trước khi thực hiện thao tác.");
             return ids;
+        }
+
+        protected Label lblWorkspaceSelection;
+        protected LinkButton btnClearWorkspaceSelection;
+        private bool workspaceSelectionCaptured;
+
+        private HashSet<Guid> WorkspaceSelection
+        {
+            get { return new HashSet<Guid>((Guid[])ViewState["WorkspaceSelection"] ?? new Guid[0]); }
+        }
+
+        private void SaveWorkspaceSelection(HashSet<Guid> selected)
+        {
+            ViewState["WorkspaceSelection"] = selected.ToArray();
+        }
+
+        private void CaptureWorkspaceSelection()
+        {
+            if (workspaceSelectionCaptured) return;
+            workspaceSelectionCaptured = true;
+            string documentId = hdfIdTaiLieu.Value;
+            if (Convert.ToString(ViewState["WorkspaceSelectionDocument"]) != documentId)
+            {
+                ViewState["WorkspaceSelectionDocument"] = documentId;
+                ViewState.Remove("WorkspaceSelection");
+                return;
+            }
+            if (!Page.IsPostBack) return;
+            var selected = WorkspaceSelection;
+            foreach (GridViewRow row in grdWorkspace.Rows)
+            {
+                Guid id = (Guid)grdWorkspace.DataKeys[row.RowIndex]["IdFile"];
+                var checkbox = (CheckBox)row.FindControl("chkWorkspaceFile");
+                if (checkbox.Checked) selected.Add(id); else selected.Remove(id);
+            }
+            SaveWorkspaceSelection(selected);
+        }
+
+        protected void btnClearWorkspaceSelection_Click(object sender, EventArgs e)
+        {
+            SaveWorkspaceSelection(new HashSet<Guid>());
+            BindWorkspace();
+        }
+
+        private void RegisterWorkspaceSelectionSummary()
+        {
+            var selected = WorkspaceSelection;
+            btnWorkspaceSign.Text = "Trình ký" + (selected.Count > 0 ? " (" + selected.Count + ")" : "");
+            btnWorkspaceSend.Text = "Gửi khách" + (selected.Count > 0 ? " (" + selected.Count + ")" : "");
+            foreach (var button in new[] { btnWorkspaceSign, btnWorkspaceSend })
+            {
+                if (selected.Count == 0) button.Attributes["disabled"] = "disabled";
+                else button.Attributes.Remove("disabled");
+            }
+            int visibleSelected = grdWorkspace.Rows.Cast<GridViewRow>().Count(row =>
+                selected.Contains((Guid)grdWorkspace.DataKeys[row.RowIndex]["IdFile"]));
+            lblWorkspaceSelection.Text = "Đã chọn " + selected.Count + " file";
+            lblWorkspaceSelection.Attributes["data-hidden-selected"] = Math.Max(0, selected.Count - visibleSelected).ToString();
+            string script = @"(function(){
+                var tableId='" + grdWorkspace.ClientID + @"', labelId='" + lblWorkspaceSelection.ClientID + @"';
+                function sync(){
+                    var table=document.getElementById(tableId), label=document.getElementById(labelId);
+                    if(!table||!label)return;
+                    var boxes=Array.from(table.querySelectorAll('[data-workspace-select] input[type=checkbox], input[type=checkbox][data-workspace-select]'));
+                    var count=boxes.filter(function(c){return c.checked;}).length;
+                    var hidden=Number(label.getAttribute('data-hidden-selected'))||0;
+                    var total=hidden+count;
+                    [['" + btnWorkspaceSign.ClientID + @"','Trình ký'],['" + btnWorkspaceSend.ClientID + @"','Gửi khách']].forEach(function(item){
+                        var button=document.getElementById(item[0]);if(!button)return;
+                        button.disabled=total===0;button.value=item[1]+(total?' ('+total+')':'');
+                        button.setAttribute('aria-disabled',total===0?'true':'false');
+                    });
+                    label.textContent='Đã chọn '+(hidden+count)+' file'+(hidden?' ('+hidden+' file ngoài trang đang xem)':'');
+                    var header=table.querySelector('[data-workspace-select-page]');
+                    if(header){header.checked=boxes.length>0&&count===boxes.length;header.indeterminate=count>0&&count<boxes.length;}
+                }
+                if(!window[tableId+'_selectionBound']){
+                    window[tableId+'_selectionBound']=true;
+                    document.addEventListener('change',function(e){var table=document.getElementById(tableId);if(table&&table.contains(e.target)&&e.target.type==='checkbox')sync();});
+                    if(window.Sys&&Sys.Application)Sys.Application.add_load(sync);
+                    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});
+                }
+                sync();
+            })();";
+            ScriptManager.RegisterStartupScript(Page, GetType(), ClientID + "_WorkspaceSelection", script, true);
         }
 
         protected void WorkspaceFilterChanged(object sender,EventArgs e) { grdWorkspace.PageIndex=0; BindWorkspace(); }
@@ -148,24 +310,99 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             return status=="CHUA_TRINH"?"Chưa trình ký":status=="THU_HOI"?"Đã thu hồi":GetSigningStatusText(value);
         }
 
-        protected string WorkspaceDeliveryFilesText(object value)
+        protected ExtraModal mdlDeliveryFiles;
+        protected Repeater rptDeliveryFiles;
+        protected Label lblDeliveryFilesContext;
+
+        protected string DeliveryFilesSummary(object value)
         {
-            if(value==null || value==DBNull.Value || string.IsNullOrWhiteSpace(Convert.ToString(value)))
-                return "Lần gửi cũ: xem lịch sử thay đổi hồ sơ.";
             try
             {
-                return string.Join("; ",Newtonsoft.Json.Linq.JArray.Parse(Convert.ToString(value))
-                    .Select(f=>Convert.ToString(f["TenFile"])+" · v"+Convert.ToString(f["FileVersion"])
-                        +((bool?)f["DaKy"]==true?" (bản đã ký)":" (bản chưa ký)")));
+                int count = Newtonsoft.Json.Linq.JArray.Parse(Convert.ToString(value)).OfType<Newtonsoft.Json.Linq.JObject>().Count();
+                return count > 0 ? count + " file đã gửi · Xem danh sách" : "Xem thông tin file đã gửi";
             }
-            catch(Newtonsoft.Json.JsonException) { return "Không đọc được danh sách file của lần gửi này."; }
+            catch (Newtonsoft.Json.JsonException) { return "Xem thông tin file đã gửi"; }
+        }
+
+        private void OpenDeliveryFiles(object deliveryId)
+        {
+            try
+            {
+                Guid id;
+                if (!Guid.TryParse(Convert.ToString(deliveryId), out id)) return;
+                // The manager checks dossier viewing permission. Resolve only IDs from
+                // this dossier's stored delivery snapshot, never from the browser.
+                var history = CreateRequestDocumentManager().GetCustomerDeliveryHistory(WorkspaceDocumentId);
+                var delivery = history.AsEnumerable().FirstOrDefault(r => (Guid)r["IdGuiNhanKhachHang"] == id);
+                if (delivery == null) throw new InvalidOperationException("Không tìm thấy lần gửi khách hàng này.");
+                lblDeliveryFilesContext.Text = HttpUtility.HtmlEncode(GetValueText(delivery["TenKhachHang"]) + " · Gửi ngày " + FormatDate(delivery["NgayGui"]));
+                var files = WorkspaceDeliveryFiles(delivery["DanhSachFileGuiJson"]);
+                foreach (DataRow row in files.Rows)
+                {
+                    Guid fileId;
+                    if (!Guid.TryParse(Convert.ToString(row["SentFileId"]), out fileId)) continue;
+                    var file = new SweetSoft.QLDA.DataAccess.TblUploadFile(fileId);
+                    if (!file.IsNew && file.IsDeleted != true && CanOpenFile(file.FileUrl))
+                        row["FileUrl"] = file.FileUrl;
+                }
+                rptDeliveryFiles.DataSource = files;
+                rptDeliveryFiles.DataBind();
+                KeepCustomerTabOpen();
+                OpenSigningModal(mdlDeliveryFiles, "DeliveryFiles");
+            }
+            catch (Exception ex) { ShowNotify(ex.Message, MSGType.Warning); }
+        }
+
+        protected DataTable WorkspaceDeliveryFiles(object value)
+        {
+            var files = new DataTable();
+            files.Columns.Add("Name");
+            files.Columns.Add("Details");
+            files.Columns.Add("SentFileId");
+            files.Columns.Add("FileUrl");
+            try
+            {
+                if (value != null && value != DBNull.Value && !string.IsNullOrWhiteSpace(Convert.ToString(value)))
+                    foreach (var file in Newtonsoft.Json.Linq.JArray.Parse(Convert.ToString(value)).OfType<Newtonsoft.Json.Linq.JObject>())
+                    {
+                        bool signed;
+                        bool.TryParse(Convert.ToString(file["DaKy"]), out signed);
+                        string version = Convert.ToString(file["FileVersion"]);
+                        string name = Convert.ToString(file["TenFile"]);
+                        files.Rows.Add(string.IsNullOrWhiteSpace(name) ? "File không có tên" : name,
+                            (string.IsNullOrWhiteSpace(version) ? "" : "Phiên bản file: " + version + " · ")
+                            + (signed ? "Bản đã ký" : "Bản chưa ký"), Convert.ToString(file["IdFileGui"]), "");
+                    }
+            }
+            catch (Newtonsoft.Json.JsonException)
+            {
+                files.Clear();
+                files.Rows.Add("Không đọc được danh sách file của lần gửi này.", "");
+            }
+            if (files.Rows.Count == 0)
+                files.Rows.Add("Lần gửi cũ chưa ghi nhận danh sách file.", "Xem lịch sử thay đổi hồ sơ để đối chiếu.");
+            return files;
         }
 
         protected void grdWorkspace_RowCommand(object sender,GridViewCommandEventArgs e)
         {
-            if(e.CommandName!="FILE_DETAIL")return;
-            try { OpenWorkspaceFile(Guid.Parse(Convert.ToString(e.CommandArgument))); }
+            if(e.CommandName!="FILE_DETAIL" && e.CommandName!="REMOVE_FILE")return;
+            try
+            {
+                if(e.CommandName=="REMOVE_FILE" && !CanManageFiles())
+                    throw new UnauthorizedAccessException("Bạn không có quyền gỡ file khỏi hồ sơ.");
+                if(e.CommandName=="REMOVE_FILE")
+                {
+                    OpenWorkspaceRemove(Guid.Parse(Convert.ToString(e.CommandArgument)));
+                }
+                else OpenWorkspaceFile(Guid.Parse(Convert.ToString(e.CommandArgument)));
+            }
             catch(Exception ex) { ShowNotify(ex.Message,MSGType.Warning); }
+        }
+
+        protected bool WorkspaceCanRemove(object locked)
+        {
+            return !Convert.ToBoolean(locked) && CanManageFiles();
         }
 
         private void OpenWorkspaceFile(Guid fileId)
@@ -272,10 +509,73 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected void btnWorkspaceRemove_Click(object sender,EventArgs e)
         {
-            ViewState.Remove("WorkspaceRestoreTarget");
-            lblWorkspaceConfirm.Text="Gỡ file khỏi hồ sơ? File cũ và lịch sử vẫn được giữ.";
-            pnlWorkspaceConfirm.Visible=true;
-            OpenSigningModal(mdlWorkspaceFile,"WorkspaceRemoveConfirm");
+            OpenWorkspaceRemove(WorkspaceFileId);
+        }
+
+        protected ExtraModal mdlWorkspaceRemove;
+        protected Label lblWorkspaceRemoveName;
+        protected Label lblWorkspaceRemoveError;
+        protected CheckBox chkWorkspaceRemoveRecall;
+        protected Button btnWorkspaceRemoveConfirm;
+        protected Button btnMoreCustomerHistory;
+        protected Label lblCustomerHistoryCount;
+
+        private void OpenWorkspaceRemove(Guid fileId)
+        {
+            EnsureDocumentActionAccess(WorkspaceDocumentId, DocumentPermissionKeys.ManageFiles);
+            var row = DocumentManager.Instance.GetWorkspaceFiles(WorkspaceDocumentId).AsEnumerable()
+                .FirstOrDefault(r => (Guid)r["IdFile"] == fileId);
+            if (row == null) throw new InvalidOperationException("File đã thay đổi. Hãy tải lại danh sách.");
+            if (Convert.ToBoolean(row["DaKhoa"])) throw new InvalidOperationException("File đã ký được khóa, không thể gỡ khỏi hồ sơ.");
+            ViewState["WorkspaceRemoveFile"] = fileId;
+            lblWorkspaceRemoveName.Text = HttpUtility.HtmlEncode(Convert.ToString(row["TenFile"]));
+            lblWorkspaceRemoveError.Text = string.Empty;
+            chkWorkspaceRemoveRecall.Visible = Convert.ToString(row["TrangThai"]) == DocumentSigningStatusKeys.Pending;
+            chkWorkspaceRemoveRecall.Checked = false;
+            CloseWorkspaceModal(mdlWorkspaceFile);
+            OpenSigningModal(mdlWorkspaceRemove, "WorkspaceRemove");
+        }
+
+        protected void btnWorkspaceRemoveConfirm_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ViewState["WorkspaceRemoveFile"] == null) throw new InvalidOperationException("Hãy chọn lại file cần gỡ.");
+                DocumentManager.Instance.ChangeWorkspaceFile(WorkspaceDocumentId, (Guid)ViewState["WorkspaceRemoveFile"],
+                    null, false, chkWorkspaceRemoveRecall.Visible && chkWorkspaceRemoveRecall.Checked);
+                ViewState.Remove("WorkspaceRemoveFile");
+                CloseWorkspaceModal(mdlWorkspaceRemove);
+                InitControls(WorkspaceDocumentId);
+                ShowNotify("Đã gỡ file khỏi danh sách hiện tại. Lịch sử vẫn được giữ.", MSGType.Success);
+            }
+            catch (Exception ex)
+            {
+                lblWorkspaceRemoveError.Text = HttpUtility.HtmlEncode(ex.Message);
+                OpenSigningModal(mdlWorkspaceRemove, "WorkspaceRemoveError");
+            }
+        }
+
+        private void BindCustomerHistory(DataTable history)
+        {
+            int limit = (int?)ViewState["CustomerHistoryLimit"] ?? 5;
+            var visible = history.Clone();
+            foreach (var row in history.AsEnumerable().OrderByDescending(r => r.Field<DateTime?>("NgayGui") ?? DateTime.MinValue).Take(limit))
+                visible.ImportRow(row);
+            BindRepeater(rptCustomer, pnlCustomer, pnlNoCustomer, visible);
+            btnMoreCustomerHistory.Visible = history.Rows.Count > visible.Rows.Count;
+            lblCustomerHistoryCount.Text = "Hiển thị " + visible.Rows.Count + " / " + history.Rows.Count + " lần gửi";
+        }
+
+        protected void btnMoreCustomerHistory_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ViewState["CustomerHistoryLimit"] = ((int?)ViewState["CustomerHistoryLimit"] ?? 5) + 5;
+                BindCustomerHistory(DocumentManager.Instance.GetCustomerDeliveryHistory(WorkspaceDocumentId));
+                KeepCustomerTabOpen();
+                upDetail.Update();
+            }
+            catch (Exception ex) { ShowNotify(ex.Message, MSGType.Warning); }
         }
 
         protected void grdFileTimeline_RowCommand(object sender,GridViewCommandEventArgs e)

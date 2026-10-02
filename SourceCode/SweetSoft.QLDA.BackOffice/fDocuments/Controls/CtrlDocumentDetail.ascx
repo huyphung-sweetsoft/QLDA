@@ -9,6 +9,12 @@
     TagName="FilesBox" %>
 
 <style>
+    .document-workspace-pager td { padding: 1rem .5rem !important; background: #fff; }
+    .document-workspace-pager__controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .4rem; }
+    .document-workspace-pager__controls .btn { min-width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: .35rem .65rem; }
+    .document-workspace-pager__controls .aspNetDisabled { opacity: .4; pointer-events: none; }
+    .document-workspace-pager__current { min-width: 80px; text-align: center; background: var(--document-purple); color: white; border-radius: .25rem; padding: .5rem .7rem; font-size: .875rem; }
+    .document-workspace-selection { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: .5rem .75rem; margin-bottom: .75rem; background: var(--document-purple-soft); border-radius: .35rem; }
     .document-file-set .sorting-control,
     .document-file-set .sort-item,
     .document-file-set .file-actions { display: none !important; }
@@ -220,6 +226,26 @@
     .document-detail__table td {
         color: #344054;
         vertical-align: middle;
+    }
+
+    .document-delivery { width: 100%; min-width: 0; }
+    .document-delivery .document-delivery__table { width: 100%; min-width: 0; table-layout: fixed; }
+    .document-delivery .document-delivery__table th,
+    .document-delivery .document-delivery__table td {
+        white-space: normal; overflow-wrap: anywhere; word-break: normal;
+        padding: .75rem; vertical-align: top; border-color: #e5e7eb;
+    }
+    .document-delivery__files { list-style: none; padding: 0; margin: 0; }
+    .document-delivery__files li + li { border-top: 1px solid #eef0f4; margin-top: .55rem; padding-top: .55rem; }
+    .document-delivery__meta { display: block; font-size: .8rem; color: #667085; margin-top: .25rem; line-height: 1.5; }
+    .document-delivery__table .badge { white-space: normal; }
+    @media (max-width: 991.98px) {
+        .document-delivery__table colgroup, .document-delivery__table thead { display: none; }
+        .document-delivery .document-delivery__table,
+        .document-delivery__table tbody, .document-delivery__table tr { display: block; width: 100%; }
+        .document-delivery__table tr + tr { margin-top: 1rem; }
+        .document-delivery .document-delivery__table td { display: block; width: 100%; box-sizing: border-box; }
+        .document-delivery__table td:before { content: attr(data-label); display: block; color: #4d0f91; font-weight: 600; font-size: .8rem; margin-bottom: .4rem; }
     }
 
     @media (max-width: 767.98px) {
@@ -493,13 +519,27 @@
                 <asp:Button runat="server" ID="btnWorkspaceFilter" Text="Tìm kiếm" CssClass="btn btn-outline-primary" CausesValidation="false" OnClick="WorkspaceFilterChanged" />
             </div>
         </div>
+        <div class="document-workspace-selection">
+            <asp:Label runat="server" ID="lblWorkspaceSelection" CssClass="text-primary small" aria-live="polite" />
+            <asp:LinkButton runat="server" ID="btnClearWorkspaceSelection" Text="Bỏ chọn tất cả" CssClass="btn btn-sm btn-outline-primary" CausesValidation="false" OnClick="btnClearWorkspaceSelection_Click" />
+            <span class="text-muted small">Lựa chọn được giữ khi đổi trang hoặc lọc.</span>
+        </div>
         <asp:GridView runat="server" ID="grdWorkspace" AutoGenerateColumns="false" DataKeyNames="IdFile,IdChuoiFile"
             GridLines="None" CssClass="table table-bordered table-hover w-100" AllowPaging="true" PageSize="10"
             OnPageIndexChanging="grdWorkspace_PageIndexChanging" OnRowCommand="grdWorkspace_RowCommand"
-            EmptyDataText="Chưa có file phù hợp." ShowHeaderWhenEmpty="true" PagerStyle-CssClass="text-center">
+            EmptyDataText="Chưa có file phù hợp." ShowHeaderWhenEmpty="true" PagerStyle-CssClass="document-workspace-pager">
+            <PagerTemplate>
+                <nav class="document-workspace-pager__controls" aria-label="Phân trang file hồ sơ">
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="First" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang đầu" aria-label="Trang đầu" Enabled='<%# grdWorkspace.PageIndex > 0 %>'><i class="fas fa-angle-double-left" aria-hidden="true"></i></asp:LinkButton>
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="Prev" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang trước" aria-label="Trang trước" Enabled='<%# grdWorkspace.PageIndex > 0 %>'><i class="fas fa-angle-left" aria-hidden="true"></i></asp:LinkButton>
+                    <span class="document-workspace-pager__current" aria-current="page">Trang <%# grdWorkspace.PageIndex + 1 %> / <%# grdWorkspace.PageCount %></span>
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="Next" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang sau" aria-label="Trang sau" Enabled='<%# grdWorkspace.PageIndex + 1 < grdWorkspace.PageCount %>'><i class="fas fa-angle-right" aria-hidden="true"></i></asp:LinkButton>
+                    <asp:LinkButton runat="server" CommandName="Page" CommandArgument="Last" CausesValidation="false" CssClass="btn btn-outline-primary" ToolTip="Trang cuối" aria-label="Trang cuối" Enabled='<%# grdWorkspace.PageIndex + 1 < grdWorkspace.PageCount %>'><i class="fas fa-angle-double-right" aria-hidden="true"></i></asp:LinkButton>
+                </nav>
+            </PagerTemplate>
             <Columns>
                 <asp:TemplateField HeaderStyle-Width="40px">
-                    <HeaderTemplate><input type="checkbox" aria-label="Chọn các file trên trang" onclick="var selected=this.checked;this.closest('table').querySelectorAll('tbody input[type=checkbox]').forEach(function(c){if(!c.disabled)c.checked=selected;});" /></HeaderTemplate>
+                    <HeaderTemplate><input type="checkbox" data-workspace-select-page="true" aria-label="Chọn các file trên trang" onchange="var selected=this.checked;this.closest('table').querySelectorAll('[data-workspace-select] input[type=checkbox], input[type=checkbox][data-workspace-select]').forEach(function(c){if(!c.disabled)c.checked=selected;});" /></HeaderTemplate>
                     <ItemTemplate><asp:CheckBox runat="server" ID="chkWorkspaceFile" data-workspace-select="true" /></ItemTemplate>
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Tên file">
@@ -512,13 +552,20 @@
                             NavigateUrl='<%# GetFileUrl(Eval("SignedFileUrl")) %>' Visible='<%# HasValue(Eval("SignedFileUrl")) %>' />
                     </ItemTemplate>
                 </asp:TemplateField>
-                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản" HeaderStyle-Width="95px" ItemStyle-CssClass="text-center" />
+                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản file" HeaderStyle-Width="110px" ItemStyle-CssClass="text-center" />
                 <asp:TemplateField HeaderText="Trạng thái ký" HeaderStyle-Width="170px">
                     <ItemTemplate><span class='<%# GetSigningStatusCss(Eval("TrangThai")) %>'><%#: WorkspaceStatusText(Eval("TrangThai")) %></span></ItemTemplate>
                 </asp:TemplateField>
                 <asp:TemplateField HeaderText="Cập nhật" HeaderStyle-Width="170px"><ItemTemplate><%#: FormatDate(Eval("NgayCapNhat")) %></ItemTemplate></asp:TemplateField>
-                <asp:TemplateField HeaderText="Thao tác" HeaderStyle-Width="90px" ItemStyle-CssClass="text-center">
-                    <ItemTemplate><asp:LinkButton runat="server" CommandName="FILE_DETAIL" CommandArgument='<%# Eval("IdFile") %>' CausesValidation="false" CssClass="btn btn-sm btn-outline-primary" ToolTip="Chi tiết và lịch sử"><i class="fas fa-eye"></i></asp:LinkButton></ItemTemplate>
+                <asp:TemplateField HeaderText="Thao tác" HeaderStyle-Width="120px" ItemStyle-CssClass="text-center">
+                    <ItemTemplate>
+                        <div class="d-flex justify-content-center gap-1">
+                            <asp:LinkButton runat="server" CommandName="FILE_DETAIL" CommandArgument='<%# Eval("IdFile") %>' CausesValidation="false" CssClass="btn btn-sm btn-outline-success" ToolTip="Chi tiết và lịch sử"><i class="fas fa-eye" aria-hidden="true"></i></asp:LinkButton>
+                            <asp:LinkButton runat="server" CommandName="REMOVE_FILE" CommandArgument='<%# Eval("IdFile") %>'
+                                CausesValidation="false" CssClass="btn btn-sm btn-outline-danger" ToolTip="Gỡ file khỏi hồ sơ" aria-label="Gỡ file khỏi hồ sơ"
+                                Visible='<%# WorkspaceCanRemove(Eval("DaKhoa")) %>'><i class="fas fa-trash" aria-hidden="true"></i></asp:LinkButton>
+                        </div>
+                    </ItemTemplate>
                 </asp:TemplateField>
             </Columns>
         </asp:GridView>
@@ -610,15 +657,14 @@
                                     <div class="document-file-history__head">
                                         <div>
                                             <div class="document-file-history__version">
-                                                <%#: FormatDate(Eval("NgayTao")) %>
+                                                Bộ file được lưu lúc: <%#: FormatDate(Eval("NgayTao")) %>
                                                 <asp:Label runat="server"
                                                     Visible='<%# Convert.ToBoolean(Eval("LaPhienBanHienTai")) %>'
                                                     Text="Hiện tại"
                                                     CssClass="badge bg-success ms-1" />
                                             </div>
                                             <div class="document-file-history__meta">
-                                                <%#: FormatDate(Eval("NgayTao")) %>
-                                                · <%#: GetValueText(Eval("TenNguoiTao")) %>
+                                                <%#: GetValueText(Eval("TenNguoiTao")) %>
                                                 · <%#: GetVersionSourceText(Eval("NguonTao")) %>
                                             </div>
                                         </div>
@@ -633,7 +679,7 @@
                                                 Visible='<%# CanRestoreVersion(Eval("LaPhienBanHienTai")) %>'
                                                 CommandName="RESTORE_VERSION"
                                                 CommandArgument='<%# Eval("IdPhienBanTaiLieu") %>'
-                                                Text="Khôi phục bản này"
+                                                Text="Khôi phục cả bộ"
                                                 CausesValidation="false"
                                                 CssClass="btn btn-sm btn-outline-warning" />
                                             <asp:LinkButton runat="server"
@@ -778,30 +824,39 @@
                         <i class="fas fa-paper-plane"></i>
                         <%= GetResourceText(BackEndResourceKeys.NO_CUSTOMER_DELIVERY_HISTORY) %>
                     </asp:Panel>
-                    <asp:Panel runat="server" ID="pnlCustomer" CssClass="table-responsive">
-                        <table class="table table-bordered table-hover document-detail__table">
+                    <asp:Panel runat="server" ID="pnlCustomer" CssClass="document-delivery">
+                        <table class="table table-bordered table-hover document-detail__table document-delivery__table">
+                            <colgroup><col style="width:22%" /><col style="width:28%" /><col style="width:20%" /><col style="width:20%" /><col style="width:10%" /></colgroup>
                             <thead><tr>
-                                <th><%= GetResourceText(BackEndResourceKeys.VERSION_NUMBER) %></th>
-                                <th><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></th>
-                                <th><%= GetResourceText(BackEndResourceKeys.RECIPIENT) %></th>
-                                <th><%= GetResourceText(BackEndResourceKeys.CHANNEL) %></th>
+                                <th>File đã gửi</th>
+                                <th>Khách hàng / Người nhận</th>
+                                <th>Thông tin gửi</th>
                                 <th><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
-                                <th><%= GetResourceText(BackEndResourceKeys.DATE) %></th>
-                                <th><%= GetResourceText(BackEndResourceKeys.RESPONSE_DEADLINE) %></th>
                                 <th><%= GetResourceText(BackEndResourceKeys.ACTION) %></th>
                             </tr></thead>
                             <tbody><asp:Repeater
                                 runat="server"
                                 ID="rptCustomer"
                                 OnItemCommand="rptCustomer_ItemCommand"><ItemTemplate><tr>
-                                <td>v<%#: Eval("SoPhienBan") %><div class="small text-muted text-break"><%#: WorkspaceDeliveryFilesText(Eval("DanhSachFileGuiJson")) %></div></td>
-                                <td><%#: GetValueText(Eval("TenKhachHang")) %></td>
-                                <td><%#: GetRecipientText(Eval("TenNguoiNhan"), Eval("EmailNguoiNhan")) %></td>
-                                <td><%#: GetCustomerDeliveryChannelText(Eval("KenhGui")) %></td>
-                                <td><span class='<%# GetCustomerStatusCss(Eval("TrangThai")) %>'><%#: GetCustomerStatusText(true, Eval("TrangThai")) %></span></td>
-                                <td><%#: GetDateRange(Eval("NgayGui"), Eval("NgayNhanLai")) %></td>
-                                <td><%#: FormatDate(Eval("HanPhanHoi")) %></td>
-                                <td><div class="d-flex flex-wrap gap-1">
+                                <td data-label="File đã gửi">
+                                    <asp:LinkButton runat="server" CommandName="VIEW_DELIVERY_FILES"
+                                        CommandArgument='<%# Eval("IdGuiNhanKhachHang") %>' CausesValidation="false"
+                                        CssClass="btn btn-sm btn-outline-primary text-wrap text-start"
+                                        Text='<%# DeliveryFilesSummary(Eval("DanhSachFileGuiJson")) %>' />
+                                </td>
+                                <td data-label="Khách hàng / Người nhận"><%#: GetValueText(Eval("TenKhachHang")) %>
+                                    <span class="document-delivery__meta">Người nhận: <%#: GetValueText(Eval("TenNguoiNhan")) %></span>
+                                    <span class="document-delivery__meta"><%#: Convert.ToString(Eval("EmailNguoiNhan")) %></span>
+                                </td>
+                                <td data-label="Thông tin gửi"><span class="small text-muted d-block">Lần gửi khách</span><%#: FormatDate(Eval("NgayGui")) %>
+                                    <span class="document-delivery__meta">Kênh: <%#: GetCustomerDeliveryChannelText(Eval("KenhGui")) %></span>
+                                    <span class="document-delivery__meta">Người gửi: <%#: GetValueText(Eval("TenNguoiThucHien")) %></span>
+                                </td>
+                                <td data-label="Trạng thái"><span class='<%# GetCustomerStatusCss(Eval("TrangThai")) %>'><%#: GetCustomerStatusText(true, Eval("TrangThai")) %></span>
+                                    <span class="document-delivery__meta">Hạn phản hồi: <%#: FormatDate(Eval("HanPhanHoi")) %></span>
+                                    <span class="document-delivery__meta">Nhận lại: <%#: FormatDate(Eval("NgayNhanLai")) %></span>
+                                </td>
+                                <td data-label="Hành động"><div class="d-flex flex-wrap gap-1">
                                     <asp:LinkButton
                                         runat="server"
                                         Visible='<%# CanManageCustomerDelivery() %>'
@@ -818,6 +873,10 @@
                                 </div></td>
                             </tr></ItemTemplate></asp:Repeater></tbody>
                         </table>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+                            <asp:Label runat="server" ID="lblCustomerHistoryCount" CssClass="text-muted small" />
+                            <asp:Button runat="server" ID="btnMoreCustomerHistory" Text="Xem thêm 5 lần gửi" CssClass="btn btn-outline-primary btn-sm" CausesValidation="false" OnClick="btnMoreCustomerHistory_Click" />
+                        </div>
                     </asp:Panel>
                 </div>
             </div>
@@ -900,10 +959,10 @@
                             <th><%= GetResourceText(BackEndResourceKeys.REFERENCE_TYPE) %></th>
                         </tr></thead>
                         <tbody><asp:Repeater runat="server" ID="rptActivity"><ItemTemplate><tr>
-                            <td class="text-center"><%#: FormatDate(Eval("NgayTao")) %></td>
-                            <td><%#: GetActivityTypeText(Eval("LoaiHanhDong")) %></td>
+                            <td class="text-center"><%#: FormatActivityDate(Eval("NgayTao")) %></td>
+                            <td><%#: GetActivityTypeText(Eval("LoaiHanhDong"), Eval("MoTa")) %></td>
                             <td><%#: GetActorText(Eval("TenNguoiThucHien"), Eval("NguoiTao")) %></td>
-                            <td><%#: GetActivityDescription(Eval("MoTa"), Eval("NoiDungThayDoi")) %></td>
+                            <td style="white-space:pre-line;overflow-wrap:anywhere"><%#: GetActivityDescription(Eval("MoTa"), Eval("NoiDungThayDoi")) %></td>
                             <td><%#: GetActivityReferenceText(Eval("LoaiThamChieu")) %></td>
                         </tr></ItemTemplate></asp:Repeater></tbody>
                     </table>
@@ -955,6 +1014,7 @@
                     ID="ddlSubmitSigningSigner"
                     ValueIsOfTypeGUID="true"
                     SimpleInit="true"
+                    MinimumResultsForSearch="0"
                     CssClass="form-select" />
             </div>
             <div class="mb-1">
@@ -990,7 +1050,7 @@
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 
-<SweetSoft:ExtraModal runat="server" ID="mdlDocumentPermissions" Title="Cấp quyền hồ sơ" Size="Large"
+<SweetSoft:ExtraModal runat="server" ID="mdlDocumentPermissions" Title="Cấp quyền hồ sơ" Size="Large" Type="Primary"
     Position="modal-dialog-scrollable" FooterButtonClose="true"
     EnsureChildControlsOnPostback="true">
     <ContentTemplate>
@@ -1134,7 +1194,7 @@
                 </ItemTemplate>
             </asp:Repeater>
         </div>
-        <p class="text-muted small mt-3 mb-0">Quyền nhóm là mức trần. Khi chọn một quyền thao tác, hệ thống tự yêu cầu quyền xem; bỏ toàn bộ quyền sẽ thu hồi cấp riêng trên hồ sơ.</p>
+        <p class="text-muted small mt-3 mb-0">Quyền nhóm là mức trần. Chọn quyền thao tác sẽ tự tích Xem hồ sơ. Muốn bỏ quyền Xem, hãy bỏ các quyền thao tác trước; bỏ toàn bộ quyền sẽ thu hồi cấp riêng trên hồ sơ.</p>
     </ContentTemplate>
     <FooterTemplate>
         <asp:Button runat="server" ID="btnSaveDocumentPermissions" Text="Lưu quyền" CssClass="btn btn-primary"
@@ -1142,13 +1202,13 @@
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 
-<SweetSoft:ExtraModal runat="server" ID="mdlVersionFiles" Title="File tại thời điểm thay đổi" Size="Large"
+<SweetSoft:ExtraModal runat="server" ID="mdlVersionFiles" Title="File tại thời điểm thay đổi" Size="Large" Type="Primary"
     Position="modal-dialog-scrollable" FooterButtonClose="true"
     EnsureChildControlsOnPostback="true">
     <ContentTemplate>
         <asp:Label runat="server" ID="lblVersionFilesSummary" CssClass="text-muted d-block mb-3" />
         <asp:Panel runat="server" ID="pnlVersionFiles" CssClass="document-version-file-list">
-            <asp:Repeater runat="server" ID="rptVersionFiles">
+            <asp:Repeater runat="server" ID="rptVersionFiles" OnItemCommand="rptVersionFiles_ItemCommand">
                 <ItemTemplate>
                     <div class="document-version-file">
                         <div>
@@ -1160,7 +1220,11 @@
                                 <%#: FormatFileSize(Eval("FileSize")) %>
                             </div>
                         </div>
-                        <div class="d-flex gap-2 flex-shrink-0">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <asp:LinkButton runat="server" Text="Khôi phục file này" CommandName="RESTORE_SNAPSHOT_FILE"
+                                CommandArgument='<%# Eval("IdFile") %>' CausesValidation="false"
+                                Visible='<%# CURRENT_PAGE.IsEdit && CanManageFiles() && HasValue(Eval("IdFile")) && CanOpenFile(Eval("FileUrl")) %>'
+                                CssClass="btn btn-sm btn-outline-warning" />
                             <asp:HyperLink runat="server"
                                 Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
                                 NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>'
@@ -1168,7 +1232,7 @@
                                 onclick="FilesBox.LayoutFilePopUp(this); return false;"
                                 ToolTip="Xem trước" aria-label="Xem trước"
                                 Text="<i class='fas fa-eye' aria-hidden='true'></i>"
-                                CssClass="btn btn-sm btn-outline-primary" />
+                                CssClass="btn btn-sm btn-outline-success" />
                             <asp:HyperLink runat="server"
                                 Visible='<%# CanOpenFile(Eval("FileUrl")) %>'
                                 NavigateUrl='<%# GetWorkspaceDownloadUrl(Eval("FileUrl")) %>'
@@ -1258,7 +1322,7 @@
                         runat="server"
                         ID="ddlCustomerDeliveryCustomer"
                         ValueIsOfTypeGUID="true"
-                        SimpleInit="true" />
+                        SimpleInit="true" MinimumResultsForSearch="0" />
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.RECIPIENT) %></label>
@@ -1447,7 +1511,7 @@
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatusId" />
             <asp:HiddenField runat="server" ID="hdfCustomerDeliveryStatus" />
             <div class="border rounded p-2 mb-3">
-                <div class="small text-muted"><%= GetResourceText(BackEndResourceKeys.CUSTOMER_DELIVERY_VERSION) %></div>
+                <div class="small text-muted">Lần gửi khách</div>
                 <asp:Label runat="server" ID="lblCustomerDeliveryStatusVersion" CssClass="fw-semibold" />
                 <span class="mx-1">·</span>
                 <asp:Label runat="server" ID="lblCustomerDeliveryStatusCustomer" CssClass="fw-semibold" />
@@ -1607,7 +1671,7 @@
     #<%= mdlWorkspaceFile.ClientID %> .modal-body th,
     #<%= mdlWorkspaceFile.ClientID %> .modal-body td { white-space: normal; }
 </style>
-<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceFile" Title="Chi tiết file" Size="Large"
+<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceFile" Title="Chi tiết file" Size="Large" Type="Primary"
     Position="modal-dialog-centered modal-dialog-scrollable" EnsureChildControlsOnPostback="true">
     <ContentTemplate>
         <asp:Label runat="server" ID="lblWorkspaceFileName" CssClass="fw-semibold d-block mb-2" />
@@ -1626,11 +1690,11 @@
             <asp:LinkButton runat="server" ID="btnWorkspaceConfirm" Text="Xác nhận" CssClass="btn btn-warning btn-sm" CausesValidation="false" OnClick="btnWorkspaceConfirm_Click" />
             <asp:LinkButton runat="server" ID="btnWorkspaceCancelConfirm" Text="Hủy" CssClass="btn btn-outline-secondary btn-sm" CausesValidation="false" OnClick="btnWorkspaceCancelConfirm_Click" />
         </asp:Panel>
-        <h6>Lịch sử phiên bản</h6>
+        <h6>Lịch sử phiên bản file</h6>
         <asp:GridView runat="server" ID="grdFileTimeline" AutoGenerateColumns="false" GridLines="None"
             CssClass="table table-bordered table-hover" OnRowCommand="grdFileTimeline_RowCommand">
             <Columns>
-                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản" />
+                <asp:BoundField DataField="FileVersion" HeaderText="Phiên bản file" />
                 <asp:BoundField DataField="HanhDong" HeaderText="Thao tác" />
                 <asp:BoundField DataField="NguoiThucHien" HeaderText="Người thực hiện" />
                 <asp:TemplateField HeaderText="Thời gian"><ItemTemplate><%#: FormatDate(Eval("NgayTao")) %></ItemTemplate></asp:TemplateField>
@@ -1662,7 +1726,120 @@
         </asp:Panel>
     </ContentTemplate>
 </SweetSoft:ExtraModal>
-<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceUpload" Title="Tải file" Size="Normal"
+<style>
+    #<%= mdlDeliveryFiles.ClientID %> .modal-dialog,
+    #<%= mdlSnapshotRestore.ClientID %> .modal-dialog {
+        width: calc(100% - 2rem); max-width: 900px;
+        height: calc(100vh - 2rem); height: calc(100dvh - 2rem);
+        min-height: 0; margin: 1rem auto; padding: 0 !important;
+        display: flex; align-items: center; justify-content: center;
+    }
+    /* ExtraModal inserts an UpdatePanel between the flex dialog and its content. */
+    #<%= mdlDeliveryFiles.ClientID %> .modal-dialog > div,
+    #<%= mdlSnapshotRestore.ClientID %> .modal-dialog > div {
+        width: 100%; min-width: 0; min-height: 0; max-height: 100%;
+        display: flex; flex-direction: column;
+    }
+    #<%= mdlDeliveryFiles.ClientID %> .modal-content,
+    #<%= mdlSnapshotRestore.ClientID %> .modal-content {
+        width: 100%; min-height: 0; max-height: 100%; overflow: hidden;
+        display: flex; flex-direction: column;
+    }
+    #<%= mdlDeliveryFiles.ClientID %> .modal-header,
+    #<%= mdlDeliveryFiles.ClientID %> .modal-footer,
+    #<%= mdlSnapshotRestore.ClientID %> .modal-header,
+    #<%= mdlSnapshotRestore.ClientID %> .modal-footer { flex: 0 0 auto; }
+    #<%= mdlSnapshotRestore.ClientID %> .modal-body { min-height: 0; overflow-y: auto; }
+    #<%= mdlDeliveryFiles.ClientID %> .modal-header { padding: .65rem 1rem !important; }
+    #<%= mdlDeliveryFiles.ClientID %> .modal-header .btn-close { transform: none; flex-shrink: 0; }
+    #<%= mdlDeliveryFiles.ClientID %> .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem; background: #f8f9fc; }
+    #<%= mdlDeliveryFiles.ClientID %> .modal-footer { padding: .65rem 1rem; background: #fff; }
+    .delivery-files-context { display: flex; gap: .75rem; align-items: flex-start; padding: .9rem 1rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 1rem; }
+    .delivery-files-context > i { color: var(--bs-primary, #4d0f91); margin-top: .2rem; }
+    .delivery-files-context > div { min-width: 0; overflow-wrap: anywhere; }
+    .delivery-files-context__title { color: #273142; font-weight: 500; line-height: 1.5; }
+    .delivery-files-context__hint { color: #667085; font-size: .8rem; margin-top: .35rem; }
+    .delivery-file-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: .85rem; padding: 1rem; margin-top: .65rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .delivery-file-row__icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 46px; border-radius: 6px; background: #f4effa; color: var(--bs-primary, #4d0f91); font-size: 1.25rem; }
+    .delivery-file-row__name { min-width: 0; overflow-wrap: anywhere; line-height: 1.5; }
+    .delivery-file-row__name a { white-space: normal; color: #273142; font-weight: 500; }
+    .delivery-file-row__name a:hover { color: var(--bs-primary, #4d0f91); text-decoration: underline; }
+    .delivery-file-row__name .document-delivery__meta { font-size: .78rem; margin-top: .4rem; }
+    .delivery-file-row__actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .delivery-file-row__actions .btn { white-space: nowrap; }
+    @media (max-width: 575.98px) {
+        .delivery-file-row { grid-template-columns: 32px minmax(0, 1fr); padding: .75rem; gap: .65rem; }
+        .delivery-file-row__icon { width: 32px; height: 38px; }
+        .delivery-file-row__actions { grid-column: 2; }
+    }
+</style>
+<SweetSoft:ExtraModal runat="server" ID="mdlDeliveryFiles" Title="Danh sách file đã gửi" Size="Large" Type="Primary"
+    EnsureChildControlsOnPostback="true" FooterButtonClose="true" Position="modal-dialog-centered modal-dialog-scrollable">
+    <ContentTemplate>
+        <div class="delivery-files-context">
+            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+            <div>
+                <asp:Label runat="server" ID="lblDeliveryFilesContext" CssClass="d-block delivery-files-context__title" />
+                <div class="delivery-files-context__hint">Các file bên dưới là bản đã gửi tại thời điểm này.</div>
+            </div>
+        </div>
+        <asp:Repeater runat="server" ID="rptDeliveryFiles"><ItemTemplate>
+            <div class="delivery-file-row">
+                <span class="delivery-file-row__icon" aria-hidden="true"><i class="far fa-file-alt"></i></span>
+                <div class="delivery-file-row__name">
+                    <asp:HyperLink runat="server" Text='<%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("Name"))) %>'
+                        NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>' data-path='<%# GetFileUrl(Eval("FileUrl")) %>'
+                        Visible='<%# HasValue(Eval("FileUrl")) %>' onclick="FilesBox.LayoutFilePopUp(this); return false;" />
+                    <asp:Label runat="server" Text='<%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("Name"))) %>' Visible='<%# !HasValue(Eval("FileUrl")) %>' />
+                    <span class="document-delivery__meta"><%#: Eval("Details") %></span>
+                    <asp:Label runat="server" CssClass="small text-muted" Text="Không có file lưu để mở lại." Visible='<%# !HasValue(Eval("FileUrl")) %>' />
+                </div>
+                <div class="delivery-file-row__actions">
+                    <asp:HyperLink runat="server" Text="Xem trước" CssClass="btn btn-sm btn-outline-primary"
+                        NavigateUrl='<%# GetFileUrl(Eval("FileUrl")) %>' data-path='<%# GetFileUrl(Eval("FileUrl")) %>'
+                        Visible='<%# HasValue(Eval("FileUrl")) %>' onclick="FilesBox.LayoutFilePopUp(this); return false;" />
+                    <asp:HyperLink runat="server" Text="Tải về" CssClass="btn btn-sm btn-outline-primary"
+                        NavigateUrl='<%# GetWorkspaceDownloadUrl(Eval("FileUrl")) %>' Visible='<%# HasValue(Eval("FileUrl")) %>' />
+                </div>
+            </div>
+        </ItemTemplate></asp:Repeater>
+    </ContentTemplate>
+</SweetSoft:ExtraModal>
+<SweetSoft:ExtraModal runat="server" ID="mdlSnapshotRestore" Title="Xác nhận khôi phục" Type="Primary" Size="Large"
+    EnsureChildControlsOnPostback="true" FooterButtonClose="true" Position="modal-dialog-centered modal-dialog-scrollable">
+    <ContentTemplate>
+        <asp:Label runat="server" ID="lblSnapshotRestoreSummary" CssClass="d-block mb-3" />
+        <div class="alert alert-warning">Chỉ thay đổi danh sách file hiện tại, không xóa lịch sử cũ hay bản đã gửi khách.
+            File đã ký bị khóa không được thay/gỡ. Nếu có file đang chờ ký bị ảnh hưởng, cần thu hồi yêu cầu trước khi khôi phục.</div>
+        <div style="max-height:45vh;overflow-y:auto;overflow-wrap:anywhere">
+            <asp:Repeater runat="server" ID="rptSnapshotRestoreChanges"><ItemTemplate>
+                <div class="border-bottom py-2"><span class="d-block small text-muted"><%#: Eval("Action") %></span><%#: Eval("Name") %></div>
+            </ItemTemplate></asp:Repeater>
+        </div>
+    </ContentTemplate>
+    <FooterTemplate>
+        <asp:Button runat="server" ID="btnSnapshotRestoreConfirm" Text="Xác nhận khôi phục" CssClass="btn btn-primary"
+            CausesValidation="false" UseSubmitBehavior="false" OnClick="btnSnapshotRestoreConfirm_Click" />
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceRemove" Title="Gỡ file khỏi hồ sơ" Size="Normal" Type="Primary"
+    Position="modal-dialog-centered" EnsureChildControlsOnPostback="true" FooterButtonClose="true">
+    <ContentTemplate>
+        <div class="d-flex gap-3 align-items-start mb-3">
+            <i class="fas fa-trash text-danger mt-1" aria-hidden="true"></i>
+            <asp:Label runat="server" ID="lblWorkspaceRemoveName" CssClass="fw-semibold" style="overflow-wrap:anywhere" />
+        </div>
+        <p class="mb-3">Chỉ gỡ khỏi danh sách hiện tại; lịch sử và bản đã gửi khách vẫn được giữ.</p>
+        <asp:CheckBox runat="server" ID="chkWorkspaceRemoveRecall" CssClass="d-block alert alert-warning"
+            Text="File đang chờ ký. Tôi đồng ý thu hồi yêu cầu ký của file này trước khi gỡ." />
+        <asp:Label runat="server" ID="lblWorkspaceRemoveError" CssClass="d-block text-danger small" aria-live="polite" />
+    </ContentTemplate>
+    <FooterTemplate>
+        <asp:Button runat="server" ID="btnWorkspaceRemoveConfirm" Text="Xác nhận gỡ file" CssClass="btn btn-danger"
+            CausesValidation="false" UseSubmitBehavior="false" OnClick="btnWorkspaceRemoveConfirm_Click" />
+    </FooterTemplate>
+</SweetSoft:ExtraModal>
+<SweetSoft:ExtraModal runat="server" ID="mdlWorkspaceUpload" Title="Tải file" Size="Normal" Type="Primary"
     EnsureChildControlsOnPostback="true" FooterButtonClose="true">
     <ContentTemplate>
         <label class="form-label">Chọn file</label>

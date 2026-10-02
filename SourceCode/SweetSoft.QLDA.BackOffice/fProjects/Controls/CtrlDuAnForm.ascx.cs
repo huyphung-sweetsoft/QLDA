@@ -4,6 +4,7 @@ using SweetSoft.QLDA.BackOffice.fUsers.Controls;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
@@ -229,6 +230,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         public void OpenAdd()
         {
             RefreshProjectInfo();
+            if(!UserManager.Instance.IsAdministrator(SweetContext.Current.UserId))
+            {
+                ddlNhanVienQuanLy.SelectedValue = SweetContext.Current.UserId.ToString();
+                ddlNhanVienQuanLy.Enabled = false;
+            }
             txtMaDuAn.Text = DuAnManager.Instance.GenerateProjectCode();
             lbtSubmit.Visible = this.IsAdd;
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.SAVE);

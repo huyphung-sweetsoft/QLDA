@@ -498,8 +498,13 @@ namespace SweetSoft.QLDA.Core.Dashboard
             List<TblDuAn> projects,
             List<TblChiPhi> pendingCostRecords)
         {
-            List<Guid> projectIds = projects.Select(project => project.IdDuAn)
+            // Giữ cùng phạm vi với Dashboard Chi phí: chỉ dự án Hoàn thành.
+            List<TblDuAn> completedProjects = projects
+                .Where(project => project.TrangThai == (byte)DuAnStatus.HoanThanh)
                 .ToList();
+            List<Guid> projectIds = completedProjects
+                .Select(project => project.IdDuAn).ToList();
+            HashSet<Guid> completedProjectIds = new HashSet<Guid>(projectIds);
             List<TblChiPhi> approvedCosts =
                 _repository.GetApprovedCostsForProjects(projectIds);
             List<TblThanhToan> payments =
@@ -515,11 +520,12 @@ namespace SweetSoft.QLDA.Core.Dashboard
                 .GroupBy(cost => cost.IdDuAn)
                 .ToDictionary(group => group.Key, group => group.Sum(cost => cost.SoTien));
             Dictionary<Guid, decimal> pendingCostByProject = pendingCostRecords
+                .Where(cost => completedProjectIds.Contains(cost.IdDuAn))
                 .GroupBy(cost => cost.IdDuAn)
                 .ToDictionary(group => group.Key, group => group.Sum(cost => cost.SoTien));
 
             OverviewFinanceSummary summary = new OverviewFinanceSummary();
-            foreach (TblDuAn project in projects)
+            foreach (TblDuAn project in completedProjects)
             {
                 TblHopDongThucHien contract = null;
                 if (project.IdHopDongThucHien.HasValue)

@@ -2162,7 +2162,7 @@
     <value>Dự kiến</value>
   </data>
   <data name="DASHBOARD_COST_TITLE" xml:space="preserve">
-    <value>Tài chính dự án · Lũy kế hiện tại</value>
+    <value>Thống kê tài chính dự án</value>
   </data>
   <data name="DASHBOARD_PROJECTS_IN_SCOPE" xml:space="preserve">
     <value>Dự án trong phạm vi</value>

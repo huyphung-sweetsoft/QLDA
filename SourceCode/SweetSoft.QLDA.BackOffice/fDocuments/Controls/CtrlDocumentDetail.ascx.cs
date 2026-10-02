@@ -1,6 +1,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fFilesBox;
 using SweetSoft.QLDA.Controls;
+using SweetSoft.QLDA.Controls.Helpers;
 using SweetSoft.QLDA.Core.FileManager;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
@@ -57,6 +58,43 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                     false);
             rptDocumentPermissions.DataSource = members;
             rptDocumentPermissions.DataBind();
+            RegisterDocumentPermissionDependencies();
+        }
+
+        private void RegisterDocumentPermissionDependencies()
+        {
+            string script = @"(function () {
+                var modalId = '" + mdlDocumentPermissions.ClientID + @"';
+                function syncView(grid) {
+                    var view = grid.querySelector('.is-view input[type=checkbox]');
+                    if (!view) return;
+                    var needsView = Array.prototype.some.call(
+                        grid.querySelectorAll('.document-permission-item:not(.is-view) input[type=checkbox]'),
+                        function (checkbox) { return checkbox.checked; });
+                    if (needsView && !view.disabled) view.checked = true;
+                }
+                function syncModal() {
+                    var modal = document.getElementById(modalId);
+                    if (modal) modal.querySelectorAll('.document-permission-grid').forEach(syncView);
+                }
+                if (window[modalId + '_viewDependencyBound']) { syncModal(); return; }
+                window[modalId + '_viewDependencyBound'] = true;
+                document.addEventListener('change', function (event) {
+                    if (!event.target.matches('input[type=checkbox]')) return;
+                    var grid = event.target.closest('.document-permission-grid');
+                    var modal = document.getElementById(modalId);
+                    if (grid && modal && modal.contains(grid)) syncView(grid);
+                });
+                document.addEventListener('shown.bs.modal', function (event) {
+                    if (event.target.id === modalId) syncModal();
+                });
+                if (document.readyState === 'loading')
+                    document.addEventListener('DOMContentLoaded', syncModal, { once: true });
+                else syncModal();
+                if (window.Sys && Sys.Application) Sys.Application.add_load(syncModal);
+            })();";
+            ScriptManager.RegisterStartupScript(Page, GetType(),
+                ClientID + "_DocumentPermissionDependencies", script, true);
         }
 
         protected void chkGrantExternalUsers_CheckedChanged(
@@ -250,6 +288,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            CaptureWorkspaceSelection();
             if (ddlSubmitSigningSigner != null
                 && ddlSubmitSigningSigner.Items.Count == 0)
             {
@@ -272,6 +311,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected override void OnPreRender(EventArgs e)
         {
+            RegisterWorkspaceSelectionSummary();
             RegisterWorkspaceControls();
             RegisterVersionHistoryPostBackControls();
             RegisterSigningPostBackControls();
@@ -401,6 +441,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (fbSigningResult != null)
             {
                 fbSigningResult.IsMultiple = false;
+                fbSigningResult.MaxFileSizeBytes = SecureFileUploadHandler.DocumentSigningResultMaxFileSizeBytes;
                 fbSigningResult.AcceptType =
                     "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             }
@@ -710,11 +751,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             phCustomerTab.Visible = showCustomer;
             phCustomerPane.Visible = showCustomer;
             pnlCustomerActions.Visible = false;
-            BindRepeater(
-                rptCustomer,
-                pnlCustomer,
-                pnlNoCustomer,
-                customerHistory);
+            BindCustomerHistory(customerHistory);
 
             bool showStorage = requiresStorage
                 || storageHistory.Rows.Count > 0;
@@ -962,7 +999,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 if (!versionId.HasValue || versionId.Value == Guid.Empty)
                     continue;
 
-                string text = "v" + GetValueText(version["SoPhienBan"]);
+                string text = "Bộ file được lưu lúc: " + FormatDate(version["NgayTao"]);
                 if (GetBoolean(version, "LaPhienBanHienTai"))
                 {
                     text += " · " + GetResourceText(
@@ -1643,7 +1680,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 cblCustomerDeliveryFiles.Items.Clear();
                 foreach (var row in fileRows)
                     cblCustomerDeliveryFiles.Items.Add(new ListItem(
-                        HttpUtility.HtmlEncode(Convert.ToString(row["TenFile"]) + " · v" + row["FileVersion"]
+                        HttpUtility.HtmlEncode(Convert.ToString(row["TenFile"]) + " · Phiên bản file: " + row["FileVersion"]
                         + " · " + (Convert.ToString(row["TrangThai"]) == DocumentSigningStatusKeys.Signed ? "Bản đã ký" : "Bản chưa ký")),
                         Convert.ToString(row["IdFile"])) { Selected = true });
                 BindCustomerDeliveryDropdowns();
@@ -1798,6 +1835,11 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object source,
             RepeaterCommandEventArgs e)
         {
+            if (e.CommandName == "VIEW_DELIVERY_FILES")
+            {
+                OpenDeliveryFiles(e.CommandArgument);
+                return;
+            }
             if (!string.Equals(
                     e.CommandName,
                     "UPDATE_CUSTOMER_DELIVERY",
@@ -1858,8 +1900,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 ddlCustomerDeliveryStatus.SelectedValue = status;
                 txtCustomerDeliveryStatusNote.Text = Convert.ToString(
                     item["GhiChu"]);
-                lblCustomerDeliveryStatusVersion.Text = "v"
-                    + GetValueText(item["SoPhienBan"]);
+                lblCustomerDeliveryStatusVersion.Text = FormatDate(item["NgayGui"]);
                 lblCustomerDeliveryStatusCustomer.Text = JoinNonEmpty(
                     GetValueText(item["TenKhachHang"]),
                     GetRecipientText(
@@ -2267,16 +2308,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 EnsureDocumentActionAccess(idTaiLieu, DocumentPermissionKeys.ManageFiles);
                 if (restoreVersion)
                 {
-                    DocumentFileSet restored = CreateRequestDocumentManager()
-                        .RestoreDocumentFileSet(idTaiLieu, idPhienBanTaiLieu);
-                    InitControls(idTaiLieu);
-                    upDetail.Update();
-                    KeepVersionsTabOpen();
-                    ShowVersionHistoryNotify(
-                        restored.Created
-                            ? "Đã khôi phục phiên bản trước thành bản hiện tại."
-                            : "Bộ file hiện tại đã giống phiên bản này.",
-                        restored.Created ? MSGType.Success : MSGType.Info);
+                    PreviewSnapshotRestore(idPhienBanTaiLieu, null);
                     return;
                 }
 
@@ -2334,6 +2366,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             DataTable fileRows,
             Guid versionId)
         {
+            ViewState["ViewedSnapshotId"] = versionId;
             bool hasFiles = fileRows != null
                 && fileRows.AsEnumerable().Any(row =>
                     Convert.ToInt32(row["FileCount"]) > 0
@@ -2858,8 +2891,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
 
         protected bool CanRestoreVersion(object isCurrentValue)
         {
-            // Legacy whole-dossier snapshots remain read-only; restore a single file in its history.
-            return false;
+            return !Convert.ToBoolean(isCurrentValue) && CURRENT_PAGE.IsEdit && CanManageFiles();
         }
         protected string GetFileUrl(object value)
         {
@@ -2921,7 +2953,7 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
                 && IsOfficialVersion(fileIdValue);
         }
 
-        private bool CanManageFiles()
+        protected bool CanManageFiles()
         {
             Guid idTaiLieu;
             return Guid.TryParse(hdfIdTaiLieu.Value, out idTaiLieu)
@@ -2948,7 +2980,15 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             if (!HasValue(value))
                 return "—";
 
-            return ConvertDateTimeToString(value);
+            return DateTimeHelper.ConvertUTCToSettingTime(Convert.ToDateTime(value))
+                .ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        protected string FormatActivityDate(object value)
+        {
+            if (!HasValue(value)) return "—";
+            return DateTimeHelper.ConvertUTCToSettingTime(Convert.ToDateTime(value))
+                .ToString("dd/MM/yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         protected string GetDateRange(object fromValue, object toValue)
@@ -3000,6 +3040,8 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             string userName = Convert.ToString(userValue);
             if (string.IsNullOrWhiteSpace(userName))
                 return "—";
+            if (string.Equals(userName, "[System]", StringComparison.OrdinalIgnoreCase))
+                return "Không ghi nhận tài khoản";
 
             string resolvedName = CURRENT_PAGE.DisplayName(userName);
             return string.IsNullOrWhiteSpace(resolvedName)
@@ -3012,13 +3054,84 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             object changeValue)
         {
             string description = Convert.ToString(descriptionValue);
-            string changes = Convert.ToString(changeValue);
+            string changes = FormatDocumentActivityChanges(Convert.ToString(changeValue));
             if (string.IsNullOrWhiteSpace(description))
                 return GetValueText(changes);
             if (string.IsNullOrWhiteSpace(changes))
                 return description;
 
-            return description + " " + changes;
+            return description + (changes.Contains(": thêm quyền ") || changes.Contains(": bỏ quyền ") ? "\n" : " ") + changes;
+        }
+
+        private static string FormatDocumentActivityChanges(string value)
+        {
+            string changes = HttpUtility.HtmlDecode(value ?? string.Empty).Trim();
+            if (changes.Length == 0) return string.Empty;
+
+            // These legacy payloads identify internal snapshot/file records;
+            // the accompanying description already explains the operation.
+            Guid internalId;
+            if (Guid.TryParse(changes, out internalId)
+                || changes.StartsWith("Mốc nguồn: ", StringComparison.Ordinal)
+                || changes.StartsWith("File cũ: ", StringComparison.Ordinal))
+                return string.Empty;
+
+            if (!changes.StartsWith("[", StringComparison.Ordinal)
+                && !changes.StartsWith("{", StringComparison.Ordinal))
+                return System.Text.RegularExpressions.Regex.Replace(changes,
+                    @"\b(Kênh|Trạng thái): (EMAIL|TRUC_TIEP|KHAC|CHUA_GUI|DA_GUI|CHO_NHAN_LAI|DA_NHAN_LAI|CHUA_LUU|DA_LUU|DANG_LAY_RA)(?=;|$)",
+                    match => {
+                        var labels = new Dictionary<string, string> {
+                            { "EMAIL", "Email" }, { "TRUC_TIEP", "Trực tiếp" }, { "KHAC", "Khác" },
+                            { "CHUA_GUI", "Chưa gửi" }, { "DA_GUI", "Đã gửi" },
+                            { "CHO_NHAN_LAI", "Chờ nhận lại" }, { "DA_NHAN_LAI", "Đã nhận lại" },
+                            { "CHUA_LUU", "Chưa lưu" }, { "DA_LUU", "Đã lưu" }, { "DANG_LAY_RA", "Đang lấy ra" }
+                        };
+                        return match.Groups[1].Value + ": " + labels[match.Groups[2].Value];
+                    });
+
+            try
+            {
+                var payload = Newtonsoft.Json.Linq.JToken.Parse(changes);
+                var grants = payload as Newtonsoft.Json.Linq.JArray;
+                if (grants != null && grants.Count > 0
+                    && grants.All(item => item is Newtonsoft.Json.Linq.JObject
+                        && item["UserId"] != null && item["CanView"] != null))
+                {
+                    var permissionNames = new Dictionary<string, string> {
+                        { "CanView", "Xem hồ sơ" },
+                        { "CanUpdateInfo", "Thông tin chung" },
+                        { "CanManageFiles", "Quản lý file" },
+                        { "CanSigning", "Trình ký" },
+                        { "CanCustomerDelivery", "Gửi khách" },
+                        { "CanPhysicalStorage", "Lưu bản cứng" },
+                        { "CanDelete", "Xóa hồ sơ" }
+                    };
+                    Func<Newtonsoft.Json.Linq.JToken, string, bool> hasPermission = (item, key) => {
+                        bool enabled;
+                        return bool.TryParse(Convert.ToString(item[key]), out enabled) && enabled;
+                    };
+                    int grantedMembers = grants.Count(item => permissionNames.Keys
+                        .Any(key => hasPermission(item, key)));
+                    if (grantedMembers == 0)
+                        return "Không có quyền cấp riêng cho các thành viên trong danh sách.";
+                    var details = permissionNames.Select(permission => new {
+                        permission.Value,
+                        Count = grants.Count(item => hasPermission(item, permission.Key))
+                    }).Where(permission => permission.Count > 0)
+                        .Select(permission => permission.Value + " (" + permission.Count + ")");
+                    return grantedMembers + " thành viên có quyền cấp riêng: "
+                        + string.Join(", ", details) + ".";
+                }
+
+                // Keep unknown structured payloads in the audit store rather
+                // than exposing raw JSON and internal field names in the journal.
+                return string.Empty;
+            }
+            catch (Newtonsoft.Json.JsonException)
+            {
+                return "Không đọc được chi tiết thay đổi của nhật ký này.";
+            }
         }
 
         protected string GetActivityTypeText(object value)
@@ -3085,21 +3198,30 @@ namespace SweetSoft.QLDA.BackOffice.fDocuments.Controls
             }
             if (activityType == DocumentActivityTypeKeys.SendCustomerDelivery)
             {
-                return GetResourceText(
-                    BackEndResourceKeys.ACTIVITY_SEND_CUSTOMER_DELIVERY);
+                return "Gửi khách hàng";
             }
             if (activityType == DocumentActivityTypeKeys.UpdateCustomerDelivery)
             {
-                return GetResourceText(
-                    BackEndResourceKeys.ACTIVITY_UPDATE_CUSTOMER_DELIVERY);
+                return "Cập nhật gửi khách";
             }
             if (activityType == DocumentActivityTypeKeys.StorePhysicalCopy)
             {
-                return GetResourceText(
-                    BackEndResourceKeys.ACTIVITY_STORE_PHYSICAL_COPY);
+                return "Cập nhật lưu trữ bản cứng";
             }
 
             return GetValueText(value);
+        }
+
+        protected string GetActivityTypeText(object value, object descriptionValue)
+        {
+            string description = Convert.ToString(descriptionValue);
+            if (description.StartsWith("Đã cập nhật quyền truy cập hồ sơ", StringComparison.Ordinal))
+                return "Cập nhật quyền";
+            if (description.StartsWith("Gỡ một file khỏi hồ sơ", StringComparison.Ordinal))
+                return "Gỡ file";
+            if (description.StartsWith("Tải bản mới cho một file", StringComparison.Ordinal))
+                return "Thay file";
+            return GetActivityTypeText(value);
         }
 
         protected string GetActivityReferenceText(object value)
