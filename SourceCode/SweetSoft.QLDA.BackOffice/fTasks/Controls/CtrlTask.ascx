@@ -1650,7 +1650,7 @@
             }
 
             $(document).on('show.bs.modal shown.bs.modal hidden.bs.modal', function () {
-                if (state.pending || readPersistedScroll()) restorePersistedScroll();
+                if (state.pending) restorePersistedScroll();
             });
 
             if (window.MutationObserver) {
@@ -1658,7 +1658,7 @@
                     for (var i = 0; i < mutations.length; i++) {
                         if (mutations[i].type === 'childList' || mutations[i].type === 'attributes') {
                             var modal = document.querySelector('.modal.show, .modal.in');
-                            if (modal && (state.pending || readPersistedScroll())) {
+                            if (modal && state.pending) {
                                 restorePersistedScroll();
                                 break;
                             }
