@@ -35,7 +35,7 @@ namespace SweetSoft.QLDA.BackOffice.fCosts.Controls
             lblCostName.Text = HtmlEncodeValue(cost.TenKhoanChi);
             lblUnitPrice.Text = FormatNumber(cost.DonGia);
             lblQuantity.Text = cost.SoLuong.HasValue ? cost.SoLuong.Value.ToString("N0") : "—";
-            lblTotal.Text = cost.SoTien.ToString("#,##0");
+            lblTotal.Text = cost.SoTien.ToString("N0");
             lblCreatedDate.Text = cost.NgayTao.ToString("dd/MM/yyyy HH:mm");
             BindCreatedBy(cost.IdNguoiTao);
 
