@@ -130,9 +130,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
                 }
                 DataRow row = dt.Rows[0];
                 BindProjectInformation(row);
-                BindProjectProgress();
                 BindProjectTeam();
                 BindRecentProjectHistory();
+                BindProjectProgress();
             }
             catch (Exception exc)
             {
@@ -395,7 +395,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
 
         private void BindProjectProgress()
         {
-            var tienDo = SweetSoft.QLDA.Core.Managers.DuAnManager.Instance.GetDuAnTienDo(QueryId);
+            var tienDo = DuAnManager.Instance.GetDuAnTienDo(QueryId);
 
             if (tienDo.TienDoThoiGian.HasValue)
             {
