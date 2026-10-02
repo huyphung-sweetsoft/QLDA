@@ -1,6 +1,31 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlRisk.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fRisks.Controls.CtrlRisk" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
-<%@ Register Src="~/fRisks/Controls/CtrlViewRiskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewRiskDetail" %><div class="card-header">
+<%@ Register Src="~/fRisks/Controls/CtrlViewRiskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewRiskDetail" %>
+
+<style>
+    #mdlRiskView .modal-dialog,
+    #dlDetail .modal-dialog,
+    .modal-dialog {
+        width: calc(100% - 24px) !important; 
+        max-width: 1180px !important; 
+        margin: 1.8rem auto 1.5rem !important; 
+    }
+
+    .risk-name-link { 
+        color: #542e88 !important; 
+        font-size: 16px; 
+        font-weight: 500; 
+        text-decoration: none !important; 
+        transition: color 0.15s ease; 
+    }
+    
+    .risk-name-link:hover { 
+        color: #3b82f6 !important; 
+        text-decoration: none !important; 
+    }
+</style>
+
+<div class="card-header">
     <div class="d-flex flex-column flex-xl-row gap-3">
         <asp:UpdatePanel runat="server" ID="pnlSearchDropdowns" UpdateMode="Conditional">
             <ContentTemplate>
@@ -62,7 +87,7 @@
                     <asp:TemplateField HeaderText="RiskName" SortExpression="TenRuiRo" HeaderStyle-CssClass="text-center">
                         <ItemTemplate>
                             <asp:LinkButton runat="server" ID="lbtViewDetail" CommandName="ITEM_VIEW" CommandArgument='<%# Eval("IdRuiRo_DuAn") %>'
-                                CssClass="text-primary fw-bold text-decoration-none" style="cursor: pointer;">
+                                CssClass="risk-name-link" style="cursor: pointer;">
                                 <%# Eval("TenRuiRo") != DBNull.Value && Eval("TenRuiRo") != null ? Eval("TenRuiRo") : "—" %>
                             </asp:LinkButton>
                         </ItemTemplate>
@@ -76,7 +101,7 @@
                     <asp:TemplateField HeaderText="RiskLevel" SortExpression="DiemRuiRo" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center fw-bold text-danger">
                         <ItemTemplate><%# GetMucDoRuiRoText(Eval("XacSuatXayRa"), Eval("MucDoAnhHuong"), Eval("DiemRuiRo")) %></ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Monitor" SortExpression="TenNhanVienXuLy" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Monitor" SortExpression="TenNhanVienXuLy" HeaderStyle-Width="200px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("TenNhanVienXuLy") != DBNull.Value ? Eval("TenNhanVienXuLy") : "—" %></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="CreatedDate" SortExpression="NgayTao" HeaderStyle-Width="100px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">

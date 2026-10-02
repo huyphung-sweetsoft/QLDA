@@ -87,13 +87,31 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtTongTien;
 
         /// <summary>
-        /// pnlRequesterCard control.
+        /// pnlRequesterDropdown control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlRequesterCard;
+        protected global::System.Web.UI.WebControls.Panel pnlRequesterDropdown;
+
+        /// <summary>
+        /// ddlNhanVienYeuCau control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVienYeuCau;
+
+        /// <summary>
+        /// pnlRequesterFixed control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlRequesterFixed;
 
         /// <summary>
         /// litRequesterAvatar control.
@@ -130,15 +148,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtNhanVienYeuCau;
-
-        /// <summary>
-        /// ddlNhanVienYeuCau control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlNhanVienYeuCau;
 
         /// <summary>
         /// pnlStatusNew control.

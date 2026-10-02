@@ -36,6 +36,7 @@
     .reorder-status-badge.status-done { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
     .reorder-dependency { text-align: center; white-space: nowrap; color: #475569; font-weight: 700; }
     .reorder-dependency-empty { color: #94a3b8; font-weight: 500; }
+
     .reorder-option-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
     .reorder-option { display: flex; align-items: center; gap: 11px; min-width: 0; background: linear-gradient(180deg,#fff 0%,#fbfdff 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 11px; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
     .reorder-option:hover { border-color: #c4b5fd; box-shadow: 0 7px 16px rgba(15,23,42,.055); transform: translateY(-1px); }
@@ -43,7 +44,9 @@
     .reorder-option-title { display: flex; align-items: center; gap: 6px; font-weight: 750; color: #334155; line-height: 1.3; font-size: 12.5px; }
     .reorder-option-title i { width: 22px; height: 22px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; background: #f3efff; color: #6d28d9; font-size: 10px; }
     .reorder-option-desc { font-size: 10.5px; color: #64748b; line-height: 1.4; margin-top: 3px; }
-    .reorder-switch-button { display: block; width: 84px; flex: 0 0 84px; padding: 0; border: 0; background: transparent; text-decoration: none !important; }
+
+    .reorder-switch-button { display: block; width: 84px; flex: 0 0 84px; padding: 0; border: 0; background: transparent; text-decoration: none !important; cursor: pointer; }
+    .reorder-switch-button:focus { outline: none; }
     .reorder-switch { position: relative; display: flex; align-items: center; width: 84px; height: 30px; padding: 3px; border-radius: 999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(15,23,42,.14),0 2px 5px rgba(15,23,42,.07); transition: background .25s ease, box-shadow .25s ease, transform .2s ease; }
     .reorder-switch.off { background: linear-gradient(135deg,#ef4444 0%,#dc2626 100%); }
     .reorder-switch.on { background: linear-gradient(135deg,#34d399 0%,#16a34a 100%); }
@@ -55,8 +58,10 @@
     .reorder-switch-state { position: absolute; top: 0; height: 30px; display: flex; align-items: center; color: #fff; font-size: 9.5px; font-weight: 900; letter-spacing: .55px; transition: opacity .2s ease, transform .25s ease; }
     .reorder-switch.off .reorder-switch-state { right: 10px; }
     .reorder-switch.on .reorder-switch-state { left: 10px; }
+
     .reorder-review-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 36px; border: 1px dashed #c4b5fd; background: linear-gradient(180deg,#fcfbff 0%,#f7f5ff 100%); color: #5b21b6; border-radius: 10px; padding: 7px 11px; font-weight: 750; font-size: 11.5px; text-decoration: none !important; transition: all .2s ease; }
     .reorder-review-button:hover { background: #f3efff; color: #4c1d95; border-color: #8b5cf6; transform: translateY(-1px); box-shadow: 0 6px 14px rgba(91,33,182,.07); }
+
     .reorder-review-shell { animation: reorderReviewIn .25s ease both; }
     .reorder-review-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 11px; }
     .reorder-review-caption { color: #64748b; font-size: 11px; line-height: 1.45; margin-top: 3px; }
@@ -68,34 +73,25 @@
     .reorder-review-column-title span { color: #64748b; font-size: 10px; }
     .reorder-review-list { max-height: 56vh; overflow: auto; padding: 6px; }
     .reorder-review-list .reorder-table { min-width: 0; width: 100%; }
+
     .reorder-empty { padding: 24px 12px; text-align: center; color: #94a3b8; font-size: 11.5px; }
     .reorder-scrollbar::-webkit-scrollbar, .reorder-table-wrap::-webkit-scrollbar, .reorder-review-list::-webkit-scrollbar { width: 6px; height: 6px; }
     .reorder-scrollbar::-webkit-scrollbar-thumb, .reorder-table-wrap::-webkit-scrollbar-thumb, .reorder-review-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
     .reorder-scrollbar::-webkit-scrollbar-track, .reorder-table-wrap::-webkit-scrollbar-track, .reorder-review-list::-webkit-scrollbar-track { background: transparent; }
+
     [id$="_mdlReorderOptions"] .modal-dialog, [id$="mdlReorderOptions"] .modal-dialog { max-width: 1020px !important; width: calc(100vw - 34px) !important; }
     [id$="_mdlReorderReview"] .modal-dialog, [id$="mdlReorderReview"] .modal-dialog { max-width: 1440px !important; width: calc(100vw - 28px) !important; }
     [id$="_mdlReorderOptions"] .modal-content, [id$="mdlReorderOptions"] .modal-content, [id$="_mdlReorderReview"] .modal-content, [id$="mdlReorderReview"] .modal-content { border-radius: 13px !important; overflow: visible !important; }
     [id$="_mdlReorderOptions"] .modal-header, [id$="mdlReorderOptions"] .modal-header, [id$="_mdlReorderReview"] .modal-header, [id$="mdlReorderReview"] .modal-header { border-top-left-radius: 13px !important; border-top-right-radius: 13px !important; }
 
     .reorder-loading-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .reorder-loading-btn i { font-size: 13px; }
-
     .reorder-modal-loading { position: relative; }
-
-    .reorder-loading-overlay { position: absolute; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.8); backdrop-filter: blur(2px); border-radius: 13px; animation: reorderLoadingFadeIn .18s ease both; }
-
+    .reorder-loading-overlay { position: absolute; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.8); backdrop-filter: blur(2px); border-radius: 13px; animation: reorderLoadingFadeIn .18s ease both; pointer-events: none; }
     .reorder-loading-box { min-width: 290px; max-width: 90%; padding: 22px 24px; text-align: center; background: rgba(255,255,255,.97); border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 14px 40px rgba(15,23,42,.14); animation: reorderLoadingPopup .22s ease both; }
-
     .reorder-loading-spinner { width: 50px; height: 50px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f3efff; color: #6366f1; font-size: 21px; }
-
-    .reorder-loading-spinner i { animation-duration: .85s; }
-
     .reorder-loading-title { color: #334155; font-size: 14px; font-weight: 800; line-height: 1.4; }
-
     .reorder-loading-desc { margin-top: 5px; color: #64748b; font-size: 11px; line-height: 1.45; }
-
     .reorder-loading-progress { width: 170px; height: 4px; margin: 14px auto 0; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
-
     .reorder-loading-progress::after { content: ""; display: block; width: 45%; height: 100%; border-radius: 999px; background: #6366f1; animation: reorderLoadingProgress 1.05s ease-in-out infinite; }
 
     .reorder-review-back-button:hover { color: #4f46e5 !important; background: #f5f3ff !important; border-radius: 7px !important; }
@@ -168,19 +164,27 @@
             <ContentTemplate>
                 <div class="p-3">
                     <div class="reorder-warning">
-                        <div class="reorder-warning-title"><i class="fas fa-exclamation-triangle"></i><span>Cảnh báo</span></div>
+                        <div class="reorder-warning-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Cảnh báo</span>
+                        </div>
                         <asp:Literal ID="ltrReorderWarning" runat="server"></asp:Literal>
                     </div>
+
                     <div class="reorder-summary">
                         <div class="reorder-summary-title">Thứ tự sau khi đổi</div>
                         <div class="reorder-table-wrap reorder-scrollbar">
                             <asp:Literal ID="ltrReorderOrder" runat="server"></asp:Literal>
                         </div>
                     </div>
+
                     <div class="reorder-option-grid">
                         <div class="reorder-option">
                             <div class="reorder-option-copy">
-                                <div class="reorder-option-title"><i class="fas fa-calendar-check"></i><span>Cập nhật lịch tự động</span></div>
+                                <div class="reorder-option-title">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Cập nhật lịch tự động</span>
+                                </div>
                                 <div class="reorder-option-desc">Tự tính lại ngày bắt đầu và kết thúc theo phụ thuộc mới.</div>
                             </div>
                             <asp:LinkButton ID="btnToggleAutoUpdateDates" runat="server" CssClass="reorder-switch-button" OnClick="btnToggleAutoUpdateDates_Click" CausesValidation="false">
@@ -188,21 +192,20 @@
                             </asp:LinkButton>
                         </div>
                     </div>
+
                     <asp:LinkButton ID="btnOpenReorderReview" runat="server" CssClass="reorder-review-button" OnClick="btnOpenReorderReview_Click" CausesValidation="false">
-                        <i class="fas fa-table"></i><span>Xem chi tiết công việc trước và sau</span>
+                        <i class="fas fa-table"></i>
+                        <span>Xem chi tiết công việc trước và sau</span>
                     </asp:LinkButton>
                 </div>
             </ContentTemplate>
         </asp:UpdatePanel>
     </ContentTemplate>
+
     <FooterTemplate>
-        <asp:UpdatePanel ID="upnlFooterReorderOptions" runat="server" UpdateMode="Conditional">
-            <ContentTemplate>
-                <asp:LinkButton ID="btnConfirmReorder" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorder_Click">
-                    <i class="fas fa-check me-1"></i> Áp dụng thay đổi
-                </asp:LinkButton>
-            </ContentTemplate>
-        </asp:UpdatePanel>
+        <asp:LinkButton ID="btnConfirmReorder" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorder_Click">
+            <i class="fas fa-check me-1"></i> Áp dụng thay đổi
+        </asp:LinkButton>
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 
@@ -218,10 +221,14 @@
                         </div>
                         <asp:Literal ID="ltrReorderReviewScope" runat="server"></asp:Literal>
                     </div>
+
                     <div class="reorder-review-options">
                         <div class="reorder-option">
                             <div class="reorder-option-copy">
-                                <div class="reorder-option-title"><i class="fas fa-calendar-check"></i><span>Cập nhật lịch tự động</span></div>
+                                <div class="reorder-option-title">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Cập nhật lịch tự động</span>
+                                </div>
                                 <div class="reorder-option-desc">Tính lại ngày bắt đầu và ngày kết thúc theo phụ thuộc mới.</div>
                             </div>
                             <asp:LinkButton ID="btnToggleAutoUpdateDatesReview" runat="server" CssClass="reorder-switch-button" OnClick="btnToggleAutoUpdateDatesReview_Click" CausesValidation="false">
@@ -229,30 +236,39 @@
                             </asp:LinkButton>
                         </div>
                     </div>
+
                     <div class="reorder-review-board">
                         <div class="reorder-review-column">
-                            <div class="reorder-review-column-title"><strong>Trước khi đổi</strong><span><asp:Literal ID="ltrBeforeCount" runat="server"></asp:Literal></span></div>
-                            <div class="reorder-review-list reorder-scrollbar"><asp:Literal ID="ltrReorderBefore" runat="server"></asp:Literal></div>
+                            <div class="reorder-review-column-title">
+                                <strong>Trước khi đổi</strong>
+                                <span><asp:Literal ID="ltrBeforeCount" runat="server"></asp:Literal></span>
+                            </div>
+                            <div class="reorder-review-list reorder-scrollbar">
+                                <asp:Literal ID="ltrReorderBefore" runat="server"></asp:Literal>
+                            </div>
                         </div>
+
                         <div class="reorder-review-column">
-                            <div class="reorder-review-column-title"><strong>Sau khi đổi</strong><span><asp:Literal ID="ltrAfterCount" runat="server"></asp:Literal></span></div>
-                            <div class="reorder-review-list reorder-scrollbar"><asp:Literal ID="ltrReorderAfter" runat="server"></asp:Literal></div>
+                            <div class="reorder-review-column-title">
+                                <strong>Sau khi đổi</strong>
+                                <span><asp:Literal ID="ltrAfterCount" runat="server"></asp:Literal></span>
+                            </div>
+                            <div class="reorder-review-list reorder-scrollbar">
+                                <asp:Literal ID="ltrReorderAfter" runat="server"></asp:Literal>
+                            </div>
                         </div>
                     </div>
                 </div>
             </ContentTemplate>
         </asp:UpdatePanel>
     </ContentTemplate>
+
     <FooterTemplate>
-        <asp:UpdatePanel ID="upnlFooterReorderReview" runat="server" UpdateMode="Conditional">
-            <ContentTemplate>
-                <asp:LinkButton ID="btnBackFromReview" runat="server" CausesValidation="false" OnClick="btnBackFromReview_Click" Style="display:none !important;">
-                </asp:LinkButton>
-                <asp:LinkButton ID="btnConfirmReorderFromReview" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorderFromReview_Click">
-                    <i class="fas fa-check me-1"></i> Áp dụng thay đổi
-                </asp:LinkButton>
-            </ContentTemplate>
-        </asp:UpdatePanel>
+        <asp:LinkButton ID="btnBackFromReview" runat="server" CausesValidation="false" OnClick="btnBackFromReview_Click" Style="display:none !important;"></asp:LinkButton>
+
+        <asp:LinkButton ID="btnConfirmReorderFromReview" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClientClick="return setReorderLoading(this);" OnClick="btnConfirmReorderFromReview_Click">
+            <i class="fas fa-check me-1"></i> Áp dụng thay đổi
+        </asp:LinkButton>
     </FooterTemplate>
 </SweetSoft:ExtraModal>
 
@@ -279,8 +295,9 @@
                 }
             }
 
-            if (!closeButton || closeButton.getAttribute('data-reorder-back-bound') === '1')
+            if (!closeButton || closeButton.getAttribute('data-reorder-back-bound') === '1') {
                 return;
+            }
 
             closeButton.setAttribute('data-reorder-back-bound', '1');
             closeButton.setAttribute('aria-label', 'Quay lại');
@@ -301,46 +318,55 @@
 
             closeButton.onclick = function (event) {
                 event.preventDefault();
-            event.stopImmediatePropagation();
-            __doPostBack('<%= btnBackFromReview.UniqueID %>', '');
-            return false;
-        };
+                event.stopImmediatePropagation();
+                __doPostBack('<%= btnBackFromReview.UniqueID %>', '');
+                return false;
+            };
         }
-            typeof Sys !== 'undefined' && Sys.Application) {
-        Sys.Application.add_load(setupReorderReviewBackButton);
-        se if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupReorderReviewBackButton);
-        se {
+
+        function removeReorderLoadingOverlay() {
+            var overlays = document.querySelectorAll('.reorder-loading-overlay');
+
+            for (var i = 0; i < overlays.length; i++) {
+                if (overlays[i] && overlays[i].parentNode) {
+                    overlays[i].parentNode.removeChild(overlays[i]);
+                }
+            }
+
+            var loadingContents = document.querySelectorAll('.reorder-modal-loading');
+
+            for (var j = 0; j < loadingContents.length; j++) {
+                loadingContents[j].classList.remove('reorder-modal-loading');
+            }
+
+            var loadingButtons = document.querySelectorAll('[data-loading="1"]');
+
+            for (var k = 0; k < loadingButtons.length; k++) {
+                loadingButtons[k].removeAttribute('data-loading');
+                loadingButtons[k].style.pointerEvents = '';
+                loadingButtons[k].style.opacity = '';
+            }
+        }
+
+        if (typeof Sys !== 'undefined' && Sys.Application) {
+            Sys.Application.add_load(setupReorderReviewBackButton);
+        } else if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupReorderReviewBackButton);
+        } else {
             setupReorderReviewBackButton();
         }
-})();
-        tion removeReorderLoadingOverlay() {
-    var overlays = document.querySelectorAll('.reorder-loading-overlay');
 
-    for (var i = 0; i < overlays.length; i++) {
-        if (overlays[i] && overlays[i].parentNode) {
-            overlays[i].parentNode.removeChild(overlays[i]);
-        }
-    }
-    r loadingContents = document.querySelectorAll('.reorder-modal-loading');
-
-        for (var j = 0; j < loadingContents.length; j++) {
-            loadingContents[j].classList.remove('reorder-modal-loading');
-        }
-
-        var loadingButtons = document.querySelectorAll('[data-loading="1"]');
-
-        for (var k = 0; k < loadingButtons.length; k++) {
-            loadingButtons[k].removeAttribute('data-loading');
-        }
-    }
+        window.removeReorderLoadingOverlay = removeReorderLoadingOverlay;
+    })();
 
     function setReorderLoading(btn) {
-        if (!btn)
+        if (!btn) {
             return true;
+        }
 
-        if (btn.getAttribute('data-loading') === '1')
+        if (btn.getAttribute('data-loading') === '1') {
             return false;
+        }
 
         btn.setAttribute('data-loading', '1');
         btn.classList.add('disabled');
@@ -361,40 +387,82 @@
             if (modalContent) {
                 modalContent.classList.add('reorder-modal-loading');
 
-                if (!modalContent.querySelector('.reorder-loading-overlay')) {
-                    var overlay = document.createElement('div');
-                    overlay.className = 'reorder-loading-overlay';
-                    overlay.innerHTML =
-                        '<div class="reorder-loading-box">' +
-                            '<div class="reorder-loading-spinner">' +
-                                '<i class="fas fa-spinner fa-spin"></i>' +
-                            '</div>' +
-                            '<div class="reorder-loading-title">Đang áp dụng thay đổi...</div>' +
-                            '<div class="reorder-loading-desc">Hệ thống đang cập nhật thứ tự và thời gian công việc.</div>' +
-                            '<div class="reorder-loading-progress"></div>' +
-                        '</div>';
+                var oldOverlay = modalContent.querySelector('.reorder-loading-overlay');
 
-                    modalContent.appendChild(overlay);
+                if (oldOverlay) {
+                    oldOverlay.parentNode.removeChild(oldOverlay);
                 }
+
+                var overlay = document.createElement('div');
+                overlay.className = 'reorder-loading-overlay';
+
+                overlay.innerHTML =
+                    '<div class="reorder-loading-box">' +
+                        '<div class="reorder-loading-spinner">' +
+                            '<i class="fas fa-spinner fa-spin"></i>' +
+                        '</div>' +
+                        '<div class="reorder-loading-title">Đang áp dụng thay đổi...</div>' +
+                        '<div class="reorder-loading-desc">Hệ thống đang cập nhật thứ tự và thời gian công việc.</div>' +
+                        '<div class="reorder-loading-progress"></div>' +
+                    '</div>';
+
+                modalContent.appendChild(overlay);
             }
         }
 
         return true;
     }
 
-    if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
-        var reorderRequestManager = Sys.WebForms.PageRequestManager.getInstance();
+    if (typeof Sys !== 'undefined' &&
+        Sys.WebForms &&
+        Sys.WebForms.PageRequestManager) {
+
+        var reorderRequestManager =
+            Sys.WebForms.PageRequestManager.getInstance();
 
         reorderRequestManager.add_endRequest(function () {
-            removeReorderLoadingOverlay();
-            setupReorderReviewBackButton();
+            if (typeof window.removeReorderLoadingOverlay === 'function') {
+                window.removeReorderLoadingOverlay();
+            }
+
+            var modal = document.getElementById('<%= mdlReorderReview.ClientID %>');
+
+            if (modal && typeof Sys !== 'undefined' && Sys.Application) {
+                var eventName = 'reorder-review-bind-check';
+
+                if (modal.getAttribute(eventName) !== '1') {
+                    modal.setAttribute(eventName, '1');
+
+                    var header = modal.querySelector('.modal-header');
+
+                    if (header) {
+                        var closeButton = header.querySelector(
+                            'button[data-bs-dismiss="modal"],' +
+                            'a[data-bs-dismiss="modal"],' +
+                            'button[data-dismiss="modal"],' +
+                            'a[data-dismiss="modal"],' +
+                            'button.close,' +
+                            'a.close,' +
+                            'button.btn-close,' +
+                            'a.btn-close'
+                        );
+
+                        if (closeButton) {
+                            closeButton.removeAttribute(eventName);
+                        }
+                    }
+                }
+            }
         });
     }
 
     window.addEventListener('pageshow', function () {
-        removeReorderLoadingOverlay();
+        if (typeof window.removeReorderLoadingOverlay === 'function') {
+            window.removeReorderLoadingOverlay();
+        }
     });
 </script>
+
 <style type="text/css">
     .reorder-review-back-button:hover {
         color: #4f46e5 !important;

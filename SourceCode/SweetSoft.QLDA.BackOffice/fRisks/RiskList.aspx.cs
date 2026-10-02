@@ -137,7 +137,7 @@ namespace SweetSoft.QLDA.BackOffice.fRisks
         private void RefreshRiskInfo()
         {
             ControlHelpers controlHelpers = new ControlHelpers();
-            controlHelpers.BindNhanVienDuAn(ddlNhanVien, CtrlRisk1.ProjectId);
+            controlHelpers.BindNhanVienDuAnKemAvatar(ddlNhanVien, CtrlRisk1.ProjectId);
             controlHelpers.BindMucDoAnhHuong(ddlMucDoAnhHuong);
             controlHelpers.BindXacSuatRuiRo(ddlXacSuat);
             lbtSubmit.Visible = false;
