@@ -67,10 +67,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             Guid taskId = (Guid)sender;
             TblCongViec task = TaskManager.Instance.FetchById(taskId);
             if (task == null || task.DaXoa == true) return;
+
             hfEditTaskId.Value = task.IdCongViec.ToString();
             bool isPhase = TaskManager.Instance.CheckPhase(task);
             bool hasChildren = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
+
             mdlEditTask.Title = isPhase ? "Cập nhật Giai đoạn (Phase)" : "Cập nhật Công việc con";
+
             txtEditMaCv.Text = task.MaCongViec;
             txtEditTenCv.Text = task.TenCongViec;
             txtEditGiaiDoan.Text = TaskManager.Instance.GetRootPhaseName(CurrentProjectId, task.IdCongViecCha);
@@ -78,12 +81,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             txtEditThoiHan.Text = task.ThoiHanNgay.HasValue ? task.ThoiHanNgay.ToString() : "";
             txtEditNgayBatDau.Text = task.NgayBatDau.HasValue ? task.NgayBatDau.Value.ToString("yyyy-MM-dd") : "";
             txtEditNgayKetThuc.Text = task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("yyyy-MM-dd") : "";
+
             lblEditMaCv.Text = task.MaCongViec;
             lblEditGiaiDoan.Text = string.IsNullOrEmpty(txtEditGiaiDoan.Text) ? "Giai đoạn gốc" : txtEditGiaiDoan.Text;
             lblNgayKetThuc.Text = task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "--/--/----";
+
             _controlHelpers.BindPriorities(ddlEditDoUuTien, task.IdDoUuTien);
             _controlHelpers.BindTaskStatus(ddlEditTrangThai, task.TrangThai);
             boxTrangThai.Attributes["class"] = "header-dropdown-box status-box-" + task.TrangThai;
+
             string prioClass = "priority-default";
             if (ddlEditDoUuTien.SelectedItem != null)
             {
@@ -93,6 +99,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 else if (textPrio.Contains("thấp")) prioClass = "priority-low";
             }
             boxUuTien.Attributes["class"] = "header-dropdown-box " + prioClass;
+
             if (isPhase)
             {
                 rowBreadcrumb.Visible = false;
@@ -107,6 +114,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 colPhuThuoc.Visible = true;
                 _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
                 _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, task.IdCongViec, task.IdCongViecPhuThuoc, task.MaCongViec, chiLayGiaiDoan: false);
+
                 if (!task.IdCongViecCha.HasValue)
                 {
                     List<ListItem> invalidItems = new List<ListItem>();
@@ -121,32 +129,75 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     foreach (var item in invalidItems) ddlEditPhuThuoc.Items.Remove(item);
                 }
             }
+
+            bool isCompleted = (task.TrangThai == 2 || task.TrangThai == 3);
+            bool isDoing = (task.TrangThai == 1);
+
             if (isPhase || hasChildren)
             {
                 divRollUpNotice.Visible = true;
-                txtEditNgayBatDau.Enabled = this.IsEdit;
+
                 txtEditThoiHan.Enabled = false;
                 ddlEditDoUuTien.Enabled = false;
                 ddlEditTrangThai.Enabled = false;
+
+                if (isCompleted)
+                {
+                    txtEditNgayBatDau.Enabled = false;
+                    txtEditMoTa.Enabled = false;
+                    ddlEditPhuThuoc.Enabled = false;
+
+                    txtEditTenCv.Enabled = this.IsEdit;
+                }
+                else
+                {
+                    txtEditNgayBatDau.Enabled = isDoing ? false : this.IsEdit;
+                    txtEditMoTa.Enabled = this.IsEdit;
+                    txtEditTenCv.Enabled = this.IsEdit;
+                }
             }
             else
             {
                 divRollUpNotice.Visible = false;
-                txtEditNgayBatDau.Enabled = this.IsEdit;
-                txtEditThoiHan.Enabled = this.IsEdit;
-                ddlEditDoUuTien.Enabled = this.IsEdit;
-                ddlEditTrangThai.Enabled = this.IsEdit;
+
+                if (isCompleted)
+                {
+                    txtEditNgayBatDau.Enabled = false;
+                    txtEditThoiHan.Enabled = false;
+                    ddlEditDoUuTien.Enabled = false;
+                    ddlEditPhuThuoc.Enabled = false;
+                    txtEditMoTa.Enabled = false;
+
+                    txtEditTenCv.Enabled = this.IsEdit;
+                    ddlEditTrangThai.Enabled = this.IsEdit;
+                }
+                else
+                {
+                    txtEditTenCv.Enabled = this.IsEdit;
+
+                    txtEditNgayBatDau.Enabled = isDoing ? false : this.IsEdit;
+
+                    txtEditThoiHan.Enabled = this.IsEdit;
+                    ddlEditDoUuTien.Enabled = this.IsEdit;
+                    ddlEditPhuThuoc.Enabled = this.IsEdit;
+                    txtEditMoTa.Enabled = this.IsEdit;
+                    ddlEditTrangThai.Enabled = this.IsEdit;
+                }
+
                 if (task.TrangThai == 1 || task.TrangThai == 2 || task.TrangThai == 3)
                 {
                     ListItem itemChuaBatDau = ddlEditTrangThai.Items.FindByValue("0");
                     if (itemChuaBatDau != null) itemChuaBatDau.Enabled = false;
                 }
             }
+
             ddlEditCongViecCha.Enabled = false;
             UpdateMinStartDate();
             upModal.Update();
             mdlEditTask.OpenModal(true, IsPostBack ? 0 : 1000);
         }
+        #endregion
+
         private void Reminder_Callback(object sender, Guid taskId)
         {
             if (taskId == Guid.Empty)
@@ -161,7 +212,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
             TblCongViec task = TaskManager.Instance.FetchById(taskId);
 
-            if (task == null || task.DaXoa == true ||task.IdDuAn != CurrentProjectId) return;
+            if (task == null || task.DaXoa == true || task.IdDuAn != CurrentProjectId) return;
             hdfReminderTaskId.Value = taskId.ToString();
             hdfSelectedReminderIds.Value = string.Empty;
             ScriptManager.RegisterStartupScript(
@@ -190,6 +241,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             upTaskReminder.Update();
             mdlTaskReminder.OpenModal(true);
         }
+
         protected void btnProcessReminders_Click(object sender, EventArgs e)
         {
 
@@ -272,27 +324,31 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 mdlTaskReminder.CloseModal();
             }
         }
-        #endregion
 
         #region Logic Lưu Edit
         protected void btnSaveTask_Click(object sender, EventArgs e)
         {
             if (!this.IsEdit) { ShowNotify(GetResourceText(BackEndResourceKeys.NO_PERMISSION_EDIT), MSGType.Error); return; }
             if (!Guid.TryParse(hfEditTaskId.Value, out Guid taskId)) return;
+
             try { DuAnManager.Instance.EnsureCanModifyStructure(CurrentProjectId); }
             catch (Exception ex) { ShowNotify(ex.Message, MSGType.Error); return; }
+
             TblCongViec task = TaskManager.Instance.FetchById(taskId);
             if (task == null) return;
+
             bool isPhase = TaskManager.Instance.CheckPhase(task);
             bool isFatherTask = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
             byte oldStatus = task.TrangThai;
             string tenCv = txtEditTenCv.Text.Trim();
+
             if (string.IsNullOrEmpty(tenCv)) { ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error); return; }
             if (!DateTime.TryParse(txtEditNgayBatDau.Text.Trim(), out DateTime ngayBd))
             {
                 ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error);
                 return;
             }
+
             if (isPhase)
             {
                 DataTable phaseTable = TaskManager.Instance.FetchPhasesByProjectId(CurrentProjectId);
@@ -328,6 +384,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             }
 
             task.NgayBatDau = ngayBd;
+
             if (!isPhase)
             {
                 if (!int.TryParse(txtEditThoiHan.Text.Trim(), out int thoiHan) || thoiHan <= 0)
@@ -335,7 +392,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     ShowNotify(GetResourceText(BackEndResourceKeys.TASK_DURATION_MUST_BE_POSITIVE), MSGType.Error);
                     return;
                 }
+
                 byte newStatus = Convert.ToByte(ddlEditTrangThai.SelectedValue);
+
                 if (newStatus != 0 && task.IdCongViecPhuThuoc.HasValue)
                 {
                     TblCongViec dependentTask = TaskManager.Instance.FetchById(task.IdCongViecPhuThuoc.Value);
@@ -345,6 +404,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                         return;
                     }
                 }
+
                 if (newStatus != 0)
                 {
                     Guid? checkParentId = task.IdCongViecCha;
@@ -367,20 +427,26 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                         else break;
                     }
                 }
+
                 if ((oldStatus == 1 || oldStatus == 2 || oldStatus == 3) && newStatus == 0)
                 {
                     ShowNotify("Không thể chuyển công việc đang làm hoặc đã hoàn thành về trạng thái Chưa bắt đầu!", MSGType.Warning);
                     return;
                 }
+
                 task.TrangThai = newStatus;
+
                 if (oldStatus != newStatus)
                 {
                     try { DuAnManager.Instance.EnsureCanUpdateProgress(CurrentProjectId); }
                     catch (Exception ex) { ShowNotify(ex.Message, MSGType.Error); return; }
                 }
+
                 if (!isFatherTask) task.IdDoUuTien = Guid.TryParse(ddlEditDoUuTien.SelectedValue, out Guid idUt) ? (Guid?)idUt : null;
+
                 task.ThoiHanNgay = thoiHan;
                 task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);
+
                 if (newStatus == 2 || newStatus == 3)
                 {
                     if ((oldStatus != 2 && oldStatus != 3) || !task.NgayHoanThanhThucTe.HasValue)
@@ -393,12 +459,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 }
                 else
                     task.NgayHoanThanhThucTe = null;
+
                 task.IdCongViecPhuThuoc = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid ptId) ? (Guid?)ptId : null;
             }
+
             task.TenCongViec = tenCv;
             task.MoTa = txtEditMoTa.Text.Trim();
             task.NgayCapNhat = DateTime.Now;
             task.Save();
+
             if (isFatherTask)
             {
                 TaskManager.Instance.AutoSetFirstChildStartTime(CurrentProjectId, task.IdCongViec, task.NgayBatDau.Value, true);
@@ -413,6 +482,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     TaskManager.Instance.AutoSetParentStatus(CurrentProjectId, task.IdCongViecCha.Value);
                 }
             }
+
             ShowNotify(GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);
             CtrlTask1.Rebind();
             mdlEditTask.CloseModal();
@@ -521,9 +591,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
                 if (currentTask != null && TaskManager.Instance.CheckPhase(currentTask))
                 {
-                    // Phase không có công việc cha. Dependency của Phase luôn là một Phase
-                    // đứng trước nó và lấy trực tiếp từ dropdown để min ngày cập nhật ngay
-                    // khi người dùng đổi dependency.
                     parentId = null;
                     depId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid phaseDepId)
                         ? (Guid?)phaseDepId
@@ -556,6 +623,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             mdlEditTask.OpenModal(true);
             ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(), $"alert('{safeMsg}');", true);
         }
+
         #region Logic Cấu Hình Hệ Số Đóng Góp (Popup)
 
         private void ConfigHeSo_Callback(object sender, EventArgs e)
@@ -566,10 +634,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 return;
             }
 
-            // Lấy 3 dòng hệ số của RIÊNG PROJECT NÀY
             DataTable dtHeSo = HeSoDongGopManager.Instance.GetHeSoCuaDuAn(CurrentProjectId);
 
-            // Chốt chặn an toàn: Nếu dự án cũ chưa có hệ số -> Khởi tạo cho nó luôn
             if (dtHeSo == null || dtHeSo.Rows.Count == 0)
             {
                 HeSoDongGopManager.Instance.InitializeProjectCoefficients(CurrentProjectId);
@@ -589,7 +655,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             try
             {
                 List<TblHeSoDongGop> lstUpdate = new List<TblHeSoDongGop>();
-                // Quét qua Repeater để lấy ID và Hệ số mới
                 foreach (RepeaterItem item in rptHeSoDongGop.Items)
                 {
                     if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
@@ -598,10 +663,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                         HiddenField hdfIdHeSoDongGop = (HiddenField)item.FindControl("hdfIdHeSoDongGop");
                         TextBox txtHeSo = (TextBox)item.FindControl("txtHeSo");
 
-                        // [CHỮA BỆNH Ở ĐÂY]: Quy đổi mọi dấu phẩy thành dấu chấm
                         string val = txtHeSo.Text.Trim().Replace(",", ".");
 
-                        // Dùng InvariantCulture để ép server luôn hiểu dấu chấm là thập phân
                         if (Guid.TryParse(hdfIdDoUuTien.Value, out Guid idDoUuTien) &&
                             decimal.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal heSo))
                         {
@@ -617,14 +680,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                     }
                 }
 
-                // Lưu Update đè lên 3 dòng của Project này
                 bool isSaved = HeSoDongGopManager.Instance.SaveHeSoCuaDuAn(CurrentProjectId, lstUpdate);
                 if (isSaved)
                 {
                     ShowNotify("Cập nhật hệ số đóng góp thành công!", MSGType.Success);
                     mdlHeSoDongGop.CloseModal();
 
-                    // Nạp lại danh sách công việc ở UI -> Tự động truy vấn lại -> Cập nhật toàn bộ điểm Task!
                     CtrlTask1.Rebind();
                 }
                 else
@@ -639,6 +700,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         }
 
         #endregion
+
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlTask1.ConfirmRequest(e);

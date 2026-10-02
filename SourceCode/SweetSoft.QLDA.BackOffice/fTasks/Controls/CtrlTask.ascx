@@ -86,23 +86,10 @@
     .mc-weekdays span { text-align: center; font-size: 11px; font-weight: 700; color: #64748b; padding: 3px 0 5px; }
     .mc-weekdays span.mc-we { color: #94a3b8; }
     .mc-grid { grid-auto-rows: 50px; gap: 2px; }
-    
- /* ============================================================
-       CẤU HÌNH VIEWPORT VÀ Z-INDEX (SỬA LỖI ĐÈ HEADER)
-       ============================================================ */
     .mc-header, .mc-weekdays { position: relative; z-index: 20; background: #ffffff; }
-    
-    /* Mặc định Viewport phải có z-index: 30 (Cao hơn Header) để Tooltip nổi lên trên hoàn toàn */
     .mc-viewport { position: relative; overflow: visible !important; height: 310px; z-index: 30; }
-    
-    /* Khi JS gọi hiệu ứng trượt, nó bị giáng cấp xuống z-index: 10 để chạy ngầm dưới Header */
     .mc-viewport.is-animating { overflow: hidden !important; z-index: 10 !important; }
-
-    /* ============================================================
-       CĂN CHỈNH Ô NGÀY (SỬA LỖI TOOLTIP NẰM 1 CHỖ)
-       ============================================================ */
     .mc-day { 
-        /* QUAN TRỌNG NHẤT: Bắt buộc phải là relative để Tooltip neo đúng vào ngày này */
         position: relative !important; 
         overflow: visible !important; 
         
@@ -122,10 +109,6 @@
     .mc-day.st-free    { background: #e6f4ea; color: #137333; }
     .mc-day.today { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
     .mc-label { margin-top: 3px; max-width: 100%; padding: 0 3px; box-sizing: border-box; font-size: 9.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* ============================================================
-       CSS TOOLTIP DANH SÁCH TASK 
-       ============================================================ */
     .custom-task-tooltip { 
         position: absolute !important; 
         bottom: calc(100% + 5px); /* Cách đỉnh ô ngày 5px để không bị dính sát */
@@ -144,25 +127,14 @@
     .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
     .tooltip-task-list li:first-child { padding-top: 0; }
     .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
-
-    /* CHỐNG TRÀN MÉP TRÁI */
     .mc-day:nth-child(7n + 1) .custom-task-tooltip,
     .mc-day:nth-child(7n + 2) .custom-task-tooltip { left: -10px !important; transform: none !important; }
     .mc-day:nth-child(7n + 1) .custom-task-tooltip::after,
     .mc-day:nth-child(7n + 2) .custom-task-tooltip::after { left: 24px !important; margin-left: 0 !important; }
-
-    /* CHỐNG TRÀN MÉP PHẢI */
     .mc-day:nth-child(7n + 6) .custom-task-tooltip,
     .mc-day:nth-child(7n) .custom-task-tooltip { left: auto !important; right: -10px !important; transform: none !important; }
     .mc-day:nth-child(7n + 6) .custom-task-tooltip::after,
     .mc-day:nth-child(7n) .custom-task-tooltip::after { left: auto !important; right: 24px !important; margin-left: 0 !important; }
-
-    /* ===================================================================
-       2 NÚT CÔNG CỤ: NHẸ HƠN, GỌN HƠN, VẪN GIỮ ĐÚNG MÀU CHỨC NĂNG
-       - Trễ hạn: đỏ nhạt + outline; active mới chuyển đỏ đậm
-       - Thu gọn: tím nhạt + outline; active mới chuyển tím đậm
-       - Không ảnh hưởng Search / Add new / các control dùng chung
-       =================================================================== */
     .btn-filter-overdue,
     .btn-tool-folder {
         border-radius: 7px;
@@ -180,34 +152,27 @@
                     color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
         box-shadow: none;
     }
-
     .btn-filter-overdue:hover,
     .btn-tool-folder:hover {
         transform: translateY(-1px);
     }
-
-    /* 1. Trễ hạn - mặc định nhẹ, chỉ nổi mạnh khi đang filter */
     .btn-filter-overdue {
         background-color: #fff1f2 !important;
         color: #e11d48 !important;
         border: 1px solid #fda4af !important;
     }
-
     .btn-filter-overdue:hover {
         background-color: #ffe4e6 !important;
         color: #be123c !important;
         border-color: #fb7185 !important;
         box-shadow: 0 2px 6px rgba(225, 29, 72, 0.12);
     }
-
     .btn-filter-overdue.active-filter {
         background-color: #f43f5e !important;
         color: #ffffff !important;
         border-color: #f43f5e !important;
         box-shadow: 0 2px 6px rgba(244, 63, 94, 0.22);
     }
-
-    /* Số lượng trễ hạn: tạo điểm nhấn nhỏ thay vì dấu ngoặc */
     .btn-filter-overdue .overdue-count {
         min-width: 20px;
         height: 20px;
@@ -222,42 +187,34 @@
         font-weight: 700;
         line-height: 1;
     }
-
     .btn-filter-overdue.active-filter .overdue-count {
         background-color: rgba(255, 255, 255, 0.22);
         color: #ffffff;
     }
-
-    /* 2. Thu gọn / Mở rộng - tím nhạt, đồng bộ màu thương hiệu */
     .btn-tool-folder {
         background-color: #f5f3ff !important;
         color: #6d28d9 !important;
         border: 1px solid #c4b5fd !important;
     }
-
     .btn-tool-folder:hover {
         background-color: #ede9fe !important;
         color: #5b21b6 !important;
         border-color: #a78bfa !important;
         box-shadow: 0 2px 6px rgba(109, 40, 217, 0.12);
     }
-
     .btn-tool-folder.active-filter {
         background-color: #8b5cf6 !important;
         color: #ffffff !important;
         border-color: #8b5cf6 !important;
         box-shadow: 0 2px 6px rgba(139, 92, 246, 0.22);
     }
-
     .row-overdue-bg > td { background-color: #fef2f2 !important; transition: background-color 0.2s ease; }
     .table-hover > tbody > tr.row-overdue-bg:hover > td { background-color: #fee2e2 !important; }
     .row-warning-bg > td { background-color: #fffbeb !important; transition: background-color 0.2s ease; }
     .table-hover > tbody > tr.row-warning-bg:hover > td { background-color: #fef3c7 !important; } 
-
     .task-context-card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; }
     .task-context-breadcrumb { font-size: 13px; color: #475569; font-weight: 500; display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; }
     .badge-code { font-size: 16px; font-weight: 800; color: #1e40af; background: #dbeafe; padding: 4px 10px; border-radius: 6px; display: inline-block; }
-    
     .badge-pill-custom { padding: 4px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 600 !important; display: inline-block !important; white-space: nowrap !important; line-height: 1.2 !important; }
     .badge-status-doing { background-color: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
     .badge-status-todo  { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
@@ -266,8 +223,6 @@
     .badge-pri-med  { background-color: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; font-weight: 600 !important; }
     .badge-pri-high { background-color: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fca5a5 !important; font-weight: 700 !important; }
     .table-task-grid td:last-child { background-color: #fffbeb !important; border-left: 1px solid #fef08a !important; }
-
-    /* Hiệu ứng Hover chuyển trạng thái thành nút xác nhận nhanh */
     .badge-status-btn {
         position: relative;
         cursor: pointer;
@@ -320,12 +275,9 @@
         border-color: #2563eb !important;
         box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3);
     }
-
-    /* Định dạng cây Task con và Phase (Không làm vỡ layout bảng) */
     .task-sub-box { display: block; padding: 3px 0; line-height: 1.55; }
     .task-sub-code { font-weight: 700 !important; color: #334155 !important; margin-right: 2px; }
     .task-tree-branch { color: #94a3b8 !important; margin-right: 5px; user-select: none; font-family: monospace; font-size: 13px; }
-
     .task-phase-box { 
         background: linear-gradient(90deg, #f3e8ff 0%, #faf5ff 72%, #ffffff 100%) !important;
         border-left: 4px solid #7c3aed !important; 
@@ -346,13 +298,6 @@
         font-size: 15px !important; 
         margin-right: 6px;
     }
-
-    /* ================================================================
-       POLISH UI - CHỈ ÁP DỤNG CHO PHẦN BODY CỦA BẢNG TASK
-       Không đụng THEAD, cột ACTION và các control dùng chung của công ty.
-       ================================================================ */
-
-    /* Nhịp dòng gọn và dễ quét hơn */
     .table-task-grid tbody td:not(:last-child) {
         padding: 10px 12px !important;
         vertical-align: middle !important;
@@ -360,22 +305,16 @@
         color: #334155;
         line-height: 1.45;
     }
-
-    /* Cột tên công việc là vùng thông tin chính */
     .table-task-grid tbody td:nth-child(2) {
         padding-top: 9px !important;
         padding-bottom: 9px !important;
     }
-
     .table-task-grid tbody td:nth-child(2) .text-dark {
         color: #27364a !important;
     }
-
     .table-task-grid tbody td:nth-child(2) .fw-semibold {
         font-weight: 600 !important;
     }
-
-    /* Căn số/ngày thẳng hàng */
     .table-task-grid tbody td:nth-child(3),
     .table-task-grid tbody td:nth-child(4),
     .table-task-grid tbody td:nth-child(5),
@@ -384,94 +323,62 @@
     .table-task-grid tbody td:nth-child(8) {
         font-variant-numeric: tabular-nums;
     }
-
     .table-task-grid tbody td:nth-child(3),
     .table-task-grid tbody td:nth-child(4),
     .table-task-grid tbody td:nth-child(5),
     .table-task-grid tbody td:nth-child(6) {
         color: #475569;
     }
-
     .table-task-grid tbody td:nth-child(6) {
         font-weight: 600;
         color: #334155;
     }
-
-    /* Phụ thuộc: rõ ràng nhưng không lấn át tên task */
     .table-task-grid tbody td:nth-child(8) {
         color: #475569;
         font-weight: 600;
     }
-
-    /* Trạng thái: tạo khoảng thở mà không đổi kiểu nút/badge hiện có */
     .table-task-grid tbody td:nth-child(7) {
         padding-left: 8px !important;
         padding-right: 8px !important;
     }
-
     .badge-pill-custom {
         min-height: 25px;
         box-sizing: border-box;
         letter-spacing: .05px;
     }
-
-    /* Avatar được căn giữa ổn định, không thay đổi nút assign */
     .avatar-group {
         min-height: 30px;
     }
-
-    /* Dòng cảnh báo vẫn giữ nguyên màu quy ước */
     .row-overdue-bg > td:not(:last-child),
     .row-warning-bg > td:not(:last-child) {
         color: #475569;
     }
-
-    /* ================================================================
-       DRAG & DROP GIAI ĐOẠN
-       - Chỉ áp dụng cho Phase (root task / level 1)
-       - Không đụng THEAD, ACTION hay các control dùng chung
-       ================================================================ */
     .table-task-grid tbody tr.phase-draggable-row > td:nth-child(2) {
         cursor: grab;
     }
-
     .table-task-grid tbody tr.phase-draggable-row.phase-dragging > td:nth-child(2) {
         cursor: grabbing;
     }
-
     .table-task-grid tbody tr.phase-dragging {
         opacity: 0.58;
         transition: opacity .18s ease, transform .18s ease, filter .18s ease;
     }
-
     .table-task-grid tbody tr.phase-dragging .task-phase-box {
         transform: translateY(-1px);
     }
-
     .table-task-grid tbody tr.phase-dragging .task-phase-box {
         filter: saturate(0.92);
     }
-
-    /*
-       Khi đang đưa chuột vào một Phase:
-       - Không còn vạch liền ở trên / dưới từng ô.
-       - Không vẽ border riêng cho từng cell.
-       - Một lớp overlay duy nhất sẽ ôm toàn bộ row.
-       - Các nét đứt chạy ngang như băng xích, nhẹ và liên tục.
-    */
     .table-task-grid tbody tr.phase-drag-target {
         position: relative;
     }
-
     .table-task-grid tbody tr.phase-drag-target > td:not(:first-child) {
         background-color: rgba(124, 58, 237, .018) !important;
         transition: background-color .16s ease;
     }
-
     .table-task-grid tbody tr.phase-drag-noop > td:not(:first-child) {
         background-color: rgba(100, 116, 139, .028) !important;
     }
-
     .phase-row-border-overlay.noop {
         background-image:
             repeating-linear-gradient(90deg, rgba(100, 116, 139, .72) 0 8px, transparent 8px 15px),
@@ -480,7 +387,6 @@
             repeating-linear-gradient(0deg, rgba(100, 116, 139, .72) 0 8px, transparent 8px 15px);
         filter: drop-shadow(0 0 4px rgba(100, 116, 139, .10));
     }
-
     .phase-row-border-overlay {
         position: fixed;
         z-index: 99990;
@@ -866,12 +772,9 @@
                         <HeaderStyle Width="110px"/>
                         <ItemStyle Width="110px"/>
                         <ItemTemplate>
-                            <!-- 1. Nhãn tĩnh: Hiện khi Chỉ xem, LÀ task cha, HOẶC Trạng thái = 2, 3 (Đã HT) -->
                             <asp:Literal runat="server" 
                                 Visible='<%# !this.IsEdit || CheckIsFatherTask(Eval("IdCongViec")) || Eval("TrangThai").ToString() == "2" || Eval("TrangThai").ToString() == "3" %>'
                                 Text='<%# GetTaskStatusBadge(Eval("TrangThai")) %>'></asp:Literal>
-
-                            <!-- 2. Nút "Bắt đầu!": Hiện khi Trạng thái = 0 (Chưa bắt đầu) -->
                             <asp:LinkButton runat="server" ID="lbtStatusStart" 
                                 CommandName="START_TASK" 
                                 CommandArgument='<%# Eval("IdCongViec") %>'
@@ -881,8 +784,6 @@
                                 <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
                                 <span class="status-hover"><i class="fas fa-play me-1"></i>Bắt đầu!</span>
                             </asp:LinkButton>
-
-                            <!-- 3. Nút "Chốt xong!": Hiện khi Trạng thái = 1 (Đang thực hiện) -->
                             <asp:LinkButton runat="server" ID="lbtStatusFastComplete" 
                                 CommandName="FAST_COMPLETE" 
                                 CommandArgument='<%# Eval("IdCongViec") %>'
@@ -894,7 +795,6 @@
                             </asp:LinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
-
                     <asp:TemplateField HeaderText="Dependent" HeaderStyle-Width="90px" ItemStyle-Width="90px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center fw-bold">
                         <HeaderStyle Width="90px"/>
                         <ItemStyle Width="90px"/>
@@ -902,7 +802,6 @@
                             <%# GetPhuThuoc(Eval("IdCongViecPhuThuoc")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
-
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="130px">
                         <HeaderStyle Width="130px"/>
                         <ItemStyle Width="130px"/>
@@ -979,92 +878,92 @@
     </SweetSoft:ExtraModal>
 
     <script type="text/javascript">
-// ==========================================
-// LOGIC 1: LỌC CÔNG VIỆC TRỄ HẠN
-// ==========================================
-function getTaskTreeState() {
-    return {
-        overdueFiltered: $('#btnFilterOverdue').hasClass('active-filter'),
-        collapsed: $('#btnToggleTree').hasClass('active-filter')
-    };
-}
-
-function isTaskOverdue(row) {
-    var isDoingLate = row.attr('data-overdue') === '1';
-    var isDoneLate = row.find('.task-late-label').length > 0 || row.text().indexOf('Trễ hạn') > -1;
-    return isDoingLate || isDoneLate;
-}
-
-/*
-   Một nguồn dữ liệu duy nhất cho UI:
-   luôn duyệt TOÀN BỘ row trong DOM rồi quyết định row nào được hiện.
-   Vì vậy Filter + Thu gọn không bao giờ lấy "danh sách đang visible" làm dữ liệu đầu vào.
-*/
-function applyTaskViewState(animate) {
-    var state = getTaskTreeState();
-    var $rows = $('.table-task-grid tbody tr[data-level]');
-
-    $rows.each(function() {
-        var row = $(this);
-        var level = parseInt(row.attr('data-level'), 10);
-        if (isNaN(level)) level = 1;
-
-        var isRootPhase = level <= 1;
-        var isOverdue = isTaskOverdue(row);
-
-        var shouldShow;
-
-        if (state.collapsed) {
-            // Thu gọn = chỉ giữ Phase/root, bất kể đang filter hay không.
-            shouldShow = isRootPhase;
-        } else if (state.overdueFiltered) {
-            // Đang filter trễ hạn = lấy lại từ FULL DOM, chỉ hiện row trễ hạn.
-            shouldShow = isOverdue;
-        } else {
-            // Trạng thái bình thường = hiện toàn bộ.
-            shouldShow = true;
+        // ==========================================
+        // LOGIC 1: LỌC CÔNG VIỆC TRỄ HẠN
+        // ==========================================
+        function getTaskTreeState() {
+            return {
+                overdueFiltered: $('#btnFilterOverdue').hasClass('active-filter'),
+                collapsed: $('#btnToggleTree').hasClass('active-filter')
+            };
         }
 
-        if (animate) {
-            if (shouldShow) row.stop(true, true).fadeIn(160);
-            else row.stop(true, true).fadeOut(160);
-        } else {
-            row.toggle(shouldShow);
+        function isTaskOverdue(row) {
+            var isDoingLate = row.attr('data-overdue') === '1';
+            var isDoneLate = row.find('.task-late-label').length > 0 || row.text().indexOf('Trễ hạn') > -1;
+            return isDoingLate || isDoneLate;
         }
-    });
-}
 
-// ==========================================
-// LOGIC 1: LỌC CÔNG VIỆC TRỄ HẠN
-// ==========================================
-function toggleOverdueFilter() {
-    var btn = $('#btnFilterOverdue');
-    btn.toggleClass('active-filter');
+        /*
+           Một nguồn dữ liệu duy nhất cho UI:
+           luôn duyệt TOÀN BỘ row trong DOM rồi quyết định row nào được hiện.
+           Vì vậy Filter + Thu gọn không bao giờ lấy "danh sách đang visible" làm dữ liệu đầu vào.
+        */
+        function applyTaskViewState(animate) {
+            var state = getTaskTreeState();
+            var $rows = $('.table-task-grid tbody tr[data-level]');
 
-    applyTaskViewState(true);
-}
+            $rows.each(function () {
+                var row = $(this);
+                var level = parseInt(row.attr('data-level'), 10);
+                if (isNaN(level)) level = 1;
 
-// ==========================================
-// LOGIC 2: THU GỌN / MỞ RỘNG CÂY CÔNG VIỆC
-// ==========================================
-function toggleTaskTree() {
-    var btn = $('#btnToggleTree');
-    var isCollapsed = !btn.hasClass('active-filter');
+                var isRootPhase = level <= 1;
+                var isOverdue = isTaskOverdue(row);
 
-    var expandText = btn.attr('data-expand-text') || 'Mở rộng tất cả';
-    var collapseText = btn.attr('data-collapse-text') || 'Thu gọn tất cả';
+                var shouldShow;
 
-    function getShortToggleText(text) {
-        return String(text || '').replace(/\s+tất cả\s*$/i, '').trim();
-    }
+                if (state.collapsed) {
+                    // Thu gọn = chỉ giữ Phase/root, bất kể đang filter hay không.
+                    shouldShow = isRootPhase;
+                } else if (state.overdueFiltered) {
+                    // Đang filter trễ hạn = lấy lại từ FULL DOM, chỉ hiện row trễ hạn.
+                    shouldShow = isOverdue;
+                } else {
+                    // Trạng thái bình thường = hiện toàn bộ.
+                    shouldShow = true;
+                }
 
-    btn.toggleClass('active-filter', isCollapsed);
-    btn.find('i').toggleClass('fa-folder', isCollapsed).toggleClass('fa-folder-open', !isCollapsed);
-    btn.find('#lblToggleText').text(getShortToggleText(isCollapsed ? expandText : collapseText));
+                if (animate) {
+                    if (shouldShow) row.stop(true, true).fadeIn(160);
+                    else row.stop(true, true).fadeOut(160);
+                } else {
+                    row.toggle(shouldShow);
+                }
+            });
+        }
 
-    // Luôn tính lại từ FULL DOM, không dựa vào row đang visible.
-    applyTaskViewState(true);
-}
+        // ==========================================
+        // LOGIC 1: LỌC CÔNG VIỆC TRỄ HẠN
+        // ==========================================
+        function toggleOverdueFilter() {
+            var btn = $('#btnFilterOverdue');
+            btn.toggleClass('active-filter');
+
+            applyTaskViewState(true);
+        }
+
+        // ==========================================
+        // LOGIC 2: THU GỌN / MỞ RỘNG CÂY CÔNG VIỆC
+        // ==========================================
+        function toggleTaskTree() {
+            var btn = $('#btnToggleTree');
+            var isCollapsed = !btn.hasClass('active-filter');
+
+            var expandText = btn.attr('data-expand-text') || 'Mở rộng tất cả';
+            var collapseText = btn.attr('data-collapse-text') || 'Thu gọn tất cả';
+
+            function getShortToggleText(text) {
+                return String(text || '').replace(/\s+tất cả\s*$/i, '').trim();
+            }
+
+            btn.toggleClass('active-filter', isCollapsed);
+            btn.find('i').toggleClass('fa-folder', isCollapsed).toggleClass('fa-folder-open', !isCollapsed);
+            btn.find('#lblToggleText').text(getShortToggleText(isCollapsed ? expandText : collapseText));
+
+            // Luôn tính lại từ FULL DOM, không dựa vào row đang visible.
+            applyTaskViewState(true);
+        }
 
         // ==========================================
         // LOGIC 3: KÉO THẢ ĐỔI VỊ TRÍ GIAI ĐOẠN
@@ -1112,13 +1011,13 @@ function toggleTaskTree() {
 
             $('body').append(
                 '<div id="phase-drag-hint" class="phase-drag-hint" aria-live="polite">' +
-                    '<div class="phase-drag-hint-main">' +
-                        '<span class="phase-drag-hint-label">Đang sắp xếp</span>' +
-                        '<span id="phase-drag-source" class="phase-drag-hint-phase"></span>' +
-                        '<i class="fas fa-arrow-right phase-drag-hint-arrow"></i>' +
-                        '<span id="phase-drag-target" class="phase-drag-hint-phase"></span>' +
-                    '</div>' +
-                    '<div id="phase-drag-action" class="phase-drag-hint-action"></div>' +
+                '<div class="phase-drag-hint-main">' +
+                '<span class="phase-drag-hint-label">Đang sắp xếp</span>' +
+                '<span id="phase-drag-source" class="phase-drag-hint-phase"></span>' +
+                '<i class="fas fa-arrow-right phase-drag-hint-arrow"></i>' +
+                '<span id="phase-drag-target" class="phase-drag-hint-phase"></span>' +
+                '</div>' +
+                '<div id="phase-drag-action" class="phase-drag-hint-action"></div>' +
                 '</div>'
             );
         }
@@ -1542,7 +1441,7 @@ function toggleTaskTree() {
         $(document).on('click', function () {
             $('.mc-day').removeClass('show-tooltip');
         });
-        
+
         // UpdatePanel có thể render lại tbody. Sau khi render xong, áp lại state hiện tại.
         if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
             Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
@@ -1554,5 +1453,224 @@ function toggleTaskTree() {
                 }
             });
         }
+        // =========================================================
+        // GIỮ ĐÚNG VỊ TRÍ SCROLL KHI MỞ POPUP / POSTBACK
+        // Bản này xử lý cả window scroll, scroll container và Full/Async PostBack.
+        // =========================================================
+        (function () {
+            var storageKey = 'CtrlTask.ScrollState.v2';
+            var state = { pending: false, windowX: 0, windowY: 0, targetId: '', targetTop: 0, containers: [] };
+            var restoreTimers = [];
+            var restoreRunning = false;
+
+            function getWindowScroll() {
+                var vv = window.visualViewport;
+                return {
+                    x: Math.round(vv && typeof vv.pageLeft === 'number' ? vv.pageLeft : (window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0)),
+                    y: Math.round(vv && typeof vv.pageTop === 'number' ? vv.pageTop : (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0))
+                };
+            }
+
+            function isScrollableElement(el) {
+                if (!el || el === document.body || el === document.documentElement) return false;
+                var style = window.getComputedStyle(el);
+                var overflowY = style.overflowY;
+                return (overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2;
+            }
+
+            function getScrollableAncestors(target) {
+                var result = [];
+                var el = target && target.parentElement;
+                while (el && el !== document.body && el !== document.documentElement) {
+                    if (isScrollableElement(el)) result.push(el);
+                    el = el.parentElement;
+                }
+                return result;
+            }
+
+            function getElementKey(el) {
+                if (!el) return '';
+                if (el.id) return '#' + CSS.escape(el.id);
+                var parts = [];
+                var node = el;
+                while (node && node.nodeType === 1 && node !== document.body && parts.length < 8) {
+                    var index = 1;
+                    var sibling = node;
+                    while ((sibling = sibling.previousElementSibling)) index++;
+                    parts.unshift(node.tagName.toLowerCase() + ':nth-child(' + index + ')');
+                    node = node.parentElement;
+                }
+                return parts.length ? parts.join(' > ') : '';
+            }
+
+            function findElementByKey(key) {
+                if (!key) return null;
+                try { return document.querySelector(key); } catch (e) { return null; }
+            }
+
+            function getTargetInfo(target) {
+                if (!target || !target.getBoundingClientRect) return { id: '', top: 0 };
+                return { id: getElementKey(target), top: target.getBoundingClientRect().top };
+            }
+
+            function collectContainerState(target) {
+                var list = [];
+                var ancestors = getScrollableAncestors(target);
+                for (var i = 0; i < ancestors.length; i++) {
+                    var el = ancestors[i];
+                    list.push({ key: getElementKey(el), top: el.scrollTop, left: el.scrollLeft });
+                }
+                return list;
+            }
+
+            function persist() {
+                try {
+                    sessionStorage.setItem(storageKey, JSON.stringify({ pending: state.pending, windowX: state.windowX, windowY: state.windowY, targetId: state.targetId, targetTop: state.targetTop, containers: state.containers }));
+                } catch (e) { }
+            }
+
+            function readPersisted() {
+                try {
+                    var raw = sessionStorage.getItem(storageKey);
+                    if (!raw) return null;
+                    var saved = JSON.parse(raw);
+                    if (!saved || !saved.pending) return null;
+                    return saved;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function clearPersisted() {
+                state.pending = false;
+                state.targetId = '';
+                state.containers = [];
+                try { sessionStorage.removeItem(storageKey); } catch (e) { }
+            }
+
+            function capture(target) {
+                var pos = getWindowScroll();
+                var info = getTargetInfo(target);
+                state.pending = true;
+                state.windowX = pos.x;
+                state.windowY = pos.y;
+                state.targetId = info.id;
+                state.targetTop = info.top;
+                state.containers = collectContainerState(target);
+                persist();
+            }
+
+            function restoreContainerState(saved) {
+                if (!saved || !saved.key) return;
+                var el = findElementByKey(saved.key);
+                if (!el) return;
+                if (typeof saved.top === 'number') el.scrollTop = saved.top;
+                if (typeof saved.left === 'number') el.scrollLeft = saved.left;
+            }
+
+            function restoreOnce(saved) {
+                if (!saved || !saved.pending) return;
+                for (var i = 0; i < (saved.containers || []).length; i++) restoreContainerState(saved.containers[i]);
+                window.scrollTo(saved.windowX || 0, saved.windowY || 0);
+                var target = findElementByKey(saved.targetId);
+                if (target && typeof saved.targetTop === 'number') {
+                    var currentTop = target.getBoundingClientRect().top;
+                    var delta = currentTop - saved.targetTop;
+                    if (Math.abs(delta) > 1) {
+                        var current = getWindowScroll();
+                        window.scrollTo(current.x, Math.max(0, current.y + delta));
+                    }
+                }
+            }
+
+            function restorePersistedScroll() {
+                var saved = readPersisted();
+                if (!saved || restoreRunning) return;
+                restoreRunning = true;
+                for (var i = 0; i < restoreTimers.length; i++) clearTimeout(restoreTimers[i]);
+                restoreTimers = [];
+                var delays = [0, 16, 50, 100, 180, 300, 500, 750, 1000, 1500];
+                for (var j = 0; j < delays.length; j++) {
+                    (function (delay) {
+                        restoreTimers.push(setTimeout(function () { restoreOnce(saved); }, delay));
+                    })(delays[j]);
+                }
+                restoreTimers.push(setTimeout(function () {
+                    restoreOnce(saved);
+                    restoreRunning = false;
+                    clearPersisted();
+                }, 1700));
+            }
+
+            function isTaskGridTrigger(target) {
+                if (!target || !target.closest) return null;
+                return target.closest('.table-task-grid a, .table-task-grid button, .table-task-grid input, .table-task-grid select');
+            }
+
+            document.addEventListener('pointerdown', function (event) {
+                var trigger = isTaskGridTrigger(event.target);
+                if (trigger) capture(trigger);
+            }, true);
+
+            document.addEventListener('mousedown', function (event) {
+                if (event.button !== 0) return;
+                var trigger = isTaskGridTrigger(event.target);
+                if (trigger) capture(trigger);
+            }, true);
+
+            document.addEventListener('touchstart', function (event) {
+                var trigger = isTaskGridTrigger(event.target);
+                if (trigger) capture(trigger);
+            }, { capture: true, passive: true });
+
+            window.addEventListener('beforeunload', function () {
+                if (state.pending) persist();
+            });
+
+            window.addEventListener('pageshow', function () {
+                restorePersistedScroll();
+            });
+
+            if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                var prm = Sys.WebForms.PageRequestManager.getInstance();
+                prm.add_initializeRequest(function () {
+                    var active = document.activeElement;
+                    var trigger = isTaskGridTrigger(active);
+                    if (trigger && !state.pending) capture(trigger);
+                });
+                prm.add_beginRequest(function () {
+                    if (state.pending) persist();
+                });
+                prm.add_pageLoading(function () {
+                    if (state.pending) persist();
+                });
+                prm.add_endRequest(function () {
+                    restorePersistedScroll();
+                });
+            }
+
+            $(document).on('show.bs.modal shown.bs.modal hidden.bs.modal', function () {
+                if (state.pending || readPersistedScroll()) restorePersistedScroll();
+            });
+
+            if (window.MutationObserver) {
+                var observer = new MutationObserver(function (mutations) {
+                    for (var i = 0; i < mutations.length; i++) {
+                        if (mutations[i].type === 'childList' || mutations[i].type === 'attributes') {
+                            var modal = document.querySelector('.modal.show, .modal.in');
+                            if (modal && (state.pending || readPersistedScroll())) {
+                                restorePersistedScroll();
+                                break;
+                            }
+                        }
+                    }
+                });
+                observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+            }
+
+            $(function () {
+                restorePersistedScroll();
+            });
+        })();
     </script>
 </div>
