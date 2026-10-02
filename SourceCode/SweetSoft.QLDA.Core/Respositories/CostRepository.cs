@@ -253,7 +253,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             {
                 try
                 {
-                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, Guid.Parse(item.GetColumnValue("IdChiPhi").ToString()), SweetContext.Current.UserName).ConfigureAwait(false);
+                    await _auditManager.LogActionAsync(LogActions.Actions.CREATE, item, _tableName, Guid.Parse(item.GetColumnValue("IdChiPhi").ToString())).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -268,12 +268,7 @@ namespace SweetSoft.QLDA.Core.Respositories
             Guid id = Guid.Parse(chiPhi.GetColumnValue("IdChiPhi").ToString());
             TblChiPhi itemOld = GetById(id);
             chiPhi.Save();
-            string updatedBy = string.Empty;
-            try
-            {
-                updatedBy = chiPhi.GetColumnValue("NguoiCapNhat")?.ToString();
-            }
-            catch { }
+            string updatedBy = SweetContext.Current.UserName;
             Task.Run(async () =>
             {
                 try

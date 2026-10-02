@@ -509,7 +509,7 @@ namespace SweetSoft.QLDA.Core.SysManager
 
                 case nameof(TblRuiRoDuAn): return new[] { "TenRuiRo" };
 
-                case nameof(TblChiPhi): return new[] { "TenChiPhi" };
+                case nameof(TblChiPhi): return new[] { "TenKhoanChi" };
 
                 default: return new[] { "Ten", "Name", "Title", "Ma"};
             }
