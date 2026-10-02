@@ -4,315 +4,82 @@
 <%@ Register Src="~/fCosts/Controls/CtrlViewCostDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewCostDetail" %>
 
 <style>
-    /* =========================================================
-       COST LIST
-       ========================================================= */
-    /* Grid giữ nguyên style như CtrlIssue: header + border từng ô/cell */
-    .cost-list-table { margin-bottom: 0 !important; }
-    .cost-list-table th,
-    .cost-list-table td {
-        vertical-align: middle !important;
-    }
-    .cost-code {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 78px;
-        padding: 4px 8px;
-        border-radius: 6px;
-        background: #f5f3ff;
-        color: #6d28d9;
-        border: 1px solid #ddd6fe;
-        font-size: 11px;
-        font-weight: 700;
-    }
-    .cost-name-link {
-        color: #7c3aed !important;
-        font-size: 16px;
-        font-weight: 400;
-        line-height: 1.45;
-        text-decoration: none !important;
-        transition: color .15s ease, font-weight .15s ease;
-    }
-    .cost-name-link:hover {
-        color: #2563eb !important;
-        font-weight: 500;
-        text-decoration: none !important;
-    }
-    .cost-number { font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .cost-total { color: #111827; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cost-list-table { margin-bottom: 0 !important; }
+.cost-list-table th, .cost-list-table td { vertical-align: middle !important; }
+.cost-code { display: inline-flex; align-items: center; justify-content: center; min-width: 78px; padding: 4px 8px; border-radius: 6px; background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; font-size: 11px; font-weight: 700; }
 
-    /* Trạng thái Cost: dùng cùng một layout cho cả trạng thái tương tác và trạng thái readonly. */
-    .cost-status {
-        margin: 0 auto !important;
-        width: 116px !important;
-        min-width: 116px !important;
-        max-width: 116px !important;
-        height: 30px !important;
-        box-sizing: border-box;
-        padding: 4px 8px !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px !important;
-        font-size: 12px;
-        font-weight: 700;
-        line-height: 1.2;
-        text-align: center;
-        white-space: nowrap;
-    }
+.cost-name-link { color: #542e88 !important; font-size: 16px; font-weight: 500; line-height: 1.45; text-decoration: none !important; transition: color .15s ease; }
+.cost-name-link:hover { color: #3b82f6 !important; text-decoration: none !important; }
+.cost-number { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cost-total { color: #111827; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-    .cost-status-pending {
-        border: 1px solid #93c5fd !important;
-        background: #f0f7ff !important;
-        color: #1d4ed8 !important;
-    }
+.cost-status { display: inline-flex !important; align-items: center; justify-content: center; padding: 2px 6px !important; border-radius: 999px !important; line-height: 1.3; font-size: 13px !important; min-width: 95px !important; box-sizing: border-box; text-align: center; white-space: nowrap; margin: 0 auto !important; }
+.cost-status-pending { background: #fffbeb !important; border: 1px solid #fde68a !important; color: #b45309 !important; font-weight: 600; }
+.cost-status-button { position: relative; text-decoration: none !important; overflow: hidden; transition: all .15s ease; cursor: pointer; }
+.cost-status-button:hover { background: #6d28d9 !important; border-color: #5b21b6 !important; color: transparent !important; box-shadow: 0 2px 6px rgba(109, 40, 217, .20); transform: translateY(-1px); }
+.cost-status-button:hover::after { content: "✓  Duyệt nhanh"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px !important; font-weight: 700; }
+.cost-status-done { background: #dcfce7 !important; border: 1px solid #86efac !important; color: #15803d !important; font-weight: 700; cursor: default; }
+.cost-status-rejected { background: #fef2f2 !important; border: 1px solid #fecaca !important; color: #dc2626 !important; font-weight: 700; cursor: default; }
 
-    .cost-status-button {
-        position: relative;
-        text-decoration: none !important;
-        overflow: hidden;
-        transition: all .15s ease;
-        cursor: pointer;
-    }
-    .cost-status-button:hover {
-        background: #6d28d9 !important;
-        border-color: #5b21b6 !important;
-        color: transparent !important;
-        box-shadow: 0 2px 6px rgba(109, 40, 217, .20);
-        transform: translateY(-1px);
-    }
-    .cost-status-button:hover::after {
-        content: "⚡ Duyệt nhanh";
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 12px;
-        font-weight: 700;
-    }
+.cost-actions { display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+.cost-actions .btn-grid-action { min-width: 34px; height: 32px; padding: 5px 8px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
+.cost-actions .btn-grid-action:hover { background: #f5f3ff; color: #7c3aed !important; text-decoration: none !important; }
+.cost-actions .btn-grid-action.text-danger:hover { background: #fef2f2; color: #dc2626 !important; }
+.cost-attachment-btn { width: 34px; height: 32px; border-radius: 6px !important; display: inline-flex; align-items: center; justify-content: center; }
+.cost-list-table .empty-data { padding: 40px 20px !important; color: #94a3b8; }
 
-    .cost-status-done {
-        border: 1px solid #4ade80 !important;
-        background: #dcfce7 !important;
-        color: #15803d !important;
-        cursor: default;
-    }
+.cost-form { padding: 2px 2px 4px; }
+.cost-form-section { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+.cost-form-section:last-child { margin-bottom: 0; }
+.cost-form-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+.cost-form-section-title { color: #334155; font-size: 14px; font-weight: 700; }
+.cost-form-section-title i { color: #7c3aed; }
+.cost-form-section-subtitle { margin-top: 3px; color: #94a3b8; font-size: 11px; }
+.cost-form .form-label { color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.cost-form .form-control, .cost-form .form-select { border-color: #e2e8f0; border-radius: 7px; min-height: 38px; font-size: 13px; transition: all .15s ease; }
+.cost-form .form-control:focus, .cost-form .form-select:focus { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(124, 58, 237, .08); }
 
-    .cost-status-rejected {
-        border: 1px solid #f87171 !important;
-        background: #fef2f2 !important;
-        color: #dc2626 !important;
-        cursor: default;
-    }
+.cost-input-money { position: relative; }
+.cost-input-money input { padding-right: 35px !important; }
+.cost-input-money > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 12px; font-weight: 600; pointer-events: none; }
+.cost-total-box { min-height: 38px; display: flex; align-items: center; border: 1px solid #ddd6fe; background: #faf5ff; border-radius: 7px; overflow: hidden; }
+.cost-total-icon { width: 38px; align-self: stretch; display: flex; align-items: center; justify-content: center; background: #f5f3ff; color: #7c3aed; border-right: 1px solid #ddd6fe; }
+.cost-total-input { flex: 1; }
+.cost-total-input input { border: 0 !important; background: transparent !important; box-shadow: none !important; text-align: right; color: #6d28d9 !important; font-size: 15px !important; font-weight: 700 !important; }
+.cost-total-unit { padding-right: 12px; color: #7c3aed; font-size: 12px; font-weight: 700; }
 
-    .cost-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        white-space: nowrap;
-    }
-    .cost-actions .btn-grid-action {
-        min-width: 34px;
-        height: 32px;
-        padding: 5px 8px;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .cost-actions .btn-grid-action:hover {
-        background: #f5f3ff;
-        color: #7c3aed !important;
-        text-decoration: none !important;
-    }
-    .cost-actions .btn-grid-action.text-danger:hover { background: #fef2f2; color: #dc2626 !important; }
-    .cost-attachment-btn {
-        width: 34px;
-        height: 32px;
-        border-radius: 6px !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .cost-list-table .empty-data { padding: 40px 20px !important; color: #94a3b8; }
+.cost-person-card { min-height: 64px; display: flex; align-items: center; gap: 11px; padding: 9px 11px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8fafc; }
+.cost-person-avatar { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; background: #7c3aed; }
+.cost-person-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cost-person-main { min-width: 0; }
+.cost-person-name { color: #334155; font-size: 13px; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cost-person-email { margin-top: 2px; color: #94a3b8; font-size: 11px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cost-readonly-field { min-height: 38px; display: flex; align-items: center; padding-left: 10px; border: 1px solid #e5e7eb; border-radius: 7px; background: #f8fafc; }
+.cost-readonly-field > i { width: 25px; color: #94a3b8; font-size: 12px; }
+.cost-readonly-field input { min-height: 36px !important; padding-left: 2px !important; }
 
-    /* =========================================================
-       ADD / EDIT MODAL
-       ========================================================= */
-    .cost-form { padding: 2px 2px 4px; }
-    .cost-form-section {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 18px;
-        margin-bottom: 16px;
-    }
-    .cost-form-section:last-child { margin-bottom: 0; }
-    .cost-form-section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    .cost-form-section-title { color: #334155; font-size: 14px; font-weight: 700; }
-    .cost-form-section-title i { color: #7c3aed; }
-    .cost-form-section-subtitle { margin-top: 3px; color: #94a3b8; font-size: 11px; }
-    .cost-form .form-label { color: #475569; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
-    .cost-form .form-control, .cost-form .form-select {
-        border-color: #e2e8f0;
-        border-radius: 7px;
-        min-height: 38px;
-        font-size: 13px;
-        transition: all .15s ease;
-    }
-    .cost-form .form-control:focus, .cost-form .form-select:focus {
-        border-color: #a78bfa;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, .08);
-    }
-    .cost-input-money { position: relative; }
-    .cost-input-money input { padding-right: 35px !important; }
-    .cost-input-money > span {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 600;
-        pointer-events: none;
-    }
-    .cost-total-box {
-        min-height: 38px;
-        display: flex;
-        align-items: center;
-        border: 1px solid #ddd6fe;
-        background: #faf5ff;
-        border-radius: 7px;
-        overflow: hidden;
-    }
-    .cost-total-icon {
-        width: 38px;
-        align-self: stretch;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f5f3ff;
-        color: #7c3aed;
-        border-right: 1px solid #ddd6fe;
-    }
-    .cost-total-input { flex: 1; }
-    .cost-total-input input {
-        border: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        text-align: right;
-        color: #6d28d9 !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-    }
-    .cost-total-unit { padding-right: 12px; color: #7c3aed; font-size: 12px; font-weight: 700; }
+.cost-reject-box { padding: 14px; border: 1px solid #fecaca; border-left: 3px solid #ef4444; border-radius: 8px; background: #fff7f7; }
+.cost-reject-title { margin-bottom: 8px; color: #dc2626; font-size: 12px; font-weight: 700; }
+.cost-reject-title span { color: #dc2626; }
+.cost-reject-box textarea { background: #fff !important; }
+.cost-form-hint { margin-top: 8px; color: #94a3b8; font-size: 11px; }
+.cost-form-hint i { color: #7c3aed; }
 
-    /* Requester person card - same visual language as Issue assignees. */
-    .cost-person-card {
-        min-height: 64px;
-        display: flex;
-        align-items: center;
-        gap: 11px;
-        padding: 9px 11px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #f8fafc;
-    }
-    .cost-person-avatar {
-        width: 42px;
-        height: 42px;
-        flex: 0 0 42px;
-        border-radius: 50%;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 700;
-        background: #7c3aed;
-    }
-    .cost-person-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .cost-person-main { min-width: 0; }
-    .cost-person-name {
-        color: #334155;
-        font-size: 13px;
-        font-weight: 700;
-        line-height: 1.3;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .cost-person-email {
-        margin-top: 2px;
-        color: #94a3b8;
-        font-size: 11px;
-        line-height: 1.3;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .cost-readonly-field {
-        min-height: 38px;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
-        border: 1px solid #e5e7eb;
-        border-radius: 7px;
-        background: #f8fafc;
-    }
-    .cost-readonly-field > i { width: 25px; color: #94a3b8; font-size: 12px; }
-    .cost-readonly-field input { min-height: 36px !important; padding-left: 2px !important; }
-    .cost-reject-box {
-        padding: 14px;
-        border: 1px solid #fecaca;
-        border-left: 3px solid #ef4444;
-        border-radius: 8px;
-        background: #fff7f7;
-    }
-    .cost-reject-title { margin-bottom: 8px; color: #dc2626; font-size: 12px; font-weight: 700; }
-    .cost-reject-title span { color: #dc2626; }
-    .cost-reject-box textarea { background: #fff !important; }
-    .cost-form-hint { margin-top: 8px; color: #94a3b8; font-size: 11px; }
-    .cost-form-hint i { color: #7c3aed; }
+.cost-approve-modal { padding: 8px 10px 4px; }
+.cost-approve-icon { width: 54px; height: 54px; margin: 8px auto 14px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f5f3ff; color: #7c3aed; font-size: 21px; }
+.cost-approve-title { margin-bottom: 6px; color: #334155; font-weight: 700; }
+.cost-approve-description { max-width: 480px; margin: 0 auto; color: #94a3b8; font-size: 13px; line-height: 1.5; }
+.cost-approve-reject { border-top: 1px solid #e5e7eb; padding-top: 18px; }
 
-    /* Fast approve modal */
-    .cost-approve-modal { padding: 8px 10px 4px; }
-    .cost-approve-icon {
-        width: 54px;
-        height: 54px;
-        margin: 8px auto 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: #f5f3ff;
-        color: #7c3aed;
-        font-size: 21px;
-    }
-    .cost-approve-title { margin-bottom: 6px; color: #334155; font-weight: 700; }
-    .cost-approve-description { max-width: 480px; margin: 0 auto; color: #94a3b8; font-size: 13px; line-height: 1.5; }
-    .cost-approve-reject { border-top: 1px solid #e5e7eb; padding-top: 18px; }
+@media (max-width: 991px) {
+    .cost-list-table { min-width: 1050px; }
+    .cost-table-wrapper { overflow-x: auto; }
+}
 
-    @media (max-width: 991px) {
-        .cost-list-table { min-width: 1050px; }
-        .cost-table-wrapper { overflow-x: auto; }
-    }
-    @media (max-width: 767px) {
-        .cost-form-section { padding: 14px; }
-        .cost-form-section-title { font-size: 13px; }
-    }
+@media (max-width: 767px) {
+    .cost-form-section { padding: 14px; }
+    .cost-form-section-title { font-size: 13px; }
+}
 </style>
 
 <div class="card-header">
@@ -390,7 +157,7 @@
                     <asp:TemplateField HeaderText="TotalAmount" SortExpression="SoTien" HeaderStyle-Width="135px" HeaderStyle-CssClass="text-end" ItemStyle-CssClass="text-end">
                         <ItemTemplate><span class="cost-total"><%# Eval("SoTien") != DBNull.Value ? Convert.ToDecimal(Eval("SoTien")).ToString("N0") : "0" %></span></ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Requester" SortExpression="NhanVienYeuCau" HeaderStyle-Width="145px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Requester" SortExpression="NhanVienYeuCau" HeaderStyle-Width="200px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate><%# Eval("NhanVienYeuCau") != DBNull.Value ? Eval("NhanVienYeuCau") : "—" %></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="DateCreated" SortExpression="NgayTao" HeaderStyle-Width="105px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
@@ -399,18 +166,17 @@
 
                     <asp:TemplateField HeaderText="Status" SortExpression="TrangThai" HeaderStyle-Width="150px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <!-- PM: trạng thái Chờ duyệt chính là nút xử lý nhanh -->
                             <asp:LinkButton runat="server" ID="lbtApproveStatus" CommandName="OPEN_APPROVE_MODAL"
                                 CommandArgument='<%# Eval("IdChiPhi") %>' CausesValidation="false"
                                 Visible='<%# this.IsPM && Eval("TrangThai") != DBNull.Value && Eval("TrangThai").ToString() == "0" %>'
                                 CssClass="cost-status cost-status-pending cost-status-button" ToolTip="Duyệt/Từ chối nhanh khoản chi">
-                                <i class="fas fa-clock me-1"></i><span>Chờ duyệt</span>
+                                <i class="fas fa-clock me-1"></i><span>Chưa duyệt</span>
                             </asp:LinkButton>
 
                             <span runat="server"
                                 visible='<%# !this.IsPM && Eval("TrangThai") != DBNull.Value && Eval("TrangThai").ToString() == "0" %>'
                                 class="cost-status cost-status-pending">
-                                Chờ duyệt
+                                Chưa duyệt
                             </span>
 
                             <span runat="server"
@@ -460,7 +226,6 @@
 
 <asp:HiddenField runat="server" ID="hdfApproveCostId" />
 
-<!-- POPUP DUYỆT / TỪ CHỐI NHANH -->
 <SweetSoft:ExtraModal runat="server" ID="mdlFastApprove" Type="Primary" Title="Xử lý khoản chi">
     <ContentTemplate>
         <div class="cost-approve-modal">

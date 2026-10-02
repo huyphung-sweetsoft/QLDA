@@ -212,12 +212,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-2">
+                        <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="meeting-form-field">
                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.END_TIME) %></label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtThoiGianKetThuc" Enabled="false" CssClass="disabled meeting-readonly-input" PlaceHolder="Hệ thống tự tính..."></SweetSoft:ExtraTextBox>
-                                    <div class="meeting-time-summary"><i class="fas fa-clock"></i><span>Kết thúc:</span><strong id="meetingEndPreview">--/--/---- --:--</strong></div>
                                 </div>
                             </div>
                             <div class="col-md-6">
