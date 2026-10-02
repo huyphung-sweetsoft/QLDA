@@ -486,10 +486,10 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
             }
 
             if (!ProjectRecordFileAccess.CanAccess(
-                    SweetContext.Current.UserId,
-                    idChiPhi,
-                    FileUploadTypes.CostAttachment.ToString(),
-                    false))
+                SweetContext.Current.UserId,
+                idChiPhi,
+                FileUploadTypes.CostAttachment.ToString(),
+                false))
             {
                 ShowAccessDeniedNotify();
                 return;
@@ -610,13 +610,13 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                 cost.MoTaChiTiet;
 
             txtDonGia.Text =
-                cost.DonGia?.ToString("N0");
+                cost.DonGia?.ToString("#,##0", new System.Globalization.CultureInfo("vi-VN"));
 
             txtSoLuong.Text =
                 cost.SoLuong?.ToString();
 
             txtTongTien.Text =
-                cost.SoTien.ToString("N0");
+                cost.SoTien.ToString("#,##0", new System.Globalization.CultureInfo("vi-VN"));
 
             if (cost.NgayTao != null)
             {
@@ -790,26 +790,21 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                         ? txtMoTaChiTiet.Text.Trim()
                         : null;
 
-                string donGiaText =
-                    txtDonGia.Text
-                        .Trim()
-                        .Replace(",", "");
-
-                if (decimal.TryParse(
-                        donGiaText,
-                        out decimal donGia))
+                // ==========================================
+                // FIX LỖI PARSE ĐƠN GIÁ VÀ SỐ LƯỢNG: CẮT DẤU CHẤM
+                // ==========================================
+                string donGiaText = txtDonGia.Text.Trim().Replace(".", "");
+                if (decimal.TryParse(donGiaText, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal donGia))
                 {
-                    costDto.DonGia =
-                        donGia;
+                    costDto.DonGia = donGia;
                 }
 
-                if (int.TryParse(
-                        txtSoLuong.Text.Trim(),
-                        out int soLuong))
+                string soLuongText = txtSoLuong.Text.Trim().Replace(".", "");
+                if (int.TryParse(soLuongText, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int soLuong))
                 {
-                    costDto.SoLuong =
-                        soLuong;
+                    costDto.SoLuong = soLuong;
                 }
+                // ==========================================
 
                 costDto.SoTien =
                     (costDto.DonGia ?? 0) *
@@ -941,8 +936,6 @@ namespace SweetSoft.QLDA.BackOffice.fCosts
                     return;
                 }
 
-                // Chốt lại 2 khóa người dùng sau CreateOrUpdate để
-                // không bị luồng manager ghi đè sai khi Edit.
                 savedCost.IdNguoiTao =
                     creatorId;
 

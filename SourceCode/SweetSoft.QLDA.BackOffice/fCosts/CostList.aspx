@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="CostList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fCosts.CostList" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="CostList.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fCosts.CostList" ValidateRequest="false" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Register Src="~/fCosts/Controls/CtrlCost.ascx" TagPrefix="SweetSoft" TagName="CtrlCost" %>
@@ -267,17 +267,25 @@
                 return;
 
             if (donGiaInput) {
+                // Chỉ lấy số, bỏ mọi ký tự khác
                 const value = txtDonGia.value.replace(/\D/g, '');
-                txtDonGia.value = value !== '' ? parseInt(value, 10).toLocaleString('en-US') : '';
+                // Format theo chuẩn VN: 1.000.000
+                txtDonGia.value = value !== '' ? parseInt(value, 10).toLocaleString('vi-VN') : '';
             }
 
-            const donGia = parseInt(txtDonGia.value.replace(/,/g, ''), 10) || 0;
+            // Gỡ dấu chấm (.) ra để tính toán
+            const donGia = parseInt(txtDonGia.value.replace(/\./g, ''), 10) || 0;
             const soLuong = parseInt(txtSoLuong.value, 10) || 0;
-            const formattedTotal = (donGia * soLuong).toLocaleString('en-US');
+            const formattedTotal = (donGia * soLuong).toLocaleString('vi-VN');
 
             txtTongTien.value = formattedTotal;
             totalDisplay.textContent = formattedTotal;
         }
+
+        $(document).on('input', '.format-currency', function () {
+            let value = $(this).val().replace(/[^0-9]/g, '');
+            $(this).val(value !== '' ? parseInt(value, 10).toLocaleString('vi-VN') : '');
+        });
 
         function escapeCostHtml(value) {
             return $('<div>').text(value == null ? '' : value).html();
@@ -312,11 +320,11 @@
 
             return $(
                 '<div class="cost-user-result">' +
-                    '<div class="cost-user-avatar-wrap">' + avatarHtml + '</div>' +
-                    '<div class="cost-user-info">' +
-                        '<div class="cost-user-name">' + escapeCostHtml(name) + '</div>' +
-                        '<div class="cost-user-email">' + escapeCostHtml(email) + '</div>' +
-                    '</div>' +
+                '<div class="cost-user-avatar-wrap">' + avatarHtml + '</div>' +
+                '<div class="cost-user-info">' +
+                '<div class="cost-user-name">' + escapeCostHtml(name) + '</div>' +
+                '<div class="cost-user-email">' + escapeCostHtml(email) + '</div>' +
+                '</div>' +
                 '</div>'
             );
         }
@@ -341,11 +349,6 @@
                 }
             });
         }
-
-        $(document).on('input', '.format-currency', function () {
-            let value = $(this).val().replace(/[^0-9]/g, '');
-            $(this).val(value !== '' ? parseInt(value, 10).toLocaleString('en-US') : '');
-        });
 
         $(document).ready(function () {
             setTimeout(function () {
