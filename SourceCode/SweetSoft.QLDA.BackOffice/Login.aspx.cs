@@ -44,11 +44,11 @@ namespace SweetSoft.QLDA.BackOffice
                     bool isAdmin = UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
 
                     // Lưu ý: Đổi "ModuleKeys.Overview" thành Enum đúng của trang Overview bên ông
-                    bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.Dashboard);
+                    bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.EmployeeDashboard);
 
                     if (canViewOverview)
                     {
-                        Response.Redirect(GetRelativeClientPath("Home/Overview"));
+                        Response.Redirect(GetRelativeClientPath("/EmployeeDashboard"));
                     }
                     else
                     {
@@ -254,11 +254,11 @@ namespace SweetSoft.QLDA.BackOffice
 
                 // Vì SweetContext đã được set ở đầu hàm AllowLogin nên this.IsUserRight sẽ hoạt động chính xác
                 // Lưu ý: Đổi "ModuleKeys.Overview" cho chuẩn
-                bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.Dashboard);
+                bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.EmployeeDashboard);
 
                 if (canViewOverview)
                 {
-                    Response.Redirect(RewriteURLHelper.DashboardOverview, false);
+                    Response.Redirect(RewriteURLHelper.EmployeeDashboard, false);
                 }
                 else
                 {

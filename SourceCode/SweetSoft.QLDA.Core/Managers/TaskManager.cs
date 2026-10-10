@@ -1896,29 +1896,29 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             AutoSetFirstChildStartTimeInternal(projectId, parentId, newStartDate, forceUpdateStartedTask);
 
-            // Sau khi toàn bộ chuỗi con đã được dời xong, chốt lại thời gian Parent/Phase.
+            // Bước cuối: tính lại thời gian của Parent/Phase hiện tại
+            // sau khi toàn bộ task con và các quan hệ phụ thuộc đã được xử lý.
             AutoSetParentTime(projectId, parentId, forceUpdateStartedTask);
 
-            // Quan trọng: dù AutoSetParentTime có lúc không phát hiện thay đổi End/Duration,
-            // Parent/Phase vừa là node hiện tại của domino nên vẫn phải kiểm tra dependency tiếp theo.
+            // Kiểm tra các task phụ thuộc trực tiếp vào Parent/Phase hiện tại,
+            // kể cả khi ngày kết thúc của Parent/Phase không thay đổi.
             AutoSetDependentTime(projectId, parentId, forceUpdateStartedTask);
         }
 
         private void AutoSetFirstChildStartTimeInternal(Guid projectId, Guid parentId, DateTime newStartDate, bool forceUpdateStartedTask)
         {
             TblCongViec firstChild = _repository.GetFirstChildTask(projectId, parentId);
-            if (firstChild == null || firstChild.DaXoa == true)
-                return;
+            if (firstChild == null || firstChild.DaXoa == true) return;
 
             firstChild.NgayBatDau = newStartDate;
-            int firstChildDuration = firstChild.ThoiHanNgay ?? 1;
+            int firstChildDuration = Math.Max(1, firstChild.ThoiHanNgay ?? 1);
             TblCongViec grandChild = _repository.GetFirstChildTask(projectId, firstChild.IdCongViec);
 
             if (grandChild != null)
             {
-                // Khi đẩy start vượt qua end cũ, phải cập nhật end tạm trước khi Save
-                // để không vi phạm CK_TblCongViec_NgayKetThuc.
-                if (!firstChild.NgayKetThuc.HasValue || firstChild.NgayKetThuc.Value.Date < newStartDate.Date)
+                // Đảm bảo ngày kết thúc hợp lệ trước khi lưu ngày bắt đầu mới.
+                if (!firstChild.NgayKetThuc.HasValue ||
+                    firstChild.NgayKetThuc.Value.Date < newStartDate.Date)
                 {
                     firstChild.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(
                         newStartDate,
@@ -1928,24 +1928,39 @@ namespace SweetSoft.QLDA.Core.Managers
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
 
+                // 1. Đi sâu xuống toàn bộ cây task con trước.
                 AutoSetFirstChildStartTimeInternal(
                     projectId,
                     firstChild.IdCongViec,
                     newStartDate,
                     forceUpdateStartedTask);
+
+                // 2. Sau khi task con đã được cập nhật, tính lại thời gian của
+                // task cha trung gian theo ngày kết thúc lớn nhất của các task con.
+                AutoSetParentTime(
+                    projectId,
+                    firstChild.IdCongViec,
+                    forceUpdateStartedTask);
+
+                // 3. Kiểm tra phụ thuộc trực tiếp của task cha trung gian,
+                // bất kể AutoSetParentTime có phát hiện thay đổi dữ liệu hay không.
+                // Ví dụ: 1.1 kết thúc 31/08 thì 1.2 phải bắt đầu 01/09.
+                AutoSetDependentTime(
+                    projectId,
+                    firstChild.IdCongViec,
+                    forceUpdateStartedTask);
             }
             else
             {
-                int thoiHan = firstChild.ThoiHanNgay ?? 1;
-
+                // Task lá: cập nhật ngày bắt đầu và kết thúc dự kiến.
                 firstChild.NgayBatDau = newStartDate;
                 firstChild.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(
                     newStartDate,
-                    thoiHan);
+                    firstChildDuration);
                 firstChild.NgayCapNhat = DateTime.Now;
                 firstChild.Save();
 
-                // Dependency nội bộ của task lá vẫn phải được xử lý ngay.
+                // Xử lý các task phụ thuộc trực tiếp vào task lá.
                 AutoSetDependentTime(
                     projectId,
                     firstChild.IdCongViec,
@@ -2038,60 +2053,82 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 foreach (DataRow row in dtChildTasks.Rows)
                 {
-                    // 1. Tìm ngày kết thúc dự kiến lớn nhất
-                    if (row[ColNgayKetThuc] != DBNull.Value && DateTime.TryParse(row[ColNgayKetThuc].ToString(), out DateTime ngayKt))
+                    // Tìm ngày kết thúc dự kiến lớn nhất trong các task con.
+                    if (row[ColNgayKetThuc] != DBNull.Value &&
+                        DateTime.TryParse(row[ColNgayKetThuc].ToString(), out DateTime ngayKt))
                     {
                         if (!maxEnd.HasValue || ngayKt > maxEnd.Value)
                             maxEnd = ngayKt;
                     }
 
-                    // 2. Tìm ngày hoàn thành thực tế lớn nhất + Kiểm tra xem có task con nào chưa xong không
-                    if (row["NgayHoanThanhThucTe"] != DBNull.Value && DateTime.TryParse(row["NgayHoanThanhThucTe"].ToString(), out DateTime actualEnd))
+                    // Tìm ngày hoàn thành thực tế lớn nhất của các task con.
+                    if (row["NgayHoanThanhThucTe"] != DBNull.Value &&
+                        DateTime.TryParse(row["NgayHoanThanhThucTe"].ToString(), out DateTime actualEnd))
                     {
                         if (!maxActualEnd.HasValue || actualEnd > maxActualEnd.Value)
                             maxActualEnd = actualEnd;
                     }
                     else
                     {
-                        // Nếu có bất kỳ 1 task con nào bị rỗng ngày thực tế -> Cha chưa thể hoàn thành
+                        // Nếu có task con chưa có ngày hoàn thành thực tế thì cha chưa thể hoàn thành.
                         allChildrenHaveActualEndDate = false;
                     }
                 }
 
                 if (maxEnd.HasValue && parentTask.NgayBatDau.HasValue)
                 {
-                    int newThoiHan = LichBieuChungManager.Instance.CountWorkingDaysInRange(parentTask.NgayBatDau.Value, maxEnd.Value);
+                    int newThoiHan = LichBieuChungManager.Instance.CountWorkingDaysInRange(
+                        parentTask.NgayBatDau.Value,
+                        maxEnd.Value);
 
-                    // Xác định giá trị mới cho ngày hoàn thành thực tế của Cha
                     DateTime? newActualEnd = allChildrenHaveActualEndDate ? maxActualEnd : null;
 
-                    // [CHỐT CHẶN CHỐNG TREO]: Chỉ Lưu và chạy dây chuyền nếu THỰC SỰ có thay đổi dữ liệu
-                    if (!parentTask.NgayKetThuc.HasValue ||
+                    // Chỉ lưu task cha khi dữ liệu thực sự thay đổi.
+                    bool parentChanged =
+                        !parentTask.NgayKetThuc.HasValue ||
                         parentTask.NgayKetThuc.Value.Date != maxEnd.Value.Date ||
                         parentTask.ThoiHanNgay != newThoiHan ||
-                        parentTask.NgayHoanThanhThucTe != newActualEnd) // Bổ sung điều kiện kiểm tra thay đổi ngày thực tế
+                        parentTask.NgayHoanThanhThucTe != newActualEnd;
+
+                    if (parentChanged)
                     {
                         parentTask.NgayKetThuc = maxEnd.Value;
                         parentTask.ThoiHanNgay = newThoiHan;
-                        parentTask.NgayHoanThanhThucTe = newActualEnd; // Cập nhật ngày hoàn thành thực tế
-
+                        parentTask.NgayHoanThanhThucTe = newActualEnd;
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
+                    }
 
-                        AutoSetDependentTime(projectId, parentTask.IdCongViec, forceUpdateStartedTask);
+                    // QUAN TRỌNG:
+                    // Luôn kiểm tra các task phụ thuộc, kể cả khi ngày kết thúc của cha
+                    // không thay đổi. Ví dụ: 1.1 vẫn kết thúc ngày 31/08 nhưng 1.2
+                    // đang có ngày bắt đầu 31/08 thì cần được điều chỉnh thành 01/09.
+                    AutoSetDependentTime(
+                        projectId,
+                        parentTask.IdCongViec,
+                        forceUpdateStartedTask);
 
+                    // Chỉ cập nhật các cấp cha phía trên khi dữ liệu của cha hiện tại thay đổi.
+                    if (parentChanged)
+                    {
                         if (parentTask.IdCongViecCha.HasValue)
                         {
-                            AutoSetParentTime(projectId, parentTask.IdCongViecCha.Value, forceUpdateStartedTask);
+                            AutoSetParentTime(
+                                projectId,
+                                parentTask.IdCongViecCha.Value,
+                                forceUpdateStartedTask);
                         }
                         else
                         {
-                            // Nếu IdCongViecCha là null -> Đây là Root Task.
-                            if (parentTask.IdGiaiDoanDuAn.HasValue && parentTask.IdGiaiDoanDuAn.Value != Guid.Empty)
+                            // Task gốc của một giai đoạn: đồng bộ thời gian với bản ghi giai đoạn.
+                            if (parentTask.IdGiaiDoanDuAn.HasValue &&
+                                parentTask.IdGiaiDoanDuAn.Value != Guid.Empty)
                             {
-                                var phase = new SubSonic.Select().From(TblGiaiDoanDuAn.Schema)
-                                                .Where(TblGiaiDoanDuAn.Columns.IdGiaiDoanDuAn).IsEqualTo(parentTask.IdGiaiDoanDuAn.Value)
-                                                .ExecuteSingle<TblGiaiDoanDuAn>();
+                                TblGiaiDoanDuAn phase = new SubSonic.Select()
+                                    .From(TblGiaiDoanDuAn.Schema)
+                                    .Where(TblGiaiDoanDuAn.Columns.IdGiaiDoanDuAn)
+                                    .IsEqualTo(parentTask.IdGiaiDoanDuAn.Value)
+                                    .ExecuteSingle<TblGiaiDoanDuAn>();
 
                                 if (phase != null)
                                 {
@@ -2103,13 +2140,11 @@ namespace SweetSoft.QLDA.Core.Managers
                                         phaseChanged = true;
                                     }
 
-                                    // CK_TblGiaiDoanDuAn_NgayDuKien yêu cầu
-                                    // NgayDuKienHoanThanh không được nhỏ hơn NgayBatDau.
-                                    // Khi reorder làm Phase dời sang ngày muộn hơn, giá trị
-                                    // NgayDuKienHoanThanh cũ có thể nằm trước ngày bắt đầu mới.
+                                    // Ngày kết thúc dự kiến của giai đoạn không được nhỏ hơn ngày bắt đầu.
                                     if (phase.NgayBatDau.HasValue &&
                                         phase.NgayDuKienHoanThanh.HasValue &&
-                                        phase.NgayDuKienHoanThanh.Value.Date < phase.NgayBatDau.Value.Date)
+                                        phase.NgayDuKienHoanThanh.Value.Date <
+                                            phase.NgayBatDau.Value.Date)
                                     {
                                         DateTime safeExpectedEnd = phase.NgayBatDau.Value.Date;
 
@@ -2135,7 +2170,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     }
                 }
             }
-        }       
+        }
         #endregion
 
         #region 4. Khai báo Tên cột CSDL

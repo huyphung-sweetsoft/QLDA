@@ -20,7 +20,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public EventHandler NewTaskHandlerCallback;
         public EventHandler<Guid> NewSubTaskHandlerCallback;
         public EventHandler EditTaskHandlerCallback;
-        public EventHandler ConfigHeSoHandlerCallback;
         public EventHandler<Guid> ReminderHandlerCallback;
         public Guid ProjectId
         {
@@ -58,6 +57,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 CtrlFastCompleteTask1.ActionCompleted += (s, ev) => { Rebind(); };
             if (CtrlStartTask1 != null)
                 CtrlStartTask1.ActionStarted += (s, ev) => { Rebind(); };
+            if (CtrlApplyTemplate1 != null)
+                CtrlApplyTemplate1.ApplySuccessCallback += (s, ev) => { Rebind(); };
             CtrlAddPhase1.SavedSuccess += (s, ev) => { Rebind(); };
             CtrlAddSubTask1.SavedSuccess += (s, ev) => { Rebind(); };
         }
@@ -76,22 +77,48 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             upMain.Update();
             ShowNotify(GetResourceText(BackEndResourceKeys.ASSIGN_TASK_SUCCESS), MSGType.Success);
         }
+
         public void Rebind()
         {
             DataTable dtTasks = new DataTable();
             _dictTaskCodes.Clear();
-            int overdueCount = 0;
+            int overdueCount = 0; // Biến rác do hàm cũ trả về (Ta sẽ tính lại ở dưới)
             string searchValue = txtSearchSingle.Text.Trim();
             (dtTasks, _dictTaskCodes, overdueCount) = TaskManager.Instance.GetDictTasksAndCountOverdue(this.ProjectId, searchValue, IsPM || IsAdministrator);
+
+            // Tự thân vận động: Khai báo 2 biến đếm UI chuẩn xác
+            int realOverdueCount = 0;
+            int dueSoonCount = 0;
+
             if (dtTasks != null && dtTasks.Rows.Count > 0)
             {
                 if (!dtTasks.Columns.Contains("ReminderCount"))
                     dtTasks.Columns.Add("ReminderCount", typeof(int));
-
                 foreach (DataRow row in dtTasks.Rows)
+                {
                     row["ReminderCount"] = 0;
 
-                Guid currentUserId = SweetContext.Current != null? SweetContext.Current.UserId  : Guid.Empty;
+                    if (row["NgayKetThuc"] != DBNull.Value && row["TrangThai"] != DBNull.Value)
+                    {
+                        DateTime ngayKt = Convert.ToDateTime(row["NgayKetThuc"]);
+                        byte tThai = Convert.ToByte(row["TrangThai"]);
+
+                        if (tThai == 3)
+                        {
+                            realOverdueCount++;
+                        }
+                        else if (tThai != 2)
+                        {
+                            double daysLeft = (ngayKt.Date - DateTime.Now.Date).TotalDays;
+
+                            if (daysLeft < 0)
+                                realOverdueCount++;
+                            else if (daysLeft >= 0 && daysLeft <= 2)
+                                dueSoonCount++; 
+                        }
+                    }
+                }
+                Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
 
                 if (this.ProjectId != Guid.Empty && currentUserId != Guid.Empty)
                 {
@@ -127,7 +154,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     }
                 }
             }
-            lblOverdueCount.InnerText = overdueCount.ToString();
+
+            // Cập nhật số liệu chuẩn lên 2 nút bấm
+            lblOverdueCount.InnerText = realOverdueCount.ToString();
+            lblDueSoonCount.InnerText = dueSoonCount.ToString();
+
             if (dtTasks == null || dtTasks.Rows.Count == 0)
             {
                 grvData.Visible = false;
@@ -142,6 +173,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             grvData.DataBind();
             upMain.Update();
         }
+
         public void btnSearch_ServerClick(object sender, EventArgs e)
         {
             Rebind();
@@ -737,11 +769,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ShowNotify(ex.Message, MSGType.Error);
             }
         }
-        protected void lbtConfigHeSo_Click(object sender, EventArgs e)
+        protected void lbtApplyTemplate_Click(object sender, EventArgs e)
         {
-            // Bắn sự kiện ra Trang Chính (TaskList.aspx) để nó mở Popup
-            if (ConfigHeSoHandlerCallback != null)
-                ConfigHeSoHandlerCallback(sender, e);
+            if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+            CtrlApplyTemplate1.OpenModal(this.ProjectId);
         }
         #endregion
     }
