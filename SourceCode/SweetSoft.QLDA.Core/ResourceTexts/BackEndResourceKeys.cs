@@ -476,6 +476,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         //Project
         public const string USER_MANAGEMENT = "USER_MANAGEMENT";
         public const string CCCD_ALREADY_EXISTS = "CCCD_ALREADY_EXISTS";
+        public const string PROJECT_TEMPLATE_LIST = "PROJECT_TEMPLATE_LIST";
+
         //Task
         public const string TASK_MANAGEMENT = "TASK_MANAGEMENT";
         public const string NO_TASK_FOR_YOU = "NO_TASK_FOR_YOU";

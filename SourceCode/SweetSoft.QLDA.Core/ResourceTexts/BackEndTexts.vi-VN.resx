@@ -2548,15 +2548,33 @@
   <data name="DASHBOARD_NO_LOAD" xml:space="preserve">
     <value>Chưa có việc</value>
   </data>
-  <data name="DASHBOARD_RESOURCE_FREE" xml:space="preserve"><value>Rảnh</value></data>
-  <data name="DASHBOARD_RESOURCE_NORMAL" xml:space="preserve"><value>Bình thường</value></data>
-  <data name="DASHBOARD_RESOURCE_WEEKEND" xml:space="preserve"><value>Cuối tuần</value></data>
-  <data name="DASHBOARD_RESOURCE_LOAD_RULES" xml:space="preserve"><value>Rảnh: chưa được giao việc. Bình thường: 1 công việc trong ngày. Quá tải: nhiều hơn 1 công việc trong ngày.</value></data>
-  <data name="DASHBOARD_MONTH_DAILY_COUNTS" xml:space="preserve"><value>Rảnh {0} ngày · Bình thường {1} ngày · Quá tải {2} ngày</value></data>
-  <data name="DASHBOARD_MAX_TASKS_IN_DAY" xml:space="preserve"><value>Nhiều nhất {0} công việc trong một ngày</value></data>
-  <data name="DASHBOARD_TASKS_FOR_DATE" xml:space="preserve"><value>Công việc ngày {0}</value></data>
-  <data name="DASHBOARD_SELECT_DAY" xml:space="preserve"><value>Chọn một ngày để xem công việc</value></data>
-  <data name="DASHBOARD_DAILY_TASKS_DETAIL" xml:space="preserve"><value>Công việc trong ngày</value></data>
+  <data name="DASHBOARD_RESOURCE_FREE" xml:space="preserve">
+    <value>Rảnh</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_NORMAL" xml:space="preserve">
+    <value>Bình thường</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_WEEKEND" xml:space="preserve">
+    <value>Cuối tuần</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_LOAD_RULES" xml:space="preserve">
+    <value>Rảnh: chưa được giao việc. Bình thường: 1 công việc trong ngày. Quá tải: nhiều hơn 1 công việc trong ngày.</value>
+  </data>
+  <data name="DASHBOARD_MONTH_DAILY_COUNTS" xml:space="preserve">
+    <value>Rảnh {0} ngày · Bình thường {1} ngày · Quá tải {2} ngày</value>
+  </data>
+  <data name="DASHBOARD_MAX_TASKS_IN_DAY" xml:space="preserve">
+    <value>Nhiều nhất {0} công việc trong một ngày</value>
+  </data>
+  <data name="DASHBOARD_TASKS_FOR_DATE" xml:space="preserve">
+    <value>Công việc ngày {0}</value>
+  </data>
+  <data name="DASHBOARD_SELECT_DAY" xml:space="preserve">
+    <value>Chọn một ngày để xem công việc</value>
+  </data>
+  <data name="DASHBOARD_DAILY_TASKS_DETAIL" xml:space="preserve">
+    <value>Công việc trong ngày</value>
+  </data>
   <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve">
     <value>Đủ tải</value>
   </data>
@@ -3325,6 +3343,27 @@
   <data name="COMPLETED_LATE" xml:space="preserve">
     <value>Hoàn thành trễ</value>
   </data>
+  <data name="CONTRACT_NAME" xml:space="preserve">
+    <value>Tên hợp đồng</value>
+  </data>
+  <data name="CONTRACT_INFORMATION" xml:space="preserve">
+    <value>Thông tin hợp đồng</value>
+  </data>
+  <data name="CONTRACT_CONTENT" xml:space="preserve">
+    <value>Nội dung hợp đồng</value>
+  </data>
+  <data name="PHASE_MANAGEMENT" xml:space="preserve">
+    <value>Quản lý giai đoạn</value>
+  </data>
+  <data name="PHASE_NAME" xml:space="preserve">
+    <value>Tên giai đoạn</value>
+  </data>
+  <data name="PHASE_LIST" xml:space="preserve">
+    <value>Danh sách giai đoạn</value>
+  </data>
+  <data name="END" xml:space="preserve">
+    <value>Kết thúc</value>
+  </data>
   <data name="PLEASE_CHOSE_GRADE" xml:space="preserve">
     <value>Vui lòng chọn khối</value>
   </data>
@@ -3484,25 +3523,7 @@
   <data name="thi" xml:space="preserve">
     <value>Khoảng thời gian</value>
   </data>
-  <data name="CONTRACT_NAME" xml:space="preserve">
-    <value>Tên hợp đồng</value>
-  </data>
-  <data name="CONTRACT_INFORMATION" xml:space="preserve">
-    <value>Thông tin hợp đồng</value>
-  </data>
-  <data name="CONTRACT_CONTENT" xml:space="preserve">
-    <value>Nội dung hợp đồng</value>
-  </data>
-  <data name="PHASE_MANAGEMENT" xml:space="preserve">
-    <value>Quản lý giai đoạn</value>
-  </data>
-  <data name="PHASE_NAME" xml:space="preserve">
-    <value>Tên giai đoạn</value>
-  </data>
-  <data name="PHASE_LIST" xml:space="preserve">
-    <value>Danh sách giai đoạn</value>
-  </data>
-  <data name="END" xml:space="preserve">
-    <value>Kết thúc</value>
+  <data name="PROJECT_TEMPLATE_LIST" xml:space="preserve">
+    <value>Danh sách dự án mẫu</value>
   </data>
 </root>

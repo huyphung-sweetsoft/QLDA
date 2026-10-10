@@ -14,6 +14,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Error500 => "/500";
         public static string Login => "/Login";
         public static string Home => "/Home";
+        public static string EmployeeDashboard => "/EmployeeDashboard";
         public static string DashboardOverview => "/Home/Overview";
         public static string DashboardResource => "/Home/Resources";
         public static string DashboardProgress => "/Home/Progress";
@@ -83,6 +84,11 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string ProjectDetail(Guid idDuAn)
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(idDuAn.ToString())}";
+        }
+        public static string ProjectTemplates => "/ProjectTemplates";
+        public static string ProjectTemplateDetail(Guid idMau)
+        {
+            return $"/ProjectTemplate/{SecurityUtilities.ProtectUrlParameter(idMau.ToString())}";
         }
         public static string ProjectDocuments(Guid projectId)
         {
