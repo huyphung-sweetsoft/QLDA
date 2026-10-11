@@ -2674,15 +2674,33 @@
   <data name="DASHBOARD_NO_LOAD" xml:space="preserve">
     <value>No assigned work</value>
   </data>
-  <data name="DASHBOARD_RESOURCE_FREE" xml:space="preserve"><value>Free</value></data>
-  <data name="DASHBOARD_RESOURCE_NORMAL" xml:space="preserve"><value>Normal</value></data>
-  <data name="DASHBOARD_RESOURCE_WEEKEND" xml:space="preserve"><value>Weekend</value></data>
-  <data name="DASHBOARD_RESOURCE_LOAD_RULES" xml:space="preserve"><value>Free: no assigned tasks. Normal: 1 task on a day. Overloaded: more than 1 task on a day.</value></data>
-  <data name="DASHBOARD_MONTH_DAILY_COUNTS" xml:space="preserve"><value>Free {0} days · Normal {1} days · Overloaded {2} days</value></data>
-  <data name="DASHBOARD_MAX_TASKS_IN_DAY" xml:space="preserve"><value>Peak: {0} tasks in one day</value></data>
-  <data name="DASHBOARD_TASKS_FOR_DATE" xml:space="preserve"><value>Tasks for {0}</value></data>
-  <data name="DASHBOARD_SELECT_DAY" xml:space="preserve"><value>Select a day to see its tasks</value></data>
-  <data name="DASHBOARD_DAILY_TASKS_DETAIL" xml:space="preserve"><value>Tasks for the day</value></data>
+  <data name="DASHBOARD_RESOURCE_FREE" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_NORMAL" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_WEEKEND" xml:space="preserve">
+    <value>Weekend</value>
+  </data>
+  <data name="DASHBOARD_RESOURCE_LOAD_RULES" xml:space="preserve">
+    <value>Free: no assigned tasks. Normal: 1 task on a day. Overloaded: more than 1 task on a day.</value>
+  </data>
+  <data name="DASHBOARD_MONTH_DAILY_COUNTS" xml:space="preserve">
+    <value>Free {0} days · Normal {1} days · Overloaded {2} days</value>
+  </data>
+  <data name="DASHBOARD_MAX_TASKS_IN_DAY" xml:space="preserve">
+    <value>Peak: {0} tasks in one day</value>
+  </data>
+  <data name="DASHBOARD_TASKS_FOR_DATE" xml:space="preserve">
+    <value>Tasks for {0}</value>
+  </data>
+  <data name="DASHBOARD_SELECT_DAY" xml:space="preserve">
+    <value>Select a day to see its tasks</value>
+  </data>
+  <data name="DASHBOARD_DAILY_TASKS_DETAIL" xml:space="preserve">
+    <value>Tasks for the day</value>
+  </data>
   <data name="DASHBOARD_BALANCED_LOAD" xml:space="preserve">
     <value>Adequately loaded</value>
   </data>
@@ -3483,5 +3501,8 @@
   </data>
   <data name="END" xml:space="preserve">
     <value>End</value>
+  </data>
+  <data name="PROJECT_TEMPLATE_LIST" xml:space="preserve">
+    <value>Project template list</value>
   </data>
 </root>

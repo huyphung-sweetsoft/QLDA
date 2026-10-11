@@ -26,7 +26,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         {
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
             CtrlTask1.EditTaskHandlerCallback = EditTask_Callback;
-            CtrlTask1.ConfigHeSoHandlerCallback = ConfigHeSo_Callback;
             CtrlTask1.ReminderHandlerCallback = Reminder_Callback;
             if (!IsPostBack)
             {
