@@ -196,6 +196,8 @@
     <Compile Include="TblThanhVienDuAnController.cs" />
     <Compile Include="TblThongBao.cs" />
     <Compile Include="TblThongBaoController.cs" />
+    <Compile Include="TblTinhThanh.cs" />
+    <Compile Include="TblTinhThanhController.cs" />
     <Compile Include="TblTrinhKyTaiLieu.cs" />
     <Compile Include="TblTrinhKyTaiLieuController.cs" />
     <Compile Include="TblTrinhKyTaiLieuFile.cs" />
@@ -208,6 +210,8 @@
     <Compile Include="TblVanDeController.cs" />
     <Compile Include="TblVanDeNhanVien.cs" />
     <Compile Include="TblVanDeNhanVienController.cs" />
+    <Compile Include="TblXaPhuong.cs" />
+    <Compile Include="TblXaPhuongController.cs" />
     <Compile Include="VwAspnetApplication.cs" />
     <Compile Include="VwAspnetMembershipUser.cs" />
     <Compile Include="VwAspnetProfile.cs" />

@@ -160,9 +160,7 @@
     .mc-day.today { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
     
     .mc-label { margin-top: 3px; max-width: 100%; padding: 0 3px; box-sizing: border-box; font-size: 9.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    /* =========================================================
-       HIGHLIGHT NHÂN VIÊN GỐC CỦA CÔNG VIỆC
-       ========================================================= */
+   /* HIGHLIGHT NHÂN VIÊN GỐC CỦA CÔNG VIỆC */
     .member-item-row.original-member {
         background-color: #f0f8ff; 
         border-color: #bfe0ff;     
@@ -170,6 +168,18 @@
     .member-item-row.original-member:hover {
         background-color: #e6f3ff;
     }
+    
+    /* [BỔ SUNG BƯỚC 1]: ÉP NỀN TRONG SUỐT CHO VÙNG CHỨA LỊCH ĐỂ TRÀN MÀU XANH NHẠT */
+    .member-item-row.original-member .row-schedule-panel,
+    .member-item-row.original-member .row-schedule-inner,
+    .member-item-row.original-member .mini-cal-wrap,
+    .member-item-row.original-member .mini-cal,
+    .member-item-row.original-member .mc-header,
+    .member-item-row.original-member .mc-weekdays,
+    .member-item-row.original-member .mc-viewport {
+        background-color: transparent !important;
+    }
+
     .member-item-row.original-member .btn-calendar-only {
         background-color: #ffffff;
         border-color: #bfe0ff;
@@ -178,6 +188,63 @@
     .member-item-row.original-member.show-schedule .btn-calendar-only {
         background-color: #dbeafe;
         border-color: #3b82f6;
+    }
+    /* TOOLTIP CHI TIẾT CÔNG VIỆC TRONG MINI CALENDAR*/
+    .mc-day { position: relative !important; overflow: visible !important; }
+    .mc-day.has-tooltip { cursor: pointer; }
+    .mc-day:hover, .mc-day.show-tooltip { z-index: 50; }
+    
+    .custom-task-tooltip { 
+        position: absolute !important; 
+        bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%); 
+        margin-bottom: 8px; z-index: 999999 !important; background: #ffffff; color: #334155; 
+        border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 16px; 
+        min-width: 340px; 
+        max-width: 520px; 
+        width: max-content; /* Tự động bung rộng chiều ngang theo nội dung để giảm chiều cao */        
+        white-space: normal; word-break: break-word; overflow-wrap: anywhere; 
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.2); font-size: 12.5px; line-height: 1.5; 
+        opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease; 
+    }
+    .custom-task-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: #ffffff transparent transparent transparent; }
+    .mc-day:hover .custom-task-tooltip, .mc-day.show-tooltip .custom-task-tooltip { opacity: 1; visibility: visible; pointer-events: auto; }
+    
+    .tooltip-task-list { list-style: none; margin: 0; padding: 0; text-align: left; }
+    .tooltip-task-list li { margin: 0; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; color: #334155; }
+    .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
+    .tooltip-task-list li:first-child { padding-top: 0; }
+    
+    .t-project-name { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; color: #64748b; }
+    .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
+    
+    /* Thuật toán chống tràn lề trái phải cho các ngày đầu/cuối tuần */
+    .mc-day:nth-child(7n + 1) .custom-task-tooltip,
+    .mc-day:nth-child(7n + 2) .custom-task-tooltip { left: -10px !important; transform: none !important; }
+    .mc-day:nth-child(7n + 1) .custom-task-tooltip::after,
+    .mc-day:nth-child(7n + 2) .custom-task-tooltip::after { left: 24px !important; margin-left: 0 !important; }
+    .mc-day:nth-child(7n + 6) .custom-task-tooltip,
+    .mc-day:nth-child(7n) .custom-task-tooltip { left: auto !important; right: -10px !important; transform: none !important; }
+    .mc-day:nth-child(7n + 6) .custom-task-tooltip::after,
+    .mc-day:nth-child(7n) .custom-task-tooltip::after { left: auto !important; right: 24px !important; margin-left: 0 !important; }
+    .member-item-row.schedule-opened,
+    .member-item-row.schedule-opened .row-schedule-panel,
+    .member-item-row.schedule-opened .mc-viewport {
+        overflow: visible !important;
+        z-index: 50; 
+    }
+    .member-item-row.schedule-opened .mc-viewport.is-animating {
+        overflow: hidden !important;
+    }
+    .mc-day:nth-child(-n+14) .custom-task-tooltip { 
+        bottom: auto !important; 
+        top: calc(100% + 5px) !important; 
+        margin-bottom: 0; 
+        margin-top: 8px; 
+    }   
+    .mc-day:nth-child(-n+14) .custom-task-tooltip::after { 
+        top: auto !important; 
+        bottom: 100% !important; 
+        border-color: transparent transparent #ffffff transparent; 
     }
 </style>
 
@@ -246,20 +313,32 @@
                                             <ItemTemplate>
                                                 <div class='member-item-row <%# Convert.ToBoolean(Eval("IsOriginal")) ? "original-member" : "" %>' id='mem-row-<%# Eval("UserId") %>'>
                                                     <div class="row-default-view">
-                                                        <div class="member-info-group">
+                                                        <!-- Cụm thông tin bên trái (Thêm flex-grow-1 để nó đẩy phần lịch sang phải) -->
+                                                        <div class="member-info-group flex-grow-1">
                                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                                             <%# Eval("AvatarHtml") %>
                                                             <div class="member-name-block">
-                                                                <span>
-                                                                    <span class="fw-bold text-dark"><%#: Eval("DisplayName") %></span>
-                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>PM</span>" : "" %>
-                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>Đã nghỉ</span>" : "" %>
-                                                                </span>
+                                                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                                                    <span class="fw-bold text-dark me-1"><%#: Eval("DisplayName") %></span>
+                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger' style='font-size: 9.5px; padding: 2px 5px;'>PM</span>" : "" %>
+                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary' style='font-size: 9.5px; padding: 2px 5px;'>Đã nghỉ</span>" : "" %>
+                                                                </div>
                                                                 <span class="member-email"><%#: Eval("Email") %></span>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>')">📅</button>
+    
+                                                       <!-- Cụm cảnh báo & Lịch biểu nằm dạt sang phải -->
+                                                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        
+                                                            <%# Convert.ToBoolean(Eval("IsOriginal")) ? 
+                                                                "<span class='badge px-2 py-1' style='font-size: 11.5px; background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;'><i class='fas fa-user-check me-1'></i>Đã phân công</span>" 
+                                                                : (Convert.ToInt32(Eval("BusyDays")) > 0 ? 
+                                                                    string.Format("<span class='badge bg-warning text-dark px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-briefcase me-1'></i>Bận {0} ngày</span>", Eval("BusyDays")) 
+                                                                    : "<span class='badge bg-success px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-check-circle me-1'></i>Trống lịch</span>") %>
+        
+                                                            <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>')">📅</button>
+                                                        </div>
                                                     </div>
                                                     <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# Eval("ScheduleJson") %>' />
                                                     <div class="row-schedule-panel" id='overlay-<%# Eval("UserId") %>'>
@@ -325,20 +404,32 @@
                                             <ItemTemplate>
                                                 <div class="member-item-row" id='mem-row-<%# Eval("UserId") %>'>
                                                     <div class="row-default-view">
-                                                        <div class="member-info-group">
+                                                        <!-- Cụm thông tin bên trái (Thêm flex-grow-1 để nó đẩy phần lịch sang phải) -->
+                                                        <div class="member-info-group flex-grow-1">
                                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                                             <%# Eval("AvatarHtml") %>
                                                             <div class="member-name-block">
-                                                                <span>
-                                                                    <span class="fw-bold text-dark"><%#: Eval("DisplayName") %></span>
-                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>PM</span>" : "" %>
-                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>Đã nghỉ</span>" : "" %>
-                                                                </span>
+                                                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                                                    <span class="fw-bold text-dark me-1"><%#: Eval("DisplayName") %></span>
+                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger' style='font-size: 9.5px; padding: 2px 5px;'>PM</span>" : "" %>
+                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary' style='font-size: 9.5px; padding: 2px 5px;'>Đã nghỉ</span>" : "" %>
+                                                                </div>
                                                                 <span class="member-email"><%#: Eval("Email") %></span>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>')">📅</button>
+    
+                                                       <!-- Cụm cảnh báo & Lịch biểu nằm dạt sang phải -->
+                                                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        
+                                                            <%# Convert.ToBoolean(Eval("IsOriginal")) ? 
+                                                                "<span class='badge px-2 py-1' style='font-size: 11.5px; background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;'><i class='fas fa-user-check me-1'></i>Đã phân công</span>" 
+                                                                : (Convert.ToInt32(Eval("BusyDays")) > 0 ? 
+                                                                    string.Format("<span class='badge bg-warning text-dark px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-briefcase me-1'></i>Bận {0} ngày</span>", Eval("BusyDays")) 
+                                                                    : "<span class='badge bg-success px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-check-circle me-1'></i>Trống lịch</span>") %>
+        
+                                                            <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>')">📅</button>
+                                                        </div>
                                                     </div>
                                                     <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# Eval("ScheduleJson") %>' />
                                                     <div class="row-schedule-panel" id='overlay-<%# Eval("UserId") %>'>
@@ -408,17 +499,48 @@
                 if (key === todayKey) cls += ' today';
 
                 var extra = '';
-                if (info && info.text) {
-                    var label = String(info.text).replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
-                    extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+                var tooltipHtml = '';
+                var clickAttr = '';
+
+                if (info) {
+                    var label = String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
+                    if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+
+                    // [VẼ TOOLTIP]: Quét mảng tasks trong JSON và dựng giao diện Tooltip Đa Dự Án
+                    var hasTasks = (info.status === "busy" && info.tasks && info.tasks.length > 0);
+                    if (hasTasks) {
+                        cls += ' has-tooltip';
+                        clickAttr = ' onclick="CMSMasterJs.PinTooltip(this, event)"'; // Cho phép click để Ghim Tooltip
+
+                        tooltipHtml = '<div class="custom-task-tooltip"><ul class="tooltip-task-list">';
+                        for (var t = 0; t < info.tasks.length; t++) {
+                            // Ghép icon khối lập phương và Tên Dự Án lên trên Mã và Tên Task
+                            tooltipHtml += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + escAttr(info.tasks[t].projectName) + '</div><span class="t-code">[' + escAttr(info.tasks[t].code) + ']</span>' + escAttr(info.tasks[t].name) + '</li>';
+                        }
+                        tooltipHtml += '</ul></div>';
+                    } else if (info.text) {
+                        clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
+                    }
                 }
 
-                var tip = (info && info.text) ? ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"' : '';
-                html += '<div class="' + cls + '"' + tip + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
+                html += '<div class="' + cls + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + tooltipHtml + '</div>';
             }
             return html + '</div>';
         }
+        // Bật tính năng Click để ghim Tooltip (PM dễ dàng bôi đen copy Tên Task)
+        CMSMasterJs.PinTooltip = function (element, event) {
+            event.stopPropagation();
+            var isPinned = $(element).hasClass('show-tooltip');
+            $('.mc-day').removeClass('show-tooltip');
+            if (!isPinned) {
+                $(element).addClass('show-tooltip');
+            }
+        };
 
+        // Bấm ra khoảng không bất kỳ sẽ tự tắt Tooltip
+        $(document).on('click', function () {
+            $('.mc-day').removeClass('show-tooltip');
+        });
         function renderMiniCalendar(cal) {
             var st = cal.data('mc');
             var html = '<div class="mc-header">' +
@@ -438,46 +560,7 @@
             cal.html(html);
         }
 
-        CMSMasterJs.ChangeScheduleMonth = function (btnElement, delta) {
-            var cal = $(btnElement).closest('.mini-cal');
-            var st = cal.data('mc');
-            if (!st) return;
-
-            var viewport = cal.find('.mc-viewport');
-            var grids = viewport.children('.mc-grid');
-            if (grids.length > 1) {
-                grids.not(':last').remove();
-                var lastEl = grids.last()[0];
-                if (lastEl.getAnimations) lastEl.getAnimations().forEach(function (a) { a.cancel(); });
-            }
-
-            var d = new Date(st.year, st.month + delta, 1);
-            st.year = d.getFullYear();
-            st.month = d.getMonth();
-            cal.find('.mc-title').text(titleText(st));
-
-            var oldGrid = viewport.children('.mc-grid').last();
-            var newGrid = $(buildGridHtml(st));
-            viewport.append(newGrid);
-
-            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reduceMotion || !newGrid[0].animate) { oldGrid.remove(); return; }
-
-            var dir = delta > 0 ? 1 : -1;
-            var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
-
-            oldGrid[0].animate([
-                { transform: 'translateY(0)', opacity: 1 },
-                { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }
-            ], opts).onfinish = function () { oldGrid.remove(); };
-
-            newGrid[0].animate([
-                { transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 },
-                { transform: 'translateY(0)', opacity: 1 }
-            ], opts);
-        };
-
-        // HÀM JS NGUYÊN BẢN (SỬ DỤNG SCROLLINTOVIEW ĐỂ GIỮ CHUẨN TÊN NHÂN VIÊN)
+        // BẢN NÂNG CẤP: CHỜ TRƯỢT XONG MỚI BỎ VÁCH NGĂN
         CMSMasterJs.ToggleRowSchedule = function (btnElement, userId, isShow) {
             var rowEl = $(btnElement).closest('.member-item-row');
             var currentPanel = rowEl.closest('.member-list-panel');
@@ -485,7 +568,8 @@
             if (typeof isShow !== 'boolean') isShow = !rowEl.hasClass('show-schedule');
 
             if (isShow) {
-                currentPanel.find('.member-item-row.show-schedule').not(rowEl).removeClass('show-schedule');
+                // Tắt các lịch cũ và đóng luôn vách ngăn của tụi nó
+                currentPanel.find('.member-item-row.show-schedule').not(rowEl).removeClass('show-schedule schedule-opened');
 
                 var jsonString = rowEl.find('input[type="hidden"][id*="hdfScheduleJson"]').val();
                 var cal = rowEl.find('#timeline-' + userId);
@@ -517,17 +601,139 @@
                 });
                 renderMiniCalendar(cal);
 
+                // Bắt đầu kéo rèm xuống
                 rowEl.addClass('show-schedule');
 
+                // Đợi 380ms cho rèm kéo xong -> Mở khóa Vách ngăn để Tooltip đâm thủng trần
                 setTimeout(function () {
+                    if (rowEl.hasClass('show-schedule')) {
+                        rowEl.addClass('schedule-opened'); // [CHÌA KHÓA NẰM Ở ĐÂY]
+                    }
                     if (rowEl.hasClass('show-schedule') && rowEl[0].scrollIntoView) {
                         rowEl[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
                 }, 380);
 
             } else {
-                rowEl.removeClass('show-schedule');
+                rowEl.removeClass('show-schedule schedule-opened');
             }
         };
+
+        // BẢN NÂNG CẤP: KHÓA VÁCH NGĂN LẠI KHI ĐANG TRƯỢT THÁNG
+        CMSMasterJs.ChangeScheduleMonth = function (btnElement, delta) {
+            var cal = $(btnElement).closest('.mini-cal');
+            var st = cal.data('mc');
+            if (!st) return;
+
+            var viewport = cal.find('.mc-viewport');
+
+            // [BẬT KHÓA VÁCH NGĂN]: Chống tràn lịch ra ngoài & Xóa Tooltip đang ghim
+            viewport.addClass('is-animating');
+            $('.mc-day').removeClass('show-tooltip');
+
+            var grids = viewport.children('.mc-grid');
+            if (grids.length > 1) {
+                grids.not(':last').remove();
+                var lastEl = grids.last()[0];
+                if (lastEl.getAnimations) lastEl.getAnimations().forEach(function (a) { a.cancel(); });
+            }
+
+            var d = new Date(st.year, st.month + delta, 1);
+            st.year = d.getFullYear();
+            st.month = d.getMonth();
+            cal.find('.mc-title').text(titleText(st));
+
+            var oldGrid = viewport.children('.mc-grid').last();
+            var newGrid = $(buildGridHtml(st));
+            viewport.append(newGrid);
+
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion || !newGrid[0].animate) {
+                oldGrid.remove();
+                viewport.removeClass('is-animating'); // Tháo khóa nếu không có animation
+                return;
+            }
+
+            var dir = delta > 0 ? 1 : -1;
+            var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
+
+            oldGrid[0].animate([
+                { transform: 'translateY(0)', opacity: 1 },
+                { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }
+            ], opts).onfinish = function () {
+                oldGrid.remove();
+            };
+
+            newGrid[0].animate([
+                { transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 },
+                { transform: 'translateY(0)', opacity: 1 }
+            ], opts).onfinish = function () {
+                // [THÁO KHÓA VÁCH NGĂN]: Trượt lịch xong thì mở lại để Tooltip ngoi lên
+                viewport.removeClass('is-animating');
+            };
+        };
+        // Xử lý Z-Index để MessageBox không bị chìm dưới Popup
+        (function () {
+            var BASE_Z = 106000;
+
+            function stackBusinessModals() {
+                var $modals = $('.modal:visible').not('#modal-notify');
+                if ($modals.length > 1) {
+                    $('.modal-backdrop').each(function (i) {
+                        $(this).css('z-index', BASE_Z + (i * 10));
+                    });
+                    $modals.each(function (i) {
+                        $(this).css('z-index', BASE_Z + (i * 10) + 5);
+                    });
+                }
+            }
+
+            function raiseNotify() {
+                var notify = document.getElementById('modal-notify');
+                if (!notify || !$(notify).is(':visible')) return;
+
+                var $others = $('.modal:visible').not(notify);
+                if ($others.length === 0) return;
+
+                var maxZ = BASE_Z;
+                $others.each(function () {
+                    maxZ = Math.max(maxZ, parseInt(window.getComputedStyle(this).zIndex, 10) || 0);
+                });
+
+                notify.style.setProperty('z-index', String(maxZ + 20), 'important');
+                var bds = document.querySelectorAll('.modal-backdrop');
+                if (bds.length) bds[bds.length - 1].style.setProperty('z-index', String(maxZ + 15), 'important');
+            }
+
+            function raiseNotifyRepeatedly() {
+                [0, 100, 250, 500, 900].forEach(function (ms) {
+                    setTimeout(function () { stackBusinessModals(); raiseNotify(); }, ms);
+                });
+            }
+
+            ['show.bs.modal', 'shown.bs.modal'].forEach(function (evt) {
+                document.addEventListener(evt, function (e) {
+                    if (e.target && e.target.id === 'modal-notify') raiseNotifyRepeatedly();
+                });
+            });
+
+            document.addEventListener('hidden.bs.modal', function (e) {
+                if (e.target && e.target.id === 'modal-notify') {
+                    e.target.style.removeProperty('z-index');
+                }
+            });
+
+            if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(raiseNotifyRepeatedly);
+            }
+
+            // Tự động đóng Popup chọn nhân sự khi bấm "Đồng ý" trên MessageBox
+            $(document).on('click', '[id$="btnAccept"]', function () {
+                var $pickerModal = $('#<%= mdlTaskMemberPicker.ClientID %>');
+            if ($pickerModal.is(':visible')) {
+                $pickerModal.modal('hide');
+            }
+        });
+    })();
     });
 </script>

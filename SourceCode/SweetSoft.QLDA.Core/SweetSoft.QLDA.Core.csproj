@@ -284,6 +284,7 @@
     <Compile Include="Managers\BaseManager.cs" />
     <Compile Include="Managers\ChucDanhManager.cs" />
     <Compile Include="Managers\CostManager.cs" />
+    <Compile Include="Managers\DiaChinhManager.cs" />
     <Compile Include="Managers\DuAnManager.cs" />
     <Compile Include="Managers\GanttChartManager.cs" />
     <Compile Include="Managers\GiaiDoanDuAnManager.cs" />
@@ -334,6 +335,7 @@
     <Compile Include="Respositories\CauHinhTuanLamViecRepository.cs" />
     <Compile Include="Respositories\ChucDanhRepository.cs" />
     <Compile Include="Respositories\CostRepository.cs" />
+    <Compile Include="Respositories\DiaChinhRepository.cs" />
     <Compile Include="Respositories\DuAnRepository.cs" />
     <Compile Include="Respositories\GanttChartRepository.cs" />
     <Compile Include="Respositories\GiaiDoanDuAnRepository.cs" />

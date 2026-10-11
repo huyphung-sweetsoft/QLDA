@@ -33,6 +33,42 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
         protected global::System.Web.UI.UpdatePanel upnlTuanLamViec;
 
         /// <summary>
+        /// hdfDefaultMorningStart control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfDefaultMorningStart;
+
+        /// <summary>
+        /// hdfDefaultMorningEnd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfDefaultMorningEnd;
+
+        /// <summary>
+        /// hdfDefaultAfternoonStart control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfDefaultAfternoonStart;
+
+        /// <summary>
+        /// hdfDefaultAfternoonEnd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfDefaultAfternoonEnd;
+
+        /// <summary>
         /// rptTuanLamViec control.
         /// </summary>
         /// <remarks>
@@ -40,6 +76,15 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptTuanLamViec;
+
+        /// <summary>
+        /// btnApplyDefaultHours control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraButton btnApplyDefaultHours;
 
         /// <summary>
         /// btnSaveTuan control.

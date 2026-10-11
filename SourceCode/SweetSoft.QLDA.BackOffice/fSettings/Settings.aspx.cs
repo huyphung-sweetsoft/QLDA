@@ -199,39 +199,34 @@ namespace SweetSoft.QLDA.BackOffice
                 if (setting != null)
                     txtProjectCodePrefix.Text = setting.SettingValue;
                 #endregion
-                #region Contribution Coefficient
-                DataTable dtHeSoDongGop = HeSoDongGopManager.Instance.GetHeSoMacDinh();
+                #region Working Time Settings
 
-                if (dtHeSoDongGop != null && dtHeSoDongGop.Rows.Count > 0)
-                {
-                    foreach (DataRow row in dtHeSoDongGop.Rows)
-                    {
-                        if (row["DiemUuTien"] == DBNull.Value)
-                            continue;
+                setting = settingManager.GetSettingByName(SettingKeys.DefaultMorningStartTime);
+                txtDefaultMorningStart.Text = setting != null && !string.IsNullOrEmpty(setting.SettingValue)
+                    ? setting.SettingValue
+                    : "08:00";
 
-                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
+                //--------------------------------------------------------------
 
-                        if (row["HeSoDongGop"] == DBNull.Value)
-                            continue;
+                setting = settingManager.GetSettingByName(SettingKeys.DefaultMorningEndTime);
+                txtDefaultMorningEnd.Text = setting != null && !string.IsNullOrEmpty(setting.SettingValue)
+                    ? setting.SettingValue
+                    : "12:00";
 
-                        string heSo = Convert.ToDecimal(row["HeSoDongGop"]).ToString("0.####");
+                //--------------------------------------------------------------
 
-                        switch (diemUuTien)
-                        {
-                            case 1:
-                                txtHeSoThap.Text = heSo;
-                                break;
+                setting = settingManager.GetSettingByName(SettingKeys.DefaultAfternoonStartTime);
+                txtDefaultAfternoonStart.Text = setting != null && !string.IsNullOrEmpty(setting.SettingValue)
+                    ? setting.SettingValue
+                    : "13:00";
 
-                            case 2:
-                                txtHeSoTrungBinh.Text = heSo;
-                                break;
+                //--------------------------------------------------------------
 
-                            case 3:
-                                txtHeSoCao.Text = heSo;
-                                break;
-                        }
-                    }
-                }
+                setting = settingManager.GetSettingByName(SettingKeys.DefaultAfternoonEndTime);
+                txtDefaultAfternoonEnd.Text = setting != null && !string.IsNullOrEmpty(setting.SettingValue)
+                    ? setting.SettingValue
+                    : "17:00";
+
                 #endregion
 
                 #region Contacts
@@ -339,77 +334,70 @@ namespace SweetSoft.QLDA.BackOffice
                 #region Project
                 settingManager.SaveSetting(SettingKeys.ProjectCodePrefix, txtProjectCodePrefix.Text);
                 #endregion
-                #region Contribution Coefficient
+                #region Working Time Settings
 
-                List<TblHeSoDongGop> heSoDongGopList = new List<TblHeSoDongGop>();
+                string morningStart = txtDefaultMorningStart.Text.Trim();
+                string morningEnd = txtDefaultMorningEnd.Text.Trim();
+                string afternoonStart = txtDefaultAfternoonStart.Text.Trim();
+                string afternoonEnd = txtDefaultAfternoonEnd.Text.Trim();
 
-                DataTable dtHeSoDongGop = HeSoDongGopManager.Instance.GetHeSoMacDinh();
-
-                if (dtHeSoDongGop != null)
+                if (!TimeSpan.TryParseExact(
+                    morningStart,
+                    @"hh\:mm",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out TimeSpan morningStartTime)
+                    || !TimeSpan.TryParseExact(
+                        morningEnd,
+                        @"hh\:mm",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out TimeSpan morningEndTime))
                 {
-                    foreach (DataRow row in dtHeSoDongGop.Rows)
-                    {
-                        if (row["IdDoUuTien"] == DBNull.Value || row["DiemUuTien"] == DBNull.Value)
-                            continue;
-
-                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
-
-                        string value = string.Empty;
-
-                        switch (diemUuTien)
-                        {
-                            case 1:
-                                value = txtHeSoThap.Text.Trim();
-                                break;
-
-                            case 2:
-                                value = txtHeSoTrungBinh.Text.Trim();
-                                break;
-
-                            case 3:
-                                value = txtHeSoCao.Text.Trim();
-                                break;
-                        }
-
-                        if (string.IsNullOrEmpty(value))
-                            continue;
-
-                        value = value.Replace(",", ".");
-
-                        if (!decimal.TryParse(
-                            value,
-                            System.Globalization.NumberStyles.Any,
-                            System.Globalization.CultureInfo.InvariantCulture,
-                            out decimal heSo))
-                        {
-                            ShowNotify("Hệ số đóng góp không hợp lệ.", MSGType.Error);
-                            return;
-                        }
-
-                        if (heSo < 0)
-                        {
-                            ShowNotify("Hệ số đóng góp không được nhỏ hơn 0.", MSGType.Error);
-                            return;
-                        }
-
-                        heSoDongGopList.Add(new TblHeSoDongGop
-                        {
-                            IdDoUuTien = (Guid)row["IdDoUuTien"],
-                            IdDuAn = null,
-                            HeSoDongGop = heSo,
-                            DaXoa = false
-                        });
-                    }
+                    ShowNotify("Giờ ca sáng không hợp lệ.", MSGType.Error);
+                    return;
                 }
 
-                if (heSoDongGopList.Count > 0)
+                if (!TimeSpan.TryParseExact(
+                    afternoonStart,
+                    @"hh\:mm",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out TimeSpan afternoonStartTime)
+                    || !TimeSpan.TryParseExact(
+                        afternoonEnd,
+                        @"hh\:mm",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out TimeSpan afternoonEndTime))
                 {
-                    if (!HeSoDongGopManager.Instance.SaveHeSoMacDinh(heSoDongGopList))
-                    {
-                        ShowNotify("Không thể lưu cấu hình hệ số đóng góp.", MSGType.Error);
-                        return;
-                    }
+                    ShowNotify("Giờ ca chiều không hợp lệ.", MSGType.Error);
+                    return;
                 }
+
+                if (morningStartTime >= morningEndTime)
+                {
+                    ShowNotify("Giờ bắt đầu ca sáng phải nhỏ hơn giờ kết thúc.", MSGType.Error);
+                    return;
+                }
+
+                if (afternoonStartTime >= afternoonEndTime)
+                {
+                    ShowNotify("Giờ bắt đầu ca chiều phải nhỏ hơn giờ kết thúc.", MSGType.Error);
+                    return;
+                }
+
+                settingManager.SaveSetting(
+                    SettingKeys.DefaultMorningStartTime,
+                    morningStart);
+
+                settingManager.SaveSetting(
+                    SettingKeys.DefaultMorningEndTime,
+                    morningEnd);
+
+                settingManager.SaveSetting(
+                    SettingKeys.DefaultAfternoonStartTime,
+                    afternoonStart);
+
+                settingManager.SaveSetting(
+                    SettingKeys.DefaultAfternoonEndTime,
+                    afternoonEnd);
 
                 #endregion
 

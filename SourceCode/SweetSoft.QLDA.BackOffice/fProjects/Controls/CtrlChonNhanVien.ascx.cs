@@ -390,7 +390,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         }
         private string GenerateScheduleJson(Guid userId, DateTime start, DateTime end)
         {
-            // DÙNG CHUNG LOGIC LỊCH TRÌNH VỚI BÊN TASK (ĐÃ CÓ TRẠNG THÁI BUSY)
             var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, start, end);
             var dict = new Dictionary<string, object>();
 
@@ -398,8 +397,11 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             {
                 int dow = (int)ngay.Ngay.DayOfWeek;
                 string dayName = dow == 0 ? "CN" : dow == 6 ? "T7" : $"T{dow + 1}";
-
                 string text;
+
+                // [BỔ SUNG Tooltip]: Tạo danh sách chứa chi tiết các task
+                var activeTasks = new List<object>();
+
                 switch (ngay.TrangThaiLich)
                 {
                     case "holiday":
@@ -409,15 +411,25 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                         text = "⬜ " + GetResourceText(BackEndResourceKeys.WEEKEND);
                         break;
                     case "busy":
-                        // Hiển thị số lượng công việc y hệt bên Task
                         text = $"🔴 {ngay.DanhSachCongViec.Count} {GetResourceText(BackEndResourceKeys.TASK).ToLower()}";
+
+                        // Móc dữ liệu từ TomTatCongViec y như bên Task
+                        foreach (var t in ngay.DanhSachCongViec)
+                        {
+                            activeTasks.Add(new
+                            {
+                                code = t.MaCongViec,
+                                name = t.TenCongViec,
+                                projectName = t.TenDuAn
+                            });
+                        }
                         break;
                     default:
                         text = "🟢 " + GetResourceText(BackEndResourceKeys.FREE);
                         break;
                 }
 
-                dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName, text });
+                dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName = dayName, text = text, tasks = activeTasks });
             }
 
             return JsonConvert.SerializeObject(dict);

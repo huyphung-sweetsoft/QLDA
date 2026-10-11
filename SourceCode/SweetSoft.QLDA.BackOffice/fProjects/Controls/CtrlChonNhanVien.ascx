@@ -85,6 +85,40 @@
         background-color: #dbeafe;
         border-color: #3b82f6;
     }
+    /* ============================================================
+       TOOLTIP GLOBAL (NẰM TRÊN LAYER CAO NHẤT CỦA TRÌNH DUYỆT)
+       ============================================================ */
+    .mc-day { position: relative !important; overflow: visible !important; }
+    .mc-day.has-tooltip { cursor: pointer; }
+    .mc-day:hover, .mc-day.show-tooltip { z-index: 50; }
+    
+    .global-task-tooltip { 
+        position: absolute; /* Định vị tuyệt đối so với toàn màn hình */
+        z-index: 9999999 !important; /* Đè lên mọi Modal/Popup */
+        background: #ffffff; color: #334155; 
+        border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 16px; 
+        min-width: 340px; max-width: 520px; width: max-content; 
+        white-space: normal; word-break: break-word; overflow-wrap: anywhere; 
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.2); font-size: 12.5px; line-height: 1.5; 
+        opacity: 0; visibility: hidden; pointer-events: none; 
+        transition: opacity 0.15s ease, visibility 0.15s ease; 
+    }
+    .global-task-tooltip.show { opacity: 1; visibility: visible; pointer-events: auto; }
+    
+    /* Mũi tên chỉ xuống (Tự động chạy qua lại theo tọa độ JS) */
+    .global-task-tooltip::after { 
+        content: ''; position: absolute; top: 100%; 
+        left: var(--arrow-left, 50%); /* Chạy động bằng CSS Variable */
+        transform: translateX(-50%);
+        border-width: 6px; border-style: solid; border-color: #ffffff transparent transparent transparent; 
+    }
+
+    .tooltip-task-list { list-style: none; margin: 0; padding: 0; text-align: left; }
+    .tooltip-task-list li { margin: 0; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; color: #334155; }
+    .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
+    .tooltip-task-list li:first-child { padding-top: 0; }
+    .t-project-name { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; color: #64748b; }
+    .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary">
@@ -155,7 +189,7 @@
                                         <span>
                                             <span class="fw-bold text-dark"><%# Eval("DisplayName") %></span>
                                             <!-- Render Badge cảnh báo task -->
-                                            <%# Convert.ToInt32(Eval("TaskCount")) > 0 ? string.Format("<span class='badge bg-warning text-dark ms-2' style='font-size:10.5px; padding:3px 6px;'><i class='fas fa-tasks me-1'></i>{0}</span>", string.Format(GetResourceText(BackEndResourceKeys.DOING_X_TASKS) ?? "Đảm nhận {0} công việc", Eval("TaskCount"))) : "" %>
+                                        <%# Convert.ToInt32(Eval("TaskCount")) > 0 ? string.Format("<span class='badge ms-2' style='font-size:10.5px; padding:3px 6px; background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;'><i class='fas fa-tasks me-1'></i>{0}</span>", string.Format(GetResourceText(BackEndResourceKeys.DOING_X_TASKS) ?? "Đảm nhận {0} công việc", Eval("TaskCount"))) : "" %>
                                         </span>
                                         <span class="member-email"><%#: Eval("Email") %></span>
                                     </div>
@@ -212,16 +246,13 @@
         function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
         function titleText(st) { return 'Tháng ' + (st.month + 1) + ', ' + st.year; }
 
-        // Dựng lưới 6 hàng x 7 cột của tháng đang xem (st.year, st.month)
         function buildGridHtml(st) {
             var now = new Date();
             var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
-
-            // Tuần bắt đầu từ Thứ 2: getDay() 0=CN..6=T7 -> offset 0=T2..6=CN
             var offset = (new Date(st.year, st.month, 1).getDay() + 6) % 7;
             var html = '<div class="mc-grid">';
 
-            for (var i = 0; i < 42; i++) { // luôn 6 hàng để chiều cao không nhảy khi đổi tháng
+            for (var i = 0; i < 42; i++) {
                 var d = new Date(st.year, st.month, 1 - offset + i);
                 var key = toKey(d.getFullYear(), d.getMonth(), d.getDate());
                 var inRange = !!st.minKey && key >= st.minKey && key <= st.maxKey;
@@ -233,15 +264,33 @@
                 else if (info && info.status) cls += ' st-' + info.status;
                 if (key === todayKey) cls += ' today';
 
-                // Nhãn chữ lấy từ text C# (đã qua resource), bỏ emoji đầu chuỗi vì màu ô đã thể hiện trạng thái
                 var extra = '';
-                if (info && info.text) {
-                    var label = String(info.text).replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
-                    extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+                var tooltipHtml = '';
+                var clickAttr = '';
+
+                if (info) {
+                    var label = String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
+                    if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+
+                    // [SỬA LẠI]: Gói dữ liệu vào attribute ẩn, KHÔNG VẼ TOOLTIP Ở ĐÂY NỮA
+                    var hasTasks = (info.status === "busy" && info.tasks && info.tasks.length > 0);
+                    if (hasTasks) {
+                        cls += ' has-tooltip';
+                        var listHtml = '<ul class="tooltip-task-list">';
+                        for (var t = 0; t < info.tasks.length; t++) {
+                            listHtml += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + escAttr(info.tasks[t].projectName) + '</div><span class="t-code">[' + escAttr(info.tasks[t].code) + ']</span>' + escAttr(info.tasks[t].name) + '</li>';
+                        }
+                        listHtml += '</ul>';
+
+                        // Nén Data vào thẻ Div của ô ngày đó
+                        clickAttr = ' data-tooltip-content="' + encodeURIComponent(listHtml) + '"';
+                    } else if (info.text) {
+                        clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
+                    }
                 }
 
-                var tip = (info && info.text) ? ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"' : '';
-                html += '<div class="' + cls + '"' + tip + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
+                // Dòng này đã bỏ đi biến tooltipHtml cũ
+                html += '<div class="' + cls + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
             }
             return html + '</div>';
         }
@@ -267,11 +316,14 @@
             cal.html(html);
         }
 
+        $(document).on('click', function () {
+            $('.mc-day').removeClass('show-tooltip');
+        });
         CMSMasterJs.TogglePickerAccordion = function (btnElement) {
             $(btnElement).closest('.member-accordion-group').toggleClass('open');
         };
 
-        // Bấm ▲ (delta = -1) hoặc ▼ (delta = +1): lưới tháng mới trượt lên/xuống thay cho tháng cũ
+        // TRƯỢT THÁNG
         CMSMasterJs.ChangeScheduleMonth = function (btnElement, delta) {
             var cal = $(btnElement).closest('.mini-cal');
             var st = cal.data('mc');
@@ -279,7 +331,10 @@
 
             var viewport = cal.find('.mc-viewport');
 
-            // Bấm nhanh liên tiếp: chốt luôn hiệu ứng đang chạy rồi mới bắt đầu hiệu ứng mới
+            // [BẬT KHÓA VÁCH NGĂN]
+            viewport.addClass('is-animating');
+            $('.mc-day').removeClass('show-tooltip');
+
             var grids = viewport.children('.mc-grid');
             if (grids.length > 1) {
                 grids.not(':last').remove();
@@ -297,32 +352,41 @@
             viewport.append(newGrid);
 
             var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reduceMotion || !newGrid[0].animate) { oldGrid.remove(); return; }
+            if (reduceMotion || !newGrid[0].animate) {
+                oldGrid.remove();
+                viewport.removeClass('is-animating');
+                return;
+            }
 
-            // ▼ (tháng sau): tháng mới từ dưới trượt lên. ▲ (tháng trước): tháng mới từ trên trượt xuống.
             var dir = delta > 0 ? 1 : -1;
             var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
 
             oldGrid[0].animate([
                 { transform: 'translateY(0)', opacity: 1 },
                 { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }
-            ], opts).onfinish = function () { oldGrid.remove(); };
+            ], opts).onfinish = function () {
+                oldGrid.remove();
+            };
 
             newGrid[0].animate([
                 { transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 },
                 { transform: 'translateY(0)', opacity: 1 }
-            ], opts);
+            ], opts).onfinish = function () {
+                // [THÁO KHÓA VÁCH NGĂN]
+                viewport.removeClass('is-animating');
+            };
         };
 
+        // MỞ LỊCH SỔ XUỐNG
         CMSMasterJs.ToggleRowSchedule = function (btnElement, userId, isShow) {
             var rowEl = $(btnElement).closest('.member-item-row');
+            var currentPanel = rowEl.closest('.member-accordion-content');
 
-            // Không truyền isShow -> tự đảo trạng thái (bấm 📅 lần nữa để thu lại)
             if (typeof isShow !== 'boolean') isShow = !rowEl.hasClass('show-schedule');
 
             if (isShow) {
-                // Đóng các dòng khác đang mở lịch (panel tự thu lại nhờ CSS transition)
-                $('.member-item-row.show-schedule').not(rowEl).removeClass('show-schedule');
+                // Tắt các lịch cũ và đóng luôn vách ngăn của tụi nó
+                currentPanel.find('.member-item-row.show-schedule').not(rowEl).removeClass('show-schedule schedule-opened');
 
                 var jsonString = rowEl.find('input[type="hidden"][id*="hdfScheduleJson"]').val();
                 var cal = rowEl.find('#timeline-' + userId);
@@ -336,12 +400,10 @@
                     }
                 }
 
-                // Khoảng ngày hợp lệ = khoảng key có trong JSON (chính là StartDate -> EndDate của dự án)
                 var keys = Object.keys(data).sort();
                 var minKey = keys.length ? keys[0] : null;
                 var maxKey = keys.length ? keys[keys.length - 1] : null;
 
-                // Mở ở tháng hiện tại nếu hôm nay nằm trong dự án, ngược lại mở ở tháng bắt đầu
                 var now = new Date();
                 var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
                 var baseDate = (minKey && todayKey >= minKey && todayKey <= maxKey) ? now
@@ -358,15 +420,18 @@
 
                 rowEl.addClass('show-schedule');
 
-                // Sau khi panel xổ xong, cuộn nhẹ để lịch không bị che khuất ở cuối danh sách
+                // Đợi 380ms cho rèm kéo xong -> Mở khóa Vách ngăn
                 setTimeout(function () {
+                    if (rowEl.hasClass('show-schedule')) {
+                        rowEl.addClass('schedule-opened');
+                    }
                     if (rowEl.hasClass('show-schedule') && rowEl[0].scrollIntoView) {
                         rowEl[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
                 }, 380);
 
             } else {
-                rowEl.removeClass('show-schedule');
+                rowEl.removeClass('show-schedule schedule-opened');
             }
         };
         $(document).on('click', '[id$="btnAccept"]', function () {
@@ -377,6 +442,100 @@
             if ($pickerModal.is(':visible')) {
                 // Kích hoạt hàm ẩn mặc định của Bootstrap
                 $pickerModal.modal('hide');
+            }
+        });
+        // ============================================================
+        // ĐỘNG CƠ TOOLTIP GLOBAL (ĐỊNH VỊ TUYỆT ĐỐI THEO TỌA ĐỘ CHUỘT)
+        // ============================================================
+
+        // Sinh ra 1 cái khung Tooltip duy nhất nằm ở ngoài cùng màn hình
+        $('body').append('<div id="global-task-tooltip" class="global-task-tooltip"></div>');
+        var $globalTooltip = $('#global-task-tooltip');
+        var pinnedDay = null; // Biến nhớ xem ông có đang click ghim nó lại không
+
+        function showGlobalTooltip(dayEl) {
+            var $day = $(dayEl);
+            var contentRaw = $day.attr('data-tooltip-content');
+            if (!contentRaw) return;
+
+            // Xả nén Data và nhét vào khung Global
+            $globalTooltip.html(decodeURIComponent(contentRaw));
+
+            // Thuật toán quét tọa độ
+            var offset = $day.offset();
+            var ttWidth = $globalTooltip.outerWidth();
+            var ttHeight = $globalTooltip.outerHeight();
+            var dayWidth = $day.outerWidth();
+
+            // Tính toán vị trí đâm thẳng lên đỉnh đầu ô ngày
+            var topPos = offset.top - ttHeight - 10;
+            var leftPos = offset.left + (dayWidth / 2) - (ttWidth / 2);
+
+            // Thuật toán thông minh: Va chạm mép trái/phải màn hình
+            var windowWidth = $(window).width();
+            var arrowLeft = 50; // Trọng tâm mũi tên 50%
+
+            if (leftPos < 10) {
+                var overstep = 10 - leftPos;
+                leftPos = 10;
+                arrowLeft = 50 - (overstep / ttWidth * 100);
+            } else if (leftPos + ttWidth > windowWidth - 10) {
+                var overstep = (leftPos + ttWidth) - (windowWidth - 10);
+                leftPos = windowWidth - ttWidth - 10;
+                arrowLeft = 50 + (overstep / ttWidth * 100);
+            }
+
+            // Bắn Tooltip bay tới tọa độ
+            $globalTooltip.css({
+                top: topPos + 'px',
+                left: leftPos + 'px',
+                '--arrow-left': arrowLeft + '%' // Dời cái mũi tên đi theo
+            });
+
+            $globalTooltip.addClass('show');
+        }
+
+        function hideGlobalTooltip() {
+            $globalTooltip.removeClass('show');
+        }
+
+        // 1. Hover chuột
+        $(document).on('mouseenter', '.mc-day.has-tooltip', function () {
+            if (pinnedDay) return;
+            showGlobalTooltip(this);
+        }).on('mouseleave', '.mc-day.has-tooltip', function () {
+            if (pinnedDay) return;
+            hideGlobalTooltip();
+        });
+
+        // 2. Click chuột để Ghim (Thuận tiện khi copy text)
+        $(document).on('click', '.mc-day.has-tooltip', function (e) {
+            e.stopPropagation();
+            if (pinnedDay === this) {
+                pinnedDay = null;
+                hideGlobalTooltip();
+                $(this).removeClass('show-tooltip');
+            } else {
+                $('.mc-day').removeClass('show-tooltip');
+                pinnedDay = this;
+                $(this).addClass('show-tooltip');
+                showGlobalTooltip(this);
+            }
+        });
+
+        // 3. Click ra ngoài tắt ghim
+        $(document).on('click', function () {
+            pinnedDay = null;
+            $('.mc-day').removeClass('show-tooltip');
+            hideGlobalTooltip();
+        });
+
+        // 4. Nếu cuộn thanh cuộn của khung danh sách -> Tự động giấu Tooltip tránh việc nó bị trôi lơ lửng
+        $('.col-12').on('scroll', function () {
+            if (pinnedDay) {
+                pinnedDay = null;
+                $('.mc-day').removeClass('show-tooltip');
+                hideGlobalTooltip();
             }
         });
     });

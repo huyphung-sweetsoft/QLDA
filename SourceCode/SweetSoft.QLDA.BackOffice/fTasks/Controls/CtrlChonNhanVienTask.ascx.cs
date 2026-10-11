@@ -355,19 +355,28 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (GetKeyword(c).Length > 0 || HasChucDanhFilter(c))
                 users = users.Where(u => employeeRows.ContainsKey(u.UserId)).ToList();
             Guid? pmId = IdNhanVienQuanLy;
+            // Tính toán lịch và số ngày bận TRƯỚC KHI SORT
+            Dictionary<Guid, int> busyDaysDict;
+            Dictionary<Guid, string> scheduleJsonDict;
+            CalculateSchedules(users, StartDate, EndDate, out busyDaysDict, out scheduleJsonDict);
+
+            // LOGIC SẮP XẾP MỚI: Ai ít ngày bận nhất sẽ đưa lên đầu (Rảnh -> Bận)
             if (c.IsProject)
             {
                 users = users.OrderByDescending(u => pmId.HasValue && u.UserId == pmId.Value)
                              .ThenByDescending(u => picked.Contains(u.UserId))
+                             .ThenBy(u => busyDaysDict.ContainsKey(u.UserId) ? busyDaysDict[u.UserId] : 0) // Rảnh nhất lên đầu
                              .ThenBy(u => u.DisplayName)
                              .ToList();
             }
             else
             {
-                users = users.OrderBy(u => u.DisplayName).ToList();
+                users = users.OrderBy(u => busyDaysDict.ContainsKey(u.UserId) ? busyDaysDict[u.UserId] : 0) // Rảnh nhất lên đầu
+                             .ThenBy(u => u.DisplayName)
+                             .ToList();
             }
 
-            c.Rpt.DataSource = BuildDisplayList(users, StartDate, EndDate, pmId, employeeRows, activeIds, originalAssignedIds);
+            c.Rpt.DataSource = BuildDisplayList(users, pmId, employeeRows, activeIds, originalAssignedIds, busyDaysDict, scheduleJsonDict);
             c.Rpt.DataBind();
             c.LtrCount.Text = users.Count.ToString();
             c.LtrNoData.Text = GetResourceText(BackEndResourceKeys.NO_DATA);
@@ -376,7 +385,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             c.UpCount.Update();
         }
 
-        private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId, Dictionary<Guid, DataRow> employeeRows, HashSet<Guid> activeIds, HashSet<Guid> originalAssignedIds)
+        private List<object> BuildDisplayList(List<AspnetUser> users, Guid? pmId, Dictionary<Guid, DataRow> employeeRows, HashSet<Guid> activeIds, HashSet<Guid> originalAssignedIds, Dictionary<Guid, int> busyDaysDict, Dictionary<Guid, string> scheduleJsonDict)
         {
             var list = new List<object>();
             for (int i = 0; i < users.Count; i++)
@@ -385,6 +394,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 string avatarPath = user.Avatar;
                 DataRow info;
                 employeeRows.TryGetValue(user.UserId, out info);
+
                 list.Add(new
                 {
                     UserId = user.UserId,
@@ -393,8 +403,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     IsPM = pmId.HasValue && user.UserId == pmId.Value,
                     IsInactive = !activeIds.Contains(user.UserId),
                     AvatarHtml = GetSingleAvatarHtml(user.DisplayName, avatarPath, i),
-                    ScheduleJson = GenerateScheduleJson(user.UserId, start, end),
-                    IsOriginal = originalAssignedIds.Contains(user.UserId)
+                    ScheduleJson = scheduleJsonDict.ContainsKey(user.UserId) ? scheduleJsonDict[user.UserId] : "{}",
+                    IsOriginal = originalAssignedIds.Contains(user.UserId),
+                    BusyDays = busyDaysDict.ContainsKey(user.UserId) ? busyDaysDict[user.UserId] : 0
                 });
             }
             return list;
@@ -549,11 +560,55 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 IdCongViecCha = task.IdCongViecCha;
                 SyncPickedFromRepeaters();
                 List<Guid> selectedIds = GetPickedIds().Distinct().ToList();
+
                 if (!IsValidSelectedUserIds(selectedIds, out List<Guid> invalidIds))
                 {
                     ShowInvalidDataError();
                     return;
                 }
+
+                // KIỂM TRA: CHỈ CẢNH BÁO CHO NHỮNG "NHÂN VIÊN MỚI" ĐƯỢC CHỌN THÊM
+                List<Guid> currentAssigned = TaskManager.Instance.GetAssignedNhanVienIds(IdCongViec);
+                HashSet<Guid> originalAssignedIds = new HashSet<Guid>(currentAssigned);
+                List<string> overloadWarnings = new List<string>();
+
+                foreach (Guid sId in selectedIds)
+                {
+                    // LỌC THẦN THÁNH: Nếu người này vốn dĩ đã thuộc Task này từ trước thì bỏ qua, không tính bận!
+                    if (originalAssignedIds.Contains(sId)) continue;
+
+                    var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(sId, StartDate, EndDate);
+                    int busyDays = lich.Count(n => n.TrangThaiLich == "busy");
+
+                    if (busyDays > 0)
+                    {
+                        AspnetUser u = UserManager.Instance.GetUserById(sId);
+                        string name = u != null ? u.DisplayName : "Nhân viên";
+                        overloadWarnings.Add($"• <b>{name}</b> - Bận {busyDays} ngày");
+                    }
+                }
+
+                if (overloadWarnings.Count > 0)
+                {
+                    string detailHtml = string.Join("<br/>", overloadWarnings);
+                    string formattedList = $"<div style='text-align: left; background: #fffbeb; padding: 10px; border: 1px solid #fde68a; border-radius: 6px; font-size: 13px; margin-bottom: 10px; color: #b45309;'>{detailHtml}</div>";
+
+                    string dateRange = $"{StartDate.ToString("dd/MM/yyyy")} đến {EndDate.ToString("dd/MM/yyyy")}";
+                    string finalMessage = $"Các nhân viên mới được phân bổ sau đây đang có lịch bận trong thời gian giao việc ({dateRange}):<br/><br/>{formattedList}<br/>Bạn có chắc chắn muốn tiếp tục giao việc không?";
+
+                    ConfirmResult result = new ConfirmResult();
+                    result.CommandName = "CONFIRM_OVERLOAD_ASSIGN_TASK";
+                    result.Value = selectedIds;
+
+                    this.CURRENT_PAGE.CurrentConfirmResult = result;
+
+                    // SỬ DỤNG MSGButton.Accept theo yêu cầu của ông (Nó sẽ tự kèm theo nút Cancel)
+                    MessageBox msg = new MessageBox("Xác nhận phân bổ nhân sự", finalMessage, MSGButton.AcceptCancel, MSGIcon.Warning);
+
+                    OpenMessageBox(msg, result, false, false);
+                    return;
+                }
+                // Không có ai trùng lịch -> Lưu thẳng xuống Database
                 TaskManager.Instance.UpdateAssignments(IdDuAn, IdCongViec, selectedIds);
                 mdlTaskMemberPicker.CloseModal();
                 OnAssignConfirmed?.Invoke(this, EventArgs.Empty);
@@ -562,6 +617,70 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 ShowNotify(GetResourceText(BackEndResourceKeys.ERROR_OCCURED) ?? "Có lỗi xảy ra khi phân công nhân sự.", MSGType.Error);
                 try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Lỗi khi gán nhân sự Task"); } catch { }
+            }
+        }
+        private void CalculateSchedules(List<AspnetUser> users, DateTime start, DateTime end, out Dictionary<Guid, int> busyDaysDict, out Dictionary<Guid, string> scheduleJsonDict)
+        {
+            busyDaysDict = new Dictionary<Guid, int>();
+            scheduleJsonDict = new Dictionary<Guid, string>();
+
+            foreach (var u in users)
+            {
+                var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(u.UserId, start, end);
+
+                // Đếm Số ngày bận (Phục vụ Sort và Badge)
+                int busy = lich.Count(n => n.TrangThaiLich == "busy");
+                busyDaysDict[u.UserId] = busy;
+
+                var dict = new Dictionary<string, object>();
+                foreach (var ngay in lich)
+                {
+                    int dow = (int)ngay.Ngay.DayOfWeek;
+                    string dayName = dow == 0 ? "CN" : dow == 6 ? "T7" : $"T{dow + 1}";
+                    string text;
+
+                    // [BỔ SUNG Tooltip]: Tạo danh sách chứa chi tiết các task bận
+                    var activeTasks = new List<object>();
+
+                    switch (ngay.TrangThaiLich)
+                    {
+                        case "holiday": text = "🎉 " + GetResourceText(BackEndResourceKeys.HOLIDAY); break;
+                        case "weekend": text = "⬜ " + GetResourceText(BackEndResourceKeys.WEEKEND); break;
+                        case "busy":
+                            text = $"🔴 {ngay.DanhSachCongViec.Count} {GetResourceText(BackEndResourceKeys.TASK).ToLower()}";
+
+                            // Móc Dữ liệu từ TomTatCongViec để đẩy lên UI làm Tooltip Cross-Project
+                            foreach (var t in ngay.DanhSachCongViec)
+                            {
+                                activeTasks.Add(new
+                                {
+                                    code = t.MaCongViec,
+                                    name = t.TenCongViec,
+                                    projectName = t.TenDuAn
+                                });
+                            }
+                            break;
+                        default: text = "🟢 " + GetResourceText(BackEndResourceKeys.FREE); break;
+                    }
+
+                    // Nhét thêm mảng activeTasks vào chuỗi JSON của ngày đó
+                    dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName = dayName, text = text, tasks = activeTasks });
+                }
+                scheduleJsonDict[u.UserId] = Newtonsoft.Json.JsonConvert.SerializeObject(dict);
+            }
+        }
+        // Hứng sự kiện khi PM bấm "Tiếp tục giao việc" trên MessageBox
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null && e.Submit && e.CommandName == "CONFIRM_OVERLOAD_ASSIGN_TASK")
+            {
+                List<Guid> finalIds = e.Value as List<Guid>;
+                if (finalIds != null)
+                {
+                    TaskManager.Instance.UpdateAssignments(IdDuAn, IdCongViec, finalIds);
+                    mdlTaskMemberPicker.CloseModal();
+                    OnAssignConfirmed?.Invoke(this, EventArgs.Empty);
+                }
             }
         }
     }

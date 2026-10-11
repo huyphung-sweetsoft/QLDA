@@ -244,6 +244,9 @@
     <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Data\Administrative\AdministrativeDataSeeder.cs" />
+    <Compile Include="Data\Administrative\ProvinceSeedModel.cs" />
+    <Compile Include="Data\Administrative\WardSeedModel.cs" />
     <Compile Include="Default.aspx.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -822,6 +825,13 @@
     <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="SeedAdministrativeData.aspx.cs">
+      <DependentUpon>SeedAdministrativeData.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SeedAdministrativeData.aspx.designer.cs">
+      <DependentUpon>SeedAdministrativeData.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Startup.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
@@ -990,6 +1000,7 @@
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
+    <Content Include="SeedAdministrativeData.aspx" />
     <Content Include="Styles\css\landingpage.css" />
     <Content Include="Styles\images\addImage.jpg" />
     <Content Include="Styles\images\background-app.png" />
@@ -1567,6 +1578,12 @@
     <Content Include="_RFMng\themes\default\styles\filemanager.css" />
     <Content Include="_RFMng\themes\default\styles\ie.css" />
     <Content Include=".vs\SweetSoft.QLDA.BackOffice.csproj.dtbcache.json" />
+    <Content Include="Data\Administrative\all-province.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Administrative\all-ward.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -2230,7 +2247,6 @@
     <Folder Include="bin\en-US\" />
     <Folder Include="bin\vi-VN\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Data\" />
     <Folder Include="obj\" />
     <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
