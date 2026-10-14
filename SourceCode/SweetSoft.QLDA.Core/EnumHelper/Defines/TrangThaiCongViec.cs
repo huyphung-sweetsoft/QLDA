@@ -19,6 +19,9 @@ namespace SweetSoft.QLDA.Core.EnumHelper
         HoanThanh = 2,
 
         [Description("Hoàn thành trễ")]
-        HoanThanhTre = 3
+        HoanThanhTre = 3,
+
+        [Description("Chờ duyệt")]
+        ChoDuyet = 4
     }
 }

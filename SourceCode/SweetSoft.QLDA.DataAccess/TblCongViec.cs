@@ -432,6 +432,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarVaiTroNhanVien.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarVaiTroNhanVien);
 				
+				TableSchema.TableColumn colvarChoDuyet = new TableSchema.TableColumn(schema);
+				colvarChoDuyet.ColumnName = "ChoDuyet";
+				colvarChoDuyet.DataType = DbType.Boolean;
+				colvarChoDuyet.MaxLength = 0;
+				colvarChoDuyet.AutoIncrement = false;
+				colvarChoDuyet.IsNullable = true;
+				colvarChoDuyet.IsPrimaryKey = false;
+				colvarChoDuyet.IsForeignKey = false;
+				colvarChoDuyet.IsReadOnly = false;
+				
+						colvarChoDuyet.DefaultSetting = @"((0))";
+				colvarChoDuyet.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarChoDuyet);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -625,6 +639,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<byte?>(Columns.VaiTroNhanVien); }
 			set { SetColumnValue(Columns.VaiTroNhanVien, value); }
 		}
+		  
+		[XmlAttribute("ChoDuyet")]
+		[Bindable(true)]
+		public bool? ChoDuyet 
+		{
+			get { return GetColumnValue<bool?>(Columns.ChoDuyet); }
+			set { SetColumnValue(Columns.ChoDuyet, value); }
+		}
 		
 		#endregion
 		
@@ -680,7 +702,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdCongViec,Guid varIdDuAn,Guid? varIdCongViecCha,Guid? varIdCongViecPhuThuoc,Guid? varIdDoUuTien,string varMaCongViec,string varTenCongViec,string varMoTa,DateTime? varNgayBatDau,int? varThoiHanNgay,DateTime? varNgayKetThuc,DateTime? varNgayHoanThanhThucTe,int varPhanTramHoanThanh,byte varTrangThai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdGiaiDoanDuAn,bool? varDaGuiNhacNho,string varLyDoTre,byte? varVaiTroNhanVien)
+		public static void Insert(Guid varIdCongViec,Guid varIdDuAn,Guid? varIdCongViecCha,Guid? varIdCongViecPhuThuoc,Guid? varIdDoUuTien,string varMaCongViec,string varTenCongViec,string varMoTa,DateTime? varNgayBatDau,int? varThoiHanNgay,DateTime? varNgayKetThuc,DateTime? varNgayHoanThanhThucTe,int varPhanTramHoanThanh,byte varTrangThai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdGiaiDoanDuAn,bool? varDaGuiNhacNho,string varLyDoTre,byte? varVaiTroNhanVien,bool? varChoDuyet)
 		{
 			TblCongViec item = new TblCongViec();
 			
@@ -730,6 +752,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.VaiTroNhanVien = varVaiTroNhanVien;
 			
+			item.ChoDuyet = varChoDuyet;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -740,7 +764,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdCongViec,Guid varIdDuAn,Guid? varIdCongViecCha,Guid? varIdCongViecPhuThuoc,Guid? varIdDoUuTien,string varMaCongViec,string varTenCongViec,string varMoTa,DateTime? varNgayBatDau,int? varThoiHanNgay,DateTime? varNgayKetThuc,DateTime? varNgayHoanThanhThucTe,int varPhanTramHoanThanh,byte varTrangThai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdGiaiDoanDuAn,bool? varDaGuiNhacNho,string varLyDoTre,byte? varVaiTroNhanVien)
+		public static void Update(Guid varIdCongViec,Guid varIdDuAn,Guid? varIdCongViecCha,Guid? varIdCongViecPhuThuoc,Guid? varIdDoUuTien,string varMaCongViec,string varTenCongViec,string varMoTa,DateTime? varNgayBatDau,int? varThoiHanNgay,DateTime? varNgayKetThuc,DateTime? varNgayHoanThanhThucTe,int varPhanTramHoanThanh,byte varTrangThai,bool varDaXoa,string varNguoiTao,DateTime varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,Guid? varIdGiaiDoanDuAn,bool? varDaGuiNhacNho,string varLyDoTre,byte? varVaiTroNhanVien,bool? varChoDuyet)
 		{
 			TblCongViec item = new TblCongViec();
 			
@@ -789,6 +813,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.LyDoTre = varLyDoTre;
 			
 				item.VaiTroNhanVien = varVaiTroNhanVien;
+			
+				item.ChoDuyet = varChoDuyet;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -964,6 +990,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn ChoDuyetColumn
+        {
+            get { return Schema.Columns[23]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -991,6 +1024,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string DaGuiNhacNho = @"DaGuiNhacNho";
 			 public static string LyDoTre = @"LyDoTre";
 			 public static string VaiTroNhanVien = @"VaiTroNhanVien";
+			 public static string ChoDuyet = @"ChoDuyet";
 						
 		}
 		#endregion

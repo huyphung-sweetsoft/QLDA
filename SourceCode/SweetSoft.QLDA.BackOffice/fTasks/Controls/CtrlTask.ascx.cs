@@ -47,6 +47,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         private static Dictionary<Guid, TblDoUuTien> _dictPriorities = new Dictionary<Guid, TblDoUuTien>();
         protected readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
+        private CtrlFastReviewTask GetFastReviewTaskControl()
+        {
+            return this.FindControl("CtrlFastReviewTask1") as CtrlFastReviewTask;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OnAssignConfirmed += CtrlChonNhanVienTask1_OnAssignConfirmed;
@@ -54,7 +59,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 InitControls();
             CtrlSwapPhase1.SwapSuccessCallback = () => { this.Rebind(); };
             if (CtrlFastCompleteTask1 != null)
+            {
                 CtrlFastCompleteTask1.ActionCompleted += (s, ev) => { Rebind(); };
+            }
+            CtrlFastReviewTask reviewControl = GetFastReviewTaskControl();
+            if (reviewControl != null)
+            {
+                reviewControl.IsPM = this.IsPM;
+                reviewControl.ActionCompleted += (s, ev) => { Rebind(); };
+            }
             if (CtrlStartTask1 != null)
                 CtrlStartTask1.ActionStarted += (s, ev) => { Rebind(); };
             if (CtrlApplyTemplate1 != null)
@@ -114,7 +127,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                             if (daysLeft < 0)
                                 realOverdueCount++;
                             else if (daysLeft >= 0 && daysLeft <= 2)
-                                dueSoonCount++; 
+                                dueSoonCount++;
                         }
                     }
                 }
@@ -296,76 +309,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     int rowIndexSched = (e.CommandSource.GetType() != typeof(GridviewExtension))
                         ? ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex
                         : Convert.ToInt32(e.CommandArgument);
+
                     Guid taskIdSched = Guid.Empty;
                     if (!Guid.TryParse(grvData.DataKeys[rowIndexSched].Value.ToString(), out taskIdSched))
                     {
                         ShowInvalidDataError();
                         return;
                     }
-                    TblCongViec taskSched = TaskManager.Instance.FetchById(taskIdSched);
-                    if (taskSched == null)
-                    {
-                        ShowInvalidDataError();
-                        return;
-                    }
-                    if (!taskSched.NgayBatDau.HasValue || !taskSched.NgayKetThuc.HasValue)
-                    {
-                        ShowNotify("Công việc này chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch biểu!", MSGType.Warning);
-                        return;
-                    }
-                    List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskIdSched);
-                    var dict = new Dictionary<string, object>();
-                    DateTime current = taskSched.NgayBatDau.Value.Date;
-                    DateTime end = taskSched.NgayKetThuc.Value.Date;
-                    string txtTask = GetResourceText(BackEndResourceKeys.TASK).ToLower();
-                    string txtFree = GetResourceText(BackEndResourceKeys.FREE);
-                    string txtHoliday = GetResourceText(BackEndResourceKeys.HOLIDAY);
-                    string txtWeekend = GetResourceText(BackEndResourceKeys.WEEKEND);
-                    while (current <= end)
-                    {
-                        string status = "";
-                        var activeTasks = new List<object>();
-                        string displayText = "";
-                        TblLichNgoaiLe exceptionDay = LichBieuChungManager.Instance.GetExceptionByDate(current);
-                        bool isWeekend = current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday;
-                        if (exceptionDay != null)
-                        {
-                            status = "holiday";
-                            displayText = exceptionDay.TenNgoaiLe;
-                        }
-                        else if (isWeekend)
-                        {
-                            status = "weekend";
-                            displayText = txtWeekend;
-                        }
-                        else
-                        {
-                            var tasksToday = leafTasks.Where(t => t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
-                            if (tasksToday.Count > 0)
-                            {
-                                status = "busy";
-                                foreach (var t in tasksToday)
-                                    activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
-                                displayText = tasksToday.Count == 1 ? $"[{tasksToday[0].MaCongViec}]" : $"{tasksToday.Count} {txtTask}";
-                            }
-                            else
-                            {
-                                status = "free";
-                                displayText = txtFree;
-                            }
-                        }
-                        dict.Add(current.ToString("yyyy-MM-dd"), new { status = status, text = displayText, tasks = activeTasks });
-                        current = current.AddDays(1);
-                    }
-                    string jsonSchedule = Newtonsoft.Json.JsonConvert.SerializeObject(dict);
-                    mdlTaskSchedule.Title = GetResourceText(BackEndResourceKeys.SCHEDULE_DETAILS) ?? "Chi tiết lịch biểu";
-                    string startStr = taskSched.NgayBatDau.Value.ToString("dd/MM/yyyy");
-                    string endStr = taskSched.NgayKetThuc.Value.ToString("dd/MM/yyyy");
-                    ltrScheduleTaskName.Text = $"[{taskSched.MaCongViec}] {taskSched.TenCongViec} : {startStr} - {endStr}";
-                    hdfSingleTaskScheduleJson.Value = jsonSchedule;
-                    mdlTaskSchedule.OpenModal(true);
-                    ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "RenderTaskScheduleJS",
-                        "setTimeout(function() { CMSMasterJs.RenderSingleTaskSchedule(); }, 200);", true);
+                    OpenScheduleModal(taskIdSched);
                     break;
                 case "ITEM_ADD_CHILD":
                     if (!this.CURRENT_PAGE.IsAdd)
@@ -460,6 +411,53 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     }
                     break;
 
+                case "REVIEW_COMPLETE":
+                    // Chỉ PM mới được mở popup duyệt/từ chối yêu cầu hoàn thành.
+                    if (!this.IsPM)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+
+                    int rowIndexReview = (e.CommandSource.GetType() != typeof(GridviewExtension))
+                        ? ((GridViewRow)((WebControl)e.CommandSource).NamingContainer).RowIndex
+                        : Convert.ToInt32(e.CommandArgument);
+
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexReview].Value.ToString(), out Guid taskIdReview))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    TblCongViec taskToReview = TaskManager.Instance.FetchById(taskIdReview);
+                    if (taskToReview == null)
+                    {
+                        ShowInvalidNotFoundData();
+                        return;
+                    }
+
+                    if (taskToReview.TrangThai != 4)
+                    {
+                        ShowNotify("Công việc không còn ở trạng thái Chờ duyệt!", MSGType.Warning);
+                        Rebind();
+                        return;
+                    }
+
+                    CtrlFastReviewTask reviewControl = GetFastReviewTaskControl();
+                    if (reviewControl == null)
+                    {
+                        ShowNotify("Không tìm thấy giao diện duyệt hoàn thành!", MSGType.Error);
+                        return;
+                    }
+
+                    reviewControl.IsPM = this.IsPM;
+                    reviewControl.OpenModal(
+                        this.ProjectId,
+                        taskIdReview,
+                        taskToReview.MaCongViec,
+                        taskToReview.TenCongViec);
+                    break;
+
                 case "START_TASK":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
@@ -474,42 +472,55 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         TblCongViec taskToStart = TaskManager.Instance.FetchById(taskIdStart);
                         if (taskToStart != null && !CheckIsFatherTask(taskToStart.IdCongViec))
                         {
+                            var dependencyWarnings = new System.Collections.Generic.List<StartTaskDependencyWarning>();
                             if (taskToStart.IdCongViecPhuThuoc.HasValue)
                             {
-                                TblCongViec dependentTask = TaskManager.Instance.FetchById(taskToStart.IdCongViecPhuThuoc.Value);
-                                if (dependentTask != null && dependentTask.TrangThai != 2 && dependentTask.TrangThai != 3)
+                                TblCongViec dependentTask = TaskManager.Instance.FetchById(
+                                    taskToStart.IdCongViecPhuThuoc.Value);
+                                if (dependentTask != null &&
+                                    dependentTask.TrangThai != 2 &&
+                                    dependentTask.TrangThai != 3)
                                 {
-                                    ShowNotify($"Không thể bắt đầu! Công việc này phụ thuộc vào [{dependentTask.MaCongViec}] nhưng công việc đó chưa hoàn thành.", MSGType.Warning);
-                                    return;
+                                    dependencyWarnings.Add(new StartTaskDependencyWarning
+                                    {
+                                        DependencyTask = dependentTask,
+                                        ParentTask = null,
+                                        TargetTask = taskToStart
+                                    });
                                 }
                             }
                             Guid? checkParentId = taskToStart.IdCongViecCha;
                             while (checkParentId.HasValue)
                             {
-                                TblCongViec pTask = TaskManager.Instance.FetchById(checkParentId.Value);
-                                if (pTask != null)
-                                {
-                                    if (pTask.IdCongViecPhuThuoc.HasValue)
-                                    {
-                                        TblCongViec pDepTask = TaskManager.Instance.FetchById(pTask.IdCongViecPhuThuoc.Value);
-                                        if (pDepTask != null && pDepTask.TrangThai != 2 && pDepTask.TrangThai != 3)
-                                        {
-                                            ShowNotify($"Không thể bắt đầu! Giai đoạn cha [{pTask.MaCongViec}] đang bị kẹt phụ thuộc vào [{pDepTask.MaCongViec}] chưa hoàn thành.", MSGType.Warning);
-                                            return;
-                                        }
-                                    }
-                                    checkParentId = pTask.IdCongViecCha;
-                                }
-                                else
-                                {
+                                TblCongViec currentAncestorTask = TaskManager.Instance.FetchById(checkParentId.Value);
+                                if (currentAncestorTask == null)
                                     break;
+                                if (currentAncestorTask.IdCongViecPhuThuoc.HasValue)
+                                {
+                                    TblCongViec parentDependency = TaskManager.Instance.FetchById(
+                                        currentAncestorTask.IdCongViecPhuThuoc.Value);
+                                    if (parentDependency != null &&
+                                        parentDependency.TrangThai != 2 &&
+                                        parentDependency.TrangThai != 3)
+                                    {
+                                        dependencyWarnings.Add(new StartTaskDependencyWarning
+                                        {
+                                            DependencyTask = parentDependency,
+                                            ParentTask = currentAncestorTask,
+                                            TargetTask = taskToStart
+                                        });
+                                    }
                                 }
+                                checkParentId = currentAncestorTask.IdCongViecCha;
                             }
-                            CtrlStartTask1.OpenModal(taskIdStart, taskToStart.MaCongViec, taskToStart.TenCongViec);
+                            CtrlStartTask1.OpenModal(
+                                taskIdStart,
+                                taskToStart.MaCongViec,
+                                taskToStart.TenCongViec,
+                                dependencyWarnings.Count > 0 ? dependencyWarnings : null);
                         }
                     }
                     break;
-
                 case "ITEM_DELETE":
                     if (!this.CURRENT_PAGE.IsDelete)
                     {
@@ -545,6 +556,84 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     OpenMessageBox(msg, result, false, false);
                     break;
             }
+        }
+        public void OpenScheduleModal(Guid taskIdSched)
+        {
+            if (!this.CURRENT_PAGE.IsView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            TblCongViec taskSched = TaskManager.Instance.FetchById(taskIdSched);
+            if (taskSched == null)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+            if (!taskSched.NgayBatDau.HasValue || !taskSched.NgayKetThuc.HasValue)
+            {
+                ShowNotify("Công việc này chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch biểu!", MSGType.Warning);
+                return;
+            }
+
+            List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskIdSched);
+            var dict = new Dictionary<string, object>();
+            DateTime current = taskSched.NgayBatDau.Value.Date;
+            DateTime end = taskSched.NgayKetThuc.Value.Date;
+            string txtTask = GetResourceText(BackEndResourceKeys.TASK).ToLower();
+            string txtFree = GetResourceText(BackEndResourceKeys.FREE);
+            string txtHoliday = GetResourceText(BackEndResourceKeys.HOLIDAY);
+            string txtWeekend = GetResourceText(BackEndResourceKeys.WEEKEND);
+
+            while (current <= end)
+            {
+                string status = "";
+                var activeTasks = new List<object>();
+                string displayText = "";
+                TblLichNgoaiLe exceptionDay = LichBieuChungManager.Instance.GetExceptionByDate(current);
+                bool isWeekend = current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday;
+
+                if (exceptionDay != null)
+                {
+                    status = "holiday";
+                    displayText = exceptionDay.TenNgoaiLe;
+                }
+                else if (isWeekend)
+                {
+                    status = "weekend";
+                    displayText = txtWeekend;
+                }
+                else
+                {
+                    var tasksToday = leafTasks.Where(t => t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
+                    if (tasksToday.Count > 0)
+                    {
+                        status = "busy";
+                        foreach (var t in tasksToday)
+                            activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
+                        displayText = tasksToday.Count == 1 ? $"[{tasksToday[0].MaCongViec}]" : $"{tasksToday.Count} {txtTask}";
+                    }
+                    else
+                    {
+                        status = "free";
+                        displayText = txtFree;
+                    }
+                }
+                dict.Add(current.ToString("yyyy-MM-dd"), new { status = status, text = displayText, tasks = activeTasks });
+                current = current.AddDays(1);
+            }
+
+            string jsonSchedule = Newtonsoft.Json.JsonConvert.SerializeObject(dict);
+            mdlTaskSchedule.Title = GetResourceText(BackEndResourceKeys.SCHEDULE_DETAILS) ?? "Chi tiết lịch biểu";
+            string startStr = taskSched.NgayBatDau.Value.ToString("dd/MM/yyyy");
+            string endStr = taskSched.NgayKetThuc.Value.ToString("dd/MM/yyyy");
+            ltrScheduleTaskName.Text = $"[{taskSched.MaCongViec}] {taskSched.TenCongViec} : {startStr} - {endStr}";
+            hdfSingleTaskScheduleJson.Value = jsonSchedule;
+
+            mdlTaskSchedule.OpenModal(true);
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "RenderTaskScheduleJS",
+                "setTimeout(function() { CMSMasterJs.RenderSingleTaskSchedule(); }, 200);", true);
         }
         protected void grvData_RowDataBound(object sender, GridViewRowEventArgs e)
         {
@@ -703,6 +792,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public string GetTaskStatusTextOnly(object statusObj)
         {
             int status = Convert.ToInt32(statusObj);
+            if (status == 4)
+                return "Chờ duyệt";
+
             TrangThaiCongViec enumStatus = (TrangThaiCongViec)status;
             string resourceKey = TaskManager.Instance.GetValueForTrangThaiCongViec(enumStatus);
             return GetResourceText(resourceKey);
@@ -717,6 +809,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public string GetTaskStatusBadge(object statusObj)
         {
             int status = Convert.ToInt32(statusObj);
+
+            // Trạng thái mới không phụ thuộc vào mapping resource cũ của TaskManager.
+            if (status == 4)
+                return "<span class=\"badge-pill-custom badge-status-review\">Chờ duyệt</span>";
+
             TrangThaiCongViec enumStatus = (TrangThaiCongViec)status;
             string resourceKey = TaskManager.Instance.GetValueForTrangThaiCongViec(enumStatus);
             string statusText = GetResourceText(resourceKey);
