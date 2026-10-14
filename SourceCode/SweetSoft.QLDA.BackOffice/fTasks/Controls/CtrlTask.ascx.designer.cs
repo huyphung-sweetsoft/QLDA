@@ -222,6 +222,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlAddSubTask CtrlAddSubTask1;
 
         /// <summary>
+        /// CtrlFastReviewTask1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UserControl CtrlFastReviewTask1;
+
+        /// <summary>
         /// mdlTaskSchedule control.
         /// </summary>
         /// <remarks>

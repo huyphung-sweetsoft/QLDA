@@ -96,6 +96,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.TextBox txtEditMaCv;
 
         /// <summary>
+        /// txtEditTenCv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEditTenCv;
+
+        /// <summary>
         /// rowBreadcrumb control.
         /// </summary>
         /// <remarks>
@@ -166,15 +175,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlEditTrangThai;
-
-        /// <summary>
-        /// txtEditTenCv control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEditTenCv;
 
         /// <summary>
         /// rowChaVaPhuThuoc control.
@@ -267,6 +267,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         protected global::System.Web.UI.WebControls.TextBox txtEditNgayKetThuc;
 
         /// <summary>
+        /// btnViewScheduleInEdit control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnViewScheduleInEdit;
+
+        /// <summary>
         /// txtEditMoTa control.
         /// </summary>
         /// <remarks>
@@ -274,6 +283,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtEditMoTa;
+
+        /// <summary>
+        /// hdfLocalScheduleJson control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfLocalScheduleJson;
 
         /// <summary>
         /// upnlFooterEdit control.

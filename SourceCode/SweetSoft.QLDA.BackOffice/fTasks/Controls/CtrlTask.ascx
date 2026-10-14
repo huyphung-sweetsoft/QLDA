@@ -7,6 +7,7 @@
 <%@ Register Src="~/fTasks/Controls/CtrlAddSubTask.ascx" TagPrefix="SweetSoft" TagName="CtrlAddSubTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlViewTaskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewTaskDetail" %>
 <%@ Register Src="~/fTasks/Controls/CtrlFastCompleteTask.ascx" TagPrefix="SweetSoft" TagName="CtrlFastCompleteTask" %>
+<%@ Register Src="~/fTasks/Controls/CtrlFastReviewTask.ascx" TagPrefix="SweetSoft" TagName="CtrlFastReviewTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlStartTask.ascx" TagPrefix="SweetSoft" TagName="CtrlStartTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlApplyTemplate.ascx" TagPrefix="SweetSoft" TagName="CtrlApplyTemplate" %>
 <style>
@@ -334,6 +335,9 @@
     .badge-status-doing { background-color: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
     .badge-status-todo { background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
     .badge-status-done { background-color: #dcfce7 !important; color: #15803d !important; border: 1px solid #bbf7d0 !important; }
+    .badge-status-review { background-color: #fef3c7 !important; color: #92400e !important; border: 1px solid #fcd34d !important; }
+    .badge-status-btn.badge-status-review .status-hover { background-color: #b45309 !important; color: #ffffff !important; }
+    .badge-status-btn.badge-status-review:hover { border-color: #b45309 !important; box-shadow: 0 3px 6px rgba(180, 83, 9, 0.24) !important; }
     .badge-pri-low { background-color: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; font-weight: 600 !important; }
     .badge-pri-med { background-color: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a !important; font-weight: 600 !important; }
     .badge-pri-high { background-color: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fca5a5 !important; font-weight: 700 !important; }
@@ -554,7 +558,7 @@
                         <HeaderStyle Width="110px"/>
                         <ItemStyle Width="110px"/>
                         <ItemTemplate>
-                            <asp:Literal runat="server" Visible='<%# !this.IsEdit || CheckIsFatherTask(Eval("IdCongViec")) || Eval("TrangThai").ToString() == "2" || Eval("TrangThai").ToString() == "3" %>' Text='<%# GetTaskStatusBadge(Eval("TrangThai")) %>'></asp:Literal>
+                            <asp:Literal runat="server" Visible='<%# CheckIsFatherTask(Eval("IdCongViec")) || Eval("TrangThai").ToString() == "2" || Eval("TrangThai").ToString() == "3" || (Eval("TrangThai").ToString() == "4" && !this.IsPM) || (!this.IsEdit && Eval("TrangThai").ToString() != "4") %>' Text='<%# GetTaskStatusBadge(Eval("TrangThai")) %>'></asp:Literal>
                             <asp:LinkButton runat="server" ID="lbtStatusStart" CommandName="START_TASK" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsEdit && !CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "0" %>' CssClass="badge-pill-custom badge-status-btn badge-status-todo btn-start-task" ToolTip="Bắt đầu thực hiện">
                                 <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
                                 <span class="status-hover"><i class="fas fa-play me-1"></i>Bắt đầu!</span>
@@ -562,6 +566,10 @@
                             <asp:LinkButton runat="server" ID="lbtStatusFastComplete" CommandName="FAST_COMPLETE" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsEdit && !CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "1" %>' CssClass="badge-pill-custom badge-status-btn badge-status-doing" ToolTip="Xác nhận hoàn thành">
                                 <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
                                 <span class="status-hover"><i class="fas fa-check-double me-1"></i>Chốt xong!</span>
+                            </asp:LinkButton>
+                            <asp:LinkButton runat="server" ID="lbtStatusFastReview" CommandName="REVIEW_COMPLETE" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsPM && !CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "4" %>' CssClass="badge-pill-custom badge-status-btn badge-status-review" ToolTip="Duyệt hoặc từ chối yêu cầu hoàn thành">
+                                <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
+                                <span class="status-hover"><i class="fas fa-clipboard-check me-1"></i>Duyệt nhanh</span>
                             </asp:LinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
@@ -605,6 +613,7 @@
 
     <SweetSoft:CtrlAddPhase ID="CtrlAddPhase1" runat="server" />
     <SweetSoft:CtrlAddSubTask ID="CtrlAddSubTask1" runat="server" />
+    <SweetSoft:CtrlFastReviewTask ID="CtrlFastReviewTask1" runat="server" />
 
     <SweetSoft:ExtraModal DefaultButton="btnCloseTaskSchedule" ID="mdlTaskSchedule" Type="Primary" runat="server">
         <ContentTemplate>

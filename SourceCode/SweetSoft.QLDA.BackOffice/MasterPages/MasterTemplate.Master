@@ -209,6 +209,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
      height: 0;
  }
 
+
+        /* Shared GridView sizing: keep tall scrollable grids above the fixed footer and reserve space for their paging controls. */
+        body.qlda-grid-fit-page .qlda-grid-fit-viewport { min-height: 0 !important; box-sizing: border-box !important; overflow: auto !important; }
     </style>
     <asp:ContentPlaceHolder ID="cpHeadVendor" runat="server"></asp:ContentPlaceHolder>
     <asp:ContentPlaceHolder ID="cpHead" runat="server"></asp:ContentPlaceHolder>
@@ -881,6 +884,153 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 pollNotifications();
                 setInterval(pollNotifications, 30000);
             })();          
+        </script>
+
+        <script type="text/javascript">
+            (function () {
+                var gridFitFrame = 0;
+                var gridFitObserver = null;
+                var gridFitNav = null;
+                var gridFitMutationObserver = null;
+
+                function getVisibleRect(element) {
+                    if (!element || !element.getClientRects().length) return null;
+                    var rect = element.getBoundingClientRect();
+                    if (rect.width <= 0 || rect.height < 0) return null;
+                    return rect;
+                }
+
+                function findPagingRoot(body) {
+                    if (!body) return null;
+                    var paging = body.querySelector('[id*="ctrlGridviewPaging"]');
+                    if (paging && paging.getClientRects().length) return paging;
+                    var pagination = body.querySelector('.pagination');
+                    if (!pagination) return null;
+                    return pagination.closest('[id*="Paging"], .d-flex, .row') || pagination;
+                }
+
+                function findGridViewport(table, listBody) {
+                    if (!table || !listBody) return null;
+                    var tableRect = table.getBoundingClientRect();
+                    var candidate = table.parentElement;
+                    while (candidate && candidate !== listBody) {
+                        var style = window.getComputedStyle(candidate);
+                        var overflowY = style.overflowY || style.overflow;
+                        var hasVerticalOverflow = /auto|scroll|hidden|clip/i.test(overflowY || '');
+                        var rect = candidate.getBoundingClientRect();
+                        var hasExtraViewportSpace = rect.height > tableRect.height + 30;
+                        var contentActuallyOverflows = candidate.scrollHeight > candidate.clientHeight + 5;
+                        if (hasVerticalOverflow && candidate.clientHeight > 100 && (hasExtraViewportSpace || contentActuallyOverflows)) return candidate;
+                        candidate = candidate.parentElement;
+                    }
+                    return null;
+                }
+
+                function getAvailableBottom() {
+                    var footer = document.querySelector('.footer.wrapperFooter');
+                    if (footer) {
+                        var footerStyle = window.getComputedStyle(footer);
+                        var footerRect = footer.getBoundingClientRect();
+                        if ((footerStyle.position === 'fixed' || footerStyle.position === 'sticky') && footerRect.top > 0 && footerRect.top < window.innerHeight) return footerRect.top - 8;
+                    }
+                    return window.innerHeight - 12;
+                }
+
+                function sizeGridViewport(table, listBody, paging, bottom) {
+                    var viewport = findGridViewport(table, listBody);
+                    if (!viewport) return;
+                    var viewportRect = viewport.getBoundingClientRect();
+                    var pagingRect = getVisibleRect(paging);
+                    var pagingHeight = pagingRect ? Math.max(pagingRect.height, paging.scrollHeight || 0) : 0;
+                    var bodyStyle = window.getComputedStyle(listBody);
+                    var bodyPaddingBottom = parseFloat(bodyStyle.paddingBottom) || 0;
+                    var reservedPagingSpace = pagingHeight + bodyPaddingBottom + 16;
+                    var availableHeight = Math.floor(bottom - reservedPagingSpace - viewportRect.top);
+                    availableHeight = Math.max(90, availableHeight);
+                    var currentHeight = parseFloat(viewport.style.height || '0');
+                    viewport.classList.add('qlda-grid-fit-viewport');
+                    if (Math.abs(currentHeight - availableHeight) > 1) {
+                        viewport.style.setProperty('height', availableHeight + 'px', 'important');
+                        viewport.style.setProperty('max-height', availableHeight + 'px', 'important');
+                    }
+                }
+
+                function applyGridFit() {
+                    gridFitFrame = 0;
+                    var bottom = getAvailableBottom();
+                    var pagingControls = Array.prototype.slice.call(document.querySelectorAll('.main-content [id*="ctrlGridviewPaging"]'));
+                    if (!pagingControls.length) pagingControls = Array.prototype.slice.call(document.querySelectorAll('.main-content .card-body .pagination'));
+                    var foundViewport = false;
+                    pagingControls.forEach(function (pagingControl) {
+                        if (!pagingControl.getClientRects().length) return;
+                        var listBody = pagingControl.closest('.card-body');
+                        if (!listBody || !listBody.closest('.main-content') || listBody.closest('.modal, .offcanvas')) return;
+                        var paging = pagingControl;
+                        if (paging.classList.contains('pagination')) {
+                            paging = paging.closest('[id*="Paging"], .d-flex, .row') || paging;
+                        }
+                        var tables = Array.prototype.slice.call(listBody.querySelectorAll('table')).filter(function (table) {
+                            return table.getClientRects().length && !table.closest('.pagination, .modal, .offcanvas');
+                        });
+                        if (!tables.length) return;
+                        var table = tables[0];
+                        var viewport = findGridViewport(table, listBody);
+                        if (!viewport) return;
+                        sizeGridViewport(table, listBody, paging, bottom);
+                        foundViewport = true;
+                    });
+                    document.body.classList.toggle('qlda-grid-fit-page', foundViewport);
+                }
+
+                function scheduleGridFit() {
+                    if (gridFitFrame) cancelAnimationFrame(gridFitFrame);
+                    gridFitFrame = requestAnimationFrame(applyGridFit);
+                }
+
+                function attachGridFitObservers() {
+                    var nav = document.querySelector('.project-feature-tabs');
+                    if (nav !== gridFitNav) {
+                        if (gridFitObserver) gridFitObserver.disconnect();
+                        gridFitObserver = null;
+                        gridFitNav = nav;
+                        if (nav && window.ResizeObserver) {
+                            gridFitObserver = new ResizeObserver(scheduleGridFit);
+                            gridFitObserver.observe(nav);
+                        }
+                    }
+                    scheduleGridFit();
+                }
+
+                function initGridFit() {
+                    attachGridFitObservers();
+                    window.setTimeout(scheduleGridFit, 80);
+                    window.setTimeout(scheduleGridFit, 420);
+                }
+
+                if (window.jQuery) {
+                    jQuery(function () {
+                        initGridFit();
+                        jQuery(window).off('resize.qldaGridFit orientationchange.qldaGridFit').on('resize.qldaGridFit orientationchange.qldaGridFit', scheduleGridFit);
+                        jQuery(document).off('transitionend.qldaGridFit', '.project-feature-tabs').on('transitionend.qldaGridFit', '.project-feature-tabs', scheduleGridFit);
+                        if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(initGridFit);
+                        }
+                        if (window.Sys && Sys.Application) Sys.Application.add_load(initGridFit);
+                        if (window.MutationObserver) {
+                            gridFitMutationObserver = new MutationObserver(function (mutations) {
+                                for (var i = 0; i < mutations.length; i++) {
+                                    if (mutations[i].target && mutations[i].target.closest && mutations[i].target.closest('.project-feature-tabs')) {
+                                        attachGridFitObservers();
+                                        break;
+                                    }
+                                }
+                            });
+                            var tabNode = document.querySelector('.project-feature-tabs');
+                            if (tabNode) gridFitMutationObserver.observe(tabNode, { attributes: true, attributeFilter: ['class', 'style'] });
+                        }
+                    });
+                }
+            })();
         </script>
     </form>
 </body>

@@ -1,3 +1,4 @@
+using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.fTasks.Controls;
 using SweetSoft.QLDA.BackOffice.fUsers.Controls;
@@ -68,10 +69,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             if (task == null || task.DaXoa == true) return;
 
             hfEditTaskId.Value = task.IdCongViec.ToString();
+            // Lịch dự kiến chỉ thuộc công việc đang mở; không tái sử dụng JSON của task trước.
+            hdfLocalScheduleJson.Value = string.Empty;
             bool isPhase = TaskManager.Instance.CheckPhase(task);
             bool hasChildren = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
 
-            mdlEditTask.Title = isPhase ? "Cập nhật Giai đoạn (Phase)" : "Cập nhật Công việc con";
+            mdlEditTask.Title = isPhase ? "Cập nhật Giai đoạn" : "Cập nhật Công việc con";
 
             txtEditMaCv.Text = task.MaCongViec;
             txtEditTenCv.Text = task.TenCongViec;
@@ -104,7 +107,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 rowBreadcrumb.Visible = false;
                 colCongViecCha.Visible = false;
                 colPhuThuoc.Visible = true;
-                BindPhaseDependencies(task);
+                BindDependentTasks(null, task.MaCongViec, task.IdCongViecPhuThuoc);
             }
             else
             {
@@ -113,20 +116,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 colPhuThuoc.Visible = true;
                 _controlHelpers.BindParentTasks(ddlEditCongViecCha, CurrentProjectId, task.IdCongViec, task.IdCongViecCha);
                 _controlHelpers.BindDependentTasks(ddlEditPhuThuoc, CurrentProjectId, task.IdCongViec, task.IdCongViecPhuThuoc, task.MaCongViec, chiLayGiaiDoan: false);
-
-                if (!task.IdCongViecCha.HasValue)
-                {
-                    List<ListItem> invalidItems = new List<ListItem>();
-                    foreach (ListItem item in ddlEditPhuThuoc.Items)
-                    {
-                        if (Guid.TryParse(item.Value, out Guid depId))
-                        {
-                            var depTask = TaskManager.Instance.FetchById(depId);
-                            if (depTask != null && depTask.IdCongViecCha.HasValue) invalidItems.Add(item);
-                        }
-                    }
-                    foreach (var item in invalidItems) ddlEditPhuThuoc.Items.Remove(item);
-                }
+                BindDependentTasks(task.IdCongViecCha, task.MaCongViec, task.IdCongViecPhuThuoc);
             }
 
             bool isCompleted = (task.TrangThai == 2 || task.TrangThai == 3);
@@ -196,7 +186,76 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             mdlEditTask.OpenModal(true, IsPostBack ? 0 : 1000);
         }
         #endregion
+        protected void btnViewScheduleInEdit_Click(object sender, EventArgs e)
+        {
+            // Luôn dựng lịch mới từ task hiện tại, kể cả khi task thiếu ngày hợp lệ.
+            hdfLocalScheduleJson.Value = string.Empty;
+            if (!Guid.TryParse(hfEditTaskId.Value, out Guid taskId)) return;
+            TblCongViec taskSched = TaskManager.Instance.FetchById(taskId);
+            if (taskSched == null) return;
 
+            if (!taskSched.NgayBatDau.HasValue || !taskSched.NgayKetThuc.HasValue)
+            {
+                ShowNotify("Công việc này chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch biểu!", MSGType.Warning);
+                return;
+            }
+
+            List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskId);
+            var dict = new Dictionary<string, object>();
+            DateTime current = taskSched.NgayBatDau.Value.Date;
+            DateTime end = taskSched.NgayKetThuc.Value.Date;
+            string txtTask = GetResourceText(BackEndResourceKeys.TASK).ToLower();
+            string txtFree = GetResourceText(BackEndResourceKeys.FREE);
+            string txtHoliday = GetResourceText(BackEndResourceKeys.HOLIDAY);
+            string txtWeekend = GetResourceText(BackEndResourceKeys.WEEKEND);
+
+            while (current <= end)
+            {
+                string status = "";
+                var activeTasks = new List<object>();
+                string displayText = "";
+                TblLichNgoaiLe exceptionDay = LichBieuChungManager.Instance.GetExceptionByDate(current);
+                bool isWeekend = current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday;
+
+                if (exceptionDay != null)
+                {
+                    status = "holiday";
+                    displayText = exceptionDay.TenNgoaiLe;
+                }
+                else if (isWeekend)
+                {
+                    status = "weekend";
+                    displayText = txtWeekend;
+                }
+                else
+                {
+                    var tasksToday = leafTasks.Where(t => t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
+                    if (tasksToday.Count > 0)
+                    {
+                        status = "busy";
+                        foreach (var t in tasksToday)
+                            activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
+                        displayText = tasksToday.Count == 1 ? $"[{tasksToday[0].MaCongViec}]" : $"{tasksToday.Count} {txtTask}";
+                    }
+                    else
+                    {
+                        status = "free";
+                        displayText = txtFree;
+                    }
+                }
+                dict.Add(current.ToString("yyyy-MM-dd"), new { status = status, text = displayText, tasks = activeTasks });
+                current = current.AddDays(1);
+            }
+
+            // Nạp chuỗi JSON vào thẻ HiddenField
+            hdfLocalScheduleJson.Value = Newtonsoft.Json.JsonConvert.SerializeObject(dict);
+
+            upModal.Update();
+
+            // Kích hoạt Javascript để hiệu ứng trượt mở ra
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "OpenSliderJS",
+                "setTimeout(function() { openLocalTaskSchedule(); renderLocalSchedule(); }, 100);", true);
+        }
         private void Reminder_Callback(object sender, Guid taskId)
         {
             if (taskId == Guid.Empty)
@@ -513,45 +572,90 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 .ToList();
         }
 
-        private void BindPhaseDependencies(TblCongViec currentPhase)
+        private int CompareWBS(string code1, string code2)
         {
-            ddlEditPhuThuoc.Items.Clear();
-
-            List<TblCongViec> phases = GetOrderedProjectPhases(TaskManager.Instance.FetchPhasesByProjectId(CurrentProjectId));
-            int currentIndex = phases.FindIndex(x => x.IdCongViec == currentPhase.IdCongViec);
-
-            if (currentIndex <= 0)
+            string[] p1 = (code1 ?? "").Split('.');
+            string[] p2 = (code2 ?? "").Split('.');
+            for (int i = 0; i < Math.Min(p1.Length, p2.Length); i++)
             {
-                ddlEditPhuThuoc.Items.Add(new ListItem("Giai đoạn đầu tiên nên không có phụ thuộc", ""));
-                ddlEditPhuThuoc.SelectedIndex = 0;
-                ddlEditPhuThuoc.Enabled = false;
-                return;
+                int.TryParse(p1[i], out int n1);
+                int.TryParse(p2[i], out int n2);
+                if (n1 != n2) return n1.CompareTo(n2);
             }
-
-            for (int i = 0; i < currentIndex; i++)
-            {
-                TblCongViec previousPhase = phases[i];
-                ddlEditPhuThuoc.Items.Add(new ListItem(
-                    $"[{previousPhase.MaCongViec}] {previousPhase.TenCongViec}",
-                    previousPhase.IdCongViec.ToString()));
-            }
-
-            if (currentPhase.IdCongViecPhuThuoc.HasValue)
-            {
-                ListItem selectedItem = ddlEditPhuThuoc.Items.FindByValue(currentPhase.IdCongViecPhuThuoc.Value.ToString());
-                if (selectedItem != null)
-                    ddlEditPhuThuoc.SelectedValue = selectedItem.Value;
-                else
-                    ddlEditPhuThuoc.SelectedIndex = ddlEditPhuThuoc.Items.Count - 1;
-            }
-            else
-            {
-                ddlEditPhuThuoc.SelectedIndex = ddlEditPhuThuoc.Items.Count - 1;
-            }
-
-            ddlEditPhuThuoc.Enabled = this.IsEdit;
+            return p1.Length.CompareTo(p2.Length);
         }
 
+        private void BindDependentTasks(Guid? parentId, string currentTaskCode, Guid? currentDependentId = null)
+        {
+            ddlEditPhuThuoc.Items.Clear();
+            ddlEditPhuThuoc.Items.Add(new ListItem("-- Không phụ thuộc --", string.Empty));
+
+            SqlQuery query = new Select()
+                .From(TblCongViec.Schema)
+                .Where(TblCongViec.Columns.IdDuAn).IsEqualTo(CurrentProjectId)
+                .And(TblCongViec.Columns.DaXoa).IsEqualTo(false);
+
+            DataTable dt = query.ExecuteDataSet().Tables[0];
+
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                var rows = dt.AsEnumerable().ToList();
+                rows.Sort((row1, row2) => CompareWBS(row1["MaCongViec"]?.ToString().Trim(), row2["MaCongViec"]?.ToString().Trim()));
+
+                string parentCode = "";
+                if (parentId.HasValue)
+                {
+                    var pRow = rows.Find(r => r["IdCongViec"].ToString().Equals(parentId.Value.ToString(), StringComparison.OrdinalIgnoreCase));
+                    if (pRow != null) parentCode = pRow["MaCongViec"]?.ToString().Trim() ?? "";
+                }
+
+                foreach (DataRow row in rows)
+                {
+                    string maCongViec = row["MaCongViec"]?.ToString().Trim() ?? string.Empty;
+                    string tenCongViec = row["TenCongViec"]?.ToString().Trim() ?? string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(maCongViec)) continue;
+
+                    if (Guid.TryParse(Convert.ToString(row["IdCongViec"]), out Guid idCongViec))
+                    {
+                        // Bỏ qua các công việc nằm phía sau (hoặc chính nó)
+                        if (CompareWBS(maCongViec, currentTaskCode) >= 0)
+                        {
+                            continue;
+                        }
+
+                        if (!parentId.HasValue)
+                        {
+                            // Nếu đang là root (giai đoạn), chỉ phụ thuộc root khác
+                            if (maCongViec.Contains(".")) continue;
+                        }
+                        else
+                        {
+                            // Nếu đang là con, không phụ thuộc vào chính cha của mình
+                            if (maCongViec == parentCode || parentCode.StartsWith(maCongViec + "."))
+                            {
+                                continue;
+                            }
+                        }
+
+                        int level = maCongViec.Split('.').Length;
+                        string prefix = level > 1 ? new String('-', (level - 1) * 2) + " " : "";
+
+                        ddlEditPhuThuoc.Items.Add(new ListItem($"{prefix}[{maCongViec}] {tenCongViec}", idCongViec.ToString()));
+                    }
+                }
+            }
+
+            // Phục hồi lại Option đã chọn trước đó
+            if (currentDependentId.HasValue)
+            {
+                var item = ddlEditPhuThuoc.Items.FindByValue(currentDependentId.Value.ToString());
+                if (item != null)
+                {
+                    ddlEditPhuThuoc.SelectedValue = item.Value;
+                }
+            }
+        }
         protected void ddlEditCongViecChaSelected(object sender, EventArgs e)
         {
             Guid? parentId = Guid.TryParse(ddlEditCongViecCha.SelectedValue, out Guid pid) ? (Guid?)pid : null;
@@ -615,14 +719,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 }
             }
         }
-
-        private void ShowNotify(string message, MSGType msgType)
-        {
-            string safeMsg = message.Replace("'", "\\'").Replace("\r\n", "\\n").Replace("\n", "\\n");
-            mdlEditTask.OpenModal(true);
-            ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(), $"alert('{safeMsg}');", true);
-        }
-
         #region Logic Cấu Hình Hệ Số Đóng Góp (Popup)
 
         private void ConfigHeSo_Callback(object sender, EventArgs e)
