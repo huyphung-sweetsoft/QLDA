@@ -145,36 +145,207 @@ scratch. This page gets rid of all links and provides the needed markup only.
             font-size: 12px;
         }
 
-        .notification {
-            width: 400px;
-            max-width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
+        /* Notification center - only scoped to the bell dropdown. */
+        #bellDropdownWrapper .dropdown-notification.dropdown-toggle::after { display:none; }
+        #bellDropdownWrapper .dropdown-notification { display:inline-flex; align-items:center; justify-content:center; width:32px; height:36px; text-decoration:none; transition:transform .18s ease; }
+        #bellDropdownWrapper .dropdown-notification:hover { transform:translateY(-2px); }
+        #bellDropdownWrapper .dropdown-notification:focus-visible { outline:2px solid #c9a6ff; outline-offset:3px; border-radius:10px; }
+        #bellDropdownWrapper #badgeUnread { padding:4px 6px; min-width:19px; line-height:1.1; box-shadow:0 0 0 2px #4a1387; }
+        /* Popup canh theo mép phải vùng Master; giữ phần mũi nối nằm ngoài khung bo góc. */
+        #bellDropdownWrapper .notification { position:fixed!important; inset:auto var(--qlda-noti-edge-right,0px) auto auto!important; top:var(--qlda-noti-top,66px)!important; left:auto!important; bottom:auto!important; transform:none!important; width:365px; max-width:calc(100vw - 18px); box-sizing:border-box; padding:0; overflow:visible; border:1px solid #dfc8f2; border-radius:20px; background:#fff; box-shadow:0 18px 55px rgba(40,27,76,.20)!important; color:#252438; z-index:1070; }
+        #bellDropdownWrapper .notification::before { content:''; position:absolute; top:-10px; right:var(--qlda-noti-pointer-right,40px); width:20px; height:20px; background:#fbf7ff; border-top:1px solid #dfc8f2; border-left:1px solid #dfc8f2; border-top-left-radius:5px; transform:rotate(45deg); box-shadow:-4px -4px 10px rgba(40,27,76,.06); z-index:0; transition:opacity .18s ease,transform .24s ease; }
+        /* Khung popup có kích thước ổn định. Không cuộn chiều cao để tránh giật layout. */
+        #bellDropdownWrapper .qlda-noti-surface { position:relative; z-index:1; overflow:hidden; border-radius:19px; background:#fff; }
+        #bellDropdownWrapper .qlda-noti-content { min-height:0; }
+        /* Màu tím oải hương, hoa cà và hồng rất nhẹ ở bốn góc. */
+        #bellDropdownWrapper .qlda-noti-surface::after { content:''; position:absolute; inset:0; z-index:2; border-radius:inherit; pointer-events:none; background:radial-gradient(circle at 0% 0%,rgba(139,79,204,.17),transparent 84px),radial-gradient(circle at 100% 0%,rgba(195,137,236,.14),transparent 85px),radial-gradient(circle at 0% 100%,rgba(155,116,217,.12),transparent 85px),radial-gradient(circle at 100% 100%,rgba(224,143,201,.13),transparent 86px); }
+        /* Thác nước: khung mở trước, từng hàng xuất hiện, nội dung chữ đến sau. */
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-surface { animation:qlda-noti-frame-in .20s cubic-bezier(.2,.7,.25,1) both; }
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-header { animation:qlda-noti-head-in .21s ease-out .035s both; }
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-footer { animation:qlda-noti-head-in .20s ease-out .20s both; }
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-waterfall-step { animation:qlda-noti-waterfall-in .24s cubic-bezier(.2,.78,.25,1) both; animation-delay:var(--qlda-noti-in-delay,100ms); }
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-waterfall-step .qlda-noti-copy,
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-waterfall-step .qlda-noti-detail,
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-waterfall-step.qlda-noti-group-title > span,
+        #bellDropdownWrapper .notification.show.qlda-noti-opening .qlda-noti-waterfall-step.qlda-noti-empty > * { animation:qlda-noti-text-in .21s ease-out both; animation-delay:var(--qlda-noti-text-delay,220ms); }
+        /* Đóng ngược: chữ mờ trước, các hàng lùi lên từ dưới lên trên, khung cuối cùng mới rời đi. */
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-surface { pointer-events:none; animation:qlda-noti-frame-out .16s ease-in .47s both; }
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-header { animation:qlda-noti-head-out .17s ease-in .29s both; }
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-footer { animation:qlda-noti-head-out .15s ease-in .22s both; }
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-waterfall-step { animation:qlda-noti-waterfall-out .19s ease-in both; animation-delay:var(--qlda-noti-out-delay,145ms); }
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-waterfall-step .qlda-noti-copy,
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-waterfall-step .qlda-noti-detail,
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-waterfall-step.qlda-noti-group-title > span,
+        #bellDropdownWrapper .notification.show.qlda-noti-closing .qlda-noti-waterfall-step.qlda-noti-empty > * { animation:qlda-noti-text-out .13s ease-in both; }
+        #bellDropdownWrapper .notification.qlda-noti-closing::before { opacity:0; transform:translateY(-7px) rotate(45deg); }
+        @keyframes qlda-noti-frame-in { from { opacity:0; transform:translateY(-9px) scale(.987); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes qlda-noti-frame-out { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-7px) scale(.989); } }
+        @keyframes qlda-noti-head-in { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes qlda-noti-head-out { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-5px); } }
+        @keyframes qlda-noti-waterfall-in { from { opacity:0; transform:translateY(-11px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes qlda-noti-waterfall-out { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-11px); } }
+        @keyframes qlda-noti-text-in { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes qlda-noti-text-out { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-3px); } }
+        #bellDropdownWrapper .qlda-noti-header { padding:20px 20px 15px; background:linear-gradient(155deg,#faf7ff 0%,#fff 69%); border-bottom:1px solid #eeeaf6; }
+        #bellDropdownWrapper .qlda-noti-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:7px; }
+        #bellDropdownWrapper .qlda-noti-heading-copy { min-width:0; flex:1; }
+        #bellDropdownWrapper .qlda-noti-actions { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+        #bellDropdownWrapper .qlda-noti-switch { appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:4px; min-height:35px; border:1px solid #e9dff5; border-radius:9px; background:#f8f3fe; color:#642a9b; font-weight:750; font-size:11.3px; padding:6px 9px; white-space:nowrap; cursor:pointer; transition:background .16s,border-color .16s,color .16s,box-shadow .16s; }
+        #bellDropdownWrapper .qlda-noti-switch.mode-unread { border-color:#efcf8d; background:#fff7e7; color:#9a6500; box-shadow:inset 0 0 0 1px rgba(239,207,141,.22); }
+        #bellDropdownWrapper .qlda-noti-switch.mode-unread:hover,#bellDropdownWrapper .qlda-noti-switch.mode-unread:focus-visible { background:#fff0cf; border-color:#e1bb62; color:#855100; }
+        #bellDropdownWrapper .qlda-noti-switch.mode-all { border-color:#cdd7ff; background:#eef3ff; color:#3150b5; box-shadow:inset 0 0 0 1px rgba(107,140,232,.14); }
+        #bellDropdownWrapper .qlda-noti-switch.mode-all:hover,#bellDropdownWrapper .qlda-noti-switch.mode-all:focus-visible { background:#dfe9ff; border-color:#aabcf6; color:#24429d; }
+        #bellDropdownWrapper .qlda-noti-switch:focus-visible { outline:2px solid #8545c1; outline-offset:2px; }
+        #bellDropdownWrapper .qlda-noti-title { display:inline-block; font-size:21px; line-height:1.3; margin:0; font-weight:850; letter-spacing:-.45px; color:#6324a0; background:linear-gradient(105deg,#4a1387 0%,#7940b5 75%,#9952c5 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+        #bellDropdownWrapper .qlda-noti-subtitle { margin:5px 0 0; font-size:12.5px; color:#777286; }
+        #bellDropdownWrapper .qlda-noti-mark { appearance:none; display:inline-flex; align-items:center; justify-content:center; border:1px solid #eadcf8; background:#fff; border-radius:9px; min-height:35px; padding:6px 7px; font-weight:750; color:#6824a0; font-size:11.3px; white-space:nowrap; transition:background .16s,border-color .16s; }
+        #bellDropdownWrapper .qlda-noti-mark:hover { background:#f3eaff; border-color:#d4b7f1; }
+        #bellDropdownWrapper .qlda-noti-mark:focus-visible,#bellDropdownWrapper .qlda-noti-tab:focus-visible,#bellDropdownWrapper .qlda-noti-more:focus-visible,#bellDropdownWrapper .qlda-noti-detail:focus-visible { outline:2px solid #8545c1; outline-offset:2px; }
+        #bellDropdownWrapper .qlda-noti-mark:disabled { opacity:.55; cursor:wait; }
+        #bellDropdownWrapper .qlda-noti-tools { display:flex; align-items:stretch; flex-direction:column; gap:8px; margin-top:13px; }
+        #bellDropdownWrapper .qlda-noti-filter-row { display:grid; grid-template-columns:39px minmax(0,1fr) minmax(0,1fr); align-items:center; gap:7px; width:100%; }
+        /* View chooser: compact quick view or centered spacious reading view. */
+        #bellDropdownWrapper .qlda-noti-view-picker { position:relative; min-width:0; }
+        #bellDropdownWrapper .qlda-noti-view-button { width:39px; height:39px; display:flex; align-items:center; justify-content:center; padding:0; border:1px solid #dfd1ed; border-radius:10px; background:#f7f1ff; color:#69339f; cursor:pointer; transition:background .16s,border-color .16s,box-shadow .16s; }
+        #bellDropdownWrapper .qlda-noti-view-button i { font-size:19px; }
+        #bellDropdownWrapper .qlda-noti-view-button:hover,#bellDropdownWrapper .qlda-noti-view-button[aria-expanded="true"] { background:#ece0fd; border-color:#bf9ce6; box-shadow:0 2px 9px rgba(95,43,155,.08); }
+        #bellDropdownWrapper .qlda-noti-view-button:focus-visible,#bellDropdownWrapper .qlda-noti-view-option:focus-visible { outline:2px solid #8f53c3; outline-offset:2px; }
+        #bellDropdownWrapper .qlda-noti-view-menu { position:absolute; top:calc(100% + 8px); left:0; z-index:12; width:238px; max-width:calc(100vw - 54px); padding:8px; border:1px solid #dfd1f1; border-radius:13px; background:#fff; box-shadow:0 15px 35px rgba(65,26,108,.20); }
+        #bellDropdownWrapper .qlda-noti-view-menu[hidden] { display:none!important; }
+        #bellDropdownWrapper .qlda-noti-view-menu-title { padding:5px 8px 8px; color:#8b78a2; font-size:10.5px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; }
+        #bellDropdownWrapper .qlda-noti-view-option { width:100%; display:flex; align-items:center; gap:10px; padding:10px 9px; text-align:left; border:0; border-radius:9px; background:transparent; color:#3a2b4f; cursor:pointer; transition:background .16s; }
+        #bellDropdownWrapper .qlda-noti-view-option:hover,#bellDropdownWrapper .qlda-noti-view-option.is-selected { background:#f4edfe; }
+        #bellDropdownWrapper .qlda-noti-view-option > i:first-child { display:flex; align-items:center; justify-content:center; width:29px; height:29px; border-radius:8px; background:#eee5fa; color:#743cad; flex-shrink:0; font-size:17px; }
+        #bellDropdownWrapper .qlda-noti-view-option span { display:flex; flex-direction:column; min-width:0; flex:1; }
+        #bellDropdownWrapper .qlda-noti-view-option strong { font-size:12.5px; line-height:1.4; }
+        #bellDropdownWrapper .qlda-noti-view-option small { color:#9387a2; font-size:10.5px; line-height:1.4; }
+        #bellDropdownWrapper .qlda-noti-view-option .qlda-noti-view-check { font-size:17px; color:#6e2dab; opacity:0; }
+        #bellDropdownWrapper .qlda-noti-view-option.is-selected .qlda-noti-view-check { opacity:1; }
+        #bellDropdownWrapper .qlda-noti-header { position:relative; z-index:4; }
+        #bellDropdownWrapper .qlda-noti-type-wrap { position:relative; min-width:0; width:100%; }
+        #bellDropdownWrapper .qlda-noti-time-wrap .qlda-noti-filter-icon { font-size:16px; }
+        #bellDropdownWrapper .qlda-noti-filter-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:15px; color:#7a638d; pointer-events:none; }
+        #bellDropdownWrapper .qlda-noti-type { appearance:none; -webkit-appearance:none; display:block; width:100%; height:39px; padding:0 28px 0 33px; border:1px solid #e5deef; border-radius:10px; background:#fff; font-size:12px; font-weight:700; color:#484056; cursor:pointer; }
+        #bellDropdownWrapper .qlda-noti-type:focus { outline:2px solid #d9b8f5; border-color:#b98ae1; }
+        #bellDropdownWrapper .qlda-noti-chevron { position:absolute; right:9px; top:50%; transform:translateY(-50%); font-size:17px; pointer-events:none; color:#7b688b; }
+        #bellDropdownWrapper .notification-body { max-height:min(62vh,550px); overflow-y:auto; overscroll-behavior:contain; background:#fff; scrollbar-width:thin; scrollbar-color:#dad1e7 transparent; }
+        #bellDropdownWrapper .notification-body::-webkit-scrollbar { width:6px; }
+        #bellDropdownWrapper .notification-body::-webkit-scrollbar-thumb { background:#dcd4e7; border-radius:12px; }
+        #bellDropdownWrapper .qlda-noti-group-title { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between; align-items:center; padding:10px 19px 8px; background:#f8f7fb; color:#625b75; border-top:1px solid #f3f0f7; font-size:11.5px; font-weight:800; letter-spacing:.15px; }
+        #bellDropdownWrapper .qlda-noti-group-title span:last-child { color:#a29bad; font-weight:700; font-size:11px; }
+        #bellDropdownWrapper .notification-item { position:relative; display:flex; align-items:center; gap:4px; padding:0 11px 0 0; border-bottom:1px solid #f3f0f7; background:#fff; transition:background .16s ease,box-shadow .16s ease; }
+        #bellDropdownWrapper .notification-item.is-unread { background:#fbf9ff; }
+        #bellDropdownWrapper .notification-item:hover,#bellDropdownWrapper .notification-item:focus-within { background:#f5f0fd; box-shadow:inset 3px 0 0 #8243bb; }
+        #bellDropdownWrapper .qlda-noti-link { display:flex; align-items:flex-start; gap:12px; min-width:0; flex:1; padding:14px 0 14px 18px; text-decoration:none!important; color:inherit!important; }
+        #bellDropdownWrapper .notification-icon { width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:13px; flex-shrink:0; font-size:21px; }
+        #bellDropdownWrapper .qlda-noti-icon-task { background:#eee6fc; color:#6426ae; }
+        #bellDropdownWrapper .qlda-noti-icon-project { background:#e5f7ed; color:#23905b; }
+        #bellDropdownWrapper .qlda-noti-icon-meeting { background:#fff4d9; color:#bb7c0e; }
+        #bellDropdownWrapper .qlda-noti-icon-issue { background:#ffe7e8; color:#d04b5b; }
+        #bellDropdownWrapper .qlda-noti-icon-document { background:#e2f3fc; color:#247fa9; }
+        #bellDropdownWrapper .qlda-noti-icon-system { background:#edf0f5; color:#677589; }
+        #bellDropdownWrapper .qlda-noti-copy { flex:1; min-width:0; }
+        #bellDropdownWrapper .qlda-noti-topline { display:flex; align-items:center; gap:7px; margin-bottom:5px; }
+        #bellDropdownWrapper .qlda-noti-category { display:inline-flex; align-items:center; min-width:0; color:#7853a0; font-weight:800; font-size:10.5px; line-height:1.3; }
+        #bellDropdownWrapper .qlda-noti-unread-dot { display:inline-block; width:7px; height:7px; background:#7733b1; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 3px #ede2fa; }
+        #bellDropdownWrapper .qlda-noti-item-title { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; font-size:13.7px; font-weight:600; line-height:1.45; color:#40384d; }
+        #bellDropdownWrapper .qlda-noti-snippet { display:none; }
+        #bellDropdownWrapper .notification-item.is-unread .qlda-noti-item-title { color:#262036; font-weight:800; }
+        #bellDropdownWrapper .qlda-noti-time { display:flex; align-items:center; gap:5px; margin-top:6px; color:#918b9a; font-size:11.5px; }
+        #bellDropdownWrapper .qlda-noti-time i { font-size:13px; }
+        #bellDropdownWrapper .qlda-noti-detail { display:flex; flex:0 0 30px; width:30px; height:30px; justify-content:center; align-items:center; border:0; border-radius:9px; background:transparent; color:#a69db2; font-size:19px; cursor:pointer; transition:color .16s,background .16s; }
+        #bellDropdownWrapper .qlda-noti-detail:hover,#bellDropdownWrapper .notification-item:hover .qlda-noti-detail { color:#69339c; background:#ede2f9; }
+        #bellDropdownWrapper .qlda-noti-empty { min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:30px 22px; text-align:center; }
+        #bellDropdownWrapper .qlda-noti-empty-icon { width:54px; height:54px; display:flex; align-items:center; justify-content:center; background:#f2eafb; border-radius:18px; color:#8244bc; font-size:27px; }
+        #bellDropdownWrapper .qlda-noti-empty strong { color:#393047; font-size:14px; }
+        #bellDropdownWrapper .qlda-noti-empty span { max-width:290px; color:#90899a; font-size:12.5px; line-height:1.55; }
+        #bellDropdownWrapper .qlda-noti-skeleton { display:flex; gap:13px; padding:18px; border-bottom:1px solid #f3f0f7; }
+        #bellDropdownWrapper .qlda-noti-skeleton-icon,#bellDropdownWrapper .qlda-noti-skeleton-line { background:linear-gradient(90deg,#f3f0f8 25%,#e8e2f0 50%,#f3f0f8 75%); background-size:200% 100%; animation:qlda-noti-shimmer 1.4s linear infinite; }
+        #bellDropdownWrapper .qlda-noti-skeleton-icon { width:40px; height:40px; border-radius:12px; flex-shrink:0; }
+        #bellDropdownWrapper .qlda-noti-skeleton-content { flex:1; padding-top:3px; }
+        #bellDropdownWrapper .qlda-noti-skeleton-line { display:block; height:9px; width:80%; margin-bottom:10px; border-radius:6px; }
+        #bellDropdownWrapper .qlda-noti-skeleton-line:last-child { width:47%; margin:0; }
+        #bellDropdownWrapper .qlda-noti-footer { display:flex; flex-direction:column; align-items:stretch; padding:10px 18px 12px; border-top:1px solid #f0eaf6; background:#fff; }
+        #bellDropdownWrapper .qlda-noti-more { display:flex; justify-content:center; align-items:center; gap:6px; min-height:36px; width:100%; border:1px solid #e9dcf6; background:#f9f5fe; color:#6f2ca6; border-radius:9px; font-weight:800; font-size:12.5px; transition:background .16s; }
+        #bellDropdownWrapper .qlda-noti-more:hover { background:#eee3fb; }
+        #bellDropdownWrapper .qlda-noti-more:disabled { opacity:.65; cursor:wait; }
+        #bellDropdownWrapper .qlda-noti-filter-note { margin-top:7px; font-size:11px; text-align:center; color:#9a92a4; }
+        /* Centered reading mode; stays inside the existing Bootstrap dropdown. */
+        .qlda-noti-backdrop { position:fixed; inset:0; z-index:1068; background:rgba(27,13,49,.38); opacity:0; pointer-events:none; transition:opacity .22s ease; }
+        .qlda-noti-backdrop.is-visible { opacity:1; pointer-events:auto; }
+        #bellDropdownWrapper .notification.qlda-noti-expanded { top:50%!important; left:50%!important; right:auto!important; bottom:auto!important; transform:translate(-50%,-50%)!important; width:min(890px,calc(100vw - 48px))!important; max-width:none!important; height:min(760px,calc(100vh - 52px))!important; max-height:calc(100vh - 52px)!important; border-radius:22px; box-shadow:0 25px 85px rgba(24,10,53,.32)!important; }
+        #bellDropdownWrapper .notification.qlda-noti-expanded::before { display:none; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-surface { height:100%; border-radius:21px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-content { display:flex; flex-direction:column; height:100%; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-header { flex:0 0 auto; padding:22px 28px 19px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-title { font-size:25px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-subtitle { font-size:13.5px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-filter-row { grid-template-columns:43px minmax(0,220px) minmax(0,220px); gap:10px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-view-button { width:43px; }
+        #bellDropdownWrapper .qlda-noti-expanded .notification-body { flex:1 1 auto; min-height:0; max-height:none!important; overflow-y:auto; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-group-title { padding:12px 25px 11px; font-size:12.5px; }
+        #bellDropdownWrapper .qlda-noti-expanded .notification-item { padding-right:23px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-link { padding:16px 0 16px 25px; gap:16px; }
+        #bellDropdownWrapper .qlda-noti-expanded .notification-icon { width:49px; height:49px; font-size:24px; border-radius:14px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-category { font-size:11.5px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-item-title { font-size:15.5px; line-height:1.48; -webkit-line-clamp:3; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-time { font-size:12.5px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-snippet { display:-webkit-box; margin-top:7px; font-size:12.5px; line-height:1.5; color:#82778c; overflow:hidden; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow-wrap:anywhere; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-footer { flex:0 0 auto; padding:12px 27px 15px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-more { min-height:40px; font-size:13px; }
+        #bellDropdownWrapper .qlda-noti-close { display:none; width:36px; height:35px; padding:0; align-items:center; justify-content:center; border:1px solid #e7d9f5; border-radius:10px; background:#fff; color:#8a699f; cursor:pointer; transition:background-color .16s,color .16s,border-color .16s; }
+        #bellDropdownWrapper .qlda-noti-close i { font-size:21px; }
+        #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-close { display:inline-flex; }
+        #bellDropdownWrapper .qlda-noti-close:hover { background:#f6edff; color:#6326a5; border-color:#cdb0ed; }
+        #bellDropdownWrapper .qlda-noti-close:focus-visible { outline:2px solid #8545c1; outline-offset:2px; }
+        /* Detail card is mounted on <body> so the scroll container cannot clip it. */
+        .qlda-noti-preview { position:fixed; z-index:2000; width:340px; max-width:calc(100vw - 22px); padding:17px 18px 16px; border:1px solid #e8dff2; border-radius:15px; background:#fff; color:#332940; box-shadow:0 17px 45px rgba(35,19,67,.23); pointer-events:none; animation:qlda-noti-enter .16s ease-out; }
+        .qlda-noti-preview-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+        .qlda-noti-preview-type { color:#7134a7; font-size:11px; font-weight:850; }
+        .qlda-noti-preview-status { color:#785e98; background:#f2eafb; padding:4px 8px; border-radius:50px; font-weight:750; font-size:10px; }
+        .qlda-noti-preview-status.is-read { color:#657284; background:#eef1f4; }
+        .qlda-noti-preview-title { color:#292137; font-weight:850; font-size:14px; line-height:1.48; overflow-wrap:anywhere; margin-bottom:9px; }
+        .qlda-noti-preview-content { font-size:12.7px; color:#5f566b; line-height:1.6; white-space:pre-line; overflow-wrap:anywhere; max-height:150px; overflow:hidden; }
+        .qlda-noti-preview-muted { color:#9b92a7; font-style:italic; }
+        .qlda-noti-preview-foot { display:flex; flex-wrap:wrap; gap:9px 15px; padding-top:12px; margin-top:12px; border-top:1px solid #f0ebf5; font-size:11.5px; color:#837b8e; }
+        .qlda-noti-preview-foot span { display:flex; align-items:center; gap:5px; }
+        @keyframes qlda-noti-shimmer { to { background-position-x:-200%; } }
+        @keyframes qlda-noti-enter { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+        @media(max-width:575px) {
+            #bellDropdownWrapper .notification { position:fixed!important; top:var(--qlda-noti-top,72px)!important; left:8px!important; right:8px!important; width:auto!important; max-width:none!important; }
+            #bellDropdownWrapper .notification::before { right:var(--qlda-noti-pointer-right,34px); }
+            #bellDropdownWrapper .qlda-noti-header { padding:15px 13px 12px; }
+            #bellDropdownWrapper .qlda-noti-tools { gap:7px; }
+            #bellDropdownWrapper .qlda-noti-type-wrap { min-width:0; }
+            #bellDropdownWrapper .qlda-noti-filter-row { gap:7px; }
+            #bellDropdownWrapper .notification-body { max-height:min(57vh,490px); }
+            #bellDropdownWrapper .qlda-noti-link { gap:10px; padding-left:13px; }
+            #bellDropdownWrapper .qlda-noti-view-menu { left:0; width:min(238px,calc(100vw - 40px)); }
+            #bellDropdownWrapper .notification.qlda-noti-expanded { width:calc(100vw - 16px)!important; height:calc(100vh - 24px)!important; max-height:calc(100vh - 24px)!important; top:50%!important; left:50%!important; right:auto!important; transform:translate(-50%,-50%)!important; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-header { padding:17px 14px 13px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-title { font-size:22px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-filter-row { grid-template-columns:39px minmax(0,1fr) minmax(0,1fr); gap:7px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-view-button { width:39px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-link { padding:14px 0 14px 13px; gap:10px; }
+            #bellDropdownWrapper .qlda-noti-expanded .notification-item { padding-right:8px; }
+            #bellDropdownWrapper .qlda-noti-expanded .notification-icon { width:42px; height:42px; font-size:21px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-item-title { font-size:14px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-group-title { padding:11px 15px 9px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-footer { padding:10px 13px 12px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-heading { flex-wrap:wrap; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-heading-copy { flex-basis:100%; padding-right:36px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-actions { width:100%; justify-content:flex-end; padding-right:39px; }
+            #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-close { position:absolute; top:16px; right:13px; }
         }
-
-            .notification .notification-body {
-                overflow-y: auto;
-                max-height: 60vh;
-                height: 100%;
-            }
-
-            .notification .notification-close {
-                border: 1px solid lightgray;
-                padding: 2px 10px;
-                border-radius: 6px;
-            }
-
-        .dropdown-notification.dropdown-toggle::after {
-            content: unset;
-        }
-
-        .notification .notification-item:hover {
-            background: #f9fafc;
-        }
-
-        .notification-item .notification-icon {
-            width: 36px;
-            height: 36px;
+        @media(prefers-reduced-motion:reduce) {
+            #bellDropdownWrapper .qlda-noti-skeleton-icon,#bellDropdownWrapper .qlda-noti-skeleton-line { animation:none; }
+            #bellDropdownWrapper .notification .qlda-noti-surface,
+            #bellDropdownWrapper .notification .qlda-noti-header,
+            #bellDropdownWrapper .notification .qlda-noti-footer,
+            #bellDropdownWrapper .notification .qlda-noti-waterfall-step,
+            #bellDropdownWrapper .notification .qlda-noti-waterfall-step * { animation:none!important; transition:none!important; }
+            #bellDropdownWrapper .notification::before { transition:none; }
+            .qlda-noti-preview,.qlda-noti-backdrop { animation:none; transition:none!important; }
         }
 
         .fs-14 {
@@ -357,44 +528,95 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                     </li>
                                                 </ul>
                                                  <div class="wrapperRight">
-                                                     <%-- Icon chuông thông báo --%>
+                                                     <%-- Notification center (giao diện và bộ lọc xử lý phía client). --%>
                                                      <div class="dropdown m-3" id="bellDropdownWrapper">
-                                                         <a href="javascript:void(0)"
-                                                            class="dropdown-notification dropdown-toggle position-relative ignore"
-                                                            id="bellToggle"
-                                                            data-bs-toggle="dropdown"
-                                                            data-bs-auto-close="outside"
-                                                            aria-expanded="false"
-                                                            title="Thông báo">
-                                                             <i class="fas fa-bell font-size-22 text-warning"></i>
-                                                             <span id="badgeUnread"
-                                                                   class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                                                   style="display:none; font-size:10px;">0</span>
+                                                         <a href="javascript:void(0)" class="dropdown-notification dropdown-toggle position-relative ignore"
+                                                            id="bellToggle" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                                            aria-expanded="false" aria-label="Mở thông báo" title="Thông báo">
+                                                             <i class="fas fa-bell font-size-22 text-warning" aria-hidden="true"></i>
+                                                             <span id="badgeUnread" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                                   style="display:none;font-size:10px;">0</span>
                                                          </a>
-                                                         <div class="dropdown-menu dropdown-menu-end notification p-0 shadow"
-                                                              style="min-width: 380px; max-width: 95vw;"
-                                                              aria-labelledby="bellToggle">
-                                                             <%-- Header --%>
-                                                             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                                                                 <h6 class="mb-0 fw-bold">Thông báo</h6>
-                                                                 <a href="javascript:void(0)" id="btnMarkAllRead"
-                                                                    class="small text-primary text-decoration-none"
-                                                                    style="display:none">Đọc tất cả</a>
-                                                             </div>
-                                                             <%-- Danh sách --%>
-                                                             <div class="notification-body" id="notificationList">
-                                                                 <div class="text-center text-muted py-4 small" id="notificationEmpty">
-                                                                     <i class="bx bx-bell-off font-size-24 d-block mb-1"></i>
-                                                                     Không có thông báo nào
+                                                         <div id="notificationViewBackdrop" class="qlda-noti-backdrop" aria-hidden="true"></div>
+                                                         <div class="dropdown-menu dropdown-menu-end notification" aria-labelledby="bellToggle">
+                                                             <div class="qlda-noti-surface">
+                                                             <div class="qlda-noti-content">
+                                                             <div class="qlda-noti-header">
+                                                                 <div class="qlda-noti-heading">
+                                                                     <div class="qlda-noti-heading-copy">
+                                                                         <h6 class="qlda-noti-title">Thông báo</h6>
+                                                                         <p class="qlda-noti-subtitle" id="notificationSubtitle">Đang kiểm tra thông báo...</p>
+                                                                     </div>
+                                                                     <div class="qlda-noti-actions" role="group" aria-label="Thao tác thông báo">
+                                                                         <%-- Chỉ hiện hành động ngược với bộ lọc hiện tại. --%>
+                                                                         <button type="button" id="btnToggleUnread" class="qlda-noti-switch" aria-pressed="false" title="Chỉ xem thông báo chưa đọc">
+                                                                             <i id="notificationStatusToggleIcon" class="bx bx-filter-alt" aria-hidden="true"></i>
+                                                                             <span id="notificationStatusToggleText">Chưa đọc</span>
+                                                                         </button>
+                                                                         <button type="button" id="btnMarkAllRead" class="qlda-noti-mark" style="display:none">
+                                                                             <i class="bx bx-check-double me-1" aria-hidden="true"></i>Đọc tất cả
+                                                                         </button>
+                                                                         <button type="button" id="btnCloseNotificationExpanded" class="qlda-noti-close" aria-label="Đóng danh sách thông báo" title="Đóng cửa sổ thông báo">
+                                                                             <i class="bx bx-x" aria-hidden="true"></i>
+                                                                         </button>
+                                                                     </div>
+                                                                 </div>
+                                                                 <div class="qlda-noti-tools">
+                                                                     <div class="qlda-noti-filter-row">
+                                                                         <div class="qlda-noti-view-picker" id="notificationViewPicker">
+                                                                             <button type="button" id="btnNotificationView" class="qlda-noti-view-button" aria-label="Chọn chế độ xem thông báo" aria-haspopup="true" aria-expanded="false" aria-controls="notificationViewMenu" title="Chọn chế độ xem">
+                                                                                 <i id="notificationViewIcon" class="bx bx-layout" aria-hidden="true"></i>
+                                                                             </button>
+                                                                             <div id="notificationViewMenu" class="qlda-noti-view-menu" role="menu" aria-label="Chế độ xem thông báo" hidden>
+                                                                                 <div class="qlda-noti-view-menu-title">Kiểu hiển thị</div>
+                                                                                 <button type="button" class="qlda-noti-view-option is-selected" data-view-mode="compact" role="menuitemradio" aria-checked="true">
+                                                                                     <i class="bx bx-dock-right" aria-hidden="true"></i><span><strong>Thu gọn</strong><small>Bên phải, xem nhanh</small></span><i class="bx bx-check qlda-noti-view-check" aria-hidden="true"></i>
+                                                                                 </button>
+                                                                                 <button type="button" class="qlda-noti-view-option" data-view-mode="expanded" role="menuitemradio" aria-checked="false">
+                                                                                     <i class="bx bx-expand-alt" aria-hidden="true"></i><span><strong>Xem rộng</strong><small>Giữa màn hình, dễ đọc</small></span><i class="bx bx-check qlda-noti-view-check" aria-hidden="true"></i>
+                                                                                 </button>
+                                                                             </div>
+                                                                         </div>
+                                                                         <div class="qlda-noti-type-wrap">
+                                                                             <i class="bx bx-filter-alt qlda-noti-filter-icon" aria-hidden="true"></i>
+                                                                             <select id="notificationTypeFilter" class="qlda-noti-type" aria-label="Lọc theo loại thông báo">
+                                                                                 <option value="all">Mọi loại</option>
+                                                                                 <option value="CONG_VIEC">Công việc</option>
+                                                                                 <option value="DU_AN">Dự án</option>
+                                                                                 <option value="LICH_HOP">Lịch họp</option>
+                                                                                 <option value="VAN_DE">Vấn đề</option>
+                                                                                 <option value="TAI_LIEU">Tài liệu</option>
+                                                                                 <option value="HE_THONG">Hệ thống</option>
+                                                                                 <option value="other">Loại khác</option>
+                                                                             </select>
+                                                                             <i class="bx bx-chevron-down qlda-noti-chevron" aria-hidden="true"></i>
+                                                                         </div>
+                                                                         <div class="qlda-noti-type-wrap qlda-noti-time-wrap">
+                                                                             <i class="bx bx-calendar qlda-noti-filter-icon" aria-hidden="true"></i>
+                                                                             <select id="notificationDateFilter" class="qlda-noti-type" aria-label="Lọc thông báo theo khoảng thời gian">
+                                                                                 <option value="all">Toàn bộ</option>
+                                                                                 <option value="week">Tuần này</option>
+                                                                                 <option value="month">Tháng này</option>
+                                                                             </select>
+                                                                             <i class="bx bx-chevron-down qlda-noti-chevron" aria-hidden="true"></i>
+                                                                         </div>
+                                                                     </div>
                                                                  </div>
                                                              </div>
-                                                             <%-- Footer: Xem thêm --%>
-                                                             <div class="border-top text-center py-2" id="notificationFooter" style="display:none">
-                                                                 <a href="javascript:void(0)" id="btnLoadMore"
-                                                                    class="small text-primary text-decoration-none">
-                                                                     <span id="btnLoadMoreText">Xem thêm</span>
-                                                                     <span id="btnLoadMoreSpinner" class="spinner-border spinner-border-sm ms-1" style="display:none"></span>
-                                                                 </a>
+                                                             <div class="notification-body" id="notificationList" role="region" aria-label="Danh sách thông báo">
+                                                                 <div class="qlda-noti-empty"><div class="qlda-noti-empty-icon"><i class="bx bx-bell-off"></i></div>
+                                                                     <strong>Chưa có thông báo</strong><span>Thông báo mới sẽ xuất hiện tại đây.</span>
+                                                                 </div>
+                                                             </div>
+                                                             <div class="qlda-noti-footer" id="notificationFooter" style="display:none">
+                                                                 <button type="button" id="btnLoadMore" class="qlda-noti-more">
+                                                                     <span id="btnLoadMoreText">Xem thêm thông báo</span>
+                                                                     <span id="btnLoadMoreSpinner" class="spinner-border spinner-border-sm ms-1" style="display:none" aria-hidden="true"></span>
+                                                                     <i class="bx bx-chevron-down" aria-hidden="true"></i>
+                                                                 </button>
+                                                                 <div class="qlda-noti-filter-note" id="notificationFilterNote" style="display:none">Bộ lọc chỉ áp dụng cho thông báo đã tải.</div>
+                                                             </div>
+                                                             </div>
                                                              </div>
                                                          </div>
                                                      </div>
@@ -678,212 +900,677 @@ scratch. This page gets rid of all links and provides the needed markup only.
             setInterval(updateTime, 1000);
         </script>
         <script>
-            // ================================================================
-            // Notification Bell — Polling + Lazy Load
-            // ================================================================
+            // Notification center: giữ nguyên 4 WebService API và polling mỗi 30 giây.
             (function () {
-                var _currentPage = 1;
-                var _hasMore     = false;
-                var _loading     = false;
+                var _items = [];
+                var _byId = Object.create(null);
+                var _currentPage = 0;
+                var _hasMore = false;
+                var _loading = false;
                 var _initialized = false;
+                var _unreadCount = 0;
+                var _statusFilter = 'all';
+                var _typeFilter = 'all';
+                var _dateFilter = 'all';
+                var _viewMode = 'compact'; // Chế độ mặc định là popup nhỏ cạnh chuông.
+                var _autoDatePages = 0;
+                var MAX_AUTO_DATE_PAGES = 6;
+                var _preview = null;
+                var _previewTarget = null;
+                var _requestToken = 0;
+                var _listElement = null; // ASP.NET UpdatePanel có thể thay DOM của chuông.
 
-                // ---- Icon helpers ----
                 var iconMap = {
-                    'CONG_VIEC' : { icon: 'bx bx-task',         bg: 'bg-primary-subtle',  text: 'text-primary'  },
-                    'DU_AN'     : { icon: 'bx bx-briefcase',    bg: 'bg-success-subtle',  text: 'text-success'  },
-                    'LICH_HOP'  : { icon: 'bx bx-calendar',    bg: 'bg-warning-subtle',  text: 'text-warning'  },
-                    'VAN_DE'    : { icon: 'bx bx-error-circle', bg: 'bg-danger-subtle',   text: 'text-danger'   },
-                    'TAI_LIEU'  : { icon: 'bx bx-file',        bg: 'bg-info-subtle',     text: 'text-info'     },
-                    'HE_THONG'  : { icon: 'bx bx-bell',        bg: 'bg-secondary-subtle',text: 'text-secondary'}
+                    'CONG_VIEC': { icon: 'bx bx-task', css: 'qlda-noti-icon-task', label: 'Công việc' },
+                    'DU_AN': { icon: 'bx bx-briefcase', css: 'qlda-noti-icon-project', label: 'Dự án' },
+                    'LICH_HOP': { icon: 'bx bx-calendar', css: 'qlda-noti-icon-meeting', label: 'Lịch họp' },
+                    'VAN_DE': { icon: 'bx bx-error-circle', css: 'qlda-noti-icon-issue', label: 'Vấn đề' },
+                    'TAI_LIEU': { icon: 'bx bx-file', css: 'qlda-noti-icon-document', label: 'Tài liệu' },
+                    'HE_THONG': { icon: 'bx bx-bell', css: 'qlda-noti-icon-system', label: 'Hệ thống' }
                 };
 
-                function getIconMeta(loai) {
-                    return iconMap[loai] || iconMap['HE_THONG'];
+                function asText(value) {
+                    return value === null || value === undefined ? '' : String(value);
                 }
-
-                // ---- Render một notification item ----
-                function buildItem(n) {
-                    var meta    = getIconMeta(n.loaiThongBao);
-                    var unread  = !n.daDoc ? 'fw-semibold' : '';
-                    var bgUnread= !n.daDoc ? 'style="background:#f0f4ff"' : '';
-                    var link    = n.duongDanLienKet || 'javascript:void(0)';
-
-                    return '<a href="' + link + '" ' +
-                                'class="notification-item d-flex gap-2 px-3 py-2 text-decoration-none text-dark" ' +
-                                bgUnread + ' ' +
-                                'data-id="' + n.id + '" ' +
-                                'onclick="NotificationBell.onItemClick(this, event)">' +
-                               '<div class="notification-icon rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ' + meta.bg + '">' +
-                                   '<i class="' + meta.icon + ' ' + meta.text + ' font-size-18"></i>' +
-                               '</div>' +
-                               '<div class="flex-grow-1 overflow-hidden">' +
-                        '<p class="mb-0 ' + unread + ' text-truncate fs-14" title="' + $('<div>').text(n.tieuDe || '').html().replace(/"/g, '&quot;') + '">' + n.tieuDe + '</p>' +
-                                   '<small class="text-muted">' + n.ngayTao + '</small>' +
-                               '</div>' +
-                           '</a>';
+                function esc(value) {
+                    return asText(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                 }
-
-                // ---- Cập nhật badge ----
-                function updateBadge(count) {
-                    var badge = document.getElementById('badgeUnread');
-                    if (!badge) return;
-                    if (count > 0) {
-                        badge.textContent = count > 99 ? '99+' : count;
-                        badge.style.display = '';
-                    } else {
-                        badge.style.display = 'none';
+                function getMeta(type) {
+                    return iconMap[asText(type).toUpperCase()] || { icon: 'bx bx-bell', css: 'qlda-noti-icon-system', label: 'Khác' };
+                }
+                function parseDate(value) {
+                    if (!value) return null;
+                    if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+                    var s = asText(value).trim();
+                    var dotNet = /\/Date\((-?\d+)(?:[+-]\d+)?\)\//.exec(s);
+                    if (dotNet) {
+                        var msDate = new Date(Number(dotNet[1]));
+                        return isNaN(msDate.getTime()) ? null : msDate;
                     }
+                    var vn = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[\sT]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(s);
+                    if (vn) {
+                        var d = new Date(+vn[3], +vn[2] - 1, +vn[1], +(vn[4] || 0), +(vn[5] || 0), +(vn[6] || 0));
+                        return d.getFullYear() === +vn[3] && d.getMonth() === (+vn[2] - 1) && d.getDate() === +vn[1] ? d : null;
+                    }
+                    var isoDate = new Date(s);
+                    return isNaN(isoDate.getTime()) ? null : isoDate;
                 }
-
-                // ---- Gọi API đếm badge & lấy thông báo mới (polling 30s) ----
-                function pollNotifications() {
-                    $.ajax({
-                        type       : 'POST',
-                        url        : '/WebService.asmx/GetLatestNotifications',
-                        contentType: 'application/json; charset=utf-8',
-                        dataType   : 'json',
-                        success    : function (res) {
-                            if (!res || !res.d || !res.d.success) return;
-
-                            var result = res.d;
-
-                            // 1. Cập nhật badge
-                            updateBadge(result.unreadCount);
-
-                            var markAll = document.getElementById('btnMarkAllRead');
-                            if (markAll) markAll.style.display = result.unreadCount > 0 ? '' : 'none';
-
-                            // 2. Cập nhật danh sách thông báo
-                            if (result.data && result.data.length > 0) {
-                                var list = document.getElementById('notificationList');
-                                if (!list) return;
-
-                                result.data.forEach(function (n) {
-                                    var exists = document.querySelector('#notificationList .notification-item[data-id="' + n.id + '"]');
-                                    if (!exists) {
-                                        list.insertAdjacentHTML('afterbegin', buildItem(n));
-                                    }
-                                });
-
-                                var empty = document.getElementById('notificationEmpty');
-                                if (empty) empty.style.display = 'none';
-                            }
+                function displayDate(n) {
+                    var raw = n.ngayTao;
+                    if (typeof raw === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}/.test(raw)) return raw;
+                    var date = parseDate(raw);
+                    if (!date) return asText(raw) || 'Không rõ thời gian';
+                    function pad(v) { return String(v).padStart(2, '0'); }
+                    return pad(date.getDate()) + '/' + pad(date.getMonth() + 1) + '/' + date.getFullYear() +
+                        ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+                }
+                function dateGroup(n) {
+                    var date = parseDate(n.ngayTao);
+                    if (!date) return { key: 'unknown', title: 'Chưa rõ thời gian' };
+                    var today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    var itemDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    var diff = Math.round((today.getTime() - itemDay.getTime()) / 86400000);
+                    if (diff <= 0) return { key: 'today', title: 'Hôm nay' };
+                    if (diff === 1) return { key: 'yesterday', title: 'Hôm qua' };
+                    if (diff < 7) return { key: 'week', title: '7 ngày gần đây' };
+                    return { key: 'older', title: 'Trước đó' };
+                }
+                function safeLink(value) {
+                    var url = asText(value).trim();
+                    if (!url || /^javascript:/i.test(url) || url === '#') return '#';
+                    try {
+                        var parsed = new URL(url, window.location.href);
+                        return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : '#';
+                    } catch (e) { return '#'; }
+                }
+                function compareNewest(a, b) {
+                    var da = parseDate(a.ngayTao), db = parseDate(b.ngayTao);
+                    return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+                }
+                function replaceItems(items) {
+                    _items = [];
+                    _byId = Object.create(null);
+                    mergeItems(items);
+                }
+                function mergeItems(items) {
+                    var changed = false;
+                    (items || []).forEach(function (n) {
+                        if (!n || n.id === undefined || n.id === null) return;
+                        var key = asText(n.id);
+                        if (_byId[key]) {
+                            // Chỉ vẽ lại khi thông báo thay đổi, tránh giật khi polling.
+                            var stored = _byId[key];
+                            Object.keys(n).forEach(function (field) {
+                                if (stored[field] !== n[field]) {
+                                    stored[field] = n[field];
+                                    changed = true;
+                                }
+                            });
+                        } else {
+                            _byId[key] = Object.assign({}, n);
+                            _items.push(_byId[key]);
+                            changed = true;
                         }
                     });
+                    if (changed) _items.sort(compareNewest);
+                    return changed;
                 }
-
-                // ---- Tải danh sách thông báo ----
+                function updateBadge(count) {
+                    if (typeof count === 'number' && isFinite(count)) _unreadCount = Math.max(0, count);
+                    var badge = document.getElementById('badgeUnread');
+                    var markAll = document.getElementById('btnMarkAllRead');
+                    var subtitle = document.getElementById('notificationSubtitle');
+                    var toggle = document.getElementById('bellToggle');
+                    if (badge) {
+                        badge.textContent = _unreadCount > 99 ? '99+' : String(_unreadCount);
+                        badge.style.display = _unreadCount ? '' : 'none';
+                    }
+                    if (subtitle) subtitle.textContent = _unreadCount ? (_unreadCount + ' thông báo chưa đọc') : 'Bạn đã xem hết các thông báo mới';
+                    if (markAll && !markAll.disabled) markAll.style.display = _unreadCount ? '' : 'none';
+                    if (toggle) toggle.setAttribute('aria-label', _unreadCount ? 'Mở thông báo, ' + _unreadCount + ' chưa đọc' : 'Mở thông báo');
+                }
+                function isUnread(n) { return n.daDoc === false || n.daDoc === 0 || n.daDoc === 'false' || n.daDoc === 'False'; }
+                // Tuần bắt đầu từ thứ Hai; mọi mốc thời gian theo múi giờ trình duyệt.
+                function dateFilterStart() {
+                    var now = new Date();
+                    if (_dateFilter === 'week') {
+                        var mondayOffset = (now.getDay() + 6) % 7;
+                        return new Date(now.getFullYear(), now.getMonth(), now.getDate() - mondayOffset);
+                    }
+                    if (_dateFilter === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
+                    return null;
+                }
+                function getVisibleItems() {
+                    var start = dateFilterStart();
+                    var now = new Date();
+                    return _items.filter(function (n) {
+                        if (_statusFilter === 'unread' && !isUnread(n)) return false;
+                        if (start) {
+                            var created = parseDate(n.ngayTao);
+                            if (!created || created < start || created > now) return false;
+                        }
+                        if (_typeFilter === 'all') return true;
+                        var type = asText(n.loaiThongBao).toUpperCase();
+                        return _typeFilter === 'other' ? !iconMap[type] : type === _typeFilter;
+                    });
+                }
+                function needsMoreDatePages() {
+                    if (_dateFilter === 'all' || !_hasMore || !_currentPage) return false;
+                    var start = dateFilterStart();
+                    var oldest = null;
+                    _items.forEach(function (n) {
+                        var created = parseDate(n.ngayTao);
+                        if (created && (!oldest || created < oldest)) oldest = created;
+                    });
+                    // API có phân trang theo thời gian mới nhất. Khi đã tải tới thông báo
+                    // trước mốc lọc thì không cần tự gọi tiếp các trang cũ hơn.
+                    return !oldest || oldest >= start;
+                }
+                function autoLoadDateRange() {
+                    if (_loading || _autoDatePages >= MAX_AUTO_DATE_PAGES || !needsMoreDatePages()) return;
+                    _autoDatePages++;
+                    loadNotifications(_currentPage + 1);
+                }
+                function buildItem(n) {
+                    var meta = getMeta(n.loaiThongBao);
+                    var unread = isUnread(n);
+                    var link = safeLink(n.duongDanLienKet);
+                    var id = esc(n.id);
+                    return '<div class="notification-item' + (unread ? ' is-unread' : '') + '" data-id="' + id + '">' +
+                        '<a class="qlda-noti-link" href="' + esc(link) + '" aria-label="' + esc(n.tieuDe || 'Thông báo') + '">' +
+                        '<span class="notification-icon ' + meta.css + '"><i class="' + meta.icon + '" aria-hidden="true"></i></span>' +
+                        '<span class="qlda-noti-copy">' +
+                        '<span class="qlda-noti-topline"><span class="qlda-noti-category">' + esc(meta.label) + '</span>' +
+                        (unread ? '<span class="qlda-noti-unread-dot" aria-label="Chưa đọc"></span>' : '') + '</span>' +
+                        '<span class="qlda-noti-item-title">' + esc(n.tieuDe || 'Thông báo') + '</span>' +
+                        (getContent(n) ? '<span class="qlda-noti-snippet">' + esc(getContent(n)) + '</span>' : '') +
+                        '<span class="qlda-noti-time"><i class="bx bx-time-five" aria-hidden="true"></i>' + esc(displayDate(n)) + '</span>' +
+                        '</span>' +
+                        '</a>' +
+                        '<button type="button" class="qlda-noti-detail" data-id="' + id + '" title="Xem thông tin chi tiết" aria-label="Xem chi tiết thông báo">' +
+                        '<i class="bx bx-info-circle" aria-hidden="true"></i></button>' +
+                        '</div>';
+                }
+                function emptyHtml() {
+                    var filtered = _typeFilter !== 'all' || _statusFilter !== 'all' || _dateFilter !== 'all';
+                    return '<div class="qlda-noti-empty"><div class="qlda-noti-empty-icon"><i class="bx ' +
+                        (filtered ? 'bx-filter-alt' : 'bx-bell-off') + '" aria-hidden="true"></i></div>' +
+                        '<strong>' + (filtered ? 'Chưa tìm thấy thông báo phù hợp' : 'Chưa có thông báo nào') + '</strong>' +
+                        '<span>' + (filtered ? 'Bạn có thể đổi bộ lọc hoặc tải thêm thông báo.' : 'Các cập nhật mới sẽ xuất hiện tại đây.') + '</span></div>';
+                }
+                function draw() {
+                    updateStatusToggle();
+                    var list = document.getElementById('notificationList');
+                    if (!list || !_initialized || _loading && _currentPage === 0) return;
+                    hidePreview();
+                    var priorScroll = list.scrollTop;
+                    var visible = getVisibleItems();
+                    if (!visible.length) {
+                        list.innerHTML = emptyHtml();
+                    } else {
+                        var html = '';
+                        var lastGroup = '';
+                        var counts = {};
+                        visible.forEach(function (n) {
+                            var g = dateGroup(n);
+                            counts[g.key] = (counts[g.key] || 0) + 1;
+                        });
+                        visible.forEach(function (n) {
+                            var group = dateGroup(n);
+                            if (group.key !== lastGroup) {
+                                html += '<div class="qlda-noti-group-title"><span>' + group.title + '</span><span>' + counts[group.key] + ' thông báo</span></div>';
+                                lastGroup = group.key;
+                            }
+                            html += buildItem(n);
+                        });
+                        list.innerHTML = html;
+                    }
+                    list.scrollTop = priorScroll;
+                    // Nếu WebService trả dữ liệu trong lúc popup đang mở, các hàng mới vẫn nhận hiệu ứng.
+                    var openPanel = document.querySelector('#bellDropdownWrapper .notification.qlda-noti-opening');
+                    if (openPanel) prepareNotificationWaterfall();
+                    var footer = document.getElementById('notificationFooter');
+                    var note = document.getElementById('notificationFilterNote');
+                    if (footer) footer.style.display = _hasMore ? '' : 'none';
+                    if (note) note.style.display = _hasMore && (_statusFilter !== 'all' || _typeFilter !== 'all' || _dateFilter !== 'all') ? '' : 'none';
+                }
+                function showLoading() {
+                    var list = document.getElementById('notificationList');
+                    if (!list) return;
+                    var html = '';
+                    for (var i = 0; i < 3; i++) {
+                        html += '<div class="qlda-noti-skeleton" aria-hidden="true"><div class="qlda-noti-skeleton-icon"></div>' +
+                            '<div class="qlda-noti-skeleton-content"><span class="qlda-noti-skeleton-line"></span><span class="qlda-noti-skeleton-line"></span></div></div>';
+                    }
+                    list.innerHTML = html;
+                }
                 function loadNotifications(page) {
                     if (_loading) return;
                     _loading = true;
-
+                    var token = ++_requestToken;
+                    var receivedPage = false;
                     var spinner = document.getElementById('btnLoadMoreSpinner');
+                    var more = document.getElementById('btnLoadMore');
+                    if (page === 1 && _currentPage === 0) showLoading();
                     if (spinner) spinner.style.display = '';
-
+                    if (more) more.disabled = true;
                     $.ajax({
-                        type       : 'POST',
-                        url        : '/WebService.asmx/GetNotifications',
+                        type: 'POST', url: '/WebService.asmx/GetNotifications',
                         contentType: 'application/json; charset=utf-8',
-                        data       : JSON.stringify({ page: page }),
-                        dataType   : 'json',
-                        success    : function (res) {
-                            if (!res || !res.d || !res.d.success) return;
-
-                            var result = res.d;
-                            var list   = document.getElementById('notificationList');
-                            var empty  = document.getElementById('notificationEmpty');
-                            var footer = document.getElementById('notificationFooter');
-
-                            if (page === 1) {
-                                list.innerHTML = '';
-                            }
-
-                            if (result.data && result.data.length > 0) {
-                                if (empty) empty.style.display = 'none';
-                                result.data.forEach(function (n) {
-                                    list.insertAdjacentHTML('beforeend', buildItem(n));
-                                });
-                            } else if (page === 1) {
-                                if (empty) empty.style.display = '';
-                            }
-
-                            _hasMore     = result.hasMore;
-                            _currentPage = page;
-                            if (footer) footer.style.display = _hasMore ? '' : 'none';
-                        },
-                        complete: function () {
-                            _loading = false;
-                            if (spinner) spinner.style.display = 'none';
+                        data: JSON.stringify({ page: page }), dataType: 'json'
+                    }).done(function (res) {
+                        if (token !== _requestToken) return;
+                        if (!res || !res.d || !res.d.success) {
+                            if (_currentPage === 0) renderError('Không thể tải danh sách thông báo.');
+                            return;
+                        }
+                        var result = res.d;
+                        receivedPage = true;
+                        if (page === 1) replaceItems(result.data);
+                        else mergeItems(result.data);
+                        _hasMore = !!result.hasMore;
+                        _currentPage = page;
+                        draw();
+                    }).fail(function () {
+                        if (_currentPage === 0) renderError('Không thể kết nối để tải thông báo.');
+                    }).always(function () {
+                        _loading = false;
+                        if (spinner) spinner.style.display = 'none';
+                        if (more) more.disabled = false;
+                        if (_currentPage > 0) draw();
+                        if (receivedPage) autoLoadDateRange();
+                    });
+                }
+                function renderError(message) {
+                    var list = document.getElementById('notificationList');
+                    if (list) list.innerHTML = '<div class="qlda-noti-empty"><div class="qlda-noti-empty-icon"><i class="bx bx-wifi-off"></i></div>' +
+                        '<strong>' + esc(message) + '</strong><span>Đóng rồi mở lại chuông để thử tải lại.</span></div>';
+                    _initialized = false;
+                }
+                function pollNotifications() {
+                    $.ajax({
+                        type: 'POST', url: '/WebService.asmx/GetLatestNotifications',
+                        contentType: 'application/json; charset=utf-8', dataType: 'json'
+                    }).done(function (res) {
+                        if (!res || !res.d || !res.d.success) return;
+                        updateBadge(Number(res.d.unreadCount) || 0);
+                        if (_initialized && _currentPage > 0 && !_loading && mergeItems(res.d.data)) {
+                            draw();
                         }
                     });
                 }
-
-                // ---- Xử lý click vào item (đánh dấu đã đọc) ----
-                window.NotificationBell = {
-                    onItemClick: function (el, evt) {
-                        var id   = el.getAttribute('data-id');
-                        var href = el.getAttribute('href');
-
-                        // Đánh dấu đã đọc
-                        $.ajax({
-                            type       : 'POST',
-                            url        : '/WebService.asmx/MarkNotificationAsRead',
-                            contentType: 'application/json; charset=utf-8',
-                            data       : JSON.stringify({ id: id }),
-                            dataType   : 'json'
-                        });
-
-                        // Bỏ highlight chưa đọc
-                        el.removeAttribute('style');
-                        var title = el.querySelector('p');
-                        if (title) title.classList.remove('fw-semibold');
-
-                        // Giảm badge
-                        var badge = document.getElementById('badgeUnread');
-                        if (badge && badge.style.display !== 'none') {
-                            var cnt = parseInt(badge.textContent) || 0;
-                            cnt = Math.max(0, cnt - 1);
-                            updateBadge(cnt);
-                        }
+                function getContent(n) {
+                    var candidates = [n.noiDung, n.noiDungThongBao, n.moTa, n.moTaThongBao, n.content, n.message, n.thongDiep];
+                    for (var i = 0; i < candidates.length; i++) {
+                        if (candidates[i] !== null && candidates[i] !== undefined && asText(candidates[i]).trim()) return asText(candidates[i]);
                     }
-                };
-
-                // ---- Đọc tất cả ----
-                $(document).on('click', '#btnMarkAllRead', function () {
+                    return '';
+                }
+                function hidePreview() {
+                    if (_preview && _preview.parentNode) _preview.parentNode.removeChild(_preview);
+                    _preview = null;
+                    _previewTarget = null;
+                }
+                function showPreview(target) {
+                    var item = target && target.closest ? target.closest('.notification-item') : null;
+                    if (!item) return;
+                    var n = _byId[item.getAttribute('data-id')];
+                    if (!n) return;
+                    if (_previewTarget === item && _preview) return;
+                    hidePreview();
+                    var description = getContent(n);
+                    var href = safeLink(n.duongDanLienKet);
+                    var preview = document.createElement('div');
+                    preview.className = 'qlda-noti-preview';
+                    preview.setAttribute('role', 'tooltip');
+                    preview.innerHTML =
+                        '<div class="qlda-noti-preview-head"><span class="qlda-noti-preview-type">' + esc(getMeta(n.loaiThongBao).label) + '</span>' +
+                        '<span class="qlda-noti-preview-status' + (isUnread(n) ? '' : ' is-read') + '">' + (isUnread(n) ? 'Chưa đọc' : 'Đã đọc') + '</span></div>' +
+                        '<div class="qlda-noti-preview-title">' + esc(n.tieuDe || 'Thông báo') + '</div>' +
+                        (description ? '<div class="qlda-noti-preview-content">' + esc(description) + '</div>' :
+                            '<div class="qlda-noti-preview-content qlda-noti-preview-muted">Thông báo này chưa có mô tả chi tiết trong dữ liệu trả về.</div>') +
+                        '<div class="qlda-noti-preview-foot"><span><i class="bx bx-calendar"></i>' + esc(displayDate(n)) + '</span>' +
+                        (href !== '#' ? '<span><i class="bx bx-link-external"></i>Nhấn thông báo để xem liên kết</span>' : '') + '</div>';
+                    document.body.appendChild(preview);
+                    _preview = preview;
+                    _previewTarget = item;
+                    var rect = item.getBoundingClientRect();
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    var panelRect = panel ? panel.getBoundingClientRect() : rect;
+                    var width = preview.offsetWidth;
+                    var height = preview.offsetHeight;
+                    var left;
+                    if (panelRect.left >= width + 16) left = panelRect.left - width - 9;
+                    else if (window.innerWidth - panelRect.right >= width + 16) left = panelRect.right + 9;
+                    else left = Math.min(Math.max(11, rect.left), Math.max(11, window.innerWidth - width - 11));
+                    var top = rect.top;
+                    if (panelRect.left < width + 16 && window.innerWidth - panelRect.right < width + 16) {
+                        top = rect.bottom + 6;
+                        if (top + height > window.innerHeight - 11) top = rect.top - height - 6;
+                    }
+                    top = Math.max(11, Math.min(top, window.innerHeight - height - 11));
+                    preview.style.left = Math.round(left) + 'px';
+                    preview.style.top = Math.round(top) + 'px';
+                }
+                function onItemClick(el, evt) {
+                    if (evt) evt.preventDefault();
+                    var item = el.closest('.notification-item');
+                    if (!item) return;
+                    var n = _byId[item.getAttribute('data-id')];
+                    var link = safeLink(el.getAttribute('href'));
+                    hidePreview();
+                    function navigate() { if (link !== '#') window.location.assign(link); }
+                    if (!n || !isUnread(n)) { navigate(); return; }
                     $.ajax({
-                        type       : 'POST',
-                        url        : '/WebService.asmx/MarkAllNotificationsAsRead',
+                        type: 'POST', url: '/WebService.asmx/MarkNotificationAsRead',
                         contentType: 'application/json; charset=utf-8',
-                        dataType   : 'json',
-                        success    : function () {
-                            // Bỏ toàn bộ highlight
-                            $('#notificationList .notification-item').each(function () {
-                                $(this).removeAttr('style');
-                                $(this).find('p').removeClass('fw-semibold');
-                            });
-                            updateBadge(0);
-                            $('#btnMarkAllRead').hide();
-                        }
+                        data: JSON.stringify({ id: n.id }), dataType: 'json', timeout: 4500
+                    }).done(function (res) {
+                        if (res && res.d && res.d.success === false) return;
+                        n.daDoc = true;
+                        updateBadge(Math.max(0, _unreadCount - 1));
+                        draw();
+                    }).always(navigate);
+                }
+                // Giữ API global để các đoạn mã khác đang dùng NotificationBell vẫn hoạt động.
+                window.NotificationBell = window.NotificationBell || {};
+                window.NotificationBell.onItemClick = onItemClick;
+
+                function updateStatusToggle() {
+                    var btn = document.getElementById('btnToggleUnread');
+                    var label = document.getElementById('notificationStatusToggleText');
+                    var icon = document.getElementById('notificationStatusToggleIcon');
+                    if (!btn) return;
+                    var unreadOnly = _statusFilter === 'unread';
+                    var actionLabel = unreadOnly ? 'Tất cả' : 'Chưa đọc';
+                    if (label) label.textContent = actionLabel;
+                    if (icon) icon.className = unreadOnly ? 'bx bx-list-ul' : 'bx bx-filter-alt';
+                    btn.classList.remove('is-active', 'mode-all', 'mode-unread');
+                    btn.classList.add(unreadOnly ? 'mode-all' : 'mode-unread');
+                    btn.setAttribute('aria-pressed', unreadOnly ? 'true' : 'false');
+                    btn.setAttribute('aria-label', unreadOnly ? 'Hiện tất cả thông báo' : 'Chỉ xem thông báo chưa đọc');
+                    btn.title = unreadOnly ? 'Hiện tất cả thông báo' : 'Chỉ xem thông báo chưa đọc';
+                }
+                $(document).on('click', '#btnToggleUnread', function () {
+                    _statusFilter = _statusFilter === 'unread' ? 'all' : 'unread';
+                    updateStatusToggle();
+                    var list = document.getElementById('notificationList');
+                    if (list) list.scrollTop = 0;
+                    draw();
+                });
+                $(document).on('change', '#notificationTypeFilter', function () {
+                    _typeFilter = this.value;
+                    var list = document.getElementById('notificationList');
+                    if (list) list.scrollTop = 0;
+                    draw();
+                });
+                $(document).on('change', '#notificationDateFilter', function () {
+                    _dateFilter = this.value;
+                    _autoDatePages = 0;
+                    var list = document.getElementById('notificationList');
+                    if (list) list.scrollTop = 0;
+                    draw();
+                    autoLoadDateRange();
+                });
+                $(document).on('click', '#btnMarkAllRead', function () {
+                    var btn = this;
+                    btn.disabled = true;
+                    $.ajax({
+                        type: 'POST', url: '/WebService.asmx/MarkAllNotificationsAsRead',
+                        contentType: 'application/json; charset=utf-8', dataType: 'json'
+                    }).done(function (res) {
+                        if (res && res.d && res.d.success === false) return;
+                        _items.forEach(function (n) { n.daDoc = true; });
+                        updateBadge(0);
+                        draw();
+                    }).always(function () {
+                        btn.disabled = false;
+                        updateBadge(_unreadCount);
                     });
                 });
-
-                // ---- Xem thêm ----
                 $(document).on('click', '#btnLoadMore', function () {
-                    loadNotifications(_currentPage + 1);
+                    if (!_loading && _hasMore) loadNotifications(_currentPage + 1);
                 });
-
-                // ---- Lần đầu mở dropdown: load trang 1 ----
-                $(document).on('show.bs.dropdown', '#bellDropdownWrapper', function () {
-                    if (!_initialized) {
-                        _initialized = true;
-                        loadNotifications(1);
+                $(document).on('click', '#notificationList .qlda-noti-link', function (evt) {
+                    window.NotificationBell.onItemClick(this, evt);
+                });
+                $(document).on('mouseenter focusin', '#notificationList .notification-item', function () {
+                    showPreview(this);
+                });
+                $(document).on('mouseleave focusout', '#notificationList .notification-item', function (e) {
+                    if (e.type === 'focusout' && this.contains(e.relatedTarget)) return;
+                    if (_previewTarget === this) hidePreview();
+                });
+                $(document).on('click', '#notificationList .qlda-noti-detail', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showPreview(this);
+                });
+                $(document).on('scroll', '#notificationList', hidePreview);
+                $(window).on('resize.qldaNotification', function () { hidePreview(); positionNotificationDropdown(); });
+                $(document).on('keydown.qldaNotification', function (e) {
+                    if (e.key === 'Escape') hidePreview();
+                });
+                $(document).on('click.qldaNotification', function (e) {
+                    if (_preview && !$(e.target).closest('#notificationList .notification-item').length) hidePreview();
+                });
+                function closeNotificationViewMenu() {
+                    var menu = document.getElementById('notificationViewMenu');
+                    var button = document.getElementById('btnNotificationView');
+                    if (menu) menu.hidden = true;
+                    if (button) button.setAttribute('aria-expanded', 'false');
+                }
+                function syncNotificationBackdrop() {
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    var backdrop = document.getElementById('notificationViewBackdrop');
+                    if (backdrop) backdrop.classList.toggle('is-visible', !!panel && panel.classList.contains('show') && _viewMode === 'expanded');
+                }
+                function setNotificationViewMode(mode) {
+                    _viewMode = mode === 'expanded' ? 'expanded' : 'compact';
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    if (panel) {
+                        panel.classList.toggle('qlda-noti-expanded', _viewMode === 'expanded');
+                        panel.setAttribute('aria-label', _viewMode === 'expanded' ? 'Thông báo, chế độ xem rộng' : 'Thông báo, chế độ thu gọn');
+                    }
+                    var icon = document.getElementById('notificationViewIcon');
+                    var picker = document.getElementById('btnNotificationView');
+                    if (icon) icon.className = _viewMode === 'expanded' ? 'bx bx-collapse-alt' : 'bx bx-layout';
+                    if (picker) picker.title = _viewMode === 'expanded' ? 'Chế độ xem rộng - bấm để thay đổi' : 'Chế độ thu gọn - bấm để thay đổi';
+                    $('#notificationViewMenu .qlda-noti-view-option').each(function () {
+                        var selected = this.getAttribute('data-view-mode') === _viewMode;
+                        this.classList.toggle('is-selected', selected);
+                        this.setAttribute('aria-checked', selected ? 'true' : 'false');
+                    });
+                    closeNotificationViewMenu();
+                    hidePreview();
+                    positionNotificationDropdown();
+                    syncNotificationBackdrop();
+                }
+                $(document).on('click', '#btnNotificationView', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    var menu = document.getElementById('notificationViewMenu');
+                    if (!menu) return;
+                    var open = menu.hidden;
+                    menu.hidden = !open;
+                    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+                });
+                $(document).on('click', '#notificationViewMenu .qlda-noti-view-option', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setNotificationViewMode(this.getAttribute('data-view-mode'));
+                    var button = document.getElementById('btnNotificationView');
+                    if (button) button.focus();
+                });
+                $(document).on('click', function (event) {
+                    if (!$(event.target).closest('#notificationViewPicker').length) closeNotificationViewMenu();
+                });
+                $(document).on('keydown', '#notificationViewPicker', function (event) {
+                    if (event.key === 'Escape' && document.getElementById('notificationViewMenu') && !document.getElementById('notificationViewMenu').hidden) {
+                        event.stopPropagation();
+                        closeNotificationViewMenu();
+                        var button = document.getElementById('btnNotificationView');
+                        if (button) button.focus();
                     }
                 });
+                function closeExpandedNotification() {
+                    var toggle = document.getElementById('bellToggle');
+                    if (!toggle) return;
+                    var dropdown = window.bootstrap && window.bootstrap.Dropdown ? window.bootstrap.Dropdown.getOrCreateInstance(toggle) : null;
+                    if (dropdown) dropdown.hide();
+                    else if (typeof $(toggle).dropdown === 'function') $(toggle).dropdown('hide');
+                }
+                $(document).on('click', '#notificationViewBackdrop, #btnCloseNotificationExpanded', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeExpandedNotification();
+                });
+                function positionNotificationDropdown() {
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    var toggle = document.getElementById('bellToggle');
+                    if (!panel || !toggle) return;
+                    if (panel.classList.contains('qlda-noti-expanded')) return; // CSS canh chính giữa màn hình.
+                    var toggleRect = toggle.getBoundingClientRect();
+                    var bellBottom = toggleRect.bottom;
+                    panel.style.setProperty('--qlda-noti-top', Math.round(Math.max(8, Math.min(bellBottom + 10, window.innerHeight - 90))) + 'px');
+                    var rightInset;
+                    if (window.innerWidth <= 575) {
+                        rightInset = 8;
+                    } else {
+                        var container = document.querySelector('.main-content .page-content .container-fluid');
+                        if (!container) container = document.querySelector('.main-content');
+                        if (!container) container = document.querySelector('.layout-content');
+                        if (!container) container = document.querySelector('.contentHeader .container-fluid');
+                        rightInset = container ? (window.innerWidth - container.getBoundingClientRect().right) : 0;
+                    }
+                    rightInset = Math.round(Math.max(0, Math.min(rightInset, Math.max(0, window.innerWidth - 140))));
+                    panel.style.setProperty('--qlda-noti-edge-right', rightInset + 'px');
+                    var panelWidth = panel.offsetWidth || parseFloat(window.getComputedStyle(panel).width) || 365;
+                    var panelRightEdge = window.innerWidth - rightInset;
+                    var bellCenterX = toggleRect.left + (toggleRect.width / 2);
+                    var pointerRight = panelRightEdge - bellCenterX - 10;
+                    pointerRight = Math.round(Math.max(18, Math.min(pointerRight, Math.max(18, panelWidth - 42))));
+                    panel.style.setProperty('--qlda-noti-pointer-right', pointerRight + 'px');
+                }
+                // Chỉ animate các hàng thực sự nhìn thấy, tối đa 6: không làm nặng danh sách dài.
+                function prepareNotificationWaterfall() {
+                    var list = document.getElementById('notificationList');
+                    if (!list) return;
+                    var bounds = list.getBoundingClientRect();
+                    var elements = Array.prototype.slice.call(list.children);
+                    var rows = [];
+                    elements.forEach(function (el) {
+                        el.classList.remove('qlda-noti-waterfall-step');
+                        el.style.removeProperty('--qlda-noti-in-delay');
+                        el.style.removeProperty('--qlda-noti-text-delay');
+                        el.style.removeProperty('--qlda-noti-out-delay');
+                        var rect = el.getBoundingClientRect();
+                        if (rows.length < 6 && rect.height > 0 && rect.top < bounds.bottom && rect.bottom > bounds.top)
+                            rows.push(el);
+                    });
+                    rows.forEach(function (el, index) {
+                        el.style.setProperty('--qlda-noti-in-delay', (90 + index * 44) + 'ms');
+                        el.style.setProperty('--qlda-noti-text-delay', (215 + index * 44) + 'ms');
+                        el.style.setProperty('--qlda-noti-out-delay', (145 + (rows.length - index - 1) * 32) + 'ms');
+                        el.classList.add('qlda-noti-waterfall-step');
+                    });
+                }
+                var _notificationOpeningTimer = null;
+                var _notificationClosing = false;
+                var _allowNotificationHide = false;
+                var _notificationCloseTimer = null;
+                function finishNotificationHide() {
+                    var toggle = document.getElementById('bellToggle');
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    _notificationCloseTimer = null;
+                    if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
+                    _notificationOpeningTimer = null;
+                    _allowNotificationHide = true;
+                    try {
+                        if (toggle && window.bootstrap && window.bootstrap.Dropdown) {
+                            var dropdown = window.bootstrap.Dropdown.getInstance(toggle);
+                            if (!dropdown && window.bootstrap.Dropdown.getOrCreateInstance) {
+                                dropdown = window.bootstrap.Dropdown.getOrCreateInstance(toggle);
+                            }
+                            if (dropdown) dropdown.hide();
+                        } else if (toggle && typeof $(toggle).dropdown === 'function') {
+                            $(toggle).dropdown('hide');
+                        }
+                    } finally {
+                        _allowNotificationHide = false;
+                        _notificationClosing = false;
+                        if (panel) panel.classList.remove('qlda-noti-closing', 'qlda-noti-opening');
+                    }
+                }
+                $(document).on('show.bs.dropdown', '#bellDropdownWrapper', function () {
+                    if (_notificationCloseTimer) clearTimeout(_notificationCloseTimer);
+                    if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
+                    _notificationOpeningTimer = null;
+                    _notificationCloseTimer = null;
+                    _notificationClosing = false;
+                    _allowNotificationHide = false;
+                    var panel = this.querySelector('.notification');
+                    if (panel) panel.classList.remove('qlda-noti-closing', 'qlda-noti-open', 'qlda-noti-opening');
+                    setNotificationViewMode(_viewMode);
+                    positionNotificationDropdown();
+                    var list = document.getElementById('notificationList');
+                    if (!_initialized || _listElement !== list) {
+                        _listElement = list;
+                        _initialized = true;
+                        _currentPage = 0;
+                        _autoDatePages = 0;
+                        var dateSelect = document.getElementById('notificationDateFilter');
+                        var typeSelect = document.getElementById('notificationTypeFilter');
+                        _dateFilter = dateSelect ? dateSelect.value : 'all';
+                        _typeFilter = typeSelect ? typeSelect.value : 'all';
+                        _statusFilter = 'all';
+                        updateStatusToggle();
+                        loadNotifications(1);
+                    } else {
+                        updateStatusToggle();
+                    }
+                });
+                $(document).on('shown.bs.dropdown', '#bellDropdownWrapper', function () {
+                    positionNotificationDropdown();
+                    syncNotificationBackdrop();
+                    var panel = this.querySelector('.notification');
+                    if (!panel || _notificationClosing) return;
+                    prepareNotificationWaterfall();
+                    panel.classList.add('qlda-noti-opening');
+                    // Hết hiệu ứng thì bỏ lớp animation, để hover và filter hoạt động bình thường.
+                    if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
+                    _notificationOpeningTimer = setTimeout(function () {
+                        panel.classList.remove('qlda-noti-opening');
+                        _notificationOpeningTimer = null;
+                    }, 670);
+                });
+                $(document).on('hide.bs.dropdown', '#bellDropdownWrapper', function (event) {
+                    hidePreview();
+                    closeNotificationViewMenu();
+                    var panel = this.querySelector('.notification');
+                    if (_allowNotificationHide || !panel || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+                    event.preventDefault();
+                    if (_notificationClosing) return;
+                    _notificationClosing = true;
+                    if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
+                    _notificationOpeningTimer = null;
+                    panel.classList.remove('qlda-noti-opening');
+                    prepareNotificationWaterfall();
+                    panel.classList.add('qlda-noti-closing');
+                    // Chờ chữ biến mất, các hàng tan theo thứ tự ngược rồi mới ẩn khung.
+                    _notificationCloseTimer = setTimeout(finishNotificationHide, 650);
+                });
 
-                // ---- Polling 30s ----
+                $(document).on('hidden.bs.dropdown', '#bellDropdownWrapper', function () {
+                    closeNotificationViewMenu();
+                    syncNotificationBackdrop();
+                });
+
                 pollNotifications();
                 setInterval(pollNotifications, 30000);
-            })();          
+            })();
         </script>
 
         <script type="text/javascript">

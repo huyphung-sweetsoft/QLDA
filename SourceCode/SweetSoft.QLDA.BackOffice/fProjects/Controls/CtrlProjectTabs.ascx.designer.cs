@@ -24,12 +24,12 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl ulProjectTabs;
 
         /// <summary>
-        /// mdlCustomizeTabs control.
+        /// mdlProjectQuickLauncher control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlCustomizeTabs;
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlProjectQuickLauncher;
     }
 }

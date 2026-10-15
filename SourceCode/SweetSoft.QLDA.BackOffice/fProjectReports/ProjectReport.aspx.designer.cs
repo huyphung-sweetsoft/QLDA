@@ -123,15 +123,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         protected global::System.Web.UI.WebControls.Literal ltrTotalTasks;
 
         /// <summary>
-        /// ltrCompletedTasks control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCompletedTasks;
-
-        /// <summary>
         /// ltrOverdueTasks control.
         /// </summary>
         /// <remarks>
@@ -157,15 +148,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.PlaceHolder phDashboard;
-
-        /// <summary>
-        /// rptCompletedTasks control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCompletedTasks;
 
         /// <summary>
         /// rptDoingTasks control.

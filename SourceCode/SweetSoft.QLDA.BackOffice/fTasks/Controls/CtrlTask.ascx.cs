@@ -1,6 +1,7 @@
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
@@ -21,6 +22,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public EventHandler<Guid> NewSubTaskHandlerCallback;
         public EventHandler EditTaskHandlerCallback;
         public EventHandler<Guid> ReminderHandlerCallback;
+
         public Guid ProjectId
         {
             get
@@ -37,6 +39,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             set => ViewState["ProjectId"] = value;
         }
+
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
         protected bool IsAdd => this.CURRENT_PAGE.IsAdd;
@@ -52,29 +55,380 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             return this.FindControl("CtrlFastReviewTask1") as CtrlFastReviewTask;
         }
 
+        #region Notification action dispatcher
+
+        /// <summary>
+        /// Đọc action từ URL và điều phối đến popup tương ứng.
+        /// Muốn hỗ trợ action mới, thêm giá trị vào enum ThongBaoAction
+        /// và thêm một case tương ứng tại đây.
+        /// </summary>
+        private void HandleNotificationAction()
+        {
+            // Chỉ xử lý khi tải trang lần đầu, tránh mở lại popup khi postback.
+            if (IsPostBack)
+                return;
+
+            string actionText = Request.QueryString["notificationAction"];
+            if (string.IsNullOrWhiteSpace(actionText))
+                return;
+
+            // Popup kết quả là action dùng notificationId (lịch sử riêng của người nhận).
+            // Xử lý action này trước Enum.TryParse để tránh rơi về URL Tasks nếu enum chưa
+            // được cập nhật trong một môi trường build nào đó.
+            if (string.Equals(
+                    actionText.Trim(),
+                    "CtrlTaskCompletionResult",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                if (!Guid.TryParse(Request.QueryString["notificationId"], out Guid notificationId) ||
+                    notificationId == Guid.Empty)
+                {
+                    ShowInvalidDataError();
+                    ClearNotificationActionFromUrl();
+                    return;
+                }
+
+                CtrlFastReviewTask resultControl = GetFastReviewTaskControl();
+                if (resultControl == null)
+                {
+                    ShowNotify("Không tìm thấy giao diện hiển thị kết quả duyệt công việc!", MSGType.Error);
+                    ClearNotificationActionFromUrl();
+                    return;
+                }
+
+                resultControl.OpenCompletionResultWhenDialogReady(notificationId);
+                ClearNotificationActionFromUrl();
+                return;
+            }
+
+            if (!Enum.TryParse(actionText.Trim(), true, out ThongBaoAction action))
+                return;
+
+            // Không xử lý giá trị không được khai báo trong enum.
+            if (!Enum.IsDefined(typeof(ThongBaoAction), action))
+                return;
+
+            string taskIdText = Request.QueryString["notificationTaskId"];
+            if (!Guid.TryParse(taskIdText, out Guid taskId) || taskId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            // Dùng tên enum làm khóa điều phối để không phụ thuộc thứ tự số của enum.
+            // Các chuỗi trong switch phải trùng tên thành viên trong ThongBaoAction.
+            switch (action.ToString())
+            {
+                case "CtrlReviewTask":
+                    OpenReviewTaskFromNotification(taskId);
+                    break;
+
+                case "CtrlViewTaskDetail":
+                    OpenViewTaskDetailFromNotification(taskId);
+                    break;
+
+                case "CtrlFastCompleteTask":
+                    OpenFastCompleteTaskFromNotification(taskId);
+                    break;
+
+                case "CtrlStartTask":
+                    OpenStartTaskFromNotification(taskId);
+                    break;
+
+                case "CtrlTaskSchedule":
+                case "CtrlScheduleTask":
+                    OpenScheduleTaskFromNotification(taskId);
+                    break;
+
+                // Bổ sung các action khác của trang công việc tại đây.
+                // Action thuộc trang khác (cuộc họp, rủi ro, tài liệu...) sẽ do trang đó xử lý.
+                default:
+                    break;
+            }
+
+            // Action đã được đọc và điều phối ở server. Xóa hai tham số khỏi thanh địa chỉ
+            // phía client để F5 / tải lại trang không thực thi action lần thứ hai.
+            // Việc này không điều hướng lại trang và không ảnh hưởng script mở popup đã đăng ký.
+            ClearNotificationActionFromUrl();
+        }
+
+        /// <summary>
+        /// Xóa action một lần khỏi URL hiện tại mà không tải lại trang,
+        /// đồng thời giữ nguyên route, query string khác và fragment.
+        /// </summary>
+        private void ClearNotificationActionFromUrl()
+        {
+            const string scriptKey = "ClearNotificationActionFromUrl";
+            const string script = @"
+(function () {
+    function clearActionParameters() {
+        try {
+            if (!window.history || typeof window.history.replaceState !== 'function' ||
+                typeof window.URL !== 'function') {
+                return;
+            }
+
+            var currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('notificationAction');
+            currentUrl.searchParams.delete('notificationTaskId');
+            currentUrl.searchParams.delete('notificationId');
+
+            var cleanUrl = currentUrl.pathname + currentUrl.search + currentUrl.hash;
+            window.history.replaceState(window.history.state, document.title, cleanUrl);
+        } catch (e) {
+            if (window.console && typeof window.console.warn === 'function') {
+                console.warn('Không thể xóa tham số action khỏi URL:', e);
+            }
+        }
+    }
+
+    // Chờ DOM sẵn sàng rồi mới thay đổi thanh địa chỉ.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', clearActionParameters, { once: true });
+    } else {
+        window.setTimeout(clearActionParameters, 0);
+    }
+})();";
+
+            ScriptManager.RegisterStartupScript(
+                this.Page,
+                this.Page.GetType(),
+                scriptKey,
+                script,
+                true);
+        }
+
+        /// <summary>
+        /// Lấy công việc và xác nhận nó thuộc dự án hiện tại.
+        /// </summary>
+        private bool TryGetNotificationTask(Guid taskId, out TblCongViec task)
+        {
+            task = null;
+
+            if (ProjectId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return false;
+            }
+
+            task = TaskManager.Instance.FetchById(taskId);
+            if (task == null)
+            {
+                ShowInvalidNotFoundData();
+                return false;
+            }
+
+            if (task.IdDuAn != ProjectId)
+            {
+                ShowAccessDeniedNotify();
+                task = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        private void OpenReviewTaskFromNotification(Guid taskId)
+        {
+            if (!IsPM)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+                return;
+
+            if (task.TrangThai != 4)
+            {
+                ShowNotify("Công việc không còn ở trạng thái Chờ duyệt!", MSGType.Warning);
+                Rebind();
+                return;
+            }
+
+            CtrlFastReviewTask reviewControl = GetFastReviewTaskControl();
+            if (reviewControl == null)
+            {
+                ShowNotify("Không tìm thấy giao diện duyệt hoàn thành!", MSGType.Error);
+                return;
+            }
+
+            reviewControl.IsPM = IsPM;
+            reviewControl.OpenModalWhenDialogReady(ProjectId, taskId, task.MaCongViec, task.TenCongViec);
+        }
+
+        private void OpenViewTaskDetailFromNotification(Guid taskId)
+        {
+            if (!IsView && !IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+                return;
+
+            CtrlViewTaskDetail1.OpenModal(task.IdCongViec);
+        }
+
+        private void OpenFastCompleteTaskFromNotification(Guid taskId)
+        {
+            if (!IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+                return;
+
+            // Giữ điều kiện hiện tại của nút FAST_COMPLETE: chỉ công việc con.
+            if (task.IdCongViecCha.HasValue)
+            {
+                CtrlFastCompleteTask1.OpenModal(
+                    task.IdCongViec,
+                    task.MaCongViec,
+                    task.TenCongViec);
+            }
+            else
+            {
+                ShowNotify("Chỉ có thể hoàn thành nhanh công việc con!", MSGType.Warning);
+            }
+        }
+
+        private void OpenStartTaskFromNotification(Guid taskId)
+        {
+            if (!IsEdit)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+                return;
+
+            if (CheckIsFatherTask(task.IdCongViec))
+            {
+                ShowNotify("Không thể bắt đầu giai đoạn khi còn công việc con!", MSGType.Warning);
+                return;
+            }
+
+            List<StartTaskDependencyWarning> dependencyWarnings =
+                BuildStartTaskDependencyWarnings(task);
+
+            CtrlStartTask1.OpenModal(
+                task.IdCongViec,
+                task.MaCongViec,
+                task.TenCongViec,
+                dependencyWarnings.Count > 0 ? dependencyWarnings : null);
+        }
+
+        private void OpenScheduleTaskFromNotification(Guid taskId)
+        {
+            if (!IsView)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            if (!TryGetNotificationTask(taskId, out TblCongViec task))
+                return;
+
+            OpenScheduleModal(task.IdCongViec);
+        }
+
+        /// <summary>
+        /// Dùng chung logic cảnh báo công việc phụ thuộc cho thao tác bắt đầu.
+        /// </summary>
+        private List<StartTaskDependencyWarning> BuildStartTaskDependencyWarnings(TblCongViec taskToStart)
+        {
+            var dependencyWarnings = new List<StartTaskDependencyWarning>();
+
+            if (taskToStart.IdCongViecPhuThuoc.HasValue)
+            {
+                TblCongViec dependentTask = TaskManager.Instance.FetchById(
+                    taskToStart.IdCongViecPhuThuoc.Value);
+
+                if (dependentTask != null &&
+                    dependentTask.TrangThai != 2 &&
+                    dependentTask.TrangThai != 3)
+                {
+                    dependencyWarnings.Add(new StartTaskDependencyWarning
+                    {
+                        DependencyTask = dependentTask,
+                        ParentTask = null,
+                        TargetTask = taskToStart
+                    });
+                }
+            }
+
+            Guid? checkParentId = taskToStart.IdCongViecCha;
+            while (checkParentId.HasValue)
+            {
+                TblCongViec currentAncestorTask = TaskManager.Instance.FetchById(checkParentId.Value);
+                if (currentAncestorTask == null)
+                    break;
+
+                if (currentAncestorTask.IdCongViecPhuThuoc.HasValue)
+                {
+                    TblCongViec parentDependency = TaskManager.Instance.FetchById(
+                        currentAncestorTask.IdCongViecPhuThuoc.Value);
+
+                    if (parentDependency != null &&
+                        parentDependency.TrangThai != 2 &&
+                        parentDependency.TrangThai != 3)
+                    {
+                        dependencyWarnings.Add(new StartTaskDependencyWarning
+                        {
+                            DependencyTask = parentDependency,
+                            ParentTask = currentAncestorTask,
+                            TargetTask = taskToStart
+                        });
+                    }
+                }
+
+                checkParentId = currentAncestorTask.IdCongViecCha;
+            }
+
+            return dependencyWarnings;
+        }
+
+        #endregion
+
         protected void Page_Load(object sender, EventArgs e)
         {
             ((CtrlChonNhanVienTask)CtrlChonNhanVienTask1).OnAssignConfirmed += CtrlChonNhanVienTask1_OnAssignConfirmed;
+
             if (!IsPostBack)
                 InitControls();
+
             CtrlSwapPhase1.SwapSuccessCallback = () => { this.Rebind(); };
+
             if (CtrlFastCompleteTask1 != null)
             {
                 CtrlFastCompleteTask1.ActionCompleted += (s, ev) => { Rebind(); };
             }
+
             CtrlFastReviewTask reviewControl = GetFastReviewTaskControl();
             if (reviewControl != null)
             {
                 reviewControl.IsPM = this.IsPM;
                 reviewControl.ActionCompleted += (s, ev) => { Rebind(); };
             }
+
             if (CtrlStartTask1 != null)
                 CtrlStartTask1.ActionStarted += (s, ev) => { Rebind(); };
+
             if (CtrlApplyTemplate1 != null)
                 CtrlApplyTemplate1.ApplySuccessCallback += (s, ev) => { Rebind(); };
+
             CtrlAddPhase1.SavedSuccess += (s, ev) => { Rebind(); };
             CtrlAddSubTask1.SavedSuccess += (s, ev) => { Rebind(); };
+
+            // MỚI: điều phối action từ thông báo sau khi các control đã được khởi tạo.
+            HandleNotificationAction();
         }
+
         public void InitControls()
         {
             ApplyControlsText();
@@ -84,6 +438,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             txtSearchSingle.EnterSubmitClientID = lbtSearchSingle.ClientID;
             Rebind();
         }
+
         private void CtrlChonNhanVienTask1_OnAssignConfirmed(object sender, EventArgs e)
         {
             Rebind();
@@ -131,6 +486,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         }
                     }
                 }
+
                 Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
 
                 if (this.ProjectId != Guid.Empty && currentUserId != Guid.Empty)
@@ -139,26 +495,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         NhacViecLichCongViecManager.Instance.GetPendingTaskSummary(
                             this.ProjectId,
                             currentUserId);
+
                     if (reminderSummary != null && reminderSummary.Rows.Count > 0)
                     {
-                        Dictionary<Guid, int> reminderCounts =
-                            new Dictionary<Guid, int>();
+                        Dictionary<Guid, int> reminderCounts = new Dictionary<Guid, int>();
                         foreach (DataRow reminderRow in reminderSummary.Rows)
                         {
-                            if (!Guid.TryParse(
-                                    reminderRow["IdCongViec"]?.ToString(),
-                                    out Guid taskId))
+                            if (!Guid.TryParse(reminderRow["IdCongViec"]?.ToString(), out Guid taskId))
                                 continue;
+
                             int count = 0;
                             if (reminderRow["ReminderCount"] != DBNull.Value)
                                 count = Convert.ToInt32(reminderRow["ReminderCount"]);
                             reminderCounts[taskId] = count;
                         }
+
                         foreach (DataRow taskRow in dtTasks.Rows)
                         {
-                            if (!Guid.TryParse(
-                                    taskRow["IdCongViec"]?.ToString(),
-                                    out Guid taskId))
+                            if (!Guid.TryParse(taskRow["IdCongViec"]?.ToString(), out Guid taskId))
                                 continue;
 
                             if (reminderCounts.TryGetValue(taskId, out int count))
@@ -182,6 +536,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 grvData.Visible = true;
                 pnlNoTask.Visible = false;
             }
+
             grvData.DataSource = dtTasks;
             grvData.DataBind();
             upMain.Update();
@@ -191,6 +546,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
             Rebind();
         }
+
         private void ApplyControlsText()
         {
             txtSearchSingle.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
@@ -223,6 +579,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             return Guid.Empty;
         }
+
         private bool IsCurrentUserAssignedToTask(Guid taskId)
         {
             Guid currentUserId = GetCurrentUserId();
@@ -238,6 +595,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
             Rebind();
         }
+
         protected void grvData_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             switch (e.CommandName)
@@ -248,6 +606,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ReminderHandlerCallback?.Invoke(this, reminderTaskId);
                     }
                     break;
+
                 case "ASSIGN_TASK":
                     if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsView)
                     {
@@ -318,6 +677,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     }
                     OpenScheduleModal(taskIdSched);
                     break;
+
                 case "ITEM_ADD_CHILD":
                     if (!this.CURRENT_PAGE.IsAdd)
                     {
@@ -346,6 +706,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     }
                     CtrlAddSubTask1.OpenModal(this.ProjectId, parentTaskId);
                     break;
+
                 case "ITEM_VIEW":
                     if (!this.CURRENT_PAGE.IsView && !this.CURRENT_PAGE.IsEdit)
                     {
@@ -372,6 +733,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         }
                     }
                     break;
+
                 case "ITEM_DETAIL":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
@@ -394,6 +756,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         EditTaskHandlerCallback(taskId, EventArgs.Empty);
                     }
                     break;
+
                 case "FAST_COMPLETE":
                     if (!this.CURRENT_PAGE.IsEdit)
                     {
@@ -521,6 +884,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         }
                     }
                     break;
+
                 case "ITEM_DELETE":
                     if (!this.CURRENT_PAGE.IsDelete)
                     {
@@ -557,6 +921,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     break;
             }
         }
+
         public void OpenScheduleModal(Guid taskIdSched)
         {
             if (!this.CURRENT_PAGE.IsView)
@@ -635,6 +1000,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "RenderTaskScheduleJS",
                 "setTimeout(function() { CMSMasterJs.RenderSingleTaskSchedule(); }, 200);", true);
         }
+
         protected void grvData_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
@@ -677,6 +1043,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     lbtAssign.Visible = this.IsEdit || this.IsView;
             }
         }
+
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlSwapPhase1.ConfirmRequest(e);
@@ -732,10 +1099,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         {
             return _controlHelpers.GetFormattedTaskName(macv, tencv);
         }
+
         public string GetTaskPriorityBadge(object tenDoUuTien, object diemDoUuTien)
         {
             return _controlHelpers.GetTaskPriorityBadge(tenDoUuTien, diemDoUuTien);
         }
+
         public string GetPhuThuoc(object idPhuThuocObj)
         {
             if (idPhuThuocObj != null && Guid.TryParse(idPhuThuocObj.ToString(), out Guid predId))
@@ -745,10 +1114,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             return "—";
         }
+
         public string FormatDateTime(object date)
         {
             return _controlHelpers.FormatDateTime(date);
         }
+
         public string GetAssigneeDisplay(object tenNhanVienObj, object avatarsObj)
         {
             string names = tenNhanVienObj?.ToString() ?? "";
@@ -782,6 +1153,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 html += $"<div class='avatar-circle avatar-more' title='Và {count - maxDisplay} người khác'>+{count - maxDisplay}</div>";
             return html;
         }
+
         private string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "";
@@ -789,6 +1161,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
             return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
+
         public string GetTaskStatusTextOnly(object statusObj)
         {
             int status = Convert.ToInt32(statusObj);
@@ -799,6 +1172,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             string resourceKey = TaskManager.Instance.GetValueForTrangThaiCongViec(enumStatus);
             return GetResourceText(resourceKey);
         }
+
         public bool CheckIsFatherTask(object idCongViecObj)
         {
             if (idCongViecObj == null || !Guid.TryParse(idCongViecObj.ToString(), out Guid id)) return false;
@@ -806,6 +1180,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (task == null) return false;
             return TaskManager.Instance.CheckHasChildTasks(this.ProjectId, task);
         }
+
         public string GetTaskStatusBadge(object statusObj)
         {
             int status = Convert.ToInt32(statusObj);
@@ -832,6 +1207,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     return $"<span class=\"badge-pill-custom badge-status-todo\">{statusText}</span>";
             }
         }
+
         protected void lbtApplyPhaseReorder_Click(object sender, EventArgs e)
         {
             if (!this.CURRENT_PAGE.IsEdit)
@@ -866,6 +1242,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ShowNotify(ex.Message, MSGType.Error);
             }
         }
+
         protected void lbtApplyTemplate_Click(object sender, EventArgs e)
         {
             if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)

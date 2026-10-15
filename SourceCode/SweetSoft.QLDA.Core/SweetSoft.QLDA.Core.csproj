@@ -212,6 +212,7 @@
     <Compile Include="EnumHelper\Defines\MucDoAnhHuong.cs" />
     <Compile Include="EnumHelper\Defines\NguonGocVanDe.cs" />
     <Compile Include="EnumHelper\Defines\ThanhToanStatus.cs" />
+    <Compile Include="EnumHelper\Defines\ThongBaoAction.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiChiPhi.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiCongViec.cs" />
     <Compile Include="EnumHelper\Defines\TrangThaiCuocHop.cs" />

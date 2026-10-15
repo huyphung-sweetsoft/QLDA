@@ -1,5 +1,6 @@
 ﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.EnumHelper;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
 using System;
@@ -243,7 +244,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                                 ProjectId,
                                 task.MaCongViec,
                                 task.TenCongViec,
-                                task.NgayKetThuc.Value);
+                                task.NgayKetThuc.Value,
+                                ThongBaoAction.CtrlReviewTask);
                         }
                         catch (Exception)
                         {
