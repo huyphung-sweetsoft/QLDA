@@ -152,6 +152,20 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdNhanVien.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdNhanVien);
 				
+				TableSchema.TableColumn colvarXacNhanThamGia = new TableSchema.TableColumn(schema);
+				colvarXacNhanThamGia.ColumnName = "XacNhanThamGia";
+				colvarXacNhanThamGia.DataType = DbType.Boolean;
+				colvarXacNhanThamGia.MaxLength = 0;
+				colvarXacNhanThamGia.AutoIncrement = false;
+				colvarXacNhanThamGia.IsNullable = false;
+				colvarXacNhanThamGia.IsPrimaryKey = false;
+				colvarXacNhanThamGia.IsForeignKey = false;
+				colvarXacNhanThamGia.IsReadOnly = false;
+				
+						colvarXacNhanThamGia.DefaultSetting = @"((0))";
+				colvarXacNhanThamGia.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarXacNhanThamGia);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -177,6 +191,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<Guid>(Columns.IdNhanVien); }
 			set { SetColumnValue(Columns.IdNhanVien, value); }
 		}
+		  
+		[XmlAttribute("XacNhanThamGia")]
+		[Bindable(true)]
+		public bool XacNhanThamGia 
+		{
+			get { return GetColumnValue<bool>(Columns.XacNhanThamGia); }
+			set { SetColumnValue(Columns.XacNhanThamGia, value); }
+		}
 		
 		#endregion
 		
@@ -197,13 +219,15 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLichHop,Guid varIdNhanVien)
+		public static void Insert(Guid varIdLichHop,Guid varIdNhanVien,bool varXacNhanThamGia)
 		{
 			TblLichHopNhanVien item = new TblLichHopNhanVien();
 			
 			item.IdLichHop = varIdLichHop;
 			
 			item.IdNhanVien = varIdNhanVien;
+			
+			item.XacNhanThamGia = varXacNhanThamGia;
 			
 		
 			if (System.Web.HttpContext.Current != null)
@@ -215,13 +239,15 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLichHop,Guid varIdNhanVien)
+		public static void Update(Guid varIdLichHop,Guid varIdNhanVien,bool varXacNhanThamGia)
 		{
 			TblLichHopNhanVien item = new TblLichHopNhanVien();
 			
 				item.IdLichHop = varIdLichHop;
 			
 				item.IdNhanVien = varIdNhanVien;
+			
+				item.XacNhanThamGia = varXacNhanThamGia;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -250,12 +276,20 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn XacNhanThamGiaColumn
+        {
+            get { return Schema.Columns[2]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
 		{
 			 public static string IdLichHop = @"IdLichHop";
 			 public static string IdNhanVien = @"IdNhanVien";
+			 public static string XacNhanThamGia = @"XacNhanThamGia";
 						
 		}
 		#endregion

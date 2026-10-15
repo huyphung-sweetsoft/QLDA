@@ -92,13 +92,15 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdLichHop,Guid IdNhanVien)
+	    public void Insert(Guid IdLichHop,Guid IdNhanVien,bool XacNhanThamGia)
 	    {
 		    TblLichHopNhanVien item = new TblLichHopNhanVien();
 		    
             item.IdLichHop = IdLichHop;
             
             item.IdNhanVien = IdNhanVien;
+            
+            item.XacNhanThamGia = XacNhanThamGia;
             
 	    
 		    item.Save(UserName);
@@ -108,7 +110,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdLichHop,Guid IdNhanVien)
+	    public void Update(Guid IdLichHop,Guid IdNhanVien,bool XacNhanThamGia)
 	    {
 		    TblLichHopNhanVien item = new TblLichHopNhanVien();
 	        item.MarkOld();
@@ -117,6 +119,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.IdLichHop = IdLichHop;
 				
 			item.IdNhanVien = IdNhanVien;
+				
+			item.XacNhanThamGia = XacNhanThamGia;
 				
 	        item.Save(UserName);
 	    }

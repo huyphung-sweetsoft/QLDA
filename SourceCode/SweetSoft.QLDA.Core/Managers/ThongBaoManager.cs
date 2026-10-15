@@ -1,3 +1,4 @@
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.MailManager;
@@ -89,7 +90,8 @@ namespace SweetSoft.QLDA.Core.Managers
             string noiDung          = null,
             string loaiThongBao     = ThongBaoTypes.HeThong,
             Guid?  idCongViec       = null,
-            Guid?  idDuAn           = null)
+            Guid?  idDuAn           = null,
+            string duongDanLienKet = null)
         {
             if (userId == Guid.Empty)
                 return null;
@@ -108,7 +110,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 TieuDe          = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
                 NoiDung         = noiDung,
                 LoaiThongBao    = loaiThongBao,
-                DuongDanLienKet = null, // Không lưu cứng URL nữa
+                DuongDanLienKet = string.IsNullOrWhiteSpace(duongDanLienKet) ? null : duongDanLienKet.Trim(),
                 DaDoc           = false,
                 NgayDoc         = null,
                 DaXoa           = false,
@@ -128,7 +130,13 @@ namespace SweetSoft.QLDA.Core.Managers
 
             return result;
         }
+        public TblThongBao GetById(Guid idThongBao)
+        {
+            if (idThongBao == Guid.Empty)
+                return null;
 
+            return _repository.GetById(idThongBao);
+        }
         private void SendEmailNotification(TblThongBao notification)
         {
             Task.Run(async () =>
@@ -459,7 +467,7 @@ namespace SweetSoft.QLDA.Core.Managers
         // =========================================================================
         public TblThongBao CreateTaskReminderNotification(
             Guid userId, string tieuDe, string noiDung, Guid? idCongViec, Guid? idDuAn,
-            string taskCode, string taskName, DateTime deadline)
+            string taskCode, string taskName, DateTime deadline, ThongBaoAction? action = null)
         {
             if (userId == Guid.Empty) return null;
             string currentUser = _applicationContext?.UserName ?? "System";
@@ -473,7 +481,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
                 NoiDung = noiDung,
                 LoaiThongBao = ThongBaoTypes.CongViec,
-                DuongDanLienKet = null,
+                DuongDanLienKet = action.HasValue ? action.Value.ToString() : null,
                 DaDoc = false,
                 NgayDoc = null,
                 DaXoa = false,

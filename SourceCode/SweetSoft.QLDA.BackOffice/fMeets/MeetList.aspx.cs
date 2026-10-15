@@ -12,6 +12,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Web;
+using System.Web.UI.HtmlControls;
 using System.Globalization;
 using System.Linq;
 using System.Transactions;
@@ -24,6 +26,28 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.Meet;
         private ControlHelpers _control = new ControlHelpers();
+
+        // Tìm control mới theo ID mà không bắt buộc sửa thủ công các file *.designer.cs.
+        private static Control FindChild(Control root, string id)
+        {
+            if (root.ID == id) return root;
+            foreach (Control child in root.Controls)
+            {
+                Control found = FindChild(child, id);
+                if (found != null) return found;
+            }
+            return null;
+        }
+        private T UI<T>(string id) where T : Control { return FindChild(this, id) as T; }
+        protected DropDownList MeetingTypeSelect => UI<DropDownList>("ddlHinhThucHop");
+        private HiddenField JoinMeetingIdField => UI<HiddenField>("hfMeetJoinId");
+        protected HiddenField JoinReminderPendingField => UI<HiddenField>("hfMeetJoinPending");
+        protected SweetSoft.QLDA.Controls.ExtraModal JoinReminderModal => UI<SweetSoft.QLDA.Controls.ExtraModal>("mdlMeetJoinReminder");
+        private Literal JoinTitleLiteral => UI<Literal>("litMeetJoinTitle");
+        private Literal JoinLocationLiteral => UI<Literal>("litMeetJoinLocation");
+        private Literal JoinTypeLiteral => UI<Literal>("litMeetJoinType");
+        private Literal JoinWarningLiteral => UI<Literal>("litMeetJoinWarning");
+        private LinkButton JoinConfirmationButton => UI<LinkButton>("btnConfirmMeetJoin");
 
         private Guid MeetId
         {
@@ -57,6 +81,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 };
                 ApplyControlsText();
                 CtrlMeet1.InitControls();
+                ShowActiveMeetingReminder();
             }
         }
 
@@ -115,6 +140,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         {
             RefreshMeetingInfo();
             SetRecommendedMeetingStart();
+            // Nút + trong Calendar truyền ngày đã chọn vào callback thêm mới.
+            if (sender is DateTime)
+            {
+                DateTime chosen = ((DateTime)sender).Date;
+                txtNgayBatDau.DateValue = chosen;
+                txtGioBatDau.Text = chosen == DateTime.Today ? txtGioBatDau.Text : "09:00";
+            }
             lbtSubmit.Visible = this.IsAdd;
             lbtSubmit.ToolTip = lbtSubmit.Text = GetResourceText(BackEndResourceKeys.SAVE);
             dlDetail.Title = GetResourceText(BackEndResourceKeys.ADD_NEW);
@@ -144,6 +176,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             txtTenCuocHop.Text = meet.TenCuocHop;
             txtNoiDungCuocHop.Text = meet.NoiDungCuocHop;
             txtDiaDiemHop.Text = meet.DiaDiemHop;
+            MeetingTypeSelect.SelectedValue = ReadMeetingIsOnline(meet.IdLichHop) ? "1" : "0";
 
             _control.BindNhanVienThamGiaLichHop(meet.IdLichHop, hdfNhanVienIds, txtNhanVienThamGia);
             BindSelectedNhanVienDisplay();
@@ -190,6 +223,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             ControlHelpers controlHelpers = new ControlHelpers();
             controlHelpers.BindTrangThaiLichHop(ddlTrangThai);
             txtTenCuocHop.Text = txtNoiDungCuocHop.Text = txtDiaDiemHop.Text = "";
+            MeetingTypeSelect.SelectedValue = "0";
             txtNgayBatDau.DateValue = null;
             txtGioBatDau.Text = "";
             txtThoiLuong.Text = "";
@@ -218,6 +252,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
 
                 TblLichHop meetDto = new TblLichHop();
                 bool isNew = this.MeetId == Guid.Empty;
+                if ((isNew && !IsAdd) || (!isNew && !IsEdit)) { ShowAccessDeniedNotify(); return; }
+                bool isOnline = MeetingTypeSelect.SelectedValue == "1";
+                string validatedOnlineUrl;
+                if (isOnline && !TryMeetingUrl(txtDiaDiemHop.Text.Trim(), out validatedOnlineUrl))
+                {
+                    ShowNotify("Họp Online cần một URL hợp lệ (http:// hoặc https://).", MSGType.Error);
+                    return;
+                }
 
                 if (!isNew)
                     meetDto.IdLichHop = this.MeetId;
@@ -252,6 +294,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 meetDto.ThoiGianKetThuc = endDateTime;
 
                 string nhanVienIds = hdfNhanVienIds.Value;
+                List<Guid> previouslyConfirmed = isNew ? new List<Guid>() : ReadConfirmedMembers(MeetId);
 
                 TblLichHop savedMeet = MeetManager.Instance.CreateOrUpdate(meetDto, nhanVienIds);
 
@@ -261,6 +304,9 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     return;
                 }
 
+                // Lưu sau MeetManager.CreateOrUpdate: không phụ thuộc SubSonic model đã được sinh lại hay chưa.
+                SaveMeetingType(savedMeet.IdLichHop, isOnline);
+                RestoreConfirmedMembers(savedMeet.IdLichHop, previouslyConfirmed);
                 ShowSuccessSaveData();
                 dlDetail.CloseModal();
                 CtrlMeet1.Rebind();
@@ -439,6 +485,112 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             }
 
             return $"<div class='single-avatar-circle' style='background-color: {color};'>{GetInitials(name)}</div>";
+        }
+
+        private static string SqlGuid(Guid value) { return value.ToString("D"); }
+        private static bool TryMeetingUrl(string raw, out string url)
+        {
+            url = null;
+            Uri parsed;
+            if (!Uri.TryCreate((raw ?? "").Trim(), UriKind.Absolute, out parsed)) return false;
+            if ((parsed.Scheme != Uri.UriSchemeHttps && parsed.Scheme != Uri.UriSchemeHttp) ||
+                string.IsNullOrWhiteSpace(parsed.Host) || !string.IsNullOrEmpty(parsed.UserInfo)) return false;
+            url = parsed.AbsoluteUri;
+            return true;
+        }
+        private bool ReadMeetingIsOnline(Guid id)
+        {
+            if (id == Guid.Empty) return false;
+            string sql = "SELECT TOP 1 LaHopOnline FROM dbo.TblLichHop WHERE IdLichHop='" + SqlGuid(id) + "' AND IdDuAn='" + SqlGuid(CurrentProjectId) + "'";
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql)) return reader.Read() && reader["LaHopOnline"] != DBNull.Value && Convert.ToBoolean(reader["LaHopOnline"]);
+        }
+        private List<Guid> ReadConfirmedMembers(Guid id)
+        {
+            List<Guid> confirmed = new List<Guid>();
+            if (id == Guid.Empty) return confirmed;
+            string sql = "SELECT IdNhanVien FROM dbo.TblLichHop_NhanVien WHERE IdLichHop='" + SqlGuid(id) + "' AND XacNhanThamGia=1";
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                while (reader.Read())
+                {
+                    Guid member;
+                    if (Guid.TryParse(Convert.ToString(reader["IdNhanVien"]), out member)) confirmed.Add(member);
+                }
+            }
+            return confirmed;
+        }
+        private void SaveMeetingType(Guid id, bool online)
+        {
+            string sql = "UPDATE dbo.TblLichHop SET LaHopOnline=" + (online ? "1" : "0") + " WHERE IdLichHop='" + SqlGuid(id) + "' AND IdDuAn='" + SqlGuid(CurrentProjectId) + "'; SELECT @@ROWCOUNT AS ChangedRows;";
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+                if (!reader.Read() || Convert.ToInt32(reader["ChangedRows"]) != 1) throw new InvalidOperationException("Không thể cập nhật hình thức họp.");
+        }
+        private void RestoreConfirmedMembers(Guid meetingId, List<Guid> confirmed)
+        {
+            if (confirmed == null || confirmed.Count == 0) return;
+            // MeetManager có thể thay danh sách thành viên khi sửa: giữ xác nhận cũ cho người vẫn được chọn.
+            string members = string.Join(",", confirmed.Select(x => "'" + SqlGuid(x) + "'"));
+            string sql = "UPDATE dbo.TblLichHop_NhanVien SET XacNhanThamGia=1 WHERE IdLichHop='" + SqlGuid(meetingId) + "' AND IdNhanVien IN (" + members + "); SELECT @@ROWCOUNT AS ChangedRows;";
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql)) { if (reader.Read()) { /* Đã cập nhật. */ } }
+        }
+        private void ShowActiveMeetingReminder()
+        {
+            // Chỉ nhắc thành viên có quan hệ TblLichHop_NhanVien chưa xác nhận, đang trong giờ họp.
+            string sql = "SELECT TOP 1 m.IdLichHop,m.TenCuocHop,m.DiaDiemHop,m.LaHopOnline,m.ThoiGianBatDau,m.ThoiGianKetThuc " +
+                "FROM dbo.TblLichHop m INNER JOIN dbo.TblLichHop_NhanVien p ON p.IdLichHop=m.IdLichHop " +
+                "WHERE m.IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND p.IdNhanVien='" + SqlGuid(SweetContext.Current.UserId) + "' " +
+                "AND ISNULL(m.DaXoa,0)=0 AND ISNULL(p.XacNhanThamGia,0)=0 " +
+                "AND m.ThoiGianBatDau<=GETDATE() AND m.ThoiGianKetThuc>GETDATE() " +
+                "ORDER BY m.ThoiGianBatDau DESC";
+            try
+            {
+                using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+                {
+                    if (!reader.Read()) return;
+                    Guid id;
+                    if (!Guid.TryParse(Convert.ToString(reader["IdLichHop"]), out id)) return;
+                    string name = Convert.ToString(reader["TenCuocHop"]);
+                    string place = Convert.ToString(reader["DiaDiemHop"]);
+                    bool online = reader["LaHopOnline"] != DBNull.Value && Convert.ToBoolean(reader["LaHopOnline"]);
+                    string validUrl = string.Empty;
+                    bool canOpenUrl = online && TryMeetingUrl(place, out validUrl);
+                    JoinMeetingIdField.Value = id.ToString("D");
+                    JoinTitleLiteral.Text = "Cuộc họp <strong>" + HttpUtility.HtmlEncode(name) + "</strong> đang diễn ra";
+                    JoinLocationLiteral.Text = (online ? "Liên kết họp: " : "Địa điểm: ") + HttpUtility.HtmlEncode(string.IsNullOrWhiteSpace(place) ? "Chưa cung cấp" : place);
+                    JoinTypeLiteral.Text = online ? "<span class='meet-join-type'><i class='fas fa-video'></i> Họp Online</span>" : "<span class='meet-join-type is-offline'><i class='fas fa-users'></i> Họp trực tiếp</span>";
+                    JoinWarningLiteral.Text = online && !canOpenUrl ? "<span class='meet-join-warning'>Liên kết chưa hợp lệ. Bạn vẫn có thể xác nhận; vui lòng hỏi người chủ trì để nhận URL họp.</span>" : "";
+                    JoinConfirmationButton.Attributes.Remove("data-join-url");
+                    if (canOpenUrl) JoinConfirmationButton.Attributes["data-join-url"] = validUrl;
+                }
+                // Không gọi ExtraModal.OpenModal ở Page_Load: nó sinh CMSMasterJs.OpenDialog trước khi JS sẵn sàng.
+                // Đánh dấu và để client hiển thị loading 3s sau window.load rồi mở qua Bootstrap Modal.
+                JoinReminderPendingField.Value = "1";
+            }
+            catch (Exception exc)
+            {
+                // Không chặn trang Meet khi DB chưa chạy migration. Ghi log/ thông báo cho Admin.
+                System.Diagnostics.Trace.TraceError("Meet join reminder: " + exc);
+            }
+        }
+        protected void btnConfirmMeetJoin_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Guid meetingId;
+                if (!Guid.TryParse(JoinMeetingIdField.Value, out meetingId) || meetingId == Guid.Empty) { ShowInvalidDataError(); return; }
+                // Luôn kiểm tra lại quyền, dự án, thời gian, người tham gia và cờ XacNhanThamGia trên server.
+                string sql = "UPDATE p SET XacNhanThamGia=1 FROM dbo.TblLichHop_NhanVien p " +
+                    "INNER JOIN dbo.TblLichHop m ON m.IdLichHop=p.IdLichHop " +
+                    "WHERE p.IdLichHop='" + SqlGuid(meetingId) + "' AND p.IdNhanVien='" + SqlGuid(SweetContext.Current.UserId) + "' " +
+                    "AND m.IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND ISNULL(m.DaXoa,0)=0 " +
+                    "AND m.ThoiGianBatDau<=GETDATE() AND m.ThoiGianKetThuc>GETDATE() AND p.XacNhanThamGia=0; " +
+                    "SELECT @@ROWCOUNT AS ChangedRows;";
+                int changed = 0;
+                using (IDataReader reader = new InlineQuery().ExecuteReader(sql)) if (reader.Read()) changed = Convert.ToInt32(reader["ChangedRows"]);
+                JoinReminderModal.CloseModal();
+                if (changed == 0) ShowNotify("Cuộc họp đã kết thúc, bạn đã xác nhận hoặc không còn là thành viên tham gia.", MSGType.Error);
+            }
+            catch (Exception exc) { ShowNotify("Không thể xác nhận tham gia: " + exc.Message, MSGType.Error); }
         }
 
         public override void ConfirmRequest(ConfirmResult e)

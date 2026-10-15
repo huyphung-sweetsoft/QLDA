@@ -51,15 +51,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         protected global::System.Web.UI.WebControls.Literal ltrReviewTaskName;
 
         /// <summary>
-        /// ltrExpectedEndDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrExpectedEndDate;
-
-        /// <summary>
         /// ltrActualDate control.
         /// </summary>
         /// <remarks>
@@ -67,6 +58,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal ltrActualDate;
+
+        /// <summary>
+        /// ltrExpectedEndDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrExpectedEndDate;
 
         /// <summary>
         /// ltrReviewResult control.
@@ -85,6 +85,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal ltrLateReason;
+
+        /// <summary>
+        /// txtRejectReason control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtRejectReason;
 
         /// <summary>
         /// upnlReviewFooter control.
@@ -112,5 +121,59 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnApproveCompletion;
+
+        /// <summary>
+        /// mdlTaskCompletionResult control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlTaskCompletionResult;
+
+        /// <summary>
+        /// upnlTaskCompletionResult control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlTaskCompletionResult;
+
+        /// <summary>
+        /// ltrCompletionDecisionBadge control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrCompletionDecisionBadge;
+
+        /// <summary>
+        /// ltrCompletionResultTaskName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrCompletionResultTaskName;
+
+        /// <summary>
+        /// ltrCompletionResultDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrCompletionResultDate;
+
+        /// <summary>
+        /// ltrCompletionResultBody control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrCompletionResultBody;
     }
 }
