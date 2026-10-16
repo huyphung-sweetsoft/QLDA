@@ -651,6 +651,37 @@ namespace SweetSoft.QLDA.DataAccess
 		#endregion
 		
 		
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection colTblKhaiBaoGioChiTietRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection TblKhaiBaoGioChiTietRecords()
+		{
+			if(colTblKhaiBaoGioChiTietRecords == null)
+			{
+				colTblKhaiBaoGioChiTietRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection().Where(TblKhaiBaoGioChiTiet.Columns.IdCongViec, IdCongViec).Load();
+				colTblKhaiBaoGioChiTietRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioChiTietRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioChiTietRecords;
+		}
+				
+		void colTblKhaiBaoGioChiTietRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioChiTietRecords[e.NewIndex].IdCongViec = IdCongViec;
+            }
+		}
+		#endregion
+		
 			
 		
 		#region ForeignKey Properties
@@ -1031,10 +1062,32 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		#region Update PK Collections
 		
+        public void SetPKValues()
+        {
+                if (colTblKhaiBaoGioChiTietRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTiet item in colTblKhaiBaoGioChiTietRecords)
+                    {
+                        if (item.IdCongViec != IdCongViec)
+                        {
+                            item.IdCongViec = IdCongViec;
+                        }
+                    }
+               }
+		}
         #endregion
     
         #region Deep Save
 		
+        public void DeepSave()
+        {
+            Save();
+            
+                if (colTblKhaiBaoGioChiTietRecords != null)
+                {
+                    colTblKhaiBaoGioChiTietRecords.SaveAll();
+               }
+		}
         #endregion
 	}
 }

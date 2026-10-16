@@ -257,8 +257,8 @@
                                 <div class="meeting-form-field">
                                     <label class="form-label">Hình thức họp</label>
                                     <div class="meeting-method-box"><asp:DropDownList runat="server" ID="ddlHinhThucHop" CssClass="form-select" aria-label="Hình thức họp">
-                                        <asp:ListItem Value="0" Text="Offline · Trực tiếp" Selected="True" />
-                                        <asp:ListItem Value="1" Text="Online · Trực tuyến" />
+                                        <asp:ListItem Value="0" Text="Offline" Selected="True" />
+                                        <asp:ListItem Value="1" Text="Online" />
                                     </asp:DropDownList></div>
                                 </div>
                             </div>

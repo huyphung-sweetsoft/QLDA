@@ -820,6 +820,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblGuiNhanKhachHangRecords[e.NewIndex].IdNguoiThucHien = UserId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioCaCollection colTblKhaiBaoGioCaRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioCaCollection TblKhaiBaoGioCaRecords()
+		{
+			if(colTblKhaiBaoGioCaRecords == null)
+			{
+				colTblKhaiBaoGioCaRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioCaCollection().Where(TblKhaiBaoGioCa.Columns.UserId, UserId).Load();
+				colTblKhaiBaoGioCaRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioCaRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioCaRecords;
+		}
+				
+		void colTblKhaiBaoGioCaRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioCaRecords[e.NewIndex].UserId = UserId;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection colTblLichSuChinhSuaRecords;
 		public SweetSoft.QLDA.DataAccess.TblLichSuChinhSuaCollection TblLichSuChinhSuaRecords()
 		{
@@ -1665,6 +1684,17 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colTblKhaiBaoGioCaRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioCa item in colTblKhaiBaoGioCaRecords)
+                    {
+                        if (item.UserId != UserId)
+                        {
+                            item.UserId = UserId;
+                        }
+                    }
+               }
+		
                 if (colTblLichSuChinhSuaRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblLichSuChinhSua item in colTblLichSuChinhSuaRecords)
@@ -1838,6 +1868,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblGuiNhanKhachHangRecords != null)
                 {
                     colTblGuiNhanKhachHangRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioCaRecords != null)
+                {
+                    colTblKhaiBaoGioCaRecords.SaveAll();
                }
 		
                 if (colTblLichSuChinhSuaRecords != null)
