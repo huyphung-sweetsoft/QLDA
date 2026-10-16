@@ -147,6 +147,14 @@
 .ppm-tooltip .t-project-name{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;font-weight:600;color:#64748b}
 .ppm-tooltip .t-code{display:inline-block;color:#2563eb;font-weight:700;margin-right:6px}
 @media(prefers-reduced-motion:reduce){.ppm-root .tmp-calendar-pop{animation:none}}
+
+/* Badge công việc: cùng tooltip ghim với lịch mini, không tạo tooltip riêng. */
+.ppm-root .ppm-badge[data-ppm-taskbadge]{cursor:pointer;outline-offset:2px}
+.ppm-root .ppm-badge[data-ppm-taskbadge]:hover,.ppm-root .ppm-badge[data-ppm-taskbadge].show-tooltip{border-color:#7dd3fc;background:#d7efff}
+.ppm-root .ppm-badge[data-ppm-taskbadge]:focus-visible{outline:2px solid #2563eb}
+.ppm-tooltip .ppm-task-date{display:block;font-size:10.5px;color:#64748b;margin-top:4px}
+.ppm-tooltip .ppm-task-item-name{font-size:12px;font-weight:600;color:#334155}
+.ppm-root .mc-viewport.is-animating{overflow:hidden!important}
 </style>
 <SweetSoft:ExtraModal runat="server" ID="mdlMemberPicker" Type="Primary" Size="ExtraLarge">
 <ContentTemplate>
@@ -192,7 +200,7 @@
     </div>
     <div data-ppm-source style="display:none" aria-hidden="true">
       <asp:Repeater ID="rptCompanyMembers" runat="server" OnItemDataBound="rptCompanyMembers_ItemDataBound"><ItemTemplate>
-        <div class="ppm-row" data-ppm-id='<%# Eval("UserId") %>' data-ppm-original='<%# Convert.ToBoolean(Eval("IsOriginal")) ? "1" : "0" %>' data-ppm-taskcount='<%# Eval("TaskCount") %>'>
+        <div class="ppm-row" data-ppm-id='<%# Eval("UserId") %>' data-ppm-original='<%# Convert.ToBoolean(Eval("IsOriginal")) ? "1" : "0" %>' data-ppm-taskcount='<%# Eval("TaskCount") %>' data-ppm-tasks='<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("TaskTooltipJson"))).Replace("'", "&#39;") %>'>
           <div class="ppm-checkbox"><asp:CheckBox ID="chkSelect" runat="server"/></div>
           <asp:HiddenField ID="hdfUserId" runat="server" Value='<%# Eval("UserId") %>'/>
           <span class="ppm-avatar"><%# Eval("AvatarHtml") %></span>
@@ -231,6 +239,7 @@
     var tooltipId='ppmTooltip_<%= ClientID %>';
     var stateMap=window.__projectPickerState=window.__projectPickerState||{};
     var state=stateMap[rootId]||(stateMap[rootId]={mini:null,pinned:null});
+    state.miniCache=state.miniCache||{};
     var fields={picked:'hfPickedClient',original:'hfOriginalClient',miniUser:'hfMiniUser',miniMonth:'hfMiniMonth',miniPayload:'hfMiniPayload',miniButton:'btnLoadMiniMonth'};
     function root(){return document.getElementById(rootId)}
     function field(name){var r=root();return r?r.querySelector('[id$="'+fields[name]+'"]'):null}
@@ -241,14 +250,37 @@
     function savePicked(set){var f=field('picked');if(f)f.value=Array.from(set).join(',')}
     function userRows(){var r=root();return r?Array.from(r.querySelectorAll('[data-ppm-list] > .ppm-row[data-ppm-id], [data-ppm-source] > .ppm-row[data-ppm-id]')):[]}
     function personName(row){var e=row.querySelector('.ppm-person-title b');return e?e.textContent.trim():'Nhân viên'}
+    function badgeTooltipHtml(row){
+        var name=personName(row),tasks=parse(row.dataset.ppmTasks||'[]');
+        if(!Array.isArray(tasks))tasks=[];
+        var html='<div class="tmp-tooltip-heading">Công việc của '+encode(name)+'</div>';
+        if(!tasks.length)return html+'<div style="color:#64748b;font-size:11.5px">Chưa tải được chi tiết công việc.</div>';
+        html+='<div class="tmp-other-heading">Đang đảm nhận '+tasks.length+' công việc trong dự án</div><ul class="tooltip-task-list">';
+        tasks.forEach(function(t){
+            html+='<li><div class="ppm-task-item-name"><span class="t-code">'+(t.code?'['+encode(t.code)+'] ':'')+'</span>'+encode(t.name||'Chưa có tên')+'</div>'+
+                '<span class="ppm-task-date"><i class="far fa-calendar-alt me-1"></i>'+encode(t.start||'Chưa xác định')+' – '+encode(t.end||'Chưa xác định')+'</span></li>';
+        });
+        return html+'</ul>';
+    }
     function badge(row,chosen){
         var b=row.querySelector('[data-ppm-badge]');if(!b)return;
         var old=row.dataset.ppmOriginal==='1',num=parseInt(row.dataset.ppmTaskcount||'0',10)||0;
         b.className='ppm-badge'+(chosen&&!old?' new':'');
-        if(!chosen){b.textContent='';b.hidden=true;b.removeAttribute('title');return}
+        if(!chosen){b.textContent='';b.hidden=true;b.removeAttribute('title');b.removeAttribute('data-ppm-taskbadge');b.removeAttribute('data-tooltip-content');b.removeAttribute('tabindex');b.removeAttribute('role');return}
         b.hidden=false;
         b.textContent=old?(num>0?'Đảm nhận '+num+' công việc':'Đã tham gia'):'Sẽ tham gia';
-        b.title=old?(num>0?'Thành viên đã tham gia dự án, hiện có '+num+' công việc':'Thành viên đã tham gia dự án'):'Thành viên vừa được chọn, chưa lưu';
+        if(old&&num>0){
+            b.setAttribute('data-ppm-taskbadge','1');
+            b.setAttribute('data-tooltip-content',encodeURIComponent(badgeTooltipHtml(row)));
+            b.tabIndex=0;
+            b.setAttribute('role','button');
+            b.setAttribute('aria-label','Xem danh sách '+num+' công việc của '+personName(row));
+            b.title='Di chuột xem, bấm để ghim danh sách công việc';
+        }else{
+            b.removeAttribute('data-ppm-taskbadge');b.removeAttribute('data-tooltip-content');
+            b.removeAttribute('tabindex');b.removeAttribute('role');b.removeAttribute('aria-label');
+            b.title=old?'Đã tham gia dự án':'Nhân viên vừa được chọn, chưa lưu';
+        }
     }
     function updateSummary(){
         var r=root();if(!r)return;
@@ -278,7 +310,7 @@
         });
         updateSummary();
     }
-    function closeTip(){var t=document.getElementById(tooltipId);if(t)t.classList.remove('show','tmp-tooltip-below');state.pinned=null;var p=document.getElementById(popupId);if(p)p.querySelectorAll('.mc-day.show-tooltip').forEach(function(e){e.classList.remove('show-tooltip')})}
+    function closeTip(){var t=document.getElementById(tooltipId);if(t)t.classList.remove('show','tmp-tooltip-below');state.pinned=null;var p=document.getElementById(popupId);if(p)p.querySelectorAll('.mc-day.show-tooltip').forEach(function(e){e.classList.remove('show-tooltip')});var r=root();if(r)r.querySelectorAll('[data-ppm-taskbadge].show-tooltip').forEach(function(e){e.classList.remove('show-tooltip')})}
     function closeMini(resetFields){
         var p=document.getElementById(popupId);if(p){p.hidden=true;p.classList.remove('show','tmp-from-left','tmp-from-right');}
         state.mini=null;closeTip();
@@ -375,8 +407,16 @@
     function transitionMonth(cal,oldMonth){
         var st=cal.data('mc'),viewport=cal.find('.mc-viewport');
         if(!viewport.length||oldMonth==null||oldMonth===st.year+'-'+st.month){renderMiniCalendar(cal);return;}
-        closeTip();viewport.addClass('is-animating');cal.find('.mc-title').text('Tháng '+(st.month+1)+', '+st.year);
-        var oldGrid=viewport.children('.mc-grid').last(),newGrid=$(buildGridHtml(st));viewport.append(newGrid);
+        closeTip();viewport.addClass('is-animating');
+        cal.find('.mc-title').text(titleText(st));
+        var grids=viewport.children('.mc-grid');
+        if(grids.length>1){
+            grids.not(':last').each(function(){if(this.getAnimations)this.getAnimations().forEach(function(a){a.cancel()})}).remove();
+            var lastEl=grids.last()[0];
+            if(lastEl&&lastEl.getAnimations)lastEl.getAnimations().forEach(function(a){a.cancel()});
+        }
+        var oldGrid=viewport.children('.mc-grid').last(),newGrid=$(buildGridHtml(st));
+        viewport.append(newGrid);
         var prev=oldMonth.split('-'),oldIndex=(+prev[0])*12+(+prev[1]),newIndex=st.year*12+st.month,dir=newIndex>oldIndex?1:-1;
         var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if(reduceMotion||!newGrid[0].animate){oldGrid.remove();viewport.removeClass('is-animating');return;}
@@ -398,11 +438,30 @@
         el.style.left=left+'px';el.style.top=top+'px';
         el.style.setProperty('--arrow-left',Math.max(5,Math.min(95,(rect.left+rect.width/2-left)/w*100))+'%');
     }
+    function hasCachedMonth(id,month){
+        var data=state.miniCache[id],date=dateFromKey(month+'-01'),offset=(date.getDay()+6)%7;
+        if(!data)return false;
+        var first=new Date(date.getFullYear(),date.getMonth(),1-offset);
+        for(var i=0;i<42;i++){
+            if(!Object.prototype.hasOwnProperty.call(data,dayKey(new Date(first.getFullYear(),first.getMonth(),first.getDate()+i))))return false;
+        }
+        return true;
+    }
     function requestMini(id,month){
         if(projectNotifyVisible())return;
         var user=field('miniUser'),mo=field('miniMonth'),payload=field('miniPayload'),button=field('miniButton');
         if(!user||!mo||!payload||!button)return;
-        if(!state.mini||state.mini.id!==id)closeMini(false);else closeTip();user.value=id;mo.value=month;payload.value='{}';state.mini={id:id,month:month};
+        if(!state.mini||state.mini.id!==id)closeMini(false);else closeTip();
+        // Các tháng đã có dữ liệu trượt ngay, không postback và không dựng lại popup.
+        if(hasCachedMonth(id,month)){
+            state.mini={id:id,month:month};
+            user.value=id;mo.value=month;
+            renderMini(id,month,JSON.stringify(state.miniCache[id]));
+            return;
+        }
+        user.value=id;mo.value=month;
+        state.mini={id:id,month:month};
+        state.loadingMonth=month;
         button.click();
     }
     // Thuật toán calendarPosition() từ CtrlChonNhanVienTask: đo CHÍNH CỘT ĐỐI DIỆN.
@@ -432,6 +491,8 @@
         var pop=document.getElementById(popupId);if(!row||!pop)return;
         var button=row.querySelector('[data-ppm-calendar]');if(!button)return;
         var first=dateFromKey(month+'-01'),y=first.getFullYear(),m=first.getMonth(),days=parse(json);
+        state.miniCache[id]=Object.assign(state.miniCache[id]||{},days);
+        days=state.miniCache[id];
         pop.querySelector('[data-ppm-title]').textContent='Lịch · '+personName(row);
         var cal=$(pop.querySelector('[data-ppm-calendar-body]'));
         var offset=(first.getDay()+6)%7,lo=dayKey(new Date(y,m,1-offset)),hi=dayKey(new Date(y,m,42-offset));
@@ -449,7 +510,7 @@
         renderList();
         if(!projectNotifyVisible()&&value('miniUser')&&value('miniMonth')&&value('miniPayload')!=='{}')renderMini(value('miniUser'),value('miniMonth'),value('miniPayload'));
         else if(projectNotifyVisible())closeMini(true);
-        else if(!value('miniUser')||!value('miniMonth'))closeMini(false);
+        else if(!value('miniUser')||!value('miniMonth')){state.miniCache={};closeMini(false)}
     }
     if(!window.__ppmProjectListeners)window.__ppmProjectListeners={};
     if(!window.__ppmProjectListeners[rootId]){
@@ -465,7 +526,7 @@
             var r=root();if(!r)return;
             var cal=e.target.closest('[data-ppm-calendar]');
             if(cal&&r.contains(cal)){e.preventDefault();e.stopPropagation();var row=cal.closest('.ppm-row');if(row)requestMini(row.dataset.ppmId,monthKey(new Date()));return}
-            if(!e.target.closest('#'+popupId)&&!e.target.closest('#'+tooltipId)){closeMini(false)}
+            if(!e.target.closest('#'+popupId)&&!e.target.closest('#'+tooltipId)&&!e.target.closest('[id$="btnLoadMiniMonth"]')){closeMini(false)}
         });
         document.addEventListener('click',function(e){
             var pop=document.getElementById(popupId);
@@ -475,20 +536,26 @@
             var nav=e.target.closest('[data-ppm-month-change]');
             var d=nav?parseInt(nav.getAttribute('data-ppm-month-change'),10):0;
             if(d&&state.mini){var now=dateFromKey(state.mini.month+'-01');now.setMonth(now.getMonth()+d);requestMini(state.mini.id,monthKey(now));return}
-            var cell=e.target.closest('.mc-day.has-tooltip');
-            if(cell){if(state.pinned===cell){closeTip();return}closeTip();state.pinned=cell;cell.classList.add('show-tooltip');showTip(cell)}
+            var cell=e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
+            if(cell&&r.contains(cell)){if(state.pinned===cell){closeTip();return}closeTip();state.pinned=cell;cell.classList.add('show-tooltip');showTip(cell)}
+        });
+        document.addEventListener('keydown',function(e){
+            var b=e.target.closest('[data-ppm-taskbadge]');
+            if(!b||!root()||!root().contains(b))return;
+            if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click()}
+            if(e.key==='Escape')closeTip();
         });
         document.addEventListener('mouseover',function(e){
-            var pop=document.getElementById(popupId),cell=e.target.closest('.mc-day.has-tooltip');
-            if(pop&&cell&&pop.contains(cell)&&!state.pinned)showTip(cell);
+            var pop=document.getElementById(popupId),cell=e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
+            if(cell&&((pop&&pop.contains(cell))||(root()&&root().contains(cell)))&&!state.pinned)showTip(cell);
         });
         document.addEventListener('mouseout',function(e){
-            var pop=document.getElementById(popupId),cell=e.target.closest('.mc-day.has-tooltip');
-            if(pop&&cell&&pop.contains(cell)&&!state.pinned&&!(e.relatedTarget&&cell.contains(e.relatedTarget)))closeTip();
+            var pop=document.getElementById(popupId),cell=e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
+            if(cell&&((pop&&pop.contains(cell))||(root()&&root().contains(cell)))&&!state.pinned&&!(e.relatedTarget&&cell.contains(e.relatedTarget)))closeTip();
         });
         document.addEventListener('click',function(e){
             var t=document.getElementById(tooltipId);
-            if(t&&!t.contains(e.target)&&!e.target.closest('.mc-day.has-tooltip'))closeTip();
+            if(t&&!t.contains(e.target)&&!e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]'))closeTip();
         });
         document.addEventListener('scroll',function(e){
             var r=root();if(r&&r.contains(e.target))closeMini(false);

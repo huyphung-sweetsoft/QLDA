@@ -77,12 +77,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             SyncPickedFromRepeater();
             Guid userId; DateTime month;
             if (!Guid.TryParse(MiniUserField.Value, out userId) || !DateTime.TryParseExact(MiniMonthField.Value + "-01", "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out month)) return;
-            // Chỉ truy vấn 42 ngày của tháng đang mở cho đúng một nhân viên.
+            // Chỉ truy vấn một lần cho tháng được yêu cầu và hai tháng lân cận của đúng nhân viên này.
             // Không giới hạn ngày theo thời hạn dự án: lịch mini là lịch thực tế của nhân sự.
-            DateTime first = month.AddDays(-((int)month.DayOfWeek + 6) % 7);
+            DateTime previousMonth = month.AddMonths(-1);
+            DateTime nextMonth = month.AddMonths(1);
+            DateTime first = previousMonth.AddDays(-((int)previousMonth.DayOfWeek + 6) % 7);
+            DateTime lastMonth = nextMonth.AddMonths(1).AddDays(-1);
+            DateTime last = lastMonth.AddDays(6 - ((int)lastMonth.DayOfWeek + 6) % 7);
             AspnetUser user = UserManager.Instance.GetAllActiveNhanVien().FirstOrDefault(x => x.UserId == userId);
             if (user == null || (IdNhanVienQuanLy.HasValue && userId == IdNhanVienQuanLy.Value)) return;
-            MiniPayloadField.Value = BuildMonthSchedule(userId, first, first.AddDays(41));
+            MiniPayloadField.Value = BuildMonthSchedule(userId, first, last);
             upMemberList.Update();
         }
 
@@ -273,6 +277,36 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             Dictionary<Guid, int> tasks = new Dictionary<Guid, int>();
             if (CurrentIdDuAn.HasValue && CurrentIdDuAn.Value != Guid.Empty)
                 tasks = TaskManager.Instance.GetTaskCountsByProject(CurrentIdDuAn.Value);
+            // Một lần truy vấn chi tiết công việc trong dự án, dùng chung cho mọi badge.
+            // Đối chiếu IdNhanVien thực sự được gán, không nhận các task cha chỉ để hiển thị cây.
+            Dictionary<Guid, List<object>> tooltipTasks = new Dictionary<Guid, List<object>>();
+            if (CurrentIdDuAn.HasValue && CurrentIdDuAn.Value != Guid.Empty && tasks.Count > 0)
+            {
+                DataTable taskRows = TaskManager.Instance.FetchByIdAndOrderASCMaCV(CurrentIdDuAn.Value);
+                if (taskRows != null)
+                {
+                    foreach (DataRow taskRow in taskRows.Rows)
+                    {
+                        if (!taskRows.Columns.Contains("IdNhanVien") || taskRow["IdNhanVien"] == DBNull.Value) continue;
+                        string idList = Convert.ToString(taskRow["IdNhanVien"]);
+                        foreach (string rawId in (idList ?? string.Empty).Split(','))
+                        {
+                            Guid memberId;
+                            if (!Guid.TryParse(rawId.Trim(), out memberId) || !tasks.ContainsKey(memberId)) continue;
+                            List<object> memberTasks;
+                            if (!tooltipTasks.TryGetValue(memberId, out memberTasks))
+                                tooltipTasks[memberId] = memberTasks = new List<object>();
+                            memberTasks.Add(new
+                            {
+                                code = GetRowString(taskRow, "MaCongViec"),
+                                name = GetRowString(taskRow, "TenCongViec"),
+                                start = FormatTaskDate(taskRow, "NgayBatDau"),
+                                end = FormatTaskDate(taskRow, "NgayKetThuc")
+                            });
+                        }
+                    }
+                }
+            }
             HashSet<Guid> pickedSet = new HashSet<Guid>(picked);
             visible = visible.OrderByDescending(u => pickedSet.Contains(u.UserId))
                 .ThenBy(u => u.DisplayName).ThenBy(u => u.UserId).ToList();
@@ -290,7 +324,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     AvatarHtml = GetSingleAvatarHtml(user.DisplayName, user.Avatar, user.UserId),
                     IsOriginal = OriginalUserIds.Contains(user.UserId),
                     IsPicked = picked.Contains(user.UserId),
-                    TaskCount = count
+                    TaskCount = count,
+                    TaskTooltipJson = JsonConvert.SerializeObject(tooltipTasks.ContainsKey(user.UserId) ? tooltipTasks[user.UserId] : new List<object>())
                 });
             }
             rptCompanyMembers.DataSource = list; rptCompanyMembers.DataBind();
@@ -302,6 +337,13 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         }
 
 
+
+        private static string FormatTaskDate(DataRow row, string column)
+        {
+            if (row == null || !row.Table.Columns.Contains(column) || row[column] == DBNull.Value) return "Chưa xác định";
+            DateTime date;
+            return DateTime.TryParse(Convert.ToString(row[column]), out date) ? date.ToString("dd/MM/yyyy") : "Chưa xác định";
+        }
 
         /* ===================== SỰ KIỆN TÌM KIẾM / LỌC / TAG ===================== */
 
@@ -396,8 +438,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         }
 
 
-        // Chỉ truy vấn 42 ngày khi người dùng mở lịch mini / chuyển tháng.
-        // Không gọi API lịch cho từng nhân viên chỉ để render popup chọn thành viên.
+        // Chỉ truy vấn lịch khi người dùng mở lịch mini / tới tháng chưa có cache.
+        // Tải tháng trước + tháng hiện tại + tháng sau (kèm ô ngày giáp tháng) cho đúng một nhân viên.
         private string BuildMonthSchedule(Guid userId, DateTime start, DateTime end)
         {
             var days = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, start, end);
@@ -416,7 +458,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     projectName = t.TenDuAn,
                     currentProject = CurrentIdDuAn.HasValue && t.IdDuAn == CurrentIdDuAn.Value
                 }).ToArray();
-                string label = status == "holiday" ? "Nghỉ lễ" : status == "weekend" ? "Nghỉ" : count > 0 ? count + " CV" : "Trống";
+                string label = status == "holiday" ? "Nghỉ lễ" : status == "weekend" ? "Nghỉ" : count > 0 ? count + " công việc" : "Trống";
                 if (count > 0) status = "busy";
                 else if (status == "busy") status = "free";
                 result[day.Ngay.ToString("yyyy-MM-dd")] = new { status = status, text = label, tasks = tasks };

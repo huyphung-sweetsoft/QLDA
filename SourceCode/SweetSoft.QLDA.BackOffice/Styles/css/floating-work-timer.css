@@ -1,4 +1,4 @@
-/* Floating Work Timer - content-fit pill, draggable & adaptive details */
+﻿/* Floating Work Timer - content-fit pill, draggable & adaptive details */
 .kbg-float, .kbg-float * {
     box-sizing: border-box
 }
@@ -28,20 +28,23 @@
 .kbg-float-pill {
     display: inline-flex;
     align-items: center;
-    width: auto;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
     max-width: 100%;
-    min-height: 42px;
     white-space: nowrap;
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     cursor: grab;
-    padding: 7px 10px;
-    gap: 7px;
+    padding: 0;
+    gap: 0;
     border: 1px solid #dfd2f3;
-    border-radius: 15px;
+    border-radius: 50%;
     background: #fff;
-    text-align: left;
+    text-align: center;
     color: #253049;
     box-shadow: 0 4px 12px rgba(48,26,92,.07);
     transition: border-color .2s,transform .2s,box-shadow .2s
@@ -68,23 +71,61 @@
 .kbg-float-compact-line {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
+    justify-content: center;
+    gap: 0;
     width: auto;
     min-width: 0
 }
 
 .kbg-float-mini-icon {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 22px;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
     border-radius: 999px;
     background: #f3ecff;
     color: #5c26a1;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px
+    font-size: 17px;
+    transform-origin: 50% 50%
+}
+
+/* Chỉ hiển thị icon. Thời gian vẫn cập nhật trong JavaScript và thẻ chi tiết. */
+.kbg-float-compact-line strong,
+.kbg-float-chevron {
+    display: none !important
+}
+
+/* Rung êm trong 0.6 giây, nghỉ phần lớn chu kỳ để không gây khó chịu. */
+@keyframes kbg-clock-gentle-ring {
+    0%, 20%, 100% {
+        transform: rotate(0deg)
+    }
+
+    3% {
+        transform: rotate(-10deg)
+    }
+
+    6% {
+        transform: rotate(9deg)
+    }
+
+    9% {
+        transform: rotate(-7deg)
+    }
+
+    12% {
+        transform: rotate(5deg)
+    }
+
+    16% {
+        transform: rotate(-2deg)
+    }
+}
+
+.kbg-float:not([hidden]):not(.is-expanded):not(.is-dragging):not(.is-break):not(.is-offline) .kbg-float-mini-icon {
+    animation: kbg-clock-gentle-ring 3.6s ease-in-out infinite
 }
 
 .kbg-float-compact-line strong {
@@ -394,8 +435,11 @@ body.modal-open .kbg-float {
         }
 
     .kbg-float-pill {
-        min-height: 42px;
-        padding: 6px 8px
+        width: 44px;
+        min-width: 44px;
+        height: 44px;
+        min-height: 44px;
+        padding: 0
     }
 
     .kbg-float-compact-line strong {
