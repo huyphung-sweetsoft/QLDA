@@ -85,6 +85,12 @@ namespace SweetSoft.QLDA.Core.Managers
         #region Project Settings
         public static string ProjectCodePrefix = string.Format(SettingKeyPrefix, "ProjectCodePrefix");
         #endregion
+        #region Working Time Settings
+        public static string DefaultMorningStartTime = string.Format(SettingKeyPrefix, "DefaultMorningStartTime");
+        public static string DefaultMorningEndTime = string.Format(SettingKeyPrefix, "DefaultMorningEndTime");
+        public static string DefaultAfternoonStartTime = string.Format(SettingKeyPrefix, "DefaultAfternoonStartTime");
+        public static string DefaultAfternoonEndTime = string.Format(SettingKeyPrefix, "DefaultAfternoonEndTime");
+        #endregion
     }
     public class SettingManager : ISettingManager
     {

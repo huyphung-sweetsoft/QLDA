@@ -244,6 +244,9 @@
     <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Data\Administrative\AdministrativeDataSeeder.cs" />
+    <Compile Include="Data\Administrative\ProvinceSeedModel.cs" />
+    <Compile Include="Data\Administrative\WardSeedModel.cs" />
     <Compile Include="Default.aspx.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -470,6 +473,20 @@
     <Compile Include="fEmailTemplate\EmailTemplates.aspx.designer.cs">
       <DependentUpon>EmailTemplates.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fEmployeeDashboard\Controls\CtrlEmployeeDashboard.ascx.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fEmployeeDashboard\Controls\CtrlEmployeeDashboard.ascx.designer.cs">
+      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fEmployeeDashboard\EmployeeDashboard.aspx.cs">
+      <DependentUpon>EmployeeDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fEmployeeDashboard\EmployeeDashboard.aspx.designer.cs">
+      <DependentUpon>EmployeeDashboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx.cs">
       <DependentUpon>CtrlHopDongThucHien.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -534,6 +551,13 @@
     </Compile>
     <Compile Include="fIssues\IssueList.aspx.designer.cs">
       <DependentUpon>IssueList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fKhaiBaoGio\KhaiBaoGio.aspx.cs">
+      <DependentUpon>KhaiBaoGio.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fKhaiBaoGio\KhaiBaoGio.aspx.designer.cs">
+      <DependentUpon>KhaiBaoGio.aspx</DependentUpon>
     </Compile>
     <Compile Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx.cs">
       <DependentUpon>CtrlLichNgoaiLe.ascx</DependentUpon>
@@ -661,6 +685,34 @@
     <Compile Include="fProjects\DuAnDetail.aspx.designer.cs">
       <DependentUpon>DuAnDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fProjectTemplate\Controls\CtrlProjectTemplate.ascx.cs">
+      <DependentUpon>CtrlProjectTemplate.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjectTemplate\Controls\CtrlProjectTemplate.ascx.designer.cs">
+      <DependentUpon>CtrlProjectTemplate.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjectTemplate\Controls\CtrlProjectTemplateDetail.ascx.cs">
+      <DependentUpon>CtrlProjectTemplateDetail.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjectTemplate\Controls\CtrlProjectTemplateDetail.ascx.designer.cs">
+      <DependentUpon>CtrlProjectTemplateDetail.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjectTemplate\ProjectTemplateDetail.aspx.cs">
+      <DependentUpon>ProjectTemplateDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjectTemplate\ProjectTemplateDetail.aspx.designer.cs">
+      <DependentUpon>ProjectTemplateDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjectTemplate\ProjectTemplateList.aspx.cs">
+      <DependentUpon>ProjectTemplateList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjectTemplate\ProjectTemplateList.aspx.designer.cs">
+      <DependentUpon>ProjectTemplateList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="fRisks\Controls\CtrlViewRiskDetail.ascx.cs">
       <DependentUpon>CtrlViewRiskDetail.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -681,6 +733,13 @@
     </Compile>
     <Compile Include="fTasks\Controls\CtrlAddSubTask.ascx.designer.cs">
       <DependentUpon>CtrlAddSubTask.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlApplyTemplate.ascx.cs">
+      <DependentUpon>CtrlApplyTemplate.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlApplyTemplate.ascx.designer.cs">
+      <DependentUpon>CtrlApplyTemplate.ascx</DependentUpon>
     </Compile>
     <Compile Include="fTasks\Controls\CtrlFastCompleteTask.ascx.cs">
       <DependentUpon>CtrlFastCompleteTask.ascx</DependentUpon>
@@ -822,6 +881,13 @@
     <Compile Include="fUsers\NhanVienDetail.aspx.designer.cs">
       <DependentUpon>NhanVienDetail.aspx</DependentUpon>
     </Compile>
+    <Compile Include="SeedAdministrativeData.aspx.cs">
+      <DependentUpon>SeedAdministrativeData.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SeedAdministrativeData.aspx.designer.cs">
+      <DependentUpon>SeedAdministrativeData.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Startup.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
@@ -879,6 +945,7 @@
     <Content Include="Controls\Dashboard\dashboard-resource.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="Controls\WorkTimer\CtrlFloatingWorkTimer.ascx" />
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
     <Content Include="fCosts\Controls\CtrlViewCostDetail.ascx" />
     <Content Include="fCosts\CostList.aspx" />
@@ -906,6 +973,8 @@
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
     <Content Include="fEmailTemplate\EmailTemplates.aspx" />
+    <Content Include="fEmployeeDashboard\Controls\CtrlEmployeeDashboard.ascx" />
+    <Content Include="fEmployeeDashboard\EmployeeDashboard.aspx" />
     <Content Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx" />
     <Content Include="fExecuteContracts\HopDongThucHienDetail.aspx" />
     <Content Include="fExecuteContracts\HopDongThucHienList.aspx" />
@@ -933,6 +1002,7 @@
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
+    <Content Include="fKhaiBaoGio\KhaiBaoGio.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
@@ -947,9 +1017,14 @@
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />
+    <Content Include="fProjectTemplate\Controls\CtrlProjectTemplate.ascx" />
+    <Content Include="fProjectTemplate\Controls\CtrlProjectTemplateDetail.ascx" />
+    <Content Include="fProjectTemplate\ProjectTemplateDetail.aspx" />
+    <Content Include="fProjectTemplate\ProjectTemplateList.aspx" />
     <Content Include="fRisks\Controls\CtrlViewRiskDetail.ascx" />
     <Content Include="fTasks\Controls\CtrlAddPhase.ascx" />
     <Content Include="fTasks\Controls\CtrlAddSubTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlApplyTemplate.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlFastCompleteTask.ascx" />
     <Content Include="fTasks\Controls\CtrlStartTask.ascx" />
@@ -990,6 +1065,8 @@
     <Content Include="Profile.aspx" />
     <Content Include="ResetPassword.aspx" />
     <Content Include="robots.txt" />
+    <Content Include="SeedAdministrativeData.aspx" />
+    <Content Include="Styles\css\floating-work-timer.css" />
     <Content Include="Styles\css\landingpage.css" />
     <Content Include="Styles\images\addImage.jpg" />
     <Content Include="Styles\images\background-app.png" />
@@ -1003,6 +1080,7 @@
     <Content Include="Styles\images\share-image.jpg" />
     <Content Include="Styles\images\SweetSoft-logo-light.png" />
     <Content Include="Styles\js\dashboard.js" />
+    <Content Include="Styles\js\floating-work-timer.js" />
     <Content Include="Styles\js\trang-chu.js" />
     <Content Include="Styles\plugins\ckeditor\lang\vi.js" />
     <Content Include="Styles\plugins\ckeditor\plugins\image2\lang\vi.js" />
@@ -1018,6 +1096,112 @@
     <Content Include="Styles\plugins\slick\slick.css" />
     <Content Include="Styles\plugins\slick\slick.js" />
     <Content Include="Styles\video\video-trang-chu.mp4" />
+    <Content Include="Uploads\UserAvatar\2026\08\Logo_NTU_20260825_095641_TSP16V.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\100_0122_20260928_232153_V8HMEQ.JPG" />
+    <Content Include="Uploads\UserAvatar\2026\09\100_0126_20260913_151754_GFZZAH.JPG" />
+    <Content Include="Uploads\UserAvatar\2026\09\100_0128_20260912_103212_U5QPS0.JPG" />
+    <Content Include="Uploads\UserAvatar\2026\09\100_0178_20260913_154036_3EWA49.JPG" />
+    <Content Include="Uploads\UserAvatar\2026\09\1340819_20260911_094625_TDN9C0.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\401027309_307443152099981_2429635909045856463_n_20260905_105812_V3G65K.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\401027309_307443152099981_2429635909045856463_n_20260905_110337_VI8FJ2.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\401027309_307443152099981_2429635909045856463_n_20260913_180424_ZNPLCO.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\401027309_307443152099981_2429635909045856463_n_20260921_193633_IVOZMZ.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\401027309_307443152099981_2429635909045856463_n_20260921_200500_FH3OL0.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\401027309_307443152099981_2429635909045856463_n_20260921_200508_W42ELL.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\ENDFIELD_SHARE_1770995774_20260910_095858_VL13YT.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\ENDFIELD_SHARE_1770995774_20260910_100344_XP4NJW.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\ENDFIELD_SHARE_1770995774_20260910_100858_8GBORV.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\gnar_20260911_094501_Z1TGF9.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-05_221619_20260921_104255_FDNAFL.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-06_133910_20260905_110256_7T238Y.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-11_233257_20260913_175949_G4J8XB.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-11_233257_20260913_180414_5Y7RU8.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-11_233257_20260913_181327_XS2T27.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-14_090322_20260913_180323_7F2AFE.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-18_231626_20260913_175828_1R9DUX.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-18_231626_20260913_180107_QZ5OIB.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-18_231626_20260930_081135_M0FBG3.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2024-12-27_212808_20260913_175918_VY8U8F.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-01-04_231017_20260905_111415_ICC5R4.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-01-04_231017_20260913_180130_JCY46D.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-01-06_201849_20260913_180029_66ZTUY.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-01-09_182344_20260913_220304_NBW619.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-01-10_193523_20260905_111033_1DNFU1.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-03-20_143744_20260917_235201_P228HY.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2025-04-02_195007_20260917_215119_JENQFL.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2026-07-28_085058_20260911_090115_H90PMS.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2026-07-28_092343_20260911_090151_TFDHL7.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot_2026-08-07_080434_20260911_090049_YCULHP.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260901_235201_POMS7R.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260913_181301_RZBVZE.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260913_181314_Z853I5.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260917_215430_X1FB0T.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260917_215508_RBOH44.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260917_215523_BC8264.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260917_215739_BKJKY0.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260921_104605_4YA985.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260921_193613_W9LC7E.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__1__20260922_091840_1DSNNT.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__3__20260905_105759_R6RPPT.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__3__20260917_215311_P1IFV2.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__3__20260917_215323_RMCEKN.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__5__20260913_175806_F6ASDA.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__5__20260913_180047_YPTD5V.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\Screenshot__5__20260924_130439_RZFCH6.png" />
+    <Content Include="Uploads\UserAvatar\2026\09\slamdunk_20260910_102347_7JG6F0.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\slamdunk_20260910_111416_WBCBVE.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\slamdunk_20260911_091350_BFXWET.jpg" />
+    <Content Include="Uploads\UserAvatar\2026\09\slamdunk_20260911_105138_V6X34Q.jpg" />
+    <Content Include="Uploads\_Logs\2026\10\log_20261001.txt" />
+    <Content Include="Uploads\_Logs\2026\10\log_20261002.txt" />
+    <Content Include="Uploads\_Logs\2026\10\log_20261006.txt" />
+    <Content Include="Uploads\_Logs\2026\10\log_20261007.txt" />
+    <Content Include="Uploads\_Logs\2026\10\log_20261010.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260820.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260822.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260826.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260827.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260830.txt" />
+    <Content Include="Uploads\_Logs\2026\8\log_20260831.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260901.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260903.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260905.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260910.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260916.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260917.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260924.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260925.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260927.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260928.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260929.txt" />
+    <Content Include="Uploads\_Logs\2026\9\log_20260930.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_01092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_02092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_02102026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_04092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_05092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_06092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_07092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_07102026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_08092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_09092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_10092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_10102026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_11092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_12092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_13092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_15092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_16092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_17092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_21092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_22092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_23092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_24092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_25092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_27092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_28092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_29092026.txt" />
+    <Content Include="Uploads\_Logs\ErrorLog_30092026.txt" />
     <Content Include="WebService.asmx" />
     <Content Include="fFilesBox\SecureFileUploadHandler.ashx" />
     <Content Include="_RFMng\connectors\aspx\filemanager.aspx" />
@@ -1567,6 +1751,13 @@
     <Content Include="_RFMng\themes\default\styles\filemanager.css" />
     <Content Include="_RFMng\themes\default\styles\ie.css" />
     <Content Include=".vs\SweetSoft.QLDA.BackOffice.csproj.dtbcache.json" />
+    <Content Include="Data\Administrative\all-province.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Administrative\all-ward.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fKhaiBaoGio\FloatingWorkTimer.ashx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -2012,6 +2203,11 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Uploads\DocumentTemplate\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_081156_QE2CWF.docx" />
+    <Content Include="Uploads\DocumentVersion\2026\08\T_ng_h_p_kh_o_s_t_ch_c_n_ng_h__th_ng_20260827_104652_K3F7JP.docx" />
+    <Content Include="Uploads\DocumentVersion\2026\09\Pham-Trung-Kien_20260911_091552_MFMMH5.pdf" />
+    <Content Include="Uploads\ProjectContractPdf\2026\09\HopDongThucHien_7a9957ddc60540a2be2072616a82eb91.pdf" />
+    <Content Include="Uploads\ProjectContract\2026\10\HopDongThucHien_3ff14ba0da374ad591b1cfac7f2ff404__1__20261001_090729_LZ4W8A.pdf" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -2230,7 +2426,6 @@
     <Folder Include="bin\en-US\" />
     <Folder Include="bin\vi-VN\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Data\" />
     <Folder Include="obj\" />
     <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />

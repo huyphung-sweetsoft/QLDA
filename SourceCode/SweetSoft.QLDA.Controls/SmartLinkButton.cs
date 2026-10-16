@@ -53,6 +53,21 @@ namespace SweetSoft.QLDA.Controls
             }
         }
 
+        // [THÊM MỚI]: Thuộc tính để ép control tự render ra dạng mờ nhạt (disable)
+        public bool IsDisabledStyle
+        {
+            get
+            {
+                if (ViewState["IsDisabledStyle"] == null)
+                    return false;
+                return (bool)ViewState["IsDisabledStyle"];
+            }
+            set
+            {
+                ViewState["IsDisabledStyle"] = value;
+            }
+        }
+
         protected override void OnPreRender(EventArgs e)
         {
             base.OnPreRender(e);
@@ -61,37 +76,59 @@ namespace SweetSoft.QLDA.Controls
             {
                 string iconHtml = $"<i class=\"{ButtonIcon}\"></i>";
                 string resourceText = GetResourceText(ResourceKey);
+                
+                string baseClass = "";
                 switch (ResourceKey)
                 {
                     case "EMPLOYEE_DETAIL":
                     case "DETAIL":
-                        this.CssClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
+                        baseClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
                         break;
                     case "DELETE":
-                        this.CssClass = "btn btn-outline-danger btn-sm text-center btn-smart-link";
+                        baseClass = "btn btn-outline-danger btn-sm text-center btn-smart-link";
                         break;
                     case "EDIT":
                     case "ADDNEW":
                     case "ADD_NEW":
                     case "ADD":
-                        this.CssClass = "btn btn-outline-info btn-sm text-center btn-smart-link";
+                        baseClass = "btn btn-outline-info btn-sm text-center btn-smart-link";
                         break;
                     case "SAVE":
-                        this.CssClass = "btn btn-outline-warning btn-sm text-center btn-smart-link";
+                        baseClass = "btn btn-outline-warning btn-sm text-center btn-smart-link";
                         break;
                     case "FAST_APPROVAL":
-                        this.CssClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
+                        baseClass = "btn btn-outline-success btn-sm text-center btn-smart-link";
+                        break;
+                    case "TOGGLE_LOCK": // [THÊM MỚI]: Style dành riêng cho nút khóa
+                        baseClass = "btn btn-outline-primary btn-sm text-center btn-smart-link";
                         break;
                     case "RESET_PASSWORD":
                     default:
-                        this.CssClass = "btn btn-outline-primary btn-sm text-center btn-smart-link";
+                        baseClass = "btn btn-outline-primary btn-sm text-center btn-smart-link";
                         break;
                 }
+
+                // [SỬA LẠI]: Nếu IsDisabledStyle = true thì add thêm class làm mờ + chặn bấm
+                if (this.IsDisabledStyle)
+                {
+                    this.CssClass = baseClass + " opacity-25 pe-none";
+                }
+                else
+                {
+                    this.CssClass = baseClass;
+                }
+
                 this.Text = iconHtml; //+ resourceText;
-                this.ToolTip = resourceText;
+                
+                // Tránh ghi đè ToolTip nếu bên ngoài file .ascx đã truyền ToolTip động (như Khóa/Mở khóa)
+                if (string.IsNullOrEmpty(this.ToolTip))
+                {
+                    this.ToolTip = resourceText;
+                }
             }
             this.Visible = VisibleConditionKey;
         }
+
         private string GetResourceText(string resourceKey)
         {
             switch (resourceKey)
@@ -113,6 +150,8 @@ namespace SweetSoft.QLDA.Controls
                     return "Lưu";
                 case "FAST_APPROVAL":
                     return "Duyệt nhanh";
+                case "TOGGLE_LOCK": // [THÊM MỚI]: Text tooltip mặc định cho nút Khóa
+                    return "Khóa/Mở khóa tài khoản";
                 default:
                     return resourceKey;
 

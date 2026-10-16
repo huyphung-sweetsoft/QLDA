@@ -682,6 +682,8 @@ namespace SweetSoft.QLDA.Controls
             Bell,
             [Render("fas fa-user-plus")]
             UserPlus,
+            [Render("fas fa-unlock-alt")]
+            UnlockAlt,
         }
     }
 }

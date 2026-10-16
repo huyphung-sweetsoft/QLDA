@@ -1047,9 +1047,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlSwapPhase1.ConfirmRequest(e);
+            CtrlChonNhanVienTask1.ConfirmRequest(e);
             if (e != null && e.Submit &&
                 e.CommandName != "CONFIRM_SWAP_PHASES" &&
-                e.CommandName != "CONFIRM_REORDER_PHASES")
+                e.CommandName != "CONFIRM_REORDER_PHASES" &&
+                e.CommandName != "CONFIRM_OVERLOAD_ASSIGN_TASK")
             {
                 Guid taskId = Guid.Empty;
                 if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))

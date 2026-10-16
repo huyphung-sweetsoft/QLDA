@@ -30,12 +30,12 @@
                                 <SweetSoft:FilesBox runat="server" ID="fbImage" />
                             </div>
                         </div>
-
-                        <!-- CỘT PHẢI: FORM NHẬP LIỆU -->
+                       <!-- CỘT PHẢI: FORM NHẬP LIỆU -->
                         <div class="col-lg-10 pt-2">
+    
+                            <!-- KHỐI 1: CHỨA HÀNG 1 & HÀNG 2 (Không có UpdatePanel) -->
                             <div class="row px-1">
-                                
-                                <!-- HÀNG 1: Họ tên | Ngày sinh | Giới tính | CCCD -->
+                                <!-- Hàng 1: Họ tên | Ngày sinh | Giới tính | Điện thoại -->
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.FULL_NAME) %></label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtFullName" Required="true"></SweetSoft:ExtraTextBox>
@@ -53,46 +53,50 @@
                                     </SweetSoft:ExtraDropdown>
                                 </div>
                                 <div class="col-md-3 mb-2">
-                                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></label>
-                                    <SweetSoft:ExtraTextBox runat="server" ID="txtCCCD" Required="true"></SweetSoft:ExtraTextBox>
+                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %></label>
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtPhone" IsPhone="true"></SweetSoft:ExtraTextBox>
                                 </div>
 
-                                <!-- HÀNG 2: Email | Điện thoại | Địa chỉ (Cấp col-6 để full dòng) -->
+                                <!-- Hàng 2: Email | Ngày gia nhập | Phòng ban | Chức danh -->
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label label-valid">Email</label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtEmail" Required="true" IsEmail="true" RequiredAdvanced="custom[email]"></SweetSoft:ExtraTextBox>
                                 </div>
                                 <div class="col-md-3 mb-2">
-                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONE_NUMBER) %></label>
-                                    <SweetSoft:ExtraTextBox runat="server" ID="txtPhone" IsPhone="true"></SweetSoft:ExtraTextBox>
+                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_JOINDATE) %></label>
+                                    <asp:TextBox runat="server" ID="txtNgayGiaNhap" type="date" CssClass="form-control"></asp:TextBox>
                                 </div>
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.ADDRESS) %></label>
-                                    <SweetSoft:ExtraTextBox runat="server" ID="txtDiaChi"></SweetSoft:ExtraTextBox>
-                                </div>
-
-                                <!-- HÀNG 3: Phòng ban | Chức danh | Ngày gia nhập | Tình trạng -->
-                                <!-- Đổi mb-2 thành mb-0 ở hàng cuối cùng để hút khoảng trống phía dưới -->
-                                <div class="col-md-3 mb-0">
+                                <div class="col-md-3 mb-2">
                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.PHONG_BAN) %></label>
                                     <SweetSoft:ExtraDropdown runat="server" ID="ddlPhongBan" SimpleInit="true"></SweetSoft:ExtraDropdown>
                                 </div>
-                                <div class="col-md-3 mb-0">
+                                <div class="col-md-3 mb-2">
                                     <label class="form-label"><%= GetResourceText(BackEndResourceKeys.CHUC_DANH) %></label>
                                     <SweetSoft:ExtraDropdown runat="server" ID="ddlChucDanh" SimpleInit="true"></SweetSoft:ExtraDropdown>
                                 </div>
-                                <div class="col-md-3 mb-0">
-                                    <label class="form-label"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_JOINDATE) %></label>
-                                   <asp:TextBox runat="server" ID="txtNgayGiaNhap" type="date" CssClass="form-control"></asp:TextBox>
-                                </div>
-                                <div class="col-md-3 mb-0 d-flex flex-column justify-content-start">
-                                    <label class="form-label fw-bold text-nowrap">
-                                        <%= GetResourceText(BackEndResourceKeys.WORKING_STATUS) %>
-                                    </label>
-                                    <SweetSoft:ExtraCheckbox runat="server" ID="chkStatus" Checked="true" />
-                                </div>
+                            </div> <!-- ĐÓNG THẺ DÒNG SỐ 1 & 2 TẠI ĐÂY -->
 
-                            </div>
+                            <!-- KHỐI 2: CHỨA HÀNG 3 (Bọc nguyên khối bằng UpdatePanel, bên trong mở Row mới) -->
+                            <asp:UpdatePanel ID="upnlDiaChi" runat="server" UpdateMode="Conditional">
+                                <ContentTemplate>
+                                    <!-- MỞ MỘT ROW MỚI Y HỆT KHỐI Ở TRÊN -->
+                                    <div class="row px-1">
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label">Tỉnh/Thành</label>
+                                            <SweetSoft:ExtraDropdown runat="server" ID="ddlTinhThanh" AutoPostBack="true" EnableSearch="true" OnSelectedIndexChanged="ddlTinhThanh_SelectedValueChanged"></SweetSoft:ExtraDropdown>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label">Xã/Phường</label>
+                                            <SweetSoft:ExtraDropdown runat="server" ID="ddlXaPhuong" EnableSearch="true"></SweetSoft:ExtraDropdown>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Địa chỉ chi tiết (Số nhà, Tên đường...)</label>
+                                            <SweetSoft:ExtraTextBox runat="server" ID="txtDiaChi"></SweetSoft:ExtraTextBox>
+                                        </div>
+                                    </div>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+
                         </div>
                     </div>
                 </fieldset>
@@ -106,48 +110,61 @@
                         </label>
                     </div>
                 </div>
-
                 <!-- KHỐI 2: THÔNG TIN TÀI KHOẢN -->
                 <fieldset class="fieldset-box mb-1" id="boxAccountInfo" runat="server" style="display: none; padding-bottom: 5px;">
                     <legend class="text-primary fw-bold px-1 mb-0"><%= GetResourceText(BackEndResourceKeys.ACCOUNT_INFORMATION) %></legend>
-                    <div class="row pt-2 mx-0 px-1">
-                        
-                        <!-- Dòng 1: Username | Role | Toggle Password -->
+                    <div class="row pt-2 mx-0 px-1 d-flex align-items-start"> <!-- Đổi từ end sang start để Subtext không đẩy nút lên -->
+        
+                       <!-- CỘT 1 (col-4): Username -->
                         <div class="col-md-4 mb-2">
                             <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.USER_NAME) %></label>
-                            <div class="input-group">
-                                <SweetSoft:ExtraTextBox runat="server" ID="txtUserName" Required="false" MaxLength="50" RequiredAdvanced="custom[username]"></SweetSoft:ExtraTextBox>
-                                <a class="btn btn-warning" href="javascript:;" onclick="GenerateUserName();" title="<%= GetResourceText(BackEndResourceKeys.GENERATE) %>">
-                                    <i class="fas fa-bolt"></i>
-                                </a>
-                            </div>
+    
+                            <!-- Bọc riêng vùng này vào UpdatePanel để kiểm tra ngầm -->
+                            <asp:UpdatePanel ID="upnlUserName" runat="server" UpdateMode="Conditional">
+                                <ContentTemplate>
+                                    <div class="input-group">
+                                        <SweetSoft:ExtraTextBox runat="server" ID="txtUserName" Required="false" MaxLength="50" RequiredAdvanced="custom[username]"></SweetSoft:ExtraTextBox>
+                
+                                        <!-- Đổi thành LinkButton để gọi C# -->
+                                        <asp:LinkButton runat="server" ID="btnGenUser" CssClass="btn btn-warning" OnClick="btnGenUser_Click" ToolTip="<%= GetResourceText(BackEndResourceKeys.GENERATE) %>">
+                                            <i class="fas fa-bolt"></i>
+                                        </asp:LinkButton>
+                                    </div>
+            
+                                    <!-- Subtext thông báo trùng lặp -->
+                                    <asp:Label ID="lblUserCheckMsg" runat="server" CssClass="mt-1 d-block" Visible="false" style="font-size: 12px;"></asp:Label>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
                         </div>
+
+                        <!-- CỘT 2 (col-4): Role -->
                         <div class="col-md-4 mb-2">
                             <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.USER_GROUP) %></label>
                             <SweetSoft:ExtraDropdown runat="server" ID="ddlRole" SimpleInit="true"></SweetSoft:ExtraDropdown>
                         </div>
-                        <div runat="server" id="divChangePassword" visible="false" class="col-md-4 mb-2 d-flex align-items-end">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" id="chkChangePassword" runat="server" onclick="TogglePasswordEdit(this);">
-                                <label class="form-check-label text-primary fw-bold" for="<%= chkChangePassword.ClientID %>">
-                                    <%= GetResourceText(BackEndResourceKeys.CHANGE_PASSWORD) %>
-                                </label>
+
+                        <!-- CỘT 3 (col-4): "Khu vực Mật Khẩu" -->
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Mật khẩu</label> <!-- Cân bằng chiều cao với label 2 ô kia -->
+            
+                            <!-- Hiện khi Thêm Mới -->
+                            <div runat="server" id="divPasswordAutoInfo" visible="true" class="w-100 text-center">
+                                <button type="button" class="btn btn-secondary w-100" disabled style="opacity: 0.75;">
+                                    <i class="fas fa-magic me-1"></i> Tự động cấp mật khẩu
+                                </button>
+                                <small class="text-muted fst-italic d-block mt-1" style="font-size: 11.5px; line-height: 1.1;">
+                                    Hệ thống sẽ tự tạo và gửi qua Email
+                                </small>
+                            </div>
+            
+                            <!-- Hiện khi Cập Nhật -->
+                            <div runat="server" id="divResetPasswordBtn" visible="false" class="w-100 text-center">
+                                 <SweetSoft:ExtraButton runat="server" ID="lbtResetPassword" OnClick="lbtResetPassword_Click" CssClass="waves-effect waves-light w-100" ButtonStyle="Warning" ButtonIcon="UnlockAlt">
+                                    Cấp lại mật khẩu
+                                </SweetSoft:ExtraButton>
                             </div>
                         </div>
 
-                        <!-- Dòng 2: Mật khẩu -->
-                        <div runat="server" id="divPassword" data-selector="password" class="col-12 p-0">
-                            <div class="row mx-0">
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.PASSWORD) %></label>
-                                    <SweetSoft:ExtraTextBox runat="server" ID="txtPassword" TextMode="Password" Autocomplete="new-password"></SweetSoft:ExtraTextBox>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.CONFIRM_PASSWORD) %></label>
-                                    <SweetSoft:ExtraTextBox runat="server" ID="txtConfirmPassword" TextMode="Password" Autocomplete="new-password"></SweetSoft:ExtraTextBox>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </fieldset>
 
@@ -175,8 +192,6 @@
 </SweetSoft:ExtraModal>
 
 <style>
-    div[data-selector="password"] { display: none !important; }
-    div[data-selector="password"].show { display: block !important; }
     .user-popup-fieldset { width: auto; max-width: 100%; box-sizing: border-box; }
 
     /* XỬ LÝ KHÔNG GIAN DƯ THỪA TỪ LEGEND */
@@ -216,29 +231,14 @@
 </style>
 
 <script type="text/javascript">
-    function TogglePasswordEdit(t) {
-        var isChecked = $(t).is(':checked');
-        var $pwdBox = $('[data-selector="password"]');
-
-        if (isChecked) {
-            $pwdBox.addClass('show');
-            $('#<%= txtPassword.ClientID %>').addClass('validate[required]');
-            $('#<%= txtConfirmPassword.ClientID %>').addClass('validate[required]');
-        } else {
-            $pwdBox.removeClass('show');
-            $('#<%= txtPassword.ClientID %>').removeClass('validate[required]');
-            $('#<%= txtConfirmPassword.ClientID %>').removeClass('validate[required]');
-            $('#<%= txtPassword.ClientID %>').val('');
-            $('#<%= txtConfirmPassword.ClientID %>').val('');
-        }
-    }
+    // ĐÃ XÓA HÀM TogglePasswordEdit (Vì không còn dùng nữa)
 
     function ToggleAccountInfo(t) {
         var isChecked = $(t).is(':checked');
         var $accBox = $('#<%= boxAccountInfo.ClientID %>');
         var $txtUser = $('#<%= txtUserName.ClientID %>');
         var $ddlRole = $('#<%= ddlRole.ClientID %>');
-        
+
         if (isChecked) {
             $accBox.slideDown();
             $txtUser.addClass('validate[required]');
@@ -247,11 +247,7 @@
             $accBox.slideUp();
             $txtUser.removeClass('validate[required]');
             $ddlRole.removeClass('validate[required]');
-            var chkPwd = $('#<%= chkChangePassword.ClientID %>');
-            if (chkPwd.length > 0) {
-                chkPwd.prop('checked', false);
-                TogglePasswordEdit(chkPwd[0]);
-            }
+            // ĐÃ XÓA TOÀN BỘ LOGIC RÁC GỌI ĐẾN chkChangePassword CŨ Ở ĐÂY
         }
     }
 
@@ -272,4 +268,37 @@
         str = str.replace(/[^a-z0-9]/g, "");
         $('#<%= txtUserName.ClientID %>').val(str);
     }
+    (function () {
+        var BASE_Z = 106000;
+        function stackBusinessModals() {
+            var $modals = $('.modal:visible').not('#modal-notify');
+            if ($modals.length > 1) {
+                $('.modal-backdrop').each(function (i) { $(this).css('z-index', BASE_Z + (i * 10)); });
+                $modals.each(function (i) { $(this).css('z-index', BASE_Z + (i * 10) + 5); });
+            }
+        }
+        function raiseNotify() {
+            var notify = document.getElementById('modal-notify');
+            if (!notify || !$(notify).is(':visible')) return;
+            var $others = $('.modal:visible').not(notify);
+            if ($others.length === 0) return;
+            var maxZ = BASE_Z;
+            $others.each(function () { maxZ = Math.max(maxZ, parseInt(window.getComputedStyle(this).zIndex, 10) || 0); });
+            notify.style.setProperty('z-index', String(maxZ + 20), 'important');
+            var bds = document.querySelectorAll('.modal-backdrop');
+            if (bds.length) bds[bds.length - 1].style.setProperty('z-index', String(maxZ + 15), 'important');
+        }
+        function raiseNotifyRepeatedly() {
+            [0, 100, 250, 500, 900].forEach(function (ms) { setTimeout(function () { stackBusinessModals(); raiseNotify(); }, ms); });
+        }
+        ['show.bs.modal', 'shown.bs.modal'].forEach(function (evt) {
+            document.addEventListener(evt, function (e) { if (e.target && e.target.id === 'modal-notify') raiseNotifyRepeatedly(); });
+        });
+        document.addEventListener('hidden.bs.modal', function (e) {
+            if (e.target && e.target.id === 'modal-notify') e.target.style.removeProperty('z-index');
+        });
+        if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(raiseNotifyRepeatedly);
+        }
+    })();
 </script>

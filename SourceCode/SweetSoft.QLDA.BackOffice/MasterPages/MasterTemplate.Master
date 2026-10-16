@@ -7,6 +7,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.Infrastructure" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Helpers" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
+<%@ Register Src="~/Controls/WorkTimer/CtrlFloatingWorkTimer.ascx" TagPrefix="SweetSoft" TagName="CtrlFloatingWorkTimer" %>
 
 <!DOCTYPE html>
 <!--
@@ -123,6 +124,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link href="/Styles/css/icon.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/Boxicon.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/toastr.css" rel="stylesheet" type="text/css" />
+<link href="~/Styles/css/floating-work-timer.css" rel="stylesheet" type="text/css" runat="server" />
     <link href="/Styles/css/app.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/custom-style.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/plugins/validationEngine/validationEngine.jquery.css" rel="stylesheet" type="text/css" />
@@ -755,6 +757,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a runat="server" id="btnRefreshPermission" data-selector="btnRefreshPermission" onserverclick="btnRefreshPermission_ServerClick"></a>
         <asp:ContentPlaceHolder ID="cpModalMain" runat="server">
         </asp:ContentPlaceHolder>
+        <%-- Đồng hồ nổi dùng chung, độc lập cpMain và các UpdatePanel --%>
+        <SweetSoft:CtrlFloatingWorkTimer ID="CtrlFloatingWorkTimer1" runat="server" />
 
         <div class="loader-content">
             <div class="loader">
@@ -762,6 +766,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </div>
             <span class="server-message"><%= GetResourceText(BackEndResourceKeys.SYSTEM_IS_PROCESSING_YOUR_REQUEST) %></span>
         </div>
+        <%-- Floating timer: chỉ đọc trạng thái, không tạo postback --%>
+        <script src="<%= ResolveUrl("~/Styles/js/floating-work-timer.js") %>"></script>
         <%--Render from server--%>
         <asp:ContentPlaceHolder runat="server" ID="cpVendorScript"></asp:ContentPlaceHolder>
 

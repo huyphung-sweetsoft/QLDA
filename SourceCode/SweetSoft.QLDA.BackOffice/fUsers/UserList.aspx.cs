@@ -152,6 +152,7 @@ namespace SweetSoft.QLDA.BackOffice.fUsers
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlUsers1.ConfirmRequest(e);
+            CtrlUserPopup1.ConfirmRequest(e);
         }
         #endregion
 

@@ -41,6 +41,7 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                 if (!this.IsView)
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                 ApplyControlsText();
+                BindDefaultWorkingHours();
                 BindData();
                 CtrlLichNgoaiLe1.InitControls();
             }
@@ -55,6 +56,38 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                 { RewriteURLHelper.LichBieu, GetResourceText(BackEndResourceKeys.SCHEDULE_MANAGEMENT) }
             };
             btnSaveTuan.Text = btnSaveTuan.ToolTip = GetResourceText(BackEndResourceKeys.SAVE_WEEK_CONFIG);
+
+            // Nút điền giờ chỉ hỗ trợ biểu mẫu, nhưng vẫn chỉ bật cho người có quyền sửa.
+            btnApplyDefaultHours.Enabled = this.IsEdit;
+        }
+        private void BindDefaultWorkingHours()
+        {
+            SettingManager settingManager = new SettingManager();
+
+            hdfDefaultMorningStart.Value =
+                settingManager.GetSettingValue(SettingKeys.DefaultMorningStartTime);
+
+            hdfDefaultMorningEnd.Value =
+                settingManager.GetSettingValue(SettingKeys.DefaultMorningEndTime);
+
+            hdfDefaultAfternoonStart.Value =
+                settingManager.GetSettingValue(SettingKeys.DefaultAfternoonStartTime);
+
+            hdfDefaultAfternoonEnd.Value =
+                settingManager.GetSettingValue(SettingKeys.DefaultAfternoonEndTime);
+
+            // Fallback nếu hệ thống chưa có cấu hình
+            if (string.IsNullOrEmpty(hdfDefaultMorningStart.Value))
+                hdfDefaultMorningStart.Value = "08:00";
+
+            if (string.IsNullOrEmpty(hdfDefaultMorningEnd.Value))
+                hdfDefaultMorningEnd.Value = "12:00";
+
+            if (string.IsNullOrEmpty(hdfDefaultAfternoonStart.Value))
+                hdfDefaultAfternoonStart.Value = "13:00";
+
+            if (string.IsNullOrEmpty(hdfDefaultAfternoonEnd.Value))
+                hdfDefaultAfternoonEnd.Value = "17:00";
         }
         private void BindData()
         {
@@ -66,33 +99,93 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
         }
         protected void rptTuanLamViec_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            if (e.Item.ItemType != ListItemType.Item &&
+                e.Item.ItemType != ListItemType.AlternatingItem)
+                return;
+
+            TblCauHinhTuanLamViec item =
+                e.Item.DataItem as TblCauHinhTuanLamViec;
+
+            if (item == null)
+                return;
+
+            Literal ltrTenThu =
+                (Literal)e.Item.FindControl("ltrTenThu");
+
+            if (ltrTenThu != null)
             {
-                TblCauHinhTuanLamViec item = e.Item.DataItem as TblCauHinhTuanLamViec;
-                if (item != null)
-                {
-                    Literal ltrTenThu = (Literal)e.Item.FindControl("ltrTenThu");
-                    if (ltrTenThu != null)
-                    {
-                        if (item.NgayTrongTuan == 0)
-                            ltrTenThu.Text = "Chủ Nhật";
-                        else
-                            ltrTenThu.Text = "Thứ " + (item.NgayTrongTuan + 1);
-                    }
-
-                    HtmlInputGenericControl txtGioBatDauSang = (HtmlInputGenericControl)e.Item.FindControl("txtGioBatDauSang");
-                    HtmlInputGenericControl txtGioKetThucSang = (HtmlInputGenericControl)e.Item.FindControl("txtGioKetThucSang");
-                    HtmlInputGenericControl txtGioBatDauChieu = (HtmlInputGenericControl)e.Item.FindControl("txtGioBatDauChieu");
-                    HtmlInputGenericControl txtGioKetThucChieu = (HtmlInputGenericControl)e.Item.FindControl("txtGioKetThucChieu");
-
-                    // Bơm thẳng dữ liệu từ DB (chuỗi) vào Giao diện (chuỗi)
-                    txtGioBatDauSang.Value = item.GioBatDauSang;
-                    txtGioKetThucSang.Value = item.GioKetThucSang;
-                    txtGioBatDauChieu.Value = item.GioBatDauChieu;
-                    txtGioKetThucChieu.Value = item.GioKetThucChieu;
-                }
+                if (item.NgayTrongTuan == 0)
+                    ltrTenThu.Text = "Chủ Nhật";
+                else
+                    ltrTenThu.Text = "Thứ " + (item.NgayTrongTuan + 1);
             }
+
+            bool caSangOn =
+                !string.IsNullOrWhiteSpace(item.GioBatDauSang) &&
+                !string.IsNullOrWhiteSpace(item.GioKetThucSang);
+
+            bool caChieuOn =
+                !string.IsNullOrWhiteSpace(item.GioBatDauChieu) &&
+                !string.IsNullOrWhiteSpace(item.GioKetThucChieu);
+
+            ExtraCheckbox chkCaSang =
+                (ExtraCheckbox)e.Item.FindControl("chkCaSang");
+
+            ExtraCheckbox chkCaChieu =
+                (ExtraCheckbox)e.Item.FindControl("chkCaChieu");
+
+            Literal ltrTrangThaiNgay =
+                (Literal)e.Item.FindControl("ltrTrangThaiNgay");
+
+            HtmlInputGenericControl txtGioBatDauSang =
+                (HtmlInputGenericControl)e.Item.FindControl("txtGioBatDauSang");
+
+            HtmlInputGenericControl txtGioKetThucSang =
+                (HtmlInputGenericControl)e.Item.FindControl("txtGioKetThucSang");
+
+            HtmlInputGenericControl txtGioBatDauChieu =
+                (HtmlInputGenericControl)e.Item.FindControl("txtGioBatDauChieu");
+
+            HtmlInputGenericControl txtGioKetThucChieu =
+                (HtmlInputGenericControl)e.Item.FindControl("txtGioKetThucChieu");
+
+            if (chkCaSang != null)
+                chkCaSang.Checked = caSangOn;
+
+            if (chkCaChieu != null)
+                chkCaChieu.Checked = caChieuOn;
+
+            if (ltrTrangThaiNgay != null)
+                ltrTrangThaiNgay.Text = caSangOn || caChieuOn ? "Ngày làm việc" : "Ngày nghỉ";
+
+            // Chỉ đổ dữ liệu ở server. Trạng thái disabled được khởi tạo bằng JS
+            // sau khi trang render để bảo đảm bật ca có thể mở ngay các ô giờ.
+            if (txtGioBatDauSang != null)
+                txtGioBatDauSang.Value = item.GioBatDauSang ?? string.Empty;
+
+            if (txtGioKetThucSang != null)
+                txtGioKetThucSang.Value = item.GioKetThucSang ?? string.Empty;
+
+            if (txtGioBatDauChieu != null)
+                txtGioBatDauChieu.Value = item.GioBatDauChieu ?? string.Empty;
+
+            if (txtGioKetThucChieu != null)
+                txtGioKetThucChieu.Value = item.GioKetThucChieu ?? string.Empty;
         }
+        private bool IsValidShiftTimeRange(string startValue, string endValue)
+        {
+            if (string.IsNullOrWhiteSpace(startValue) || string.IsNullOrWhiteSpace(endValue))
+                return false;
+
+            if (!TimeSpan.TryParse(startValue, System.Globalization.CultureInfo.InvariantCulture, out TimeSpan startTime))
+                return false;
+
+            if (!TimeSpan.TryParse(endValue, System.Globalization.CultureInfo.InvariantCulture, out TimeSpan endTime))
+                return false;
+
+            return startTime < endTime;
+        }
+
         private void RefreshNgoaiLeForm()
         {
             txtTenNgoaiLe.Text = string.Empty;
@@ -228,57 +321,114 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                     return;
                 }
 
-                List<TblCauHinhTuanLamViec> currentList = LichBieuChungManager.Instance.GetAllCauHinhTuan();
-
-                // 1. Transaction lưu 7 ngày cấu hình tuần
-                using (var scope = new System.Transactions.TransactionScope())
+                // Validate toàn bộ ca đang bật trước khi mở transaction.
+                // Nhờ vậy lỗi ở một ngày không khiến dữ liệu của ngày trước đó bị cập nhật dở.
+                foreach (RepeaterItem row in rptTuanLamViec.Items)
                 {
-                    foreach (RepeaterItem item in rptTuanLamViec.Items)
+                    if (row.ItemType != ListItemType.Item &&
+                        row.ItemType != ListItemType.AlternatingItem)
+                        continue;
+
+                    Literal ltrTenThu = (Literal)row.FindControl("ltrTenThu");
+                    string tenThu = ltrTenThu != null ? ltrTenThu.Text : "Ngày trong tuần";
+
+                    ExtraCheckbox chkCaSang = (ExtraCheckbox)row.FindControl("chkCaSang");
+                    ExtraCheckbox chkCaChieu = (ExtraCheckbox)row.FindControl("chkCaChieu");
+
+                    HtmlInputGenericControl txtGioBatDauSang =
+                        (HtmlInputGenericControl)row.FindControl("txtGioBatDauSang");
+                    HtmlInputGenericControl txtGioKetThucSang =
+                        (HtmlInputGenericControl)row.FindControl("txtGioKetThucSang");
+                    HtmlInputGenericControl txtGioBatDauChieu =
+                        (HtmlInputGenericControl)row.FindControl("txtGioBatDauChieu");
+                    HtmlInputGenericControl txtGioKetThucChieu =
+                        (HtmlInputGenericControl)row.FindControl("txtGioKetThucChieu");
+
+                    if (chkCaSang != null && chkCaSang.Checked &&
+                        !IsValidShiftTimeRange(txtGioBatDauSang.Value, txtGioKetThucSang.Value))
                     {
-                        if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
-                        {
-                            HiddenField hdfIdCauHinh = (HiddenField)item.FindControl("hdfIdCauHinh");
-                            ExtraCheckbox chkIsWorking = (ExtraCheckbox)item.FindControl("chkIsWorking");
-                            HtmlInputGenericControl txtGioBatDauSang = (HtmlInputGenericControl)item.FindControl("txtGioBatDauSang");
-                            HtmlInputGenericControl txtGioKetThucSang = (HtmlInputGenericControl)item.FindControl("txtGioKetThucSang");
-                            HtmlInputGenericControl txtGioBatDauChieu = (HtmlInputGenericControl)item.FindControl("txtGioBatDauChieu");
-                            HtmlInputGenericControl txtGioKetThucChieu = (HtmlInputGenericControl)item.FindControl("txtGioKetThucChieu");
-
-                            Guid idCauHinh = Guid.Parse(hdfIdCauHinh.Value);
-                            TblCauHinhTuanLamViec obj = currentList.Find(x => x.IdCauHinh == idCauHinh);
-
-                            if (obj != null)
-                            {
-                                obj.LaNgayLamViec = chkIsWorking.Checked;
-                                if (chkIsWorking.Checked)
-                                {
-                                    obj.GioBatDauSang = string.IsNullOrEmpty(txtGioBatDauSang.Value) ? null : txtGioBatDauSang.Value;
-                                    obj.GioKetThucSang = string.IsNullOrEmpty(txtGioKetThucSang.Value) ? null : txtGioKetThucSang.Value;
-                                    obj.GioBatDauChieu = string.IsNullOrEmpty(txtGioBatDauChieu.Value) ? null : txtGioBatDauChieu.Value;
-                                    obj.GioKetThucChieu = string.IsNullOrEmpty(txtGioKetThucChieu.Value) ? null : txtGioKetThucChieu.Value;
-                                }
-                                else
-                                {
-                                    obj.GioBatDauSang = null;
-                                    obj.GioKetThucSang = null;
-                                    obj.GioBatDauChieu = null;
-                                    obj.GioKetThucChieu = null;
-                                }
-
-                                LichBieuChungManager.Instance.UpdateCauHinhTuan(obj);
-                            }
-                        }
+                        ShowNotify(tenThu + ": giờ ca sáng không hợp lệ. Vui lòng nhập đủ giờ và bảo đảm giờ bắt đầu nhỏ hơn giờ kết thúc.", MSGType.Error);
+                        return;
                     }
+
+                    if (chkCaChieu != null && chkCaChieu.Checked &&
+                        !IsValidShiftTimeRange(txtGioBatDauChieu.Value, txtGioKetThucChieu.Value))
+                    {
+                        ShowNotify(tenThu + ": giờ ca chiều không hợp lệ. Vui lòng nhập đủ giờ và bảo đảm giờ bắt đầu nhỏ hơn giờ kết thúc.", MSGType.Error);
+                        return;
+                    }
+                }
+
+                List<TblCauHinhTuanLamViec> currentList =
+                    LichBieuChungManager.Instance.GetAllCauHinhTuan();
+
+                using (var scope = new TransactionScope())
+                {
+                    foreach (RepeaterItem row in rptTuanLamViec.Items)
+                    {
+                        if (row.ItemType != ListItemType.Item &&
+                            row.ItemType != ListItemType.AlternatingItem)
+                            continue;
+
+                        HiddenField hdfIdCauHinh =
+                            (HiddenField)row.FindControl("hdfIdCauHinh");
+
+                        ExtraCheckbox chkCaSang =
+                            (ExtraCheckbox)row.FindControl("chkCaSang");
+
+                        ExtraCheckbox chkCaChieu =
+                            (ExtraCheckbox)row.FindControl("chkCaChieu");
+
+                        HtmlInputGenericControl txtGioBatDauSang =
+                            (HtmlInputGenericControl)row.FindControl("txtGioBatDauSang");
+
+                        HtmlInputGenericControl txtGioKetThucSang =
+                            (HtmlInputGenericControl)row.FindControl("txtGioKetThucSang");
+
+                        HtmlInputGenericControl txtGioBatDauChieu =
+                            (HtmlInputGenericControl)row.FindControl("txtGioBatDauChieu");
+
+                        HtmlInputGenericControl txtGioKetThucChieu =
+                            (HtmlInputGenericControl)row.FindControl("txtGioKetThucChieu");
+
+                        Guid idCauHinh = Guid.Parse(hdfIdCauHinh.Value);
+                        TblCauHinhTuanLamViec obj =
+                            currentList.Find(x => x.IdCauHinh == idCauHinh);
+
+                        if (obj == null)
+                            continue;
+
+                        bool caSangOn = chkCaSang != null && chkCaSang.Checked;
+                        bool caChieuOn = chkCaChieu != null && chkCaChieu.Checked;
+
+                        // Chỉ cần có một ca bật thì ngày vẫn là ngày làm việc.
+                        obj.LaNgayLamViec = caSangOn || caChieuOn;
+
+                        obj.GioBatDauSang = caSangOn ? txtGioBatDauSang.Value : null;
+                        obj.GioKetThucSang = caSangOn ? txtGioKetThucSang.Value : null;
+                        obj.GioBatDauChieu = caChieuOn ? txtGioBatDauChieu.Value : null;
+                        obj.GioKetThucChieu = caChieuOn ? txtGioKetThucChieu.Value : null;
+
+                        LichBieuChungManager.Instance.UpdateCauHinhTuan(obj);
+                    }
+
                     scope.Complete();
                 }
 
-                // 2. SAU KHI LỊCH TUẦN ĐÃ LƯU XONG: Làm mới Cache và Sync Task đúng 1 lần duy nhất
                 LichBieuChungManager.Instance.ForceRefreshCache();
                 //TaskManager.Instance.SyncPendingTasksAfterScheduleChange(DateTime.Today);
 
                 ShowSuccessSaveData();
                 BindData();
                 upnlTuanLamViec.Update();
+
+                // Chỉ đặt lại mốc so sánh sau khi transaction lưu thành công.
+                ScriptManager.RegisterStartupScript(
+                    upnlTuanLamViec,
+                    GetType(),
+                    "ScheduleSaved_" + Guid.NewGuid().ToString("N"),
+                    "CMSMasterJs.MarkScheduleAsSaved();",
+                    true);
             }
             catch (Exception exc)
             {
@@ -287,9 +437,8 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
         }
         public override void ConfirmRequest(ConfirmResult e)
         {
+            // Chuyển các yêu cầu xác nhận thuộc lịch ngoại lệ cho đúng user control xử lý.
             CtrlLichNgoaiLe1.ConfirmRequest(e);
         }
-        // Hàm test gọi Pop-up UserControl
-      
     }
 }

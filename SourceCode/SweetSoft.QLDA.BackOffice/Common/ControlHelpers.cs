@@ -541,6 +541,69 @@ namespace SweetSoft.QLDA.BackOffice.Common
             }
             dropdown.SelectedIndex = -1;
         }
+        public void BindTinhThanh(BootstrapDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+
+            List<TblTinhThanh> lstTinh = DiaChinhManager.Instance.GetAllTinhThanh();
+            if (lstTinh == null)
+                lstTinh = new List<TblTinhThanh>();
+
+            // Lấy MaTinh làm Value, TenTinhThanh làm Text
+            ddl.DataTextField = TblTinhThanh.Columns.TenTinhThanh;
+            ddl.DataValueField = TblTinhThanh.Columns.MaTinh;
+            ddl.DataSource = lstTinh;
+            ddl.DataBind();
+        }
+
+        public void BindXaPhuong(BootstrapDropdown ddl, string maTinh)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+
+            // Nếu chưa chọn Tỉnh (mã rỗng) thì trả về mảng rỗng để reset Dropdown Xã
+            List<TblXaPhuong> lstXa = string.IsNullOrEmpty(maTinh)
+                                      ? new List<TblXaPhuong>()
+                                      : DiaChinhManager.Instance.GetXaPhuongByMaTinh(maTinh);
+
+            // Lấy MaXa làm Value, TenXaPhuong làm Text
+            ddl.DataTextField = TblXaPhuong.Columns.TenXaPhuong;
+            ddl.DataValueField = TblXaPhuong.Columns.MaXa;
+            ddl.DataSource = lstXa;
+            ddl.DataBind();
+        }
+        // FIXED: Đổi tham số thành ExtraDropdown
+        public void BindTinhThanh(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+
+            List<TblTinhThanh> lstTinh = DiaChinhManager.Instance.GetAllTinhThanh();
+            if (lstTinh == null)
+                lstTinh = new List<TblTinhThanh>();
+
+            ddl.DataTextField = TblTinhThanh.Columns.TenTinhThanh;
+            ddl.DataValueField = TblTinhThanh.Columns.MaTinh;
+            ddl.DataSource = lstTinh;
+            ddl.DataBind();
+        }
+
+        // FIXED: Đổi tham số thành ExtraDropdown
+        public void BindXaPhuong(ExtraDropdown ddl, string maTinh)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+
+            List<TblXaPhuong> lstXa = string.IsNullOrEmpty(maTinh)
+                                      ? new List<TblXaPhuong>()
+                                      : DiaChinhManager.Instance.GetXaPhuongByMaTinh(maTinh);
+
+            ddl.DataTextField = TblXaPhuong.Columns.TenXaPhuong;
+            ddl.DataValueField = TblXaPhuong.Columns.MaXa;
+            ddl.DataSource = lstXa;
+            ddl.DataBind();
+        }
         public void BindStatus(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();

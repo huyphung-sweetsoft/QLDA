@@ -119,6 +119,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         public override void ConfirmRequest(ConfirmResult e)
         {
             CtrlNhanViens1.ConfirmRequest(e);
+            CtrlNhanVienPopup1.ConfirmRequest(e);
         }
 
         public override void CloseRequest(ConfirmResult e)

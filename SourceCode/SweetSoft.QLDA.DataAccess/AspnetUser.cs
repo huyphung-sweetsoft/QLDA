@@ -464,6 +464,32 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
+				TableSchema.TableColumn colvarMaTinh = new TableSchema.TableColumn(schema);
+				colvarMaTinh.ColumnName = "MaTinh";
+				colvarMaTinh.DataType = DbType.AnsiString;
+				colvarMaTinh.MaxLength = 2;
+				colvarMaTinh.AutoIncrement = false;
+				colvarMaTinh.IsNullable = true;
+				colvarMaTinh.IsPrimaryKey = false;
+				colvarMaTinh.IsForeignKey = false;
+				colvarMaTinh.IsReadOnly = false;
+				colvarMaTinh.DefaultSetting = @"";
+				colvarMaTinh.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarMaTinh);
+				
+				TableSchema.TableColumn colvarMaXa = new TableSchema.TableColumn(schema);
+				colvarMaXa.ColumnName = "MaXa";
+				colvarMaXa.DataType = DbType.AnsiString;
+				colvarMaXa.MaxLength = 10;
+				colvarMaXa.AutoIncrement = false;
+				colvarMaXa.IsNullable = true;
+				colvarMaXa.IsPrimaryKey = false;
+				colvarMaXa.IsForeignKey = false;
+				colvarMaXa.IsReadOnly = false;
+				colvarMaXa.DefaultSetting = @"";
+				colvarMaXa.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarMaXa);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -672,6 +698,22 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return GetColumnValue<DateTime?>(Columns.NgayCapNhat); }
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
+		}
+		  
+		[XmlAttribute("MaTinh")]
+		[Bindable(true)]
+		public string MaTinh 
+		{
+			get { return GetColumnValue<string>(Columns.MaTinh); }
+			set { SetColumnValue(Columns.MaTinh, value); }
+		}
+		  
+		[XmlAttribute("MaXa")]
+		[Bindable(true)]
+		public string MaXa 
+		{
+			get { return GetColumnValue<string>(Columns.MaXa); }
+			set { SetColumnValue(Columns.MaXa, value); }
 		}
 		
 		#endregion
@@ -1254,6 +1296,77 @@ namespace SweetSoft.QLDA.DataAccess
 			DataService.ExecuteQuery(cmdDel);
 		}
 		
+		 
+		public SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection() { return AspnetUser.GetTblCongViecCollection(this.UserId); }
+		public static SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection(Guid varUserId)
+		{
+		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[TblCongViec] INNER JOIN [TblCongViec_NhanVien] ON [TblCongViec].[IdCongViec] = [TblCongViec_NhanVien].[IdCongViec] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmd.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
+			TblCongViecCollection coll = new TblCongViecCollection();
+			coll.LoadAndCloseReader(rdr);
+			return coll;
+		}
+		
+		public static void SaveTblCongViecMap(Guid varUserId, TblCongViecCollection items)
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (TblCongViec item in items)
+			{
+				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
+				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item.GetPrimaryKeyValue());
+				varTblCongViecNhanVien.Save();
+			}
+		}
+		public static void SaveTblCongViecMap(Guid varUserId, System.Web.UI.WebControls.ListItemCollection itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
+			{
+				if (l.Selected) 
+				{
+					TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+					varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
+					varTblCongViecNhanVien.SetColumnValue("IdCongViec", l.Value);
+					varTblCongViecNhanVien.Save();
+				}
+			}
+		}
+		public static void SaveTblCongViecMap(Guid varUserId , Guid[] itemList) 
+		{
+			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
+			//delete out the existing
+			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			coll.Add(cmdDel);
+			DataService.ExecuteTransaction(coll);
+			foreach (Guid item in itemList) 
+			{
+				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
+				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
+				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item);
+				varTblCongViecNhanVien.Save();
+			}
+		}
+		
+		public static void DeleteTblCongViecMap(Guid varUserId) 
+		{
+			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
+			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
+			DataService.ExecuteQuery(cmdDel);
+		}
+		
 		#endregion
 		
         
@@ -1264,7 +1377,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey,bool varLaNhanVien,Guid? varIdPhongBan,Guid? varIdChucDanh,DateTime? varNgaySinh,string varGioiTinh,string varIdCCCD,string varDiaChi,DateTime? varNgayGiaNhap,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Insert(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey,bool varLaNhanVien,Guid? varIdPhongBan,Guid? varIdChucDanh,DateTime? varNgaySinh,string varGioiTinh,string varIdCCCD,string varDiaChi,DateTime? varNgayGiaNhap,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,string varMaTinh,string varMaXa)
 		{
 			AspnetUser item = new AspnetUser();
 			
@@ -1318,6 +1431,10 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
+			item.MaTinh = varMaTinh;
+			
+			item.MaXa = varMaXa;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -1328,7 +1445,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey,bool varLaNhanVien,Guid? varIdPhongBan,Guid? varIdChucDanh,DateTime? varNgaySinh,string varGioiTinh,string varIdCCCD,string varDiaChi,DateTime? varNgayGiaNhap,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat)
+		public static void Update(Guid varApplicationId,Guid varUserId,bool varIsDeleted,bool varIsActivated,bool varIsAnonymous,string varUserName,string varLoweredUserName,string varDisplayName,string varAvatar,string varMobileAlias,DateTime varLastActivityDate,string varAuthenticatorKey,string varResetPasswordKey,bool varLaNhanVien,Guid? varIdPhongBan,Guid? varIdChucDanh,DateTime? varNgaySinh,string varGioiTinh,string varIdCCCD,string varDiaChi,DateTime? varNgayGiaNhap,string varNguoiTao,DateTime? varNgayTao,string varNguoiCapNhat,DateTime? varNgayCapNhat,string varMaTinh,string varMaXa)
 		{
 			AspnetUser item = new AspnetUser();
 			
@@ -1381,6 +1498,10 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NguoiCapNhat = varNguoiCapNhat;
 			
 				item.NgayCapNhat = varNgayCapNhat;
+			
+				item.MaTinh = varMaTinh;
+			
+				item.MaXa = varMaXa;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -1570,6 +1691,20 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn MaTinhColumn
+        {
+            get { return Schema.Columns[25]; }
+        }
+        
+        
+        
+        public static TableSchema.TableColumn MaXaColumn
+        {
+            get { return Schema.Columns[26]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -1599,6 +1734,8 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string NgayTao = @"NgayTao";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
+			 public static string MaTinh = @"MaTinh";
+			 public static string MaXa = @"MaXa";
 						
 		}
 		#endregion

@@ -422,6 +422,8 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string PHASE_NAME = "PHASE_NAME";
         public const string PHASE_LIST = "PHASE_LIST";
         public const string END = "END";
+        public const string PROVINCE_CITY = "PROVINCE_CITY";
+        public const string WARD_COMMUNE = "WARD_COMMUNE";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

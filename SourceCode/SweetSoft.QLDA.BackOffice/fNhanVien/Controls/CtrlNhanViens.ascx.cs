@@ -17,6 +17,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -123,7 +124,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
             txtSearchTenNhanVien.SearchTagItemText = GetResourceText(BackEndResourceKeys.EMPLOYEE_NAME);
-            txtSearchIdCCCD.SearchTagItemText = GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD);
             txtSearchEmail.SearchTagItemText = "Email";
             txtSearchPhone.SearchTagItemText = GetResourceText(BackEndResourceKeys.PHONE_NUMBER);
             ddlSearchChucDanh.SearchTagItemText = GetResourceText(BackEndResourceKeys.CHUC_DANH);
@@ -134,9 +134,10 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
             lbtSearchAdvanced.ToolTip = lbtSearchAdvanced.Text = GetResourceText(BackEndResourceKeys.SEARCH);
             btnExport.ToolTip = btnExport.Text = GetResourceText(BackEndResourceKeys.EXPORT_EXCEL);
 
+            ddlSearchTrangThai.SearchTagItemText = "Trạng thái tài khoản";
             txtSearchSingle.PlaceHolder = txtSearchTenNhanVien.PlaceHolder
                 = txtSearchEmail.PlaceHolder = txtSearchPhone.PlaceHolder
-                = txtSearchIdCCCD.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+                = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
 
             List<string> lstTableHeader = new List<string>
             {
@@ -145,7 +146,7 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
                 "Liên hệ",
                 GetResourceText(BackEndResourceKeys.PHONG_BAN),
                 GetResourceText(BackEndResourceKeys.CHUC_DANH),
-                "Định danh",
+                "Trạng thái tài khoản",
                 GetResourceText(BackEndResourceKeys.EMPLOYEE_JOINDATE),
                 GetResourceText(BackEndResourceKeys.ACTION),
             };
@@ -155,7 +156,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
         private void AssignSearchColumns()
         {
             txtSearchTenNhanVien.SearchColumn = AspnetUser.Columns.DisplayName;
-            txtSearchIdCCCD.SearchColumn = AspnetUser.Columns.IdCCCD;
             txtSearchPhone.SearchColumn = AspnetUser.Columns.MobileAlias;
             txtSearchEmail.SearchColumn = AspnetMembership.Columns.Email;
             ddlSearchChucDanh.SearchColumn = TblChucDanh.Columns.IdChucDanh;
@@ -302,6 +302,43 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
 
                     OpenMessageBox(msg, result, false, false);
                     break;
+                case "TOGGLE_LOCK_ACCOUNT":
+                    if (!this.CURRENT_PAGE.IsEdit)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    int rowIndexToggle = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndexToggle].Value.ToString(), out Guid toggleUserId))
+                    {
+                        ShowInvalidDataError();
+                        return;
+                    }
+
+                    AspnetUser toggleUser = UserManager.Instance.GetUserById(toggleUserId);
+                    if (toggleUser == null)
+                    {
+                        ShowInvalidNotFoundData();
+                        return;
+                    }
+
+                    // --- THÊM ĐOẠN NÀY ĐỂ CHẶN SERVER ---
+                    if (toggleUser.UserName.StartsWith("EMP_"))
+                    {
+                        ShowNotify("Nhân viên này chưa được cấp tài khoản, không thể khóa.", MSGType.Warning);
+                        return;
+                    }
+                    // ------------------------------------
+
+                    ConfirmResult resultToggle = new ConfirmResult();
+                    resultToggle.CommandName = "TOGGLE_LOCK_ACCOUNT";
+                    resultToggle.Value = toggleUser;
+                    this.CURRENT_PAGE.CurrentConfirmResult = resultToggle;
+
+                    string messageStr = toggleUser.IsActivated ? "Bạn có chắc chắn muốn KHÓA tài khoản của nhân viên {0} không?" : "Bạn có chắc chắn muốn MỞ KHÓA tài khoản của nhân viên {0} không?";
+                    MessageBox msgToggle = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION), string.Format(messageStr, toggleUser.DisplayName), MSGButton.Send, MSGIcon.Warning);
+                    OpenMessageBox(msgToggle, resultToggle, false, false);
+                    break;
             }
         }
 
@@ -332,9 +369,70 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
                         ShowNotify(exc.Message, MSGType.Error);
                     }
                 }
+                // [THÊM MỚI]: BẮT SỰ KIỆN XÁC NHẬN KHÓA / MỞ KHÓA TÀI KHOẢN
+                // [THÊM MỚI]: BẮT SỰ KIỆN XÁC NHẬN KHÓA / MỞ KHÓA TÀI KHOẢN
+                else if (e.CommandName.Contains("TOGGLE_LOCK_ACCOUNT"))
+                {
+                    AspnetUser user = e.Value as AspnetUser;
+                    if (user == null) { ShowInvalidNotFoundData(); return; }
+                    try
+                    {
+                        // Đã xóa cái dòng using tào lao đi, xử lý y chang CtrlUsers:
+
+                        // 1. Tác động Core Membership (Chặn/Mở quyền đăng nhập của .NET Identity)
+                        MembershipUser memUser = Membership.GetUser(user.UserName);
+                        if (memUser != null)
+                        {
+                            bool newState = !user.IsActivated; // Lật ngược trạng thái hiện tại
+                            memUser.IsApproved = newState;
+                            Membership.UpdateUser(memUser);
+
+                            // 2. Tác động Bảng AspnetUsers (Cập nhật hiển thị Lưới)
+                            user.IsActivated = newState;
+                            user.Save();
+
+                            ShowNotify(newState ? "Đã MỞ KHÓA tài khoản thành công!" : "Đã KHÓA tài khoản thành công!", MSGType.Success);
+                            grvData.Rebind();
+                        }
+                        else
+                        {
+                            ShowNotify("Nhân viên này chưa được cấp tài khoản hệ thống hợp lệ.", MSGType.Error);
+                        }
+                    }
+                    catch (Exception exc)
+                    {
+                        ShowNotify(exc.Message, MSGType.Error);
+                    }
+                }
             }
         }
+        // Hàm Render Badge Trạng thái Tài khoản
+        protected string RenderAccountStatus(object userNameObj, object isActivatedObj)
+        {
+            string userName = userNameObj != null ? userNameObj.ToString() : string.Empty;
 
+            // TRẠNG THÁI 1: CHƯA CẤP (TÀI KHOẢN MA)
+            if (string.IsNullOrEmpty(userName) || userName.StartsWith("EMP_"))
+            {
+                return "<span class=\"badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 px-2 py-1\" style=\"font-size: 11.5px;\"><i class=\"fas fa-user-slash me-1\"></i> Chưa cấp</span>";
+            }
+
+            // Parse giá trị IsActivated an toàn
+            bool isActivated = false;
+            if (isActivatedObj != null && isActivatedObj != DBNull.Value)
+            {
+                bool.TryParse(isActivatedObj.ToString(), out isActivated);
+            }
+
+            // TRẠNG THÁI 3: HOẠT ĐỘNG
+            if (isActivated)
+            {
+                return "<span class=\"badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1\" style=\"font-size: 11.5px;\"><i class=\"fas fa-check-circle me-1\"></i> Hoạt động</span>";
+            }
+
+            // TRẠNG THÁI 2: ĐÃ KHÓA
+            return "<span class=\"badge bg-danger-subtle text-danger border border-danger border-opacity-25 px-2 py-1\" style=\"font-size: 11.5px;\"><i class=\"fas fa-lock me-1\"></i> Đã khóa</span>";
+        }
         protected void bootstrapDropdown_SelectedValueChanged(object sender, EventArgs e)
         {
             MasterTemplate master = Page.Master as MasterTemplate;
@@ -477,6 +575,11 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
                             range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                         }
                     },
+                    { "IsActivated", range =>
+                        {
+                            range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        }
+                    }
                 },
                 IsFixedHeader = true,
                 EnableZebraStripe = true,
@@ -491,16 +594,16 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
                     "Trạng thái",
                     GetResourceText(BackEndResourceKeys.PHONG_BAN),
                     GetResourceText(BackEndResourceKeys.CHUC_DANH),
-                    GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD),
+                    //GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD),
                     GetResourceText(BackEndResourceKeys.EMPLOYEE_JOINDATE)
                 },
                 ShowColumns = new HashSet<string>()
                 {
                     "DisplayName", // Đã chuyển từ TenNhanVien
-                    "IsActivated",
+                    "TrangThaiText",
                     "TenPhongBan",
                     "TenChucDanh",
-                    "IdCCCD",
+                    //"IdCCCD",
                     "NgayGiaNhap"
                 }
             };

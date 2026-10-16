@@ -26,6 +26,10 @@ namespace SweetSoft.QLDA.Core.Managers
             _auditManager = new AuditManager(GetClientInfo());
             _repository = new TaskRepository(_auditManager);
         }
+        public Dictionary<Guid, List<string>> GetConflictTasks(DateTime start, DateTime end, Guid currentTaskId)
+        {
+            return _repository.GetConflictTasks(start, end, currentTaskId);
+        }
 
         #region 1. Lấy dữ liệu & Danh mục
         public DataTable FetchByIdAndOrderASCMaCV(Guid projectId, string searchValue = null) => _repository.FetchByIdAndOrderASCMaCV(projectId, searchValue);

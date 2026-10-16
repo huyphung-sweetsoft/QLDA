@@ -87,58 +87,31 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtPhone;
 
         /// <summary>
-        /// chkStatus control.
+        /// divPasswordAutoInfo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraCheckbox chkStatus;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divPasswordAutoInfo;
 
         /// <summary>
-        /// divChangePassword control.
+        /// divResetPasswordBtn control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divChangePassword;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divResetPasswordBtn;
 
         /// <summary>
-        /// chkChangePassword control.
+        /// lbtResetPassword control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox chkChangePassword;
-
-        /// <summary>
-        /// divPassword control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divPassword;
-
-        /// <summary>
-        /// txtPassword control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtPassword;
-
-        /// <summary>
-        /// txtConfirmPassword control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtConfirmPassword;
+        protected global::SweetSoft.QLDA.Controls.ExtraButton lbtResetPassword;
 
         /// <summary>
         /// lbtSubmit control.
