@@ -213,13 +213,13 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchTenNhanVien;
 
         /// <summary>
-        /// txtSearchIdCCCD control.
+        /// ddlSearchTrangThai control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtSearchIdCCCD;
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlSearchTrangThai;
 
         /// <summary>
         /// txtSearchEmail control.

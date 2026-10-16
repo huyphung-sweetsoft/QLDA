@@ -56,6 +56,9 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                 { RewriteURLHelper.LichBieu, GetResourceText(BackEndResourceKeys.SCHEDULE_MANAGEMENT) }
             };
             btnSaveTuan.Text = btnSaveTuan.ToolTip = GetResourceText(BackEndResourceKeys.SAVE_WEEK_CONFIG);
+
+            // Nút điền giờ chỉ hỗ trợ biểu mẫu, nhưng vẫn chỉ bật cho người có quyền sửa.
+            btnApplyDefaultHours.Enabled = this.IsEdit;
         }
         private void BindDefaultWorkingHours()
         {
@@ -418,6 +421,14 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
                 ShowSuccessSaveData();
                 BindData();
                 upnlTuanLamViec.Update();
+
+                // Chỉ đặt lại mốc so sánh sau khi transaction lưu thành công.
+                ScriptManager.RegisterStartupScript(
+                    upnlTuanLamViec,
+                    GetType(),
+                    "ScheduleSaved_" + Guid.NewGuid().ToString("N"),
+                    "CMSMasterJs.MarkScheduleAsSaved();",
+                    true);
             }
             catch (Exception exc)
             {
@@ -426,9 +437,8 @@ namespace SweetSoft.QLDA.BackOffice.fLichBieu
         }
         public override void ConfirmRequest(ConfirmResult e)
         {
+            // Chuyển các yêu cầu xác nhận thuộc lịch ngoại lệ cho đúng user control xử lý.
             CtrlLichNgoaiLe1.ConfirmRequest(e);
         }
-        // Hàm test gọi Pop-up UserControl
-
     }
 }

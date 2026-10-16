@@ -80,6 +80,10 @@ namespace SweetSoft.QLDA.Core.Managers
 
             Guid currentUserId = SweetContext.Current != null ? SweetContext.Current.UserId : Guid.Empty;
             bool isInsert = (dto.UserId == Guid.Empty);
+            if (isInsert && dto.LaNhanVien)
+            {
+                dto.IsActivated = true; // Ngầm định: Mới vào làm thì luôn Active
+            }
             //string unencryptedPassword = "";
             AspnetUser resultUser = null;
             //Phân tích ý đồ và gán account action
@@ -104,6 +108,8 @@ namespace SweetSoft.QLDA.Core.Managers
                     dto.NgaySinh = existingUser.NgaySinh;
                     dto.GioiTinh = existingUser.GioiTinh;
                     dto.DiaChi = existingUser.DiaChi;
+                    dto.MaTinh = existingUser.MaTinh;
+                    dto.MaXa = existingUser.MaXa;
                     dto.NgayGiaNhap = existingUser.NgayGiaNhap;
                 }
                 bool oldIsGhost = IsGhostAccount(existingUser.UserName);
@@ -137,15 +143,17 @@ namespace SweetSoft.QLDA.Core.Managers
             // 2. Kiểm tra CCCD duy nhất & Dọn rác
             if (dto.LaNhanVien)
             {
-                BusinessValidator.ThrowIfNullOrEmpty(dto.IdCCCD, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.IdCCCD));
-                BusinessValidator.ThrowIf(_repository.IsCCCDExist(dto.UserId, dto.IdCCCD),
-                    BackEndResourceKeys.CCCD_ALREADY_EXISTS, nameof(dto.IdCCCD), ErrorCodes.Conflict);
+                //BusinessValidator.ThrowIfNullOrEmpty(dto.IdCCCD, BackEndResourceKeys.PLEASE_ENTER_THE_VALUE, nameof(dto.IdCCCD));
+                //BusinessValidator.ThrowIf(_repository.IsCCCDExist(dto.UserId, dto.IdCCCD),
+                //    BackEndResourceKeys.CCCD_ALREADY_EXISTS, nameof(dto.IdCCCD), ErrorCodes.Conflict);
             }
             else
             {
                 // Tài khoản hệ thống thì dọn rác các thuộc tính của nhân viên
                 dto.IdPhongBan = null; dto.IdChucDanh = null; dto.IdCCCD = null;
                 dto.NgaySinh = null; dto.NgayGiaNhap = null; dto.GioiTinh = null; dto.DiaChi = null;
+                dto.MaTinh = null; 
+                dto.MaXa = null;   
             }
 
             // 3. Validation Vành đai thép: Chỉ dành cho các luồng TÀI KHOẢN THẬT (Real Account)
@@ -230,6 +238,8 @@ namespace SweetSoft.QLDA.Core.Managers
                         newUser.NgaySinh = dto.NgaySinh;
                         newUser.GioiTinh = dto.GioiTinh;
                         newUser.IdCCCD = dto.IdCCCD;
+                        newUser.MaTinh = dto.MaTinh; 
+                        newUser.MaXa = dto.MaXa;
                         newUser.DiaChi = dto.DiaChi;
                         newUser.NgayGiaNhap = dto.NgayGiaNhap;
                         newUser.IsDeleted = false;
@@ -358,6 +368,8 @@ namespace SweetSoft.QLDA.Core.Managers
                     existingUser.GioiTinh = dto.GioiTinh;
                     existingUser.IdCCCD = dto.IdCCCD;
                     existingUser.DiaChi = dto.DiaChi;
+                    existingUser.MaTinh = dto.MaTinh; 
+                    existingUser.MaXa = dto.MaXa;
                     existingUser.NgayGiaNhap = dto.NgayGiaNhap;
                     existingUser.NgayCapNhat = DateTime.Now;
                     existingUser.NguoiCapNhat = currentUserId != Guid.Empty ? currentUserId.ToString() : "System";

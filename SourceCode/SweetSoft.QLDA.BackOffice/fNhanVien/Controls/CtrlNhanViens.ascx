@@ -120,15 +120,9 @@
                     <asp:TemplateField HeaderText="Chức danh" HeaderStyle-CssClass="text-center" SortExpression="TenChucDanh" ItemStyle-CssClass="text-left">
                         <ItemTemplate><%# Eval("TenChucDanh") %></ItemTemplate>
                     </asp:TemplateField>
-
-                    <asp:TemplateField HeaderText="Định danh" HeaderStyle-CssClass="text-center" SortExpression="IdCCCD" ItemStyle-CssClass="text-left">
+                    <asp:TemplateField HeaderText="Trạng thái tài khoản" HeaderStyle-CssClass="text-center" SortExpression="IsActivated" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <div class="d-block mb-1">
-                                <strong>CCCD:</strong> <%# Eval("IdCCCD") %>
-                            </div>
-                            <div class="d-block text-muted" title="Ngày sinh">
-                                <i class="fas fa-birthday-cake me-1"></i> <%# this.ConvertDateTimeToString(Eval("NgaySinh"), false) %>
-                            </div>
+                            <%# RenderAccountStatus(Eval("UserName"), Eval("IsActivated")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     
@@ -138,24 +132,34 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     
-                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
+                   <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="150px">
                         <ItemTemplate>
                             <div class="d-flex justify-content-center gap-2">
-                                <!-- 1. NÚT XEM CHI TIẾT: Hình con mắt, gọi lệnh VIEW_DETAIL để chuyển trang -->
+                                <!-- 1. NÚT XEM CHI TIẾT -->
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>'
                                     ID="lbtViewDetail" CommandName="VIEW_DETAIL" CssClass="btn-grid-action text-decoration-underline text-info"
                                     ResourceKey='<%# "EMPLOYEE_DETAIL" %>'
                                     ButtonIcon="fas fa-eye">
                                 </SweetSoft:SmartLinkButton>
 
-                                <!-- 2. NÚT SỬA NHANH: Hình cây bút, gọi lệnh ITEM_DETAIL để mở Popup -->
+                                <!-- 2. NÚT SỬA NHANH -->
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit %>'
                                     ID="lbtEdit" CommandName="ITEM_DETAIL" CssClass="btn-grid-action text-decoration-underline text-warning"
                                     ResourceKey='<%# BackEndResourceKeys.EDIT %>'
                                     ButtonIcon="fas fa-pencil-alt">
                                 </SweetSoft:SmartLinkButton>
 
-                                <!-- 3. NÚT XÓA: Hình thùng rác, gọi lệnh ITEM_DELETE -->
+                               <!-- NÚT KHÓA / MỞ KHÓA TÀI KHOẢN -->
+                                <SweetSoft:SmartLinkButton runat="server" 
+                                    VisibleConditionKey='<%# this.IsEdit %>'
+                                    IsDisabledStyle='<%# Convert.ToString(Eval("UserName")).StartsWith("EMP_") %>'
+                                    ID="lbtToggleLock" CommandName="TOGGLE_LOCK_ACCOUNT" 
+                                    ResourceKey="TOGGLE_LOCK"
+                                    ToolTip='<%# Convert.ToString(Eval("UserName")).StartsWith("EMP_") ? "Chưa cấp tài khoản" : (Convert.ToBoolean(Eval("IsActivated")) ? "Khóa tài khoản này" : "Mở khóa tài khoản này") %>'
+                                    ButtonIcon='<%# Convert.ToBoolean(Eval("IsActivated")) ? "fas fa-lock" : "fas fa-unlock" %>'>
+                                </SweetSoft:SmartLinkButton>
+
+                                <!-- 4. NÚT XÓA -->
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'
                                     ID="lbtDelete" CommandName="ITEM_DELETE" CssClass="btn-grid-action text-decoration-underline text-danger"
                                     ResourceKey='<%# BackEndResourceKeys.DELETE %>'
@@ -197,8 +201,13 @@
                                 <SweetSoft:ExtraTextBox runat="server" ID="txtSearchTenNhanVien" SearchColumn="DisplayName" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label"><%=GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></label>
-                                <SweetSoft:ExtraTextBox runat="server" ID="txtSearchIdCCCD" SearchColumn="IdCCCD" PlaceHolder="Enter the value"></SweetSoft:ExtraTextBox>
+                                <label class="form-label">Trạng thái tài khoản</label>
+                                <SweetSoft:ExtraDropdown runat="server" ID="ddlSearchTrangThai" SimpleInit="true">
+                                    <asp:ListItem Text="-- Tất cả --" Value=""></asp:ListItem>
+                                    <asp:ListItem Text="Hoạt động" Value="1"></asp:ListItem>
+                                    <asp:ListItem Text="Đã khóa" Value="0"></asp:ListItem>
+                                    <asp:ListItem Text="Chưa cấp" Value="-1"></asp:ListItem>
+                                </SweetSoft:ExtraDropdown>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Email</label>

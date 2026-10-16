@@ -609,6 +609,25 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblHeSoDongGopRecords[e.NewIndex].IdDuAn = IdDuAn;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection colTblKhaiBaoGioChiTietRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection TblKhaiBaoGioChiTietRecords()
+		{
+			if(colTblKhaiBaoGioChiTietRecords == null)
+			{
+				colTblKhaiBaoGioChiTietRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection().Where(TblKhaiBaoGioChiTiet.Columns.IdDuAn, IdDuAn).Load();
+				colTblKhaiBaoGioChiTietRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioChiTietRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioChiTietRecords;
+		}
+				
+		void colTblKhaiBaoGioChiTietRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioChiTietRecords[e.NewIndex].IdDuAn = IdDuAn;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblLichHopCollection colTblLichHopRecords;
 		public SweetSoft.QLDA.DataAccess.TblLichHopCollection TblLichHopRecords()
 		{
@@ -1127,6 +1146,17 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colTblKhaiBaoGioChiTietRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTiet item in colTblKhaiBaoGioChiTietRecords)
+                    {
+                        if (item.IdDuAn != IdDuAn)
+                        {
+                            item.IdDuAn = IdDuAn;
+                        }
+                    }
+               }
+		
                 if (colTblLichHopRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblLichHop item in colTblLichHopRecords)
@@ -1246,6 +1276,11 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblHeSoDongGopRecords != null)
                 {
                     colTblHeSoDongGopRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioChiTietRecords != null)
+                {
+                    colTblKhaiBaoGioChiTietRecords.SaveAll();
                }
 		
                 if (colTblLichHopRecords != null)

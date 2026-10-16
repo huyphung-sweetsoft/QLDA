@@ -15,6 +15,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string Login => "/Login";
         public static string Home => "/Home";
         public static string EmployeeDashboard => "/EmployeeDashboard";
+        public static string KhaiBaoGio => "/Khai-bao-gio";
         public static string DashboardOverview => "/Home/Overview";
         public static string DashboardResource => "/Home/Resources";
         public static string DashboardProgress => "/Home/Progress";
@@ -171,7 +172,7 @@ namespace SweetSoft.QLDA.BackOffice.Common
         public static string ViewDetailEmp(Guid userId)
         {
             return $"/Employee/{SecurityUtilities.ProtectUrlParameter(userId.ToString())}";
-        //cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
+            //cái Security là để mã hóa cái userId thành 1 chuỗi ký tự bla bla để bảo mật
         }
         //-----------------------------------------
         public static string Classes => "/Classes";

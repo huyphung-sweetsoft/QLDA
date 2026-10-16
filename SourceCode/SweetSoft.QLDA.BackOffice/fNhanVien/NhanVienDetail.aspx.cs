@@ -543,8 +543,11 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             {
                 int dow = (int)ngay.Ngay.DayOfWeek;
                 string dayName = dow == 0 ? "CN" : dow == 6 ? "T7" : $"T{dow + 1}";
-
                 string text;
+
+                // [MỚI]: Khởi tạo mảng chứa chi tiết Task
+                var activeTasks = new List<object>();
+
                 switch (ngay.TrangThaiLich)
                 {
                     case "holiday":
@@ -555,13 +558,19 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                         break;
                     case "busy":
                         text = $"🔴 {ngay.DanhSachCongViec.Count} {GetResourceText(BackEndResourceKeys.TASK).ToLower()}";
+                        // [MỚI]: Nạp thông tin Task vào mảng
+                        foreach (var t in ngay.DanhSachCongViec)
+                        {
+                            activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec, projectName = t.TenDuAn });
+                        }
                         break;
                     default:
                         text = "🟢 " + GetResourceText(BackEndResourceKeys.FREE);
                         break;
                 }
 
-                dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName, text });
+                // [MỚI]: Đẩy mảng tasks vào chuỗi JSON
+                dict.Add(ngay.Ngay.ToString("yyyy-MM-dd"), new { status = ngay.TrangThaiLich, dayName = dayName, text = text, tasks = activeTasks });
             }
 
             return JsonConvert.SerializeObject(dict);

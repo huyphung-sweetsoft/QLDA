@@ -524,8 +524,8 @@ namespace SweetSoft.QLDA.DataAccess
 		/// </summary>
 		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUser
 		{
-			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNguoiKy); }
-			set { SetColumnValue("IdNguoiKy", value.UserId); }
+			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNguoiGui); }
+			set { SetColumnValue("IdNguoiGui", value.UserId); }
 		}
 		
 		
@@ -533,10 +533,10 @@ namespace SweetSoft.QLDA.DataAccess
 		/// Returns a AspnetUser ActiveRecord object related to this TblTrinhKyTaiLieu
 		/// 
 		/// </summary>
-		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUserToIdNguoiGui
+		public SweetSoft.QLDA.DataAccess.AspnetUser AspnetUserToIdNguoiKy
 		{
-			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNguoiGui); }
-			set { SetColumnValue("IdNguoiGui", value.UserId); }
+			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNguoiKy); }
+			set { SetColumnValue("IdNguoiKy", value.UserId); }
 		}
 		
 		

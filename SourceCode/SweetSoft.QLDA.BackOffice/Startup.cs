@@ -15,6 +15,7 @@ namespace SweetSoft.QLDA.BackOffice
             app.UseHangfireServer();
 
             RecurringJob.AddOrUpdate("Check-Meetings-Tasks", () => NotificationJob.QuetVaGuiThongBao(), Cron.Minutely);
+            RecurringJob.AddOrUpdate("KhaiBaoGio-Chot-So", () => KhaiBaoGioCloseJob.Run(), Cron.Minutely);
         }
     }
 }

@@ -120,6 +120,37 @@
             .task-sub-table { font-size: 12px; display: block; overflow-x: auto; }
             .project-summary-head { padding: 14px; }
         }
+        /* ============================================================
+           TOOLTIP GLOBAL (NẰM TRÊN LAYER CAO NHẤT CỦA TRÌNH DUYỆT)
+           ============================================================ */
+        .mc-day { position: relative !important; overflow: visible !important; }
+        .mc-day.has-tooltip { cursor: pointer; }
+        .mc-day:hover, .mc-day.show-tooltip { z-index: 50; }
+        
+        .global-task-tooltip { 
+            position: absolute; z-index: 9999999 !important; 
+            background: #ffffff; color: #334155; 
+            border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 16px; 
+            min-width: 340px; max-width: 520px; width: max-content; 
+            white-space: normal; word-break: break-word; overflow-wrap: anywhere; 
+            box-shadow: 0 10px 40px rgba(15, 23, 42, 0.2); font-size: 12.5px; line-height: 1.5; 
+            opacity: 0; visibility: hidden; pointer-events: none; 
+            transition: opacity 0.15s ease, visibility 0.15s ease; 
+        }
+        .global-task-tooltip.show { opacity: 1; visibility: visible; pointer-events: auto; }
+        
+        .global-task-tooltip::after { 
+            content: ''; position: absolute; top: 100%; 
+            left: var(--arrow-left, 50%); transform: translateX(-50%);
+            border-width: 6px; border-style: solid; border-color: #ffffff transparent transparent transparent; 
+        }
+
+        .tooltip-task-list { list-style: none; margin: 0; padding: 0; text-align: left; }
+        .tooltip-task-list li { margin: 0; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; color: #334155; }
+        .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
+        .tooltip-task-list li:first-child { padding-top: 0; }
+        .t-project-name { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; color: #64748b; }
+        .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
     </style>
 </asp:Content>
 
@@ -632,19 +663,122 @@
                 if (key === todayKey) cls += ' today';
 
                 var extra = '';
-                if (info && info.text) {
-                    var label = String(info.text).replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
-                    extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+                var clickAttr = ''; // [MỚI]
+
+                if (info) {
+                    var label = String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
+                    if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+
+                    // [MỚI]: Xử lý Tooltip y hệt như bên Chọn Nhân Viên
+                    var hasTasks = (info.status === "busy" && info.tasks && info.tasks.length > 0);
+                    if (hasTasks) {
+                        cls += ' has-tooltip';
+                        var listHtml = '<ul class="tooltip-task-list">';
+                        for (var t = 0; t < info.tasks.length; t++) {
+                            listHtml += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + escAttr(info.tasks[t].projectName) + '</div><span class="t-code">[' + escAttr(info.tasks[t].code) + ']</span>' + escAttr(info.tasks[t].name) + '</li>';
+                        }
+                        listHtml += '</ul>';
+
+                        // Ép data html vào thuộc tính ẩn
+                        clickAttr = ' data-tooltip-content="' + encodeURIComponent(listHtml) + '"';
+                    } else if (info.text) {
+                        clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
+                    }
                 }
 
-                var tip = (info && info.text) ? ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"' : '';
-                html += '<div class="' + cls + '"' + tip + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
+                html += '<div class="' + cls + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
             }
             html += '</div>';
-
             calDiv.innerHTML = html;
         }
+        // ============================================================
+        // ĐỘNG CƠ TOOLTIP GLOBAL (ĐỊNH VỊ TUYỆT ĐỐI THEO TỌA ĐỘ CHUỘT)
+        // ============================================================
+        if ($('#global-task-tooltip').length === 0) {
+            $('body').append('<div id="global-task-tooltip" class="global-task-tooltip"></div>');
+        }
+        var $globalTooltip = $('#global-task-tooltip');
+        var pinnedDay = null;
 
+        function showGlobalTooltip(dayEl) {
+            var $day = $(dayEl);
+            var contentRaw = $day.attr('data-tooltip-content');
+            if (!contentRaw) return;
+
+            $globalTooltip.html(decodeURIComponent(contentRaw));
+
+            var offset = $day.offset();
+            var ttWidth = $globalTooltip.outerWidth();
+            var ttHeight = $globalTooltip.outerHeight();
+            var dayWidth = $day.outerWidth();
+
+            var topPos = offset.top - ttHeight - 10;
+            var leftPos = offset.left + (dayWidth / 2) - (ttWidth / 2);
+
+            var windowWidth = $(window).width();
+            var arrowLeft = 50;
+
+            if (leftPos < 10) {
+                var overstep = 10 - leftPos;
+                leftPos = 10;
+                arrowLeft = 50 - (overstep / ttWidth * 100);
+            } else if (leftPos + ttWidth > windowWidth - 10) {
+                var overstep = (leftPos + ttWidth) - (windowWidth - 10);
+                leftPos = windowWidth - ttWidth - 10;
+                arrowLeft = 50 + (overstep / ttWidth * 100);
+            }
+
+            $globalTooltip.css({
+                top: topPos + 'px',
+                left: leftPos + 'px',
+                '--arrow-left': arrowLeft + '%'
+            });
+
+            $globalTooltip.addClass('show');
+        }
+
+        function hideGlobalTooltip() {
+            $globalTooltip.removeClass('show');
+        }
+
+        $(document).on('mouseenter', '.mc-day.has-tooltip', function () {
+            if (pinnedDay) return;
+            showGlobalTooltip(this);
+        }).on('mouseleave', '.mc-day.has-tooltip', function () {
+            if (pinnedDay) return;
+            hideGlobalTooltip();
+        });
+
+        // Click để Ghim
+        $(document).on('click', '.mc-day.has-tooltip', function (e) {
+            e.stopPropagation();
+            if (pinnedDay === this) {
+                pinnedDay = null;
+                hideGlobalTooltip();
+                $(this).removeClass('show-tooltip');
+            } else {
+                $('.mc-day').removeClass('show-tooltip');
+                pinnedDay = this;
+                $(this).addClass('show-tooltip');
+                showGlobalTooltip(this);
+            }
+        });
+
+        // Click ra ngoài tắt ghim
+        $(document).on('click', function () {
+            pinnedDay = null;
+            $('.mc-day').removeClass('show-tooltip');
+            hideGlobalTooltip();
+        });
+
+        // Cuộn chuột tắt ghim (Trường hợp Lịch nằm trong vùng có thanh cuộn)
+        $('.side-panel-body').on('scroll', function () {
+            if (pinnedDay) {
+                pinnedDay = null;
+                $('.mc-day').removeClass('show-tooltip');
+                hideGlobalTooltip();
+            }
+        });
         // 1. Chạy lần đầu khi load trang (F5)
         $(document).ready(function () {
             renderEmployeeMonthCalendar();

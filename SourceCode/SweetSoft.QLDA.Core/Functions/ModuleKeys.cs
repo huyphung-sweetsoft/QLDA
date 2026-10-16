@@ -55,5 +55,6 @@ namespace SweetSoft.QLDA.Core.Functions
         DocumentSigningInbox,
         ProjectTemplate,
         EmployeeDashboard,
+        KhaiBaoGio,
     }
 }

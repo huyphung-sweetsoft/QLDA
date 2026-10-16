@@ -114,13 +114,58 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.UpdatePanel upMemberList;
 
         /// <summary>
-        /// ltrCountCompany control.
+        /// hfPickedClient control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCountCompany;
+        protected global::System.Web.UI.WebControls.HiddenField hfPickedClient;
+
+        /// <summary>
+        /// hfOriginalClient control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfOriginalClient;
+
+        /// <summary>
+        /// hfMiniUser control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMiniUser;
+
+        /// <summary>
+        /// hfMiniMonth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMiniMonth;
+
+        /// <summary>
+        /// hfMiniPayload control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMiniPayload;
+
+        /// <summary>
+        /// btnLoadMiniMonth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnLoadMiniMonth;
 
         /// <summary>
         /// rptCompanyMembers control.
@@ -130,6 +175,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptCompanyMembers;
+
+        /// <summary>
+        /// ltrCountCompany control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrCountCompany;
 
         /// <summary>
         /// pnlNoData control.

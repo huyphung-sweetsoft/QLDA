@@ -117,6 +117,8 @@
     <Compile Include="TblCauHinhTuanLamViecController.cs" />
     <Compile Include="TblChiPhi.cs" />
     <Compile Include="TblChiPhiController.cs" />
+    <Compile Include="TblChiTietMau.cs" />
+    <Compile Include="TblChiTietMauController.cs" />
     <Compile Include="TblChucDanh.cs" />
     <Compile Include="TblChucDanhController.cs" />
     <Compile Include="TblCongViec.cs" />
@@ -143,6 +145,12 @@
     <Compile Include="TblHopDongThucHienController.cs" />
     <Compile Include="TblKhachHang.cs" />
     <Compile Include="TblKhachHangController.cs" />
+    <Compile Include="TblKhaiBaoGioCa.cs" />
+    <Compile Include="TblKhaiBaoGioCaController.cs" />
+    <Compile Include="TblKhaiBaoGioChiTiet.cs" />
+    <Compile Include="TblKhaiBaoGioChiTietController.cs" />
+    <Compile Include="TblKhaiBaoGioNhatKy.cs" />
+    <Compile Include="TblKhaiBaoGioNhatKyController.cs" />
     <Compile Include="TblLichHop.cs" />
     <Compile Include="TblLichHopController.cs" />
     <Compile Include="TblLichHopNhanVien.cs" />
@@ -165,6 +173,8 @@
     <Compile Include="TblLoaiTaiLieuController.cs" />
     <Compile Include="TblLuuTruVatLy.cs" />
     <Compile Include="TblLuuTruVatLyController.cs" />
+    <Compile Include="TblMauDuAn.cs" />
+    <Compile Include="TblMauDuAnController.cs" />
     <Compile Include="TblMauTaiLieu.cs" />
     <Compile Include="TblMauTaiLieuController.cs" />
     <Compile Include="TblNhacViecLichCongViec.cs" />

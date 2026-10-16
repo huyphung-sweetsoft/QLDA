@@ -352,44 +352,23 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                         , MSGButton.DeleteCancel, MSGIcon.Error);
                     OpenMessageBox(msg, result, false, false);
                     break;
-                case "RESET_PASSWORD":
-                    if (!this.CURRENT_PAGE.IsEdit)
-                    {
-                        ShowAccessDeniedNotify();
-                        return;
-                    }
-                    //--------------------------------------------
-                    rowIndex = 0;
-                    if (e.CommandSource.GetType() != typeof(GridviewExtension))
-                        rowIndex = ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex;
-                    else
-                        rowIndex = Convert.ToInt32(e.CommandArgument);
+                case "TOGGLE_LOCK_ACCOUNT":
+                    if (!this.CURRENT_PAGE.IsEdit) { ShowAccessDeniedNotify(); return; }
 
-                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out userId))
-                    {
-                        ShowInvalidDataError();
-                        return;
-                    }
-
-                    if (UserManager.Instance.IsAdministrator(userId) && !SweetContext.Current.IsAdministrator)
-                    {
-                        ShowNotify(GetResourceText(BackEndResourceKeys.THE_ACCOUNT_DOES_NOT_HAVE_PERMISSION_TO_PERFORM_THIS_ACTION));
-                        return;
-                    }
+                    rowIndex = (e.CommandSource.GetType() != typeof(GridviewExtension)) ? ((GridViewRow)((LinkButton)(e.CommandSource)).NamingContainer).RowIndex : Convert.ToInt32(e.CommandArgument);
+                    if (!Guid.TryParse(grvData.DataKeys[rowIndex].Value.ToString(), out userId)) { ShowInvalidDataError(); return; }
 
                     user = UserManager.Instance.GetUserById(userId);
-                    if (user == null)
-                    {
-                        ShowInvalidNotFoundData();
-                        return;
-                    }
+                    if (user == null) { ShowInvalidNotFoundData(); return; }
 
                     result = new ConfirmResult();
-                    result.CommandName = "USER_RESET_PASSWORD";
+                    result.CommandName = "TOGGLE_LOCK_ACCOUNT";
                     result.Value = user;
                     this.CURRENT_PAGE.CurrentConfirmResult = result;
-                    msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION)
-                        , string.Format(GetResourceText(BackEndResourceKeys.PLEASE_CONFIRM_TO_RESET_PASSWORD_FOR_ACCOUNT), user.DisplayName), MSGButton.Send, MSGIcon.Warning);
+
+                    // Lời thoại thay đổi động theo trạng thái hiện tại
+                    string messageStr = user.IsActivated ? "Bạn có chắc chắn muốn KHÓA tài khoản {0} không?" : "Bạn có chắc chắn muốn MỞ KHÓA tài khoản {0} không?";
+                    msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION), string.Format(messageStr, user.DisplayName), MSGButton.Send, MSGIcon.Warning);
                     OpenMessageBox(msg, result, false, false);
                     break;
             }
@@ -602,6 +581,17 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
             Response.Flush();
             Response.End();
         }
+        protected string RenderAccountStatus(object isActivatedObj)
+        {
+            bool isActivated = false;
+            if (isActivatedObj != null && isActivatedObj != DBNull.Value)
+                bool.TryParse(isActivatedObj.ToString(), out isActivated);
+
+            if (isActivated)
+                return "<span class=\"badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1\" style=\"font-size: 11.5px;\"><i class=\"fas fa-check-circle me-1\"></i> Hoạt động</span>";
+
+            return "<span class=\"badge bg-danger-subtle text-danger border border-danger border-opacity-25 px-2 py-1\" style=\"font-size: 11.5px;\"><i class=\"fas fa-lock me-1\"></i> Đã khóa</span>";
+        }
         public override void ConfirmRequest(ConfirmResult e)//là điểm cuối trong 1 quy trình thực hiện 1 hành động nhạy cảm như xóa hoặc reset password
         {
             if (e != null)
@@ -629,48 +619,26 @@ namespace SweetSoft.QLDA.BackOffice.fUsers.Controls
                             ShowNotify(exc.Message, MSGType.Error);
                         }
                     }
-                    else if (e.CommandName.Contains("USER_RESET_PASSWORD"))
+                    else if (e.CommandName.Contains("TOGGLE_LOCK_ACCOUNT"))
                     {
                         AspnetUser user = e.Value as AspnetUser;
-                        if (user == null)
-                        {
-                            ShowInvalidNotFoundData();
-                            return;
-                        }
-
+                        if (user == null) { ShowInvalidNotFoundData(); return; }
                         try
                         {
-                            bool isDefault = false;
-                            if (WebConfigurationManager.AppSettings["IsUsedDefaultPassword"] != null)
-                                isDefault = bool.Parse(WebConfigurationManager.AppSettings["IsUsedDefaultPassword"]);
+                            // 1. Tác động Core Membership (Chặn đăng nhập)
+                            MembershipUser memUser = Membership.GetUser(user.UserName);
+                            if (memUser != null)
+                            {
+                                bool newState = !user.IsActivated; // Lật ngược trạng thái hiện tại
+                                memUser.IsApproved = newState;
+                                Membership.UpdateUser(memUser);
 
-                            string password = string.Empty;
-                            if (isDefault)
-                                password = this.CURRENT_PAGE.DefaultPassword;
-                            else
-                                password = SecurityUtilities.CreateAlphaNumericString(8);
+                                // 2. Tác động Bảng Users (Cập nhật hiển thị Lưới)
+                                user.IsActivated = newState;
+                                user.Save();
 
-                            MembershipUser membershipUser = Membership.GetUser(user.UserName);
-                            if (membershipUser == null)
-                            {
-                                ShowInvalidDataError();
-                                return;
-                            }
-                            string oldPass = membershipUser.ResetPassword();
-                            if (!membershipUser.ChangePassword(oldPass, password))
-                            {
-                                ShowNotify(GetResourceText(BackEndResourceKeys.UNABLE_TO_UPDATE_PASSWORD_FOR_ACCOUNT));
-                                return;
-                            }
-                            Membership.UpdateUser(membershipUser);
-                            user.Email = membershipUser.Email;
-                            user.ResetPasswordKey = string.Empty;
-                            user.Save();
-                            if (user != null)
-                            {
-                                if(SendMailHandlerCallback != null)
-                                    SendMailHandlerCallback(new { User = user, Password = password }, EventArgs.Empty);
-                                ShowNotify(GetResourceText(BackEndResourceKeys.THE_NEW_PASSWORD_HAS_BEEN_SENT_TO_THE_ACCOUNT_S_EMAIL_ADDRESS));
+                                ShowNotify(newState ? "Đã MỞ KHÓA tài khoản thành công!" : "Đã KHÓA tài khoản thành công!", MSGType.Success);
+                                grvData.Rebind();
                             }
                         }
                         catch (Exception exc)

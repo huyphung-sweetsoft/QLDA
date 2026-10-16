@@ -6,11 +6,11 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
-        /* Bảng cấu hình tuần: giữ fieldset và màu tím theo giao diện chung */
+        /* Giữ phong cách tím của hệ thống, giảm cảm giác các khối bị lồng nhiều lớp */
         .schedule-table-wrap {
             overflow-x: auto;
-            border: 1px solid #e5d8f4;
-            border-radius: 10px;
+            border: 1px solid #e3d7f1;
+            border-radius: 6px;
             background: #fff;
         }
 
@@ -22,21 +22,25 @@
         }
 
         .schedule-config-table thead th {
-            padding: .85rem .8rem;
+            padding: .78rem .8rem;
             color: #4b168c;
             background: #f4eefb;
             border-bottom: 1px solid #dfd0ef;
             font-size: .82rem;
             font-weight: 700;
-            letter-spacing: .025em;
             white-space: nowrap;
             vertical-align: middle;
         }
 
+        .schedule-config-table thead th i {
+            color: #5b21b6;
+        }
+
         .schedule-config-table tbody td {
-            padding: .65rem .7rem;
+            padding: .55rem .75rem;
             border-color: #eee7f5;
             vertical-align: middle;
+            background: #fff;
         }
 
         .schedule-config-table tbody tr:hover > td {
@@ -46,7 +50,8 @@
         .schedule-day-cell {
             width: 155px;
             min-width: 155px;
-            background: #fbf8ff;
+            background: #fbf8ff !important;
+            border-right: 1px solid #eee7f5;
         }
 
         .schedule-day-name {
@@ -59,29 +64,34 @@
             display: inline-flex;
             align-items: center;
             margin-top: .4rem;
-            padding: .18rem .5rem;
-            border-radius: 999px;
+            padding: .2rem .45rem;
+            border: 1px solid transparent;
+            border-radius: 4px;
             font-size: .72rem;
             font-weight: 600;
+            line-height: 1.25;
             white-space: nowrap;
         }
 
         .schedule-day-status.is-working {
             color: #5b21b6;
-            background: #eee5fa;
+            background: #f1eafa;
+            border-color: #e5d7f5;
         }
 
         .schedule-day-status.is-day-off {
-            color: #64748b;
-            background: #eef0f3;
+            color: #737083;
+            background: #f4f3f7;
+            border-color: #e8e6ed;
         }
 
+        /* Phẳng hơn: không tạo thêm card bo góc bên trong mỗi ô của bảng */
         .schedule-shift-cell {
-            min-width: 360px;
-            padding: .65rem .7rem;
-            border: 1px solid #eee7f5;
-            border-radius: 8px;
-            background: #fff;
+            min-width: 340px;
+            padding: .2rem .15rem;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
         }
 
         .schedule-shift-heading {
@@ -89,18 +99,19 @@
             align-items: center;
             justify-content: space-between;
             gap: .75rem;
-            margin-bottom: .55rem;
+            margin-bottom: .4rem;
         }
 
-        .schedule-shift-title {
+        .schedule-shift-title,
+        .schedule-shift-title.afternoon {
             color: #5b21b6;
             font-size: .88rem;
             font-weight: 700;
             white-space: nowrap;
         }
 
-        .schedule-shift-title.afternoon {
-            color: #318acb;
+        .schedule-shift-title i {
+            color: #6d35bd;
         }
 
         .schedule-shift-switch {
@@ -118,10 +129,12 @@
         }
 
         .schedule-time-group .input-group-text {
+            display: flex;
+            align-items: center;
             padding: .35rem .5rem;
-            color: #514263;
-            background: #f8f5fc;
-            border-color: #ded5e9;
+            color: #4b168c;
+            background: #f6f1fc;
+            border-color: #e0d5ef;
             font-size: .8rem;
             font-weight: 600;
         }
@@ -130,31 +143,63 @@
             width: 1%;
             min-width: 0;
             max-width: none;
+            min-height: 36px;
             flex: 1 1 0;
-            padding: .35rem .4rem;
+            padding: .3rem .4rem;
             text-align: center;
-            border-color: #ded5e9;
-            font-size: .9rem;
+            color: #343044;
+            background-color: #fff;
+            border-color: #e0d5ef;
+            border-radius: 0 !important;
+            font-size: .88rem;
+            box-shadow: none;
+        }
+
+        .schedule-time-group > :first-child {
+            border-top-left-radius: 5px !important;
+            border-bottom-left-radius: 5px !important;
+        }
+
+        .schedule-time-group > :last-child {
+            border-top-right-radius: 5px !important;
+            border-bottom-right-radius: 5px !important;
+        }
+
+        .schedule-time-input:focus {
+            position: relative;
+            z-index: 2;
+            border-color: #8b5fc7 !important;
+            box-shadow: 0 0 0 .12rem rgba(91, 33, 182, .12) !important;
         }
 
         .schedule-time-input:disabled {
-            color: #94a3b8;
-            background: #f1f3f5;
+            color: #aaa4b6 !important;
+            background: #f3f1f6 !important;
+            background-image: none !important;
             cursor: not-allowed;
-            opacity: .8;
+            opacity: 1;
         }
 
         @media (max-width: 767.98px) {
             .schedule-config-table {
                 min-width: 940px;
             }
+
             .schedule-config-table tbody td {
                 padding: .5rem;
             }
+
             .schedule-shift-cell {
-                min-width: 345px;
+                min-width: 330px;
             }
         }
+        .schedule-unsaved-alert {
+    position: static !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    width: auto !important;
+}
     </style>
 </asp:Content>
 
@@ -225,11 +270,10 @@
                                                                     <div class="schedule-shift-cell">
                                                                         <div class="schedule-shift-heading">
                                                                             <span class="schedule-shift-title"><i class="fas fa-sun me-1"></i>Ca sáng</span>
-                                                                            <div class="schedule-shift-switch">
+                                                                            <div class="schedule-shift-switch js-morning-switch">
+                                                                                <%-- Giữ nguyên cơ chế switch ON/OFF cũ của ExtraCheckbox. --%>
                                                                                 <SweetSoft:ExtraCheckbox runat="server"
                                                                                     ID="chkCaSang"
-                                                                                    SwitchType="Primary"
-                                                                                    CssClass="js-shift-morning"
                                                                                     OnText="Bật"
                                                                                     OffText="Tắt"
                                                                                     OnChange="CMSMasterJs.ToggleShiftConfig(this, 'morning');" />
@@ -247,11 +291,10 @@
                                                                     <div class="schedule-shift-cell">
                                                                         <div class="schedule-shift-heading">
                                                                             <span class="schedule-shift-title afternoon"><i class="fas fa-cloud-sun me-1"></i>Ca chiều</span>
-                                                                            <div class="schedule-shift-switch">
+                                                                            <div class="schedule-shift-switch js-afternoon-switch">
+                                                                                <%-- Giữ nguyên cơ chế switch ON/OFF cũ của ExtraCheckbox. --%>
                                                                                 <SweetSoft:ExtraCheckbox runat="server"
                                                                                     ID="chkCaChieu"
-                                                                                    SwitchType="Info"
-                                                                                    CssClass="js-shift-afternoon"
                                                                                     OnText="Bật"
                                                                                     OffText="Tắt"
                                                                                     OnChange="CMSMasterJs.ToggleShiftConfig(this, 'afternoon');" />
@@ -272,15 +315,27 @@
                                             </table>
                                         </div>
                                     </fieldset>
-                                    
-                                   <div class="text-end mb-4 d-flex justify-content-end gap-2">
+
+                                    <div id="scheduleDirtyNotice"
+                                         class="alert alert-warning schedule-unsaved-alert mb-3"
+                                         style="display:none;"
+                                         role="status"
+                                         aria-live="polite">
+                                        <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+                                        <strong>Có thay đổi chưa được lưu.</strong>
+                                        Cấu hình trên biểu mẫu khác với cấu hình đã lưu. Vui lòng kiểm tra và nhấn
+                                        <strong>“Lưu cấu hình tuần”</strong> để cập nhật hệ thống.
+                                    </div>
+
+                                    <div class="text-end mb-4 d-flex justify-content-end gap-2">
 
                                         <SweetSoft:ExtraButton runat="server"
                                             ID="btnApplyDefaultHours"
                                             ButtonStyle="Secondary"
                                             ButtonIcon="Refresh"
-                                            OnClientClick="CMSMasterJs.ApplyDefaultWorkingHours(); return false;">
-                                            Áp dụng giờ làm việc mặc định
+                                            OnClientClick="CMSMasterJs.ApplyDefaultWorkingHours(); return false;"
+                                            CausesValidation="false">
+                                            Điền giờ mặc định
                                         </SweetSoft:ExtraButton>
 
                                         <SweetSoft:ExtraButton runat="server"
@@ -371,9 +426,19 @@
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
+        // ExtraCheckbox là WebForms CheckBox; class định danh đặt trên div bao quanh,
+        // không dựa vào CssClass của control vì WebForms có thể render class trên span.
+        CMSMasterJs.IsScheduleShiftOn = function ($row, shiftType) {
+            var wrapperSelector = shiftType === 'morning'
+                ? '.js-morning-switch'
+                : '.js-afternoon-switch';
+            var $checkbox = $row.find(wrapperSelector).find('input[type="checkbox"]').first();
+            return $checkbox.length > 0 && $checkbox.prop('checked') === true;
+        };
+
         CMSMasterJs.UpdateScheduleDayStatus = function ($row) {
-            var morningOn = $row.find('input.js-shift-morning:checked').length > 0;
-            var afternoonOn = $row.find('input.js-shift-afternoon:checked').length > 0;
+            var morningOn = CMSMasterJs.IsScheduleShiftOn($row, 'morning');
+            var afternoonOn = CMSMasterJs.IsScheduleShiftOn($row, 'afternoon');
             var isWorking = morningOn || afternoonOn;
             var $status = $row.find('.schedule-day-status');
 
@@ -382,14 +447,72 @@
                 .toggleClass('is-day-off', !isWorking);
         };
 
+        // Bản chụp logic của cấu hình tuần đã được xác nhận/lưu gần nhất.
+        // Không tính giờ của một ca đang tắt vì khi lưu, các giờ này được ghi thành null.
+        if (typeof CMSMasterJs.ScheduleSavedSnapshot === 'undefined') {
+            CMSMasterJs.ScheduleSavedSnapshot = null;
+        }
+
+        CMSMasterJs.GetScheduleSnapshot = function () {
+            var snapshot = [];
+
+            $('#tblScheduleWeek .schedule-day-row').each(function () {
+                var $row = $(this);
+                var morningOn = CMSMasterJs.IsScheduleShiftOn($row, 'morning');
+                var afternoonOn = CMSMasterJs.IsScheduleShiftOn($row, 'afternoon');
+
+                snapshot.push({
+                    morningOn: morningOn,
+                    morningStart: $row.find('.time-morning-start').val() || '',
+                    morningEnd: $row.find('.time-morning-end').val() || '',
+                    afternoonOn: afternoonOn,
+                    afternoonStart: $row.find('.time-afternoon-start').val() || '',
+                    afternoonEnd: $row.find('.time-afternoon-end').val() || ''
+                });
+            });
+
+            return JSON.stringify(snapshot);
+        };
+
+        CMSMasterJs.CaptureScheduleSavedSnapshot = function () {
+            CMSMasterJs.ScheduleSavedSnapshot = CMSMasterJs.GetScheduleSnapshot();
+        };
+
+        CMSMasterJs.UpdateScheduleDirtyState = function () {
+            // Khi chưa có bản mốc (trước khi khởi tạo lần đầu), không tự báo thay đổi.
+            if (CMSMasterJs.ScheduleSavedSnapshot === null) {
+                return;
+            }
+
+            var currentSnapshot = CMSMasterJs.GetScheduleSnapshot();
+            var isDirty = currentSnapshot !== CMSMasterJs.ScheduleSavedSnapshot;
+            var $notice = $('#scheduleDirtyNotice');
+
+            // Điều khiển trực tiếp display để cảnh báo không phụ thuộc utility class d-none.
+            $notice.css('display', isDirty ? 'block' : 'none');
+        };
+
+        // Chỉ gọi hàm này khi server đã lưu thành công và cập nhật lại UpdatePanel.
+        CMSMasterJs.MarkScheduleAsSaved = function () {
+            CMSMasterJs.CaptureScheduleSavedSnapshot();
+            CMSMasterJs.UpdateScheduleDirtyState();
+        };
+
         CMSMasterJs.ToggleShiftConfig = function (checkboxElement, shiftType) {
-            var $checkbox = $(checkboxElement);
-            var isChecked = $checkbox.is(':checked');
-            var $row = $checkbox.closest('tr.schedule-day-row');
+            var $element = $(checkboxElement);
+            var $checkbox = $element.is('input[type="checkbox"]')
+                ? $element
+                : $element.find('input[type="checkbox"]').first();
+            var isChecked = $checkbox.length > 0 && $checkbox.prop('checked') === true;
+            var $row = $element.closest('tr.schedule-day-row');
             var $startInput;
             var $endInput;
             var defaultStart;
             var defaultEnd;
+
+            if (!$row.length) {
+                return;
+            }
 
             if (shiftType === 'morning') {
                 $startInput = $row.find('.time-morning-start');
@@ -414,13 +537,14 @@
             }
 
             CMSMasterJs.UpdateScheduleDayStatus($row);
+            CMSMasterJs.UpdateScheduleDirtyState();
         };
 
         CMSMasterJs.ApplyDefaultWorkingHours = function () {
             $('#tblScheduleWeek .schedule-day-row').each(function () {
                 var $row = $(this);
 
-                if ($row.find('input.js-shift-morning:checked').length > 0) {
+                if (CMSMasterJs.IsScheduleShiftOn($row, 'morning')) {
                     $row.find('.time-morning-start')
                         .val($('#<%= hdfDefaultMorningStart.ClientID %>').val())
                         .prop('disabled', false).removeAttr('disabled');
@@ -429,7 +553,7 @@
                         .prop('disabled', false).removeAttr('disabled');
                 }
 
-                if ($row.find('input.js-shift-afternoon:checked').length > 0) {
+                if (CMSMasterJs.IsScheduleShiftOn($row, 'afternoon')) {
                     $row.find('.time-afternoon-start')
                         .val($('#<%= hdfDefaultAfternoonStart.ClientID %>').val())
                         .prop('disabled', false).removeAttr('disabled');
@@ -438,13 +562,15 @@
                         .prop('disabled', false).removeAttr('disabled');
                 }
             });
+
+            CMSMasterJs.UpdateScheduleDirtyState();
         };
 
         CMSMasterJs.InitializeShiftInputs = function () {
             $('#tblScheduleWeek .schedule-day-row').each(function () {
                 var $row = $(this);
-                var morningOn = $row.find('input.js-shift-morning:checked').length > 0;
-                var afternoonOn = $row.find('input.js-shift-afternoon:checked').length > 0;
+                var morningOn = CMSMasterJs.IsScheduleShiftOn($row, 'morning');
+                var afternoonOn = CMSMasterJs.IsScheduleShiftOn($row, 'afternoon');
 
                 $row.find('.time-morning-start, .time-morning-end')
                     .prop('disabled', !morningOn);
@@ -470,10 +596,28 @@
                 }
             });
 
+            // Theo dõi cả ô giờ và checkbox, kể cả sau khi UpdatePanel thay DOM.
+            var scheduleDirtySelector = '#tblScheduleWeek .schedule-time-input, ' +
+                '#tblScheduleWeek .js-morning-switch input[type="checkbox"], ' +
+                '#tblScheduleWeek .js-afternoon-switch input[type="checkbox"]';
+
+            $(document)
+                .off('input.scheduleDirty change.scheduleDirty', scheduleDirtySelector)
+                .on('input.scheduleDirty change.scheduleDirty', scheduleDirtySelector, function () {
+                    // Chạy sau event onchange của ExtraCheckbox để giờ đã được cập nhật xong.
+                    window.setTimeout(function () {
+                        CMSMasterJs.UpdateScheduleDirtyState();
+                    }, 0);
+                });
+
             CMSMasterJs.InitializeShiftInputs();
+            CMSMasterJs.CaptureScheduleSavedSnapshot();
+            CMSMasterJs.UpdateScheduleDirtyState();
 
             CMSMasterJs.AddEndRequest(function () {
+                // Không chụp lại mốc ở đây: postback không thành công không được coi là đã lưu.
                 CMSMasterJs.InitializeShiftInputs();
+                CMSMasterJs.UpdateScheduleDirtyState();
             });
         });
     </script>

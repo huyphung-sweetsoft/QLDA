@@ -573,6 +573,37 @@ namespace SweetSoft.QLDA.BackOffice.Common
             ddl.DataSource = lstXa;
             ddl.DataBind();
         }
+        // FIXED: Đổi tham số thành ExtraDropdown
+        public void BindTinhThanh(ExtraDropdown ddl)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+
+            List<TblTinhThanh> lstTinh = DiaChinhManager.Instance.GetAllTinhThanh();
+            if (lstTinh == null)
+                lstTinh = new List<TblTinhThanh>();
+
+            ddl.DataTextField = TblTinhThanh.Columns.TenTinhThanh;
+            ddl.DataValueField = TblTinhThanh.Columns.MaTinh;
+            ddl.DataSource = lstTinh;
+            ddl.DataBind();
+        }
+
+        // FIXED: Đổi tham số thành ExtraDropdown
+        public void BindXaPhuong(ExtraDropdown ddl, string maTinh)
+        {
+            ddl.Items.Clear();
+            ddl.DefaultSearchValue = "";
+
+            List<TblXaPhuong> lstXa = string.IsNullOrEmpty(maTinh)
+                                      ? new List<TblXaPhuong>()
+                                      : DiaChinhManager.Instance.GetXaPhuongByMaTinh(maTinh);
+
+            ddl.DataTextField = TblXaPhuong.Columns.TenXaPhuong;
+            ddl.DataValueField = TblXaPhuong.Columns.MaXa;
+            ddl.DataSource = lstXa;
+            ddl.DataBind();
+        }
         public void BindStatus(ExtraDropdown dropdown, bool isAll = false)
         {
             dropdown.Items.Clear();
