@@ -115,7 +115,71 @@
     .row-default-view { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; width: 100%; min-height: 46px; box-sizing: border-box; font-size: 13px; }
     .member-info-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
     .member-name-block { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
-    .member-email { font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .member-email {
+    font-size: 11px;
+    color: #64748b;
+
+    /* Hiển thị đầy đủ email, không cắt bằng dấu ... */
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    }
+
+    /* Chức danh nằm cùng dòng với tên nhân viên */
+    .member-position {
+        font-size: 12px;
+        font-weight: 500;
+        color: #475569;
+        min-width: 0;
+    }
+
+    .member-position:not(:empty)::before {
+        content: "·";
+        color: #94a3b8;
+        margin: 0 5px 0 2px;
+    }
+
+    .member-position:empty {
+        display: none;
+    }
+
+    /* Thanh tổng quan phân công ở chân popup */
+    .task-assignment-footer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .task-assignment-summary {
+        margin-right: auto;
+        min-width: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #475569;
+    }
+
+    /*
+     * UpdatePanel ở chân popup cần giãn để phần tổng quan
+     * nằm bên trái, còn nút Lưu và nút Đóng vẫn ở bên phải.
+     */
+    div[id$="upnlTaskMemberFooter"] {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    @media (max-width: 575px) {
+        .task-assignment-footer-row {
+            gap: 8px;
+        }
+
+        .task-assignment-summary {
+            font-size: 11px;
+        }
+    }
     .member-email:empty { display: none; }
     .member-info-group input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; }
     
@@ -160,9 +224,7 @@
     .mc-day.today { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
     
     .mc-label { margin-top: 3px; max-width: 100%; padding: 0 3px; box-sizing: border-box; font-size: 9.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    /* =========================================================
-       HIGHLIGHT NHÂN VIÊN GỐC CỦA CÔNG VIỆC
-       ========================================================= */
+   /* HIGHLIGHT NHÂN VIÊN GỐC CỦA CÔNG VIỆC */
     .member-item-row.original-member {
         background-color: #f0f8ff; 
         border-color: #bfe0ff;     
@@ -170,6 +232,18 @@
     .member-item-row.original-member:hover {
         background-color: #e6f3ff;
     }
+    
+    /* [BỔ SUNG BƯỚC 1]: ÉP NỀN TRONG SUỐT CHO VÙNG CHỨA LỊCH ĐỂ TRÀN MÀU XANH NHẠT */
+    .member-item-row.original-member .row-schedule-panel,
+    .member-item-row.original-member .row-schedule-inner,
+    .member-item-row.original-member .mini-cal-wrap,
+    .member-item-row.original-member .mini-cal,
+    .member-item-row.original-member .mc-header,
+    .member-item-row.original-member .mc-weekdays,
+    .member-item-row.original-member .mc-viewport {
+        background-color: transparent !important;
+    }
+
     .member-item-row.original-member .btn-calendar-only {
         background-color: #ffffff;
         border-color: #bfe0ff;
@@ -179,30 +253,576 @@
         background-color: #dbeafe;
         border-color: #3b82f6;
     }
+    /* ============================================================
+       TOOLTIP GLOBAL (NẰM TRÊN LAYER CAO NHẤT CỦA TRÌNH DUYỆT)
+       ============================================================ */
+    .mc-day { position: relative !important; overflow: visible !important; }
+    .mc-day.has-tooltip { cursor: pointer; }
+    .mc-day:hover, .mc-day.show-tooltip { z-index: 50; }
+    
+    .global-task-tooltip { 
+        position: absolute; /* Định vị tuyệt đối so với toàn màn hình */
+        z-index: 9999999 !important; /* Đè lên mọi Modal/Popup */
+        background: #ffffff; color: #334155; 
+        border: 1px solid #cbd5e1; border-radius: 10px; padding: 11px 16px; 
+        min-width: 340px; max-width: 520px; width: max-content; 
+        white-space: normal; word-break: break-word; overflow-wrap: anywhere; 
+        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.2); font-size: 12.5px; line-height: 1.5; 
+        opacity: 0; visibility: hidden; pointer-events: none; 
+        transition: opacity 0.15s ease, visibility 0.15s ease; 
+    }
+    .global-task-tooltip.show { opacity: 1; visibility: visible; pointer-events: auto; }
+    
+    /* Mũi tên chỉ xuống (Tự động chạy qua lại theo tọa độ JS) */
+    .global-task-tooltip::after { 
+        content: ''; position: absolute; top: 100%; 
+        left: var(--arrow-left, 50%); /* Chạy động bằng CSS Variable */
+        transform: translateX(-50%);
+        border-width: 6px; border-style: solid; border-color: #ffffff transparent transparent transparent; 
+    }
+
+    .tooltip-task-list { list-style: none; margin: 0; padding: 0; text-align: left; }
+    .tooltip-task-list li { margin: 0; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; color: #334155; }
+    .tooltip-task-list li:last-child { border-bottom: none; padding-bottom: 0; }
+    .tooltip-task-list li:first-child { padding-top: 0; }
+    .t-project-name { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; color: #64748b; }
+    .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
+
+
+/* === Task member planner 2026: popover + people timeline === */
+.task-member-picker-root{position:relative}
+.tmp-tabs{display:flex;gap:4px;align-items:center;flex-shrink:0;min-height:34px;margin-top:6px;border-bottom:1px solid #e5e7eb}
+.tmp-tab{border:1px solid transparent;border-bottom:2px solid transparent;background:transparent;color:#64748b;font-size:12.5px;font-weight:700;padding:6px 13px;cursor:pointer;white-space:nowrap;border-radius:6px 6px 0 0}
+.tmp-tab:hover{background:#f8f5fc;color:#552291}
+.tmp-tab.is-active{color:#552291;border-bottom-color:#6630a2;background:#f8f5fc}
+.tmp-tab:focus-visible,.tmp-pop-close:focus-visible,.tmp-day:focus-visible,.tmp-timeline-bar button:focus-visible{outline:2px solid #6630a2;outline-offset:2px}
+.tmp-auto-note{margin-left:auto;font-size:11px;color:#9a3412;cursor:help;padding-right:5px}
+.task-member-picker-root .task-member-columns[hidden],.task-member-picker-root .tmp-timeline[hidden],.task-member-picker-root .tmp-calendar-pop[hidden]{display:none!important}
+.task-member-picker-root .task-member-columns{flex:1 1 0}
+.tmp-calendar-pop{position:absolute;z-index:100;min-width:240px;display:flex;flex-direction:column;overflow:visible;padding:10px;border:1px solid #d9c5ee;border-radius:10px;background:#fff;box-shadow:0 12px 35px rgba(28,18,58,.22);animation:tmp-pop-in .14s ease-out}
+@keyframes tmp-pop-in{from{opacity:.5;transform:scale(.985)}to{opacity:1;transform:scale(1)}}
+.tmp-calendar-pop:before,.tmp-calendar-pop:after{position:absolute;content:"";width:0;height:0;border-top:10px solid transparent;border-bottom:10px solid transparent;top:var(--tmp-arrow-y,50%);transform:translateY(-50%)}
+.tmp-calendar-pop.tmp-from-left:before{left:-12px;border-right:12px solid #d9c5ee}
+.tmp-calendar-pop.tmp-from-left:after{left:-10px;border-right:11px solid #fff}
+.tmp-calendar-pop.tmp-from-right:before{right:-12px;border-left:12px solid #d9c5ee}
+.tmp-calendar-pop.tmp-from-right:after{right:-10px;border-left:11px solid #fff}
+.tmp-pop-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px;padding:0 1px 6px;border-bottom:1px solid #f1ebf7}
+.tmp-pop-name{font-size:12.5px;font-weight:750;color:#25324a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tmp-pop-close{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;border:0;background:#f7f2fd;color:#61309e;cursor:pointer;font-size:19px}
+.tmp-pop-inner{min-height:0;overflow-y:auto;overflow-x:hidden}
+.tmp-calendar-pop .mc-header{padding-top:5px}
+.tmp-calendar-pop .mc-grid{grid-auto-rows:var(--tmp-day-size,36px);gap:2px}
+.tmp-calendar-pop .mc-viewport{height:calc(var(--tmp-day-size,36px)*6 + 10px)}
+.tmp-calendar-pop .mc-weekdays span{font-size:10px;padding:2px 0}
+.tmp-calendar-pop .mc-day{font-size:11px}
+.tmp-calendar-pop .mc-label{font-size:9px}
+.tmp-calendar-pop .mc-day.has-current:after{content:"";width:5px;height:5px;border-radius:50%;background:#7c3aed;position:absolute;right:5px;bottom:4px}
+.tmp-pop-help{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:5px 1px 0;color:#64748b;font-size:10px}
+.tmp-pop-help span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;vertical-align:middle;margin-right:4px;background:var(--tmp-legend)}
+.tmp-pop-detail{display:none;min-height:0;overflow-y:auto;font-size:12px;line-height:1.5;color:#334155;padding-top:9px}
+.tmp-calendar-pop.tmp-detail-mode .tmp-pop-calendar{display:none}
+.tmp-calendar-pop.tmp-detail-mode .tmp-pop-detail{display:block}
+.tmp-pop-detail-back{border:1px solid #e1d6ee;border-radius:6px;background:#faf7ff;color:#5b2189;padding:5px 9px;font-size:11.5px;cursor:pointer;margin-bottom:8px}
+.tmp-pop-task{border-bottom:1px dashed #e2e8f0;padding:8px 0}
+.tmp-pop-task:last-child{border:0}
+.tmp-pop-task small{display:block;color:#64748b;margin-bottom:2px}
+.tmp-timeline{position:relative;display:flex;flex:1 1 0;flex-direction:column;min-height:0;min-width:0;overflow:hidden;border:1px solid #e2e8f0;border-radius:8px;background:#fff}
+.tmp-timeline-bar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid #e8edf4;background:#f8fafc;flex-shrink:0;min-width:0}
+.tmp-timeline-search{height:31px;border:1px solid #dbe2eb;border-radius:6px;padding:5px 10px;max-width:330px;min-width:125px;flex:1 1 auto;font-size:12px;background:#fff}
+.tmp-timeline-filter{height:31px;max-width:165px;min-width:110px;border:1px solid #dbe2eb;background:#fff;border-radius:6px;font-size:12px;padding:4px 7px}
+.tmp-window-nav{border:1px solid #dbe2eb;border-radius:5px;color:#552291;background:#fff;min-width:24px;height:28px;cursor:pointer}
+.tmp-window-nav[hidden]{display:none!important}
+.tmp-timeline-tip{margin-left:auto;font-size:10.5px;color:#64748b;white-space:nowrap}
+.tmp-scroll{position:relative;flex:1 1 0;overflow:auto;min-height:0;min-width:0;scrollbar-color:#cbd5e1 transparent}
+.tmp-table{width:max-content;min-width:100%;border-spacing:0;border-collapse:separate;table-layout:fixed}
+.tmp-table th,.tmp-table td{padding:0;border-right:1px solid #eef1f6;border-bottom:1px solid #eef1f6;box-sizing:border-box}
+.tmp-table thead th{position:sticky;top:0;z-index:7;background:#f1f5f9;color:#506179;font-weight:700;white-space:nowrap}
+.tmp-table .tmp-left{position:sticky;left:0;width:276px;min-width:276px;max-width:276px;z-index:5;background:#fff;box-shadow:2px 0 4px rgba(0,0,0,.035)}
+.tmp-table thead tr:nth-child(2) th{top:22px}
+.tmp-table thead .tmp-left{z-index:9;background:#f1f5f9;text-align:left;padding-left:12px;font-size:12px}
+.tmp-month{height:22px;font-size:10.5px;text-align:center}
+.tmp-date{height:29px;min-width:36px;width:36px;text-align:center;font-size:10px;line-height:1.1}
+.tmp-date span{display:block;color:#7b8799;font-size:9px;margin-top:2px}
+.tmp-date.tmp-today{color:#59249b;background:#ede4fa}
+.tmp-group td{height:31px;background:#eaf2fa!important;font-size:11.5px;font-weight:750;color:#234e7d}
+.tmp-group.tmp-other td{background:#fceff5!important;color:#9d174d}
+.tmp-group .tmp-left{z-index:6;background:inherit!important;padding-left:10px}
+.tmp-group button{border:0;color:inherit;background:none;font-weight:750;cursor:pointer;text-align:left;width:100%;height:30px}
+.tmp-employee td{height:49px}
+.tmp-person-cell{display:flex;align-items:center;gap:7px;padding:6px 8px;min-width:0}
+.tmp-person-cell input{width:15px;height:15px;flex:0 0 auto;accent-color:#5b21b6;cursor:pointer}
+.tmp-person-text{flex:1 1 auto;min-width:0}
+.tmp-person-text strong{display:block;color:#25354b;font-size:11.5px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.tmp-person-text small{display:block;font-size:10px;color:#77849a;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.tmp-busy-count{font-size:9.5px;color:#a16207;font-weight:700;white-space:nowrap}
+.tmp-employee.tmp-will-add .tmp-left{box-shadow:inset 3px 0 #7c3aed}
+.tmp-employee.tmp-will-remove .tmp-left{box-shadow:inset 3px 0 #ef4444}
+.tmp-day{width:100%;height:34px;padding:0;border:0;border-radius:3px;display:block;cursor:pointer;background:#e6f4ea;position:relative}
+.tmp-day.st-busy{background:#fee2e2}
+.tmp-day.st-weekend{background:#f1f5f9}
+.tmp-day.st-holiday{background:#fef3c7}
+.tmp-day.st-free{background:#e6f4ea}
+.tmp-day.out-of-range{background:#f8fafc}
+.tmp-day.has-current:after{content:"";width:5px;height:5px;border-radius:50%;background:#7c3aed;position:absolute;bottom:3px;right:3px}
+.tmp-day:hover{outline:1px solid #7443b3;outline-offset:-1px}
+.tmp-table .tmp-employee.is-selected .tmp-left{background:#faf6ff}
+.tmp-empty{padding:35px 15px;text-align:center;color:#64748b;font-size:12px}
+.tmp-floating-day-detail{position:absolute;z-index:20;max-width:350px;width:min(350px,calc(100% - 22px));background:#fff;border:1px solid #d9c5ee;border-radius:9px;box-shadow:0 9px 26px rgba(25,12,55,.2);padding:13px;overflow-y:auto;max-height:240px;font-size:12px}
+.tmp-floating-day-detail[hidden]{display:none!important}
+/* Timeline toolbar: same design vocabulary as BootstrapDropdown + ExtraTextBox and one-row filter tags. */
+.tmp-timeline-bar .tmp-filter-target{max-width:186px;min-width:154px}
+.tmp-timeline-bar .tmp-role-filter{max-width:156px;min-width:115px;border-color:#7b38b3;color:#445367}
+.tmp-search-combo{display:flex;align-items:stretch;flex:1 1 auto;min-width:150px;max-width:360px;height:32px}
+.tmp-search-combo .tmp-timeline-search{min-width:80px;width:100%;height:32px;max-width:none;border:1px solid #cfc6e5;border-right:0;border-radius:5px 0 0 5px}
+.tmp-search-apply{display:inline-flex;align-items:center;justify-content:center;flex:0 0 34px;height:32px;background:#fff;color:#561b90;border:1px solid #61269f;border-radius:0 5px 5px 0;cursor:pointer}
+.tmp-search-apply:hover{background:#f5efff}
+.tmp-active-filters{display:flex;gap:5px;align-items:center;overflow-x:auto;flex-shrink:0;height:26px;max-height:26px;padding:2px 9px;border-bottom:1px solid #f0edf5;scrollbar-width:thin;white-space:nowrap}
+.tmp-active-filters[hidden]{display:none!important}
+.tmp-filter-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;background:#f3edfc;color:#54218d;font-size:10.5px;white-space:nowrap;border:1px solid #e6d8f5}
+.tmp-filter-tag button{font-size:13px;color:#54218d;background:none;border:0;padding:0 1px;cursor:pointer;line-height:1}
+.task-member-picker-root .listSearchTagBox{max-height:30px;min-height:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin}
+.tmp-calendar-pop .mc-grid{grid-auto-rows:var(--tmp-day-size,48px)}
+.tmp-calendar-pop .mc-viewport{height:calc(var(--tmp-day-size,48px)*6 + 10px)}
+.tmp-calendar-pop .mc-day{font-size:12px}
+.tmp-calendar-pop .mc-label{font-size:10px}
+.global-task-tooltip{position:fixed!important;max-width:min(520px,calc(100vw - 24px));min-width:min(340px,calc(100vw - 24px));max-height:min(410px,calc(100vh - 24px));overflow-y:auto;z-index:9999999!important}
+.global-task-tooltip.tmp-tooltip-below::after{top:auto;bottom:100%;border-color:transparent transparent #fff transparent}
+.tmp-tooltip-heading{color:#334155;font-size:11px;font-weight:750;border-bottom:1px solid #e5e7eb;padding-bottom:5px;margin-bottom:4px}
+.tmp-current-task{background:#f5f0ff;padding:7px 8px;border-radius:6px;border:1px solid #ddd0ff;margin:4px 0 7px}
+.tmp-current-task strong{display:block;color:#6939aa;font-size:10.5px;margin-bottom:3px}
+.tmp-other-heading{font-weight:750;color:#b45309;font-size:11px;margin:5px 0}
+@media(max-width:991px){.task-member-picker-root .task-member-columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:none}.tmp-table .tmp-left{min-width:220px;width:220px;max-width:220px}.tmp-timeline-tip{display:none}}
+@media(max-width:620px){.tmp-auto-note{display:none}.tmp-timeline-filter{max-width:128px}.tmp-table .tmp-left{min-width:180px;width:180px;max-width:180px}.tmp-pop-head{max-width:100%}}
+@media(prefers-reduced-motion:reduce){.tmp-calendar-pop{animation:none}}
+
+/* ===============================================================
+   RESOURCE TIMELINE V3 — use the visual vocabulary of Danh sach
+   Only .tmp-* rules are overridden; the original list is unchanged.
+   =============================================================== */
+.task-member-picker-root .tmp-timeline{width:100%;min-width:0;min-height:0;flex:1 1 0}
+.task-member-picker-root .tmp-timeline-bar{height:48px;min-height:48px;padding:7px 10px;gap:8px;background:#fff;flex-wrap:nowrap;border-bottom:1px solid #e2e8f0}
+.task-member-picker-root .tmp-group-control{flex:0 0 151px;min-width:0;position:relative}
+.task-member-picker-root .tmp-target-select{width:100%;height:33px;padding:4px 23px 4px 9px;border-radius:5px;border:1px solid #cbd5e1;background:#fff;color:#475569;font-weight:500;font-size:12px;cursor:pointer}
+.task-member-picker-root .tmp-role-control{flex:0 0 145px;min-width:0}
+.task-member-picker-root .tmp-role-select{display:block;width:100%;height:33px;padding:4px 21px 4px 8px;border:1px solid #7bc0fa;border-radius:3px;background:#42a5f5;color:white;font-weight:500;font-size:12px;cursor:pointer}
+.task-member-picker-root .tmp-role-select option{background:white;color:#334155}
+.task-member-picker-root .tmp-search-combo{flex:1 1 280px;width:auto;min-width:140px;max-width:410px;height:33px;display:flex}
+.task-member-picker-root .tmp-search-combo .tmp-timeline-search{flex:1 1 auto;min-width:0;height:33px;max-width:none;margin:0;padding:6px 10px;border:1px solid #7c3db5;border-right:0!important;border-radius:4px 0 0 4px;background:white;color:#334155;font-size:12px}
+.task-member-picker-root .tmp-search-combo .tmp-search-apply{flex:0 0 34px;height:33px;border:1px solid #6b2aa5;border-radius:0 4px 4px 0;background:white;color:#581c87;font-size:13px;padding:0;cursor:pointer}
+.task-member-picker-root .tmp-search-combo .tmp-search-apply:hover{background:#f5edff}
+.task-member-picker-root .tmp-only-picked{display:inline-flex;align-items:center;gap:5px;margin:0;white-space:nowrap;font-size:11px;color:#475569;cursor:pointer}
+.task-member-picker-root .tmp-only-picked input{width:14px;height:14px;accent-color:#5b21b6}
+.task-member-picker-root .tmp-timeline-tip{flex:0 0 auto;max-width:175px;overflow:hidden;text-overflow:ellipsis;margin-left:auto;font-size:10px}
+.task-member-picker-root .tmp-active-filters{flex:0 0 27px;min-height:27px;height:27px;max-height:27px;display:flex;gap:5px;align-items:center;padding:3px 10px;background:#fff;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;white-space:nowrap;border-bottom:1px solid #e9e5f0}
+.task-member-picker-root .tmp-active-filters[hidden]{display:none!important}
+.task-member-picker-root .tmp-filter-tag{display:inline-flex;gap:5px;align-items:center;flex:0 0 auto;padding:2px 7px;border:1px solid #e2d1f6;border-radius:5px;background:#f5f0ff;color:#5b218c;font-size:11px;font-weight:600;line-height:18px}
+.task-member-picker-root .tmp-filter-tag button{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border:0;background:transparent;color:#5b218c;font-size:15px;cursor:pointer}
+/* Fixed column: never let a task with only a few days expand this cell. */
+.task-member-picker-root .tmp-table{min-width:0!important;width:max-content!important;table-layout:fixed;border-spacing:0;border-collapse:separate}
+.task-member-picker-root .tmp-table col.tmp-person-col{width:360px!important}
+.task-member-picker-root .tmp-table col.tmp-date-col{width:56px!important}
+.task-member-picker-root .tmp-table .tmp-left{width:360px!important;min-width:360px!important;max-width:360px!important;left:0;position:sticky;z-index:5;background:#fff;box-shadow:2px 0 5px rgba(0,0,0,.055)}
+.task-member-picker-root .tmp-table .tmp-date{min-width:56px!important;max-width:56px!important;width:56px!important;height:31px;font-size:11px}
+.task-member-picker-root .tmp-table .tmp-month{height:24px}
+.task-member-picker-root .tmp-table thead tr:nth-child(2) th{top:24px}
+.task-member-picker-root .tmp-table .tmp-group td{height:32px}
+.task-member-picker-root .tmp-table .tmp-employee td{height:63px}
+.task-member-picker-root .tmp-table .tmp-person-cell{min-height:63px;gap:8px;padding:6px 9px;align-items:center}
+.task-member-picker-root .tmp-table .tmp-person-cell input{flex:0 0 auto;width:16px;height:16px;accent-color:#2563eb}
+.task-member-picker-root .tmp-person-avatar{display:flex;flex:0 0 26px;width:26px;height:26px;align-items:center;justify-content:center}
+.task-member-picker-root .tmp-person-avatar .single-avatar-circle{width:26px;height:26px}
+.task-member-picker-root .tmp-person-text{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:2px}
+.task-member-picker-root .tmp-person-text strong{font-size:12px;font-weight:700;color:#243247;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-member-picker-root .tmp-person-text small{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-member-picker-root .tmp-person-badges{display:flex;align-items:center;flex-wrap:nowrap;gap:4px;overflow:hidden}
+.task-member-picker-root .tmp-person-badges .badge{font-size:10.5px!important;font-weight:600!important;padding:3px 6px!important;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.task-member-picker-root .tmp-day{height:47px;border-radius:5px;margin:4px 2px;width:calc(100% - 4px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;font-size:10px;font-weight:600;line-height:1.15;white-space:nowrap;color:#137333}
+.task-member-picker-root .tmp-day.st-busy{color:#b91c1c;background:#fee2e2}
+.task-member-picker-root .tmp-day.st-holiday{color:#b45309;background:#fef3c7}
+.task-member-picker-root .tmp-day.st-weekend{color:#64748b;background:#f1f5f9}
+.task-member-picker-root .tmp-day.st-free{color:#137333;background:#e6f4ea}
+.task-member-picker-root .tmp-day.outside-task{outline:1px dashed rgba(100,116,139,.24);outline-offset:-2px}
+.task-member-picker-root .tmp-date.outside-task{background:#f7f8fb;color:#8894a6}
+.task-member-picker-root .tmp-date.inside-task{background:#f0e9fa;color:#552291}
+.task-member-picker-root .tmp-date.task-boundary{box-shadow:inset 2px 0 #8546be}
+.task-member-picker-root .tmp-day.has-current:after{background:#7c3aed;width:6px;height:6px;bottom:2px;right:2px}
+.task-member-picker-root .tmp-table .tmp-group .tmp-left{background:#eaf2fa!important}
+.task-member-picker-root .tmp-table .tmp-group.tmp-other .tmp-left{background:#fceff5!important}
+.task-member-picker-root .tmp-empty{width:100%;min-width:360px;padding:25px 14px}
+@media(max-width:1250px){.task-member-picker-root .tmp-table .tmp-left{width:330px!important;min-width:330px!important;max-width:330px!important}.task-member-picker-root .tmp-table col.tmp-person-col{width:330px!important}.task-member-picker-root .tmp-timeline-tip{display:none}}
+@media(max-width:800px){.task-member-picker-root .tmp-table .tmp-left{width:300px!important;min-width:300px!important;max-width:300px!important}.task-member-picker-root .tmp-table col.tmp-person-col{width:300px!important}.task-member-picker-root .tmp-timeline-bar{gap:5px;padding:5px}.task-member-picker-root .tmp-group-control{flex-basis:125px}.task-member-picker-root .tmp-role-control{flex-basis:116px}.task-member-picker-root .tmp-only-picked span{display:none}}
+
+/* Timeline filter refinements: exact visual language of the member list. */
+.task-member-picker-root .tmp-timeline-bar{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;min-width:0;padding:7px 10px;background:#fff}
+.task-member-picker-root .tmp-role-control{flex:0 0 116px;min-width:116px;width:116px}
+.task-member-picker-root .tmp-role-select{width:100%;max-width:100%;min-width:0;height:34px;padding:5px 23px 5px 9px;background-color:#42a5f5;border:1px solid #77bff8;border-radius:3px;color:#fff;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}
+.task-member-picker-root .tmp-search-combo{display:flex!important;flex:1 1 0!important;flex-wrap:nowrap!important;align-items:stretch;min-width:0!important;max-width:none!important;width:auto!important;height:34px!important;gap:0!important;margin:0!important}
+.task-member-picker-root .tmp-search-combo .tmp-timeline-search{display:block!important;flex:1 1 0!important;width:0!important;min-width:0!important;max-width:none!important;height:34px!important;margin:0!important;border:1px solid #7c3db5!important;border-right:0!important;border-radius:4px 0 0 4px!important;padding:6px 10px!important;box-shadow:none!important;background:#fff!important;color:#334155!important;font-size:12px!important}
+.task-member-picker-root .tmp-search-combo .tmp-search-apply{display:inline-flex!important;flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:34px!important;align-items:center;justify-content:center;padding:0!important;margin:0!important;border:1px solid #6b2aa5!important;border-radius:0 4px 4px 0!important;background:#fff!important;color:#581c87!important;box-shadow:none!important;position:static!important;line-height:1!important}
+.task-member-picker-root .tmp-search-combo .tmp-search-apply i{font-size:13px;line-height:1}
+.task-member-picker-root .tmp-only-picked{flex:0 0 auto;white-space:nowrap;margin:0 2px 0 4px}
+.task-member-picker-root .tmp-timeline-tip{flex:0 1 auto;max-width:185px;min-width:0;margin-left:auto}
+/* Match the Original ExtraSearchBox tag: white body, thin purple border and separated X. */
+.task-member-picker-root .tmp-active-filters{flex:0 0 34px;min-height:34px;height:34px;max-height:34px;padding:4px 10px;gap:6px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;background:#fff;align-items:center}
+.task-member-picker-root .tmp-active-filters[hidden]{display:none!important}
+.task-member-picker-root .tmp-filter-tag{display:inline-flex;align-items:center;gap:0;flex:0 0 auto;background:#fff;border:1px solid #7137ae;border-radius:3px;color:#334155;padding:0 0 0 9px;height:25px;line-height:23px;font-size:11px;font-weight:500;white-space:nowrap}
+.task-member-picker-root .tmp-filter-tag .tmp-tag-value{color:#64259b;font-weight:650;margin-left:4px}
+.task-member-picker-root .tmp-filter-tag button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 23px;width:23px;height:23px;border:0;border-left:1px solid #d5c5e7;border-radius:0;background:#fff;color:#5e2195;padding:0;margin:0 0 0 7px;font-size:16px;line-height:1;cursor:pointer}
+.task-member-picker-root .tmp-filter-tag button:hover{background:#f7f1ff}
+/* The list's native ExtraSearchBox tags were clipped by max-height:30px + overflow:hidden. */
+.task-member-picker-root .panel-filter .listSearchTagBox{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;padding:2px 0 7px!important;margin:0!important;box-sizing:border-box;white-space:normal}
+.task-member-picker-root .panel-filter .listSearchTagBox > *{max-width:100%}
+@media(max-width:900px){.task-member-picker-root .tmp-timeline-tip{display:none}.task-member-picker-root .tmp-timeline-bar{gap:6px}.task-member-picker-root .tmp-role-control{flex-basis:110px;min-width:110px;width:110px}}
+@media(max-width:560px){.task-member-picker-root .tmp-timeline-bar{padding:5px;gap:5px}.task-member-picker-root .tmp-role-control{flex:0 0 98px;min-width:98px;width:98px}.task-member-picker-root .tmp-only-picked span{display:none}}
+
+
+/* === VIEW MODE + FIXED RESOURCE RAIL (2026-10-15) === */
+.task-member-picker-root .tmp-tabs{gap:10px;height:36px;min-height:36px;margin-top:4px;border-bottom:1px solid #e7eaf1}
+.task-member-picker-root .tmp-view-caption{color:#334155;font-size:12px;font-weight:750;white-space:nowrap}
+.task-member-picker-root .tmp-view-switch{display:inline-flex;align-items:center;gap:0;margin-left:auto;border:1px solid #b9c8e3;border-radius:6px;overflow:hidden;margin-left:2px;background:#fff}
+.task-member-picker-root .tmp-view-switch .tmp-tab{display:inline-flex;align-items:center;justify-content:center;width:34px;height:29px;padding:0;margin:0;border:0;border-radius:0;background:#fff;color:#63738a;font-size:14px;line-height:1;transition:background-color .15s,color .15s}
+.task-member-picker-root .tmp-view-switch .tmp-tab + .tmp-tab{border-left:1px solid #d5dfec}
+.task-member-picker-root .tmp-view-switch .tmp-tab.is-active{color:#1d63cc;background:#e0efff;box-shadow:inset 0 0 0 1px #9cc4ff}
+.task-member-picker-root .tmp-view-switch .tmp-tab:hover:not(.is-active){background:#f3f7fd;color:#20599d}
+.task-member-picker-root .tmp-view-switch{margin-left:auto}
+.task-member-picker-root .tmp-auto-note{margin-left:8px}
+/* Selected employees use the same subtle highlight in either view. */
+.task-member-picker-root .member-item-row.is-selected{background:#f4effc!important;border-color:#c9b4ec!important;box-shadow:inset 3px 0 #7643b5}
+.task-member-picker-root .member-item-row.is-selected:hover{background:#ece3fa!important}
+.task-member-picker-root .member-item-row.original-member:not(.is-selected){background:#fff;border-color:#e2e8f0}
+.task-member-picker-root .tmp-timeline-bar{justify-content:flex-start;gap:9px}
+.task-member-picker-root .tmp-search-combo{flex:0 1 440px!important;width:440px!important;max-width:440px!important;min-width:150px!important}
+.task-member-picker-root .tmp-search-combo .tmp-timeline-search{flex:1 1 auto!important}
+.task-member-picker-root .tmp-timeline-tip{margin-left:auto}
+/* A vertical board shared by two rails; the person rail never moves horizontally. */
+.task-member-picker-root .tmp-scroll{overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-x:contain;min-height:0}
+.task-member-picker-root .tmp-board{--tmp-person-width:360px;--tmp-row-height:68px;--tmp-group-height:32px;--tmp-header-height:56px;display:grid;grid-template-columns:var(--tmp-person-width) minmax(0,1fr);min-width:0;width:100%;align-items:start}
+.task-member-picker-root .tmp-board-names{width:var(--tmp-person-width);min-width:0;background:#fff;border-right:1px solid #dfe6ef;position:relative;z-index:2}
+.task-member-picker-root .tmp-board-dates{overflow-x:auto;overflow-y:hidden;min-width:0;width:100%;scrollbar-width:none;overscroll-behavior-x:contain}
+.task-member-picker-root .tmp-board-dates::-webkit-scrollbar{display:none}
+.task-member-picker-root .tmp-board-track{width:max-content;min-width:100%}
+.task-member-picker-root .tmp-board-person-head{height:var(--tmp-header-height);box-sizing:border-box;display:flex;align-items:center;padding:0 12px;background:#f1f5f9;color:#506179;font-weight:700;font-size:12px;border-bottom:1px solid #e4eaf0}
+.task-member-picker-root .tmp-board-months{height:24px;display:flex;background:#f1f5f9}
+.task-member-picker-root .tmp-board-month{height:24px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:#f1f5f9;color:#566b89;font-weight:700;font-size:10.5px;border-right:1px solid #e4eaf0;box-sizing:border-box}
+.task-member-picker-root .tmp-board-dayheads{height:32px;display:flex;background:#f1f5f9}
+.task-member-picker-root .tmp-board-dayhead{width:56px;flex:0 0 56px;height:32px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:10px;color:#506179;border-right:1px solid #e4eaf0;border-bottom:1px solid #e4eaf0}
+.task-member-picker-root .tmp-board-dayhead span{font-size:9px;color:#7b8799}
+.task-member-picker-root .tmp-board-dayhead.inside-task{background:#f0e9fa;color:#552291}
+.task-member-picker-root .tmp-board-dayhead.outside-task{background:#f7f8fb;color:#8996a9}
+.task-member-picker-root .tmp-board-dayhead.task-boundary{box-shadow:inset 2px 0 #8546be}
+.task-member-picker-root .tmp-board-group,.task-member-picker-root .tmp-board-group-days{height:var(--tmp-group-height);box-sizing:border-box;border-bottom:1px solid #e6edf4;background:#eaf2fa}
+.task-member-picker-root .tmp-board-group.tmp-other,.task-member-picker-root .tmp-board-group-days.tmp-other{background:#fceff5}
+.task-member-picker-root .tmp-board-group button{display:block;text-align:left;border:0;background:transparent;color:#234e7d;font-size:11px;font-weight:750;padding:0 12px;width:100%;height:100%;cursor:pointer}
+.task-member-picker-root .tmp-board-group.tmp-other button{color:#9d174d}
+.task-member-picker-root .tmp-board-person-row,.task-member-picker-root .tmp-board-dayrow{height:var(--tmp-row-height);box-sizing:border-box;border-bottom:1px solid #e7edf3;background:#fff}
+.task-member-picker-root .tmp-board-person-row{min-width:0}
+.task-member-picker-root .tmp-board-person-row.is-selected,.task-member-picker-root .tmp-board-dayrow.is-selected{background:#faf5ff}
+.task-member-picker-root .tmp-board-person-row.is-selected{box-shadow:inset 3px 0 #7c3aed}
+.task-member-picker-root .tmp-board-person-row .tmp-person-cell{height:100%;display:flex;min-width:0;align-items:center;gap:8px;padding:6px 9px;box-sizing:border-box}
+.task-member-picker-root .tmp-board-person-row .tmp-person-cell>input{flex:0 0 16px;width:16px;height:16px;accent-color:#2563eb}
+.task-member-picker-root .tmp-board-person-row .tmp-person-avatar{display:flex;align-items:center;justify-content:center;flex:0 0 26px;width:26px;height:26px}
+.task-member-picker-root .tmp-board-person-row .tmp-person-text{display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:2px}
+.task-member-picker-root .tmp-board-person-row .tmp-person-text strong{color:#243247;font-size:12px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.task-member-picker-root .tmp-board-person-row .tmp-person-text small{font-size:10.5px;color:#77849a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-member-picker-root .tmp-board-person-row .tmp-person-badges{display:flex;overflow:hidden;min-width:0}
+.task-member-picker-root .tmp-board-person-row .tmp-person-badges .badge{max-width:100%;font-size:10.5px!important;padding:3px 6px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-member-picker-root .tmp-board-dayrow{display:flex;min-width:0}
+.task-member-picker-root .tmp-board-daycell{width:56px;flex:0 0 56px;height:var(--tmp-row-height);box-sizing:border-box;border-right:1px solid #f1f3f7;padding:5px 2px;display:flex;align-items:center;justify-content:center}
+.task-member-picker-root .tmp-board-daycell .tmp-day{display:flex!important;align-items:center;justify-content:center;flex-direction:column;width:100%!important;height:47px!important;margin:0!important}
+.task-member-picker-root .tmp-board-no-results{padding:25px 12px;color:#64748b;font-size:12px}
+/* This scrollbar controls only the date rail, never the employee names. */
+.task-member-picker-root .tmp-timeline-xbar{flex:0 0 14px;height:14px;margin-left:360px;overflow-x:auto;overflow-y:hidden;background:#fff;border-top:1px solid #eef1f6;scrollbar-color:#b8c5d8 #f1f5f9;overscroll-behavior-x:contain}
+.task-member-picker-root .tmp-timeline-xbar[hidden]{display:none!important}
+.task-member-picker-root .tmp-timeline-xbar>div{height:1px}
+@media(max-width:1250px){.task-member-picker-root .tmp-board{--tmp-person-width:330px}.task-member-picker-root .tmp-timeline-xbar{margin-left:330px}}
+@media(max-width:800px){.task-member-picker-root .tmp-board{--tmp-person-width:300px}.task-member-picker-root .tmp-timeline-xbar{margin-left:300px}}
+@media(max-width:700px){.task-member-picker-root .tmp-search-combo{flex:1 1 auto!important;width:auto!important;min-width:110px!important}.task-member-picker-root .tmp-timeline-tip{display:none}.task-member-picker-root .tmp-view-caption{display:none}}
+
+
+/* V5: the two views use exactly the same SweetSoft server controls and styles. */
+.task-member-picker-root .tmp-tabs{display:flex;align-items:center;gap:12px;min-height:45px;height:45px;margin-top:3px;padding-bottom:5px;border-bottom:1px solid #e8e6ed}
+.task-member-picker-root .tmp-assignment-notice{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid #fed7aa;border-radius:6px;background:#fff8ef;color:#b45309;font-size:11.5px;line-height:1.35}
+.task-member-picker-root .tmp-assignment-notice i{flex:0 0 auto;font-size:13px}
+.task-member-picker-root .tmp-view-switch{margin-left:auto!important;margin-right:0!important;flex:0 0 auto}
+.task-member-picker-root .tmp-timeline-bar{display:flex!important;align-items:center;gap:8px;height:auto;min-height:49px;padding:7px 10px;background:#fff;flex-wrap:nowrap}
+.task-member-picker-root .tmp-native-role{flex:0 0 auto;min-width:110px;max-width:160px;display:flex;align-items:center}
+.task-member-picker-root .tmp-native-role > *{max-width:100%}
+.task-member-picker-root .tmp-native-search{flex:0 1 450px!important;width:min(450px,100%)!important;min-width:140px!important;max-width:450px!important;margin:0!important;display:flex;flex-wrap:nowrap!important;align-items:stretch}
+.task-member-picker-root .tmp-native-search .input-search-filter{flex:1 1 0!important;min-width:0!important;width:0!important}
+.task-member-picker-root .tmp-native-search .btn-search-filter{flex:0 0 37px!important;min-width:37px!important;margin:0!important}
+.task-member-picker-root .tmp-timeline-tip{margin-left:auto;font-size:10px;color:#64748b}
+.task-member-picker-root .tmp-timeline-tags{min-height:0!important;height:auto!important;max-height:42px!important;flex:0 0 auto;padding:2px 9px 5px;background:#fff;overflow-x:auto;overflow-y:hidden;white-space:nowrap;box-sizing:border-box}
+.task-member-picker-root .tmp-timeline-tags[hidden]{display:none!important}
+.task-member-picker-root .tmp-timeline-tags > span,.task-member-picker-root .tmp-timeline-tags > div{max-width:100%}
+/* A real fixed header: top header is OUTSIDE the vertical scroll rails. */
+.task-member-picker-root .tmp-scroll{flex:1 1 0;min-height:0;overflow:hidden!important;display:flex!important;min-width:0}
+.task-member-picker-root .tmp-board{--tmp-person-width:360px;--tmp-row-height:83px;--tmp-header-height:56px;display:grid!important;grid-template-columns:var(--tmp-person-width) minmax(0,1fr)!important;grid-template-rows:var(--tmp-header-height) minmax(0,1fr)!important;height:100%!important;width:100%!important;min-width:0;min-height:0;overflow:hidden;align-items:stretch}
+.task-member-picker-root .tmp-board-head-names{grid-column:1;grid-row:1;background:#f1f5f9;border-right:1px solid #dfe6ef;z-index:3}
+.task-member-picker-root .tmp-board-head-dates{grid-column:2;grid-row:1;min-width:0;overflow:hidden;background:#f1f5f9;z-index:3}
+.task-member-picker-root .tmp-board-names{grid-column:1;grid-row:2;width:100%;min-width:0;min-height:0;height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;border-right:1px solid #dfe6ef;z-index:2}
+.task-member-picker-root .tmp-board-names::-webkit-scrollbar{display:none}
+.task-member-picker-root .tmp-board-dates{grid-column:2;grid-row:2;min-width:0;min-height:0;width:100%;height:100%;overflow:auto!important;scrollbar-color:#b8c5d8 #f1f5f9;overscroll-behavior:contain}
+.task-member-picker-root .tmp-board-person-head{height:var(--tmp-header-height)}
+.task-member-picker-root .tmp-board-person-row,.task-member-picker-root .tmp-board-dayrow{height:var(--tmp-row-height)}
+.task-member-picker-root .tmp-board-daycell{height:var(--tmp-row-height)}
+.task-member-picker-root .tmp-board-daycell .tmp-day{height:57px!important}
+.task-member-picker-root .tmp-board-person-row .tmp-person-cell{gap:7px;padding:6px 9px;align-items:center}
+.task-member-picker-root .tmp-board-person-row .tmp-person-avatar{flex:0 0 27px;width:27px;height:27px}
+.task-member-picker-root .tmp-board-person-row .tmp-person-text{gap:2px;justify-content:center;overflow:visible}
+.task-member-picker-root .tmp-person-headline{display:flex;align-items:center;flex-wrap:wrap;column-gap:4px;row-gap:1px;min-width:0;font-size:11.5px;line-height:1.2}
+.task-member-picker-root .tmp-person-headline strong{display:inline!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;max-width:100%;color:#243247}
+.task-member-picker-root .tmp-person-position{color:#64748b;font-size:10.5px;white-space:normal;overflow-wrap:anywhere}
+.task-member-picker-root .tmp-person-email{font-size:10.3px;color:#71809a;line-height:1.2;white-space:normal;overflow-wrap:anywhere;min-width:0}
+.task-member-picker-root .tmp-person-pm.badge{padding:2px 5px!important;font-size:9.5px!important;line-height:1.1;color:#fff!important}
+.task-member-picker-root .tmp-board-person-row .tmp-person-badges{min-height:18px;overflow:visible}
+.task-member-picker-root .tmp-board-person-row .tmp-person-badges .badge{max-width:100%;text-overflow:ellipsis;font-size:10px!important;padding:3px 6px!important}
+@media(max-width:1250px){.task-member-picker-root .tmp-board{--tmp-person-width:330px}.task-member-picker-root .tmp-timeline-xbar{margin-left:330px}}
+@media(max-width:800px){.task-member-picker-root .tmp-board{--tmp-person-width:300px}.task-member-picker-root .tmp-timeline-xbar{margin-left:300px}}
+@media(max-width:750px){.task-member-picker-root .tmp-assignment-notice{font-size:10px;padding:6px}.task-member-picker-root .tmp-timeline-tip{display:none}}
+
+
+/* Chỉ giảm nhẹ font trong bộ lọc / tìm kiếm của chế độ Lịch trình. */
+.task-member-picker-root #tmpPaneTimeline .tmp-native-role .dropdown-toggle,
+.task-member-picker-root #tmpPaneTimeline .tmp-native-role .btn,
+.task-member-picker-root #tmpPaneTimeline .tmp-native-role .bootstrap-select > .btn,
+.task-member-picker-root #tmpPaneTimeline .tmp-native-role .filter-option-inner-inner {font-size:12px!important;}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-search .input-search-filter,
+.task-member-picker-root #tmpPaneTimeline .tmp-native-search .input-search-filter::placeholder {font-size:12px!important;}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-search .btn-search-filter,
+.task-member-picker-root #tmpPaneTimeline .tmp-native-search .btn-search-filter i {font-size:12px!important;}
+
+
+/* Smaller native ExtraSearchBox tags ONLY in Timeline (the List remains unchanged). */
+.task-member-picker-root #tmpPaneTimeline #tmpTimelineTags{font-size:10.5px!important;line-height:18px!important;padding:1px 9px 3px!important;max-height:35px!important}
+.task-member-picker-root #tmpPaneTimeline #tmpTimelineTags :is(span,a,button,.btn,.badge,strong,b,small){font-size:10.5px!important;line-height:18px!important}
+.task-member-picker-root #tmpPaneTimeline #tmpTimelineTags :is(.tag,.tag-item,.badge,.btn-group,[class*="search-tag"],[class*="SearchTag"],[class*="tag-item"]){min-height:21px!important;height:auto!important;line-height:18px!important}
+.task-member-picker-root #tmpPaneTimeline #tmpTimelineTags :is(.tag,.tag-item,.badge,.btn){padding-top:1px!important;padding-bottom:1px!important}
+.task-member-picker-root #tmpPaneTimeline #tmpTimelineTags :is(button,.close,[class*="close"],.btn-close){font-size:12px!important;line-height:18px!important;padding-top:0!important;padding-bottom:0!important}
+
+/* V7: Timeline filter uses the SAME wrapper/layout as List filter, not an inline UpdatePanel.
+   Responsive group follows the half-width List column; long BootstrapDropdown labels grow naturally. */
+.task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row{
+    flex:0 1 calc(50% - 8px);
+    width:calc(50% - 8px);
+    max-width:650px;
+    min-width:0;
+    margin:0!important;
+    flex-wrap:nowrap!important;
+    gap:8px!important;
+    align-items:stretch;
+}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row > [id$="upnlTimelineRole"]{
+    flex:0 0 auto;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row .tmp-native-role{
+    display:block!important;
+    flex:none!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row .tmp-native-role > *{
+    max-width:none!important;
+}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row .tmp-native-search{
+    display:flex!important;
+    flex:1 1 0!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+    flex-wrap:nowrap!important;
+}
+.task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row .tmp-native-search .input-search-filter{
+    flex:1 1 auto!important;
+    width:1%!important;
+    min-width:0!important;
+}
+@media(max-width:1050px){
+    .task-member-picker-root #tmpPaneTimeline .tmp-native-filter-row{
+        flex:1 1 auto;
+        width:auto;
+        max-width:calc(100% - 16px);
+    }
+}
+
+/* Nền tím nhạt cho các ngày thuộc thời hạn task */
+.task-member-picker-root .tmp-board-daycell.inside-task {
+    background: #f7f2ff;
+}
+
+/* Nền trung tính cho các ngày ngoài thời hạn */
+.task-member-picker-root .tmp-board-daycell.outside-task {
+    background: #fbfcfe;
+}
+
+/* Viền nhẹ đánh dấu ngày bắt đầu và kết thúc */
+.task-member-picker-root .tmp-board-daycell.task-boundary-start {
+    box-shadow: inset 2px 0 0 rgba(124,58,237,.18);
+}
+
+.task-member-picker-root .tmp-board-daycell.task-boundary-end {
+    box-shadow: inset -2px 0 0 rgba(124,58,237,.18);
+}
+
+
+/* V3 stable redesign: real SweetSoft controls; card template cloned from the original Repeaters. */
+.task-member-picker-root .tmp-legacy-sources{display:none!important}
+.task-member-picker-root .tmp-v3-columns{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+.task-member-picker-root .tmp-v3-columns .member-list-panel{min-width:0;overflow:hidden}
+.task-member-picker-root .tmp-v3-columns .panel-header{height:45px;min-height:45px;padding:9px 12px;background:#f1f5f9;color:#334e75}
+.task-member-picker-root .tmp-v3-columns .tmp-v3-picked-header{background:#f4edfc;color:#58248a}
+.task-member-picker-root .tmp-v3-columns .tmp-v3-available-header{background:#edf3fa;color:#225685}
+.task-member-picker-root .tmp-v3-list{flex:1;min-height:0;overflow:auto;background:#f8fafc;padding:10px}
+.task-member-picker-root .tmp-v3-list .member-item-row{margin-bottom:8px;min-height:58px;border-radius:8px}
+.task-member-picker-root .tmp-v3-list .row-default-view{display:flex;align-items:center;gap:8px;min-height:58px!important;padding:7px 9px!important;box-sizing:border-box}
+.task-member-picker-root .tmp-v3-list .member-info-group{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 0}
+.task-member-picker-root .tmp-v3-list .member-name-block{min-width:0;flex:1 1 0}
+.task-member-picker-root .tmp-v3-list .member-name-block>div{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;margin-bottom:2px!important;min-width:0}
+.task-member-picker-root .tmp-v3-list .member-name-block .fw-bold,.task-member-picker-root .tmp-v3-list .member-position{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0;margin:0!important}
+.task-member-picker-root .tmp-v3-list .member-email{display:block;font-size:10.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-member-picker-root .tmp-v3-list .row-default-view>.d-flex{display:flex!important;align-items:center!important;gap:7px!important;flex:0 0 auto;flex-wrap:nowrap!important;min-width:0;margin:0!important}
+.task-member-picker-root .tmp-v3-list .row-default-view>.d-flex .badge{font-size:10px!important;padding:4px 6px!important;line-height:1.15!important;white-space:nowrap!important;max-width:125px;overflow:hidden;text-overflow:ellipsis}
+.task-member-picker-root .tmp-v3-list .btn-calendar-only{flex:0 0 31px;width:31px;height:31px}
+.task-member-picker-root .tmp-v3-list .member-item-row.is-selected{background:#f7f1ff;border-color:#d8c3f6;box-shadow:inset 3px 0 #7c3aed}
+.task-member-picker-root .tmp-v3-legend{height:26px;flex:0 0 26px;padding:5px 11px;display:flex;gap:15px;align-items:center;justify-content:flex-start;font-size:10.5px;color:#64748b;background:#fff;border-bottom:1px solid #edf2f7}
+.task-member-picker-root .tmp-v3-dot{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:middle;margin:0 5px 1px 0}
+.task-member-picker-root .tmp-v3-dot.project{background:#16a34a}.task-member-picker-root .tmp-v3-dot.other{background:#94a3b8}
+.task-member-picker-root .tmp-v3-empty{padding:34px 12px;text-align:center;color:#8793a6;font-size:12px;line-height:1.5}
+.task-member-picker-root .tmp-v3-toolbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;width:100%;min-width:0;height:47px;padding:5px 9px;background:#fff;border:1px solid #e7eaf2;border-radius:7px;margin:1px 0 8px;box-sizing:border-box}
+.task-member-picker-root .tmp-v3-filter-label{flex:0 0 auto;color:#64748b;font-size:10.5px;font-weight:700;white-space:nowrap}
+.task-member-picker-root .tmp-v3-filter-controls{display:flex!important;align-items:center;flex:1 1 auto!important;min-width:0;max-width:none!important;width:auto!important;gap:8px!important;margin:0!important;flex-wrap:nowrap!important}
+.task-member-picker-root .tmp-v3-dropdown-pair{display:flex!important;align-items:center!important;gap:8px!important;flex:0 0 auto;min-width:0;max-width:390px}
+.task-member-picker-root .tmp-v3-dropdown-pair>div,.task-member-picker-root .tmp-v3-dropdown-pair>.bootstrap-select{min-width:0}
+.task-member-picker-root .tmp-v3-dropdown-pair .dropdown-toggle,.task-member-picker-root .tmp-v3-dropdown-pair .btn{font-size:11.5px!important;white-space:nowrap}
+.task-member-picker-root .tmp-v3-filter-controls .tmp-native-search{flex:1 1 170px!important;min-width:110px!important;max-width:360px!important;width:auto!important;margin:0!important}
+.task-member-picker-root .tmp-v3-toolbar #tmpTimelineTags{flex:0 1 260px!important;min-width:0!important;max-width:260px!important;height:31px!important;max-height:31px!important;padding:3px 0!important;border:0!important;margin:0!important;overflow:auto hidden!important;white-space:nowrap!important}
+.task-member-picker-root .tmp-v3-toolbar #tmpTimelineTags:empty{display:none!important}
+.task-member-picker-root .tmp-v3-toolbar .listSearchTagBox{flex:0 1 260px}
+.task-member-picker-root .tmp-timeline-window-nav{display:flex;justify-content:flex-end;align-items:center;gap:5px;position:absolute;top:3px;right:10px;z-index:4;pointer-events:none}
+.task-member-picker-root .tmp-timeline-window-nav button{pointer-events:auto}
+.task-member-picker-root .tmp-timeline-window-nav .tmp-timeline-tip{display:none}
+.task-member-picker-root #tmpPaneTimeline{min-height:0}
+.task-member-picker-root .tmp-board-group.tmp-selected,.task-member-picker-root .tmp-board-group-days.tmp-selected{background:#f3eafb!important}
+.task-member-picker-root .tmp-board-group.tmp-selected button{color:#58248a!important}
+.task-member-picker-root .tmp-board-person-row .tmp-person-source{display:inline-flex;align-items:center}
+.task-member-picker-root .tmp-board-daycell.outside-task{background:#fafbfe!important}
+.task-member-picker-root .tmp-board-daycell.outside-task .tmp-day{background:#f1f3f7!important;border:1px solid #e5e9f0!important;color:#94a3b8!important}
+.task-member-picker-root .tmp-board-daycell.outside-task .tmp-day .tmp-v3-context-dot{width:6px;height:6px;background:#a9b5c9;border-radius:50%}
+.task-member-picker-root .tmp-board-daycell.inside-task{background:#f7f2ff!important}
+@media(max-width:1000px){.task-member-picker-root .tmp-v3-filter-label{display:none}.task-member-picker-root .tmp-v3-dropdown-pair{gap:5px}.task-member-picker-root .tmp-v3-toolbar #tmpTimelineTags{max-width:140px!important}.task-member-picker-root .tmp-v3-list .row-default-view>.d-flex .badge{max-width:105px}}
+
+/* 3.0 hotfix: task hiện tại có lịch riêng; không còn nhầm với ngày Trống. */
+.task-member-picker-root .tmp-calendar-pop .mc-day.st-current-only,
+.task-member-picker-root .tmp-board-daycell .tmp-day.st-current-only {
+    background:#efe5ff!important;color:#6633a3!important;border:1px solid #d4baf5!important;
+}
+.task-member-picker-root .tmp-calendar-pop .mc-day.st-current-only .mc-label {
+    color:#6633a3!important;font-weight:700;
+}
+/* Chuẩn hóa toàn bộ thanh lọc: không còn flex trống lớn trước SearchTag. */
+.task-member-picker-root .tmp-v3-toolbar {justify-content:flex-start;gap:8px!important;}
+.task-member-picker-root .tmp-v3-toolbar .tmp-v3-filter-controls {
+    display:flex!important;flex:0 1 auto!important;width:auto!important;min-width:0!important;
+    max-width:calc(100% - 200px)!important;gap:8px!important;align-items:center!important;
+}
+.task-member-picker-root .tmp-v3-toolbar .tmp-v3-dropdown-pair {
+    flex:0 0 auto!important;max-width:none!important;width:auto!important;gap:8px!important;
+}
+.task-member-picker-root .tmp-v3-dropdown-pair > *:first-child,
+.task-member-picker-root .tmp-v3-dropdown-pair > *:first-child .bootstrap-select {min-width:104px!important;width:auto!important;}
+.task-member-picker-root .tmp-v3-dropdown-pair > *:nth-child(2),
+.task-member-picker-root .tmp-v3-dropdown-pair > *:nth-child(2) .bootstrap-select {min-width:130px!important;width:auto!important;}
+.task-member-picker-root .tmp-v3-dropdown-pair .bootstrap-select > button,
+.task-member-picker-root .tmp-v3-dropdown-pair .dropdown-toggle {min-height:33px!important;height:33px!important;padding:5px 10px!important;font-size:12px!important;}
+.task-member-picker-root .tmp-v3-toolbar .tmp-native-search {
+    flex:0 1 335px!important;width:335px!important;min-width:195px!important;max-width:335px!important;
+}
+.task-member-picker-root .tmp-v3-toolbar #tmpTimelineTags {
+    flex:0 1 360px!important;width:auto!important;min-width:0!important;max-width:360px!important;
+    height:33px!important;max-height:33px!important;overflow-x:auto!important;overflow-y:hidden!important;
+    margin:0!important;padding:3px 0!important;text-align:left!important;
+}
+.task-member-picker-root .tmp-v3-toolbar #tmpTimelineTags > * {max-width:none!important;min-width:max-content;}
+@media(max-width:1100px){
+    .task-member-picker-root .tmp-v3-toolbar .tmp-native-search{flex-basis:240px!important;width:240px!important;min-width:165px!important}
+    .task-member-picker-root .tmp-v3-toolbar #tmpTimelineTags{max-width:185px!important}
+}
+
+/* Timeline v3.1: hai nhóm có header luôn thấy và cuộn dọc riêng.
+   Vẫn chỉ có một thanh cuộn ngang điều khiển đồng bộ hai nhóm. */
+.task-member-picker-root .tmp-board-group-stack{grid-column:1 / -1;grid-row:2;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.task-member-picker-root .tmp-board-section{display:grid;grid-template-columns:var(--tmp-person-width) minmax(0,1fr);grid-template-rows:var(--tmp-group-height) minmax(0,1fr);flex:0 0 auto;min-width:0;min-height:var(--tmp-group-height);width:100%;overflow:hidden}
+.task-member-picker-root .tmp-board-section > .tmp-board-group{grid-column:1;grid-row:1;min-width:0;z-index:1}
+.task-member-picker-root .tmp-board-section > .tmp-board-group-days{grid-column:2;grid-row:1;min-width:0}
+.task-member-picker-root .tmp-board-section-names{grid-column:1;grid-row:2;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#b5c3d7 transparent;border-right:1px solid #dfe6ef}
+.task-member-picker-root .tmp-board-section-dates{grid-column:2;grid-row:2;min-height:0;min-width:0;overflow:auto;scrollbar-width:none;overscroll-behavior:contain}
+.task-member-picker-root .tmp-board-section-dates::-webkit-scrollbar{display:none}
+.task-member-picker-root .tmp-board-group.tmp-selected,.task-member-picker-root .tmp-board-group-days.tmp-selected{background:#f3eafb!important}
+.task-member-picker-root .tmp-board-section .tmp-board-group button{height:100%}
+.task-member-picker-root .tmp-board-section.is-collapsed{height:var(--tmp-group-height)!important}
+.task-member-picker-root .tmp-board-section.is-collapsed .tmp-board-section-names,.task-member-picker-root .tmp-board-section.is-collapsed .tmp-board-section-dates{display:none}
+.task-member-picker-root .tmp-board-section .tmp-board-no-results{padding:13px 12px;font-size:11px}
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlTaskMemberPicker" Type="Primary" Size="ExtraLarge">
     <ContentTemplate>
         <asp:UpdatePanel ID="upnlMemberPicker" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
-                
-                <div class="js-validation validationEngineContainer p-2 task-modal-body">
-
+                 <asp:HiddenField ID="hdfPickedIdsClient" runat="server" />
+                <asp:HiddenField ID="hdfOriginalAssignedIdsClient" runat="server" />
+                <input type="hidden" id="tmpFilterRevision" value="<%= ClientFilterRevision %>" />
+                <input type="hidden" id="hdfTaskPickerId" value="<%= ClientTaskId %>" />
+                <input type="hidden" id="hdfTimelineJson" value="<%= System.Web.HttpUtility.HtmlAttributeEncode(ClientTimelineJson) %>" />
+                <div class="js-validation validationEngineContainer p-2 task-modal-body task-member-picker-root">
                     <!-- HEADER CỐ ĐỊNH -->
                     <div class="task-modal-header-info">
                         <div class="info-row-custom" style="background: #eff6ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 8px;">
                             <asp:Literal runat="server" ID="ltrTaskInfoNote"></asp:Literal>
                         </div>
-                        <div style="font-size: 12px; color: #9a3412; background: #fff7ed; padding: 8px 12px; border-radius: 6px; border: 1px solid #fdba74;">
-                            <i class="fas fa-exclamation-triangle me-1"></i> <%= GetResourceText(BackEndResourceKeys.AUTO_ADD_MEMBER_WARNING_MSG) %>
+                        <div class="tmp-tabs" role="group" aria-label="Cách hiển thị nhân viên">
+                            <div class="tmp-assignment-notice" title="Khi chọn nhân viên thuộc nhóm Nhân sự khác, hệ thống sẽ tự động cấp quyền tham gia dự án sau khi lưu."><i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span>Lưu ý: Nếu chọn nhân sự thuộc danh sách Khác, hệ thống sẽ tự động cấp quyền tham gia Dự án cho nhân sự đó.</span></div>
+                            <div class="tmp-view-switch" role="tablist" aria-label="Chuyển cách hiển thị">
+                                <button type="button" id="tmpTabList" class="tmp-tab is-active" role="tab" aria-selected="true" aria-controls="tmpPaneList" title="Hiển thị dưới dạng danh sách" aria-label="Hiển thị dưới dạng danh sách"><i class="fas fa-list-ul" aria-hidden="true"></i></button>
+                                <button type="button" id="tmpTabTimeline" class="tmp-tab" role="tab" aria-selected="false" aria-controls="tmpPaneTimeline" title="Hiển thị dưới dạng lịch trình" aria-label="Hiển thị dưới dạng lịch trình"><i class="fas fa-stream" aria-hidden="true"></i></button>
+                            </div>
                         </div>
                     </div>
 
+                    <div class="tmp-v3-toolbar" aria-label="Lọc danh sách ứng viên">
+                        <span class="tmp-v3-filter-label">Lọc ứng viên</span>
+                            <div class="d-flex flex-row gap-2 tmp-native-filter-row tmp-v3-filter-controls">
+                                <asp:UpdatePanel runat="server" ID="upnlTimelineRole" UpdateMode="Conditional">
+                                    <ContentTemplate>
+                                        <asp:Panel runat="server" ID="pnlSearchTimeline" CssClass="tmp-v3-dropdown-pair">
+                                            <SweetSoft:BootstrapDropdown ID="ddlSourceTimeline" runat="server" Text="Tất cả" AutoPostBack="true" AllowClear="false" SearchColumn="NguonNhanSu" EnableSearch="false" ValueIsOfTypeGUID="False" OnSelectedValueChanged="ddlSourceTimeline_SelectedValueChanged"></SweetSoft:BootstrapDropdown>
+                                            <SweetSoft:BootstrapDropdown ID="ddlChucDanhTimeline" runat="server" Text="Chức Danh" AutoPostBack="true" AllowClear="true" SearchColumn="IdChucDanh" EnableSearch="true" ValueIsOfTypeGUID="True" SearchPlaceholder="Tìm kiếm theo tên chức danh..." NoResultsText="Không tìm thấy tên chức danh" OnSelectedValueChanged="ddlChucDanhTimeline_SelectedValueChanged"></SweetSoft:BootstrapDropdown>
+                                        </asp:Panel>
+                                    </ContentTemplate>
+                                </asp:UpdatePanel>
+                                <div class="input-group flex-grow-1 tmp-native-search">
+                                    <SweetSoft:ExtraTextBox runat="server" ID="txtSearchTimeline" CssClass="border-primary input-search-filter" PlaceHolder="Nhập từ khóa tìm kiếm..."></SweetSoft:ExtraTextBox>
+                                    <SweetSoft:ExtraButton runat="server" ID="lbtSearchTimeline" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearchTimeline_ServerClick"></SweetSoft:ExtraButton>
+                                </div>
+                            </div>
+                        <div class="tmp-timeline-tags listSearchTagBox" id="tmpTimelineTags">
+                            <asp:UpdatePanel ID="upnlTimelineTags" runat="server" UpdateMode="Conditional" RenderMode="Inline">
+                                <ContentTemplate>
+                                    <SweetSoft:ExtraSearchBox ID="searchTagBoxTimeline" runat="server" OnTagClosed="searchTagBoxTimeline_TagClosed"></SweetSoft:ExtraSearchBox>
+                                </ContentTemplate>
+                            </asp:UpdatePanel>
+                        </div>
+                    </div>
+                    <!-- Hidden ASP.NET repeater sources: keep server control lifecycle and postback contract. -->
+                    <div id="tmpLegacySources" class="tmp-legacy-sources" aria-hidden="true">
                     <!-- GRID 2 CỘT TỰ CO GIÃN -->
-                    <div class="task-member-columns">
+                    <div class="task-member-columns" id="tmpLegacySourcePanels">
 
                         <!-- CỘT 1: NHÂN SỰ DỰ ÁN -->
-                        <div class="member-list-panel" id="panelProject">
+                        <div class="member-list-panel" id="sourcePanelProject">
                             <div class="panel-header">
                                 <span>📁 <%= GetResourceText(BackEndResourceKeys.PROJECT_MEMBERS) %></span>
                                 <span class="badge bg-primary rounded-pill">
@@ -224,10 +844,10 @@
                                         </ContentTemplate>
                                     </asp:UpdatePanel>
                                     
-                                    <asp:Panel runat="server" DefaultButton="lbtSearchProj" CssClass="input-group flex-grow-1">
+                                    <div class="input-group flex-grow-1">
                                         <SweetSoft:ExtraTextBox runat="server" ID="txtSearchProj" CssClass="border-primary input-search-filter" PlaceHolder="Nhập từ khóa tìm kiếm..."></SweetSoft:ExtraTextBox>
                                         <SweetSoft:ExtraButton runat="server" ID="lbtSearchProj" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearchProj_ServerClick"></SweetSoft:ExtraButton>
-                                    </asp:Panel>
+                                    </div>
                                 </div>
                                 <div class="listSearchTagBox">
                                     <asp:UpdatePanel ID="upSearchTagProj" runat="server" UpdateMode="Conditional">
@@ -244,22 +864,34 @@
                                     <ContentTemplate>
                                         <asp:Repeater ID="rptProjectMembers" runat="server" OnItemDataBound="rptMembers_ItemDataBound">
                                             <ItemTemplate>
-                                                <div class='member-item-row <%# Convert.ToBoolean(Eval("IsOriginal")) ? "original-member" : "" %>' id='mem-row-<%# Eval("UserId") %>'>
+                                                <div class='member-item-row <%# Convert.ToBoolean(Eval("IsOriginal")) ? "original-member" : "" %>' id='mem-row-<%# Eval("UserId") %>' data-tmp-group='project'>
                                                     <div class="row-default-view">
-                                                        <div class="member-info-group">
+                                                        <!-- Cụm thông tin bên trái (Thêm flex-grow-1 để nó đẩy phần lịch sang phải) -->
+                                                        <div class="member-info-group flex-grow-1">
                                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                                             <%# Eval("AvatarHtml") %>
                                                             <div class="member-name-block">
-                                                                <span>
-                                                                    <span class="fw-bold text-dark"><%#: Eval("DisplayName") %></span>
-                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>PM</span>" : "" %>
-                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>Đã nghỉ</span>" : "" %>
-                                                                </span>
+                                                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                                                    <span class="fw-bold text-dark me-1"><%#: Eval("DisplayName") %></span>
+                                                                    <span class="member-position"><%#: Eval("ChucDanh") %></span>
+                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger' style='font-size: 9.5px; padding: 2px 5px;'>PM</span>" : "" %>
+                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary' style='font-size: 9.5px; padding: 2px 5px;'>Đã nghỉ</span>" : "" %>
+                                                                </div>
                                                                 <span class="member-email"><%#: Eval("Email") %></span>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>')">📅</button>
+    
+                                                       <!-- Cụm cảnh báo & Lịch biểu nằm dạt sang phải -->
+                                                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        
+                                                            <%# Convert.ToBoolean(Eval("IsOriginal")) ? 
+                                                                "<span class='badge px-2 py-1' style='font-size: 11.5px; background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;'><i class='fas fa-user-check me-1'></i>Đã phân công</span>" 
+                                                                : (Convert.ToInt32(Eval("BusyDays")) > 0 ? 
+                                                                    string.Format("<span class='badge bg-warning text-dark px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-briefcase me-1'></i>Bận {0} ngày</span>", Eval("BusyDaysDisplay")) 
+                                                                    : "<span class='badge bg-success px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-check-circle me-1'></i>Trống lịch</span>") %>
+                                                            <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="return TaskMemberPlanner.openCalendar(this, '<%# Eval("UserId") %>');">📅</button>
+                                                        </div>
                                                     </div>
                                                     <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# Eval("ScheduleJson") %>' />
                                                     <div class="row-schedule-panel" id='overlay-<%# Eval("UserId") %>'>
@@ -281,7 +913,7 @@
                         </div>
 
                         <!-- CỘT 2: NHÂN SỰ KHÁC TRONG CÔNG TY -->
-                        <div class="member-list-panel" id="panelCompany">
+                        <div class="member-list-panel" id="sourcePanelCompany">
                             <div class="panel-header company-header">
                                 <span>🏢 <%= GetResourceText(BackEndResourceKeys.OTHER_EMPLOYEES) %></span>
                                 <span class="badge bg-danger rounded-pill">
@@ -303,10 +935,10 @@
                                         </ContentTemplate>
                                     </asp:UpdatePanel>
                                     
-                                    <asp:Panel runat="server" DefaultButton="lbtSearchCompany" CssClass="input-group flex-grow-1">
+                                    <div class="input-group flex-grow-1">
                                         <SweetSoft:ExtraTextBox runat="server" ID="txtSearchCompany" CssClass="border-primary input-search-filter" PlaceHolder="Nhập từ khóa tìm kiếm..."></SweetSoft:ExtraTextBox>
                                         <SweetSoft:ExtraButton runat="server" ID="lbtSearchCompany" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearchCompany_ServerClick"></SweetSoft:ExtraButton>
-                                    </asp:Panel>
+                                    </div>
                                 </div>
                                 <div class="listSearchTagBox">
                                     <asp:UpdatePanel ID="upSearchTagCompany" runat="server" UpdateMode="Conditional">
@@ -323,22 +955,34 @@
                                     <ContentTemplate>
                                         <asp:Repeater ID="rptCompanyMembers" runat="server" OnItemDataBound="rptMembers_ItemDataBound">
                                             <ItemTemplate>
-                                                <div class="member-item-row" id='mem-row-<%# Eval("UserId") %>'>
+                                                <div class="member-item-row" id='mem-row-<%# Eval("UserId") %>' data-tmp-group='other'>
                                                     <div class="row-default-view">
-                                                        <div class="member-info-group">
+                                                        <!-- Cụm thông tin bên trái (Thêm flex-grow-1 để nó đẩy phần lịch sang phải) -->
+                                                        <div class="member-info-group flex-grow-1">
                                                             <asp:CheckBox runat="server" ID="chkSelect" />
                                                             <asp:HiddenField runat="server" ID="hdfUserId" Value='<%# Eval("UserId") %>' />
                                                             <%# Eval("AvatarHtml") %>
                                                             <div class="member-name-block">
-                                                                <span>
-                                                                    <span class="fw-bold text-dark"><%#: Eval("DisplayName") %></span>
-                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>PM</span>" : "" %>
-                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary ms-2' style='font-size: 10px; padding: 2px 6px; border-radius: 4px;'>Đã nghỉ</span>" : "" %>
-                                                                </span>
+                                                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                                                    <span class="fw-bold text-dark me-1"><%#: Eval("DisplayName") %></span>
+                                                                    <span class="member-position"><%#: Eval("ChucDanh") %></span>
+                                                                    <%# Convert.ToBoolean(Eval("IsPM")) ? "<span class='badge bg-danger' style='font-size: 9.5px; padding: 2px 5px;'>PM</span>" : "" %>
+                                                                    <%# Convert.ToBoolean(Eval("IsInactive")) ? "<span class='badge bg-secondary' style='font-size: 9.5px; padding: 2px 5px;'>Đã nghỉ</span>" : "" %>
+                                                                </div>
                                                                 <span class="member-email"><%#: Eval("Email") %></span>
                                                             </div>
                                                         </div>
-                                                        <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="CMSMasterJs.ToggleRowSchedule(this, '<%# Eval("UserId") %>')">📅</button>
+    
+                                                       <!-- Cụm cảnh báo & Lịch biểu nằm dạt sang phải -->
+                                                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        
+                                                          <%# Convert.ToBoolean(Eval("IsOriginal")) ? 
+                                                                "<span class='badge px-2 py-1' style='font-size: 11.5px; background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;'><i class='fas fa-user-check me-1'></i>Đã phân công</span>" 
+                                                                : (Convert.ToInt32(Eval("BusyDays")) > 0 ? 
+                                                                    string.Format("<span class='badge bg-warning text-dark px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-briefcase me-1'></i>Bận {0} ngày</span>", Eval("BusyDaysDisplay")) 
+                                                                    : "<span class='badge bg-success px-2 py-1' style='font-size: 11.5px;'><i class='fas fa-check-circle me-1'></i>Trống lịch</span>") %>
+                                                            <button type="button" class="btn-calendar-only" title="Xem lịch" onclick="return TaskMemberPlanner.openCalendar(this, '<%# Eval("UserId") %>');">📅</button>
+                                                        </div>
                                                     </div>
                                                     <asp:HiddenField runat="server" ID="hdfScheduleJson" Value='<%# Eval("ScheduleJson") %>' />
                                                     <div class="row-schedule-panel" id='overlay-<%# Eval("UserId") %>'>
@@ -359,6 +1003,32 @@
                             </div>
                         </div>
 
+                    </div>
+                    </div> <!-- End hidden ASP.NET Repeater sources -->
+                    <div id="tmpPaneList" class="task-member-columns tmp-v3-columns" role="tabpanel">
+                        <section class="member-list-panel" id="panelProject" aria-label="Nhân sự được chọn">
+                            <div class="panel-header tmp-v3-picked-header"><span><i class="fas fa-user-check me-1"></i> Nhân sự được chọn</span><span class="badge bg-primary rounded-pill" id="tmpSelectedCount">0</span></div>
+                            <div class="panel-list tmp-v3-list" id="tmpSelectedList"></div>
+                        </section>
+                        <section class="member-list-panel" id="panelCompany" aria-label="Nhân sự có thể phân công">
+                            <div class="panel-header tmp-v3-available-header"><span><i class="fas fa-users me-1"></i> Nhân sự có thể phân công</span><span class="badge bg-primary rounded-pill" id="tmpAvailableCount">0</span></div>
+                            <div class="tmp-v3-legend"><span><i class="tmp-v3-dot project"></i>Thuộc dự án</span><span><i class="tmp-v3-dot other"></i>Ngoài dự án</span></div>
+                            <div class="panel-list tmp-v3-list" id="tmpAvailableList"></div>
+                        </section>
+                    </div>
+                    <div id="tmpPaneTimeline" class="tmp-timeline" role="tabpanel" hidden>
+                        <div class="tmp-timeline-window-nav"><span id="tmpWindowLabel" class="tmp-timeline-tip">Cuộn ngang để xem thêm ngày</span><button type="button" class="tmp-window-nav" id="tmpWindowPrev" hidden title="Khoảng ngày trước">◀</button><button type="button" class="tmp-window-nav" id="tmpWindowNext" hidden title="Khoảng ngày tiếp">▶</button></div>
+                        <div class="tmp-scroll" id="tmpTimelineScroll">
+                            <div class="tmp-board" id="tmpTimelineTable" role="table" aria-label="Lịch phân bổ theo nhân viên"></div>
+                        </div>
+                        <div class="tmp-timeline-xbar" id="tmpTimelineXBar" aria-label="Cuộn ngang vùng lịch" tabindex="0"><div id="tmpTimelineXTrack"></div></div>
+                        <div id="tmpDayDetail" class="tmp-floating-day-detail" hidden></div>
+                    </div>
+                    <div id="tmpCalendarPop" class="tmp-calendar-pop" role="dialog" aria-label="Lịch làm việc của nhân viên" hidden>
+                        <div class="tmp-pop-head"><span id="tmpPopName" class="tmp-pop-name"></span><button id="tmpPopClose" class="tmp-pop-close" type="button" aria-label="Đóng lịch">&times;</button></div>
+                        <div class="tmp-pop-inner"><div class="tmp-pop-calendar" id="tmpPopCalendar"><div class="mini-cal" id="tmpCalendar"></div>
+                            <div class="tmp-pop-help"><span style="--tmp-legend:#fee2e2">Bận</span><span style="--tmp-legend:#e6f4ea">Trống</span><span style="--tmp-legend:#fef3c7">Nghỉ lễ</span><span style="--tmp-legend:#f1f5f9">Nghỉ tuần</span></div>
+                        </div></div>
                     </div> <!-- End Grid -->
                 </div> <!-- End Modal Body -->
 
@@ -367,14 +1037,35 @@
     </ContentTemplate>
 
     <FooterTemplate>
-        <asp:UpdatePanel ID="upnlTaskMemberFooter" runat="server" UpdateMode="Conditional">
+        <asp:UpdatePanel ID="upnlTaskMemberFooter" runat="server"
+            UpdateMode="Conditional">
             <ContentTemplate>
-                <SweetSoft:ExtraButton runat="server" ID="btnConfirmTaskAssign" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true" OnClick="btnConfirmTaskAssign_Click">
-                    <%= GetResourceText(BackEndResourceKeys.SAVE) %>
-                </SweetSoft:ExtraButton>
+
+                <div class="task-assignment-footer-row">
+
+                    <!-- Tóm tắt lựa chọn, nằm bên trái -->
+                    <asp:Label
+                        ID="lblAssignmentSummary"
+                        runat="server"
+                        CssClass="task-assignment-summary" />
+
+                    <!-- Giữ nguyên nút Lưu hiện tại -->
+                    <SweetSoft:ExtraButton
+                        runat="server"
+                        ID="btnConfirmTaskAssign"
+                        CssClass="waves-effect waves-light"
+                        ButtonStyle="Primary"
+                        ButtonIcon="Save"
+                        IsPace="true"
+                        OnClick="btnConfirmTaskAssign_Click">
+                        <%= GetResourceText(BackEndResourceKeys.SAVE) %>
+                    </SweetSoft:ExtraButton>
+
+                </div>
+
             </ContentTemplate>
         </asp:UpdatePanel>
-    </FooterTemplate>   
+    </FooterTemplate> 
 </SweetSoft:ExtraModal>
 
 <script type="text/javascript">
@@ -389,6 +1080,30 @@
         function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
         function titleText(st) { return 'Tháng ' + (st.month + 1) + ', ' + st.year; }
 
+        function taskDayTooltip(info, key, employee, outside) {
+            if (!info) return '';
+            var hasTasks = !!(info.tasks && info.tasks.length);
+            var current = !!info.current;
+            var p = key.split('-');
+            var html = '<div class="tmp-tooltip-heading">' + (employee ? escAttr(employee) + ' · ' : 'Ngày ') + p[2] + '/' + p[1] + '/' + p[0] + '</div>';
+            if (outside) html += '<div style="color:#64748b;font-size:10.5px;margin-bottom:5px">Ngoài thời hạn công việc đang phân công</div>';
+            if (current) {
+                var own = info.currentTask || {};
+                html += '<div class="tmp-current-task"><strong>● Công việc đang phân công (không tính trùng lịch)</strong>' +
+                    (own.code ? '<span class="t-code">[' + escAttr(own.code) + ']</span>' : '') +
+                    escAttr(own.name || 'Công việc hiện tại') + '</div>';
+            }
+            if (hasTasks) {
+                html += '<div class="tmp-other-heading">Công việc khác (' + info.tasks.length + ')</div><ul class="tooltip-task-list">';
+                info.tasks.forEach(function(t) {
+                    html += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + escAttr(t.projectName || '') + '</div>' +
+                        '<span class="t-code">[' + escAttr(t.code || '') + ']</span>' + escAttr(t.name || '') + '</li>';
+                });
+                html += '</ul>';
+            }
+            if (!hasTasks && !current) html += '<div style="font-size:11.5px;color:#64748b">' + escAttr(info.text || 'Chưa có lịch công việc') + '</div>';
+            return html;
+        }
         function buildGridHtml(st) {
             var now = new Date();
             var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
@@ -405,20 +1120,32 @@
                 if (d.getMonth() !== st.month) cls += ' out-month';
                 if (!inRange) cls += ' out-range';
                 else if (info && info.status) cls += ' st-' + info.status;
+                // Có task hiện tại mà không vướng task khác: màu tím, không ghi là 'Trống'.
+                if (info && info.current && info.status === 'free') cls += ' st-current-only';
                 if (key === todayKey) cls += ' today';
+                if (info && info.current) cls += ' has-current';
 
                 var extra = '';
-                if (info && info.text) {
-                    var label = String(info.text).replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
-                    extra = '<span class="mc-label">' + escAttr(label) + '</span>';
-                }
+                var tooltipHtml = '';
+                var clickAttr = '';
 
-                var tip = (info && info.text) ? ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"' : '';
-                html += '<div class="' + cls + '"' + tip + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
+                if (info) {
+                    var label = info.current && info.status === 'free' ? 'Task này' : String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
+                    if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+                    var hasOthers = !!(info.tasks && info.tasks.length);
+                    var hasCurrent = !!info.current;
+                    if (hasOthers || hasCurrent) {
+                        cls += ' has-tooltip';
+                        var listHtml = taskDayTooltip(info, key, '', false);
+                        clickAttr = ' data-tooltip-content="' + encodeURIComponent(listHtml) + '"';
+                    } else if (info.text) {
+                        clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
+                    }
+                }
+                html += '<div class="' + cls + '" data-day-key="' + key + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
             }
             return html + '</div>';
         }
-
         function renderMiniCalendar(cal) {
             var st = cal.data('mc');
             var html = '<div class="mc-header">' +
@@ -438,46 +1165,9 @@
             cal.html(html);
         }
 
-        CMSMasterJs.ChangeScheduleMonth = function (btnElement, delta) {
-            var cal = $(btnElement).closest('.mini-cal');
-            var st = cal.data('mc');
-            if (!st) return;
+        window.TaskMemberCalendarEngine = { render: renderMiniCalendar, parseKey: parseKey, tooltipHtml: taskDayTooltip };
 
-            var viewport = cal.find('.mc-viewport');
-            var grids = viewport.children('.mc-grid');
-            if (grids.length > 1) {
-                grids.not(':last').remove();
-                var lastEl = grids.last()[0];
-                if (lastEl.getAnimations) lastEl.getAnimations().forEach(function (a) { a.cancel(); });
-            }
-
-            var d = new Date(st.year, st.month + delta, 1);
-            st.year = d.getFullYear();
-            st.month = d.getMonth();
-            cal.find('.mc-title').text(titleText(st));
-
-            var oldGrid = viewport.children('.mc-grid').last();
-            var newGrid = $(buildGridHtml(st));
-            viewport.append(newGrid);
-
-            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reduceMotion || !newGrid[0].animate) { oldGrid.remove(); return; }
-
-            var dir = delta > 0 ? 1 : -1;
-            var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
-
-            oldGrid[0].animate([
-                { transform: 'translateY(0)', opacity: 1 },
-                { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }
-            ], opts).onfinish = function () { oldGrid.remove(); };
-
-            newGrid[0].animate([
-                { transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 },
-                { transform: 'translateY(0)', opacity: 1 }
-            ], opts);
-        };
-
-        // HÀM JS NGUYÊN BẢN (SỬ DỤNG SCROLLINTOVIEW ĐỂ GIỮ CHUẨN TÊN NHÂN VIÊN)
+        // BẢN NÂNG CẤP: CHỜ TRƯỢT XONG MỚI BỎ VÁCH NGĂN
         CMSMasterJs.ToggleRowSchedule = function (btnElement, userId, isShow) {
             var rowEl = $(btnElement).closest('.member-item-row');
             var currentPanel = rowEl.closest('.member-list-panel');
@@ -485,7 +1175,8 @@
             if (typeof isShow !== 'boolean') isShow = !rowEl.hasClass('show-schedule');
 
             if (isShow) {
-                currentPanel.find('.member-item-row.show-schedule').not(rowEl).removeClass('show-schedule');
+                // Tắt các lịch cũ và đóng luôn vách ngăn của tụi nó
+                currentPanel.find('.member-item-row.show-schedule').not(rowEl).removeClass('show-schedule schedule-opened');
 
                 var jsonString = rowEl.find('input[type="hidden"][id*="hdfScheduleJson"]').val();
                 var cal = rowEl.find('#timeline-' + userId);
@@ -517,17 +1208,776 @@
                 });
                 renderMiniCalendar(cal);
 
+                // Bắt đầu kéo rèm xuống
                 rowEl.addClass('show-schedule');
 
+                // Đợi 380ms cho rèm kéo xong -> Mở khóa Vách ngăn để Tooltip đâm thủng trần
                 setTimeout(function () {
+                    if (rowEl.hasClass('show-schedule')) {
+                        rowEl.addClass('schedule-opened'); // [CHÌA KHÓA NẰM Ở ĐÂY]
+                    }
                     if (rowEl.hasClass('show-schedule') && rowEl[0].scrollIntoView) {
                         rowEl[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     }
                 }, 380);
 
             } else {
-                rowEl.removeClass('show-schedule');
+                rowEl.removeClass('show-schedule schedule-opened');
             }
         };
+
+        // BẢN NÂNG CẤP: KHÓA VÁCH NGĂN LẠI KHI ĐANG TRƯỢT THÁNG
+        CMSMasterJs.ChangeScheduleMonth = function (btnElement, delta) {
+            var cal = $(btnElement).closest('.mini-cal');
+            var st = cal.data('mc');
+            if (!st) return;
+
+            var viewport = cal.find('.mc-viewport');
+
+            // Đóng tooltip đã ghim trước khi đổi tháng.
+            if (CMSMasterJs.HideTaskTooltip) CMSMasterJs.HideTaskTooltip();
+            viewport.addClass('is-animating');
+            $('.mc-day,.tmp-day').removeClass('show-tooltip');
+
+            var grids = viewport.children('.mc-grid');
+            if (grids.length > 1) {
+                grids.not(':last').remove();
+                var lastEl = grids.last()[0];
+                if (lastEl.getAnimations) lastEl.getAnimations().forEach(function (a) { a.cancel(); });
+            }
+
+            var d = new Date(st.year, st.month + delta, 1);
+            st.year = d.getFullYear();
+            st.month = d.getMonth();
+            cal.find('.mc-title').text(titleText(st));
+
+            var oldGrid = viewport.children('.mc-grid').last();
+            var newGrid = $(buildGridHtml(st));
+            viewport.append(newGrid);
+
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion || !newGrid[0].animate) {
+                oldGrid.remove();
+                viewport.removeClass('is-animating'); // Tháo khóa nếu không có animation
+                return;
+            }
+
+            var dir = delta > 0 ? 1 : -1;
+            var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
+
+            oldGrid[0].animate([
+                { transform: 'translateY(0)', opacity: 1 },
+                { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }
+            ], opts).onfinish = function () {
+                oldGrid.remove();
+            };
+
+            newGrid[0].animate([
+                { transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 },
+                { transform: 'translateY(0)', opacity: 1 }
+            ], opts).onfinish = function () {
+                // [THÁO KHÓA VÁCH NGĂN]: Trượt lịch xong thì mở lại để Tooltip ngoi lên
+                viewport.removeClass('is-animating');
+            };
+        };
+        // ============================================================
+        // ĐỘNG CƠ TOOLTIP GLOBAL (ĐỊNH VỊ TUYỆT ĐỐI THEO TỌA ĐỘ CHUỘT)
+        // ============================================================
+
+        // Sinh ra 1 cái khung Tooltip duy nhất nằm ở ngoài cùng màn hình
+        if ($('#global-task-tooltip').length === 0) {
+            $('body').append('<div id="global-task-tooltip" class="global-task-tooltip"></div>');
+        }
+        var $globalTooltip = $('#global-task-tooltip');
+        var pinnedDay = null; // Biến nhớ xem ông có đang click ghim nó lại không
+
+        function showGlobalTooltip(dayEl) {
+            var $day = $(dayEl), raw = $day.attr('data-tooltip-content');
+            if (!raw) return;
+            try { $globalTooltip.html(decodeURIComponent(raw)); } catch(e) { return; }
+            $globalTooltip.addClass('show');
+            var rect = dayEl.getBoundingClientRect();
+            var ttWidth = $globalTooltip.outerWidth(), ttHeight = $globalTooltip.outerHeight();
+            var left = Math.max(10, Math.min(window.innerWidth - ttWidth - 10, rect.left + rect.width / 2 - ttWidth / 2));
+            var top = rect.top - ttHeight - 10, below = false;
+            if (top < 10) { top = Math.max(10, Math.min(window.innerHeight - ttHeight - 10, rect.bottom + 10)); below = true; }
+            $globalTooltip.toggleClass('tmp-tooltip-below', below);
+            $globalTooltip.css({top: top + 'px', left: left + 'px', '--arrow-left': Math.max(5,Math.min(95,(rect.left + rect.width/2-left)/ttWidth*100))+'%'});
+        }
+        function hideGlobalTooltip() { $globalTooltip.removeClass('show tmp-tooltip-below'); }
+        function clearPin() { pinnedDay = null; $('.mc-day,.tmp-day').removeClass('show-tooltip'); hideGlobalTooltip(); }
+        CMSMasterJs.HideTaskTooltip = clearPin;
+        $(document).on('mouseenter.taskMiniTip', '.mc-day.has-tooltip,.tmp-day.has-tooltip', function () {
+            if (!pinnedDay) showGlobalTooltip(this);
+        }).on('mouseleave.taskMiniTip', '.mc-day.has-tooltip,.tmp-day.has-tooltip', function () {
+            if (!pinnedDay) hideGlobalTooltip();
+        });
+        $(document).on('click.taskMiniTip', '.mc-day.has-tooltip,.tmp-day.has-tooltip', function (e) {
+            e.stopPropagation();
+            if (pinnedDay === this) { clearPin(); return; }
+            clearPin(); pinnedDay = this; $(this).addClass('show-tooltip'); showGlobalTooltip(this);
+        });
+        // Giữ tooltip được ghim khi tương tác nội dung để có thể copy chữ.
+        $(document).on('click.taskMiniTip', function(e) {
+            if (!$(e.target).closest('#global-task-tooltip,.mc-day.has-tooltip,.tmp-day.has-tooltip').length) clearPin();
+        });
+        $(document).on('keydown.taskMiniTip', function(e) { if (e.key === 'Escape') clearPin(); });
+        // WebForms timeline scroll is a separate scroll container; pinned tips must not drift.
+        document.addEventListener('scroll', function(e) {
+            if (e.target && e.target.closest && e.target.closest('.panel-list,.tmp-scroll,.tmp-board-dates,.tmp-timeline-xbar')) clearPin();
+        }, true);
     });
+        // Xử lý Z-Index để MessageBox không bị chìm dưới Popup
+        (function () {
+            var BASE_Z = 106000;
+
+            function stackBusinessModals() {
+                var $modals = $('.modal:visible').not('#modal-notify');
+                if ($modals.length > 1) {
+                    $('.modal-backdrop').each(function (i) {
+                        $(this).css('z-index', BASE_Z + (i * 10));
+                    });
+                    $modals.each(function (i) {
+                        $(this).css('z-index', BASE_Z + (i * 10) + 5);
+                    });
+                }
+            }
+
+            function raiseNotify() {
+                var notify = document.getElementById('modal-notify');
+                if (!notify || !$(notify).is(':visible')) return;
+
+                var $others = $('.modal:visible').not(notify);
+                if ($others.length === 0) return;
+
+                var maxZ = BASE_Z;
+                $others.each(function () {
+                    maxZ = Math.max(maxZ, parseInt(window.getComputedStyle(this).zIndex, 10) || 0);
+                });
+
+                notify.style.setProperty('z-index', String(maxZ + 20), 'important');
+                var bds = document.querySelectorAll('.modal-backdrop');
+                if (bds.length) bds[bds.length - 1].style.setProperty('z-index', String(maxZ + 15), 'important');
+            }
+
+            function raiseNotifyRepeatedly() {
+                [0, 100, 250, 500, 900].forEach(function (ms) {
+                    setTimeout(function () { stackBusinessModals(); raiseNotify(); }, ms);
+                });
+            }
+
+            ['show.bs.modal', 'shown.bs.modal'].forEach(function (evt) {
+                document.addEventListener(evt, function (e) {
+                    if (e.target && e.target.id === 'modal-notify') raiseNotifyRepeatedly();
+                });
+            });
+
+            document.addEventListener('hidden.bs.modal', function (e) {
+                if (e.target && e.target.id === 'modal-notify') {
+                    e.target.style.removeProperty('z-index');
+                }
+            });
+
+            if (typeof Sys !== 'undefined' && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(raiseNotifyRepeatedly);
+            }
+
+            // Chỉ server đóng popup sau khi UpdateAssignments() thành công.
+    })();
+</script>
+<script type="text/javascript">
+    (function () {
+        var pickedFieldId =
+        '<%= hdfPickedIdsClient.ClientID %>';
+
+        var originalFieldId =
+        '<%= hdfOriginalAssignedIdsClient.ClientID %>';
+
+        var summaryLabelId =
+        '<%= lblAssignmentSummary.ClientID %>';
+
+        function getElement(id) {
+            return document.getElementById(id);
+        }
+
+        function readIds(raw) {
+            var ids = new Set();
+
+            (raw || '').split(',').forEach(function (part) {
+                var id = part.trim().toLowerCase();
+
+                if (id) {
+                    ids.add(id);
+                }
+            });
+
+            return ids;
+        }
+
+        function updateSummary() {
+            var pickedField = getElement(pickedFieldId);
+            var originalField = getElement(originalFieldId);
+
+            // Ưu tiên ID của ASP.NET Label, dự phòng tìm theo CSS class.
+            var summary = getElement(summaryLabelId)
+                || document.querySelector('.task-assignment-summary');
+
+            if (!pickedField || !originalField || !summary) {
+                console.warn(
+                    '[TaskMemberPicker] Không tìm thấy trường dữ liệu hoặc footer.',
+                    {
+                        pickedFieldFound: !!pickedField,
+                        originalFieldFound: !!originalField,
+                        summaryFound: !!summary
+                    }
+                );
+                return;
+            }
+
+            var picked = readIds(pickedField.value);
+            var original = readIds(originalField.value);
+
+            var kept = 0;
+
+            picked.forEach(function (id) {
+                if (original.has(id)) {
+                    kept++;
+                }
+            });
+
+            var added = picked.size - kept;
+            var removed = original.size - kept;
+
+            summary.textContent =
+                picked.size + ' nhân viên sau lưu' +
+                ' · Giữ ' + kept +
+                ' · Thêm ' + added +
+                ' · Gỡ ' + removed;
+        }
+
+        function handleMemberCheckboxChange(event) {
+            var checkbox = event.target;
+
+            if (!checkbox ||
+                checkbox.tagName !== 'INPUT' ||
+                checkbox.type !== 'checkbox') {
+                return;
+            }
+
+            // Chỉ xử lý checkbox nằm trong dòng nhân viên.
+            var row = checkbox.closest(
+                '.member-item-row[id^="mem-row-"]'
+            );
+
+            if (!row) {
+                return;
+            }
+
+            var pickedField = getElement(pickedFieldId);
+
+            if (!pickedField) {
+                console.error(
+                    '[TaskMemberPicker] Không tìm thấy hdfPickedIdsClient.'
+                );
+                return;
+            }
+
+            // ID đã có sẵn trong id="mem-row-{GUID}".
+            // Không cần phụ thuộc ID render của HiddenField trong Repeater.
+            var prefix = 'mem-row-';
+            var userId = row.id
+                .substring(prefix.length)
+                .trim()
+                .toLowerCase();
+
+            if (!userId) {
+                return;
+            }
+
+            var picked = readIds(pickedField.value);
+
+            if (checkbox.checked) {
+                picked.add(userId);
+            } else {
+                picked.delete(userId);
+            }
+
+            // Lưu trạng thái lựa chọn, kể cả người bị ẩn do lọc.
+            pickedField.value = Array.from(picked).join(',');
+
+            // Cập nhật ngay trên trình duyệt, không cần postback.
+            updateSummary();
+        }
+
+        // Đăng ký duy nhất một lần.
+        // Listener trên document vẫn hoạt động khi UpdatePanel
+        // thay thế các phần tử Repeater.
+        if (!window.__taskMemberSelectionListenerBound) {
+            document.addEventListener(
+                'change',
+                handleMemberCheckboxChange,
+                true
+            );
+
+            window.__taskMemberSelectionListenerBound = true;
+        }
+
+        // Sau khi UpdatePanel hoàn tất postback, lấy lại dữ liệu mới.
+        if (window.Sys &&
+            window.Sys.WebForms &&
+            window.Sys.WebForms.PageRequestManager) {
+
+            window.Sys.WebForms.PageRequestManager
+                .getInstance()
+                .add_endRequest(updateSummary);
+        }
+
+        updateSummary();
+    })();
+</script>
+<script type="text/javascript">
+    /* Task member planner: one selection store; popover preview + resource timeline. */
+    (function (window, document, $) {
+        'use strict';
+        if (!$ || (window.TaskMemberPlanner && window.TaskMemberPlanner.__v4)) return;
+        var state = { taskId: '', data: null, json: '', tab: 'list', onlyPicked: false, filters: { project: { keyword: '', role: '' }, other: { keyword: '', role: '' } }, collapsed: {}, filterRevision: null, dayStart: 0, calendarButton: null, calendarData: null };
+        var DAY_MS = 86400000;
+        function root() { return document.querySelector('.task-member-picker-root'); }
+        function get(id) { var r = root(); return r ? r.querySelector('#' + id) : null; }
+        function f(suffix) { var r = root(), parent = r && r.parentElement; return parent ? parent.querySelector('input[type="hidden"][id$="' + suffix + '"]') : null; }
+        function parseIds(text) { var result = [], seen = {}; (text || '').split(',').forEach(function (s) { s = s.trim().toLowerCase(); if (s && !seen[s]) { seen[s] = true; result.push(s); } }); return result; }
+        function picked() { return parseIds(f('hdfPickedIdsClient') ? f('hdfPickedIdsClient').value : ''); }
+        function originals() { return parseIds(f('hdfOriginalAssignedIdsClient') ? f('hdfOriginalAssignedIdsClient').value : ''); }
+        function esc(str) { return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+        function dateUtc(s) { var a = s.split('-'); return new Date(Date.UTC(+a[0], +a[1] - 1, +a[2])); }
+        function dayKey(d) { return d.toISOString().slice(0, 10); }
+        function fmtDate(s) { var p = s.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+        function findPerson(id) { if (!state.data) return null; id = String(id).toLowerCase(); return state.data.members.find(function (m) { return String(m.id).toLowerCase() === id; }) || null; }
+        function isReadonly() { return !!(state.data && state.data.readonlyMode); }
+        function syncSelection() {
+            var r = root(), chosen = picked(), initial = originals(); if (!r) return;
+            Array.prototype.forEach.call(r.querySelectorAll('.member-item-row[id^="mem-row-"]'), function (row) {
+                var id = row.id.slice('mem-row-'.length).toLowerCase();
+                var box = row.querySelector('input[type="checkbox"]');
+                var active = chosen.indexOf(id) >= 0;
+                if (box) box.checked = active;
+                row.classList.toggle('is-selected', active);
+            });
+            Array.prototype.forEach.call(r.querySelectorAll('.tmp-employee'), function (row) {
+                var id = row.getAttribute('data-id').toLowerCase(), active = chosen.indexOf(id) >= 0, old = initial.indexOf(id) >= 0;
+                row.classList.toggle('is-selected', active);
+                row.classList.toggle('tmp-will-add', active && !old);
+                row.classList.toggle('tmp-will-remove', old && !active);
+                var calendarRow = r.querySelector('.tmp-board-dayrow[data-id="' + id + '"]');
+                if (calendarRow) calendarRow.classList.toggle('is-selected', active);
+                var box = row.querySelector('input[type="checkbox"]');
+                if (box) box.checked = active;
+            });
+            var label = document.querySelector('[id$="lblAssignmentSummary"]');
+            if (label) {
+                var kept = chosen.filter(function (id) { return initial.indexOf(id) >= 0; }).length;
+                var outsideAdded = chosen.filter(function (id) { var m = findPerson(id); return initial.indexOf(id) < 0 && m && m.group === 'other'; }).length;
+                label.textContent = chosen.length + ' nhân viên sau lưu · Giữ ' + kept + ' · Thêm ' + (chosen.length - kept) + ' · Gỡ ' + (initial.length - kept) + (outsideAdded ? ' · Thêm ' + outsideAdded + ' vào dự án' : '');
+            }
+        }
+        function setPicked(id, on) {
+            if (isReadonly()) return;
+            id = String(id || '').toLowerCase(); var chosen = picked().filter(function (x) { return x !== id; });
+            if (on) chosen.push(id);
+            var el = f('hdfPickedIdsClient'); if (!el) return;
+            el.value = chosen.join(','); syncSelection(); renderNewList(true);
+            if (state.tab === 'timeline') renderTimeline(true);
+        }
+        function readData() {
+            var el = f('hdfTimelineJson'), idField = f('hdfTaskPickerId'), id = idField ? idField.value : '';
+            if (!el || !el.value) return;
+            if (id !== state.taskId) {
+                state.tab = 'list'; state.onlyPicked = false; state.filters = { project: { keyword: '', role: '' }, other: { keyword: '', role: '' } }; state.collapsed = {}; state.filterRevision = null; state.dayStart = 0;
+                closePopover(); state.taskId = id;
+            }
+            if (el.value !== state.json) {
+                try {
+                    state.data = JSON.parse(el.value); state.json = el.value;
+                    if (state.data.filters) {
+                        ['project', 'other'].forEach(function (g) {
+                            var v = state.data.filters[g] || {};
+                            state.filters[g] = { keyword: v.keyword || '', role: (v.role || '').toLowerCase() };
+                        });
+                    }
+                } catch (ex) { console.error('Không đọc được dữ liệu lịch phân bổ.', ex); state.data = null; }
+            }
+            var only = get('tmpOnlyPicked'); if (only) only.checked = state.onlyPicked;
+            var tags = get('tmpTimelineTags');
+            if (tags) {
+                var pp = state.filters.project || {}, oo = state.filters.other || {};
+                var filterData = state.data && state.data.filters || {};
+                tags.hidden = !((pp.keyword && pp.keyword === oo.keyword) || (pp.role && pp.role === oo.role) || (filterData.source && filterData.source !== 'all'));
+            }
+            // Chỉ phản hồi các thao tác lọc do server xác nhận, không tự đổi
+            // trạng thái mở/đóng khi tick nhân viên hay chuyển chế độ.
+            var revisionField = f('tmpFilterRevision');
+            var revision = revisionField ? revisionField.value : '0';
+            if (state.filterRevision !== null && revision !== state.filterRevision) {
+                state.collapsed.selected = true;
+                state.collapsed.available = false;
+            }
+            state.filterRevision = revision;
+            showTab(state.tab, true); syncSelection();
+        }
+        function showTab(mode, avoidReload) {
+            var list = get('tmpPaneList'), timeline = get('tmpPaneTimeline'), b1 = get('tmpTabList'), b2 = get('tmpTabTimeline');
+            if (!list || !timeline) return;
+            state.tab = mode === 'timeline' ? 'timeline' : 'list'; closePopover();
+            list.hidden = state.tab !== 'list'; timeline.hidden = state.tab !== 'timeline';
+            if (state.tab === 'list') renderNewList(true);
+            if (b1) { b1.classList.toggle('is-active', state.tab === 'list'); b1.setAttribute('aria-selected', state.tab === 'list'); }
+            if (b2) { b2.classList.toggle('is-active', state.tab === 'timeline'); b2.setAttribute('aria-selected', state.tab === 'timeline'); }
+            if (state.tab === 'timeline') renderTimeline(avoidReload);
+        }
+        function calendarPosition() {
+            var r = root(), pop = get('tmpCalendarPop'), btn = state.calendarButton;
+            if (!r || !pop || !btn || !document.contains(btn)) { closePopover(); return; }
+            var ownPanel = btn.closest('.member-list-panel'), other = get(ownPanel.id === 'panelProject' ? 'panelCompany' : 'panelProject');
+            if (!other) return;
+            var ownList = btn.closest('.panel-list');
+            var br = btn.getBoundingClientRect(), pr = other.getBoundingClientRect(), rr = r.getBoundingClientRect(), lr = ownList.getBoundingClientRect();
+            if (br.bottom < lr.top || br.top > lr.bottom) { closePopover(); return; }
+            var left = pr.left - rr.left + 5, top = pr.top - rr.top + 5, width = Math.max(215, pr.width - 10), height = Math.max(235, pr.height - 10);
+            pop.style.left = Math.round(left) + 'px'; pop.style.top = Math.round(top) + 'px';
+            pop.style.width = Math.round(width) + 'px'; pop.style.height = Math.round(height) + 'px';
+            pop.classList.toggle('tmp-from-left', ownPanel.id === 'panelProject');
+            pop.classList.toggle('tmp-from-right', ownPanel.id !== 'panelProject');
+            pop.style.setProperty('--tmp-arrow-y', Math.max(16, Math.min(height - 16, br.top + br.height / 2 - pr.top)) + 'px');
+            var available = height - 125;
+            var size = Math.max(33, Math.min(59, Math.floor((available - 10) / 6)));
+            pop.style.setProperty('--tmp-day-size', size + 'px');
+        }
+        function closePopover() {
+            if (window.CMSMasterJs && window.CMSMasterJs.HideTaskTooltip) window.CMSMasterJs.HideTaskTooltip();
+            var pop = get('tmpCalendarPop'); if (pop) { pop.hidden = true; pop.classList.remove('tmp-detail-mode'); }
+            if (state.calendarButton) state.calendarButton.setAttribute('aria-expanded', 'false');
+            state.calendarButton = null; state.calendarData = null;
+        }
+        function showDayDetails(person, info, key, destination, showBack) {
+            if (!destination) return;
+            var html = (showBack ? '<button type="button" class="tmp-pop-detail-back" id="tmpBackMonth">← Quay lại lịch</button>' : '')
+                + '<strong>' + esc(fmtDate(key)) + ' · ' + esc(person.name) + '</strong>'
+                + '<div style="color:#64748b;margin-top:5px">' + esc((info && info.text) || 'Không có thông tin') + '</div>';
+            if (info && info.current) html += '<div class="tmp-pop-task"><small>Công việc đang phân công</small>Nhân viên đã tham gia task hiện tại (không tính trùng lịch).</div>';
+            if (info && Array.isArray(info.tasks)) info.tasks.forEach(function (t) { html += '<div class="tmp-pop-task"><small>' + esc(t.projectName) + '</small><strong>[' + esc(t.code) + ']</strong> ' + esc(t.name) + '</div>'; });
+            destination.innerHTML = html;
+        }
+        function openCalendar(button, id) {
+            var r = root(), pop = get('tmpCalendarPop'); if (!r || !pop) return false;
+            if (state.calendarButton === button && !pop.hidden) { closePopover(); return false; }
+            closePopover();
+            var row = button.closest('.member-item-row');
+            var input = row ? row.querySelector('input[type="hidden"][id*="hdfScheduleJson"]') : null;
+            var data = {}; try { data = input ? JSON.parse(input.value || '{}') : ((findPerson(id) || {}).schedule || {}); } catch (e) { console.error('Lịch nhân viên không hợp lệ', e); }
+            var person = findPerson(id) || { id: id, name: (row ? $(row).find('.fw-bold.text-dark').first().text() : '') || 'Nhân viên', schedule: data };
+            state.calendarButton = button; button.setAttribute('aria-expanded', 'true');
+            get('tmpPopName').textContent = 'Lịch · ' + person.name;
+            // Lịch mini chỉ lấy NGÀY CỦA TASK. Timeline vẫn được xem các ngày trước/sau.
+            var taskStart = state.data && state.data.start, taskEnd = state.data && state.data.end;
+            if (taskStart && taskEnd) {
+                var taskData = {};
+                Object.keys(data).forEach(function (key) {
+                    if (key >= taskStart && key <= taskEnd) taskData[key] = data[key];
+                });
+                data = taskData;
+            }
+            var keys = Object.keys(data).sort();
+            // Chọn tháng có nhiều ngày thuộc thời hạn thực của task nhất.
+            var monthly = {}, bestMonth = (taskStart || keys[0] || new Date().toISOString().slice(0, 10)).slice(0, 7), bestCount = 0;
+            keys.forEach(function (key) { var m = key.slice(0, 7); monthly[m] = (monthly[m] || 0) + 1; if (monthly[m] > bestCount) { bestCount = monthly[m]; bestMonth = m; } });
+            state.calendarData = data;
+            var d = dateUtc(bestMonth + '-01'); var cal = $('#tmpCalendar');
+            cal.data('mc', { data: data, minKey: taskStart || keys[0] || null, maxKey: taskEnd || keys[keys.length - 1] || null, year: d.getUTCFullYear(), month: d.getUTCMonth() });
+            if (window.TaskMemberCalendarEngine) window.TaskMemberCalendarEngine.render(cal);
+            pop.hidden = false; calendarPosition();
+            return false;
+        }
+        function dateWindow() {
+            if (!state.data || !state.data.start || !state.data.end) return [];
+            var a = dateUtc(state.data.displayStart || state.data.start).getTime();
+            var b = dateUtc(state.data.displayEnd || state.data.end).getTime();
+            var count = Math.floor((b - a) / DAY_MS) + 1;
+            if (!count || count < 0) return [];
+            var windowSize = count > 100 ? 90 : count;
+            state.dayStart = Math.max(0, Math.min(state.dayStart, count - windowSize));
+            var out = []; for (var i = state.dayStart; i < state.dayStart + windowSize; i++)out.push(dayKey(new Date(a + i * DAY_MS)));
+            return out;
+        }
+        function renderTimeline(preserveScroll) {
+            var container = get('tmpTimelineScroll'), board = get('tmpTimelineTable');
+            if (!container || !board || !state.data) return;
+            var oldRail = board.querySelector('.tmp-board-section-dates');
+            var oldBar = get('tmpTimelineXBar');
+            var oldX = oldRail ? oldRail.scrollLeft : (oldBar ? oldBar.scrollLeft : 0);
+            var oldYs = {};
+            ['selected', 'available'].forEach(function (g) {
+                var el = board.querySelector('.tmp-board-section-names[data-group="' + g + '"]');
+                oldYs[g] = el ? el.scrollTop : 0;
+            });
+            var days = dateWindow(), chosen = picked(), initial = originals();
+            var a = dateUtc(state.data.displayStart || state.data.start).getTime();
+            var b = dateUtc(state.data.displayEnd || state.data.end).getTime();
+            var total = Math.floor((b - a) / DAY_MS) + 1;
+            var showWindows = total > 100, prev = get('tmpWindowPrev'), next = get('tmpWindowNext'), lbl = get('tmpWindowLabel');
+            if (prev) { prev.hidden = !showWindows; prev.disabled = state.dayStart === 0; }
+            if (next) { next.hidden = !showWindows; next.disabled = state.dayStart + days.length >= total; }
+            if (lbl) lbl.textContent = showWindows && days.length ? fmtDate(days[0]) + ' – ' + fmtDate(days[days.length - 1]) : 'Cuộn ngang để xem thêm ngày';
+            if (state.data.timelineError) {
+                board.innerHTML = '<div class="tmp-empty">Không tải được Lịch phân bổ. Vẫn có thể phân công tại chế độ Danh sách; hãy kiểm tra log máy chủ.</div>';
+                var errorBar = get('tmpTimelineXBar'); if (errorBar) errorBar.hidden = true;
+                return;
+            }
+            var members = (state.data.members || []).filter(function (m) {
+                return chosen.indexOf(String(m.id).toLowerCase()) >= 0 || filterCandidate(m);
+            });
+            members.sort(function (a, b) {
+                var sa = chosen.indexOf(String(a.id).toLowerCase()) >= 0, sb = chosen.indexOf(String(b.id).toLowerCase()) >= 0;
+                if (sa !== sb) return sa ? -1 : 1;
+                if (!sa) return freeCount(b) - freeCount(a) || Number(b.group === 'project') - Number(a.group === 'project') || (a.name || '').localeCompare(b.name || '');
+                return Number(!!b.original) - Number(!!a.original) || (a.name || '').localeCompare(b.name || '');
+            });
+            var dateHeadHtml = '<div class="tmp-board-months" role="row">';
+            for (var k = 0; k < days.length;) {
+                var mon = days[k].slice(0, 7), j = k;
+                while (j < days.length && days[j].slice(0, 7) === mon) j++;
+                dateHeadHtml += '<div class="tmp-board-month" style="width:' + ((j - k) * 56) + 'px">Tháng ' + esc(mon.slice(5)) + '/' + esc(mon.slice(0, 4)) + '</div>';
+                k = j;
+            }
+            dateHeadHtml += '</div><div class="tmp-board-dayheads" role="row">';
+            days.forEach(function (day) {
+                var d = dateUtc(day), weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                var inside = day >= state.data.start && day <= state.data.end, boundary = day === state.data.start || day === state.data.end;
+                dateHeadHtml += '<div class="tmp-board-dayhead ' + (inside ? 'inside-task' : 'outside-task') + (boundary ? ' task-boundary' : '') + '"><b>' + d.getUTCDate() + '</b><span>' + weekdays[d.getUTCDay()] + '</span></div>';
+            });
+            dateHeadHtml += '</div>';
+            var groups = ['selected', 'available'].map(function (group) {
+                var people = members.filter(function (m) {
+                    var checked = chosen.indexOf(String(m.id).toLowerCase()) >= 0;
+                    return group === 'selected' ? checked : !checked;
+                });
+                var nameHtml = '', dateHtml = '';
+                if (!people.length) nameHtml = '<div class="tmp-board-no-results">' + (group === 'selected' ? 'Chưa chọn nhân viên.' : 'Không có ứng viên phù hợp bộ lọc.') + '</div>';
+                people.forEach(function (m) {
+                    var id = String(m.id).toLowerCase(), active = chosen.indexOf(id) >= 0, old = initial.indexOf(id) >= 0;
+                    var status = badgeFor(m, active, old);
+                    nameHtml += '<div class="tmp-board-person-row tmp-employee ' + (active ? 'is-selected ' : '') + '" data-id="' + esc(id) + '">' +
+                        '<div class="tmp-person-cell"><input type="checkbox" data-tmp-pick="' + esc(id) + '" ' + (active ? 'checked ' : '') + (isReadonly() ? 'disabled ' : '') + 'aria-label="Phân công ' + esc(m.name) + '"/>' +
+                        '<span class="tmp-person-avatar">' + (m.avatarHtml || '') + '</span>' +
+                        '<span class="tmp-person-text"><span class="tmp-person-headline"><strong>' + esc(m.name) + '</strong><span class="tmp-person-source" title="' + (m.group === 'project' ? 'Đã tham gia dự án' : 'Chưa tham gia dự án') + '"><i class="tmp-v3-dot ' + (m.group === 'project' ? 'project' : 'other') + '"></i></span>' +
+                        (m.role ? '<span class="tmp-person-position"> · ' + esc(m.role) + '</span>' : '') +
+                        (m.isPM ? ' <span class="badge bg-danger tmp-person-pm">PM</span>' : '') + '</span>' +
+                        '<span class="tmp-person-email">' + esc(m.email || '') + '</span><span class="tmp-person-badges">' + status + '</span></span></div></div>';
+                    dateHtml += '<div class="tmp-board-dayrow ' + (active ? 'is-selected' : '') + '" data-id="' + esc(id) + '">';
+                    days.forEach(function (day) {
+                        var entry = m.schedule && m.schedule[day] || null, inside = day >= state.data.start && day <= state.data.end;
+                        var st = entry && entry.status || 'weekend', taskCount = entry && entry.tasks ? entry.tasks.length : 0, current = !!(entry && entry.current);
+                        var label = inside ? (st === 'busy' ? (taskCount + ' CV') : st === 'holiday' ? 'Nghỉ lễ' : st === 'weekend' ? 'Nghỉ' : current ? 'Task này' : 'Trống') : (st === 'busy' ? '<span class="tmp-v3-context-dot"></span>' : '');
+                        var tooltip = entry && window.TaskMemberCalendarEngine ? window.TaskMemberCalendarEngine.tooltipHtml(entry, day, m.name, !inside) : '';
+                        dateHtml += '<div class="tmp-board-daycell ' + (inside ? 'inside-task' : 'outside-task') + (day === state.data.start ? ' task-boundary-start' : '') + (day === state.data.end ? ' task-boundary-end' : '') + '"><button type="button" class="tmp-day st-' + esc(st) + (inside ? '' : ' outside-task') + (current ? ' has-current' : '') + (inside && current && st === 'free' ? ' st-current-only' : '') + (entry ? ' has-tooltip' : '') + '" data-id="' + esc(id) + '" data-day="' + esc(day) + '"' + (tooltip ? ' data-tooltip-content="' + encodeURIComponent(tooltip) + '"' : '') + ' aria-label="' + esc(m.name + ' · ' + fmtDate(day) + ' · ' + (entry ? entry.text : 'Không có dữ liệu')) + '">' + label + '</button></div>';
+                    });
+                    dateHtml += '</div>';
+                });
+                return {
+                    key: group, people: people, folded: !!state.collapsed[group], names: nameHtml, dates: dateHtml,
+                    desired: state.collapsed[group] ? 0 : (people.length ? Math.min(3, people.length) * 83 : 43)
+                };
+            });
+            // Ưu tiên nhóm Đã chọn: chỉ hiện các hàng TRỌN VẸN, tối đa 3 hàng.
+            // Nhóm Ứng viên dùng phần còn lại; hai header luôn nhìn thấy.
+            // Không chia tỷ lệ 50/50 khiến hàng cuối bị cắt ở 1,5 dòng.
+            var available = Math.max(0, (board.clientHeight || 390) - 56 - 64);
+            var selectedGroup = groups[0], candidateGroup = groups[1], rowHeight = 83;
+            selectedGroup.bodyHeight = 0;
+            candidateGroup.bodyHeight = 0;
+            if (!selectedGroup.folded) {
+                var selectedRows = Math.min(3, selectedGroup.people.length, Math.floor(available / rowHeight));
+                selectedGroup.bodyHeight = selectedRows * rowHeight;
+                // Khi không đủ một dòng nhưng vẫn có dữ liệu, không bao giờ mở lửng một hàng.
+                if (!selectedRows && selectedGroup.people.length && available > 0)
+                    selectedGroup.bodyHeight = Math.min(available, rowHeight);
+                if (!selectedGroup.people.length)
+                    selectedGroup.bodyHeight = Math.min(43, available);
+            }
+            var leftHeight = Math.max(0, available - selectedGroup.bodyHeight);
+            if (!candidateGroup.folded) {
+                var candidateRows = Math.min(3, candidateGroup.people.length, Math.floor(leftHeight / rowHeight));
+                candidateGroup.bodyHeight = candidateRows * rowHeight;
+                // Hai nhóm cùng mở mà không đủ một hàng ứng viên: chỉ giữ header,
+                // click header đó sẽ chuyển trọng tâm sang ứng viên (thu nhóm trên).
+                if (!candidateRows && candidateGroup.people.length && leftHeight > 0 && selectedGroup.bodyHeight === 0)
+                    candidateGroup.bodyHeight = Math.min(leftHeight, rowHeight);
+                if (!candidateGroup.people.length)
+                    candidateGroup.bodyHeight = Math.min(43, leftHeight);
+            }
+            var width = days.length * 56, groupsHtml = '';
+            groups.forEach(function (g) {
+                var selected = g.key === 'selected', title = selected ? 'Nhân sự được chọn' : 'Nhân sự có thể phân công';
+                var className = selected ? ' tmp-selected' : '';
+                var folded = g.folded ? ' is-collapsed' : '';
+                groupsHtml += '<section class="tmp-board-section' + folded + '" data-group="' + g.key + '" style="height:' + (32 + Math.floor(g.bodyHeight || 0)) + 'px">' +
+                    '<div class="tmp-board-group' + className + '"><button type="button" class="tmp-toggle-group" data-group="' + g.key + '" aria-expanded="' + (!g.folded) + '">' + (g.folded ? '▸' : '▾') + ' ' + title + ' (' + g.people.length + ')' + (selected && g.people.length ? ' · Đã chọn ' + g.people.length : '') + '</button></div>' +
+                    '<div class="tmp-board-group-days' + className + '"></div>' +
+                    '<div class="tmp-board-section-names" data-group="' + g.key + '">' + g.names + '</div>' +
+                    '<div class="tmp-board-section-dates" data-group="' + g.key + '"><div class="tmp-board-track" style="width:' + width + 'px">' + g.dates + '</div></div></section>';
+            });
+            board.innerHTML = '<div class="tmp-board-head-names"><div class="tmp-board-person-head" role="columnheader">Danh sách nhân sự</div></div>' +
+                '<div class="tmp-board-head-dates" id="tmpDatesHeadScroll"><div class="tmp-board-track" style="width:' + width + 'px">' + dateHeadHtml + '</div></div>' +
+                '<div class="tmp-board-group-stack">' + groupsHtml + '</div>';
+            var bar = get('tmpTimelineXBar'), track = get('tmpTimelineXTrack');
+            if (track) track.style.width = width + 'px';
+            if (bar) bar.hidden = !days.length;
+            var offset = days.length ? Math.floor((dateUtc(state.data.start).getTime() - dateUtc(days[0]).getTime()) / DAY_MS) : 0;
+            var x = preserveScroll ? oldX : Math.max(0, (offset - 5) * 56);
+            board.querySelectorAll('.tmp-board-section-dates').forEach(function (rail) { rail.scrollLeft = x; });
+            var head = get('tmpDatesHeadScroll'); if (head) head.scrollLeft = x;
+            if (bar) bar.scrollLeft = x;
+            ['selected', 'available'].forEach(function (group) {
+                var y = preserveScroll ? (oldYs[group] || 0) : 0;
+                var names = board.querySelector('.tmp-board-section-names[data-group="' + group + '"]');
+                var dates = board.querySelector('.tmp-board-section-dates[data-group="' + group + '"]');
+                if (names) names.scrollTop = y;
+                if (dates) dates.scrollTop = y;
+            });
+            var detail = get('tmpDayDetail'); if (detail) detail.hidden = true;
+            syncSelection();
+        }
+        function sourceRow(id) {
+            var src = get('tmpLegacySources');
+            if (!src) return null;
+            var rows = src.querySelectorAll('.member-item-row');
+            for (var i = 0; i < rows.length; i++) if (rows[i].id === 'mem-row-' + id) return rows[i];
+            return null;
+        }
+        function filterCandidate(m) {
+            var source = state.data && state.data.filters && state.data.filters.source || 'all';
+            if (source !== 'all' && m.group !== source) return false;
+            var p = state.filters.project || {}, q = state.filters.other || {};
+            var kw = p.keyword || q.keyword || '', role = p.role || q.role || '';
+            return (!kw || (m.name + ' ' + (m.role || '') + ' ' + (m.email || '')).toLocaleLowerCase().indexOf(kw.toLocaleLowerCase()) >= 0) &&
+                (!role || String(m.roleId || '').toLowerCase() === String(role).toLowerCase());
+        }
+        function freeCount(m) { return Math.max(0, Number(state.data.workingDays || 0) - Number(m.busy || 0)); }
+        function badgeFor(m, selected, old) {
+            if (selected) return old ? '<span class="badge" style="color:#0284c7;background:#e0f2fe;border:1px solid #bae6fd"><i class="fas fa-user-check me-1"></i>Đã phân công</span>' : '<span class="badge" style="color:#64259b;background:#f0e8fc;border:1px solid #ddcdf3">Sẽ phân công</span>';
+            var total = Number(state.data.workingDays || 0), free = freeCount(m);
+            if (!total) return '<span class="badge bg-secondary">Không có ngày làm việc</span>';
+            if (!free) return '<span class="badge bg-secondary">Trống 0/' + total + ' ngày</span>';
+            return '<span class="badge bg-success"><i class="fas fa-calendar-check me-1"></i>Trống ' + free + '/' + total + ' ngày</span>';
+        }
+        function cardFromServer(m, selected, old) {
+            var id = String(m.id).toLowerCase(), source = sourceRow(id), card;
+            if (source) {
+                card = source.cloneNode(true);
+                Array.prototype.forEach.call(card.querySelectorAll('[id],[name],[for]'), function (n) { n.removeAttribute('id'); n.removeAttribute('name'); n.removeAttribute('for'); });
+                card.removeAttribute('id');
+                Array.prototype.forEach.call(card.querySelectorAll('input[type="hidden"],.row-schedule-panel'), function (n) { n.remove(); });
+                var check = card.querySelector('input[type="checkbox"]');
+                if (check) { check.removeAttribute('onclick'); check.removeAttribute('onchange'); check.setAttribute('data-tmp-pick', id); check.checked = selected; check.disabled = isReadonly(); }
+                var button = card.querySelector('.btn-calendar-only');
+                if (button) { button.removeAttribute('onclick'); button.setAttribute('data-tmp-calendar', id); }
+                var actions = button && button.parentElement;
+                if (actions) { Array.prototype.slice.call(actions.children).forEach(function (n) { if (n !== button) n.remove(); }); actions.insertAdjacentHTML('afterbegin', badgeFor(m, selected, old)); }
+            } else {
+                // Fallback if an unusual historical user was not rendered by its Repeater.
+                card = document.createElement('div'); card.className = 'member-item-row';
+                card.innerHTML = '<div class="row-default-view"><div class="member-info-group flex-grow-1"><input type="checkbox" data-tmp-pick="' + esc(id) + '" ' + (selected ? 'checked ' : '') + (isReadonly() ? 'disabled ' : '') + '/>' + (m.avatarHtml || '') + '<div class="member-name-block"><div class="d-flex align-items-center flex-wrap gap-1 mb-1"><span class="fw-bold text-dark me-1">' + esc(m.name) + '</span><span class="member-position">' + esc(m.role || '') + '</span>' + (m.isPM ? '<span class="badge bg-danger" style="font-size:9.5px;padding:2px 5px">PM</span>' : '') + '</div><span class="member-email">' + esc(m.email || '') + '</span></div></div><div class="d-flex align-items-center gap-2 flex-shrink-0">' + badgeFor(m, selected, old) + '<button type="button" class="btn-calendar-only" data-tmp-calendar="' + esc(id) + '" title="Xem lịch">📅</button></div></div>';
+            }
+            card.classList.toggle('is-selected', selected); card.classList.remove('original-member'); card.setAttribute('data-tmp-id', id);
+            var name = card.querySelector('.fw-bold.text-dark');
+            if (name) { var dot = document.createElement('i'); dot.className = 'tmp-v3-dot ' + (m.group === 'project' ? 'project' : 'other'); dot.title = m.group === 'project' ? 'Đã tham gia dự án' : 'Chưa tham gia dự án'; dot.setAttribute('aria-label', dot.title); name.insertAdjacentElement('afterend', dot); }
+            return card;
+        }
+        function renderNewList(preserve) {
+            var list = get('tmpSelectedList'), available = get('tmpAvailableList');
+            if (!state.data || !list || !available) return;
+            var oldL = list.scrollTop, oldR = available.scrollTop, chosen = picked(), original = originals();
+            var members = (state.data.members || []), selected = [], candidates = [];
+            members.forEach(function (m) { (chosen.indexOf(String(m.id).toLowerCase()) >= 0 ? selected : candidates).push(m); });
+            selected.sort(function (a, b) { return Number(!!b.original) - Number(!!a.original) || (a.name || '').localeCompare(b.name || '') || String(a.id).localeCompare(String(b.id)); });
+            candidates = candidates.filter(filterCandidate);
+            candidates.sort(function (a, b) { return freeCount(b) - freeCount(a) || Number(b.group === 'project') - Number(a.group === 'project') || (a.name || '').localeCompare(b.name || '') || String(a.id).localeCompare(String(b.id)); });
+            list.textContent = ''; available.textContent = '';
+            var frag1 = document.createDocumentFragment(), frag2 = document.createDocumentFragment();
+            selected.forEach(function (m) { frag1.appendChild(cardFromServer(m, true, original.indexOf(String(m.id).toLowerCase()) >= 0)); });
+            candidates.forEach(function (m) { frag2.appendChild(cardFromServer(m, false, false)); });
+            list.appendChild(frag1); available.appendChild(frag2);
+            if (!selected.length) list.innerHTML = '<div class="tmp-v3-empty"><i class="far fa-user fa-lg"></i><div style="margin-top:10px">Chưa chọn nhân viên cho công việc.<br/>Chọn từ danh sách bên phải.</div></div>';
+            if (!candidates.length) available.innerHTML = '<div class="tmp-v3-empty">Không có ứng viên phù hợp bộ lọc.</div>';
+            var a = get('tmpSelectedCount'), b = get('tmpAvailableCount'); if (a) a.textContent = selected.length; if (b) b.textContent = candidates.length;
+            if (preserve) { list.scrollTop = oldL; available.scrollTop = oldR; }
+        }
+        function setupWorkingDays() {
+            if (!state.data) return;
+            // Y is sent from the server in the same calculation used by the list badge.
+            state._workingDays = Number(state.data.workingDays) || 0;
+        }
+        // Delegate events: UpdatePanel can replace toolbar/repeater markup after every postback.
+        // `scroll` does not bubble reliably; capturing at document survives UpdatePanel replacements.
+        // Hai khu vực cuộn dọc riêng, nhưng đồng bộ theo cặp tên/lịch trong từng nhóm.
+        // Phần ngày và header tháng dùng một toạ độ cuộn ngang cho cả hai nhóm.
+        document.addEventListener('scroll', function (e) {
+            var target = e.target;
+            if (!target || !target.classList) return;
+            var group = target.getAttribute('data-group');
+            var board = get('tmpTimelineTable'); if (!board) return;
+            var isDate = target.classList.contains('tmp-board-section-dates');
+            var isName = target.classList.contains('tmp-board-section-names');
+            if (isDate || isName) {
+                var names = board.querySelector('.tmp-board-section-names[data-group="' + group + '"]');
+                var dates = board.querySelector('.tmp-board-section-dates[data-group="' + group + '"]');
+                if (isDate && names && Math.abs(names.scrollTop - target.scrollTop) > 1) names.scrollTop = target.scrollTop;
+                if (isName && dates && Math.abs(dates.scrollTop - target.scrollTop) > 1) dates.scrollTop = target.scrollTop;
+                if (isDate) {
+                    var x = target.scrollLeft, bar = get('tmpTimelineXBar'), head = get('tmpDatesHeadScroll');
+                    if (bar && Math.abs(bar.scrollLeft - x) > 1) bar.scrollLeft = x;
+                    if (head && Math.abs(head.scrollLeft - x) > 1) head.scrollLeft = x;
+                    board.querySelectorAll('.tmp-board-section-dates').forEach(function (other) {
+                        if (other !== target && Math.abs(other.scrollLeft - x) > 1) other.scrollLeft = x;
+                    });
+                }
+            } else if (target.id === 'tmpTimelineXBar') {
+                var newX = target.scrollLeft, header = get('tmpDatesHeadScroll');
+                if (header && Math.abs(header.scrollLeft - newX) > 1) header.scrollLeft = newX;
+                board.querySelectorAll('.tmp-board-section-dates').forEach(function (other) {
+                    if (Math.abs(other.scrollLeft - newX) > 1) other.scrollLeft = newX;
+                });
+            }
+        }, true);
+        $(document).on('click.taskPlanner', '#tmpTabList', function () { showTab('list'); });
+        $(document).on('click.taskPlanner', '#tmpTabTimeline', function () { showTab('timeline'); });
+        $(document).on('change.taskPlanner', '#tmpOnlyPicked', function () { state.onlyPicked = this.checked; renderTimeline(true); });
+        $(document).on('click.taskPlanner', '#tmpWindowPrev,#tmpWindowNext', function () { state.dayStart = Math.max(0, state.dayStart + (this.id === 'tmpWindowNext' ? 90 : -90)); renderTimeline(false); });
+        $(document).on('click.taskPlanner', '.tmp-toggle-group', function () {
+            var g = this.getAttribute('data-group');
+            if (g === 'available' && !state.collapsed.selected && !state.collapsed.available) {
+                // Cả hai đang mở: chuyển trọng tâm sang ứng viên để xem trọn hàng.
+                state.collapsed.selected = true;
+                state.collapsed.available = false;
+            } else {
+                state.collapsed[g] = !state.collapsed[g];
+            }
+            renderTimeline(true);
+        });
+        $(document).on('change.taskPlanner', '[data-tmp-pick]', function () { setPicked(this.getAttribute('data-tmp-pick'), this.checked); });
+        $(document).on('click.taskPlanner', '[data-tmp-calendar]', function () { return openCalendar(this, this.getAttribute('data-tmp-calendar')); });
+        $(document).on('change.taskPlanner', '.task-member-picker-root .member-item-row input[type="checkbox"]', function () { window.setTimeout(syncSelection, 0); });
+        $(document).on('click.taskPlanner', '#tmpPopClose', closePopover);
+        $(document).on('click.taskPlanner', function (e) {
+            if (!e.target.closest('#tmpCalendarPop') && !e.target.closest('#global-task-tooltip') && !e.target.closest('.task-member-picker-root .btn-calendar-only')) closePopover();
+        });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePopover(); });
+        document.addEventListener('scroll', function (e) {
+            if (state.calendarButton && e.target.classList && e.target.classList.contains('panel-list') && e.target.contains(state.calendarButton)) closePopover();
+        }, true);
+        window.addEventListener('resize', function () { if (state.calendarButton) calendarPosition(); });
+        function afterRequest() { readData(); setupWorkingDays(); renderNewList(true); if (state.tab === 'timeline') renderTimeline(true); }
+        if (window.Sys && window.Sys.WebForms && window.Sys.WebForms.PageRequestManager) { window.Sys.WebForms.PageRequestManager.getInstance().add_endRequest(afterRequest); }
+        $(function () { afterRequest(); });
+        window.TaskMemberPlanner = { __v4: true, openCalendar: openCalendar, refresh: afterRequest, close: closePopover };
+    })(window, document, window.jQuery);
 </script>

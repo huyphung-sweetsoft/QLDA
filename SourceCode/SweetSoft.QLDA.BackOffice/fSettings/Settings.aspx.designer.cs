@@ -195,31 +195,40 @@ namespace SweetSoft.QLDA.BackOffice
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtProjectCodePrefix;
 
         /// <summary>
-        /// txtHeSoThap control.
+        /// txtDefaultMorningStart control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtHeSoThap;
+        protected global::System.Web.UI.WebControls.TextBox txtDefaultMorningStart;
 
         /// <summary>
-        /// txtHeSoTrungBinh control.
+        /// txtDefaultMorningEnd control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtHeSoTrungBinh;
+        protected global::System.Web.UI.WebControls.TextBox txtDefaultMorningEnd;
 
         /// <summary>
-        /// txtHeSoCao control.
+        /// txtDefaultAfternoonStart control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtHeSoCao;
+        protected global::System.Web.UI.WebControls.TextBox txtDefaultAfternoonStart;
+
+        /// <summary>
+        /// txtDefaultAfternoonEnd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtDefaultAfternoonEnd;
 
         /// <summary>
         /// txtInternalAnnouncement control.

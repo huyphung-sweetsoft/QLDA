@@ -211,7 +211,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                 System.Threading.Tasks.Task.Run(() => {
                     // Truyền tDenNgay vào hàm nhận DateTime? vẫn hoàn toàn hợp lệ (implicit conversion)
-                    TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, detailReason,"LICH_NGOAI_LE", null,resultItem.IdNgoaiLe);
+                    TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, detailReason, "LICH_NGOAI_LE", null, resultItem.IdNgoaiLe);
                 });
             }
             return resultItem;
@@ -242,7 +242,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                     // [THAY THẾ HÀM CŨ]: Bắn thông báo ngầm
                     System.Threading.Tasks.Task.Run(() => {
-                        TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, reason,"LICH_NGOAI_LE", null, item.IdNgoaiLe);
+                        TaskManager.Instance.NotifyPMsOnScheduleChange(tTuNgay, tDenNgay, reason, "LICH_NGOAI_LE", null, item.IdNgoaiLe);
                     });
                 }
                 return isDeleted;
@@ -303,6 +303,61 @@ namespace SweetSoft.QLDA.Core.Managers
                 }
             }
             return currentDate;
+        }
+
+        /// <summary>
+        /// Danh sách ca làm việc của một ngày. Rỗng nếu là ngày nghỉ (lịch ngoại lệ hoặc cấu hình tuần tắt).
+        /// Một ca đang bật khi cả giờ bắt đầu và giờ kết thúc đều có giá trị hợp lệ (cùng quy tắc trang Lịch biểu).
+        /// Lịch ngoại lệ chỉ quản lý ngày nghỉ chung, nên không có giờ ca riêng cho ngoại lệ.
+        /// </summary>
+        public List<ThongTinCa> GetShiftsForDate(DateTime date)
+        {
+            List<ThongTinCa> result = new List<ThongTinCa>();
+            RefreshCacheIfNeeded();
+
+            TblLichNgoaiLe ex = GetExceptionByDate(date);
+            if (ex != null && !ex.LaNgayLamViec) return result;
+
+            if (_weekConfigCache == null) return result;
+            int dayOfWeek = (int)date.DayOfWeek;
+            TblCauHinhTuanLamViec config = _weekConfigCache.Find(x => x.NgayTrongTuan == dayOfWeek);
+            if (config == null || !config.LaNgayLamViec) return result;
+
+            AddShiftIfValid(result, 1, date, config.GioBatDauSang, config.GioKetThucSang);
+            AddShiftIfValid(result, 2, date, config.GioBatDauChieu, config.GioKetThucChieu);
+            return result;
+        }
+
+        private static readonly string[] TimeFormats = { "HH:mm", "H:mm", "HH:mm:ss", "H:mm:ss" };
+
+        private static bool TryParseTime(string value, out TimeSpan time)
+        {
+            time = TimeSpan.Zero;
+            if (string.IsNullOrWhiteSpace(value)) return false;
+            DateTime parsed;
+            if (!DateTime.TryParseExact(value.Trim(), TimeFormats,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out parsed))
+                return false;
+            time = parsed.TimeOfDay;
+            return true;
+        }
+
+        private static void AddShiftIfValid(List<ThongTinCa> list, byte loaiCa, DateTime date, string start, string end)
+        {
+            TimeSpan s, e;
+            if (!TryParseTime(start, out s) || !TryParseTime(end, out e)) return;
+            if (e <= s) return;
+
+            list.Add(new ThongTinCa
+            {
+                LoaiCa = loaiCa,
+                GioBatDau = s.ToString(@"hh\:mm"),
+                GioKetThuc = e.ToString(@"hh\:mm"),
+                SoPhutCa = (int)(e - s).TotalMinutes,
+                BatDau = date.Date + s,
+                KetThuc = date.Date + e
+            });
         }
 
         public int CountWorkingDaysInRange(DateTime start, DateTime end)

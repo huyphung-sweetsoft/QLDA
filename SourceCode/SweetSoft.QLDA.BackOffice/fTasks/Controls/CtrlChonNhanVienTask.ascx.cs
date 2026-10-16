@@ -37,6 +37,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             get => ViewState["IdCongViecCha"] as Guid?;
             set => ViewState["IdCongViecCha"] = value;
         }
+        protected string ClientTaskId => IdCongViec.ToString("D");
+        protected string ClientTimelineJson => ViewState["TaskMemberTimelineJson"] as string ?? "";
         private DateTime StartDate
         {
             get => ViewState["StartDate"] != null ? (DateTime)ViewState["StartDate"] : DateTime.Today;
@@ -114,6 +116,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 UpCount = upCountCompany
             };
         }
+        private readonly Dictionary<string, string> _memberCalendarCache = new Dictionary<string, string>();
+        private readonly Dictionary<string, int> _memberBusyCache = new Dictionary<string, int>();
+        private Dictionary<Guid, DataRow> _fullEmployeeRows;
         private bool _searchControlsReady;
         private List<Guid> _pickedForBind = new List<Guid>();
         protected void Page_Load(object sender, EventArgs e)
@@ -125,6 +130,193 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             PrepareSearchControls();
             base.OnPreRender(e);
         }
+        // Timeline uses the SAME SweetSoft controls as the two original search panels.
+        // Resolve by ID to avoid introducing new designer.cs fields in an existing WebForms project.
+        private static T FindTimelineChild<T>(Control parent, string id) where T : Control
+        {
+            if (parent == null) return null;
+            if (parent.ID == id) return parent as T;
+            foreach (Control child in parent.Controls)
+            {
+                T found = FindTimelineChild<T>(child, id);
+                if (found != null) return found;
+            }
+            return null;
+        }
+        private T TimelineControl<T>(string id) where T : Control
+        {
+            return FindTimelineChild<T>(upnlMemberPicker, id);
+        }
+
+        // BootstrapDropdown của dự án là WebControl có Items: List<DropdownItem>,
+        // không phải asp:DropDownList/ListItemCollection. Dùng API chính thức.
+        private static void BindSourceDropdown(SweetSoft.QLDA.Controls.BootstrapDropdown ddl)
+        {
+            if (ddl == null) return;
+            ddl.DataSource = null;
+            ddl.ClearItems();
+            ddl.AddItem("Tất cả", "all");
+            ddl.AddItem("Trong dự án", "project");
+            ddl.AddItem("Ngoài dự án", "other");
+            ddl.Text = "Tất cả";
+            ddl.SelectedValue = "all";
+        }
+        // Tín hiệu từ server để JavaScript chỉ tự đóng/mở nhóm khi lọc thật sự.
+        protected string ClientFilterRevision => Convert.ToString(ViewState["TaskMemberFilterRevision"] ?? 0);
+        private string GetSourceFilter()
+        {
+            var ddl = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlSourceTimeline");
+            var val = (ddl == null ? "all" : ddl.SelectedValue ?? "all").ToLowerInvariant();
+            return val == "project" || val == "other" ? val : "all";
+        }
+        protected void ddlSourceTimeline_SelectedValueChanged(object sender, EventArgs e)
+        {
+            RefreshTimelineNativeSearch(false, false);
+        }
+        private void InitTimelineNativeSearch()
+        {
+            var ddl = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlChucDanhTimeline");
+            var txt = TimelineControl<SweetSoft.QLDA.Controls.ExtraTextBox>("txtSearchTimeline");
+            var tags = TimelineControl<SweetSoft.QLDA.Controls.ExtraSearchBox>("searchTagBoxTimeline");
+            if (ddl == null || txt == null || tags == null) return;
+            // Chức danh phải được bind độc lập. Nếu nguồn nhân sự lỗi, không được
+            // bỏ qua việc nạp toàn bộ chức danh (lỗi dropdown chỉ còn 'Bỏ chọn').
+            ddl.SearchTagItemText = GetResourceText(BackEndResourceKeys.CHUC_DANH);
+            txt.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
+            txt.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_SEARCH_KEYWORDS);
+            new ControlHelpers().BindChucDanh(ddl);
+            ddl.ClearSelection();
+            txt.Text = string.Empty;
+            var source = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlSourceTimeline");
+            if (source != null)
+            {
+                source.SearchTagItemText = "Nguồn nhân sự";
+                try
+                {
+                    BindSourceDropdown(source);
+                    source.SelectedValue = "all";
+                }
+                catch (Exception ex)
+                {
+                    try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "Loi nap nguon nhan su - bo loc chuc danh da duoc nap"); } catch { }
+                }
+            }
+            tags.TagItems.Clear();
+            tags.Update();
+            SyncTimelineNativeSearch();
+        }
+        private void SyncTimelineNativeSearch()
+        {
+            var ddl = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlChucDanhTimeline");
+            var txt = TimelineControl<SweetSoft.QLDA.Controls.ExtraTextBox>("txtSearchTimeline");
+            var tags = TimelineControl<SweetSoft.QLDA.Controls.ExtraSearchBox>("searchTagBoxTimeline");
+            if (ddl == null || txt == null || tags == null) return;
+            ListCtx a = GetCtx(true), b = GetCtx(false);
+            string aKeyword = GetKeyword(a), bKeyword = GetKeyword(b);
+            bool commonKeyword = string.Equals(aKeyword, bKeyword, StringComparison.Ordinal);
+            string aRole = HasChucDanhFilter(a) ? a.Ddl.SelectedValue : string.Empty;
+            string bRole = HasChucDanhFilter(b) ? b.Ddl.SelectedValue : string.Empty;
+            bool commonRole = string.Equals(aRole, bRole, StringComparison.OrdinalIgnoreCase);
+            txt.Text = commonKeyword ? aKeyword : string.Empty;
+            if (commonRole && !string.IsNullOrEmpty(aRole)) ddl.SelectedValue = aRole;
+            else ddl.ClearSelection();
+            tags.TagItems.Clear();
+            var source = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlSourceTimeline");
+            if (source != null && GetSourceFilter() != "all" && source.SearchTagItem != null)
+                tags.TagItems.Add(source.SearchTagItem);
+            // Lấy chính SearchTagItem do bộ lọc gốc sinh ra. Hai Repeater ẩn vẫn có
+            // bộ lọc SweetSoft hợp lệ; đừng tự tái tạo tag từ textbox sau postback.
+            bool roleAdded = false, keywordAdded = false;
+            foreach (var item in a.TagBox.TagItems)
+            {
+                if (item == null) continue;
+                if (commonRole && !string.IsNullOrEmpty(aRole) && item.Key == a.Ddl.ClientID)
+                {
+                    tags.TagItems.Add(item); roleAdded = true;
+                }
+                else if (commonKeyword && aKeyword.Length > 0 && item.Key == a.Txt.ClientID)
+                {
+                    tags.TagItems.Add(item); keywordAdded = true;
+                }
+            }
+            if (commonRole && !string.IsNullOrEmpty(aRole) && !roleAdded && ddl.SearchTagItem != null)
+                tags.TagItems.Add(ddl.SearchTagItem);
+            if (commonKeyword && aKeyword.Length > 0 && !keywordAdded && txt.SearchTagItem != null)
+                tags.TagItems.Add(txt.SearchTagItem);
+            tags.Update();
+            var roleUp = TimelineControl<UpdatePanel>("upnlTimelineRole");
+            var tagsUp = TimelineControl<UpdatePanel>("upnlTimelineTags");
+            if (roleUp != null) roleUp.Update();
+            if (tagsUp != null) tagsUp.Update();
+        }
+        private void RefreshTimelineNativeSearch(bool changeKeyword, bool changeRole)
+        {
+            try
+            {
+                var ddl = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlChucDanhTimeline");
+                var txt = TimelineControl<SweetSoft.QLDA.Controls.ExtraTextBox>("txtSearchTimeline");
+                if (ddl == null || txt == null) return;
+                SyncPickedFromRepeaters();
+                string keyword = (txt.Text ?? string.Empty).Trim();
+                if (keyword.Length > 300) keyword = keyword.Substring(0, 300);
+                string role = ddl.SelectedValue ?? string.Empty;
+                Guid parsedRole;
+                bool validRole = Guid.TryParse(role, out parsedRole) && parsedRole != Guid.Empty;
+                foreach (ListCtx ctx in new[] { GetCtx(true), GetCtx(false) })
+                {
+                    if (changeKeyword) ctx.Txt.Text = keyword;
+                    if (changeRole)
+                    {
+                        if (validRole) ctx.Ddl.SelectedValue = parsedRole.ToString("D");
+                        else ctx.Ddl.ClearSelection();
+                    }
+                    ctx.UpSearch.Update();
+                    UpdateSearchTags(ctx);
+                    BindList(ctx);
+                }
+                ViewState["TaskMemberFilterRevision"] = Convert.ToInt32(ViewState["TaskMemberFilterRevision"] ?? 0) + 1;
+                TryBuildTimelineSnapshot();
+                SyncTimelineNativeSearch();
+                upnlMemberPicker.Update();
+                UpdateAssignmentSummary();
+                upnlTaskMemberFooter.Update();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(GetResourceText(BackEndResourceKeys.ERROR_OCCURED) ?? "Không thể lọc nhân viên.", MSGType.Error);
+                try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Loi bo loc timeline Task native controls"); } catch { }
+            }
+        }
+        protected void btnSearchTimeline_ServerClick(object sender, EventArgs e)
+        {
+            RefreshTimelineNativeSearch(true, false);
+        }
+        protected void ddlChucDanhTimeline_SelectedValueChanged(object sender, EventArgs e)
+        {
+            RefreshTimelineNativeSearch(false, true);
+        }
+        protected void searchTagBoxTimeline_TagClosed(object sender, SweetSoft.QLDA.Controls.SearchTagItem tag)
+        {
+            var txt = TimelineControl<SweetSoft.QLDA.Controls.ExtraTextBox>("txtSearchTimeline");
+            var ddl = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlChucDanhTimeline");
+            var source = TimelineControl<SweetSoft.QLDA.Controls.BootstrapDropdown>("ddlSourceTimeline");
+            if (txt == null || ddl == null) return;
+            if (tag != null && source != null && tag.Key == source.ClientID)
+            {
+                source.SelectedValue = "all";
+                RefreshTimelineNativeSearch(false, false);
+            }
+            else if (tag != null && (tag.Key == txt.ClientID || tag.Key == GetCtx(true).Txt.ClientID || tag.Key == GetCtx(false).Txt.ClientID))
+            {
+                txt.Text = string.Empty;
+                RefreshTimelineNativeSearch(true, false);
+            }
+            else if (tag != null && (tag.Key == ddl.ClientID || tag.Key == GetCtx(true).Ddl.ClientID || tag.Key == GetCtx(false).Ddl.ClientID))
+            {
+                ddl.ClearSelection();
+                RefreshTimelineNativeSearch(false, true);
+            }
+        }
         private void PrepareSearchControls()
         {
             if (_searchControlsReady || lbtSearchProj == null || lbtSearchCompany == null) return;
@@ -134,6 +326,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 script.RegisterAsyncPostBackControl(c.BtnSearch);
                 c.Txt.EnterSubmitClientID = c.BtnSearch.ClientID;
+            }
+            var extraSearch = TimelineControl<Control>("lbtSearchTimeline");
+            var extraText = TimelineControl<SweetSoft.QLDA.Controls.ExtraTextBox>("txtSearchTimeline");
+            if (extraSearch != null && extraText != null)
+            {
+                script.RegisterAsyncPostBackControl(extraSearch);
+                extraText.EnterSubmitClientID = extraSearch.ClientID;
             }
             _searchControlsReady = true;
         }
@@ -161,23 +360,96 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             this.StartDate = startDate;
             this.EndDate = endDate;
             this.IdNhanVienQuanLy = idNhanVienQuanLy;
-            SetPickedIds(TaskManager.Instance.GetAssignedNhanVienIds(idCongViec));
+            ViewState["TaskMemberTaskName"] = taskName ?? string.Empty;
+            // Chụp lại trạng thái phân công ban đầu để so sánh khi người dùng thay đổi.
+            List<Guid> originalAssignedIds = TaskManager.Instance
+                .GetAssignedNhanVienIds(idCongViec)
+                .Distinct()
+                .ToList();
+
+            ViewState["TaskMemberOriginalSnapshot"] = string.Join(",", originalAssignedIds);
+            SetOriginalAssignedIds(originalAssignedIds);
+            SetPickedIds(originalAssignedIds);
+            UpdateAssignmentSummary();
+            lblAssignmentSummary.Visible = !ViewOnly;
             ListCtx proj = GetCtx(true);
             ListCtx company = GetCtx(false);
             InitSearchControls(proj);
             InitSearchControls(company);
+            ViewState["TaskMemberFilterRevision"] = 0;
+            // The timeline is auxiliary: failure to prepare its filter must not prevent opening the picker.
+            try { InitTimelineNativeSearch(); }
+            catch (Exception exc)
+            {
+                try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Loi khoi tao bo loc timeline nhan su"); } catch { }
+            }
+            TryBuildTimelineSnapshot();
             BindList(proj);
             BindList(company);
             mdlTaskMemberPicker.Title = GetResourceText(BackEndResourceKeys.ASSIGN_TASK);
             btnConfirmTaskAssign.ToolTip = btnConfirmTaskAssign.Text = GetResourceText(BackEndResourceKeys.SAVE);
+            // TÍNH TOÁN SỐ NGÀY THỜI HẠN CỦA TASK
+            int totalTaskDays = 0;
+            if (startDate != DateTime.MinValue && endDate != DateTime.MinValue && endDate >= startDate)
+            {
+                totalTaskDays = LichBieuChungManager.Instance.CountWorkingDaysInRange(startDate, endDate);
+            }
+
             string thoiGian = $"<strong>{startDate:dd/MM/yyyy}</strong> - <strong>{endDate:dd/MM/yyyy}</strong>";
             string safeTaskName = HttpUtility.HtmlEncode(taskName);
-            ltrTaskInfoNote.Text = $"<div style='margin-bottom: 5px; font-size: 13px;'><i class='fas fa-tasks me-1'></i> {GetResourceText(BackEndResourceKeys.TASK)}: <strong style='color: #b91c1c;'>{safeTaskName}</strong></div>" +
+
+            // BỔ SUNG BADGE "THỜI HẠN: Y NGÀY" VÀO NGAY CẠNH TÊN CÔNG VIỆC
+            ltrTaskInfoNote.Text = $"<div style='margin-bottom: 5px; font-size: 13px;'><i class='fas fa-tasks me-1'></i> {GetResourceText(BackEndResourceKeys.TASK)}: <strong style='color: #b91c1c;'>{safeTaskName}</strong>" +
+                                   $"<span class='badge ms-2' style='background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 11px;'><i class='fas fa-hourglass-half me-1'></i>Thời hạn: {totalTaskDays} ngày</span></div>" +
                                    $"<div style='font-size: 12px;'><i class='far fa-clock me-1'></i> {GetResourceText(BackEndResourceKeys.EXECUTION_TIME)}: {thoiGian}</div>";
             btnConfirmTaskAssign.Visible = !ViewOnly;
             mdlTaskMemberPicker.OpenModal(true);
             upnlMemberPicker.Update();
             upnlTaskMemberFooter.Update();
+        }
+        private static List<Guid> ParseGuidIds(string raw)
+        {
+            var result = new List<Guid>();
+
+            if (string.IsNullOrWhiteSpace(raw))
+                return result;
+
+            foreach (string part in raw.Split(','))
+            {
+                if (Guid.TryParse(part, out Guid id) && !result.Contains(id))
+                    result.Add(id);
+            }
+
+            return result;
+        }
+
+        private void SetOriginalAssignedIds(IEnumerable<Guid> ids)
+        {
+            hdfOriginalAssignedIdsClient.Value = ids == null
+                ? string.Empty
+                : string.Join(",", ids.Distinct().Select(id => id.ToString()));
+        }
+
+        private void UpdateAssignmentSummary()
+        {
+            if (lblAssignmentSummary == null ||
+                hdfOriginalAssignedIdsClient == null)
+                return;
+
+            var original = new HashSet<Guid>(
+                ParseGuidIds(hdfOriginalAssignedIdsClient.Value));
+
+            var picked = new HashSet<Guid>(GetPickedIds());
+
+            int kept = picked.Count(id => original.Contains(id));
+            int added = picked.Count - kept;
+            int removed = original.Count(id => !picked.Contains(id));
+
+            lblAssignmentSummary.Text =
+                $"{picked.Count} nhân viên sau lưu" +
+                $"  ·  Giữ {kept}" +
+                $"  ·  Thêm {added}" +
+                $"  ·  Gỡ {removed}";
         }
         private void InitSearchControls(ListCtx c)
         {
@@ -223,6 +495,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             return result;
         }
+        private static string GetChucDanh(DataRow row)
+        {
+            return GetRowString(row, "TenChucDanh").Trim();
+        }
         private static string GetRowString(DataRow row, string column)
         {
             if (row == null || !row.Table.Columns.Contains(column) || row[column] == DBNull.Value)
@@ -231,28 +507,33 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         private List<Guid> GetPickedIds()
         {
-            var list = new List<Guid>();
-            string raw = ViewState["CtrlChonNhanVienTask_Picked"] as string;
-            if (string.IsNullOrEmpty(raw)) return list;
-            foreach (string part in raw.Split(','))
-            {
-                Guid id;
-                if (Guid.TryParse(part, out id) && !list.Contains(id))
-                    list.Add(id);
-            }
-            return list;
+            return ParseGuidIds(
+                ViewState["CtrlChonNhanVienTask_Picked"] as string);
         }
         private void SetPickedIds(IEnumerable<Guid> ids)
         {
-            ViewState["CtrlChonNhanVienTask_Picked"] = ids == null ? string.Empty : string.Join(",", ids.Select(x => x.ToString()));
+            string raw = ids == null
+                ? string.Empty
+                : string.Join(",", ids.Distinct().Select(id => id.ToString()));
+
+            ViewState["CtrlChonNhanVienTask_Picked"] = raw;
+
+            // Đồng bộ danh sách lựa chọn với phía trình duyệt.
+            if (hdfPickedIdsClient != null)
+                hdfPickedIdsClient.Value = raw;
         }
         private void SyncPickedFromRepeaters()
         {
-            if (ViewOnly) return;
-            List<Guid> picked = GetPickedIds();
+            if (ViewOnly)
+                return;
+            List<Guid> picked = hdfPickedIdsClient != null
+                ? ParseGuidIds(hdfPickedIdsClient.Value)
+                : GetPickedIds();
             SyncOne(rptProjectMembers, picked);
             SyncOne(rptCompanyMembers, picked);
+
             SetPickedIds(picked);
+            UpdateAssignmentSummary();
         }
         private void SyncOne(Repeater rpt, List<Guid> picked)
         {
@@ -351,53 +632,39 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     ? allUsers.Where(u => nhomA.Contains(u.UserId) || (!activeIds.Contains(u.UserId) && picked.Contains(u.UserId))).ToList()
                     : allUsers.Where(u => !nhomA.Contains(u.UserId) && activeIds.Contains(u.UserId)).ToList();
             }
-            Dictionary<Guid, DataRow> employeeRows = SearchEmployeeRows(c);
-            if (GetKeyword(c).Length > 0 || HasChucDanhFilter(c))
-                users = users.Where(u => employeeRows.ContainsKey(u.UserId)).ToList();
+            // Always render all eligible users as hidden server-owned templates; client filters only applicants.
+            // Important: selecting staff must never disappear from the source Repeaters on a filtered postback.
+            if (_fullEmployeeRows == null) _fullEmployeeRows = GetAllEmployeeRowsForTimeline();
+            Dictionary<Guid, DataRow> employeeRows = _fullEmployeeRows;
             Guid? pmId = IdNhanVienQuanLy;
+            // Tính toán lịch và số ngày bận TRƯỚC KHI SORT
+            Dictionary<Guid, int> busyDaysDict;
+            Dictionary<Guid, string> scheduleJsonDict;
+            CalculateSchedules(users, StartDate, EndDate, out busyDaysDict, out scheduleJsonDict);
+
+            // LOGIC SẮP XẾP MỚI: Ai ít ngày bận nhất sẽ đưa lên đầu (Rảnh -> Bận)
             if (c.IsProject)
             {
                 users = users.OrderByDescending(u => pmId.HasValue && u.UserId == pmId.Value)
                              .ThenByDescending(u => picked.Contains(u.UserId))
+                             .ThenBy(u => busyDaysDict.ContainsKey(u.UserId) ? busyDaysDict[u.UserId] : 0) // Rảnh nhất lên đầu
                              .ThenBy(u => u.DisplayName)
                              .ToList();
             }
             else
             {
-                users = users.OrderBy(u => u.DisplayName).ToList();
+                users = users.OrderBy(u => busyDaysDict.ContainsKey(u.UserId) ? busyDaysDict[u.UserId] : 0) // Rảnh nhất lên đầu
+                             .ThenBy(u => u.DisplayName)
+                             .ToList();
             }
 
-            c.Rpt.DataSource = BuildDisplayList(users, StartDate, EndDate, pmId, employeeRows, activeIds, originalAssignedIds);
+            c.Rpt.DataSource = BuildDisplayList(users, pmId, employeeRows, activeIds, originalAssignedIds, busyDaysDict, scheduleJsonDict);
             c.Rpt.DataBind();
             c.LtrCount.Text = users.Count.ToString();
             c.LtrNoData.Text = GetResourceText(BackEndResourceKeys.NO_DATA);
             c.PnlNoData.Visible = users.Count == 0;
             c.UpList.Update();
             c.UpCount.Update();
-        }
-
-        private List<object> BuildDisplayList(List<AspnetUser> users, DateTime start, DateTime end, Guid? pmId, Dictionary<Guid, DataRow> employeeRows, HashSet<Guid> activeIds, HashSet<Guid> originalAssignedIds)
-        {
-            var list = new List<object>();
-            for (int i = 0; i < users.Count; i++)
-            {
-                var user = users[i];
-                string avatarPath = user.Avatar;
-                DataRow info;
-                employeeRows.TryGetValue(user.UserId, out info);
-                list.Add(new
-                {
-                    UserId = user.UserId,
-                    DisplayName = user.DisplayName,
-                    Email = GetRowString(info, "Email"),
-                    IsPM = pmId.HasValue && user.UserId == pmId.Value,
-                    IsInactive = !activeIds.Contains(user.UserId),
-                    AvatarHtml = GetSingleAvatarHtml(user.DisplayName, avatarPath, i),
-                    ScheduleJson = GenerateScheduleJson(user.UserId, start, end),
-                    IsOriginal = originalAssignedIds.Contains(user.UserId)
-                });
-            }
-            return list;
         }
         protected void ddlChucDanhProj_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -452,6 +719,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 SyncPickedFromRepeaters();
                 UpdateSearchTags(c);
                 BindList(c);
+                TryBuildTimelineSnapshot();
+                SyncTimelineNativeSearch();
+                // Cập nhật cả JSON, hai danh sách và toolbar khi tìm kiếm trong bất kỳ tab nào.
+                upnlMemberPicker.Update();
+                UpdateAssignmentSummary();
+                if (upnlTaskMemberFooter != null)
+                    upnlTaskMemberFooter.Update();
             }
             catch (Exception exc)
             {
@@ -505,10 +779,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
             return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
         }
-        private string GetSingleAvatarHtml(string name, string avatar, int index)
+        private string GetSingleAvatarHtml(string name, string avatar, Guid userId)
         {
             string[] colors = { "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899" };
-            string color = colors[index % colors.Length];
+            // Stable across both views and sorting/filtering; never derive palette from row index.
+            byte[] bytes = userId.ToByteArray();
+            int colorSeed = 0;
+            foreach (byte part in bytes) colorSeed = (colorSeed + part) % colors.Length;
+            string color = colors[colorSeed];
             bool isDefaultAvatar = string.IsNullOrEmpty(avatar) || avatar.EndsWith("/Styles/images/user-icon.png", StringComparison.OrdinalIgnoreCase);
             string safeName = HttpUtility.HtmlEncode(GetInitials(name));
             string fallbackHtml = $"<div class=\\'single-avatar-circle\\' style=\\'background-color: {color};\\'>{safeName}</div>";
@@ -522,12 +800,25 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         protected void rptMembers_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            if (e.Item.ItemType != ListItemType.Item && e.Item.ItemType != ListItemType.AlternatingItem) return;
-            HiddenField hdfUserId = (HiddenField)e.Item.FindControl("hdfUserId");
-            CheckBox chkSelect = (CheckBox)e.Item.FindControl("chkSelect");
-            if (hdfUserId == null || chkSelect == null) return;
-            if (Guid.TryParse(hdfUserId.Value, out Guid currentUserId) && _pickedForBind.Contains(currentUserId))
-                chkSelect.Checked = true;
+            if (e.Item.ItemType != ListItemType.Item &&
+                e.Item.ItemType != ListItemType.AlternatingItem)
+                return;
+
+            HiddenField hdfUserId =
+                (HiddenField)e.Item.FindControl("hdfUserId");
+
+            CheckBox chkSelect =
+                (CheckBox)e.Item.FindControl("chkSelect");
+
+            if (hdfUserId == null || chkSelect == null)
+                return;
+
+            if (Guid.TryParse(hdfUserId.Value, out Guid currentUserId))
+            {
+                chkSelect.Checked =
+                    _pickedForBind.Contains(currentUserId);
+            }
+
             chkSelect.Enabled = !ViewOnly;
         }
         protected void btnConfirmTaskAssign_Click(object sender, EventArgs e)
@@ -547,13 +838,51 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     return;
                 }
                 IdCongViecCha = task.IdCongViecCha;
+                if (AssignmentChangedWhileOpen())
+                {
+                    ShowNotify("Danh sách phân công đã thay đổi từ nơi khác. Hãy đóng và mở lại cửa sổ để tránh ghi đè.", MSGType.Error);
+                    return;
+                }
                 SyncPickedFromRepeaters();
                 List<Guid> selectedIds = GetPickedIds().Distinct().ToList();
+
                 if (!IsValidSelectedUserIds(selectedIds, out List<Guid> invalidIds))
                 {
                     ShowInvalidDataError();
                     return;
                 }
+
+                // Phân biệt người có trong DB trước khi mở popup với người đang chọn.
+                // Một lần bấm Lưu chỉ mở tối đa MỘT MessageBox, dù vừa gỡ vừa thêm người bận.
+                var originalIds = new HashSet<Guid>(ParseGuidIds(ViewState["TaskMemberOriginalSnapshot"] as string));
+                var selectedSet = new HashSet<Guid>(selectedIds);
+                List<Guid> removedIds = originalIds.Except(selectedSet).OrderBy(x => x).ToList();
+                List<Guid> addedIds = selectedSet.Except(originalIds).OrderBy(x => x).ToList();
+                var busyAdded = new List<KeyValuePair<Guid, int>>();
+                foreach (Guid userId in addedIds)
+                {
+                    var schedule = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, StartDate, EndDate);
+                    int busyDays = schedule == null ? 0 : schedule.Count(day =>
+                        day.TrangThaiLich == "busy" &&
+                        day.DanhSachCongViec != null &&
+                        day.DanhSachCongViec.Any(job => job.IdCongViec != IdCongViec &&
+                            job.TrangThai != 2 && job.TrangThai != 3));
+                    if (busyDays > 0) busyAdded.Add(new KeyValuePair<Guid, int>(userId, busyDays));
+                }
+                if (removedIds.Count > 0 || busyAdded.Count > 0)
+                {
+                    string message = BuildAssignmentChangeMessage(removedIds, addedIds, busyAdded);
+                    var result = new ConfirmResult
+                    {
+                        CommandName = "CONFIRM_TASK_ASSIGNMENT_CHANGES",
+                        Value = selectedIds
+                    };
+                    CURRENT_PAGE.CurrentConfirmResult = result;
+                    OpenMessageBox(new MessageBox("Xác nhận thay đổi phân công", message,
+                        MSGButton.AcceptCancel, MSGIcon.Warning), result, false, false);
+                    return;
+                }
+                // Không có ai trùng lịch -> Lưu thẳng xuống Database
                 TaskManager.Instance.UpdateAssignments(IdDuAn, IdCongViec, selectedIds);
                 mdlTaskMemberPicker.CloseModal();
                 OnAssignConfirmed?.Invoke(this, EventArgs.Empty);
@@ -562,6 +891,382 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 ShowNotify(GetResourceText(BackEndResourceKeys.ERROR_OCCURED) ?? "Có lỗi xảy ra khi phân công nhân sự.", MSGType.Error);
                 try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Lỗi khi gán nhân sự Task"); } catch { }
+            }
+        }
+        // Dùng MessageBox của Master: tất cả thay đổi rủi ro được xác nhận trong một bước.
+        // Encode tên và tài khoản nhân viên vì MessageBox render nội dung HTML.
+        private string BuildAssignmentChangeMessage(List<Guid> removedIds, List<Guid> addedIds,
+            List<KeyValuePair<Guid, int>> busyAdded)
+        {
+            var html = new System.Text.StringBuilder();
+            html.Append("<div style='text-align:left;font-size:13px;line-height:1.55;max-height:52vh;overflow-y:auto;padding:1px 2px'>");
+            html.Append("<div style='margin-bottom:10px;color:#475569'>Công việc: <strong>")
+                .Append(HttpUtility.HtmlEncode(ViewState["TaskMemberTaskName"] as string ?? "Công việc hiện tại"))
+                .Append("</strong></div>");
+            if (removedIds.Count > 0)
+            {
+                html.Append("<section style='background:#fff5f5;border:1px solid #fecaca;border-radius:7px;padding:10px 12px;margin-bottom:10px'>")
+                    .Append("<div style='color:#b42318;font-weight:700;margin-bottom:6px'>Gỡ phân công · ")
+                    .Append(removedIds.Count).Append(" nhân viên</div>");
+                foreach (Guid id in removedIds)
+                {
+                    AppendAssignmentPerson(html, id, null);
+                }
+                html.Append("<div style='color:#7f1d1d;font-size:12px;margin-top:6px'>Những nhân viên này sẽ không còn được giao công việc trên; không bị gỡ khỏi dự án.</div></section>");
+            }
+            if (busyAdded.Count > 0)
+            {
+                html.Append("<section style='background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:10px 12px;margin-bottom:10px'>")
+                    .Append("<div style='color:#a16207;font-weight:700;margin-bottom:4px'>Thêm nhân viên có lịch bận · ")
+                    .Append(busyAdded.Count).Append(" người</div>")
+                    .Append("<div style='color:#92400e;font-size:12px;margin-bottom:6px'>Trong thời hạn ")
+                    .Append(StartDate.ToString("dd/MM/yyyy")).Append(" – ").Append(EndDate.ToString("dd/MM/yyyy"))
+                    .Append("</div>");
+                foreach (var item in busyAdded)
+                {
+                    AppendAssignmentPerson(html, item.Key, "Bận " + item.Value + " ngày");
+                }
+                html.Append("</section>");
+            }
+            int freeAddedCount = addedIds.Count - busyAdded.Count;
+            if (freeAddedCount > 0)
+            {
+                html.Append("<div style='margin:7px 0 10px;color:#475569'>Ngoài ra, có ")
+                    .Append(freeAddedCount).Append(" nhân viên mới không phát sinh cảnh báo trùng lịch.</div>");
+            }
+            html.Append("<div style='font-weight:600;color:#334155'>Bạn có chắc chắn muốn áp dụng những thay đổi phân công này không?</div></div>");
+            return html.ToString();
+        }
+        private static void AppendAssignmentPerson(System.Text.StringBuilder html, Guid userId, string note)
+        {
+            AspnetUser user = UserManager.Instance.GetUserById(userId);
+            string name = user == null || string.IsNullOrWhiteSpace(user.DisplayName)
+                ? "Nhân viên (" + userId.ToString("D") + ")" : user.DisplayName;
+            html.Append("<div style='padding:3px 0;border-bottom:1px solid rgba(100,116,139,.12)'>• <strong>")
+                .Append(HttpUtility.HtmlEncode(name)).Append("</strong>");
+            if (user != null && !string.IsNullOrWhiteSpace(user.UserName))
+            {
+                html.Append(" <span style='color:#64748b;font-size:11px'>(")
+                    .Append(HttpUtility.HtmlEncode(user.UserName)).Append(")</span>");
+            }
+            if (!string.IsNullOrEmpty(note))
+                html.Append(" <span style='float:right;font-weight:600;color:#a16207'>")
+                    .Append(HttpUtility.HtmlEncode(note)).Append("</span>");
+            html.Append("</div>");
+        }
+        private void GetMemberSchedule(Guid userId, DateTime start, DateTime end, out int busyDays, out string scheduleJson)
+        {
+            string cacheKey = userId.ToString("N") + ":" + start.ToString("yyyyMMdd") + ":" + end.ToString("yyyyMMdd");
+            if (_memberCalendarCache.TryGetValue(cacheKey, out scheduleJson))
+            {
+                busyDays = _memberBusyCache[cacheKey];
+                return;
+            }
+            var lich = LichTrinhManager.Instance.LayLichTrinhNhanVien(userId, start, end);
+            // Lịch trạng thái của Manager có thể bỏ qua công việc hiện tại trong một số truy vấn.
+            // Với nhân viên đã phân công, khoảng ngày làm việc trong task vẫn có lịch của task này.
+            bool alreadyAssigned = ParseGuidIds(ViewState["TaskMemberOriginalSnapshot"] as string).Contains(userId);
+            string taskName = ViewState["TaskMemberTaskName"] as string ?? "Công việc hiện tại";
+            var days = new Dictionary<string, object>();
+            busyDays = 0;
+            foreach (var ngay in lich)
+            {
+                string status = ngay.TrangThaiLich;
+                var activeTasks = ngay.DanhSachCongViec == null ? null
+                    : ngay.DanhSachCongViec.Where(t => t.TrangThai != 2 && t.TrangThai != 3).ToList();
+                var thisTask = activeTasks == null ? null : activeTasks.FirstOrDefault(t => t.IdCongViec == IdCongViec);
+                bool inTaskPeriod = ngay.Ngay.Date >= StartDate.Date && ngay.Ngay.Date <= EndDate.Date;
+                bool onWorkingDay = status != "holiday" && status != "weekend";
+                bool current = thisTask != null || (alreadyAssigned && inTaskPeriod && onWorkingDay);
+                var otherTasks = activeTasks == null ? null : activeTasks.Where(t => t.IdCongViec != IdCongViec).ToList();
+                int otherCount = otherTasks == null ? 0 : otherTasks.Count;
+                if (status == "busy")
+                {
+                    status = otherCount > 0 ? "busy" : "free";
+                    if (otherCount > 0 && ngay.Ngay.Date >= StartDate.Date && ngay.Ngay.Date <= EndDate.Date) busyDays++;
+                }
+                string text = status == "holiday" ? (GetResourceText(BackEndResourceKeys.HOLIDAY) ?? "Ngày nghỉ")
+                    : status == "weekend" ? (GetResourceText(BackEndResourceKeys.WEEKEND) ?? "Ngày nghỉ tuần")
+                    : status == "busy" ? otherCount + " công việc khác"
+                    : current ? "Đã phân công công việc hiện tại" : (GetResourceText(BackEndResourceKeys.FREE) ?? "Trống lịch");
+                days[ngay.Ngay.ToString("yyyy-MM-dd")] = new
+                {
+                    status = status,
+                    text = text,
+                    current = current,
+                    currentTask = thisTask != null
+                        ? new { code = thisTask.MaCongViec, name = thisTask.TenCongViec, projectName = thisTask.TenDuAn }
+                        : (current ? new { code = string.Empty, name = taskName, projectName = string.Empty } : null),
+                    tasks = otherTasks == null ? null : otherTasks.Select(t => new { code = t.MaCongViec, name = t.TenCongViec, projectName = t.TenDuAn }).ToList()
+                };
+            }
+            scheduleJson = Newtonsoft.Json.JsonConvert.SerializeObject(days);
+            _memberCalendarCache[cacheKey] = scheduleJson;
+            _memberBusyCache[cacheKey] = busyDays;
+        }
+
+        private void CalculateSchedules(List<AspnetUser> users, DateTime start, DateTime end, out Dictionary<Guid, int> busyDaysDict, out Dictionary<Guid, string> scheduleJsonDict)
+        {
+            busyDaysDict = new Dictionary<Guid, int>();
+            scheduleJsonDict = new Dictionary<Guid, string>();
+            foreach (var user in users)
+            {
+                int count;
+                string json;
+                GetMemberSchedule(user.UserId, start, end, out count, out json);
+                busyDaysDict[user.UserId] = count;
+                scheduleJsonDict[user.UserId] = json;
+            }
+        }
+
+        private Dictionary<Guid, DataRow> GetAllEmployeeRowsForTimeline()
+        {
+            // Lay metadata CHUA loc de Timeline khong mat chuc danh/email khi nguoi dung filter.
+            // Neu cau truy van danh muc nay loi, dung ket qua cua hai cot hien tai.
+            var result = new Dictionary<Guid, DataRow>();
+            try
+            {
+                int count;
+                var parameters = new Dictionary<string, object>();
+                parameters[KEY_LA_NHAN_VIEN] = true;
+                DataTable dt = UserManager.Instance.SearchUsers("", parameters, "DisplayName ASC", 0, MAX_ROWS, out count);
+                if (dt != null && dt.Columns.Contains("UserId"))
+                {
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        Guid id;
+                        if (Guid.TryParse(Convert.ToString(row["UserId"]), out id)) result[id] = row;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "Khong tai duoc metadata tat ca nhan vien timeline"); } catch { }
+            }
+            // Phan du lieu da tim thay tu control cung luon duoc uu tien neu cap nhat.
+            foreach (var pair in SearchEmployeeRows(GetCtx(true))) result[pair.Key] = pair.Value;
+            foreach (var pair in SearchEmployeeRows(GetCtx(false))) result[pair.Key] = pair.Value;
+            return result;
+        }
+
+        private void TryBuildTimelineSnapshot()
+        {
+            // Timeline la chuc nang bo sung. Loi o timeline khong duoc chan modal phan cong.
+            try
+            {
+                BuildTimelineSnapshot();
+            }
+            catch (Exception exc)
+            {
+                ViewState["TaskMemberTimelineJson"] = Newtonsoft.Json.JsonConvert.SerializeObject(new
+                {
+                    start = StartDate.ToString("yyyy-MM-dd"),
+                    end = EndDate.ToString("yyyy-MM-dd"),
+                    displayStart = StartDate.ToString("yyyy-MM-dd"),
+                    displayEnd = EndDate.ToString("yyyy-MM-dd"),
+                    workingDays = 0,
+                    readonlyMode = ViewOnly,
+                    timelineError = true,
+                    filters = new
+                    {
+                        project = new { keyword = "", role = "" },
+                        other = new { keyword = "", role = "" }
+                    },
+                    members = new object[0]
+                });
+                try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Loi tai timeline nhan su (khong chan popup phan cong)"); } catch { }
+            }
+        }
+
+        private void BuildTimelineSnapshot()
+        {
+            int taskCalendarDays = (EndDate.Date - StartDate.Date).Days + 1;
+            int buffer = taskCalendarDays <= 3 ? 6 : taskCalendarDays <= 10 ? 5 : taskCalendarDays <= 20 ? 3 : 2;
+            // Always supply real schedule data for at least 21 calendar days.
+            // The allocation period itself is unchanged; X/Y still counts only StartDate..EndDate.
+            int standardDays = taskCalendarDays + 2 * buffer;
+            int extraDays = Math.Max(0, 21 - standardDays);
+            int beforeExtra = extraDays / 2;
+            int afterExtra = extraDays - beforeExtra;
+            DateTime displayStart = StartDate.Date.AddDays(-buffer - beforeExtra);
+            DateTime displayEnd = EndDate.Date.AddDays(buffer + afterExtra);
+            var all = UserManager.Instance.GetAllActiveNhanVien();
+            var activeIds = new HashSet<Guid>(all.Select(u => u.UserId));
+            var assigned = TaskManager.Instance.GetAssignedNhanVienIds(IdCongViec);
+            var projectMembers = new HashSet<Guid>(ThanhVienDuAnManager.Instance.GetAllActiveMemberIds(IdDuAn));
+            var parentMembers = IdCongViecCha.HasValue
+                ? new HashSet<Guid>(TaskManager.Instance.GetAssignedNhanVienIds(IdCongViecCha.Value))
+                : new HashSet<Guid>();
+            var eligibleIds = new HashSet<Guid>();
+            if (!IsPmOrAdmin() && IdCongViecCha.HasValue)
+            {
+                foreach (Guid id in parentMembers) eligibleIds.Add(id);
+            }
+            else
+            {
+                foreach (var u in all) eligibleIds.Add(u.UserId);
+                foreach (Guid id in assigned) eligibleIds.Add(id);
+            }
+            foreach (Guid id in eligibleIds)
+            {
+                if (!all.Any(u => u.UserId == id))
+                {
+                    AspnetUser inactive = UserManager.Instance.GetUserById(id);
+                    if (inactive != null) all.Add(inactive);
+                }
+            }
+            Dictionary<Guid, DataRow> employeeRows = GetAllEmployeeRowsForTimeline();
+            // Dự phòng trường hợp SearchUsers trả về tên chức danh nhưng không có cột IdChucDanh.
+            var roleLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            // Truy van bo sung nhan chuc danh KHONG duoc phep ngan popup mo.
+            try
+            {
+                var roles = new Select().From(TblChucDanh.Schema).ExecuteTypedList<TblChucDanh>();
+                if (roles != null)
+                    foreach (TblChucDanh role in roles)
+                        if (role != null && !string.IsNullOrWhiteSpace(role.TenChucDanh))
+                            roleLookup[role.TenChucDanh.Trim()] = role.IdChucDanh.ToString("D");
+            }
+            catch (Exception exc)
+            {
+                try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Khong tai duoc danh muc chuc danh timeline Task"); } catch { }
+            }
+            var members = new List<object>();
+            foreach (AspnetUser u in all.Where(u => eligibleIds.Contains(u.UserId))
+                .OrderBy(u => u.DisplayName))
+            {
+                bool inactive = !activeIds.Contains(u.UserId);
+                bool inProject = projectMembers.Contains(u.UserId);
+                DataRow row;
+                employeeRows.TryGetValue(u.UserId, out row);
+                string roleName = GetChucDanh(row);
+                string roleId = GetRowString(row, "IdChucDanh");
+                Guid parsedRole;
+                if (!Guid.TryParse(roleId, out parsedRole))
+                    roleId = roleLookup.ContainsKey(roleName) ? roleLookup[roleName] : string.Empty;
+                int busy;
+                string scheduleJson;
+                GetMemberSchedule(u.UserId, displayStart, displayEnd, out busy, out scheduleJson);
+                members.Add(new
+                {
+                    id = u.UserId.ToString("D"),
+                    name = u.DisplayName ?? "Nhân viên",
+                    role = roleName,
+                    roleId = roleId,
+                    email = GetRowString(row, "Email"),
+                    avatarHtml = GetSingleAvatarHtml(u.DisplayName, u.Avatar, u.UserId),
+                    isPM = IdNhanVienQuanLy.HasValue && u.UserId == IdNhanVienQuanLy.Value,
+                    group = inProject ? "project" : "other",
+                    inactive = inactive,
+                    original = assigned.Contains(u.UserId),
+                    busy = busy,
+                    schedule = Newtonsoft.Json.Linq.JObject.Parse(scheduleJson)
+                });
+            }
+            ViewState["TaskMemberTimelineJson"] = Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                start = StartDate.ToString("yyyy-MM-dd"),
+                end = EndDate.ToString("yyyy-MM-dd"),
+                displayStart = displayStart.ToString("yyyy-MM-dd"),
+                displayEnd = displayEnd.ToString("yyyy-MM-dd"),
+                workingDays = LichBieuChungManager.Instance.CountWorkingDaysInRange(StartDate, EndDate),
+                readonlyMode = ViewOnly,
+                filters = new
+                {
+                    source = GetSourceFilter(),
+                    project = new { keyword = GetKeyword(GetCtx(true)), role = HasChucDanhFilter(GetCtx(true)) ? GetCtx(true).Ddl.SelectedValue : string.Empty },
+                    other = new { keyword = GetKeyword(GetCtx(false)), role = HasChucDanhFilter(GetCtx(false)) ? GetCtx(false).Ddl.SelectedValue : string.Empty }
+                },
+                members = members
+            });
+        }
+
+        private bool AssignmentChangedWhileOpen()
+        {
+            var originally = new HashSet<Guid>(ParseGuidIds(ViewState["TaskMemberOriginalSnapshot"] as string));
+            var current = new HashSet<Guid>(TaskManager.Instance.GetAssignedNhanVienIds(IdCongViec));
+            return !originally.SetEquals(current);
+        }
+
+        private List<object> BuildDisplayList(List<AspnetUser> users, Guid? pmId, Dictionary<Guid, DataRow> employeeRows, HashSet<Guid> activeIds, HashSet<Guid> originalAssignedIds, Dictionary<Guid, int> busyDaysDict, Dictionary<Guid, string> scheduleJsonDict)
+        {
+            var list = new List<object>();
+
+            // TÍNH TỔNG SỐ NGÀY (Y) CỦA TASK ĐANG XÉT
+            int totalTaskDays = 0;
+            if (StartDate != DateTime.MinValue && EndDate != DateTime.MinValue && EndDate >= StartDate)
+            {
+                totalTaskDays = LichBieuChungManager.Instance.CountWorkingDaysInRange(StartDate, EndDate);
+            }
+
+            for (int i = 0; i < users.Count; i++)
+            {
+                var user = users[i];
+                string avatarPath = user.Avatar;
+                DataRow info;
+                employeeRows.TryGetValue(user.UserId, out info);
+
+                int busyDays = busyDaysDict.ContainsKey(user.UserId) ? busyDaysDict[user.UserId] : 0;
+
+                // TẠO CHUỖI HIỂN THỊ "Bận X/Y ngày"
+                int freeDays = Math.Max(0, totalTaskDays - busyDays);
+                string busyDaysDisplay = totalTaskDays > 0 ? $"{freeDays}/{totalTaskDays}" : "0/0";
+
+                list.Add(new
+                {
+                    UserId = user.UserId,
+                    DisplayName = user.DisplayName,
+                    ChucDanh = GetChucDanh(info),
+                    Email = GetRowString(info, "Email"),
+                    IsPM = pmId.HasValue && user.UserId == pmId.Value,
+                    IsInactive = !activeIds.Contains(user.UserId),
+                    AvatarHtml = GetSingleAvatarHtml(user.DisplayName, avatarPath, user.UserId),
+                    ScheduleJson = scheduleJsonDict.ContainsKey(user.UserId)
+         ? scheduleJsonDict[user.UserId]
+         : "{}",
+                    IsOriginal = originalAssignedIds.Contains(user.UserId),
+                    BusyDays = busyDays,
+                    FreeDays = freeDays,
+                    BusyDaysDisplay = busyDaysDisplay
+                });
+            }
+            return list;
+        }
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e != null && e.Submit && e.CommandName == "CONFIRM_TASK_ASSIGNMENT_CHANGES")
+            {
+                List<Guid> finalIds = e.Value as List<Guid>;
+                if (finalIds == null || ViewOnly || CURRENT_PAGE == null ||
+                    !CURRENT_PAGE.IsUserRight(ActionKeys.Update, CURRENT_PAGE.PAGE_FUNCTION_CODE))
+                {
+                    ShowAccessDeniedNotify();
+                    return;
+                }
+                TblCongViec task = TaskManager.Instance.FetchById(IdCongViec);
+                if (task == null || task.IdDuAn != IdDuAn || AssignmentChangedWhileOpen())
+                {
+                    ShowNotify("Phân công hoặc công việc đã thay đổi. Vui lòng mở lại cửa sổ để kiểm tra.", MSGType.Error);
+                    return;
+                }
+                IdCongViecCha = task.IdCongViecCha;
+                List<Guid> invalidIds;
+                if (!IsValidSelectedUserIds(finalIds, out invalidIds))
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+                try
+                {
+                    TaskManager.Instance.UpdateAssignments(IdDuAn, IdCongViec, finalIds);
+                    mdlTaskMemberPicker.CloseModal();
+                    OnAssignConfirmed?.Invoke(this, EventArgs.Empty);
+                }
+                catch (Exception exc)
+                {
+                    ShowNotify(GetResourceText(BackEndResourceKeys.ERROR_OCCURED) ?? "Có lỗi xảy ra khi lưu phân công.", MSGType.Error);
+                    try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(exc, "Lỗi xác nhận thay đổi phân công Task"); } catch { }
+                }
             }
         }
     }

@@ -120,11 +120,9 @@
                             <%# Eval("RoleName") %>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Status" HeaderStyle-CssClass="text-center" SortExpression="IsActivated" ItemStyle-CssClass="text-center">
+                    <asp:TemplateField HeaderText="Trạng thái" HeaderStyle-CssClass="text-center" SortExpression="IsActivated" ItemStyle-CssClass="text-center">
                         <ItemTemplate>
-                            <span class='badge <%# Convert.ToBoolean(Eval("IsActivated")) ? "bg-success" : "bg-danger" %>'>
-                                <%# Convert.ToBoolean(Eval("IsActivated")) ? GetResourceText(BackEndResourceKeys.LOGIN_ALLOWED) : GetResourceText(BackEndResourceKeys.LOGIN_NOT_ALLOWED) %>
-                            </span>
+                            <%# RenderAccountStatus(Eval("IsActivated")) %>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="2FA" HeaderStyle-CssClass="text-center" SortExpression="AuthenticatorKey" ItemStyle-CssClass="text-center">
@@ -145,11 +143,11 @@
                                     ResourceKey='<%# BackEndResourceKeys.EDIT%>'
                                     ButtonIcon='<%#  "fas fa-pencil-alt" %>'>
                                 </SweetSoft:SmartLinkButton>
-
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsEdit  %>'
-                                    ID="lbtResetPassword" CommandName="RESET_PASSWORD" CssClass="btn-grid-action text-decoration-underline ms-2 me-2"
-                                    ResourceKey='<%# BackEndResourceKeys.RESET_PASSWORD %>'
-                                    ButtonIcon="fas fa-unlock-alt">
+                                    ID="lbtToggleLock" CommandName="TOGGLE_LOCK_ACCOUNT" 
+                                    CssClass="btn-grid-action text-decoration-underline ms-2 me-2 text-secondary"
+                                    ToolTip='<%# Convert.ToBoolean(Eval("IsActivated")) ? "Khóa tài khoản này" : "Mở khóa tài khoản này" %>'
+                                    ButtonIcon='<%# Convert.ToBoolean(Eval("IsActivated")) ? "fas fa-lock" : "fas fa-unlock" %>'>
                                 </SweetSoft:SmartLinkButton>
 
                                 <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsDelete %>'

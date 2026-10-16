@@ -63,6 +63,50 @@ namespace SweetSoft.QLDA.Core.Respositories
             dt.Load(iDataReader);
             return dt;
         }
+        // Đổi kiểu trả về thành Dictionary<Guid, List<string>> để lấy tên chi tiết
+        public Dictionary<Guid, List<string>> GetConflictTasks(DateTime start, DateTime end, Guid currentTaskId)
+        {
+            string sql = @"
+                SELECT cvnv.IdNhanVien, cv.MaCongViec, cv.TenCongViec
+                FROM TblCongViec_NhanVien cvnv
+                INNER JOIN TblCongViec cv ON cv.IdCongViec = cvnv.IdCongViec
+                INNER JOIN TblDuAn da ON da.IdDuAn = cv.IdDuAn
+                WHERE (cv.DaXoa = 0 OR cv.DaXoa IS NULL)
+                  AND (da.DaXoa = 0 OR da.DaXoa IS NULL)
+                  AND cv.IdCongViec != @TaskId 
+                  AND cv.TrangThai IN (0, 1, 3) 
+                  AND cv.NgayBatDau <= @EndDate 
+                  AND cv.NgayKetThuc >= @StartDate";
+
+            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
+            cmd.AddParameter("@StartDate", start.Date, DbType.DateTime);
+            cmd.AddParameter("@EndDate", end.Date, DbType.DateTime);
+            cmd.AddParameter("@TaskId", currentTaskId, DbType.Guid);
+
+            Dictionary<Guid, List<string>> dict = new Dictionary<Guid, List<string>>();
+            try
+            {
+                using (IDataReader reader = DataService.GetReader(cmd))
+                {
+                    while (reader.Read())
+                    {
+                        Guid userId = reader.GetGuid(0);
+                        string maCV = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                        string tenCV = reader.IsDBNull(2) ? "" : reader.GetString(2);
+
+                        if (!dict.ContainsKey(userId)) dict[userId] = new List<string>();
+
+                        // Ghép mã và tên task thành 1 dòng
+                        dict[userId].Add($"- [{maCV}] {tenCV}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "Lỗi GetConflictTasks");
+            }
+            return dict;
+        }
         public DataTable FetchByEmployeeIdAndOrderASCMaCV(Guid projectId, Guid idNhanVien, string searchValue = null)
         {
             string searchCondition = "";

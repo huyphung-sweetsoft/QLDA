@@ -37,24 +37,11 @@ namespace SweetSoft.QLDA.BackOffice
         {
             if (!IsPostBack)
             {
-
+                // KIỂM TRA ĐÃ LOGIN HAY CHƯA
                 if (SweetContext.Current.User != null)
                 {
-                    // [SỬA Ở ĐÂY]: Kiểm tra quyền trước khi redirect
-                    bool isAdmin = UserManager.Instance.IsAdministrator(SweetContext.Current.UserId);
-
-                    // Lưu ý: Đổi "ModuleKeys.Overview" thành Enum đúng của trang Overview bên ông
-                    bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.EmployeeDashboard);
-
-                    if (canViewOverview)
-                    {
-                        Response.Redirect(GetRelativeClientPath("/EmployeeDashboard"));
-                    }
-                    else
-                    {
-                        // Lưu ý: Đổi "RewriteURLHelper.Project" thành thuộc tính trỏ tới Danh sách dự án của ông
-                        Response.Redirect(RewriteURLHelper.Projects);
-                    }
+                    // Giao toàn quyền bẻ lái cho ResolveHomeUrl
+                    Response.Redirect(GetRelativeClientPath(ResolveHomeUrl(SweetContext.Current.UserId)));
                     return;
                 }
 
@@ -66,6 +53,14 @@ namespace SweetSoft.QLDA.BackOffice
             }
         }
 
+        /// <summary>Trang đích sau đăng nhập: tài khoản nhân viên vào trang khai báo giờ, tài khoản khác vào dashboard.</summary>
+        private string ResolveHomeUrl(Guid userId)
+        {
+            AspnetUser user = UserManager.Instance.GetUserById(userId);
+            return (user != null && user.LaNhanVien)
+                ? RewriteURLHelper.KhaiBaoGio
+                : RewriteURLHelper.EmployeeDashboard;
+        }
 
         private void ApplyControlText()
         {
@@ -73,6 +68,7 @@ namespace SweetSoft.QLDA.BackOffice
             lbtLogin.ToolTip = lbtLogin.Text = GetResourceText(BackEndResourceKeys.LOGIN);
             hTitle.InnerText = GetResourceText(BackEndResourceKeys.LOGIN_TO_THE_SYSTEM);
         }
+
         protected void lbtLogin_Click(object sender, EventArgs e)
         {
             try
@@ -95,11 +91,6 @@ namespace SweetSoft.QLDA.BackOffice
 
                 if (!Membership.ValidateUser(txtUserName.Text, txtPassword.Text))
                 {
-                    //var membershipUser = Membership.GetUser(txtUserName.Text);
-                    //membershipUser.UnlockUser();
-                    //string oldPwd = membershipUser.GetPassword();
-                    //membershipUser.ChangePassword(oldPwd, txtPassword.Text);
-                    //Membership.UpdateUser(membershipUser);
                     validationEngine.AddErrorPrompt(txtUserName.ClientID, GetResourceText(BackEndResourceKeys.INCORRECT_USERNAME_OR_PASSWORD));
                     txtUserName.Focus();
                     validationEngine.ShowErrorPrompt();
@@ -164,6 +155,7 @@ namespace SweetSoft.QLDA.BackOffice
                 throw new Exception("Login", exc);
             }
         }
+
         protected void lbtVerify_Click(object sender, EventArgs e)
         {
             try
@@ -202,7 +194,9 @@ namespace SweetSoft.QLDA.BackOffice
         outer:
             InitOTP();
         }
+
         private void InitOTP() => ScriptManager.RegisterClientScriptBlock(this.Page, GetType(), "LoginJs.init", "LoginJs.init();", true);
+
         private void AllowLogin(AspnetUser aspnetUser)
         {
             SweetContext.ClearAdminData();
@@ -242,6 +236,7 @@ namespace SweetSoft.QLDA.BackOffice
             });
 
             //------------------------------------------------
+            // LOGIC ĐIỀU HƯỚNG MỚI ĐÃ ĐƯỢC DỌN RÁC
             if (!string.IsNullOrEmpty(ReturnTo) && ReturnTo.Count() > 1)
             {
                 Response.Redirect(GetRelativeClientPath(ReturnTo), false);
@@ -249,23 +244,7 @@ namespace SweetSoft.QLDA.BackOffice
             }
             else
             {
-                // [SỬA Ở ĐÂY]: Bẻ lái dựa trên quyền của user
-                bool isAdmin = UserManager.Instance.IsAdministrator(aspnetUser.UserId);
-
-                // Vì SweetContext đã được set ở đầu hàm AllowLogin nên this.IsUserRight sẽ hoạt động chính xác
-                // Lưu ý: Đổi "ModuleKeys.Overview" cho chuẩn
-                bool canViewOverview = isAdmin || this.IsUserRight(ActionKeys.View, ModuleKeys.EmployeeDashboard);
-
-                if (canViewOverview)
-                {
-                    Response.Redirect(RewriteURLHelper.EmployeeDashboard, false);
-                }
-                else
-                {
-                    // Nhảy thẳng vào trang danh sách dự án nếu bị cấm xem Overview
-                    // Lưu ý: Đổi "RewriteURLHelper.Project" cho chuẩn
-                    Response.Redirect(RewriteURLHelper.Projects, false);
-                }
+                Response.Redirect(ResolveHomeUrl(aspnetUser.UserId), false);
             }
         }
 
