@@ -117,31 +117,17 @@
     .st-tooltip.phase-tooltip:hover::before, .st-tooltip.parent-tooltip:hover::before { opacity: 1; visibility: visible; transform: translateY(-2px); }
     .st-tooltip.parent-tooltip:hover { background: #f5f3ff !important; border-color: #d8b4fe !important; }
 
-    /* ===================================================================
-       SLIDER CSS (HIỆU ỨNG TRƯỢT MƯỢT MÀ, KHÔNG GIẬT)
-       =================================================================== */
-    .task-edit-wrapper { display: flex; width: 100%; overflow: hidden; position: relative; box-sizing: border-box; }
-    .task-form-panel { width: 100%; flex: 0 0 100%; transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .3s ease; }
-    .task-schedule-panel { width: 0; flex: 0 0 0; opacity: 0; transform: translateX(30px); transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .3s ease, width .35s ease; overflow: hidden; background: #f8fafc; border-left: 1px solid #e2e8f0; border-radius: 0 8px 8px 0; }
-    
-    .task-edit-wrapper.is-split .task-schedule-panel { width: 520px; flex: 0 0 520px; opacity: 1; transform: translateX(0); padding-left: 16px; }
-    
-    @media (min-width: 768px) { 
-        #<%= mdlEditTask.ClientID %> .modal-dialog { width: 750px !important; max-width: 750px !important; transition: width .35s cubic-bezier(0.4, 0, 0.2, 1), max-width .35s cubic-bezier(0.4, 0, 0.2, 1); } 
-        #<%= mdlEditTask.ClientID %> .modal-dialog:has(.task-edit-wrapper.is-split) { width: 1280px !important; max-width: 1280px !important; }
-    }
-    @media (max-width: 1300px) {
-        #<%= mdlEditTask.ClientID %> .modal-dialog:has(.task-edit-wrapper.is-split) { width: 96vw !important; max-width: 96vw !important; }
-        .task-form-panel { width: 52vw; flex: 0 0 52vw; }
-        .task-edit-wrapper.is-split .task-schedule-panel { width: 44vw; flex: 0 0 44vw; }
-    }
-    @media (max-width: 767.98px) {
-        .task-edit-wrapper.is-split { flex-direction: column; }
-        .task-form-panel { width: 100% !important; flex: 0 0 auto !important; }
-        .task-edit-wrapper.is-split .task-schedule-panel { width: 100% !important; flex: 0 0 auto !important; border-left: none; border-top: 1px solid #e2e8f0; padding-left: 0; padding-top: 14px; transform: translateY(0); }
-        #<%= mdlEditTask.ClientID %> .modal-dialog:has(.task-edit-wrapper.is-split) { width: 95vw !important; max-width: 95vw !important; }
-        .task-context-top { flex-direction: column; align-items: flex-start; gap: 12px;}
-    }
+    /* Hiệu ứng chỉ mở rộng ngang: form cố định chiều rộng, lịch được lộ dần theo popup. */
+    .task-edit-wrapper { --ql-task-cal-width:clamp(418px,calc(100vw - 782px),530px);display:flex;align-items:stretch;width:100%;min-width:0;position:relative;overflow:hidden;box-sizing:border-box; }
+    .task-form-panel { flex:0 0 750px;width:750px;min-width:0;max-width:100%;transition:none; }
+    .task-schedule-panel { box-sizing:border-box;flex:0 0 0;width:0;min-width:0;height:0;max-height:0;align-self:flex-start;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(18px);background:#f8fafc;border-left:0 solid #e2e8f0;transition:flex-basis .46s cubic-bezier(.22,1,.36,1),width .46s cubic-bezier(.22,1,.36,1),opacity .24s ease,transform .46s cubic-bezier(.22,1,.36,1),visibility 0s linear .46s,border-width .46s ease; }
+    .task-schedule-panel > .p-3 { box-sizing:border-box;width:var(--ql-task-cal-width);min-width:var(--ql-task-cal-width); }
+    .task-edit-wrapper.is-split .task-form-panel { flex:0 0 750px;width:750px;min-width:0;max-width:none; }
+    .task-edit-wrapper.is-split .task-schedule-panel { flex:0 0 var(--ql-task-cal-width);width:var(--ql-task-cal-width);height:var(--ql-task-form-height,auto);max-height:var(--ql-task-form-height,none);align-self:flex-start;overflow-x:hidden;overflow-y:auto;opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0);border-left-width:1px;transition: flex-basis .46s cubic-bezier(.22,1,.36,1),width .46s cubic-bezier(.22,1,.36,1),opacity .3s ease .1s,transform .46s cubic-bezier(.22,1,.36,1),visibility 0s,border-width .46s ease; }
+    #<%= mdlEditTask.ClientID %> .modal-dialog { width:750px!important;max-width:calc(100vw - 32px)!important;transition:width .46s cubic-bezier(.22,1,.36,1),max-width .46s cubic-bezier(.22,1,.36,1),transform .3s ease!important; }
+    #<%= mdlEditTask.ClientID %> .modal-dialog.ql-task-schedule-expanded { width:min(1280px,calc(100vw - 32px))!important;max-width:calc(100vw - 32px)!important; }
+    @media(max-width:1199.98px) { .task-edit-wrapper { --ql-task-cal-width:100%; } .task-form-panel,.task-edit-wrapper.is-split .task-form-panel { flex:0 0 100%;width:100%;max-width:100%; } .task-edit-wrapper.is-split { flex-direction:column; } .task-schedule-panel { flex:0 0 0;width:100%;max-height:0;transform:translateY(12px);border-left:0;border-top:0 solid #e2e8f0; } .task-schedule-panel > .p-3 { width:100%;min-width:0; } .task-edit-wrapper.is-split .task-schedule-panel { flex:0 0 auto;width:100%;height:auto;max-height:500px;align-self:stretch;border-left:0;border-top-width:1px;transform:translateY(0); } #<%= mdlEditTask.ClientID %> .modal-dialog.ql-task-schedule-expanded { width:calc(100vw - 32px)!important; } }
+    @media(prefers-reduced-motion:reduce) { #<%= mdlEditTask.ClientID %> .modal-dialog,.task-schedule-panel,.task-edit-wrapper.is-split .task-schedule-panel { transition:none!important; } }
 
     /* ===================================================================
        GLOBAL LOADING OVERLAY (MỜ ẢO ĐỈNH CAO)
@@ -152,6 +138,27 @@
     .st-loading-text { color: #5b21b6; font-weight: 800; font-size: 15px; letter-spacing: 0.5px; animation: stPulseText 1.5s ease-in-out infinite; text-transform: uppercase; }
     @keyframes stSpinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes stPulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* Lịch dự kiến độc lập: không phụ thuộc CMSMasterJs.DrawTaskCalendarGrid. */
+    #local-task-timeline-container .ql-local-cal-toolbar { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px; }
+    #local-task-timeline-container .ql-local-cal-title { color:#4b1e82;font-size:14px;font-weight:800;text-align:center; }
+    #local-task-timeline-container .ql-local-cal-nav { display:inline-grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border:1px solid #ddd2ec;border-radius:7px;background:#fff;color:#54218d;cursor:pointer; }
+    #local-task-timeline-container .ql-local-cal-nav:hover { background:#efe6fc;border-color:#bd9be2; }
+    #local-task-timeline-container .ql-local-cal-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px; }
+    #local-task-timeline-container .ql-local-cal-dow { padding:5px 0;text-align:center;color:#725586;font-size:10.5px;font-weight:750; }
+    #local-task-timeline-container .ql-local-cal-day { display:flex;flex-direction:column;justify-content:space-between;gap:4px;min-height:47px;min-width:0;padding:5px 3px;border:1px solid #eeeaf4;border-radius:7px;background:#fff;color:#4d4661;text-align:left; }
+    #local-task-timeline-container .ql-local-cal-day.is-outside { background:#faf9fc;color:#a5a0ae; }
+    #local-task-timeline-container .ql-local-cal-day.is-free { background:#f1fbf5;border-color:#ccedda;color:#176a45; }
+    #local-task-timeline-container .ql-local-cal-day.is-busy { background:#eee7fa;border-color:#ceb5e9;color:#54218d; }
+    #local-task-timeline-container .ql-local-cal-day.is-holiday { background:#fff4e7;border-color:#f2d4aa;color:#956014; }
+    #local-task-timeline-container .ql-local-cal-day.is-weekend { background:#f6f2f9;border-color:#e2d8e9;color:#82658d; }
+    #local-task-timeline-container .ql-local-cal-day.is-in-range { cursor:help; }
+    #local-task-timeline-container .ql-local-cal-day.is-in-range:hover { outline:2px solid #ad82d7;outline-offset:0; }
+    #local-task-timeline-container .ql-local-cal-number { font-size:11px;font-weight:800; }
+    #local-task-timeline-container .ql-local-cal-caption { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px;font-weight:650; }
+    #local-task-timeline-container .ql-local-cal-legend { display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;color:#6f6480;font-size:11px; }
+    #local-task-timeline-container .ql-local-cal-legend b { display:inline-block;width:9px;height:9px;margin-right:4px;border-radius:3px;vertical-align:baseline; }
+    #local-task-timeline-container .ql-local-cal-empty { padding:18px 9px;text-align:center;color:#857c91;font-size:12px; }
 </style>
 </asp:Content>
 
@@ -427,116 +434,120 @@
 <script type="text/javascript">
 
     // =========================================================
-    // JAVASCRIPT: LOGIC TOGGLE MỞ / ĐÓNG LỊCH TRÊN CLIENT
+    // LỊCH DỰ KIẾN: CHỈ CHUYỂN ĐỘNG THEO CHIỀU NGANG
     // =========================================================
-    function toggleLocalTaskSchedule() {
-        var $wrapper = $('#taskEditWrapper');
-        var isOpen = $wrapper.hasClass('is-split');
-
-        if (isOpen) {
-            // Đang mở -> Đóng lại ngay lập tức hoàn toàn trên client
-            $wrapper.removeClass('is-split');
-            return false; // Chặn đứng postback xuống server
-        } else {
-            // Đang đóng -> Kiểm tra xem đã có dữ liệu JSON chưa
-            var jsonVal = $('#<%= hdfLocalScheduleJson.ClientID %>').val();
-            if (jsonVal && jsonVal.trim() !== '') {
-                // Đã có dữ liệu từ trước -> Chỉ việc trượt mở ra trên client (Không postback)
-                $wrapper.addClass('is-split');
-                renderLocalSchedule();
-                return false; // Chặn đứng postback
-            } else {
-                // Chưa có dữ liệu -> Cho phép postback lần đầu để server nạp JSON
-                return true; 
-            }
-        }
-    }
-
-    function openLocalTaskSchedule() {
-        $('#taskEditWrapper').addClass('is-split');
-    }
-
-    function closeLocalTaskSchedule() {
-        $('#taskEditWrapper').removeClass('is-split');
-    }
-
-    // Xóa hoàn toàn trạng thái lịch phía client khi popup đóng hoặc đổi công việc.
-    // Không xóa JSON khi chỉ đóng panel lịch, để có thể mở lại nhanh cho cùng công việc.
-    function resetLocalTaskScheduleState(clearJson) {
+    function getLocalTaskScheduleElements() {
         var wrapper = document.getElementById('taskEditWrapper');
-        if (wrapper) wrapper.classList.remove('is-split');
-
-        var cal = $('#local-task-timeline-container');
-        if (cal.length) cal.empty().removeData('mc');
-
-        if (clearJson) {
-            var hiddenField = document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');
-            if (hiddenField) hiddenField.value = '';
-        }
+        var modal = document.getElementById('<%= mdlEditTask.ClientID %>');
+        var dialog = modal ? modal.querySelector('.modal-dialog') : null;
+        var form = document.getElementById('pnlTaskForm');
+        return { wrapper: wrapper, modal: modal, dialog: dialog, form: form };
     }
 
-    // Giữ nguyên chiều rộng đang hiển thị trong lúc popup đóng.
-    // Tránh hiện tượng modal co từ bản rộng về bản thường rồi mới biến mất.
+    function setLocalTaskScheduleVisible(visible) {
+        var el = getLocalTaskScheduleElements();
+        if (!el.wrapper || !el.dialog || !el.form) return false;
+        if (el.wrapper.classList.contains('is-split') === visible) return true;
+        if (visible) {
+            // Vẽ trước khi animation bắt đầu; panel đang ẩn hoàn toàn nên không làm popup dài xuống.
+            renderLocalSchedule();
+            var formHeight = Math.ceil(el.form.getBoundingClientRect().height);
+            if (formHeight > 0) el.wrapper.style.setProperty('--ql-task-form-height', formHeight + 'px');
+        }
+        // Modal và panel bắt đầu/hoàn tất cùng một nhịp. Không để browser tái căn giữa theo chiều cao.
+        el.wrapper.classList.toggle('is-split', visible);
+        el.dialog.classList.toggle('ql-task-schedule-expanded', visible);
+        return true;
+    }
+
+    function toggleLocalTaskSchedule() {
+        var el = getLocalTaskScheduleElements();
+        if (!el.wrapper) return false;
+        if (el.wrapper.classList.contains('is-split')) { setLocalTaskScheduleVisible(false); return false; }
+        var hiddenField = document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');
+        if(hiddenField && hiddenField.value && hiddenField.value.trim()) { setLocalTaskScheduleVisible(true);return false; }
+        // Trường hợp dữ liệu chưa được nạp (ngày không hợp lệ/lỗi truy vấn): dùng fallback server cũ.
+        return true;
+    }
+
+    function openLocalTaskSchedule() { setLocalTaskScheduleVisible(true); }
+    function closeLocalTaskSchedule() { setLocalTaskScheduleVisible(false); }
+
+    function resetLocalTaskScheduleState(clearJson) {
+        var el=getLocalTaskScheduleElements();
+        if(el.wrapper) {el.wrapper.classList.remove('is-split');el.wrapper.style.removeProperty('--ql-task-form-height');}
+        if(el.dialog) el.dialog.classList.remove('ql-task-schedule-expanded');
+        var cal=$('#local-task-timeline-container');
+        if(cal.length) cal.empty().removeData('mc');
+        if(clearJson) { var hiddenField=document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');if(hiddenField) hiddenField.value=''; }
+    }
+
     (function bindTaskEditModalCloseBehavior() {
-        var modalSelector = '#<%= mdlEditTask.ClientID %>';
-
-        $(document)
-            .off('hide.bs.modal.taskEditScheduleClose', modalSelector)
-            .on('hide.bs.modal.taskEditScheduleClose', modalSelector, function () {
-                var dialog = this.querySelector('.modal-dialog');
-                if (!dialog) return;
-
-                var currentWidth = dialog.getBoundingClientRect().width;
-                if (currentWidth > 0) {
-                    dialog.style.setProperty('width', currentWidth + 'px', 'important');
-                    dialog.style.setProperty('max-width', currentWidth + 'px', 'important');
-                }
-
-                // Chỉ giữ chuyển động đóng của Bootstrap, bỏ transition co chiều rộng.
-                dialog.style.setProperty('transition', 'transform .3s ease-out', 'important');
-            })
-            .off('hidden.bs.modal.taskEditScheduleClose', modalSelector)
-            .on('hidden.bs.modal.taskEditScheduleClose', modalSelector, function () {
-                var dialog = this.querySelector('.modal-dialog');
-                if (dialog) {
-                    dialog.style.removeProperty('width');
-                    dialog.style.removeProperty('max-width');
-                    dialog.style.removeProperty('transition');
-                }
-
-                resetLocalTaskScheduleState(true);
-            });
+        var modalSelector='#<%= mdlEditTask.ClientID %>';
+        $(document).off('hide.bs.modal.taskEditScheduleClose',modalSelector).on('hide.bs.modal.taskEditScheduleClose',modalSelector,function () {
+            var dialog=this.querySelector('.modal-dialog');
+            if(!dialog)return;
+            var currentWidth=dialog.getBoundingClientRect().width;
+            if(currentWidth>0) {dialog.style.setProperty('width',currentWidth+'px','important');dialog.style.setProperty('max-width',currentWidth+'px','important');}
+            dialog.style.setProperty('transition','transform .3s ease-out','important');
+        }).off('hidden.bs.modal.taskEditScheduleClose',modalSelector).on('hidden.bs.modal.taskEditScheduleClose',modalSelector,function () {
+            var dialog=this.querySelector('.modal-dialog');
+            resetLocalTaskScheduleState(true);
+            if(dialog){dialog.style.removeProperty('width');dialog.style.removeProperty('max-width');dialog.style.removeProperty('transition');}
+        });
     })();
 
+    // Renderer nội bộ: nếu Master không có DrawTaskCalendarGrid vẫn vẽ lịch được.
     function renderLocalSchedule() {
-        var cal = $('#local-task-timeline-container'); 
-        cal.empty(); 
-        var hiddenField = $('#<%= hdfLocalScheduleJson.ClientID %>'); 
-        if (hiddenField.length === 0) return; 
-        
-        var jsonString = hiddenField.val(); 
-        if (!jsonString) return; 
-        
-        var data = {}; 
-        try { 
-            var decodedJson = $('<textarea/>').html(jsonString).text(); 
-            data = JSON.parse(decodedJson) || {}; 
-        } catch (e) { return; } 
-        
-        var keys = Object.keys(data).sort(); 
-        if (keys.length === 0) return; 
-        
-        var minKey = keys[0]; 
-        var maxKey = keys[keys.length - 1]; 
-        var baseDate = new Date(parseInt(minKey.split('-')[0]), parseInt(minKey.split('-')[1]) - 1, parseInt(minKey.split('-')[2])); 
-        
-        cal.data('mc', { data: data, minKey: minKey, maxKey: maxKey, year: baseDate.getFullYear(), month: baseDate.getMonth() }); 
-        
-        if (typeof CMSMasterJs !== 'undefined' && CMSMasterJs.DrawTaskCalendarGrid) {
-            CMSMasterJs.DrawTaskCalendarGrid(cal);
-        }
+        var cal = $('#local-task-timeline-container');
+        if (!cal.length) return;
+        var hiddenField = document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');
+        if (!hiddenField || !hiddenField.value) { cal.html('<div class="ql-local-cal-empty">Chưa có dữ liệu lịch dự kiến.</div>'); return; }
+        var data;
+        try { data = JSON.parse(hiddenField.value); } catch (e) { cal.html('<div class="ql-local-cal-empty">Dữ liệu lịch không hợp lệ.</div>'); return; }
+        var keys = Object.keys(data || {}).sort();
+        if (!keys.length) { cal.html('<div class="ql-local-cal-empty">Không có ngày trong lịch.</div>'); return; }
+        var parts = keys[0].split('-');
+        var baseDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+        var oldState = cal.data('mc');
+        // Sau UpdatePanel, task mới sẽ trở về tháng bắt đầu; task cũ giữ tháng đang xem.
+        var cacheId = keys[0] + '|' + keys[keys.length - 1];
+        var current = oldState && oldState.cacheId === cacheId ? oldState : {year:baseDate.getFullYear(),month:baseDate.getMonth()};
+        current.data = data;current.cacheId = cacheId;current.minKey = keys[0];current.maxKey = keys[keys.length-1];
+        cal.data('mc', current);
+        drawLocalScheduleMonth();
     }
 
+    function drawLocalScheduleMonth() {
+        var cal = $('#local-task-timeline-container'), mc = cal.data('mc');
+        if (!mc || !mc.data) return;
+        var year = mc.year, month = mc.month;
+        var first = new Date(year, month, 1);
+        var offset = (first.getDay() + 6) % 7;
+        var days = new Date(year, month + 1, 0).getDate();
+        var totalCells = Math.ceil((offset + days) / 7) * 7;
+        var weekdayNames = ['T2','T3','T4','T5','T6','T7','CN'];
+        var html = '<div class="ql-local-cal-toolbar"><button type="button" class="ql-local-cal-nav" data-cal-step="-1" aria-label="Tháng trước"><i class="fas fa-chevron-left"></i></button><span class="ql-local-cal-title">Tháng '+(month+1)+'/'+year+'</span><button type="button" class="ql-local-cal-nav" data-cal-step="1" aria-label="Tháng sau"><i class="fas fa-chevron-right"></i></button></div><div class="ql-local-cal-grid">';
+        weekdayNames.forEach(function (n) { html += '<div class="ql-local-cal-dow">'+n+'</div>'; });
+        function escapeHtml(v) { return $('<div/>').text(v == null ? '' : String(v)).html(); }
+        function dateKey(d) { return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
+        for (var n = 0; n < totalCells; n++) {
+            var date = new Date(year, month, n-offset+1), key=dateKey(date), row=mc.data[key];
+            var status = row && /^(busy|free|holiday|weekend)$/.test(row.status) ? row.status : '';
+            var caption = row && row.text ? String(row.text) : '';
+            var summary = row && Array.isArray(row.tasks) ? row.tasks.map(function(t){return '[' + (t.code||'') + '] ' + (t.name||'');}).join('\n') : '';
+            var tip = escapeHtml((caption ? caption : 'Không có lịch') + (summary ? '\n' + summary : ''));
+            html += '<div class="ql-local-cal-day '+(row?'is-in-range is-'+status:'is-outside')+'" title="'+tip+'"><span class="ql-local-cal-number">'+date.getDate()+'</span>'+(row ? '<span class="ql-local-cal-caption">'+escapeHtml(caption || (status==='free'?'Trống':''))+'</span>' : '')+'</div>';
+        }
+        html += '</div><div class="ql-local-cal-legend"><span><b style="background:#a17bd2"></b>Có công việc</span><span><b style="background:#66b38a"></b>Trống</span><span><b style="background:#e6b476"></b>Nghỉ lễ</span><span><b style="background:#b3a4c2"></b>Cuối tuần</span></div>';
+        cal.html(html);
+    }
+    $(document).off('click.qlLocalCalendar').on('click.qlLocalCalendar', '#local-task-timeline-container [data-cal-step]', function () {
+        var cal=$('#local-task-timeline-container'), mc=cal.data('mc');
+        if (!mc) return;
+        var date=new Date(mc.year,mc.month+parseInt(this.getAttribute('data-cal-step'),10),1);
+        mc.year=date.getFullYear();mc.month=date.getMonth();drawLocalScheduleMonth();
+    });
 
     // =========================================================
     // TỰ ĐỘNG ĐÓNG NGOẶC VUÔNG CHO MÃ CÔNG VIỆC

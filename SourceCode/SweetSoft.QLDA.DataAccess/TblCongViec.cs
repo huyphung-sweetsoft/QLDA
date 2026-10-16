@@ -663,82 +663,16 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		private SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection colTblCongViecNhanVienRecords;
-		public SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection TblCongViecNhanVienRecords()
-		{
-			if(colTblCongViecNhanVienRecords == null)
-			{
-				colTblCongViecNhanVienRecords = new SweetSoft.QLDA.DataAccess.TblCongViecNhanVienCollection().Where(TblCongViecNhanVien.Columns.IdCongViec, IdCongViec).Load();
-				colTblCongViecNhanVienRecords.ListChanged += new ListChangedEventHandler(colTblCongViecNhanVienRecords_ListChanged);
-			}
-			return colTblCongViecNhanVienRecords;
-		}
-				
-		void colTblCongViecNhanVienRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblCongViecNhanVienRecords[e.NewIndex].IdCongViec = IdCongViec;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection colTblNhacViecLichCongViecRecords;
-		public SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection TblNhacViecLichCongViecRecords()
-		{
-			if(colTblNhacViecLichCongViecRecords == null)
-			{
-				colTblNhacViecLichCongViecRecords = new SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViecCollection().Where(TblNhacViecLichCongViec.Columns.IdCongViec, IdCongViec).Load();
-				colTblNhacViecLichCongViecRecords.ListChanged += new ListChangedEventHandler(colTblNhacViecLichCongViecRecords_ListChanged);
-			}
-			return colTblNhacViecLichCongViecRecords;
-		}
-				
-		void colTblNhacViecLichCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblNhacViecLichCongViecRecords[e.NewIndex].IdCongViec = IdCongViec;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colChildTblCongViecRecords;
-		public SweetSoft.QLDA.DataAccess.TblCongViecCollection ChildTblCongViecRecords()
-		{
-			if(colChildTblCongViecRecords == null)
-			{
-				colChildTblCongViecRecords = new SweetSoft.QLDA.DataAccess.TblCongViecCollection().Where(TblCongViec.Columns.IdCongViecCha, IdCongViec).Load();
-				colChildTblCongViecRecords.ListChanged += new ListChangedEventHandler(colChildTblCongViecRecords_ListChanged);
-			}
-			return colChildTblCongViecRecords;
-		}
-				
-		void colChildTblCongViecRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colChildTblCongViecRecords[e.NewIndex].IdCongViecCha = IdCongViec;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblCongViecCollection colChildTblCongViecRecordsFromTblCongViec;
-		public SweetSoft.QLDA.DataAccess.TblCongViecCollection ChildTblCongViecRecordsFromTblCongViec()
-		{
-			if(colChildTblCongViecRecordsFromTblCongViec == null)
-			{
-				colChildTblCongViecRecordsFromTblCongViec = new SweetSoft.QLDA.DataAccess.TblCongViecCollection().Where(TblCongViec.Columns.IdCongViecPhuThuoc, IdCongViec).Load();
-				colChildTblCongViecRecordsFromTblCongViec.ListChanged += new ListChangedEventHandler(colChildTblCongViecRecordsFromTblCongViec_ListChanged);
-			}
-			return colChildTblCongViecRecordsFromTblCongViec;
-		}
-				
-		void colChildTblCongViecRecordsFromTblCongViec_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colChildTblCongViecRecordsFromTblCongViec[e.NewIndex].IdCongViecPhuThuoc = IdCongViec;
-            }
-		}
+		#region PrimaryKey Methods		
+		
+        protected override void SetPrimaryKey(object oValue)
+        {
+            base.SetPrimaryKey(oValue);
+            
+            SetPKValues();
+        }
+        
+		
 		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection colTblKhaiBaoGioChiTietRecords;
 		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection TblKhaiBaoGioChiTietRecords()
 		{
@@ -756,63 +690,6 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblKhaiBaoGioChiTietRecords[e.NewIndex].IdCongViec = IdCongViec;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblThongBaoCollection colTblThongBaoRecords;
-		public SweetSoft.QLDA.DataAccess.TblThongBaoCollection TblThongBaoRecords()
-		{
-			if(colTblThongBaoRecords == null)
-			{
-				colTblThongBaoRecords = new SweetSoft.QLDA.DataAccess.TblThongBaoCollection().Where(TblThongBao.Columns.IdCongViec, IdCongViec).Load();
-				colTblThongBaoRecords.ListChanged += new ListChangedEventHandler(colTblThongBaoRecords_ListChanged);
-			}
-			return colTblThongBaoRecords;
-		}
-				
-		void colTblThongBaoRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblThongBaoRecords[e.NewIndex].IdCongViec = IdCongViec;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblVanDeCollection colTblVanDeRecords;
-		public SweetSoft.QLDA.DataAccess.TblVanDeCollection TblVanDeRecords()
-		{
-			if(colTblVanDeRecords == null)
-			{
-				colTblVanDeRecords = new SweetSoft.QLDA.DataAccess.TblVanDeCollection().Where(TblVanDe.Columns.IdCongViecPhatSinh, IdCongViec).Load();
-				colTblVanDeRecords.ListChanged += new ListChangedEventHandler(colTblVanDeRecords_ListChanged);
-			}
-			return colTblVanDeRecords;
-		}
-				
-		void colTblVanDeRecords_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblVanDeRecords[e.NewIndex].IdCongViecPhatSinh = IdCongViec;
-            }
-		}
-		private SweetSoft.QLDA.DataAccess.TblVanDeCollection colTblVanDeRecordsFromTblCongViec;
-		public SweetSoft.QLDA.DataAccess.TblVanDeCollection TblVanDeRecordsFromTblCongViec()
-		{
-			if(colTblVanDeRecordsFromTblCongViec == null)
-			{
-				colTblVanDeRecordsFromTblCongViec = new SweetSoft.QLDA.DataAccess.TblVanDeCollection().Where(TblVanDe.Columns.IdCongViecBiAnhHuong, IdCongViec).Load();
-				colTblVanDeRecordsFromTblCongViec.ListChanged += new ListChangedEventHandler(colTblVanDeRecordsFromTblCongViec_ListChanged);
-			}
-			return colTblVanDeRecordsFromTblCongViec;
-		}
-				
-		void colTblVanDeRecordsFromTblCongViec_ListChanged(object sender, ListChangedEventArgs e)
-		{
-            if (e.ListChangedType == ListChangedType.ItemAdded)
-            {
-		        // Set foreign key value
-		        colTblVanDeRecordsFromTblCongViec[e.NewIndex].IdCongViecBiAnhHuong = IdCongViec;
             }
 		}
 		#endregion
@@ -1294,50 +1171,6 @@ namespace SweetSoft.QLDA.DataAccess
 		
         public void SetPKValues()
         {
-                if (colTblCongViecNhanVienRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblCongViecNhanVien item in colTblCongViecNhanVienRecords)
-                    {
-                        if (item.IdCongViec != IdCongViec)
-                        {
-                            item.IdCongViec = IdCongViec;
-                        }
-                    }
-               }
-		
-                if (colTblNhacViecLichCongViecRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblNhacViecLichCongViec item in colTblNhacViecLichCongViecRecords)
-                    {
-                        if (item.IdCongViec != IdCongViec)
-                        {
-                            item.IdCongViec = IdCongViec;
-                        }
-                    }
-               }
-		
-                if (colChildTblCongViecRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colChildTblCongViecRecords)
-                    {
-                        if (item.IdCongViecCha == null ||item.IdCongViecCha != IdCongViec)
-                        {
-                            item.IdCongViecCha = IdCongViec;
-                        }
-                    }
-               }
-		
-                if (colChildTblCongViecRecordsFromTblCongViec != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblCongViec item in colChildTblCongViecRecordsFromTblCongViec)
-                    {
-                        if (item.IdCongViecPhuThuoc == null ||item.IdCongViecPhuThuoc != IdCongViec)
-                        {
-                            item.IdCongViecPhuThuoc = IdCongViec;
-                        }
-                    }
-               }
-		
                 if (colTblKhaiBaoGioChiTietRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTiet item in colTblKhaiBaoGioChiTietRecords)
@@ -1345,39 +1178,6 @@ namespace SweetSoft.QLDA.DataAccess
                         if (item.IdCongViec != IdCongViec)
                         {
                             item.IdCongViec = IdCongViec;
-                        }
-                    }
-               }
-		
-                if (colTblThongBaoRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblThongBao item in colTblThongBaoRecords)
-                    {
-                        if (item.IdCongViec == null ||item.IdCongViec != IdCongViec)
-                        {
-                            item.IdCongViec = IdCongViec;
-                        }
-                    }
-               }
-		
-                if (colTblVanDeRecords != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblVanDe item in colTblVanDeRecords)
-                    {
-                        if (item.IdCongViecPhatSinh == null ||item.IdCongViecPhatSinh != IdCongViec)
-                        {
-                            item.IdCongViecPhatSinh = IdCongViec;
-                        }
-                    }
-               }
-		
-                if (colTblVanDeRecordsFromTblCongViec != null)
-                {
-                    foreach (SweetSoft.QLDA.DataAccess.TblVanDe item in colTblVanDeRecordsFromTblCongViec)
-                    {
-                        if (item.IdCongViecBiAnhHuong == null ||item.IdCongViecBiAnhHuong != IdCongViec)
-                        {
-                            item.IdCongViecBiAnhHuong = IdCongViec;
                         }
                     }
                }
@@ -1390,44 +1190,9 @@ namespace SweetSoft.QLDA.DataAccess
         {
             Save();
             
-                if (colTblCongViecNhanVienRecords != null)
-                {
-                    colTblCongViecNhanVienRecords.SaveAll();
-               }
-		
-                if (colTblNhacViecLichCongViecRecords != null)
-                {
-                    colTblNhacViecLichCongViecRecords.SaveAll();
-               }
-		
-                if (colChildTblCongViecRecords != null)
-                {
-                    colChildTblCongViecRecords.SaveAll();
-               }
-		
-                if (colChildTblCongViecRecordsFromTblCongViec != null)
-                {
-                    colChildTblCongViecRecordsFromTblCongViec.SaveAll();
-               }
-		
                 if (colTblKhaiBaoGioChiTietRecords != null)
                 {
                     colTblKhaiBaoGioChiTietRecords.SaveAll();
-               }
-		
-                if (colTblThongBaoRecords != null)
-                {
-                    colTblThongBaoRecords.SaveAll();
-               }
-		
-                if (colTblVanDeRecords != null)
-                {
-                    colTblVanDeRecords.SaveAll();
-               }
-		
-                if (colTblVanDeRecordsFromTblCongViec != null)
-                {
-                    colTblVanDeRecordsFromTblCongViec.SaveAll();
                }
 		}
         #endregion
