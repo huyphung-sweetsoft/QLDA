@@ -15,6 +15,24 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
     {
 
         /// <summary>
+        /// meetViewShell control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl meetViewShell;
+
+        /// <summary>
+        /// upMain control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upMain;
+
+        /// <summary>
         /// pnlSearchDropdowns control.
         /// </summary>
         /// <remarks>
@@ -60,6 +78,60 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraButton lbtSearchSingle;
 
         /// <summary>
+        /// btnCalendarPrev control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCalendarPrev;
+
+        /// <summary>
+        /// btnCalendarToday control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCalendarToday;
+
+        /// <summary>
+        /// btnCalendarNext control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCalendarNext;
+
+        /// <summary>
+        /// btnCalendarMonth control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCalendarMonth;
+
+        /// <summary>
+        /// btnCalendarWeek control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCalendarWeek;
+
+        /// <summary>
+        /// btnCalendarMine control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCalendarMine;
+
+        /// <summary>
         /// tagOther control.
         /// </summary>
         /// <remarks>
@@ -67,6 +139,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl tagOther;
+
+        /// <summary>
+        /// meetViewSwitcher control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl meetViewSwitcher;
 
         /// <summary>
         /// pnlButtons control.
@@ -105,15 +186,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::SweetSoft.QLDA.Controls.ExtraSearchBox searchTagBox;
 
         /// <summary>
-        /// upMain control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upMain;
-
-        /// <summary>
         /// grvData control.
         /// </summary>
         /// <remarks>
@@ -130,6 +202,33 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.Controls.GridviewPaging ctrlGridviewPaging;
+
+        /// <summary>
+        /// phMeetingCalendar control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phMeetingCalendar;
+
+        /// <summary>
+        /// hdfCalendarCreateDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfCalendarCreateDate;
+
+        /// <summary>
+        /// btnCreateCalendarMeeting control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnCreateCalendarMeeting;
 
         /// <summary>
         /// btnRefreshMeetingStatuses control.
@@ -157,6 +256,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlXemNhanVienMeet CtrlXemNhanVienMeet1;
+
+        /// <summary>
+        /// mdlCalendarDayMeetings control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlCalendarDayMeetings;
 
         /// <summary>
         /// pnlSearch control.

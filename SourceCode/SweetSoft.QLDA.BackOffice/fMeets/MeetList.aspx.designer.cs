@@ -105,6 +105,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtThoiGianKetThuc;
 
         /// <summary>
+        /// ddlHinhThucHop control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlHinhThucHop;
+
+        /// <summary>
         /// txtDiaDiemHop control.
         /// </summary>
         /// <remarks>
@@ -220,5 +229,77 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraButton btnXacNhanNhanVien;
+
+        /// <summary>
+        /// mdlMeetJoinReminder control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlMeetJoinReminder;
+
+        /// <summary>
+        /// hfMeetJoinId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMeetJoinId;
+
+        /// <summary>
+        /// hfMeetJoinPending control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfMeetJoinPending;
+
+        /// <summary>
+        /// litMeetJoinTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetJoinTitle;
+
+        /// <summary>
+        /// litMeetJoinType control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetJoinType;
+
+        /// <summary>
+        /// litMeetJoinLocation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetJoinLocation;
+
+        /// <summary>
+        /// litMeetJoinWarning control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litMeetJoinWarning;
+
+        /// <summary>
+        /// btnConfirmMeetJoin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnConfirmMeetJoin;
     }
 }

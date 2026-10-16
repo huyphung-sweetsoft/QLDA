@@ -51,6 +51,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         protected global::System.Web.UI.WebControls.Literal ltrTaskName;
 
         /// <summary>
+        /// pnlDependencyWarning control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDependencyWarning;
+
+        /// <summary>
+        /// ltrDependencyWarning control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDependencyWarning;
+
+        /// <summary>
         /// upnlFooterStartTask control.
         /// </summary>
         /// <remarks>

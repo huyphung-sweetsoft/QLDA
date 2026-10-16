@@ -51,6 +51,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         protected global::System.Web.UI.WebControls.HiddenField hdfExpectedEndDate;
 
         /// <summary>
+        /// ltrActionHeading control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrActionHeading;
+
+        /// <summary>
         /// ltrTaskName control.
         /// </summary>
         /// <remarks>
@@ -103,5 +112,14 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnConfirmComplete;
+
+        /// <summary>
+        /// ltrConfirmButtonText control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrConfirmButtonText;
     }
 }

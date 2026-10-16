@@ -63,17 +63,16 @@ namespace SweetSoft.QLDA.BackOffice.fProjectReports
             try
             {
                 string htmlBody = RenderControlToHtml(phReportContent);
-                int countCompleted = GetReportCount("ReportCountCompleted");
                 int countDoingTotal = GetReportCount("ReportCountDoing");
                 int countTodo = GetReportCount("ReportCountTodo");
-                int countDoingNormal = GetReportCount("ReportCountDoingNormal");
-                int countDoingWarning = GetReportCount("ReportCountDoingWarning");
-                int countDoingOverdue = GetReportCount("ReportCountDoingOverdue");
-                htmlBody = htmlBody.Replace("<canvas id=\"taskStatusChart\"></canvas>", BuildDoughnutChartSvg(new[] { countCompleted, countDoingTotal, countTodo }, new[] { "Hoàn thành", "Đang làm", "Chưa bắt đầu" }, new[] { "#10b981", "#0ea5e9", "#cbd5e1" }));
-                htmlBody = htmlBody.Replace("<canvas id=\"doingStatusChart\"></canvas>", BuildDoughnutChartSvg(new[] { countDoingNormal, countDoingWarning, countDoingOverdue }, new[] { "Bình thường", "Sắp hạn", "Trễ hạn" }, new[] { "#3b82f6", "#f59e0b", "#ef4444" }));
+                int countDeadlineNormal = GetReportCount("ReportCountDeadlineNormal");
+                int countDeadlineWarning = GetReportCount("ReportCountDeadlineWarning");
+                int countDeadlineOverdue = GetReportCount("ReportCountDeadlineOverdue");
+                htmlBody = htmlBody.Replace("<canvas id=\"taskStatusChart\"></canvas>", BuildDoughnutChartSvg(new[] { countDoingTotal, countTodo }, new[] { "Đang làm", "Chưa bắt đầu" }, new[] { "#0ea5e9", "#cbd5e1" }));
+                htmlBody = htmlBody.Replace("<canvas id=\"doingStatusChart\"></canvas>", BuildDoughnutChartSvg(new[] { countDeadlineNormal, countDeadlineWarning, countDeadlineOverdue }, new[] { "Bình thường", "Sắp hạn", "Trễ hạn" }, new[] { "#3b82f6", "#f59e0b", "#ef4444" }));
                 string cssStyles = @"
 <style>
-html, body { margin: 0; padding: 0; background: #ffffff; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.45; color: #334155; }
+html, body { margin: 0; padding: 0; background: #ffffff; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.45; color: #111827; }
 body { word-wrap: break-word; }
 .report-paper { width: 100%; box-sizing: border-box; background: #ffffff; border: 1px solid #f1f5f9; padding: 28px 24px; position: relative; }
 .report-paper:before { content: ''; display: block; height: 5px; margin: -28px -24px 22px -24px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
@@ -81,7 +80,7 @@ body { word-wrap: break-word; }
 .report-header h1 { font-size: 24px; color: #0f172a; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; }
 .sub-date { font-size: 14px; color: #64748b; font-weight: 500; font-style: italic; }
 .kpi-summary-bar { display: table; table-layout: fixed; width: 100%; border-collapse: collapse; margin-bottom: 26px; border: 1px solid #cbd5e1; }
-.kpi-item { display: table-cell; width: 25%; text-align: center; border-right: 1px solid #cbd5e1; padding: 14px 8px; vertical-align: middle; }
+.kpi-item { display: table-cell; width: 33.333333%; text-align: center; border-right: 1px solid #cbd5e1; padding: 14px 8px; vertical-align: middle; }
 .kpi-item:last-child { border-right: 0; }
 .kpi-title { font-size: 12px; color: #64748b; display: block; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
 .kpi-number { font-size: 24px; font-weight: 800; display: block; line-height: 1.1; }
@@ -103,6 +102,9 @@ body { word-wrap: break-word; }
 .pdf-chart-svg { width: 100%; height: 225px; display: block; }
 .table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; page-break-inside: auto; word-wrap: break-word; }
 .table th, .table td { border: 1px solid #cbd5e1; padding: 8px 7px; vertical-align: middle; white-space: normal; word-break: break-word; line-height: 1.35; }
+.task-code-name { line-height: 1.45; }
+.task-code-chip { display: inline-block; vertical-align: middle; min-width: 30px; margin-right: 6px; padding: 2px 5px; border-radius: 4px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px; font-weight: 700; text-align: center; line-height: 1.3; }
+.task-name-text { display: inline; vertical-align: middle; color: #334155; font-weight: 500; }
 .table th { background-color: #f8fafc; font-weight: 700; text-align: center; }
 .table tbody tr { page-break-inside: avoid; }
 .text-center { text-align: center; }
@@ -299,64 +301,57 @@ body { word-wrap: break-word; }
             }
             ltrReportPeriod.Text = periodName.ToString();
             DataTable dtAllTasks = GanttChartManager.Instance.GetGanttTasks(projectId);
-            DataTable dtCompleted = dtAllTasks.Clone();
+            if (dtAllTasks == null)
+                dtAllTasks = new DataTable();
+
             DataTable dtDoing = dtAllTasks.Clone();
             DataTable dtTodo = dtAllTasks.Clone();
-            if (dtAllTasks != null && dtAllTasks.Rows.Count > 0)
+            if (dtAllTasks.Rows.Count > 0)
             {
                 foreach (DataRow row in dtAllTasks.Rows)
                 {
-                    int status = row["TrangThai"] != DBNull.Value ? Convert.ToInt32(row["TrangThai"]) : 0;
+                    int status = row["TrangThai"] != DBNull.Value ? Convert.ToInt32(row["TrangThai"]) : -1;
                     DateTime? taskStart = row["NgayBatDau"] != DBNull.Value ? Convert.ToDateTime(row["NgayBatDau"]) : (DateTime?)null;
                     DateTime? taskEnd = row["NgayKetThuc"] != DBNull.Value ? Convert.ToDateTime(row["NgayKetThuc"]) : (DateTime?)null;
-                    bool isInPeriod = false;
+                    bool isInPeriod;
+
                     if (taskStart.HasValue && taskEnd.HasValue)
-                    {
-                        isInPeriod = (taskStart.Value <= toDate && taskEnd.Value >= fromDate);
-                    }
+                        isInPeriod = taskStart.Value <= toDate && taskEnd.Value >= fromDate;
                     else if (taskStart.HasValue)
-                    {
-                        isInPeriod = (taskStart.Value <= toDate);
-                    }
+                        isInPeriod = taskStart.Value <= toDate;
                     else if (taskEnd.HasValue)
-                    {
-                        isInPeriod = (taskEnd.Value >= fromDate);
-                    }
+                        isInPeriod = taskEnd.Value >= fromDate;
                     else
-                    {
                         isInPeriod = true;
-                    }
+
+                    // Only active tasks are included: 1 = doing, 0 = not started.
+                    // Completed tasks (2) and unknown statuses are intentionally excluded.
                     if (isInPeriod)
                     {
-                        if (status == 2) dtCompleted.ImportRow(row);
-                        else if (status == 1) dtDoing.ImportRow(row);
-                        else dtTodo.ImportRow(row);
+                        if (status == 1)
+                            dtDoing.ImportRow(row);
+                        else if (status == 0)
+                            dtTodo.ImportRow(row);
                     }
                 }
             }
-            DataTable dtIssues = ProjectReportManager.Instance.GetIssues(projectId, fromDate, toDate);
-            int totalTasks = dtCompleted.Rows.Count + dtDoing.Rows.Count + dtTodo.Rows.Count;
-            int countCompleted = dtCompleted.Rows.Count;
+
+            // Both active-task tables use expected end date, earliest first; rows without a date go last.
+            dtDoing = SortTasksByExpectedEndDate(dtDoing);
+            dtTodo = SortTasksByExpectedEndDate(dtTodo);
+
+            // The report only includes issues which are currently being processed.
+            DataTable dtIssues = FilterProcessingIssues(ProjectReportManager.Instance.GetIssues(projectId, fromDate, toDate));
+            int totalTasks = dtDoing.Rows.Count + dtTodo.Rows.Count;
             int countTodo = dtTodo.Rows.Count;
-            int countDoingNormal = 0;
-            int countDoingWarning = 0;
-            int countDoingOverdue = 0;
-            foreach (DataRow row in dtDoing.Rows)
-            {
-                if (row["NgayKetThuc"] != DBNull.Value)
-                {
-                    DateTime endDate = Convert.ToDateTime(row["NgayKetThuc"]).Date;
-                    int remainingDays = (int)(endDate - DateTime.Now.Date).TotalDays;
-                    if (remainingDays < 0) countDoingOverdue++;
-                    else if (remainingDays <= 2) countDoingWarning++;
-                    else countDoingNormal++;
-                }
-                else
-                {
-                    countDoingNormal++;
-                }
-            }
             int countDoingTotal = dtDoing.Rows.Count;
+            int countDeadlineNormal = 0;
+            int countDeadlineWarning = 0;
+            int countDeadlineOverdue = 0;
+
+            // Deadline chart and overdue KPI include both in-progress and not-started tasks.
+            CountDeadlineStatuses(dtDoing, ref countDeadlineNormal, ref countDeadlineWarning, ref countDeadlineOverdue);
+            CountDeadlineStatuses(dtTodo, ref countDeadlineNormal, ref countDeadlineWarning, ref countDeadlineOverdue);
             if (ddlPeriod.SelectedValue == "ALL")
             {
                 phDashboard.Visible = true;
@@ -368,10 +363,10 @@ body { word-wrap: break-word; }
                             window.taskChartInstance = new Chart(ctx1, {{
                                 type: 'doughnut',
                                 data: {{
-                                    labels: ['Hoàn thành ({countCompleted})', 'Đang làm ({countDoingTotal})', 'Chưa bắt đầu ({countTodo})'],
+                                    labels: ['Đang làm ({countDoingTotal})', 'Chưa bắt đầu ({countTodo})'],
                                     datasets: [{{
-                                        data: [{countCompleted}, {countDoingTotal}, {countTodo}],
-                                        backgroundColor: ['#10b981', '#0ea5e9', '#cbd5e1'],
+                                        data: [{countDoingTotal}, {countTodo}],
+                                        backgroundColor: ['#0ea5e9', '#cbd5e1'],
                                         borderWidth: 2,
                                         borderColor: '#ffffff'
                                     }}]
@@ -386,10 +381,27 @@ body { word-wrap: break-word; }
                                     plugins: {{
                                         legend: {{
                                             position: 'right',
-                                            labels: {{ boxWidth: 15, font: {{ size: 11, weight: 'bold' }}, color: '#334155' }}
+                                            labels: {{ boxWidth: 15, font: {{ size: 11, weight: 'bold' }}, color: '#111827' }},
+                                            onClick: function (event, legendItem, legend) {{
+                                                var chart = legend.chart;
+                                                var dataset = chart.data.datasets[legendItem.datasetIndex || 0];
+                                                // Không điều hướng khi số lượng của mục chú thích bằng 0.
+                                                if (!dataset || Number(dataset.data[legendItem.index]) <= 0) return;
+                                                var targetId = legendItem.index === 0 ? 'doingTasksSection' : 'todoTasksSection';
+                                                if (window.scrollToReportSection) window.scrollToReportSection(targetId);
+                                            }},
+                                            onHover: function (event, legendItem, legend) {{
+                                                var dataset = legend.chart.data.datasets[legendItem.datasetIndex || 0];
+                                                var target = event.native && event.native.target;
+                                                if (target) target.style.cursor = dataset && Number(dataset.data[legendItem.index]) > 0 ? 'pointer' : 'not-allowed';
+                                            }},
+                                            onLeave: function (event) {{
+                                                var target = event.native && event.native.target;
+                                                if (target) target.style.cursor = 'default';
+                                            }}
                                         }},
                                         datalabels: {{
-                                            color: '#1e293b',
+                                            color: '#000000',
                                             font: {{ weight: 'bold', size: 11 }},
                                             formatter: function(value, context) {{
                                                 if (!value || value === 0) return ''; // Ẩn nhãn nếu giá trị bằng 0
@@ -403,7 +415,21 @@ body { word-wrap: break-word; }
                                         }},
                                         tooltip: {{ enabled: false }}
                                     }},
-                                    cutout: '55%'
+                                    cutout: '55%',
+                                    onClick: function (event, activeElements, chart) {{
+                                    if (!activeElements || !activeElements.length) return;
+                                    var point = activeElements[0];
+                                    var dataset = chart.data.datasets[point.datasetIndex];
+                                    if (!dataset || Number(dataset.data[point.index]) <= 0) return;
+                                    var targetId = point.index === 0 ? 'doingTasksSection' : 'todoTasksSection';
+                                    if (window.scrollToReportSection) window.scrollToReportSection(targetId);
+                                    }},
+                                    onHover: function (event, activeElements, chart) {{
+                                        var point = activeElements && activeElements.length ? activeElements[0] : null;
+                                        var dataset = point && chart.data.datasets[point.datasetIndex];
+                                        var target = event.native && event.native.target;
+                                        if (target) target.style.cursor = dataset && Number(dataset.data[point.index]) > 0 ? 'pointer' : 'default';
+                                    }}
                                 }}
                             }});
                         }}
@@ -413,9 +439,9 @@ body { word-wrap: break-word; }
                             window.doingChartInstance = new Chart(ctx2, {{
                                 type: 'doughnut',
                                 data: {{
-                                    labels: ['Bình thường ({countDoingNormal})', 'Sắp hạn ({countDoingWarning})', 'Trễ hạn ({countDoingOverdue})'],
+                                    labels: ['Bình thường ({countDeadlineNormal})', 'Sắp hạn ({countDeadlineWarning})', 'Trễ hạn ({countDeadlineOverdue})'],
                                     datasets: [{{
-                                        data: [{countDoingNormal}, {countDoingWarning}, {countDoingOverdue}],
+                                        data: [{countDeadlineNormal}, {countDeadlineWarning}, {countDeadlineOverdue}],
                                         backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
                                         borderWidth: 2,
                                         borderColor: '#ffffff'
@@ -431,10 +457,26 @@ body { word-wrap: break-word; }
                                     plugins: {{
                                         legend: {{
                                             position: 'right',
-                                            labels: {{ boxWidth: 15, font: {{ size: 11, weight: 'bold' }}, color: '#334155' }}
+                                            labels: {{ boxWidth: 15, font: {{ size: 11, weight: 'bold' }}, color: '#111827' }},
+                                            onClick: function (event, legendItem, legend) {{
+                                                var dataset = legend.chart.data.datasets[legendItem.datasetIndex || 0];
+                                                // Mục có giá trị 0 không thể bấm để cuộn báo cáo.
+                                                if (!dataset || Number(dataset.data[legendItem.index]) <= 0) return;
+                                                var states = ['normal', 'soon', 'overdue'];
+                                                if (window.scrollToTaskDeadline) window.scrollToTaskDeadline(states[legendItem.index]);
+                                            }},
+                                            onHover: function (event, legendItem, legend) {{
+                                                var dataset = legend.chart.data.datasets[legendItem.datasetIndex || 0];
+                                                var target = event.native && event.native.target;
+                                                if (target) target.style.cursor = dataset && Number(dataset.data[legendItem.index]) > 0 ? 'pointer' : 'not-allowed';
+                                            }},
+                                            onLeave: function (event) {{
+                                                var target = event.native && event.native.target;
+                                                if (target) target.style.cursor = 'default';
+                                            }}
                                         }},
                                         datalabels: {{
-                                            color: '#1e293b',
+                                            color: '#000000',
                                             font: {{ weight: 'bold', size: 11 }},
                                             formatter: function(value, context) {{
                                                 if (!value || value === 0) return ''; // Ẩn nhãn và không hiển thị chữ thừa khi giá trị bằng 0
@@ -448,7 +490,21 @@ body { word-wrap: break-word; }
                                         }},
                                         tooltip: {{ enabled: false }}
                                     }},
-                                    cutout: '55%'
+                                    cutout: '55%',
+                                    onClick: function (event, activeElements, chart) {{
+                                    if (!activeElements || !activeElements.length) return;
+                                    var point = activeElements[0];
+                                    var dataset = chart.data.datasets[point.datasetIndex];
+                                    if (!dataset || Number(dataset.data[point.index]) <= 0) return;
+                                    var states = ['normal', 'soon', 'overdue'];
+                                    if (window.scrollToTaskDeadline) window.scrollToTaskDeadline(states[point.index]);
+                                    }},
+                                    onHover: function (event, activeElements, chart) {{
+                                        var point = activeElements && activeElements.length ? activeElements[0] : null;
+                                        var dataset = point && chart.data.datasets[point.datasetIndex];
+                                        var target = event.native && event.native.target;
+                                        if (target) target.style.cursor = dataset && Number(dataset.data[point.index]) > 0 ? 'pointer' : 'default';
+                                    }}
                                 }}
                             }});
                         }}
@@ -461,17 +517,13 @@ body { word-wrap: break-word; }
                 phDashboard.Visible = false;
             }
             ltrTotalTasks.Text = totalTasks.ToString();
-            ltrCompletedTasks.Text = countCompleted.ToString();
-            ltrOverdueTasks.Text = countDoingOverdue.ToString();
+            ltrOverdueTasks.Text = countDeadlineOverdue.ToString();
             ltrTotalIssues.Text = dtIssues.Rows.Count.ToString();
-            ViewState["ReportCountCompleted"] = countCompleted;
             ViewState["ReportCountDoing"] = countDoingTotal;
             ViewState["ReportCountTodo"] = countTodo;
-            ViewState["ReportCountDoingNormal"] = countDoingNormal;
-            ViewState["ReportCountDoingWarning"] = countDoingWarning;
-            ViewState["ReportCountDoingOverdue"] = countDoingOverdue;
-            rptCompletedTasks.DataSource = dtCompleted;
-            rptCompletedTasks.DataBind();
+            ViewState["ReportCountDeadlineNormal"] = countDeadlineNormal;
+            ViewState["ReportCountDeadlineWarning"] = countDeadlineWarning;
+            ViewState["ReportCountDeadlineOverdue"] = countDeadlineOverdue;
             rptDoingTasks.DataSource = dtDoing;
             rptDoingTasks.DataBind();
             rptTodoTasks.DataSource = dtTodo;
@@ -489,39 +541,129 @@ body { word-wrap: break-word; }
         }
         private string BuildDoughnutChartSvg(int[] values, string[] labels, string[] colors)
         {
-            const double centerX = 115;
-            const double centerY = 118;
-            const double radius = 64;
-            const double labelRadius = 96;
+            // Dùng các path SVG dạng cung thay cho stroke-dasharray. Một số HTML-to-PDF
+            // renderer xử lý dashoffset của circle không ổn định, khiến biểu đồ bị khuyết lát.
+            const double centerX = 130;
+            const double centerY = 112;
+            const double outerRadius = 82;
+            const double innerRadius = 42;
+            const double labelRadius = 104;
+
             double total = 0;
-            foreach (int value in values) total += Math.Max(0, value);
-            StringBuilder svg = new StringBuilder();
-            svg.Append("<svg class='pdf-chart-svg' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 235' preserveAspectRatio='xMidYMid meet'>");
-            double circumference = 2 * Math.PI * radius;
-            double cumulative = 0;
-            if (total > 0)
+            int positiveSliceCount = 0;
+            int singleSliceIndex = -1;
+            for (int i = 0; i < values.Length; i++)
             {
+                double value = Math.Max(0, values[i]);
+                total += value;
+                if (value > 0)
+                {
+                    positiveSliceCount++;
+                    singleSliceIndex = i;
+                }
+            }
+
+            StringBuilder svg = new StringBuilder();
+            svg.Append("<svg xmlns='http://www.w3.org/2000/svg' width='520' height='225' viewBox='0 0 520 225' version='1.1'>");
+
+            if (total > 0 && positiveSliceCount == 1)
+            {
+                // Trường hợp chỉ có một trạng thái có dữ liệu: vẽ vòng tròn đầy đủ,
+                // không dùng cung 360 độ (SVG không vẽ được arc có điểm đầu = điểm cuối).
+                svg.Append("<circle cx='").Append(FormatSvg(centerX))
+                   .Append("' cy='").Append(FormatSvg(centerY))
+                   .Append("' r='").Append(FormatSvg(outerRadius))
+                   .Append("' fill='").Append(colors[singleSliceIndex]).Append("'/>");
+                svg.Append("<circle cx='").Append(FormatSvg(centerX))
+                   .Append("' cy='").Append(FormatSvg(centerY))
+                   .Append("' r='").Append(FormatSvg(innerRadius))
+                   .Append("' fill='#ffffff'/>");
+            }
+            else if (total > 0)
+            {
+                double currentAngle = -Math.PI / 2.0;
                 for (int i = 0; i < values.Length; i++)
                 {
                     double value = Math.Max(0, values[i]);
                     if (value <= 0) continue;
-                    double segmentLength = circumference * value / total;
-                    double offset = -cumulative;
-                    svg.Append("<circle cx='").Append(FormatSvg(centerX)).Append("' cy='").Append(FormatSvg(centerY)).Append("' r='").Append(FormatSvg(radius)).Append("' fill='none' stroke='").Append(colors[i]).Append("' stroke-width='44' stroke-dasharray='").Append(FormatSvg(segmentLength)).Append(" ").Append(FormatSvg(circumference - segmentLength)).Append("' stroke-dashoffset='").Append(FormatSvg(offset)).Append("' transform='rotate(-90 115 118)'/>");
-                    double midRatio = (cumulative + segmentLength / 2) / circumference;
-                    double angle = midRatio * 2 * Math.PI - Math.PI / 2;
-                    double labelX = centerX + Math.Cos(angle) * labelRadius;
-                    double labelY = centerY + Math.Sin(angle) * labelRadius;
-                    string percentage = (value / total * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%";
-                    svg.Append("<text x='").Append(FormatSvg(labelX)).Append("' y='").Append(FormatSvg(labelY)).Append("' text-anchor='middle' font-family='Arial,sans-serif' font-size='11' font-weight='700' fill='#1e293b'>").Append(values[i]).Append(" task (").Append(percentage).Append(")</text>");
-                    cumulative += segmentLength;
+
+                    double sweepAngle = (value / total) * (2.0 * Math.PI);
+                    double endAngle = currentAngle + sweepAngle;
+                    int largeArc = sweepAngle > Math.PI ? 1 : 0;
+
+                    double outerStartX = centerX + Math.Cos(currentAngle) * outerRadius;
+                    double outerStartY = centerY + Math.Sin(currentAngle) * outerRadius;
+                    double outerEndX = centerX + Math.Cos(endAngle) * outerRadius;
+                    double outerEndY = centerY + Math.Sin(endAngle) * outerRadius;
+                    double innerEndX = centerX + Math.Cos(endAngle) * innerRadius;
+                    double innerEndY = centerY + Math.Sin(endAngle) * innerRadius;
+                    double innerStartX = centerX + Math.Cos(currentAngle) * innerRadius;
+                    double innerStartY = centerY + Math.Sin(currentAngle) * innerRadius;
+
+                    string path = "M " + FormatSvg(outerStartX) + " " + FormatSvg(outerStartY)
+                        + " A " + FormatSvg(outerRadius) + " " + FormatSvg(outerRadius) + " 0 " + largeArc + " 1 " + FormatSvg(outerEndX) + " " + FormatSvg(outerEndY)
+                        + " L " + FormatSvg(innerEndX) + " " + FormatSvg(innerEndY)
+                        + " A " + FormatSvg(innerRadius) + " " + FormatSvg(innerRadius) + " 0 " + largeArc + " 0 " + FormatSvg(innerStartX) + " " + FormatSvg(innerStartY)
+                        + " Z";
+
+                    svg.Append("<path d='").Append(path)
+                       .Append("' fill='").Append(colors[i])
+                       .Append("' stroke='#ffffff' stroke-width='1.5' stroke-linejoin='round'/>");
+                    currentAngle = endAngle;
                 }
             }
+
+            // Nhãn phần trăm đặt ngoài vòng tròn, tránh đè trực tiếp lên các lát biểu đồ.
+            if (total > 0)
+            {
+                double currentAngle = -Math.PI / 2.0;
+                for (int i = 0; i < values.Length; i++)
+                {
+                    double value = Math.Max(0, values[i]);
+                    if (value <= 0) continue;
+
+                    double sweepAngle = (value / total) * (2.0 * Math.PI);
+                    double middleAngle = positiveSliceCount == 1
+                        ? Math.PI / 2.0
+                        : currentAngle + (sweepAngle / 2.0);
+
+                    double labelX = centerX + Math.Cos(middleAngle) * labelRadius;
+                    double labelY = centerY + Math.Sin(middleAngle) * labelRadius;
+                    double horizontalDirection = Math.Cos(middleAngle);
+                    string textAnchor = horizontalDirection > 0.2 ? "start" : (horizontalDirection < -0.2 ? "end" : "middle");
+
+                    // Căn nhãn ra phía ngoài vòng tròn để chữ không nằm đè lên lát màu.
+                    // Với nhãn phía trái, giữ điểm cuối nằm sát ngoài mép vòng; nếu hướng thẳng
+                    // sang trái thì đưa nhãn xuống dưới biểu đồ để không bị cắt ở mép SVG.
+                    if (textAnchor == "end" && labelX < 95) labelX = 95;
+                    if (textAnchor == "end" && Math.Abs(labelY - centerY) < outerRadius * 0.55)
+                        labelY = centerY + outerRadius + 18;
+                    if (labelX < 8) labelX = 8;
+                    if (labelX > 235) labelX = 235;
+                    if (labelY < 18) labelY = 18;
+                    if (labelY > 214) labelY = 214;
+
+                    string percentage = (value / total * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+                    svg.Append("<text x='").Append(FormatSvg(labelX))
+                       .Append("' y='").Append(FormatSvg(labelY))
+                       .Append("' text-anchor='").Append(textAnchor)
+                       .Append("' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='11' font-weight='700' fill='#111827'>")
+                       .Append(values[i]).Append(" task (").Append(percentage).Append(")</text>");
+
+                    currentAngle += sweepAngle;
+                }
+            }
+
             for (int i = 0; i < labels.Length; i++)
             {
                 double legendY = 78 + (i * 30);
-                svg.Append("<rect x='272' y='").Append(FormatSvg(legendY - 9)).Append("' width='15' height='15' fill='").Append(colors[i]).Append("'/><text x='295' y='").Append(FormatSvg(legendY + 3)).Append("' font-family='Arial,sans-serif' font-size='12' font-weight='700' fill='#334155'>").Append(labels[i]).Append(" (").Append(values[i]).Append(")</text>");
+                svg.Append("<rect x='315' y='").Append(FormatSvg(legendY - 9))
+                   .Append("' width='15' height='15' fill='").Append(colors[i]).Append("'/>");
+                svg.Append("<text x='338' y='").Append(FormatSvg(legendY + 3))
+                   .Append("' font-family='Arial,sans-serif' font-size='12' font-weight='700' fill='#111827'>")
+                   .Append(labels[i]).Append(" (").Append(values[i]).Append(")</text>");
             }
+
             svg.Append("</svg>");
             return svg.ToString();
         }
@@ -532,25 +674,81 @@ body { word-wrap: break-word; }
         #region Helpers dùng cho file ASPX
         protected string GetDeadlineClass(object ngayKetThucObj)
         {
-            if (ngayKetThucObj == DBNull.Value) return "text-muted";
+            if (ngayKetThucObj == null || ngayKetThucObj == DBNull.Value) return "text-muted";
             DateTime endDate = Convert.ToDateTime(ngayKetThucObj).Date;
-            int remainingDays = (int)(endDate - DateTime.Now.Date).TotalDays;
+            int remainingDays = (int)(endDate - DateTime.Today).TotalDays;
             if (remainingDays < 0) return "text-danger";
             if (remainingDays <= 2) return "text-warning";
             return "text-dark";
         }
+
+        protected string GetDeadlineState(object ngayKetThucObj)
+        {
+            if (ngayKetThucObj == null || ngayKetThucObj == DBNull.Value) return "normal";
+            DateTime endDate = Convert.ToDateTime(ngayKetThucObj).Date;
+            int remainingDays = (int)(endDate - DateTime.Today).TotalDays;
+            if (remainingDays < 0) return "overdue";
+            if (remainingDays <= 2) return "soon";
+            return "normal";
+        }
+
         protected string GetTaskWarningHtml(object ngayKetThucObj)
         {
-            if (ngayKetThucObj != DBNull.Value)
-            {
-                DateTime endDate = Convert.ToDateTime(ngayKetThucObj).Date;
-                int remainingDays = (int)(endDate - DateTime.Now.Date).TotalDays;
-                if (remainingDays < 0)
-                    return "<div style='color: #dc2626; font-size: 11px; font-weight: bold;'>(Trễ hạn)</div>";
-                else if (remainingDays <= 2)
-                    return "<div style='color: #d97706; font-size: 11px; font-weight: bold;'>(Sắp đến hạn)</div>";
-            }
+            string deadlineState = GetDeadlineState(ngayKetThucObj);
+            if (deadlineState == "overdue")
+                return "<div><span class='report-badge badge-danger deadline-label'>Trễ hạn</span></div>";
+            if (deadlineState == "soon")
+                return "<div><span class='report-badge badge-warning deadline-label'>Sắp hạn</span></div>";
             return "";
+        }
+
+        private DataTable SortTasksByExpectedEndDate(DataTable source)
+        {
+            if (source == null || source.Rows.Count < 2 || !source.Columns.Contains("NgayKetThuc"))
+                return source;
+
+            DataTable sortable = source.Copy();
+            const string hasEndDateColumn = "__HasExpectedEndDate";
+            if (sortable.Columns.Contains(hasEndDateColumn))
+                sortable.Columns.Remove(hasEndDateColumn);
+            sortable.Columns.Add(hasEndDateColumn, typeof(bool));
+            foreach (DataRow row in sortable.Rows)
+                row[hasEndDateColumn] = row["NgayKetThuc"] != DBNull.Value;
+
+            sortable.DefaultView.Sort = hasEndDateColumn + " DESC, NgayKetThuc ASC";
+            string[] originalColumns = new string[source.Columns.Count];
+            for (int i = 0; i < source.Columns.Count; i++)
+                originalColumns[i] = source.Columns[i].ColumnName;
+            return sortable.DefaultView.ToTable(false, originalColumns);
+        }
+
+        private void CountDeadlineStatuses(DataTable tasks, ref int normal, ref int warning, ref int overdue)
+        {
+            if (tasks == null || !tasks.Columns.Contains("NgayKetThuc")) return;
+            foreach (DataRow row in tasks.Rows)
+            {
+                string state = GetDeadlineState(row["NgayKetThuc"]);
+                if (state == "overdue") overdue++;
+                else if (state == "soon") warning++;
+                else normal++;
+            }
+        }
+
+        private DataTable FilterProcessingIssues(DataTable source)
+        {
+            if (source == null) return new DataTable();
+            DataTable filtered = source.Clone();
+            if (!source.Columns.Contains("TrangThai")) return filtered;
+
+            foreach (DataRow row in source.Rows)
+            {
+                if (row["TrangThai"] != DBNull.Value &&
+                    Convert.ToInt32(row["TrangThai"]) == (int)TrangThaiVanDeEnum.Processing)
+                {
+                    filtered.ImportRow(row);
+                }
+            }
+            return filtered;
         }
         protected string GetPriorityText(int priority)
         {

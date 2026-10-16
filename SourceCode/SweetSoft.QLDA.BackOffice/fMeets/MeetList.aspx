@@ -7,112 +7,146 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
-        .employee-scroll-container::-webkit-scrollbar { width: 6px; }
-        .employee-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
-        .employee-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-        .employee-scroll-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .member-item-row { position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; transition: border-color .2s, box-shadow .2s; cursor: pointer; }
-        .member-item-row:hover { border-color: #93c5fd; background-color: #f8fafc; }
-        .member-item-row:last-child { margin-bottom: 0; }
-        .row-default-view { display: flex; align-items: center; padding: 8px 12px; width: 100%; min-height: 52px; box-sizing: border-box; }
-        .member-info-group { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
-        .member-info-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; margin: 0; border-radius: 4px; border: 1px solid #cbd5e1; }
-        .single-avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-        .member-name-block { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
-        .member-name-block .fw-bold { font-size: 14px; font-weight: 600 !important; color: #1e293b; }
-        .member-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
-        .member-email:empty { display: none; }
-        .record-attachments .file-actions { display: none !important; }
-        #<%= dlDetail.ClientID %> .modal-dialog { max-width: 1180px; width: calc(100vw - 32px); margin: 1rem auto; }
-        #<%= dlDetail.ClientID %> .modal-body { padding: 18px 20px 14px; background: #f8fafc; }
-        #<%= dlDetail.ClientID %> .modal-footer { padding: 12px 20px 16px; border-top: 1px solid #e2e8f0; background: #fff; }
-        .meeting-detail-layout { align-items: stretch; }
-        .meeting-form-column { height: 100%; }
-        .meeting-form-card { height: 100%; display: flex; flex-direction: column; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 15px; box-shadow: 0 4px 14px rgba(15,23,42,.04); }
-        .meeting-form-card-title { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; padding-bottom: 10px; border-bottom: 1px solid #eef2f7; font-size: 12px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: .35px; }
-        .meeting-form-card-title i { color: #6366f1; font-size: 13px; }
-        .meeting-form-field { margin-bottom: 12px; }
-        .meeting-form-field:last-child { margin-bottom: 0; }
-        .meeting-form-field .form-label { margin-bottom: 6px; font-size: 11px; font-weight: 700; color: #475569; }
-        .meeting-form-field .form-text { margin-top: 6px; font-size: 10px; color: #94a3b8; }
-        .meeting-summary-box { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
-        .meeting-summary-box i { color: #6366f1; font-size: 13px; }
-        .meeting-summary-box strong { color: #334155; font-size: 12px; }
-        .meeting-summary-box span { color: #64748b; font-size: 10px; }
-        .meeting-description-card { display: flex; flex-direction: column; }
-        .meeting-description-editor { min-height: 340px; }
-        .meeting-description-editor .cke { border-radius: 10px; overflow: hidden; border: 1px solid #dbe3ec; }
-        .meeting-description-editor .cke_contents { min-height: 275px !important; }
-        .meeting-description-editor .cke_top { border-radius: 10px 10px 0 0; }
-        .meeting-participant-box .input-group > .form-control { min-height: 54px; }
-        .meeting-participant-row { flex: 1 1 auto; min-height: 0; }
-        .meeting-participant-row > .col-12 { display: flex; flex-direction: column; min-height: 0; }
-        .meeting-participant-row .meeting-form-field { margin-bottom: 0; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-        .selected-meeting-members-box { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; padding: 8px; }
-        .selected-meeting-members-list { display: flex; flex-direction: column; gap: 6px; max-height: 168px; overflow-y: auto; }
-        .meeting-participant-row .selected-meeting-members-box { flex: 1 1 auto; min-height: 180px; overflow: hidden; }
-        .meeting-participant-row .selected-meeting-members-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; max-height: none; height: 100%; overflow-y: auto; align-content: start; }
-        .selected-meeting-member-row { display: flex; align-items: center; gap: 10px; padding: 7px 9px; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; min-width: 0; }
-        .selected-meeting-member-avatar { width: 34px; height: 34px; flex: 0 0 34px; display: flex; align-items: center; justify-content: center; }
-        .selected-meeting-member-avatar .single-avatar-circle { width: 34px; height: 34px; }
-        .selected-meeting-member-info { min-width: 0; line-height: 1.25; }
-        .selected-meeting-member-name { font-size: 12px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .selected-meeting-member-email { font-size: 10.5px; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .selected-meeting-members-empty { min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px dashed #cbd5e1; border-radius: 9px; color: #94a3b8; font-size: 11px; background: #fff; }
-        .selected-meeting-members-empty i { color: #94a3b8; }
-        .meeting-readonly-input { background: #f8fafc !important; color: #475569 !important; }
-        .meeting-time-picker,
-        .meeting-duration-picker { position: relative; }
-        .meeting-input-shell { position: relative; }
-        .meeting-picker-trigger { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); border: 0; background: transparent; color: #64748b; width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s ease; z-index: 2; }
-        .meeting-picker-trigger:hover { background: #eef2ff; color: #4f46e5; }
-        .meeting-picker-input { padding-right: 46px !important; cursor: pointer; }
-        .meeting-picker-popover { position: absolute; top: calc(100% + 8px); left: 0; width: min(390px, calc(100vw - 40px)); background: #fff; border: 1px solid #dbe3ec; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,23,42,.14); padding: 13px; z-index: 9999; display: none; }
-        .meeting-picker-popover.open { display: block; animation: meetingPickerIn .16s ease both; }
-        .meeting-picker-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-        .meeting-picker-title strong { font-size: 12px; color: #334155; }
-        .meeting-picker-title span { font-size: 10px; color: #94a3b8; }
-        .meeting-time-selected { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 52px; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; }
-        .meeting-time-selected .selected-time { font-size: 28px; line-height: 1; font-weight: 800; letter-spacing: .8px; color: #312e81; font-variant-numeric: tabular-nums; }
-        .meeting-time-section { margin-top: 10px; }
-        .meeting-time-section-label { font-size: 10px; color: #64748b; font-weight: 700; margin: 0 0 7px 2px; text-transform: uppercase; letter-spacing: .4px; }
-        .meeting-hour-grid { display: grid; grid-template-columns: repeat(8, minmax(0,1fr)); gap: 6px; }
-        .meeting-minute-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 7px; }
-        .meeting-time-choice { border: 1px solid #e2e8f0; background: #fff; color: #475569; border-radius: 9px; min-height: 34px; padding: 5px 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all .16s ease; }
-        .meeting-time-choice:hover { border-color: #a5b4fc; background: #eef2ff; color: #4338ca; }
-        .meeting-time-choice.active { border-color: #6366f1; background: #6366f1; color: #fff; box-shadow: 0 4px 10px rgba(99,102,241,.2); }
-        .meeting-picker-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 11px; padding-top: 10px; border-top: 1px solid #edf2f7; }
-        .meeting-picker-hint { font-size: 10px; color: #64748b; line-height: 1.35; }
-        .meeting-picker-close { border: 0; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 10.5px; font-weight: 700; cursor: pointer; }
-        .meeting-duration-card { display: flex; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border: 1px solid #e2e8f0; border-radius: 13px; padding: 10px; }
-        .duration-step-button { width: 38px; height: 38px; border-radius: 11px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-size: 20px; line-height: 1; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .16s ease; }
-        .duration-step-button:hover { background: #eef2ff; border-color: #a5b4fc; color: #4338ca; }
-        .duration-value-box { min-width: 130px; text-align: center; }
-        .duration-value-main { font-size: 24px; line-height: 1.05; color: #312e81; font-weight: 800; font-variant-numeric: tabular-nums; }
-        .duration-value-sub { font-size: 10px; color: #64748b; margin-top: 3px; font-weight: 600; }
-        .duration-quick { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 6px; margin-top: 9px; }
-        .duration-quick-button { border: 1px solid #e2e8f0; background: #fff; color: #475569; border-radius: 8px; min-height: 30px; padding: 4px 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all .16s ease; }
-        .duration-quick-button:hover, .duration-quick-button.active { border-color: #a5b4fc; background: #eef2ff; color: #4338ca; }
-        .meeting-duration-note { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: #64748b; font-size: 10px; }
-        .meeting-duration-note i { color: #6366f1; }
-        .meeting-time-summary { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 9px; font-size: 11px; color: #64748b; }
-        .meeting-time-summary strong { color: #334155; font-weight: 800; }
-        @keyframes meetingPickerIn { from { opacity: 0; transform: translateY(-3px) scale(.995); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @media (max-width: 991.98px) {
-            #<%= dlDetail.ClientID %> .modal-dialog { width: calc(100vw - 20px); margin: .6rem auto; }
-            #<%= dlDetail.ClientID %> .modal-body { padding: 14px; }
-            .meeting-description-editor { min-height: 0; }
-            .meeting-description-editor .cke_contents { min-height: 220px !important; }
-        }
-        @media (max-width: 767.98px) {
-            .meeting-participant-row .selected-meeting-members-list { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 640px) {
-            .meeting-hour-grid { grid-template-columns: repeat(6, minmax(0,1fr)); }
-            .duration-quick { grid-template-columns: repeat(3, minmax(0,1fr)); }
-            .meeting-picker-popover { width: min(360px, calc(100vw - 28px)); }
-        }
-    </style>
+    .employee-scroll-container::-webkit-scrollbar { width: 6px; }
+    .employee-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
+    .employee-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
+    .employee-scroll-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .member-item-row { position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; transition: border-color .2s, box-shadow .2s; cursor: pointer; }
+    .member-item-row:hover { border-color: #93c5fd; background-color: #f8fafc; }
+    .member-item-row:last-child { margin-bottom: 0; }
+    .row-default-view { display: flex; align-items: center; padding: 8px 12px; width: 100%; min-height: 52px; box-sizing: border-box; }
+    .member-info-group { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
+    .member-info-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; margin: 0; border-radius: 4px; border: 1px solid #cbd5e1; }
+    .single-avatar-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .member-name-block { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    .member-name-block .fw-bold { font-size: 14px; font-weight: 600 !important; color: #1e293b; }
+    .member-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+    .member-email:empty { display: none; }
+    .record-attachments .file-actions { display: none !important; }
+    #<%= dlDetail.ClientID %> .modal-dialog { max-width: 1180px; width: calc(100vw - 32px); margin: 1rem auto; }
+    #<%= dlDetail.ClientID %> .modal-body { padding: 18px 20px 14px; background: #f8fafc; }
+    #<%= dlDetail.ClientID %> .modal-footer { padding: 12px 20px 16px; border-top: 1px solid #e2e8f0; background: #fff; }
+    .meeting-detail-layout { align-items: stretch; }
+    .meeting-form-column { height: 100%; }
+    .meeting-form-card { height: 100%; display: flex; flex-direction: column; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 15px; box-shadow: 0 4px 14px rgba(15,23,42,.04); }
+    .meeting-form-card-title { display: flex; align-items: center; gap: 8px; margin-bottom: 13px; padding-bottom: 10px; border-bottom: 1px solid #eef2f7; font-size: 12px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: .35px; }
+    .meeting-form-card-title i { color: #6366f1; font-size: 13px; }
+    .meeting-form-field { margin-bottom: 12px; }
+    .meeting-form-field:last-child { margin-bottom: 0; }
+    .meeting-form-field .form-label { margin-bottom: 6px; font-size: 11px; font-weight: 700; color: #475569; }
+    .meeting-form-field .form-text { margin-top: 6px; font-size: 10px; color: #94a3b8; }
+    .meeting-summary-box { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+    .meeting-summary-box i { color: #6366f1; font-size: 13px; }
+    .meeting-summary-box strong { color: #334155; font-size: 12px; }
+    .meeting-summary-box span { color: #64748b; font-size: 10px; }
+    .meeting-description-card { display: flex; flex-direction: column; }
+    .meeting-description-editor { min-height: 340px; }
+    .meeting-description-editor .cke { border-radius: 10px; overflow: hidden; border: 1px solid #dbe3ec; }
+    .meeting-description-editor .cke_contents { min-height: 275px !important; }
+    .meeting-description-editor .cke_top { border-radius: 10px 10px 0 0; }
+    .meeting-participant-box .input-group > .form-control { min-height: 54px; }
+    .meeting-participant-row { flex: 1 1 auto; min-height: 0; }
+    .meeting-participant-row > .col-12 { display: flex; flex-direction: column; min-height: 0; }
+    .meeting-participant-row .meeting-form-field { margin-bottom: 0; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .selected-meeting-members-box { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; padding: 8px; }
+    .selected-meeting-members-list { display: flex; flex-direction: column; gap: 6px; max-height: 168px; overflow-y: auto; }
+    .meeting-participant-row .selected-meeting-members-box { flex: 1 1 auto; min-height: 180px; overflow: hidden; }
+    .meeting-participant-row .selected-meeting-members-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; max-height: none; height: 100%; overflow-y: auto; align-content: start; }
+    .selected-meeting-member-row { display: flex; align-items: center; gap: 10px; padding: 7px 9px; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; min-width: 0; }
+    .selected-meeting-member-avatar { width: 34px; height: 34px; flex: 0 0 34px; display: flex; align-items: center; justify-content: center; }
+    .selected-meeting-member-avatar .single-avatar-circle { width: 34px; height: 34px; }
+    .selected-meeting-member-info { min-width: 0; line-height: 1.25; }
+    .selected-meeting-member-name { font-size: 12px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .selected-meeting-member-email { font-size: 10.5px; color: #64748b; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .selected-meeting-members-empty { min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px dashed #cbd5e1; border-radius: 9px; color: #94a3b8; font-size: 11px; background: #fff; }
+    .selected-meeting-members-empty i { color: #94a3b8; }
+    .meeting-readonly-input { background: #f8fafc !important; color: #475569 !important; }
+    .meeting-time-picker, .meeting-duration-picker { position: relative; }
+    .meeting-input-shell { position: relative; }
+    .meeting-picker-trigger { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); border: 0; background: transparent; color: #64748b; width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .2s ease; z-index: 2; }
+    .meeting-picker-trigger:hover { background: #eef2ff; color: #4f46e5; }
+    .meeting-picker-input { padding-right: 46px !important; cursor: pointer; }
+    .meeting-picker-popover { position: absolute; top: calc(100% + 8px); left: 0; width: min(390px, calc(100vw - 40px)); background: #fff; border: 1px solid #dbe3ec; border-radius: 14px; box-shadow: 0 16px 40px rgba(15,23,42,.14); padding: 13px; z-index: 9999; display: none; }
+    .meeting-picker-popover.open { display: block; animation: meetingPickerIn .16s ease both; }
+    .meeting-picker-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .meeting-picker-title strong { font-size: 12px; color: #334155; }
+    .meeting-picker-title span { font-size: 10px; color: #94a3b8; }
+    .meeting-time-selected { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 52px; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; }
+    .meeting-time-selected .selected-time { font-size: 28px; line-height: 1; font-weight: 800; letter-spacing: .8px; color: #312e81; font-variant-numeric: tabular-nums; }
+    .meeting-time-section { margin-top: 10px; }
+    .meeting-time-section-label { font-size: 10px; color: #64748b; font-weight: 700; margin: 0 0 7px 2px; text-transform: uppercase; letter-spacing: .4px; }
+    .meeting-hour-grid { display: grid; grid-template-columns: repeat(8, minmax(0,1fr)); gap: 6px; }
+    .meeting-minute-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 7px; }
+    .meeting-time-choice { border: 1px solid #e2e8f0; background: #fff; color: #475569; border-radius: 9px; min-height: 34px; padding: 5px 4px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all .16s ease; }
+    .meeting-time-choice:hover { border-color: #a5b4fc; background: #eef2ff; color: #4338ca; }
+    .meeting-time-choice.active { border-color: #6366f1; background: #6366f1; color: #fff; box-shadow: 0 4px 10px rgba(99,102,241,.2); }
+    .meeting-picker-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 11px; padding-top: 10px; border-top: 1px solid #edf2f7; }
+    .meeting-picker-hint { font-size: 10px; color: #64748b; line-height: 1.35; }
+    .meeting-picker-close { border: 0; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 10.5px; font-weight: 700; cursor: pointer; }
+    .meeting-duration-card { display: flex; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border: 1px solid #e2e8f0; border-radius: 13px; padding: 10px; }
+    .duration-step-button { width: 38px; height: 38px; border-radius: 11px; border: 1px solid #cbd5e1; background: #fff; color: #475569; font-size: 20px; line-height: 1; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .16s ease; }
+    .duration-step-button:hover { background: #eef2ff; border-color: #a5b4fc; color: #4338ca; }
+    .duration-value-box { min-width: 130px; text-align: center; }
+    .duration-value-main { font-size: 24px; line-height: 1.05; color: #312e81; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .duration-value-sub { font-size: 10px; color: #64748b; margin-top: 3px; font-weight: 600; }
+    .duration-quick { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 6px; margin-top: 9px; }
+    .duration-quick-button { border: 1px solid #e2e8f0; background: #fff; color: #475569; border-radius: 8px; min-height: 30px; padding: 4px 3px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all .16s ease; }
+    .duration-quick-button:hover, .duration-quick-button.active { border-color: #a5b4fc; background: #eef2ff; color: #4338ca; }
+    .meeting-duration-note { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: #64748b; font-size: 10px; }
+    .meeting-duration-note i { color: #6366f1; }
+    .meeting-time-summary { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 9px; font-size: 11px; color: #64748b; }
+    .meeting-time-summary strong { color: #334155; font-weight: 800; }
+    @keyframes meetingPickerIn {
+        from { opacity: 0; transform: translateY(-3px) scale(.995); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @media (max-width: 991.98px) {
+        #<%= dlDetail.ClientID %> .modal-dialog { width: calc(100vw - 20px); margin: .6rem auto; }
+        #<%= dlDetail.ClientID %> .modal-body { padding: 14px; }
+        .meeting-description-editor { min-height: 0; }
+        .meeting-description-editor .cke_contents { min-height: 220px !important; }
+    }
+    @media (max-width: 767.98px) {
+        .meeting-participant-row .selected-meeting-members-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+        .meeting-hour-grid { grid-template-columns: repeat(6, minmax(0,1fr)); }
+        .duration-quick { grid-template-columns: repeat(3, minmax(0,1fr)); }
+        .meeting-picker-popover { width: min(360px, calc(100vw - 28px)); }
+    }
+    .meeting-method-box { display:flex;align-items:center;gap:10px;min-height:38px; }
+    .meeting-method-box .form-select { height:38px;min-width:0;border:1px solid #d9c9ec;background-color:#fcfaff;color:#48247d;font-size:12px;font-weight:700;border-radius:8px; }
+    .meeting-method-note { display:block;margin-top:4px;color:#84768f;font-size:10.5px;line-height:1.35; }
+    .meet-join-reminder { padding:15px 16px 20px; }
+    .meet-join-symbol { display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:15px;background:#efe6fa;color:#6b32a2;font-size:24px;margin-bottom:10px; }
+    .meet-join-lead { margin:0 0 9px;font-size:16px;font-weight:800;line-height:1.5;color:#40206c; }
+    .meet-join-location { display:flex;align-items:start;gap:10px;margin-top:10px;padding:12px 14px;border:1px solid #e3d6f0;border-radius:10px;background:#f9f6fe;color:#3b2a57;font-size:13px;line-height:1.55;overflow-wrap:anywhere; }
+    .meet-join-location i { color:#6e38a5;flex:0 0 auto;margin-top:3px; }
+    .meet-join-sub { font-size:12px;color:#657187;margin-top:10px;line-height:1.55; }
+    .meet-join-type { display:inline-flex;gap:5px;align-items:center;padding:5px 9px;border-radius:7px;font-size:12px;font-weight:750;color:#16636f;background:#e9f8f9; }
+    .meet-join-type.is-offline { color:#78552a;background:#fff2df; }
+    .meet-join-warning { display:block;margin-top:9px;font-size:12px;color:#ad5736; }
+    /* Loader nhắc họp: chỉ hiển thị khi server đánh dấu cuộc họp cần nhắc. Không thay viền/nút X của ExtraModal. */
+    .meet-join-preparing[hidden] { display:none!important; }
+    .meet-join-preparing { position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(33,19,54,.43);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);transition:opacity .18s ease; }
+    .meet-join-preparing.is-done { opacity:0;pointer-events:none; }
+    .meet-join-preparing-card { width:min(390px,100%);padding:27px 27px 24px;border:1px solid #e4d5f5;border-radius:18px;background:#fff;box-shadow:0 24px 70px rgba(37,19,71,.22);text-align:center; }
+    .meet-join-preparing-spinner { position:relative;display:grid;place-items:center;width:63px;height:63px;margin:0 auto 16px;border:4px solid #ebdff8;border-top-color:#6026a3;border-right-color:#9356ce;border-radius:50%;animation:meetJoinSpin .85s linear infinite; }
+    .meet-join-preparing-spinner i { color:#642a9d;font-size:22px;animation:meetJoinSpinReverse .85s linear infinite; }
+    .meet-join-preparing-title { display:block;margin-bottom:5px;color:#451977;font-size:17px;line-height:1.4;font-weight:800; }
+    .meet-join-preparing-desc { margin:0;color:#766a86;font-size:12.5px;line-height:1.6; }
+    .meet-join-preparing-progress { height:5px;margin-top:20px;overflow:hidden;border-radius:999px;background:#eee4fa; }
+    .meet-join-preparing-progress span { display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#54218d,#a56ddd); }
+    .meet-join-preparing.is-running .meet-join-preparing-progress span { animation:meetJoinProgress 3s linear forwards; }
+    @keyframes meetJoinSpin { to { transform:rotate(360deg); } }
+    @keyframes meetJoinSpinReverse { to { transform:rotate(-360deg); } }
+    @keyframes meetJoinProgress { from { width:0; } to { width:100%; } }
+    @media(prefers-reduced-motion:reduce) { .meet-join-preparing-spinner,.meet-join-preparing-spinner i { animation:none; }.meet-join-preparing.is-running .meet-join-preparing-progress span { animation:none;width:100%; } }
+    @media(max-width:767.98px) {
+        .meeting-method-box .form-select { min-width:0; }
+        .meet-join-reminder { padding:12px 9px; }
+    }
+</style>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
@@ -219,10 +253,20 @@
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtThoiGianKetThuc" Enabled="false" CssClass="disabled meeting-readonly-input" PlaceHolder="Hệ thống tự tính..."></SweetSoft:ExtraTextBox>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <div class="meeting-form-field">
-                                    <label class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.MEETING_ROOM) %></label>
+                                    <label class="form-label">Hình thức họp</label>
+                                    <div class="meeting-method-box"><asp:DropDownList runat="server" ID="ddlHinhThucHop" CssClass="form-select" aria-label="Hình thức họp">
+                                        <asp:ListItem Value="0" Text="Offline · Trực tiếp" Selected="True" />
+                                        <asp:ListItem Value="1" Text="Online · Trực tuyến" />
+                                    </asp:DropDownList></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="meeting-form-field">
+                                    <label class="form-label label-valid" id="meetingLocationLabel"><%= GetResourceText(BackEndResourceKeys.MEETING_ROOM) %></label>
                                     <SweetSoft:ExtraTextBox runat="server" ID="txtDiaDiemHop" Required="true"></SweetSoft:ExtraTextBox>
+                                    <span class="meeting-method-note" id="meetingLocationHint">Nhập phòng hoặc địa điểm họp.</span>
                                 </div>
                             </div>
                         </div>
@@ -314,9 +358,98 @@
             <SweetSoft:ExtraButton runat="server" ID="btnXacNhanNhanVien" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" OnClick="btnXacNhanNhanVien_Click">Xác nhận</SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
+    <SweetSoft:ExtraModal runat="server" ID="mdlMeetJoinReminder" Type="Primary" Title="Cuộc họp đang diễn ra">
+        <ContentTemplate>
+            <div class="meet-join-reminder">
+                <asp:HiddenField runat="server" ID="hfMeetJoinId" />
+                <asp:HiddenField runat="server" ID="hfMeetJoinPending" Value="0" />
+                <span class="meet-join-symbol"><i class="fas fa-video" aria-hidden="true"></i></span>
+                <p class="meet-join-lead"><asp:Literal runat="server" ID="litMeetJoinTitle" /></p>
+                <asp:Literal runat="server" ID="litMeetJoinType" />
+                <div class="meet-join-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><div><asp:Literal runat="server" ID="litMeetJoinLocation" /></div></div>
+                <div class="meet-join-sub">Bạn nằm trong danh sách tham gia. Xác nhận một lần để không hiện lại lời nhắc này trên các lần tải trang tiếp theo.</div>
+                <asp:Literal runat="server" ID="litMeetJoinWarning" />
+            </div>
+        </ContentTemplate>
+        <FooterTemplate>
+            <asp:LinkButton runat="server" ID="btnConfirmMeetJoin" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnConfirmMeetJoin_Click" OnClientClick="MeetJoinReminder.openBeforeConfirm(this);"><i class="fas fa-check-circle me-1" aria-hidden="true"></i> Xác nhận tham gia</asp:LinkButton>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
+    <div id="meetJoinPreparingOverlay" class="meet-join-preparing" role="status" aria-live="polite" aria-label="Đang tải thông tin cuộc họp" hidden>
+        <div class="meet-join-preparing-card">
+            <div class="meet-join-preparing-spinner"><i class="fas fa-video" aria-hidden="true"></i></div>
+            <strong class="meet-join-preparing-title">Đang chuẩn bị cuộc họp</strong>
+            <p class="meet-join-preparing-desc">Đang tải thông tin tham gia. Vui lòng chờ trong giây lát...</p>
+            <div class="meet-join-preparing-progress" aria-hidden="true"><span></span></div>
+        </div>
+    </div>
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
+    <script type="text/javascript">
+        // Server chỉ gắn cờ. Chờ window.load + 3 giây trước khi hiển thị ExtraModal.
+        // Không phụ thuộc CMSMasterJs.OpenDialog (hàm có thể chưa được đăng ký).
+        (function () {
+            var pendingId = '<%= JoinReminderPendingField.ClientID %>';
+            var modalId = '<%= JoinReminderModal.ClientID %>';
+            function openBootstrapModal(attempt) {
+                var element = document.getElementById(modalId);
+                if (!element) return;
+                try {
+                    if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+                        var instance = typeof window.bootstrap.Modal.getOrCreateInstance === 'function'
+                            ? window.bootstrap.Modal.getOrCreateInstance(element)
+                            : new window.bootstrap.Modal(element);
+                        instance.show();
+                        return;
+                    }
+                    if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+                        window.jQuery(element).modal('show');
+                        return;
+                    }
+                } catch (error) { if (window.console) console.warn('Chưa thể mở ExtraModal:', error); }
+                if (attempt < 20) window.setTimeout(function () { openBootstrapModal(attempt + 1); }, 150);
+                else if (window.console) console.error('Bootstrap Modal chưa sẵn sàng để mở nhắc cuộc họp.');
+            }
+            function beginReminder() {
+                // Đánh dấu ngay để không chạy hai lần sau UpdatePanel hoặc các sự kiện load.
+                var field = document.getElementById(pendingId);
+                if (!field || field.value !== '1') return;
+                field.value = '0';
+                var overlay = document.getElementById('meetJoinPreparingOverlay');
+                if (overlay) {
+                    overlay.hidden = false;
+                    overlay.classList.remove('is-done');
+                    // Kích hoạt animation sau khi layout được tạo để thanh tiến trình chạy trọn 3s.
+                    void overlay.offsetWidth;
+                    overlay.classList.add('is-running');
+                }
+                window.setTimeout(function () {
+                    if (overlay) overlay.classList.add('is-done');
+                    window.setTimeout(function () {
+                        if (overlay) { overlay.hidden = true; overlay.classList.remove('is-running', 'is-done'); }
+                        openBootstrapModal(0);
+                    }, 180);
+                }, 3000);
+            }
+            // Load xong toàn bộ trang (kể cả các script do ScriptManager nạp) rồi mới đếm 3 giây.
+            if (document.readyState === 'complete') beginReminder();
+            else window.addEventListener('load', beginReminder, { once: true });
+            if (window.Sys && Sys.Application) Sys.Application.add_load(function () {
+                if (document.readyState === 'complete') beginReminder();
+            });
+        })();
+    </script>
+    <script type="text/javascript">
+        window.MeetJoinReminder = window.MeetJoinReminder || {
+            openBeforeConfirm: function(button) {
+                var raw=button.getAttribute('data-join-url');
+                if(!raw)return true;
+                try { var url=new URL(raw,window.location.origin);if(url.protocol==='https:'||url.protocol==='http:')window.open(url.href,'_blank','noopener,noreferrer'); } catch(e) { }
+                return true;
+            }
+        };
+    </script>
     <script type="text/javascript">
         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function () {
             var $startInput = $('#<%= txtGioBatDau.ClientID %>');
@@ -329,6 +462,16 @@
             var $durationMain = $('#durationValueMain');
             var $durationSub = $('#durationValueSub');
             var $meetingEndPreview = $('#meetingEndPreview');
+
+            var $meetingType = $('#<%= MeetingTypeSelect.ClientID %>');
+            function syncMeetingMethod() {
+                var online = $meetingType.val() === '1';
+                $('#meetingLocationLabel').text(online ? 'Liên kết cuộc họp *' : 'Địa điểm họp *');
+                $('#meetingLocationHint').text(online ? 'Dán URL Google Meet (https://meet.google.com/...) hoặc link họp HTTPS.' : 'Nhập phòng hoặc địa điểm họp.');
+                $('#<%= txtDiaDiemHop.ClientID %>').attr('placeholder', online ? 'https://meet.google.com/...' : 'Phòng họp / địa chỉ...');
+            }
+            $meetingType.off('change.meettype').on('change.meettype',syncMeetingMethod);
+            syncMeetingMethod();
 
             if (!$startInput.length || !$dateInput.length || !$durationInput.length) return;
 

@@ -13,12 +13,6 @@ using System.Web.UI.HtmlControls;
 
 namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 {
-    /// <summary>
-    /// Thanh điều hướng theo ngữ cảnh của một dự án.
-    /// Các tab được sinh từ aspnet_Functions thay vì khai báo cứng trong markup.
-    /// Mỗi tab vẫn dẫn đến một trang Web Forms độc lập để giữ nguyên lifecycle,
-    /// modal và luồng nghiệp vụ sẵn có của từng chức năng.
-    /// </summary>
     public partial class CtrlProjectTabs : BaseAdminUserControl
     {
         private static readonly char[] IconClassSeparators = { ' ', '\t', '\r', '\n' };
@@ -127,6 +121,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             HtmlGenericControl item = new HtmlGenericControl("li");
             item.Attributes["class"] = "nav-item";
 
+            item.Attributes["data-module"] = moduleKey.ToString();
+
             HtmlAnchor link = new HtmlAnchor
             {
                 HRef = navigateUrl
@@ -188,10 +184,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         {
             try
             {
-                // Tab Hồ sơ dự án là cửa vào danh sách. Thành viên/PM vẫn
-                // được thấy tab ngay cả khi chưa được cấp hồ sơ nào; người
-                // ngoài dự án chỉ thấy tab khi có ít nhất một hồ sơ được cấp.
-                // Từng dòng hồ sơ vẫn được ACL lọc riêng tại tầng truy vấn.
                 if (moduleKey == ModuleKeys.ProjectDocument)
                 {
                     return DocumentManager.Instance

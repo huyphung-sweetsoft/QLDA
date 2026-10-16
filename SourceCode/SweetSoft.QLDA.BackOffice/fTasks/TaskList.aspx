@@ -2,511 +2,156 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fTasks/Controls/CtrlTask.ascx" TagPrefix="SweetSoft" TagName="CtrlTask" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
-
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
-
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
 <style>
+    /* ===================================================================
+       MASTER FORM STYLING (PREMIUM UI 2024)
+       =================================================================== */
     .smart-field { display: flex; flex-direction: column; width: 100%; min-width: 0; }
     .smart-field > label { display: flex; align-items: center; margin-bottom: 8px; color: #374151; font-size: 13.5px; font-weight: 700; line-height: 1.3; }
     .smart-field > label i { width: 17px; margin-right: 4px; color: #6b7280 !important; text-align: center; }
-    .smart-field > .form-control,
-    .smart-field > .form-select,
-    .smart-field .input-group > .form-control,
-    .smart-field .input-group > .form-select { min-height: 46px !important; padding: 10px 13px !important; border: 1px solid #d1d5db !important; border-radius: 9px !important; background-color: #ffffff !important; color: #1f2937 !important; font-size: 14px !important; font-weight: 500 !important; box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04) !important; transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease; }
+    
+    .smart-field > .form-control, .smart-field > .form-select, .smart-field .input-group > .form-control, .smart-field .input-group > .form-select { 
+        min-height: 46px !important; padding: 10px 13px !important; border: 1px solid #d1d5db !important; border-radius: 9px !important; 
+        background-color: #ffffff !important; color: #1f2937 !important; font-size: 14px !important; font-weight: 500 !important; 
+        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04) !important; transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease; 
+    }
     .smart-field .form-control::placeholder { color: #9ca3af !important; font-weight: 400 !important; }
-    .smart-field > .form-control:hover:not(:disabled):not([readonly]),
-    .smart-field > .form-select:hover:not(:disabled),
-    .smart-field .input-group > .form-control:hover:not(:disabled):not([readonly]) { border-color: #a78bfa !important; background-color: #ffffff !important; }
-    .smart-field > .form-control:focus,
-    .smart-field > .form-select:focus,
-    .smart-field .input-group > .form-control:focus { border-color: #7c3aed !important; background-color: #ffffff !important; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12), 0 2px 5px rgba(17, 24, 39, 0.04) !important; outline: none !important; }
+    .smart-field > .form-control:hover:not(:disabled):not([readonly]), .smart-field > .form-select:hover:not(:disabled), .smart-field .input-group > .form-control:hover:not(:disabled):not([readonly]) { border-color: #a78bfa !important; background-color: #ffffff !important; }
+    .smart-field > .form-control:focus, .smart-field > .form-select:focus, .smart-field .input-group > .form-control:focus { border-color: #7c3aed !important; background-color: #ffffff !important; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12), 0 2px 5px rgba(17, 24, 39, 0.04) !important; outline: none !important; }
     .smart-field textarea.form-control { min-height: 98px !important; resize: vertical; line-height: 1.55; padding-top: 11px !important; }
     .smart-field > .form-select { padding-right: 38px !important; cursor: pointer; }
-    .smart-field > .form-select:focus { cursor: pointer; }
-    .smart-field:has(input[readonly]),
-    .smart-field:has(textarea[readonly]) { padding: 11px 14px 12px 14px; background: #f6f3ff; border: 1px solid #ddd6fe; border-left: 4px solid #8b5cf6; border-radius: 9px; box-shadow: 0 1px 2px rgba(76, 29, 149, 0.04); justify-content: center; }
-    .smart-field:has(input[readonly]) > label,
-    .smart-field:has(textarea[readonly]) > label { margin-bottom: 4px; color: #6d28d9; font-size: 10.5px; font-weight: 800; letter-spacing: .45px; text-transform: uppercase; }
-    .smart-field:has(input[readonly]) > label i,
-    .smart-field:has(textarea[readonly]) > label i { color: #8b5cf6 !important; }
-    .smart-field:has(input[readonly]) .form-control,
-    .smart-field:has(textarea[readonly]) .form-control { min-height: auto !important; height: auto !important; padding: 0 !important; border: none !important; border-radius: 0 !important; background: transparent !important; color: #312e81 !important; font-size: 15px !important; font-weight: 750 !important; box-shadow: none !important; outline: none !important; cursor: default !important; }
-    .smart-field:has(input:disabled),
-    .smart-field:has(select:disabled) { padding: 11px 14px 12px 14px; background: #f3f4f6; border: 1px solid #d1d5db; border-left: 4px solid #9ca3af; border-radius: 9px; box-shadow: inset 0 1px 0 rgba(255,255,255,.8); justify-content: center; }
-    .smart-field:has(input:disabled) > label,
-    .smart-field:has(select:disabled) > label { margin-bottom: 4px; color: #6b7280; font-size: 10.5px; font-weight: 800; letter-spacing: .45px; text-transform: uppercase; }
-    .smart-field:has(input:disabled) > label i,
-    .smart-field:has(select:disabled) > label i { color: #9ca3af !important; }
-    .smart-field:has(input:disabled) .form-control,
-    .smart-field:has(select:disabled) .form-select { min-height: auto !important; height: auto !important; padding: 0 !important; border: none !important; border-radius: 0 !important; background: transparent !important; color: #374151 !important; font-size: 15px !important; font-weight: 750 !important; box-shadow: none !important; outline: none !important; opacity: 1 !important; cursor: default !important; appearance: none !important; -webkit-appearance: none !important; }
-    #colCongViecCha .smart-field:has(select:disabled) { background: #f4f4f5; border-color: #d4d4d8; border-left: 4px solid #a1a1aa; }
-    #colCongViecCha .smart-field:has(select:disabled) > label { color: #71717a; }
-    #colCongViecCha .smart-field:has(select:disabled) > label i { color: #a1a1aa !important; }
+
     .smart-field .input-group { display: flex; flex-wrap: nowrap; align-items: stretch; }
     .smart-field .input-group > .form-control { border-radius: 9px 0 0 9px !important; }
-    .smart-field .input-group > .input-group-text { min-height: 46px; padding: 0 13px; border: 1px solid #d1d5db; border-left: 0; border-radius: 0 9px 9px 0; background: #f5f3ff; color: #6b7280; font-size: 13px; font-weight: 700; }
-    .smart-field:has(input[readonly]) .input-group-text,
-    .smart-field:has(input:disabled) .input-group-text { display: none !important; }
-    .duration-suffix { display: none; margin-left: 7px; color: #4b5563; font-size: 14px !important; font-weight: 750 !important; white-space: nowrap; align-self: center; }
-    .smart-field:has(input[readonly]) .duration-suffix,
-    .smart-field:has(input:disabled) .duration-suffix { display: inline-block; }
-
-    /* Đồng bộ chiều cao 3 ô ngày bắt đầu / thời hạn / ngày kết thúc */
-    .task-edit-date-row { align-items: stretch !important; }
-    .task-edit-date-row > [class*="col-"] { display: flex; align-items: stretch; }
-    .task-edit-date-row > [class*="col-"] > .smart-field,
-    .task-edit-date-row > [class*="col-"] > .end-date-locked { width: 100%; height: 100%; }
-    .task-edit-date-row .smart-field { min-height: 78px; }
-
-    .end-date-locked { min-height: 78px; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 10px 15px; background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #22c55e; border-radius: 9px; box-shadow: 0 1px 2px rgba(22, 101, 52, 0.04); }
-    .end-date-locked > label { display: flex; align-items: center; margin-bottom: 4px; color: #15803d; font-size: 10.5px; font-weight: 800; letter-spacing: .45px; text-transform: uppercase; }
-    .end-date-locked > label i { color: #16a34a !important; }
-    .end-date-value { color: #15803d; font-size: 16px; font-weight: 800; line-height: 1.35; }
-    .task-context-card { padding: 14px 16px; background: #ffffff; border: 1px solid #e5e7eb; border-left: 4px solid #6d28d9; border-radius: 10px; box-shadow: 0 2px 6px rgba(17, 24, 39, 0.05); }
-    .task-context-breadcrumb { display: flex; align-items: center; gap: 8px; margin-top: 11px; padding-top: 10px; border-top: 1px dashed #d1d5db; color: #4b5563; font-size: 13px; font-weight: 500; }
-    .task-context-breadcrumb i { color: #7c3aed; font-size: 13px; }
-    .badge-code { min-width: 38px; display: inline-flex; justify-content: center; align-items: center; padding: 5px 10px; background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 7px; color: #5b21b6; font-size: 15px; font-weight: 800; line-height: 1.2; }
+    .smart-field .input-group > .input-group-text { min-height: 46px; padding: 0 13px; border: 1px solid #d1d5db; border-left: 0; border-radius: 0 9px 9px 0; background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 700; }
 
     /* ===================================================================
-       TASK HEADER / PRIORITY / STATUS - CUSTOM DROPDOWN
-       Không dùng native <select> cho 2 control đầu vì popup native của
-       browser/Windows không thể style đồng bộ với giao diện.
+       DISABLED & READONLY FIELDS STYLING
        =================================================================== */
-    .task-context-card {
-        padding: 16px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-left: 4px solid #6d28d9;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05);
+    .smart-field > .form-control:disabled, 
+    .smart-field > .form-select:disabled,
+    .smart-field .input-group > .form-control:disabled {
+        background-color: #f8fafc !important; border: 1px dashed #cbd5e1 !important; color: #64748b !important; font-weight: 600 !important; cursor: not-allowed !important; box-shadow: none !important; background-image: none !important;
     }
-
-    .task-context-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        min-width: 0;
+    
+    .smart-field .input-group:has(.form-control:disabled) > .input-group-text {
+        background-color: #f8fafc !important; border: 1px dashed #cbd5e1 !important; border-left: none !important; color: #94a3b8 !important;
     }
-
-    .task-context-identity,
-    .task-context-phase {
-        min-width: 0;
-        display: flex;
-        align-items: center;
+    
+    .smart-field > .form-control[readonly],
+    .smart-field > textarea[readonly] {
+        background-color: #f5f3ff !important; border: 1px dashed #d8b4fe !important; color: #6d28d9 !important; font-weight: 600 !important; cursor: default !important; box-shadow: none !important;
     }
-
-    .task-context-identity { gap: 10px; }
-    .task-context-phase { gap: 9px; }
-
-    .task-context-kicker {
-        display: block;
-        margin-bottom: 3px;
-        color: #94a3b8;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: .55px;
-        line-height: 1.2;
-        text-transform: uppercase;
-    }
-
-    .task-context-phase i {
-        width: 30px;
-        height: 30px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 30px;
-        border-radius: 8px;
-        background: #f5f3ff;
-        color: #7c3aed;
-        font-size: 12px;
-    }
-
-    .task-context-phase-value {
-        min-width: 0;
-        color: #374151;
-        font-size: 13.5px;
-        font-weight: 700;
-        line-height: 1.35;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .task-context-divider {
-        height: 1px;
-        margin: 14px 0;
-        background: #eef2f7;
-    }
-
-    .task-meta-controls {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-        gap: 12px;
-    }
-
-    .task-meta-shell {
-        position: relative;
-        min-width: 0;
-    }
-
-    .task-meta-label {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin: 0 0 6px 1px;
-        color: #64748b;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: .55px;
-        line-height: 1.2;
-        text-transform: uppercase;
-    }
-
-    .task-meta-label i {
-        width: 14px;
-        color: #94a3b8 !important;
-        text-align: center;
-        font-size: 11px;
-    }
-
-    .task-dropdown {
-        position: relative;
-        min-width: 0;
-    }
-
-    .task-native-select {
-        display: none !important;
-    }
-
-    .task-dropdown-toggle {
-        width: 100%;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        padding: 9px 12px;
-        border: 1px solid #dbe1ea;
-        border-radius: 9px;
-        background: #ffffff;
-        color: #1f2937;
-        text-align: left;
-        font-size: 13.5px;
-        font-weight: 750;
-        box-shadow: 0 1px 2px rgba(17, 24, 39, 0.035);
-        transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
-        cursor: pointer;
-    }
-
-    .task-dropdown-toggle:hover {
-        border-color: #c7d2fe;
-        background: #fcfcff;
-    }
-
-    .task-dropdown-toggle:focus-visible {
-        outline: none;
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, .10);
-    }
-
-    .task-dropdown-toggle:disabled {
-        background: #f8fafc;
-        color: #94a3b8;
-        cursor: default;
-        box-shadow: none;
-    }
-
-    .task-dropdown.open .task-dropdown-toggle {
-        border-color: #8b5cf6;
-        box-shadow: 0 0 0 3px rgba(124, 58, 237, .09);
-    }
-
-    .task-meta-value {
-        min-width: 0;
-        flex: 1 1 auto;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .task-dropdown-chevron {
-        flex: 0 0 auto;
-        margin-left: auto;
-        color: #94a3b8;
-        font-size: 10px;
-        transition: transform .18s ease;
-    }
-
-    .task-dropdown.open .task-dropdown-chevron {
-        transform: rotate(180deg);
-    }
-
-    .task-status-dot {
-        width: 9px;
-        height: 9px;
-        flex: 0 0 9px;
-        border-radius: 50%;
-        background: #94a3b8;
-        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
-    }
-
-    .task-dropdown-menu {
-        position: absolute;
-        z-index: 2000;
-        top: calc(100% + 6px);
-        left: 0;
-        min-width: 100%;
-        max-height: 230px;
-        overflow-y: auto;
-        padding: 5px;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        background: #ffffff;
-        box-shadow: 0 14px 30px rgba(15, 23, 42, .14), 0 2px 8px rgba(15, 23, 42, .06);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-3px);
-        transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
-    }
-
-    .task-dropdown-menu.drop-up {
-        top: auto;
-        bottom: calc(100% + 6px);
-        transform: translateY(3px);
-    }
-
-    .task-dropdown.open .task-dropdown-menu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    .task-dropdown-item {
-        min-height: 36px;
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        padding: 8px 9px;
-        border-radius: 7px;
-        color: #334155;
-        font-size: 13.5px;
-        font-weight: 600;
-        line-height: 1.25;
-        cursor: pointer;
-        user-select: none;
-        transition: background-color .12s ease, color .12s ease;
-    }
-
-    .task-dropdown-item:hover {
-        background: #f8fafc;
-        color: #111827;
-    }
-
-    .task-dropdown-item.active {
-        background: #f8fafc;
-        color: #334155;
-    }
-
-    .task-dropdown-item .task-check {
-        margin-left: auto;
-        color: #7c3aed;
-        font-size: 11px;
+    
+    .readonly-success { 
+        background-color: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; color: #15803d !important; font-weight: 700 !important; cursor: default !important; box-shadow: 0 2px 4px rgba(34, 197, 94, 0.05) !important; font-size: 15px !important; 
     }
 
     /* ===================================================================
-       MÀU CHO VALUE ĐANG CHỌN
-       Chỉ áp dụng cho nút đang hiển thị, tránh ảnh hưởng các item trong menu.
+       LAYOUT & CONTEXT CARDS
        =================================================================== */
-    .priority-low .task-dropdown-toggle .task-status-dot,
-    .dot-low {
-        background: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
-    }
-    .priority-low .task-dropdown-toggle .task-meta-value { color: #0369a1; }
+    .task-context-card { padding: 16px; background: #ffffff; border: 1px solid #e5e7eb; border-left: 4px solid #6d28d9; border-radius: 12px; box-shadow: 0 2px 8px rgba(17, 24, 39, 0.05); }
+    .task-context-divider { height: 1px; margin: 16px 0; background: #eef2f7; }
+    .task-meta-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; }
+    .task-meta-shell { position: relative; min-width: 0; }
+    .task-meta-label { display: flex; align-items: center; gap: 6px; margin: 0 0 6px 1px; color: #374151; font-size: 13.5px; font-weight: 700; letter-spacing: normal; line-height: 1.3; text-transform: none !important; }
+    .task-meta-label i { width: 17px; color: #6b7280 !important; text-align: center; font-size: 13px; }
+    .task-top-label { display: block; margin-bottom: 8px; color: #374151; font-size: 13.5px; font-weight: 700; letter-spacing: normal; line-height: 1.3; text-transform: none !important; white-space: nowrap; }
+    /* Một nhãn Tên công việc dùng chung cho mã công việc và tên có thể chỉnh sửa. */
+    .task-edit-wrapper label, .task-edit-wrapper .task-meta-label { text-transform: none !important; letter-spacing: normal !important; }
+    .task-code-name-control { display: flex; align-items: stretch; width: 100%; min-width: 0; }
+    .task-code-prefix { display: flex; align-items: center; justify-content: center; flex: 0 0 110px; width: 110px; min-width: 110px; min-height: 46px; padding: 0 10px; background: #f5f3ff; border: 1px solid #ddd6fe; border-right: 0; border-radius: 9px 0 0 9px; color: #6d28d9; font-size: 16px; font-weight: 800; box-shadow: 0 1px 2px rgba(109, 40, 217, 0.05); }
+    .task-code-name-control > .task-name-input { flex: 1 1 auto; width: 1%; min-width: 0; min-height: 46px !important; height: 46px; padding: 10px 13px !important; border: 1px solid #d1d5db !important; border-left: 1px solid #ddd6fe !important; border-radius: 0 9px 9px 0 !important; background: #ffffff !important; color: #1e293b !important; font-size: 15px !important; font-weight: 700 !important; box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04) !important; }
+    .task-code-name-control > .task-name-input:focus { position: relative; z-index: 1; border-color: #7c3aed !important; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12) !important; }
+    .task-code-prefix .task-code-label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .priority-med .task-dropdown-toggle .task-status-dot,
-    .dot-medium {
-        background: #f59e0b;
-        box-shadow: 0 0 0 3px rgba(245, 158, 11, .12);
-    }
-    .priority-med .task-dropdown-toggle .task-meta-value { color: #b45309; }
-
-    .priority-high .task-dropdown-toggle .task-status-dot,
-    .dot-high {
-        background: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
-    }
-    .priority-high .task-dropdown-toggle .task-meta-value { color: #b91c1c; }
-
-    .priority-default .task-dropdown-toggle .task-status-dot,
-    .dot-default {
-        background: #94a3b8;
-        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
-    }
-    .priority-default .task-dropdown-toggle .task-meta-value { color: #334155; }
-
-    /* Status colors cho value đang chọn */
-    .status-box-0 .task-dropdown-toggle .task-status-dot,
-    .status-default .task-dropdown-toggle .task-status-dot,
-    .dot-status-0 {
-        background: #94a3b8;
-        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12);
-    }
-    .status-box-0 .task-dropdown-toggle .task-meta-value,
-    .status-default .task-dropdown-toggle .task-meta-value { color: #475569; }
-
-    .status-box-1 .task-dropdown-toggle .task-status-dot,
-    .status-running .task-dropdown-toggle .task-status-dot,
-    .dot-status-1 {
-        background: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
-    }
-    .status-box-1 .task-dropdown-toggle .task-meta-value,
-    .status-running .task-dropdown-toggle .task-meta-value { color: #1d4ed8; }
-
-    .status-box-2 .task-dropdown-toggle .task-status-dot,
-    .status-done .task-dropdown-toggle .task-status-dot,
-    .dot-status-2 {
-        background: #22c55e;
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, .12);
-    }
-    .status-box-2 .task-dropdown-toggle .task-meta-value,
-    .status-done .task-dropdown-toggle .task-meta-value { color: #15803d; }
-
-    .status-box-3 .task-dropdown-toggle .task-status-dot,
-    .status-error .task-dropdown-toggle .task-status-dot,
-    .dot-status-3 {
-        background: #ef4444;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12);
-    }
-    .status-box-3 .task-dropdown-toggle .task-meta-value,
-    .status-error .task-dropdown-toggle .task-meta-value { color: #b91c1c; }
-
-    /* ===================================================================
-       MÀU TỪNG OPTION TRONG MENU
-       Mỗi mức có màu riêng, item được chọn chỉ dùng nền rất nhạt tương ứng.
-       =================================================================== */
-    .task-dropdown-item.priority-option-low,
-    .task-dropdown-item.status-option-not-started {
-        --option-color: #3b82f6;
-        --option-text: #0369a1;
-        --option-bg: #eff6ff;
-    }
-
-    .task-dropdown-item.priority-option-medium {
-        --option-color: #f59e0b;
-        --option-text: #b45309;
-        --option-bg: #fffbeb;
-    }
-
-    .task-dropdown-item.priority-option-high {
-        --option-color: #ef4444;
-        --option-text: #b91c1c;
-        --option-bg: #fef2f2;
-    }
-
-    .task-dropdown-item.status-option-running {
-        --option-color: #3b82f6;
-        --option-text: #1d4ed8;
-        --option-bg: #eff6ff;
-    }
-
-    .task-dropdown-item.status-option-done {
-        --option-color: #22c55e;
-        --option-text: #15803d;
-        --option-bg: #f0fdf4;
-    }
-
-    .task-dropdown-item.status-option-other {
-        --option-color: #ef4444;
-        --option-text: #b91c1c;
-        --option-bg: #fef2f2;
-    }
-
-    .task-dropdown-item.priority-option-low .task-status-dot,
-    .task-dropdown-item.status-option-running .task-status-dot {
-        background: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, .12) !important;
-    }
-
-    .task-dropdown-item.priority-option-medium .task-status-dot {
-        background: #f59e0b !important;
-        box-shadow: 0 0 0 3px rgba(245, 158, 11, .12) !important;
-    }
-
-    .task-dropdown-item.priority-option-high .task-status-dot {
-        background: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12) !important;
-    }
-
-    .task-dropdown-item.status-option-not-started .task-status-dot {
-        background: #94a3b8 !important;
-        box-shadow: 0 0 0 3px rgba(148, 163, 184, .12) !important;
-    }
-
-    .task-dropdown-item.status-option-done .task-status-dot {
-        background: #22c55e !important;
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, .12) !important;
-    }
-
-    .task-dropdown-item.status-option-other .task-status-dot {
-        background: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, .12) !important;
-    }
-
-    .task-dropdown-item[class*="option-"] > span:not(.task-status-dot) {
-        color: #334155;
-    }
-
-    .task-dropdown-item[class*="option-"].active {
-        background: var(--option-bg, #f8fafc) !important;
-        color: var(--option-text, #334155) !important;
-    }
-
-    .task-dropdown-item[class*="option-"].active > span:not(.task-status-dot) {
-        color: var(--option-text, #334155) !important;
-        font-weight: 750;
-    }
-
-    .task-dropdown-item[class*="option-"].active .task-check {
-        color: var(--option-color, #7c3aed) !important;
-    }
-
-    .task-dropdown-item[class*="option-"]:hover {
-        background: var(--option-bg, #f8fafc);
-    }
-
-    .task-context-breadcrumb {
-        display: none;
-    }
-
-    #divRollUpNotice .badge { display: inline-flex; align-items: center; padding: 6px 9px !important; background: #fff7ed !important; border: 1px solid #fed7aa; border-radius: 7px; color: #9a3412 !important; font-size: 11px !important; font-weight: 700; }
-    #divRollUpNotice .badge i { color: #ea580c !important; }
-
-    @media (min-width: 768px) {
-        #<%= mdlEditTask.ClientID %> .modal-dialog {
-            width: 92% !important;
-            max-width: 800px !important;
-        }
-    }
-
+    /* C.V cha chỉ chiếm một vùng nhỏ như ô Giai đoạn; Phụ thuộc dùng phần còn lại. */
+    #<%= colCongViecCha.ClientID %>.task-parent-column { flex: 0 0 155px !important; width: 155px !important; max-width: 155px !important; }
+    #<%= colPhuThuoc.ClientID %>.task-dependent-column { flex: 1 1 0 !important; width: auto !important; max-width: none !important; min-width: 0; }
     @media (max-width: 767.98px) {
-        .task-context-card { padding: 13px; }
-        .task-context-top { align-items: flex-start; flex-direction: column; gap: 12px; }
-        .task-context-phase { width: 100%; }
-        .task-meta-controls { grid-template-columns: 1fr; }
-        #rowUuTienTrangThai { width: 100%; }
-        .end-date-locked { min-height: 72px; }
-        .task-edit-date-row > [class*="col-"] { display: block; }
-        .task-edit-date-row .smart-field, .task-edit-date-row .end-date-locked { min-height: 72px; height: auto; }
+        #<%= colCongViecCha.ClientID %>.task-parent-column,
+        #<%= colPhuThuoc.ClientID %>.task-dependent-column { flex: 0 0 100% !important; width: 100% !important; max-width: 100% !important; }
     }
+
+    /* ===================================================================
+       SMART STATUS & PRIORITY
+       =================================================================== */
+    .task-status-dot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: #94a3b8; box-shadow: 0 0 0 3px rgba(148, 163, 184, .12); margin-right: 4px;}
+    
+    .btn-status-start { background: #eff6ff !important; color: #1d4ed8 !important; border: 1px solid #bfdbfe !important; transition: all 0.2s !important; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.05) !important; }
+    .btn-status-start:hover { background: #dbeafe !important; border-color: #93c5fd !important; transform: translateY(-1px); }
+    .btn-status-complete { background: #f0fdf4 !important; color: #15803d !important; border: 1px solid #bbf7d0 !important; transition: all 0.2s !important; box-shadow: 0 2px 4px rgba(34, 197, 94, 0.05) !important; }
+    .btn-status-complete:hover { background: #dcfce7 !important; border-color: #86efac !important; transform: translateY(-1px); }
+    .btn-status-revert { background: #f8fafc !important; color: #475569 !important; border: 1px dashed #cbd5e1 !important; transition: all 0.2s !important; }
+    .btn-status-revert:hover { background: #f1f5f9 !important; color: #1e293b !important; border-style: solid !important; border-color: #94a3b8 !important; transform: translateY(-1px); }
+    .btn-status-undo { background: #ffffff !important; border: 1px solid #e2e8f0 !important; color: #64748b !important; transition: all 0.2s !important; display: flex; align-items: center; justify-content: center; width: 44px; padding: 0 !important; }
+    .btn-status-undo:hover { background: #fef2f2 !important; border-color: #fca5a5 !important; color: #dc2626 !important; }
+    
+    .priority-box { min-height: 44px; border-radius: 9px !important; display: flex; align-items: center; justify-content: center; font-size: 13px !important; font-weight: 600 !important; transition: all 0.2s ease !important; padding: 6px !important; flex: 1; }
+
+    .btn-view-schedule { height: 46px; border-radius: 9px !important; display: flex; align-items: center; justify-content: center; font-weight: 750 !important; background-color: #f0f9ff !important; border: 1px dashed #7dd3fc !important; color: #0284c7 !important; transition: all 0.2s; font-size: 13.5px; letter-spacing: 0.2px; padding: 0 10px; }
+    .btn-view-schedule:hover { background-color: #e0f2fe !important; border-style: solid !important; border-color: #38bdf8 !important; color: #0369a1 !important; transform: translateY(-1px); }
 
     #divRollUpNotice .badge { display: inline-flex; align-items: center; padding: 6px 9px !important; background: #fff7ed !important; border: 1px solid #fed7aa; border-radius: 7px; color: #9a3412 !important; font-size: 11px !important; font-weight: 700; }
     #divRollUpNotice .badge i { color: #ea580c !important; }
-    @media (min-width: 768px) { #<%= mdlEditTask.ClientID %> .modal-dialog { width: 92% !important; max-width: 760px !important; } }
-    @media (max-width: 767.98px) { .task-context-card { padding: 12px; } #rowUuTienTrangThai { width: 100%; } .header-dropdown-box { width: 100%; justify-content: space-between; } .end-date-locked { min-height: 72px; } .task-edit-date-row > [class*="col-"] { display: block; } .task-edit-date-row .smart-field, .task-edit-date-row .end-date-locked { min-height: 72px; height: auto; } }
+
+    /* TOOLTIP THÔNG MINH */
+    .st-tooltip { position: relative; cursor: help; transition: all 0.2s; }
+    .st-tooltip.phase-tooltip::after, .st-tooltip.parent-tooltip::after {
+        content: attr(data-title); position: absolute; bottom: 100%; right: 0; transform: translateY(-3px); 
+        background: linear-gradient(135deg, #6d28d9 0%, #2e1065 100%); border: 1px solid rgba(167, 139, 250, 0.35); box-shadow: 0 8px 15px rgba(109, 40, 217, 0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+        color: #ffffff; font-size: 12.5px; font-weight: 600; padding: 8px 14px; border-radius: 8px; width: max-content; 
+        max-width: 280px; white-space: normal; line-height: 1.45; opacity: 0; visibility: hidden; z-index: 9999; pointer-events: none; 
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: left;
+    }
+    .st-tooltip.parent-tooltip::after { right: auto; left: 0; }
+    .st-tooltip.phase-tooltip::before, .st-tooltip.parent-tooltip::before {
+        content: ""; position: absolute; bottom: 100%; right: 18px; transform: translateY(4px); 
+        border: 6px solid transparent; border-top-color: #6d28d9; opacity: 0; visibility: hidden; z-index: 9999; pointer-events: none; transition: all 0.2s ease; 
+    }
+    .st-tooltip.parent-tooltip::before { right: auto; left: 20px; }
+    
+    .st-tooltip.phase-tooltip:hover::after, .st-tooltip.parent-tooltip:hover::after { opacity: 1; visibility: visible; transform: translateY(-8px); }
+    .st-tooltip.phase-tooltip:hover::before, .st-tooltip.parent-tooltip:hover::before { opacity: 1; visibility: visible; transform: translateY(-2px); }
+    .st-tooltip.parent-tooltip:hover { background: #f5f3ff !important; border-color: #d8b4fe !important; }
+
+    /* ===================================================================
+       SLIDER CSS (HIỆU ỨNG TRƯỢT MƯỢT MÀ, KHÔNG GIẬT)
+       =================================================================== */
+    .task-edit-wrapper { display: flex; width: 100%; overflow: hidden; position: relative; box-sizing: border-box; }
+    .task-form-panel { width: 100%; flex: 0 0 100%; transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .3s ease; }
+    .task-schedule-panel { width: 0; flex: 0 0 0; opacity: 0; transform: translateX(30px); transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .3s ease, width .35s ease; overflow: hidden; background: #f8fafc; border-left: 1px solid #e2e8f0; border-radius: 0 8px 8px 0; }
+    
+    .task-edit-wrapper.is-split .task-schedule-panel { width: 520px; flex: 0 0 520px; opacity: 1; transform: translateX(0); padding-left: 16px; }
+    
+    @media (min-width: 768px) { 
+        #<%= mdlEditTask.ClientID %> .modal-dialog { width: 750px !important; max-width: 750px !important; transition: width .35s cubic-bezier(0.4, 0, 0.2, 1), max-width .35s cubic-bezier(0.4, 0, 0.2, 1); } 
+        #<%= mdlEditTask.ClientID %> .modal-dialog:has(.task-edit-wrapper.is-split) { width: 1280px !important; max-width: 1280px !important; }
+    }
+    @media (max-width: 1300px) {
+        #<%= mdlEditTask.ClientID %> .modal-dialog:has(.task-edit-wrapper.is-split) { width: 96vw !important; max-width: 96vw !important; }
+        .task-form-panel { width: 52vw; flex: 0 0 52vw; }
+        .task-edit-wrapper.is-split .task-schedule-panel { width: 44vw; flex: 0 0 44vw; }
+    }
+    @media (max-width: 767.98px) {
+        .task-edit-wrapper.is-split { flex-direction: column; }
+        .task-form-panel { width: 100% !important; flex: 0 0 auto !important; }
+        .task-edit-wrapper.is-split .task-schedule-panel { width: 100% !important; flex: 0 0 auto !important; border-left: none; border-top: 1px solid #e2e8f0; padding-left: 0; padding-top: 14px; transform: translateY(0); }
+        #<%= mdlEditTask.ClientID %> .modal-dialog:has(.task-edit-wrapper.is-split) { width: 95vw !important; max-width: 95vw !important; }
+        .task-context-top { flex-direction: column; align-items: flex-start; gap: 12px;}
+    }
+
+    /* ===================================================================
+       GLOBAL LOADING OVERLAY (MỜ ẢO ĐỈNH CAO)
+       =================================================================== */
+    #global-loading-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+    #global-loading-overlay.is-active { opacity: 1; visibility: visible; }
+    .st-spinner-ring { width: 54px; height: 54px; border: 4px solid #ede9fe; border-top: 4px solid #7c3aed; border-radius: 50%; animation: stSpinRing 0.85s linear infinite; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15); }
+    .st-loading-text { color: #5b21b6; font-weight: 800; font-size: 15px; letter-spacing: 0.5px; animation: stPulseText 1.5s ease-in-out infinite; text-transform: uppercase; }
+    @keyframes stSpinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes stPulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 </style>
 </asp:Content>
 
@@ -527,119 +172,151 @@
         <ContentTemplate>
             <asp:UpdatePanel ID="upModal" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>
-                    <div class="p-3">
-                        <asp:HiddenField ID="hfEditTaskId" runat="server" />
-                        <div class="task-context-card mb-4" id="divContextCard" runat="server">
-                            <div class="task-context-top">
-                                <div class="task-context-identity">
-                                    <div>
-                                        <span class="task-context-kicker">MÃ CÔNG VIỆC</span>
-                                        <asp:Label ID="lblEditMaCv" runat="server" CssClass="badge-code"></asp:Label>
-                                        <asp:TextBox ID="txtEditMaCv" runat="server" style="display:none;"></asp:TextBox>
-                                    </div>
-                                </div>
-                                <div class="task-context-phase" id="rowBreadcrumb" runat="server">
-                                    <i class="fas fa-layer-group"></i>
-                                    <div>
-                                        <span class="task-context-kicker">GIAI ĐOẠN</span>
-                                        <asp:Label ID="lblEditGiaiDoan" runat="server" CssClass="task-context-phase-value"></asp:Label>
-                                        <asp:TextBox ID="txtEditGiaiDoan" runat="server" style="display:none;"></asp:TextBox>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="task-edit-wrapper" id="taskEditWrapper">
+                        
+                        <!-- CỘT TRÁI: FORM CẬP NHẬT -->
+                        <div id="pnlTaskForm" class="task-form-panel">
+                            <div class="px-2 py-3">
+                                <asp:HiddenField ID="hfEditTaskId" runat="server" />
+                                
+                                <div class="task-context-card mb-3" id="divContextCard" runat="server">
+                                    <div class="d-flex align-items-end gap-3 mb-3">
+                                        <div style="flex: 1 1 auto; min-width: 0;">
+                                            <label class="task-top-label"><i class="fas fa-tasks me-1"></i><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %> <span class="text-danger ms-1">*</span></label>
+                                            <div class="task-code-name-control">
+                                                <div class="task-code-prefix" title="Mã công việc">
+                                                    <asp:Label ID="lblEditMaCv" runat="server" CssClass="task-code-label"></asp:Label>
+                                                    <asp:TextBox ID="txtEditMaCv" runat="server" style="display:none;"></asp:TextBox>
+                                                </div>
+                                                <asp:TextBox ID="txtEditTenCv" runat="server" CssClass="form-control task-name-input" placeholder="Nhập tên đầu việc..."></asp:TextBox>
+                                            </div>
+                                        </div>
 
-                            <div class="task-context-divider"></div>
+                                        <div id="rowBreadcrumb" runat="server" style="flex: 0 0 auto;">
+                                            <label class="task-top-label text-center">Giai đoạn</label>
+                                            <div class="st-tooltip phase-tooltip d-flex align-items-center justify-content-center" id="phaseTooltipWrapper" data-title="" style="height: 46px; min-width: 46px; border-radius: 9px; margin: 0; padding: 0 10px; background: #f5f3ff; border: 1px dashed #d8b4fe; color: #6d28d9;">
+                                                <span id="phaseShortText" style="font-size: 15px; font-weight: 800;"></span>
+                                            </div>
+                                            <asp:Label ID="lblEditGiaiDoan" runat="server" CssClass="d-none"></asp:Label>
+                                            <asp:TextBox ID="txtEditGiaiDoan" runat="server" style="display:none;"></asp:TextBox>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="task-context-divider" style="margin: 0 0 16px 0;"></div>
+                                    
+                                    <div class="task-meta-controls" id="rowUuTienTrangThai" runat="server">
+                                        <div class="task-meta-shell" id="boxUuTien" runat="server">
+                                            <div class="task-meta-label"><i class="fas fa-flag"></i> Ưu tiên</div>
+                                            <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="d-none task-priority-select" onchange="initSmartPriority()"></asp:DropDownList>
+                                            
+                                            <div class="d-flex align-items-center gap-2 w-100" id="prioritySelector"></div>
+                                            
+                                            <div id="priorityLocked" style="display: none;">
+                                                <button type="button" class="btn w-100 fw-bold d-flex align-items-center justify-content-start gap-2" style="min-height: 44px; padding-left: 14px; cursor: not-allowed; pointer-events: none; border-radius: 9px;"></button>
+                                            </div>
+                                        </div>
 
-                            <div class="task-meta-controls" id="rowUuTienTrangThai" runat="server">
-                                <div class="task-meta-shell header-dropdown-box priority-default" id="boxUuTien" runat="server">
-                                    <div class="task-meta-label"><i class="fas fa-flag"></i> ƯU TIÊN</div>
-                                    <div class="task-dropdown priority-default" data-select-id="<%= ddlEditDoUuTien.ClientID %>">
-                                        <asp:DropDownList ID="ddlEditDoUuTien" runat="server" CssClass="task-native-select" onchange="updatePriorityColor(this)"></asp:DropDownList>
-                                        <button type="button" class="task-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
-                                            <span class="task-status-dot"></span>
-                                            <span class="task-meta-value">Đang tải...</span>
-                                            <i class="fas fa-chevron-down task-dropdown-chevron"></i>
-                                        </button>
-                                        <div class="task-dropdown-menu" role="listbox"></div>
+                                        <div class="task-meta-shell" id="boxTrangThai" runat="server">
+                                            <div class="task-meta-label"><i class="fas fa-check-circle"></i> Trạng thái</div>
+                                            <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="d-none task-status-select"></asp:DropDownList>
+                                            
+                                            <div class="d-flex align-items-center gap-2">
+                                                <button type="button" id="btnSmartStatus" class="btn w-100 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="toggleSmartStatus()" style="min-height: 44px; font-size: 13.5px; border-radius: 9px;">
+                                                </button>
+                                                <button type="button" id="btnUndoStatus" class="btn btn-status-undo" onclick="undoSmartStatus()" title="Hoàn tác trạng thái ban đầu" style="min-height: 44px; border-radius: 9px; display: none;">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="task-meta-shell header-dropdown-box status-box-0" id="boxTrangThai" runat="server">
-                                    <div class="task-meta-label"><i class="fas fa-check-circle"></i> TRẠNG THÁI</div>
-                                    <div class="task-dropdown status-default" data-select-id="<%= ddlEditTrangThai.ClientID %>">
-                                        <asp:DropDownList ID="ddlEditTrangThai" runat="server" CssClass="task-native-select" onchange="updateStatusColor(this)"></asp:DropDownList>
-                                        <button type="button" class="task-dropdown-toggle" aria-haspopup="listbox" aria-expanded="false">
-                                            <span class="task-status-dot"></span>
-                                            <span class="task-meta-value">Đang tải...</span>
-                                            <i class="fas fa-chevron-down task-dropdown-chevron"></i>
-                                        </button>
-                                        <div class="task-dropdown-menu" role="listbox"></div>
+                                <div class="row g-3 mb-3" id="rowChaVaPhuThuoc" runat="server">
+                                    <div class="col-12 col-md-auto task-parent-column" id="colCongViecCha" runat="server">
+                                        <div class="smart-field">
+                                            <label style="white-space: nowrap;"><i class="fas fa-sitemap"></i> Công việc cha</label>
+                                            <asp:DropDownList ID="ddlEditCongViecCha" runat="server" CssClass="d-none task-parent-select" AutoPostBack="true" OnSelectedIndexChanged="ddlEditCongViecChaSelected"></asp:DropDownList>
+                                            
+                                            <div class="st-tooltip parent-tooltip d-flex align-items-center justify-content-center" id="parentTooltipWrapper" data-title="" style="height: 46px; border-radius: 9px; background: #f8fafc; border: 1px dashed #cbd5e1; cursor: help; transition: all 0.2s;">
+                                                <span id="parentShortText" style="font-size: 15px; font-weight: 800; color: #475569;"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md task-dependent-column" id="colPhuThuoc" runat="server">
+                                        <div class="smart-field">
+                                            <label><i class="fas fa-link"></i><%= GetResourceText(BackEndResourceKeys.DEPENDENT) %></label>
+                                            <asp:DropDownList ID="ddlEditPhuThuoc" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlEditPhuThuocSelected"></asp:DropDownList>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="divRollUpNotice" runat="server" class="mb-3" visible="false">
+                                    <div style="padding: 10px 14px; background: #fff7ed; border: 1px dashed #fdba74; border-radius: 9px; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-lock text-warning" style="font-size: 16px;"></i>
+                                        <span style="color: #9a3412; font-size: 13px; font-weight: 600;">Ngày tháng và Trạng thái bị khóa do tổng hợp tự động từ task con.</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-3 mb-3 align-items-end">
+                                    <div class="col-md-3">
+                                        <div class="smart-field">
+                                            <label><i class="far fa-calendar-alt"></i><%= GetResourceText(BackEndResourceKeys.START_DATE) %> <span class="text-danger ms-1">*</span></label>
+                                            <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control px-2" TextMode="Date"></asp:TextBox>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="smart-field">
+                                            <label><i class="fas fa-hourglass-half"></i><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger ms-1">*</span></label>
+                                            <div class="input-group">
+                                                <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control px-2" TextMode="Number" min="1"></asp:TextBox>
+                                                <span class="input-group-text px-2">Ngày</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="smart-field">
+                                            <label style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="far fa-calendar-check me-1 text-success"></i><%= GetResourceText(BackEndResourceKeys.EXPECTED_COMPLETION_DATE) %></label>
+                                            <div class="form-control d-flex align-items-center readonly-success px-2">
+                                                <asp:Label ID="lblNgayKetThuc" runat="server" CssClass="mb-0">--/--/----</asp:Label>
+                                                <asp:TextBox ID="txtEditNgayKetThuc" runat="server" style="display:none;"></asp:TextBox>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <asp:LinkButton ID="btnViewScheduleInEdit" runat="server" CssClass="btn w-100 btn-view-schedule" OnClick="btnViewScheduleInEdit_Click" OnClientClick="return toggleLocalTaskSchedule();" ToolTip="Bật hoặc tắt bảng lịch dự kiến">
+                                            <i class="fas fa-calendar-alt me-1"></i> Lịch dự kiến
+                                        </asp:LinkButton>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="smart-field">
+                                            <label><i class="fas fa-align-left"></i><%= GetResourceText(BackEndResourceKeys.SUMMARY) %></label>
+                                            <asp:TextBox ID="txtEditMoTa" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control"></asp:TextBox>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-12">
-                                <div class="smart-field">
-                                    <label><i class="fas fa-tasks"></i><%= GetResourceText(BackEndResourceKeys.TASK_NAME) %> <span class="text-danger ms-1">*</span></label>
-                                    <asp:TextBox ID="txtEditTenCv" runat="server" CssClass="form-control form-control-lg" placeholder="Nhập tên đầu việc..."></asp:TextBox>
+
+                        <!-- CỘT PHẢI: LỊCH BIỂU -->
+                        <div id="pnlTaskSchedule" class="task-schedule-panel">
+                            <div class="p-3">
+                                <div class="apt-detail-header mb-3" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
+                                    <h6 class="m-0" style="color: #1e40af; font-weight: 700; font-size: 16px;"><i class="fas fa-calendar-alt me-2"></i>Lịch biểu dự kiến</h6>
+                                    <button type="button" class="btn btn-sm btn-light border" onclick="closeLocalTaskSchedule(); return false;" style="color: #475569; font-weight: 600;"><i class="fas fa-chevron-right me-1"></i>Đóng lịch</button>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="row g-3 mb-3" id="rowChaVaPhuThuoc" runat="server">
-                            <div class="col-12" id="colCongViecCha" runat="server">
-                                <div class="smart-field">
-                                    <label><i class="fas fa-sitemap"></i><%= GetResourceText(BackEndResourceKeys.PARENT_TASK) %></label>
-                                    <asp:DropDownList ID="ddlEditCongViecCha" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlEditCongViecChaSelected"></asp:DropDownList>
-                                </div>
-                            </div>
-                            <div class="col-12" id="colPhuThuoc" runat="server">
-                                <div class="smart-field">
-                                    <label><i class="fas fa-link"></i><%= GetResourceText(BackEndResourceKeys.DEPENDENT) %></label>
-                                    <asp:DropDownList ID="ddlEditPhuThuoc" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlEditPhuThuocSelected"></asp:DropDownList>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="divRollUpNotice" runat="server" class="mb-2" visible="false">
-                            <span class="badge">
-                                <i class="fas fa-lock me-1"></i>Ngày tháng và Trạng thái bị khóa do tổng hợp từ task con
-                            </span>
-                        </div>
-                        <div class="row g-3 mb-3 task-edit-date-row">
-                            <div class="col-md-4">
-                                <div class="smart-field">
-                                    <label><i class="far fa-calendar-alt"></i><%= GetResourceText(BackEndResourceKeys.START_DATE) %> <span class="text-danger ms-1">*</span></label>
-                                    <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="smart-field">
-                                    <label><i class="fas fa-hourglass-half"></i><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger ms-1">*</span></label>
-                                    <div class="input-group">
-                                        <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control" TextMode="Number" min="1"></asp:TextBox>
-                                        <span class="input-group-text">Ngày</span>
-                                        <span class="duration-suffix">ngày</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="end-date-locked">
-                                    <label><i class="far fa-calendar-check me-1"></i><%= GetResourceText(BackEndResourceKeys.EXPECTED_COMPLETION_DATE) %></label>
-                                    <div class="end-date-value">
-                                        <asp:Label ID="lblNgayKetThuc" runat="server">--/--/----</asp:Label>
-                                        <asp:TextBox ID="txtEditNgayKetThuc" runat="server" style="display:none;"></asp:TextBox>
+                                <asp:HiddenField ID="hdfLocalScheduleJson" runat="server" />
+                                <div class="row-schedule-inner" style="padding: 10px 0;">
+                                    <div class="mini-cal-wrap">
+                                        <div class="mini-cal" id="local-task-timeline-container"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <div class="smart-field">
-                                    <label><i class="fas fa-align-left"></i><%= GetResourceText(BackEndResourceKeys.SUMMARY) %></label>
-                                    <asp:TextBox ID="txtEditMoTa" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control"></asp:TextBox>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
@@ -647,14 +324,15 @@
         <FooterTemplate>
             <asp:UpdatePanel ID="upnlFooterEdit" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>
-                    <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveTask_Click">
+                    <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveTask_Click" OnClientClick="showGlobalLoading();">
                         <i class="fas fa-save me-1"></i> Cập nhật
                     </asp:LinkButton>
                 </ContentTemplate>
             </asp:UpdatePanel>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
-<!-- POPUP CẤU HÌNH HỆ SỐ ĐÓNG GÓP -->
+
+    <!-- POPUP CẤU HÌNH HỆ SỐ ĐÓNG GÓP -->
     <SweetSoft:ExtraModal runat="server" ID="mdlHeSoDongGop" Type="Primary" Title="Cấu hình hệ số đóng góp">
         <ContentTemplate>
             <asp:UpdatePanel ID="upHeSoDongGop" runat="server" UpdateMode="Conditional">
@@ -663,18 +341,14 @@
                         <div class="alert alert-info" style="font-size:13px; background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;">
                             <i class="fas fa-info-circle me-1"></i> Các hệ số dưới đây là phiên bản độc lập của riêng dự án này. Việc thay đổi sẽ tự động <strong>áp dụng hồi tố</strong> để tính lại điểm cho toàn bộ công việc.
                         </div>
-
-                        <!-- Cấu trúc HTML y chang Settings.aspx, đã xóa thẻ <i> thừa -->
                         <div class="row">
                             <asp:Repeater ID="rptHeSoDongGop" runat="server">
                                 <ItemTemplate>
                                     <div class="col-lg-4">
                                         <div class="mt-3">
                                             <label class="form-label">Hệ số <%# Eval("TenDoUuTien").ToString().ToLower() %></label>
-                                            
                                             <asp:HiddenField ID="hdfIdDoUuTien" runat="server" Value='<%# Eval("IdDoUuTien") %>' />
                                             <asp:HiddenField ID="hdfIdHeSoDongGop" runat="server" Value='<%# Eval("IdHeSoDongGop") %>' />
-                                            
                                             <asp:TextBox ID="txtHeSo" runat="server" CssClass="form-control" TextMode="Number" step="0.01" min="0" 
                                                 Text='<%# Convert.ToDecimal(Eval("HeSoDongGop")).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) %>'>
                                             </asp:TextBox>
@@ -690,13 +364,15 @@
         <FooterTemplate>
             <asp:UpdatePanel ID="upnlFooterHeSo" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>
-                    <asp:LinkButton ID="btnSaveHeSo" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveHeSo_Click">
+                    <asp:LinkButton ID="btnSaveHeSo" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveHeSo_Click" OnClientClick="showGlobalLoading();">
                         <i class="fas fa-save me-1"></i> Lưu hệ số
                     </asp:LinkButton>
                 </ContentTemplate>
             </asp:UpdatePanel>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
+
+    <!-- POPUP NHẮC VIỆC -->
     <SweetSoft:ExtraModal runat="server" ID="mdlTaskReminder" Type="Primary">
         <ContentTemplate>
             <asp:UpdatePanel runat="server" ID="upTaskReminder" UpdateMode="Conditional">
@@ -717,7 +393,6 @@
                        <asp:Repeater runat="server" ID="rptTaskReminders">
                             <ItemTemplate>
                                 <div class="d-flex align-items-center border-bottom py-2 gap-2">
-                                    <!-- [SỬA LỖI]: Dùng input thuần thay vì asp:CheckBox -->
                                     <input type="checkbox" class="form-check-input mt-0" 
                                            value='<%# Eval("IdNhacViec") %>' 
                                            onchange="toggleReminderSelection(this);" 
@@ -734,7 +409,6 @@
                 </ContentTemplate>
             </asp:UpdatePanel>
         </ContentTemplate>
-
         <FooterTemplate>
             <asp:UpdatePanel runat="server" ID="upTaskReminderFooter" UpdateMode="Conditional">
                 <ContentTemplate>
@@ -751,210 +425,383 @@
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
 <script type="text/javascript">
-    function closeAllTaskDropdowns(exceptDropdown) {
-        $('.task-dropdown.open').each(function () {
-            if (!exceptDropdown || this !== exceptDropdown) {
-                $(this).removeClass('open');
-                $(this).find('.task-dropdown-toggle').attr('aria-expanded', 'false');
+
+    // =========================================================
+    // JAVASCRIPT: LOGIC TOGGLE MỞ / ĐÓNG LỊCH TRÊN CLIENT
+    // =========================================================
+    function toggleLocalTaskSchedule() {
+        var $wrapper = $('#taskEditWrapper');
+        var isOpen = $wrapper.hasClass('is-split');
+
+        if (isOpen) {
+            // Đang mở -> Đóng lại ngay lập tức hoàn toàn trên client
+            $wrapper.removeClass('is-split');
+            return false; // Chặn đứng postback xuống server
+        } else {
+            // Đang đóng -> Kiểm tra xem đã có dữ liệu JSON chưa
+            var jsonVal = $('#<%= hdfLocalScheduleJson.ClientID %>').val();
+            if (jsonVal && jsonVal.trim() !== '') {
+                // Đã có dữ liệu từ trước -> Chỉ việc trượt mở ra trên client (Không postback)
+                $wrapper.addClass('is-split');
+                renderLocalSchedule();
+                return false; // Chặn đứng postback
+            } else {
+                // Chưa có dữ liệu -> Cho phép postback lần đầu để server nạp JSON
+                return true; 
             }
-        });
+        }
     }
 
-    function getPriorityClass(text) {
-        text = (text || '').toLowerCase();
-        if (text.indexOf('cao') > -1) return 'priority-high';
-        if (text.indexOf('trung bình') > -1) return 'priority-med';
-        if (text.indexOf('thấp') > -1) return 'priority-low';
-        return 'priority-default';
+    function openLocalTaskSchedule() {
+        $('#taskEditWrapper').addClass('is-split');
     }
 
-    function getStatusClass(text, value) {
-        text = (text || '').toLowerCase();
-        if (text.indexOf('hoàn thành') > -1) return 'status-done';
-        if (text.indexOf('đang thực hiện') > -1) return 'status-running';
-        if (value === '3') return 'status-error';
-        if (value === '2') return 'status-done';
-        if (value === '1') return 'status-running';
-        return 'status-default';
+    function closeLocalTaskSchedule() {
+        $('#taskEditWrapper').removeClass('is-split');
     }
 
-    function getPriorityDotClass(text) {
-        return getPriorityClass(text)
-            .replace('priority-med', 'dot-medium')
-            .replace('priority-low', 'dot-low')
-            .replace('priority-high', 'dot-high')
-            .replace('priority-default', 'dot-default');
+    // Xóa hoàn toàn trạng thái lịch phía client khi popup đóng hoặc đổi công việc.
+    // Không xóa JSON khi chỉ đóng panel lịch, để có thể mở lại nhanh cho cùng công việc.
+    function resetLocalTaskScheduleState(clearJson) {
+        var wrapper = document.getElementById('taskEditWrapper');
+        if (wrapper) wrapper.classList.remove('is-split');
+
+        var cal = $('#local-task-timeline-container');
+        if (cal.length) cal.empty().removeData('mc');
+
+        if (clearJson) {
+            var hiddenField = document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');
+            if (hiddenField) hiddenField.value = '';
+        }
     }
 
-    function getStatusDotClass(text, value) {
-        var cls = getStatusClass(text, value);
-        if (cls === 'status-running') return 'dot-status-1';
-        if (cls === 'status-done') return 'dot-status-2';
-        if (cls === 'status-error') return 'dot-status-3';
-        return 'dot-status-0';
-    }
+    // Giữ nguyên chiều rộng đang hiển thị trong lúc popup đóng.
+    // Tránh hiện tượng modal co từ bản rộng về bản thường rồi mới biến mất.
+    (function bindTaskEditModalCloseBehavior() {
+        var modalSelector = '#<%= mdlEditTask.ClientID %>';
 
-    function getPriorityOptionClass(text) {
-        text = (text || '').toLowerCase();
-        if (text.indexOf('cao') > -1) return 'priority-option-high';
-        if (text.indexOf('trung bình') > -1) return 'priority-option-medium';
-        if (text.indexOf('thấp') > -1) return 'priority-option-low';
-        return 'priority-option-low';
-    }
+        $(document)
+            .off('hide.bs.modal.taskEditScheduleClose', modalSelector)
+            .on('hide.bs.modal.taskEditScheduleClose', modalSelector, function () {
+                var dialog = this.querySelector('.modal-dialog');
+                if (!dialog) return;
 
-    function getStatusOptionClass(text, value) {
-        text = (text || '').toLowerCase();
-        if (text.indexOf('chưa bắt đầu') > -1 || text.indexOf('chua bat dau') > -1) return 'status-option-not-started';
-        if (text.indexOf('đang thực hiện') > -1 || text.indexOf('dang thuc hien') > -1) return 'status-option-running';
-        if (text.indexOf('hoàn thành') > -1 || text.indexOf('hoan thanh') > -1) return 'status-option-done';
-        if (value === '1') return 'status-option-running';
-        if (value === '2') return 'status-option-done';
-        return 'status-option-other';
-    }
-
-    function syncTaskDropdown(selectElement) {
-        if (!selectElement) return;
-
-        var $select = $(selectElement);
-        var $dropdown = $('.task-dropdown[data-select-id="' + selectElement.id + '"]');
-        if (!$dropdown.length) return;
-
-        var value = $select.val();
-        var $selectedOption = $select.find('option:selected');
-        var text = $selectedOption.text() || 'Chưa chọn';
-        var isPriority = $select.attr('id') === '<%= ddlEditDoUuTien.ClientID %>';
-        var valueClass = isPriority ? getPriorityClass(text) : getStatusClass(text, value);
-        var dotClass = isPriority ? getPriorityDotClass(text) : getStatusDotClass(text, value);
-        var menuHtml = '';
-
-        $select.find('option').each(function () {
-            var optionText = $(this).text().trim();
-            var optionValue = $(this).val();
-            var optionSelected = this.selected;
-            var optionDotClass = isPriority
-                ? getPriorityDotClass(optionText)
-                : getStatusDotClass(optionText, optionValue);
-            var optionTypeClass = isPriority
-                ? getPriorityOptionClass(optionText)
-                : getStatusOptionClass(optionText, optionValue);
-
-            menuHtml += '<div class="task-dropdown-item ' + optionTypeClass + (optionSelected ? ' active' : '') + '" role="option" aria-selected="' + optionSelected + '" data-value="' + $('<div/>').text(optionValue).html() + '">';
-            menuHtml += '<span class="task-status-dot ' + optionDotClass + '"></span>';
-            menuHtml += '<span>' + $('<div/>').text(optionText).html() + '</span>';
-            if (optionSelected) {
-                menuHtml += '<i class="fas fa-check task-check"></i>';
-            }
-            menuHtml += '</div>';
-        });
-
-        var $shell = $dropdown.closest('.task-meta-shell');
-        $shell.removeClass('priority-default priority-low priority-med priority-high status-box-0 status-box-1 status-box-2 status-box-3 status-default status-running status-done status-error');
-        $shell.addClass(valueClass);
-
-        $dropdown.removeClass('priority-default priority-low priority-med priority-high status-box-0 status-box-1 status-box-2 status-box-3 status-default status-running status-done status-error');
-        $dropdown.addClass(valueClass);
-
-        $dropdown.find('.task-meta-value').text(text);
-        $dropdown.find('.task-status-dot').removeClass('dot-low dot-medium dot-high dot-default dot-status-0 dot-status-1 dot-status-2 dot-status-3').addClass(dotClass);
-        $dropdown.find('.task-dropdown-menu').html(menuHtml);
-
-        var $toggle = $dropdown.find('.task-dropdown-toggle');
-        $toggle.prop('disabled', $select.prop('disabled'));
-        $toggle.attr('aria-disabled', $select.prop('disabled') ? 'true' : 'false');
-    }
-
-    function initTaskHeaderDropdown(selectElement) {
-        if (!selectElement) return;
-        syncTaskDropdown(selectElement);
-    }
-
-    function initAllTaskHeaderDropdowns() {
-        var prioritySelect = document.getElementById('<%= ddlEditDoUuTien.ClientID %>');
-        var statusSelect = document.getElementById('<%= ddlEditTrangThai.ClientID %>');
-        initTaskHeaderDropdown(prioritySelect);
-        initTaskHeaderDropdown(statusSelect);
-    }
-
-    function updateStatusColor(selectElement) {
-        syncTaskDropdown(selectElement);
-    }
-
-    function updatePriorityColor(selectElement) {
-        syncTaskDropdown(selectElement);
-    }
-
-    $(document).off('click.taskHeaderToggle').on('click.taskHeaderToggle', '.task-dropdown-toggle', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var dropdown = $(this).closest('.task-dropdown')[0];
-        if (!dropdown || $(this).prop('disabled')) return;
-
-        var isOpen = $(dropdown).hasClass('open');
-        closeAllTaskDropdowns(dropdown);
-
-        if (!isOpen) {
-            $(dropdown).addClass('open');
-            $(this).attr('aria-expanded', 'true');
-
-            var menu = $(dropdown).find('.task-dropdown-menu')[0];
-            if (menu) {
-                $(menu).removeClass('drop-up');
-                var rect = dropdown.getBoundingClientRect();
-                var estimatedMenuHeight = Math.min(menu.scrollHeight || 180, 230);
-                var spaceBelow = window.innerHeight - rect.bottom;
-                if (spaceBelow < estimatedMenuHeight + 18 && rect.top > estimatedMenuHeight + 18) {
-                    $(menu).addClass('drop-up');
+                var currentWidth = dialog.getBoundingClientRect().width;
+                if (currentWidth > 0) {
+                    dialog.style.setProperty('width', currentWidth + 'px', 'important');
+                    dialog.style.setProperty('max-width', currentWidth + 'px', 'important');
                 }
+
+                // Chỉ giữ chuyển động đóng của Bootstrap, bỏ transition co chiều rộng.
+                dialog.style.setProperty('transition', 'transform .3s ease-out', 'important');
+            })
+            .off('hidden.bs.modal.taskEditScheduleClose', modalSelector)
+            .on('hidden.bs.modal.taskEditScheduleClose', modalSelector, function () {
+                var dialog = this.querySelector('.modal-dialog');
+                if (dialog) {
+                    dialog.style.removeProperty('width');
+                    dialog.style.removeProperty('max-width');
+                    dialog.style.removeProperty('transition');
+                }
+
+                resetLocalTaskScheduleState(true);
+            });
+    })();
+
+    function renderLocalSchedule() {
+        var cal = $('#local-task-timeline-container'); 
+        cal.empty(); 
+        var hiddenField = $('#<%= hdfLocalScheduleJson.ClientID %>'); 
+        if (hiddenField.length === 0) return; 
+        
+        var jsonString = hiddenField.val(); 
+        if (!jsonString) return; 
+        
+        var data = {}; 
+        try { 
+            var decodedJson = $('<textarea/>').html(jsonString).text(); 
+            data = JSON.parse(decodedJson) || {}; 
+        } catch (e) { return; } 
+        
+        var keys = Object.keys(data).sort(); 
+        if (keys.length === 0) return; 
+        
+        var minKey = keys[0]; 
+        var maxKey = keys[keys.length - 1]; 
+        var baseDate = new Date(parseInt(minKey.split('-')[0]), parseInt(minKey.split('-')[1]) - 1, parseInt(minKey.split('-')[2])); 
+        
+        cal.data('mc', { data: data, minKey: minKey, maxKey: maxKey, year: baseDate.getFullYear(), month: baseDate.getMonth() }); 
+        
+        if (typeof CMSMasterJs !== 'undefined' && CMSMasterJs.DrawTaskCalendarGrid) {
+            CMSMasterJs.DrawTaskCalendarGrid(cal);
+        }
+    }
+
+
+    // =========================================================
+    // TỰ ĐỘNG ĐÓNG NGOẶC VUÔNG CHO MÃ CÔNG VIỆC
+    // =========================================================
+    function processMaCvUI() {
+        var $lblMaCv = $('#<%= lblEditMaCv.ClientID %>');
+        if ($lblMaCv.length > 0) {
+            var text = $lblMaCv.text().trim();
+            if (text && !text.startsWith('[')) {
+                $lblMaCv.text('[' + text + ']');
             }
         }
-    });
+    }
 
-    $(document).off('click.taskHeaderItem').on('click.taskHeaderItem', '.task-dropdown-item', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var $item = $(this);
-        var $dropdown = $item.closest('.task-dropdown');
-        var selectId = $dropdown.attr('data-select-id');
-        var select = document.getElementById(selectId);
-        var value = $item.attr('data-value');
-
-        if (!select) return;
-
-        select.value = value;
-        $(select).trigger('change');
-
-        $dropdown.removeClass('open');
-        $dropdown.find('.task-dropdown-toggle').attr('aria-expanded', 'false');
-    });
-
-    $(document).off('click.taskHeaderOutside').on('click.taskHeaderOutside', function () {
-        closeAllTaskDropdowns();
-    });
-
-    $(document).off('keydown.taskHeaderEscape').on('keydown.taskHeaderEscape', function (e) {
-        if (e.key === 'Escape') {
-            closeAllTaskDropdowns();
+    function processPhaseUI() {
+        var $lblPhase = $('#<%= lblEditGiaiDoan.ClientID %>');
+        if ($lblPhase.length === 0) return; 
+        
+        var fullText = $lblPhase.text().trim();
+        var $wrapper = $('#phaseTooltipWrapper');
+        var $shortText = $('#phaseShortText');
+        
+        if (!fullText || fullText === '-- --' || fullText === 'Giai đoạn gốc' || fullText.indexOf('---') > -1) {
+            $wrapper.attr('data-title', 'Là giai đoạn gốc');
+            $wrapper.css({ 'background': '#f8fafc', 'border': '1px dashed #cbd5e1', 'color': '#94a3b8' });
+            $shortText.html('<i class="fas fa-minus m-0" style="font-size:14px;"></i>');
+            return;
         }
-    });
 
-    $(document).off('change.taskHeaderSync').on('change.taskHeaderSync', '.task-native-select', function () {
-        syncTaskDropdown(this);
-    });
+        $wrapper.attr('data-title', fullText);
 
-    $(window).off('resize.taskHeader').on('resize.taskHeader', function () {
-        closeAllTaskDropdowns();
+        var match = fullText.match(/\[(.*?)\]/);
+        if (match && match[0]) {
+            $shortText.text(match[0]);
+        } else {
+            $shortText.html('<i class="fas fa-layer-group m-0" style="font-size:14px;"></i>');
+        }
+    }
+
+    function processParentUI() {
+        var $ddlParent = $('#<%= ddlEditCongViecCha.ClientID %>');
+        if ($ddlParent.length === 0) return;
+        
+        var $wrapper = $('#parentTooltipWrapper');
+        var $shortText = $('#parentShortText');
+        
+        var fullText = $ddlParent.find('option:selected').text() || '';
+        fullText = fullText.trim();
+
+        if (!fullText || fullText === 'Chưa chọn' || fullText.indexOf('---') > -1) {
+            $wrapper.attr('data-title', 'Không có công việc cha');
+            $shortText.html('<i class="fas fa-sitemap m-0" style="font-size:14px; color: #94a3b8;"></i>');
+            return;
+        }
+
+        $wrapper.attr('data-title', fullText);
+
+        var match = fullText.match(/\[(.*?)\]/);
+        if (match && match[0]) {
+            $shortText.text(match[0]);
+        } else {
+            $shortText.html('<i class="fas fa-sitemap m-0" style="font-size:14px; color: #475569;"></i>');
+        }
+    }
+
+    // =========================================================
+    // LOGIC NÚT ĐỘ ƯU TIÊN (SMART PRIORITY)
+    // =========================================================
+    function initSmartPriority() {
+        var $ddl = $('.task-priority-select');
+        if (!$ddl.length) return;
+        
+        var isDisabled = $ddl.prop('disabled') || $ddl.attr('disabled') === 'disabled';
+        var currentVal = $ddl.val();
+        var $selector = $('#prioritySelector');
+        var $locked = $('#priorityLocked');
+        var $lockedBtn = $locked.find('button');
+        
+        if (isDisabled) {
+            $selector.hide();
+            $locked.show();
+            
+            var text = $ddl.find('option:selected').text();
+            if (!text) text = 'Chưa thiết lập';
+            
+            var color = '#64748b'; var bg = '#f8fafc'; var border = '#e2e8f0';
+            if (text.toLowerCase().indexOf('cao') > -1) { color = '#b91c1c'; bg = '#fef2f2'; border = '#fecaca'; }
+            else if (text.toLowerCase().indexOf('trung bình') > -1) { color = '#b45309'; bg = '#fffbeb'; border = '#fde68a'; }
+            else if (text.toLowerCase().indexOf('thấp') > -1) { color = '#1d4ed8'; bg = '#eff6ff'; border = '#bfdbfe'; }
+            
+            $lockedBtn.css({ 'background': bg, 'color': color, 'border': '1px dashed ' + border });
+            $lockedBtn.html('<span class="task-status-dot" style="background:'+color+'; box-shadow: 0 0 0 3px '+bg+';"></span> ' + text);
+        } else {
+            $locked.hide();
+            $selector.show();
+            
+            $selector.empty();
+            $ddl.find('option').each(function() {
+                var val = $(this).val();
+                if (!val) return; 
+                var text = $(this).text();
+                var isSelected = (val === currentVal);
+                
+                var color = '#64748b'; var border = '#e2e8f0'; var hoverBg = '#f1f5f9';
+                var selectedBg = '#ffffff'; var selectedBorder = '#64748b';
+                
+                if (text.toLowerCase().indexOf('cao') > -1) { color = '#b91c1c'; border = '#fecaca'; hoverBg = '#fef2f2'; selectedBorder = '#ef4444'; selectedBg = '#fff5f5'; }
+                else if (text.toLowerCase().indexOf('trung bình') > -1) { color = '#b45309'; border = '#fde68a'; hoverBg = '#fffbeb'; selectedBorder = '#f59e0b'; selectedBg = '#fffbf0'; }
+                else if (text.toLowerCase().indexOf('thấp') > -1) { color = '#1d4ed8'; border = '#bfdbfe'; hoverBg = '#eff6ff'; selectedBorder = '#3b82f6'; selectedBg = '#f0f5ff'; }
+                
+                var $box = $('<button type="button" class="btn priority-box"></button>');
+                
+                if (isSelected) {
+                    $box.css({ 'background': selectedBg, 'color': color, 'border': '2px solid ' + selectedBorder, 'box-shadow': '0 2px 4px rgba(0,0,0,0.03)' });
+                    $box.html('<span class="task-status-dot" style="background:'+color+'; box-shadow: 0 0 0 2px '+selectedBg+';"></span> ' + text);
+                } else {
+                    $box.css({ 'background': '#ffffff', 'color': '#64748b', 'border': '1px solid #e2e8f0' });
+                    $box.html(text);
+                    $box.hover(function() {
+                        $(this).css({ 'background': hoverBg, 'color': color, 'border-color': border });
+                    }, function() {
+                        $(this).css({ 'background': '#ffffff', 'color': '#64748b', 'border-color': '#e2e8f0' });
+                    });
+                }
+                
+                $box.on('click', function() {
+                    $ddl.val(val).trigger('change');
+                });
+                
+                $selector.append($box);
+            });
+        }
+    }
+
+    // =========================================================
+    // LOGIC NÚT TRẠNG THÁI (SMART STATUS)
+    // =========================================================
+    function initSmartStatus() {
+        var $ddl = $('.task-status-select');
+        if (!$ddl.length) return;
+        if (typeof $ddl.data('original-value') === 'undefined') {
+            $ddl.data('original-value', $ddl.val());
+        }
+        renderSmartStatus();
+    }
+
+    function renderSmartStatus() {
+        var $ddl = $('.task-status-select');
+        var $btn = $('#btnSmartStatus');
+        var $undo = $('#btnUndoStatus');
+        if (!$ddl.length) return;
+        
+        var currentVal = $ddl.val();
+        var originalVal = $ddl.data('original-value');
+        var isDisabled = $ddl.prop('disabled') || $ddl.attr('disabled') === 'disabled';
+        
+        $btn.removeClass('btn-status-start btn-status-complete btn-status-revert');
+        
+        if (isDisabled) {
+            $btn.css({ 'cursor': 'not-allowed', 'pointer-events': 'none' });
+            
+            if (currentVal === '0') {
+                $btn.css({ 'background': '#f8fafc', 'color': '#64748b', 'border': '1px dashed #cbd5e1' });
+                $btn.html('<i class="fas fa-hourglass-start"></i> Chưa bắt đầu');
+            } else if (currentVal === '1') {
+                $btn.css({ 'background': '#eff6ff', 'color': '#1d4ed8', 'border': '1px solid #bfdbfe' });
+                $btn.html('<i class="fas fa-play"></i> Đang thực hiện');
+            } else if (currentVal === '2') {
+                $btn.css({ 'background': '#f0fdf4', 'color': '#15803d', 'border': '1px solid #bbf7d0' });
+                $btn.html('<i class="fas fa-check"></i> Hoàn thành');
+            } else if (currentVal === '3') {
+                $btn.css({ 'background': '#fef2f2', 'color': '#b91c1c', 'border': '1px solid #fecaca' });
+                $btn.html('<i class="fas fa-exclamation-circle"></i> Hoàn thành <span style="color:#dc2626; margin-left:4px;">(Trễ hạn)</span>');
+            } else {
+                $btn.css({ 'background': '#f8fafc', 'color': '#64748b', 'border': '1px solid #e2e8f0' });
+                $btn.html('<i class="fas fa-info-circle"></i> Không xác định');
+            }
+            $undo.hide();
+        } 
+        else {
+            $btn.css({ 'background': '', 'color': '', 'border': '', 'cursor': 'pointer', 'pointer-events': 'auto' });
+            
+            if (currentVal === '0') {
+                $btn.addClass('btn-status-start').html('<i class="fas fa-play"></i> Bắt đầu thực hiện');
+            } else if (currentVal === '1') {
+                $btn.addClass('btn-status-complete').html('<i class="fas fa-check"></i> Đánh dấu hoàn thành');
+            } else if (currentVal === '2' || currentVal === '3') {
+                $btn.addClass('btn-status-start').html('<i class="fas fa-redo"></i> Tiếp tục thực hiện'); 
+            } else {
+                $btn.addClass('btn-status-revert').html('<i class="fas fa-exchange-alt"></i> Thay đổi');
+            }
+            
+            if (currentVal !== originalVal && originalVal !== undefined) {
+                $undo.fadeIn(200);
+            } else {
+                $undo.hide();
+            }
+        }
+    }
+
+    function toggleSmartStatus() {
+        var $ddl = $('.task-status-select');
+        if ($ddl.prop('disabled') || $ddl.attr('disabled') === 'disabled') return;
+        
+        var currentVal = $ddl.val();
+        if (currentVal === '0') {
+            $ddl.val('1'); 
+        } else if (currentVal === '1') {
+            $ddl.val('2'); 
+        } else if (currentVal === '2' || currentVal === '3') {
+            $ddl.val('1'); 
+        }
+        renderSmartStatus();
+    }
+
+    function undoSmartStatus() {
+        var $ddl = $('.task-status-select');
+        var originalVal = $ddl.data('original-value');
+        if (originalVal !== undefined) {
+            $ddl.val(originalVal);
+            renderSmartStatus();
+        }
+    }
+
+    // =========================================================
+    // HIỆU ỨNG LOADING TOÀN MÀN HÌNH
+    // =========================================================
+    function showGlobalLoading() {
+        if ($('#global-loading-overlay').length === 0) {
+            $('body').append('<div id="global-loading-overlay"><div class="st-spinner-ring"></div><div class="st-loading-text">Đang xử lý dữ liệu...</div></div>');
+        }
+        $('#global-loading-overlay').addClass('is-active');
+    }
+
+    function hideGlobalLoading() {
+        $('#global-loading-overlay').removeClass('is-active');
+    }
+
+    // =========================================================
+    // EVENT BINDINGS
+    // =========================================================
+    $(document).off('change.taskPrioritySync').on('change.taskPrioritySync', '.task-priority-select', function () {
+        initSmartPriority();
     });
 
     $(function () {
-        initAllTaskHeaderDropdowns();
+        initSmartStatus();
+        initSmartPriority();
+        processMaCvUI();
+        processPhaseUI();
+        processParentUI();
     });
 
     if (window.Sys && Sys.Application) {
         Sys.Application.add_load(function () {
-            closeAllTaskDropdowns();
-            initAllTaskHeaderDropdowns();
+            initSmartStatus();
+            initSmartPriority();
+            processMaCvUI();
+            processPhaseUI();
+            processParentUI();
+        });
+        
+        // Tự động tắt Loading Overlay khi Server xử lý xong Data
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+            hideGlobalLoading();
         });
     }
 
@@ -974,35 +821,27 @@
             }
         }
     });
+
     function toggleReminderSelection(chk) {
         var hidden = document.getElementById('<%= hdfSelectedReminderIds.ClientID %>');
         var button = document.getElementById('<%= btnProcessReminders.ClientID %>');
 
-        if (!hidden || !button)
-            return;
+        if (!hidden || !button) return;
 
-        // [SỬA LỖI]: Lấy trực tiếp từ thuộc tính value
         var id = chk.value;
-        if (!id)
-            return;
+        if (!id) return;
 
-        var ids = hidden.value
-            ? hidden.value.split(',').filter(function (x) { return x; })
-            : [];
+        var ids = hidden.value ? hidden.value.split(',').filter(function (x) { return x; }) : [];
 
         if (chk.checked) {
-            if (ids.indexOf(id) === -1)
-                ids.push(id);
-        }
-        else {
+            if (ids.indexOf(id) === -1) ids.push(id);
+        } else {
             ids = ids.filter(function (x) { return x !== id; });
         }
 
         hidden.value = ids.join(',');
-
         var disabled = ids.length === 0;
 
-        // Bật/tắt nút bằng CSS
         button.style.pointerEvents = disabled ? 'none' : 'auto';
         button.style.opacity = disabled ? '0.55' : '1';
         button.style.cursor = disabled ? 'default' : 'pointer';

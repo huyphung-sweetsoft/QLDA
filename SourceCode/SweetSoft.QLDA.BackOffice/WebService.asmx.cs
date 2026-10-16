@@ -64,22 +64,28 @@ namespace SweetSoft.QLDA.BackOffice
         /// </summary>
         /// <param name="page">Trang hiện tại, bắt đầu từ 1</param>
         [WebMethod(EnableSession = true)]
+
         public object GetNotifications(int page = 1)
         {
             try
             {
                 const int PageSize = 10;
+
                 Guid userId = SweetContext.Current.UserId;
 
                 if (userId == Guid.Empty)
                     return new { success = false, message = "Unauthorized" };
 
-                // Chuyển page -> startRow / endRow theo pattern ROW_NUMBER của project
                 int startRow = (page - 1) * PageSize + 1;
-                int endRow   = startRow + PageSize - 1;
+                int endRow = startRow + PageSize - 1;
 
                 int totalRecord = 0;
-                DataTable dt = ThongBaoManager.Instance.GetByUser(userId, startRow, endRow, out totalRecord);
+
+                DataTable dt = ThongBaoManager.Instance.GetByUser(
+                    userId,
+                    startRow,
+                    endRow,
+                    out totalRecord);
 
                 List<object> items = new List<object>();
 
@@ -87,22 +93,59 @@ namespace SweetSoft.QLDA.BackOffice
                 {
                     foreach (DataRow row in dt.Rows)
                     {
-                        Guid? idDuAn = row["IdDuAn"] == DBNull.Value ? (Guid?)null : (Guid)row["IdDuAn"];
-                        Guid? idCongViec = row["IdCongViec"] == DBNull.Value ? (Guid?)null : (Guid)row["IdCongViec"];
-                        string loaiThongBao = row["LoaiThongBao"] == DBNull.Value ? null : (string)row["LoaiThongBao"];
-                        
+                        Guid idThongBao = row["IdThongBao"] == DBNull.Value
+                            ? Guid.Empty
+                            : (Guid)row["IdThongBao"];
+
+                        Guid? idDuAn = row["IdDuAn"] == DBNull.Value
+                            ? (Guid?)null
+                            : (Guid)row["IdDuAn"];
+
+                        Guid? idCongViec = row["IdCongViec"] == DBNull.Value
+                            ? (Guid?)null
+                            : (Guid)row["IdCongViec"];
+
+                        string loaiThongBao = row["LoaiThongBao"] == DBNull.Value
+                            ? null
+                            : Convert.ToString(row["LoaiThongBao"]);
+
+                        string action = row["DuongDanLienKet"] == DBNull.Value
+                            ? null
+                            : Convert.ToString(row["DuongDanLienKet"]);
+
+                        if (!string.IsNullOrWhiteSpace(action))
+                            action = action.Trim();
+                        else
+                            action = null;
+
+                        // Truyền cả ID thông báo để mở đúng popup kết quả.
+                        string notificationUrl =
+                            SweetSoft.QLDA.BackOffice.Common.NotificationHelper
+                                .BuildNotificationLink(
+                                    loaiThongBao,
+                                    idDuAn,
+                                    idCongViec,
+                                    action,
+                                    idThongBao);
+
                         items.Add(new
                         {
-                            id             = row["IdThongBao"],
-                            tieuDe         = row["TieuDe"],
-                            noiDung        = row["NoiDung"] == DBNull.Value ? null : (string)row["NoiDung"],
-                            loaiThongBao   = loaiThongBao,
-                            duongDanLienKet= row["DuongDanLienKet"] == DBNull.Value
-                                || string.IsNullOrWhiteSpace(Convert.ToString(row["DuongDanLienKet"]))
-                                    ? SweetSoft.QLDA.BackOffice.Common.NotificationHelper.BuildNotificationLink(loaiThongBao, idDuAn, idCongViec)
-                                    : Convert.ToString(row["DuongDanLienKet"]),
-                            daDoc          = (bool)row["DaDoc"],
-                            ngayTao        = Convert.ToDateTime(row["NgayTao"]).ToString("dd/MM/yyyy HH:mm")
+                            id = idThongBao,
+
+                            tieuDe = row["TieuDe"],
+
+                            noiDung = row["NoiDung"] == DBNull.Value
+                                ? null
+                                : Convert.ToString(row["NoiDung"]),
+
+                            loaiThongBao = loaiThongBao,
+
+                            duongDanLienKet = notificationUrl,
+
+                            daDoc = (bool)row["DaDoc"],
+
+                            ngayTao = Convert.ToDateTime(row["NgayTao"])
+                                .ToString("dd/MM/yyyy HH:mm")
                         });
                     }
                 }
@@ -112,14 +155,18 @@ namespace SweetSoft.QLDA.BackOffice
                 return new
                 {
                     success = true,
-                    data    = items,
-                    total   = totalRecord,
+                    data = items,
+                    total = totalRecord,
                     hasMore = hasMore
                 };
             }
             catch (Exception ex)
             {
-                return new { success = false, message = ex.Message };
+                return new
+                {
+                    success = false,
+                    message = ex.Message
+                };
             }
         }
 
