@@ -3,6 +3,7 @@
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <%@ Register Src="~/fIssues/Controls/CtrlViewIssueDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewIssueDetail" %>
 <%@ Register Src="~/fTasks/Controls/CtrlViewTaskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewTaskDetail" %>
+<%@ Register Src="~/fGanttCharts/Controls/CtrlShareProgress.ascx" TagPrefix="SweetSoft" TagName="CtrlShareProgress" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -19,11 +20,11 @@
     }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
-        .gantt { background: #fff; border: 1px solid #ccc; border-radius: 6px; animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 65vh; overflow: auto; position: relative; }
-        .gantt-body { display: flex; width: max-content; min-width: 100%; min-height: 100%; }
+        .gantt { background: #fff; border: 1px solid #ccc; border-radius: 6px; animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 65vh; overflow: auto; position: relative; isolation: isolate; }
+        .gantt-body { display: flex; width: max-content; min-width: 100%; min-height: 100%; position: relative; }
         
-        .task-col { width: 350px; flex-shrink: 0; background: #fff; z-index: 20; position: sticky; left: 0; border-right: 1px solid #ccc; box-shadow: 2px 0 8px rgba(0,0,0,0.04); min-height: 100%; }
-        .task-col-header { height: 44px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; background: #f8f9fa; border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 30; }
+        .task-col { width: 350px; flex: 0 0 350px; background: #fff; position: sticky; left: 0; z-index: 80; border-right: 1px solid #ccc; box-shadow: 4px 0 10px rgba(0,0,0,0.07); min-height: 100%; }
+        .task-col-header { height: 44px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; background: #f8f9fa; border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 90; }
 
         .task-row-wrap { height: 52px; max-height: 52px; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; box-sizing: border-box; font-size: 13px; background: #fff; overflow: hidden; transition: max-height 0.35s ease-in-out, opacity 0.35s ease-in-out, background-color 0.2s, border-width 0.35s ease-in-out; opacity: 1; }
         
@@ -38,11 +39,11 @@
         
         .hidden-task { max-height: 0 !important; opacity: 0 !important; border-bottom-width: 0 !important; }
         
-        .chart-col { flex: 1; position: relative; }
-        .chart-header { height: 44px; position: relative; background: #f8f9fa; border-bottom: 1px solid #ccc; position: sticky; top: 0; z-index: 25; }
+        .chart-col { flex: 1; position: relative; z-index: 1; }
+        .chart-header { height: 44px; position: sticky; top: 0; background: #f8f9fa; border-bottom: 1px solid #ccc; z-index: 10; }
         .chart-header .tick-label { position: absolute; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #555; white-space: nowrap; }
         .chart-header .tick-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #e0e0e0; }
-        .chart-tracks { position: relative; min-height: 100px; }
+        .chart-tracks { position: relative; min-height: 100px; z-index: 1; }
         .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #f2f2f2; }
         .task-track { height: 52px; max-height: 52px; position: relative; border-bottom: 1px solid #e5e5e5; overflow: hidden; transition: max-height 0.35s ease-in-out, border-width 0.35s ease-in-out; }
         
@@ -116,6 +117,7 @@
                     <div class="legend-item"><span class="legend-swatch" style="background-color:#cbd5e1; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.NOT_YET_STARTED) %></div>
                     <div class="legend-item"><span class="legend-swatch" style="background:#ea4335;border-radius:0;width:2px;height:14px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.TODAY) %></div>
                     <div class="legend-item"><i class="fas fa-long-arrow-alt-right" style="color:#ff9800;"></i> <%= GetResourceText(BackEndResourceKeys.DEPENDENT_LINK) %></div>
+                    <button type="button" class="share-progress-trigger" onclick="return openShareProgressSelector(event);"><i class="fas fa-paper-plane"></i> Gửi tiến độ cho khách hàng</button>
                 </div>
 
                 <div class="gantt">
@@ -305,6 +307,7 @@
     </asp:UpdatePanel>
 
     <SweetSoft:CtrlViewTaskDetail runat="server" ID="CtrlViewTaskDetail1" />
+    <SweetSoft:CtrlShareProgress runat="server" ID="CtrlShareProgress1" />
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
@@ -336,6 +339,12 @@ var shouldReopenTaskInfo = false;
                 document.getElementById('<%= hdfIssueIdToView.ClientID %>').value = issueId;
                 document.getElementById('<%= btnTriggerViewIssue.ClientID %>').click();
             }, 350);
+        }
+
+        function openShareProgressSelector(e) {
+            if (e) e.preventDefault();
+            if (window.ShareProgressUI) return window.ShareProgressUI.openSelection(e);
+            return false;
         }
 
         function bindModalEvents() {

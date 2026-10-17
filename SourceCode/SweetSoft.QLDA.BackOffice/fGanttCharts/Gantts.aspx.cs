@@ -19,6 +19,13 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
+            Control shareProgressControl = FindControlRecursive(this, "CtrlShareProgress1");
+            if (shareProgressControl != null)
+            {
+                var projectIdProperty = shareProgressControl.GetType().GetProperty("ProjectId");
+                if (projectIdProperty != null && projectIdProperty.CanWrite)
+                    projectIdProperty.SetValue(shareProgressControl, CurrentProjectId, null);
+            }
             if (!IsPostBack)
             {
                 if (!this.IsView)
@@ -42,6 +49,18 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
                 this.DataBind();
                 BindGanttChart(CurrentProjectId);
             }
+        }
+
+        private static Control FindControlRecursive(Control root, string id)
+        {
+            if (root == null) return null;
+            if (string.Equals(root.ID, id, StringComparison.Ordinal)) return root;
+            foreach (Control child in root.Controls)
+            {
+                Control found = FindControlRecursive(child, id);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         protected string GetProjectName()
