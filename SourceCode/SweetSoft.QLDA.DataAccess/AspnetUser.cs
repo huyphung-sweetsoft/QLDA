@@ -466,8 +466,8 @@ namespace SweetSoft.QLDA.DataAccess
 				
 				TableSchema.TableColumn colvarMaTinh = new TableSchema.TableColumn(schema);
 				colvarMaTinh.ColumnName = "MaTinh";
-				colvarMaTinh.DataType = DbType.AnsiString;
-				colvarMaTinh.MaxLength = 2;
+				colvarMaTinh.DataType = DbType.String;
+				colvarMaTinh.MaxLength = 10;
 				colvarMaTinh.AutoIncrement = false;
 				colvarMaTinh.IsNullable = true;
 				colvarMaTinh.IsPrimaryKey = false;
@@ -479,7 +479,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 				TableSchema.TableColumn colvarMaXa = new TableSchema.TableColumn(schema);
 				colvarMaXa.ColumnName = "MaXa";
-				colvarMaXa.DataType = DbType.AnsiString;
+				colvarMaXa.DataType = DbType.String;
 				colvarMaXa.MaxLength = 10;
 				colvarMaXa.AutoIncrement = false;
 				colvarMaXa.IsNullable = true;
@@ -803,6 +803,63 @@ namespace SweetSoft.QLDA.DataAccess
             {
 		        // Set foreign key value
 		        colTblCongViecNhanVienRecords[e.NewIndex].IdNhanVien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoatCollection colTblKhaiBaoGioDoiSoatRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoatCollection TblKhaiBaoGioDoiSoatRecords()
+		{
+			if(colTblKhaiBaoGioDoiSoatRecords == null)
+			{
+				colTblKhaiBaoGioDoiSoatRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoatCollection().Where(TblKhaiBaoGioDoiSoat.Columns.IdNhanVien, UserId).Load();
+				colTblKhaiBaoGioDoiSoatRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioDoiSoatRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioDoiSoatRecords;
+		}
+				
+		void colTblKhaiBaoGioDoiSoatRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioDoiSoatRecords[e.NewIndex].IdNhanVien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection colTblKhaiBaoGioPhienRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection TblKhaiBaoGioPhienRecords()
+		{
+			if(colTblKhaiBaoGioPhienRecords == null)
+			{
+				colTblKhaiBaoGioPhienRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection().Where(TblKhaiBaoGioPhien.Columns.IdNguoiKichHoat, UserId).Load();
+				colTblKhaiBaoGioPhienRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioPhienRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioPhienRecords;
+		}
+				
+		void colTblKhaiBaoGioPhienRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioPhienRecords[e.NewIndex].IdNguoiKichHoat = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection colTblKhaiBaoGioPhienRecordsFromAspnetUser;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection TblKhaiBaoGioPhienRecordsFromAspnetUser()
+		{
+			if(colTblKhaiBaoGioPhienRecordsFromAspnetUser == null)
+			{
+				colTblKhaiBaoGioPhienRecordsFromAspnetUser = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection().Where(TblKhaiBaoGioPhien.Columns.IdNhanVien, UserId).Load();
+				colTblKhaiBaoGioPhienRecordsFromAspnetUser.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioPhienRecordsFromAspnetUser_ListChanged);
+			}
+			return colTblKhaiBaoGioPhienRecordsFromAspnetUser;
+		}
+				
+		void colTblKhaiBaoGioPhienRecordsFromAspnetUser_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioPhienRecordsFromAspnetUser[e.NewIndex].IdNhanVien = UserId;
             }
 		}
 		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
@@ -1296,77 +1353,6 @@ namespace SweetSoft.QLDA.DataAccess
 			DataService.ExecuteQuery(cmdDel);
 		}
 		
-		 
-		public SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection() { return AspnetUser.GetTblCongViecCollection(this.UserId); }
-		public static SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection(Guid varUserId)
-		{
-		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[TblCongViec] INNER JOIN [TblCongViec_NhanVien] ON [TblCongViec].[IdCongViec] = [TblCongViec_NhanVien].[IdCongViec] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmd.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
-			TblCongViecCollection coll = new TblCongViecCollection();
-			coll.LoadAndCloseReader(rdr);
-			return coll;
-		}
-		
-		public static void SaveTblCongViecMap(Guid varUserId, TblCongViecCollection items)
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (TblCongViec item in items)
-			{
-				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
-				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item.GetPrimaryKeyValue());
-				varTblCongViecNhanVien.Save();
-			}
-		}
-		public static void SaveTblCongViecMap(Guid varUserId, System.Web.UI.WebControls.ListItemCollection itemList) 
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
-			{
-				if (l.Selected) 
-				{
-					TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-					varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
-					varTblCongViecNhanVien.SetColumnValue("IdCongViec", l.Value);
-					varTblCongViecNhanVien.Save();
-				}
-			}
-		}
-		public static void SaveTblCongViecMap(Guid varUserId , Guid[] itemList) 
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (Guid item in itemList) 
-			{
-				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
-				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item);
-				varTblCongViecNhanVien.Save();
-			}
-		}
-		
-		public static void DeleteTblCongViecMap(Guid varUserId) 
-		{
-			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			DataService.ExecuteQuery(cmdDel);
-		}
-		
 		#endregion
 		
         
@@ -1788,6 +1774,39 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colTblKhaiBaoGioDoiSoatRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoat item in colTblKhaiBaoGioDoiSoatRecords)
+                    {
+                        if (item.IdNhanVien != UserId)
+                        {
+                            item.IdNhanVien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblKhaiBaoGioPhienRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhien item in colTblKhaiBaoGioPhienRecords)
+                    {
+                        if (item.IdNguoiKichHoat == null ||item.IdNguoiKichHoat != UserId)
+                        {
+                            item.IdNguoiKichHoat = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblKhaiBaoGioPhienRecordsFromAspnetUser != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhien item in colTblKhaiBaoGioPhienRecordsFromAspnetUser)
+                    {
+                        if (item.IdNhanVien != UserId)
+                        {
+                            item.IdNhanVien = UserId;
+                        }
+                    }
+               }
+		
                 if (colTblChiPhiRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
@@ -1990,6 +2009,21 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblCongViecNhanVienRecords != null)
                 {
                     colTblCongViecNhanVienRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioDoiSoatRecords != null)
+                {
+                    colTblKhaiBaoGioDoiSoatRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioPhienRecords != null)
+                {
+                    colTblKhaiBaoGioPhienRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioPhienRecordsFromAspnetUser != null)
+                {
+                    colTblKhaiBaoGioPhienRecordsFromAspnetUser.SaveAll();
                }
 		
                 if (colTblChiPhiRecords != null)

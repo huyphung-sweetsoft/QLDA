@@ -748,6 +748,13 @@
     <Compile Include="fTasks\Controls\CtrlFastCompleteTask.ascx.designer.cs">
       <DependentUpon>CtrlFastCompleteTask.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fTasks\Controls\CtrlFastReviewTask.ascx.cs">
+      <DependentUpon>CtrlFastReviewTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlFastReviewTask.ascx.designer.cs">
+      <DependentUpon>CtrlFastReviewTask.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fTasks\Controls\CtrlStartTask.ascx.cs">
       <DependentUpon>CtrlStartTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1027,6 +1034,7 @@
     <Content Include="fTasks\Controls\CtrlApplyTemplate.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
     <Content Include="fTasks\Controls\CtrlFastCompleteTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlFastReviewTask.ascx" />
     <Content Include="fTasks\Controls\CtrlStartTask.ascx" />
     <Content Include="fTasks\Controls\CtrlSwapPhase.ascx" />
     <Content Include="fTasks\Controls\CtrlViewTaskDetail.ascx" />

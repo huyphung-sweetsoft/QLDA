@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Transactions;
+using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
 
 namespace SweetSoft.QLDA.Core.Managers
 {
@@ -508,6 +511,9 @@ namespace SweetSoft.QLDA.Core.Managers
         /// </summary>
         public SaveResult StartOrResumeTask(Guid userId, Guid taskId, DateTime now)
         {
+            // Tranh dual-write: trang 1.0 khong duoc ghi sau khi he thong V2 cutover.
+            if (KhaiBaoGio20DaKichHoat())
+                return SaveResult.Fail("Trang khai bao gio cu da ngung ghi. Vui long mo giao dien 2.0.");
             try
             {
                 if (userId == Guid.Empty) return SaveResult.Fail("Không xác định được người dùng.");
@@ -585,6 +591,8 @@ namespace SweetSoft.QLDA.Core.Managers
         /// </summary>
         public SaveResult StopTask(Guid userId, Guid taskId, DateTime now)
         {
+            if (KhaiBaoGio20DaKichHoat())
+                return SaveResult.Fail("Trang khai bao gio cu da ngung ghi. Vui long mo giao dien 2.0.");
             try
             {
                 if (userId == Guid.Empty) return SaveResult.Fail("Không xác định được người dùng.");
@@ -693,6 +701,7 @@ namespace SweetSoft.QLDA.Core.Managers
         /// </summary>
         public int CloseExpiredShifts(DateTime now)
         {
+            if (KhaiBaoGio20DaKichHoat()) return 0;
             int closed = 0;
             DateTime? goLive = GetGoLiveDate();
             LichBieuChungManager lich = LichBieuChungManager.Instance;
@@ -801,5 +810,407 @@ namespace SweetSoft.QLDA.Core.Managers
         }
 
         #endregion
+
+        // Co 1 feature flag chung cho writer va job; mac dinh false = V1.
+        public static bool KhaiBaoGio20DaKichHoat()
+        {
+            return string.Equals(ConfigurationManager.AppSettings["KhaiBaoGio20.KichHoat"],
+                "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // =================== API 2.0 de trang WebForms moi su dung ===================
+        // Giu nguyen GetTodayView / StartOrResumeTask / StopTask cua giao dien 1.0.
+        // Khong tu dong chuyen sang V2 khi markup/code-behind chua duoc nang cap.
+        public Kbg20KetQua BatDauGioThuong(Guid idNhanVien, Guid idDuAn, Guid idCongViec,
+            Guid idThaoTac, bool chapNhanQuaHan = false, bool chapNhanPhuThuoc = false)
+        {
+            return new KhaiBaoGio20Manager().BatDauGioThuong(idNhanVien, idDuAn,
+                idCongViec, idThaoTac, chapNhanQuaHan, chapNhanPhuThuoc);
+        }
+
+        public Kbg20KetQua BatDauTangCa(Guid idNhanVien, Guid idDuAn,
+            Guid idCongViec, Guid idThaoTac)
+        {
+            return new KhaiBaoGio20Manager().BatDauTangCa(idNhanVien, idDuAn,
+                idCongViec, idThaoTac);
+        }
+
+        public Kbg20KetQua DungPhien(Guid idNhanVien, Guid idPhien)
+        {
+            return new KhaiBaoGio20Manager().DungPhien(idNhanVien, idPhien);
+        }
+
+        public List<Kbg20Phien> LayCacDongHoDangHoatDong(Guid idNhanVien)
+        {
+            return new KhaiBaoGio20Manager().LayCacDongHoDangHoatDong(idNhanVien);
+        }
+    }
+}
+
+// ============================================================================
+// KHAI BAO GIO 2.0 — BO SUNG VAO CUNG FILE, KHONG XOA API 1.0.
+// - 1.0 phuc vu trang WebForms cu, chua ket noi UI 2.0.
+// - 2.0 la API moi, doc/ghi dung 3 bang V2; khong dual-write 3 bang cu.
+// ============================================================================
+namespace SweetSoft.QLDA.Core.Managers
+{
+    /// <summary>
+    /// Loi 2.0: DOC/GHI bang moi, KHONG tu dong chuyen traffic cua web forms cu.
+    /// Moi thoi diem SQL la UTC (datetime2(0)); lich lam viec tinh theo gio Viet Nam.
+    /// </summary>
+    public sealed class KhaiBaoGio20Manager
+    {
+        private readonly KhaiBaoGio20Repository _repo;
+        private readonly TimeZoneInfo _muiGio;
+        public KhaiBaoGio20Manager()
+        {
+            _repo = new KhaiBaoGio20Repository();
+            try { _muiGio = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"); }
+            catch (TimeZoneNotFoundException) { _muiGio = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh"); }
+        }
+        private static DateTime ChuanGiay(DateTime dt)
+        {
+            DateTime utc = dt.Kind == DateTimeKind.Utc ? dt : dt.ToUniversalTime();
+            return new DateTime(utc.Ticks - utc.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
+        }
+        private DateTime GioDiaPhuong(DateTime utc) { return TimeZoneInfo.ConvertTimeFromUtc(utc, _muiGio); }
+        private DateTime GioUtc(DateTime local)
+        {
+            return ChuanGiay(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(local, DateTimeKind.Unspecified), _muiGio));
+        }
+        private List<ThongTinCa> LayCa(DateTime ngay)
+        {
+            LichBieuChungManager lich = LichBieuChungManager.Instance;
+            // Lich ngoai le chi la ngay nghi: khong doc LaNgayLamViec cu.
+            if (lich.GetExceptionByDate(ngay) != null) return new List<ThongTinCa>();
+            return lich.GetShiftsForDate(ngay) ?? new List<ThongTinCa>();
+        }
+        private bool TrongCa(DateTime local)
+        {
+            return LayCa(local.Date).Any(c => local >= c.BatDau && local < c.KetThuc);
+        }
+        private DateTime? MocHetHanUtc(KhaiBaoGio20Repository.CongViec task)
+        {
+            if (!task.NgayKetThuc.HasValue) return null;
+            DateTime end = task.NgayKetThuc.Value.Date;
+            // End date cua task la ngay, chot tai cuoi ca cuoi cung <= ngay do.
+            for (int i = 0; i < 730; i++)
+            {
+                DateTime day = end.AddDays(-i);
+                if (task.NgayBatDau.HasValue && day < task.NgayBatDau.Value.Date) break;
+                var shifts = LayCa(day);
+                if (shifts.Count > 0) return GioUtc(shifts.Max(x => x.KetThuc));
+            }
+            return GioUtc(end.AddDays(1));
+        }
+        private DateTime MocNgatTangCaUtc(DateTime batDauUtc)
+        {
+            DateTime batDau = GioDiaPhuong(batDauUtc);
+            // Gio bat dau ca SOM NHAT cua ngay lam viec tiep theo.
+            // Truong hop cuoi tuan/le -> tiep tuc toi ca dau tien sau ngay nghi.
+            for (int i = 1; i <= 730; i++)
+            {
+                var ca = LayCa(batDau.Date.AddDays(i));
+                if (ca.Count > 0) return GioUtc(ca.Min(s => s.BatDau));
+            }
+            throw new InvalidOperationException("Khong tim thay ca lam viec tiep theo de tu ngat tang ca.");
+        }
+        private static bool HopLe(KhaiBaoGio20Repository.CongViec task)
+        {
+            return task != null && (task.TrangThai == 0 || task.TrangThai == 1) && !task.ChoDuyet;
+        }
+        private void KiemTraDuAn(SqlConnection con, SqlTransaction tx, Guid duAn)
+        {
+            using (var cmd = KhaiBaoGio20Repository.Lenh(con, tx,
+                "SELECT TrangThai FROM dbo.TblDuAn WITH(HOLDLOCK) WHERE IdDuAn=@D AND ISNULL(DaXoa,0)=0"))
+            {
+                KhaiBaoGio20Repository.P(cmd, "@D", SqlDbType.UniqueIdentifier, duAn);
+                object val = cmd.ExecuteScalar();
+                if (val == null || Convert.ToInt32(val) != (int)SweetSoft.QLDA.Core.EnumHelper.Defines.DuAnStatus.DangThucHien)
+                    throw new InvalidOperationException("Du an khong o trang thai dang thuc hien.");
+            }
+        }
+        private List<KhaiBaoGio20Repository.CongViec> LayToTien(SqlConnection con, SqlTransaction tx,
+             KhaiBaoGio20Repository.CongViec conTask)
+        {
+            var result = new List<KhaiBaoGio20Repository.CongViec>();
+            var seen = new HashSet<Guid> { conTask.IdCongViec };
+            Guid? id = conTask.IdCongViecCha;
+            while (id.HasValue)
+            {
+                if (!seen.Add(id.Value) || seen.Count > 100)
+                    throw new InvalidOperationException("Phat hien chu trinh hoac nhieu cap khong hop le trong cay cong viec.");
+                var cha = _repo.LayCongViec(con, tx, id.Value);
+                if (cha == null || cha.IdDuAn != conTask.IdDuAn)
+                    throw new InvalidOperationException("Cay cong viec khong hop le hoac chua duoc dong bo.");
+                result.Add(cha);
+                id = cha.IdCongViecCha;
+            }
+            return result;
+        }
+        public Kbg20KetQua BatDauGioThuong(Guid idNhanVien, Guid idDuAn, Guid idCongViec,
+            Guid idThaoTac, bool chapNhanQuaHan = false, bool chapNhanPhuThuoc = false)
+        {
+            if (idNhanVien == Guid.Empty || idDuAn == Guid.Empty || idCongViec == Guid.Empty || idThaoTac == Guid.Empty)
+                return Kbg20KetQua.Loi("Thieu ma nhan vien, du an, cong viec hoac thao tac.");
+            DateTime nowUtc = ChuanGiay(DateTime.UtcNow), nowLocal = GioDiaPhuong(nowUtc);
+            if (!TrongCa(nowLocal)) return Kbg20KetQua.Loi("Chi bat dau gio thuong trong ca lam viec hop le.");
+            try
+            {
+                using (var con = _repo.MoKetNoi())
+                using (var tx = con.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+                {
+                    _repo.KhoaTheoDuAn(con, tx, idDuAn);
+                    KiemTraDuAn(con, tx, idDuAn);
+                    var lapLai = _repo.LayPhienTheoThaoTac(con, tx, idThaoTac, idNhanVien, idCongViec, Kbg20LoaiGio.Thuong);
+                    if (lapLai != null)
+                    {
+                        tx.Commit();
+                        var daXuLy = Kbg20KetQua.Ok("Thao tac Start nay da duoc ghi nhan; khong tao phien trung.");
+                        daXuLy.IdPhien = lapLai.IdPhien;
+                        return daXuLy;
+                    }
+                    var task = _repo.LayCongViec(con, tx, idCongViec);
+                    if (task == null || task.IdDuAn != idDuAn || !HopLe(task)) return Kbg20KetQua.Loi("Cong viec khong hop le, dang cho duyet hoac da hoan thanh.");
+                    if (!_repo.CoPhanCong(con, tx, idCongViec, idNhanVien)) return Kbg20KetQua.Loi("Ban khong duoc phan cong truc tiep vao cong viec nay.");
+                    if (task.NgayBatDau.HasValue && nowLocal.Date < task.NgayBatDau.Value.Date)
+                        return Kbg20KetQua.Loi("Chua den ngay bat dau theo ke hoach.");
+                    var active = _repo.LayPhienMo(con, tx, idNhanVien, idCongViec, Kbg20LoaiGio.Thuong);
+                    if (active != null) { tx.Commit(); var ok = Kbg20KetQua.Ok("Dong ho cong viec dang hoat dong."); ok.IdPhien = active.IdPhien; return ok; }
+                    bool overdue = task.NgayKetThuc.HasValue && nowLocal.Date > task.NgayKetThuc.Value.Date;
+                    if (overdue && !chapNhanQuaHan) return new Kbg20KetQua { CanXacNhanQuaHan = true, ThongBao = "Cong viec da qua han. Xac nhan tiep tuc tinh gio?" };
+                    if (task.IdCongViecPhuThuoc.HasValue)
+                    {
+                        var dep = _repo.LayCongViec(con, tx, task.IdCongViecPhuThuoc.Value);
+                        if (dep != null && dep.TrangThai != 2 && dep.TrangThai != 3 && !chapNhanPhuThuoc)
+                            return new Kbg20KetQua { CanXacNhanPhuThuoc = true, ThongBao = "Cong viec phu thuoc chua hoan thanh. Xac nhan thuc hien song song?" };
+                    }
+                    var ancestors = LayToTien(con, tx, task);
+                    var ketQua = Kbg20KetQua.Ok("Da bat dau dong ho " + task.MaCongViec + ".");
+                    ketQua.IdPhien = _repo.TaoPhien(con, tx, idNhanVien, task, Kbg20LoaiGio.Thuong,
+                             nowUtc, Kbg20NguonBatDau.ThuCong, null, null, idThaoTac, overdue);
+                    _repo.ChuyenTrangThaiDangLam(con, tx, task.IdCongViec, nowLocal);
+                    foreach (var cha in ancestors)
+                    {
+                        if (!HopLe(cha)) { ketQua.CanhBao.Add("Bo qua dong ho cha " + cha.MaCongViec + " (bi khoa/cho duyet/da hoan thanh)."); continue; }
+                        if (cha.NgayBatDau.HasValue && nowLocal.Date < cha.NgayBatDau.Value.Date)
+                        { ketQua.CanhBao.Add("Bo qua dong ho cha " + cha.MaCongViec + " (chua toi ngay bat dau)."); continue; }
+                        DateTime? moc = MocHetHanUtc(cha);
+                        if (moc.HasValue && nowUtc >= moc.Value)
+                        { ketQua.CanhBao.Add("Bo qua dong ho cha " + cha.MaCongViec + " (da het han; can xu ly rieng)."); continue; }
+                        _repo.ChuyenTrangThaiDangLam(con, tx, cha.IdCongViec, nowLocal);
+                        foreach (Guid nv in _repo.LayNguoiPhanCong(con, tx, cha.IdCongViec))
+                        {
+                            // Dung quy tac: neu da tung Start (bat ke da dung), KHONG tu Resume.
+                            if (_repo.DaTungBatDau(con, tx, nv, cha.IdCongViec)) continue;
+                            _repo.TaoPhien(con, tx, nv, cha, Kbg20LoaiGio.Thuong, nowUtc,
+                                Kbg20NguonBatDau.TuDongTuCongViecCon, task.IdCongViec, idNhanVien, idThaoTac, false);
+                            _repo.TaoThongBaoWeb(con, tx, nv, cha, task, nowLocal);
+                            ketQua.SoPhienTuDong++;
+                        }
+                    }
+                    tx.Commit();
+                    return ketQua;
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            { return Kbg20KetQua.Loi("Dong ho da duoc tao boi yeu cau khac. Vui long tai lai danh sach."); }
+            catch (Exception ex)
+            {
+                SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "KBG20 BatDauGioThuong");
+                return Kbg20KetQua.Loi("Khong the bat dau dong ho do loi he thong.");
+            }
+        }
+        public Kbg20KetQua BatDauTangCa(Guid idNhanVien, Guid idDuAn, Guid idCongViec, Guid idThaoTac)
+        {
+            if (idNhanVien == Guid.Empty || idDuAn == Guid.Empty || idCongViec == Guid.Empty || idThaoTac == Guid.Empty)
+                return Kbg20KetQua.Loi("Thong tin khong hop le.");
+            DateTime nowUtc = ChuanGiay(DateTime.UtcNow), local = GioDiaPhuong(nowUtc);
+            var ca = LayCa(local.Date);
+            // Chua chot cho phep tang ca ngay nghi -> khong tu mo luong nay.
+            if (ca.Count == 0) return Kbg20KetQua.Loi("Chua cau hinh tang ca tren ngay nghi/le.");
+            if (local < ca.Max(s => s.KetThuc)) return Kbg20KetQua.Loi("Chi duoc bat tang ca sau khi ket thuc ca cuoi cung.");
+            try
+            {
+                using (var con = _repo.MoKetNoi()) using (var tx = con.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+                {
+                    _repo.KhoaTheoDuAn(con, tx, idDuAn);
+                    KiemTraDuAn(con, tx, idDuAn);
+                    var lapLai = _repo.LayPhienTheoThaoTac(con, tx, idThaoTac, idNhanVien, idCongViec, Kbg20LoaiGio.TangCa);
+                    if (lapLai != null)
+                    {
+                        tx.Commit();
+                        var daXuLy = Kbg20KetQua.Ok("Thao tac Start tang ca nay da duoc ghi nhan; khong tao phien trung.");
+                        daXuLy.IdPhien = lapLai.IdPhien;
+                        return daXuLy;
+                    }
+                    var task = _repo.LayCongViec(con, tx, idCongViec);
+                    if (task == null || task.IdDuAn != idDuAn || !HopLe(task) || !_repo.CoPhanCong(con, tx, idCongViec, idNhanVien))
+                        return Kbg20KetQua.Loi("Cong viec/phan cong khong hop le.");
+                    if (task.NgayBatDau.HasValue && local.Date < task.NgayBatDau.Value.Date)
+                        return Kbg20KetQua.Loi("Chua toi ngay bat dau cong viec.");
+                    var open = _repo.LayPhienMo(con, tx, idNhanVien, idCongViec, Kbg20LoaiGio.TangCa);
+                    if (open != null) { tx.Commit(); var already = Kbg20KetQua.Ok("Dong ho tang ca da chay."); already.IdPhien = open.IdPhien; return already; }
+                    bool overdue = task.NgayKetThuc.HasValue && local.Date > task.NgayKetThuc.Value.Date;
+                    if (overdue) return Kbg20KetQua.Loi("Tang ca cho task qua han can duoc xac nhan theo quy trinh rieng.");
+                    var result = Kbg20KetQua.Ok("Da bat dau tang ca.");
+                    result.IdPhien = _repo.TaoPhien(con, tx, idNhanVien, task, Kbg20LoaiGio.TangCa,
+                        nowUtc, Kbg20NguonBatDau.ThuCong, null, null, idThaoTac, false);
+                    // Tang ca KHONG kich hoat cac dong ho cha.
+                    tx.Commit(); return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "KBG20 BatDauTangCa");
+                return Kbg20KetQua.Loi("Khong bat dau duoc tang ca do loi he thong.");
+            }
+        }
+        public Kbg20KetQua DungPhien(Guid idNhanVien, Guid idPhien)
+        {
+            if (idNhanVien == Guid.Empty || idPhien == Guid.Empty) return Kbg20KetQua.Loi("Thong tin khong hop le.");
+            DateTime now = ChuanGiay(DateTime.UtcNow);
+            try
+            {
+                using (var con = _repo.MoKetNoi()) using (var tx = con.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+                {
+                    // Doc de biet du an TRUOC khi khoa row phien; tranh dao thu tu khoa
+                    // Start: AppLock -> Session, Stop: Session -> AppLock.
+                    var soBo = _repo.LayPhienSoBo(con, tx, idPhien, idNhanVien);
+                    if (soBo == null) return Kbg20KetQua.Loi("Phien da dung hoac khong thuoc nhan vien.");
+                    _repo.KhoaTheoDuAn(con, tx, soBo.IdDuAn);
+                    var phien = _repo.LayPhienMoTheoId(con, tx, idPhien, idNhanVien);
+                    if (phien == null) return Kbg20KetQua.Loi("Phien da duoc dong boi yeu cau khac.");
+                    // Tam khoa dung thu cong dong ho task cha neu co con chua hoan thanh;
+                    // tang ca khong bi khoa vi day la phien tu nguyen.
+                    if (phien.LoaiGio == Kbg20LoaiGio.Thuong && _repo.ConHauDueChuaHoanThanh(con, tx, phien.IdCongViec))
+                        return Kbg20KetQua.Loi("Chua the dung dong ho giam sat: van con cong viec con chua hoan thanh (quy tac tam thoi).");
+                    DateTime mocDong = KetToanTrongGiaoDich(con, tx, phien, now, false);
+                    // Neu qua moc tu ngat ma Hangfire chua kip xu ly, ghi dung THOI DIEM
+                    // tu ngat thay vi ghi gio nhan vien bam Stop den muon.
+                    var lyDo = Kbg20LyDoKetThuc.TuDung;
+                    if (mocDong < now)
+                        lyDo = phien.LoaiGio == Kbg20LoaiGio.TangCa
+                            ? Kbg20LyDoKetThuc.TuNgatTangCa : Kbg20LyDoKetThuc.HetHanCongViec;
+                    _repo.DongPhien(con, tx, phien.IdPhien, mocDong, lyDo);
+                    tx.Commit(); return Kbg20KetQua.Ok("Da dung dung phien duoc chon, cac phien khac khong anh huong.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "KBG20 DungPhien");
+                return Kbg20KetQua.Loi("Khong dung duoc phien do loi he thong.");
+            }
+        }
+        // Chi danh cho luong hoan thanh sau khi tiep nhan code cua partner:
+        // moi nguoi / 2 loai gio / cung task duoc dong chung giao dich hoan thanh.
+        // KHONG goi doc lap khi submit; repo hoan thanh can dung cung SqlTransaction.
+        internal void DongTatCaPhienCuaTaskTrongGiaoDich(SqlConnection con, SqlTransaction tx, Guid idCongViec, DateTime utc)
+        {
+            foreach (var phien in _repo.LayPhienMoCuaTask(con, tx, idCongViec))
+            {
+                DateTime e = KetToanTrongGiaoDich(con, tx, phien, utc, true);
+                _repo.DongPhien(con, tx, phien.IdPhien, e, Kbg20LyDoKetThuc.GuiDuyetHoanThanh);
+            }
+        }
+        private DateTime KetToanTrongGiaoDich(SqlConnection con, SqlTransaction tx,
+           Kbg20Phien phien, DateTime denUtc, bool tinhDenHet)
+        {
+            // Khoang [daTinhDen, den): chi tinh mot lan, watermark cap nhat chung transaction.
+            DateTime start = phien.DaTinhDenLucUtc ?? phien.BatDauLucUtc;
+            DateTime end = denUtc;
+            if (end < start) end = start;
+            if (phien.KetThucLucUtc.HasValue && end > phien.KetThucLucUtc.Value)
+                end = phien.KetThucLucUtc.Value;
+            if (phien.LoaiGio == Kbg20LoaiGio.TangCa)
+            {
+                DateTime cutoff = MocNgatTangCaUtc(phien.BatDauLucUtc);
+                if (end > cutoff) end = cutoff;
+            }
+            else if (!phien.LaTiepTucQuaHan)
+            {
+                var task = _repo.LayCongViec(con, tx, phien.IdCongViec);
+                DateTime? cutoff = task == null ? (DateTime?)null : MocHetHanUtc(task);
+                if (cutoff.HasValue && end > cutoff.Value) end = cutoff.Value;
+                if (end < start) end = start;
+            }
+            if (end <= start) return start;
+            DateTime startLocal = GioDiaPhuong(start), endLocal = GioDiaPhuong(end);
+            for (DateTime day = startLocal.Date; day <= endLocal.Date; day = day.AddDays(1))
+            {
+                if (phien.LoaiGio == Kbg20LoaiGio.Thuong)
+                {
+                    foreach (var s in LayCa(day))
+                    {
+                        DateTime localA = startLocal > s.BatDau ? startLocal : s.BatDau;
+                        DateTime localB = endLocal < s.KetThuc ? endLocal : s.KetThuc;
+                        if (localB > localA) _repo.GhiKhoang(con, tx, phien.IdPhien, day, GioUtc(localA), GioUtc(localB),
+                              "Ca " + s.LoaiCa + " " + s.GioBatDau + "-" + s.GioKetThuc);
+                    }
+                }
+                else
+                {
+                    // Tang ca: khoang thuc duoc bam bat dau den khi dung/cutoff.
+                    // Tach theo ngay dia phuong, KHONG phu thuoc lich gio thuong.
+                    DateTime localA = startLocal > day ? startLocal : day;
+                    DateTime localB = endLocal < day.AddDays(1) ? endLocal : day.AddDays(1);
+                    if (localB > localA) _repo.GhiKhoang(con, tx, phien.IdPhien, day, GioUtc(localA), GioUtc(localB), "Tang ca");
+                }
+            }
+            _repo.CapNhatDaTinh(con, tx, phien.IdPhien, end);
+            return end;
+        }
+        public Kbg20ThongKeKetToan KetToanPhienMo(DateTime utcNow, int soLuong = 100)
+        {
+            DateTime now = ChuanGiay(utcNow);
+            var result = new Kbg20ThongKeKetToan();
+            foreach (var item in _repo.LayDanhSachPhienMo(Math.Max(1, Math.Min(soLuong, 500))))
+            {
+                try
+                {
+                    using (var con = _repo.MoKetNoi()) using (var tx = con.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+                    {
+                        _repo.KhoaTheoDuAn(con, tx, item.IdDuAn);
+                        var phien = _repo.LayPhienMoTheoId(con, tx, item.IdPhien, item.IdNhanVien);
+                        if (phien == null) continue;
+                        // Du lieu phan cong/trang thai co the da thay doi tai TaskManager.
+                        // Tu dong dong phien nhu hang rao bao ve, nhung can hook tai
+                        // thao tac goc de chot DUNG thoi diem nguoi dung bi go.
+                        Kbg20LyDoKetThuc? lyDoBatBuoc =
+                            _repo.LayLyDoDongBatBuoc(con, tx, phien.IdCongViec, phien.IdNhanVien);
+                        DateTime e = KetToanTrongGiaoDich(con, tx, phien, now, false);
+                        bool cutoff = lyDoBatBuoc.HasValue;
+                        Kbg20LyDoKetThuc reason = lyDoBatBuoc ?? Kbg20LyDoKetThuc.HetHanCongViec;
+                        if (phien.LoaiGio == Kbg20LoaiGio.TangCa)
+                        {
+                            if (!lyDoBatBuoc.HasValue)
+                            {
+                                cutoff = now >= MocNgatTangCaUtc(phien.BatDauLucUtc);
+                                reason = Kbg20LyDoKetThuc.TuNgatTangCa;
+                            }
+                        }
+                        else if (!phien.LaTiepTucQuaHan)
+                        {
+                            var task = _repo.LayCongViec(con, tx, phien.IdCongViec);
+                            var hetHan = task == null ? (DateTime?)null : MocHetHanUtc(task);
+                            if (!lyDoBatBuoc.HasValue)
+                                cutoff = hetHan.HasValue && now >= hetHan.Value;
+                        }
+                        if (cutoff)
+                        {
+                            _repo.DongPhien(con, tx, phien.IdPhien, e, reason);
+                            result.SoPhienDaTuNgat++;
+                        }
+                        tx.Commit(); result.SoPhienDaXuLy++;
+                    }
+                }
+                catch (Exception ex) { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex, "KBG20 KetToanPhienMo " + item.IdPhien); }
+            }
+            return result;
+        }
+        public List<Kbg20Phien> LayCacDongHoDangHoatDong(Guid idNhanVien)
+        {
+            return _repo.LayPhienTheoNhanVien(idNhanVien);
+        }
     }
 }

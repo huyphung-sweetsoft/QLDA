@@ -149,8 +149,14 @@
     <Compile Include="TblKhaiBaoGioCaController.cs" />
     <Compile Include="TblKhaiBaoGioChiTiet.cs" />
     <Compile Include="TblKhaiBaoGioChiTietController.cs" />
+    <Compile Include="TblKhaiBaoGioDoiSoat.cs" />
+    <Compile Include="TblKhaiBaoGioDoiSoatController.cs" />
+    <Compile Include="TblKhaiBaoGioKhoangTinh.cs" />
+    <Compile Include="TblKhaiBaoGioKhoangTinhController.cs" />
     <Compile Include="TblKhaiBaoGioNhatKy.cs" />
     <Compile Include="TblKhaiBaoGioNhatKyController.cs" />
+    <Compile Include="TblKhaiBaoGioPhien.cs" />
+    <Compile Include="TblKhaiBaoGioPhienController.cs" />
     <Compile Include="TblLichHop.cs" />
     <Compile Include="TblLichHopController.cs" />
     <Compile Include="TblLichHopNhanVien.cs" />

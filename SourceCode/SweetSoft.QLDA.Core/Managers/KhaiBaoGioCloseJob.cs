@@ -15,7 +15,14 @@ namespace SweetSoft.QLDA.Core.Managers
 
             try
             {
-                KhaiBaoGioManager.Instance.CloseExpiredShifts(DateTime.Now);
+                // Khong chay dong thoi hai job writer cho cung nhom nguoi dung.
+                // Chi bat V2 khi da chuyen web + widget + DB sang 2.0.
+                // Mac dinh = 1.0 de khong lam thay doi he thong hien tai.
+                bool dungV2 = KhaiBaoGioManager.KhaiBaoGio20DaKichHoat();
+                if (dungV2)
+                    new KhaiBaoGio20Manager().KetToanPhienMo(DateTime.UtcNow, 300);
+                else
+                    KhaiBaoGioManager.Instance.CloseExpiredShifts(DateTime.Now);
             }
             catch (Exception ex)
             {

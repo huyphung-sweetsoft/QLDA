@@ -239,3 +239,56 @@ namespace SweetSoft.QLDA.Core.Managers
         }
     }
 }
+
+// ============================================================================
+// KHAI BAO GIO 2.0 — BO SUNG VAO CUNG FILE, KHONG XOA API 1.0.
+// - 1.0 phuc vu trang WebForms cu, chua ket noi UI 2.0.
+// - 2.0 la API moi, doc/ghi dung 3 bang V2; khong dual-write 3 bang cu.
+// ============================================================================
+namespace SweetSoft.QLDA.Core.Managers
+{
+    // API 2.0 doc lap voi Models cua KhaiBaoGio 1.0.
+    public enum Kbg20LoaiGio : byte { Thuong = 1, TangCa = 2 }
+    public enum Kbg20NguonBatDau : byte { ThuCong = 1, TuDongTuCongViecCon = 2 }
+    public enum Kbg20LyDoKetThuc : byte
+    {
+        TuDung = 1, HetHanCongViec = 2, GuiDuyetHoanThanh = 3,
+        GoPhanCong = 4, TuNgatTangCa = 5, CongViecBiKhoa = 6, QuanTriDieuChinh = 7
+    }
+    public class Kbg20KetQua
+    {
+        public bool ThanhCong { get; set; }
+        public bool CanXacNhanQuaHan { get; set; }
+        public bool CanXacNhanPhuThuoc { get; set; }
+        public string ThongBao { get; set; }
+        public Guid? IdPhien { get; set; }
+        public int SoPhienTuDong { get; set; }
+        public List<string> CanhBao { get; set; } = new List<string>();
+        public static Kbg20KetQua Loi(string thongBao) { return new Kbg20KetQua { ThongBao = thongBao }; }
+        public static Kbg20KetQua Ok(string thongBao) { return new Kbg20KetQua { ThanhCong = true, ThongBao = thongBao }; }
+    }
+    public class Kbg20Phien
+    {
+        public Guid IdPhien { get; set; }
+        public Guid IdNhanVien { get; set; }
+        public Guid IdCongViec { get; set; }
+        public Guid IdDuAn { get; set; }
+        public Kbg20LoaiGio LoaiGio { get; set; }
+        public DateTime BatDauLucUtc { get; set; }
+        public DateTime? KetThucLucUtc { get; set; }
+        public DateTime? DaTinhDenLucUtc { get; set; }
+        public bool LaTiepTucQuaHan { get; set; }
+        public byte NguonBatDau { get; set; }
+        public string MaCongViec { get; set; }
+        public string TenCongViec { get; set; }
+        public string MaDuAn { get; set; }
+        public string TenDuAn { get; set; }
+        public long SoGiayDaKetToan { get; set; }
+    }
+    public class Kbg20ThongKeKetToan
+    {
+        public int SoPhienDaXuLy { get; set; }
+        public int SoPhienDaTuNgat { get; set; }
+        public int SoKhoangDaGhi { get; set; }
+    }
+}

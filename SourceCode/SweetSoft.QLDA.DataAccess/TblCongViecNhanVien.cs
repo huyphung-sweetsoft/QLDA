@@ -133,11 +133,10 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdCongViec.AutoIncrement = false;
 				colvarIdCongViec.IsNullable = false;
 				colvarIdCongViec.IsPrimaryKey = true;
-				colvarIdCongViec.IsForeignKey = true;
+				colvarIdCongViec.IsForeignKey = false;
 				colvarIdCongViec.IsReadOnly = false;
 				colvarIdCongViec.DefaultSetting = @"";
-				
-					colvarIdCongViec.ForeignKeyTableName = "TblCongViec";
+				colvarIdCongViec.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdCongViec);
 				
 				TableSchema.TableColumn colvarIdNhanVien = new TableSchema.TableColumn(schema);
@@ -237,17 +236,6 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			get { return SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(this.IdNhanVien); }
 			set { SetColumnValue("IdNhanVien", value.UserId); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a TblCongViec ActiveRecord object related to this TblCongViecNhanVien
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViec
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViec); }
-			set { SetColumnValue("IdCongViec", value.IdCongViec); }
 		}
 		
 		
