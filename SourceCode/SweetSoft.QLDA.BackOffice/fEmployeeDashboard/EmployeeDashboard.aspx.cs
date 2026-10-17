@@ -88,23 +88,17 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
                 List<ProjectItem> projects = LoadProjects(userId);
                 List<TaskItem> allTasks = LoadTasks(userId);
                 List<IssueItem> issues = LoadIssues(userId);
+                List<TodayTimeProjectItem> todayTimeProjects = LoadTodayTimeProjects(userId, allTasks);
+                rptTodayTimeProjects.DataSource = todayTimeProjects;
+                rptTodayTimeProjects.DataBind();
+                pnlNoTodayTimeProjects.Visible = todayTimeProjects.Count == 0;
+                hfEdDailyKey.Value = userId.ToString("N") + "_" + DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                 List<MeetingItem> meetings = LoadMeetings(userId);
                 List<ExceptionItem> exceptions = LoadExceptions();
                 Dictionary<DayOfWeek, WorkdayConfiguration> workdayConfigurations = LoadWorkdayConfigurations();
                 List<CalendarDayItem> days = BuildCalendarDays(allTasks, meetings, exceptions, workdayConfigurations);
 
                 // --- TÍNH TOÁN BIỂU ĐỒ ---
-                int totalT = allTasks.Count;
-                int overdueT = allTasks.Count(x => x.IsOverdue);
-                int dueSoonT = allTasks.Count(x => x.IsDueSoon);
-                int normalT = totalT - overdueT - dueSoonT;
-
-                lblTotalTasksChart.Text = totalT.ToString();
-                lblTaskOverdueChart.Text = overdueT.ToString();
-                lblTaskDueSoonChart.Text = dueSoonT.ToString();
-                lblTaskNormalChart.Text = normalT.ToString();
-                divTaskChart.Style["background"] = GenerateConicGradient(overdueT, dueSoonT, normalT, totalT);
-
                 int totalP = projects.Count;
                 int overdueP = projects.Count(x => x.IsOverdue);
                 int dueSoonP = projects.Count(x => x.IsDueSoon);
@@ -138,8 +132,12 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
                 }
 
                 // --- BINDING ---
+                rptProjectStatusRows.DataSource = projects;
+                rptProjectStatusRows.DataBind();
                 rptProjectsAll.DataSource = projects;
                 rptProjectsAll.DataBind();
+                rptProjectTasks.DataSource = LoadProjectOverviewTasks(userId, projects);
+                rptProjectTasks.DataBind();
                 rptTasksAll.DataSource = panelTasks;
                 rptTasksAll.DataBind();
                 rptIssuesAll.DataSource = issues;
@@ -193,6 +191,8 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
                     List<ProjectItem> projects = LoadProjects(userId);
                     rptProjectsAll.DataSource = projects;
                     rptProjectsAll.DataBind();
+                    rptProjectTasks.DataSource = LoadProjectOverviewTasks(userId, projects);
+                    rptProjectTasks.DataBind();
                     pnlNoProjects.Visible = projects.Count == 0;
                 }
             }
@@ -278,29 +278,6 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
             lnkMoreTasks_Click(sender, e);
         }
 
-        // Bắt sự kiện người dùng bấm "Tên Dự Án" -> Gán biến Lọc
-
-        protected void rptProjectsAll_ItemCommand(object source, RepeaterCommandEventArgs e)
-        {
-            if (e.CommandName == "FILTER_TASKS")
-            {
-                Guid projectId;
-                if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out projectId) || projectId == Guid.Empty) return;
-                PrepareModalQueryContext();
-                Guid userId;
-                if (!TryResolveCurrentUserId(out userId)) return;
-                // Do not trust a posted project ID unless it belongs to the current user's project list.
-                List<ProjectItem> availableProjects = LoadProjects(userId);
-                ProjectItem project = availableProjects.FirstOrDefault(p => p.Id == projectId);
-                if (project == null) return;
-                FilterProjectId = projectId;
-                lblProjectFilterName.Text = "Dự án: " + Server.HtmlEncode(project == null ? "" : project.Name);
-                lblProjectFilterName.Visible = project != null;
-                btnAttentionTasks.Visible = true;
-                lnkMoreTasks_Click(source, EventArgs.Empty);
-            }
-        }
-
         private string GenerateConicGradient(int overdue, int dueSoon, int normal, int total)
         {
             if (total == 0) return "conic-gradient(#f1f5f9 0% 100%)";
@@ -369,6 +346,56 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
             phPosition.Visible = !String.IsNullOrWhiteSpace(positionName);
             lblDepartment.Text = Server.HtmlEncode(departmentName);
             lblPosition.Text = Server.HtmlEncode(positionName);
+        }
+
+        private List<TodayTimeProjectItem> LoadTodayTimeProjects(Guid userId, List<TaskItem> currentWeekTasks)
+        {
+            DateTime today = DateTime.Today;
+            List<TaskItem> source = currentWeekTasks;
+            if (_weekStart != GetMonday(today))
+            {
+                DateTime savedStart = _weekStart, savedEnd = _weekEnd;
+                try { _weekStart = GetMonday(today); _weekEnd = _weekStart.AddDays(6); source = LoadTasks(userId); }
+                finally { _weekStart = savedStart; _weekEnd = savedEnd; }
+            }
+            return source.Where(t => t.ProjectId != Guid.Empty && !t.IsCompleted &&
+                (t.IsOverdue || ((t.StartDate ?? t.EndDate ?? today).Date <= today && (t.EndDate ?? t.StartDate ?? today).Date >= today)))
+                .GroupBy(t => t.ProjectId)
+                .Select(g => new TodayTimeProjectItem
+                {
+                    Code = g.First().ProjectCode,
+                    Name = g.First().ProjectName,
+                    TaskCount = g.Count(),
+                    OverdueCount = g.Count(t => t.IsOverdue),
+                    NavigateUrl = ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio.aspx") + "?projectId=" + HttpUtility.UrlEncode(g.Key.ToString("D"))
+                })
+                .OrderByDescending(x => x.OverdueCount).ThenBy(x => x.Name).ToList();
+        }
+
+
+        /// <summary>Đường dẫn Khai báo giờ. Dự án chỉ xuất hiện trong HTML sau khi được lọc theo user.</summary>
+        protected string GetKhaiBaoGioUrl(Guid projectId)
+        {
+            return ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio.aspx") + "?projectId=" + HttpUtility.UrlEncode(projectId.ToString("D"));
+        }
+
+        /// <summary>Tất cả công việc được giao cho user trong các dự án đang hiển thị, kể cả đã hoàn thành.</summary>
+        private List<TaskItem> LoadProjectOverviewTasks(Guid userId, IEnumerable<ProjectItem> allowedProjects)
+        {
+            var projectIds = new HashSet<Guid>((allowedProjects ?? Enumerable.Empty<ProjectItem>()).Select(x => x.Id));
+            if (projectIds.Count == 0) return new List<TaskItem>();
+            DataTable table = Query(@"
+SELECT DISTINCT t.IdCongViec, t.IdDuAn, d.MaDuAn, d.TenDuAn, t.MaCongViec, t.TenCongViec,
+       t.NgayBatDau, t.NgayKetThuc, t.ThoiHanNgay, t.PhanTramHoanThanh,
+       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai
+FROM dbo.TblCongViec_NhanVien tn
+INNER JOIN dbo.TblCongViec t ON t.IdCongViec = tn.IdCongViec
+INNER JOIN dbo.TblDuAn d ON d.IdDuAn = t.IdDuAn
+INNER JOIN dbo.TblThanhVienDuAn tv ON tv.IdDuAn = d.IdDuAn AND tv.IdNhanVien = @UserId
+WHERE tn.IdNhanVien = @UserId AND ISNULL(tv.DaXoa, 0) = 0
+  AND ISNULL(t.DaXoa, 0) = 0 AND ISNULL(d.DaXoa, 0) = 0
+ORDER BY t.NgayKetThuc, t.TenCongViec;", GuidParameter("@UserId", userId));
+            return ParseTasksFromDataTable(table).Where(x => projectIds.Contains(x.ProjectId)).ToList();
         }
 
         private List<ProjectItem> LoadProjects(Guid userId)
@@ -771,8 +798,14 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
 
         private void BindEmptyDashboard()
         {
+            rptTodayTimeProjects.DataSource = new List<TodayTimeProjectItem>();
+            rptTodayTimeProjects.DataBind();
+            pnlNoTodayTimeProjects.Visible = true;
+            hfEdDailyKey.Value = String.Empty;
             rptProjectsAll.DataSource = new List<ProjectItem>();
             rptProjectsAll.DataBind();
+            rptProjectTasks.DataSource = new List<TaskItem>();
+            rptProjectTasks.DataBind();
             rptTasksAll.DataSource = new List<TaskItem>();
             rptTasksAll.DataBind();
             rptIssuesAll.DataSource = new List<IssueItem>();
@@ -1108,6 +1141,15 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public string AfternoonEnd { get; set; }
         }
 
+        public class TodayTimeProjectItem
+        {
+            public string Code { get; set; }
+            public string Name { get; set; }
+            public int TaskCount { get; set; }
+            public int OverdueCount { get; set; }
+            public string NavigateUrl { get; set; }
+        }
+
         public class CalendarDayItem
         {
             public DateTime Date { get; set; }
@@ -1120,6 +1162,8 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public string WorkHours { get; set; }
             public bool HasEvents { get; set; }
             public List<CalendarEvent> Events { get; set; }
+            public List<CalendarEvent> TaskEvents { get { return Events == null ? new List<CalendarEvent>() : Events.Where(x => x.CssClass == "task").ToList(); } }
+            public List<CalendarEvent> MeetingEvents { get { return Events == null ? new List<CalendarEvent>() : Events.Where(x => x.CssClass == "meeting").ToList(); } }
             public int MeetingCount { get { return Events == null ? 0 : Events.Count(item => item.CssClass == "meeting"); } }
             public int TaskCount { get { return Events == null ? 0 : Events.Count(item => item.CssClass == "task"); } }
             public List<CalendarEvent> PreviewEvents

@@ -211,5 +211,14 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlViewTaskDetail CtrlViewTaskDetail1;
+
+        /// <summary>
+        /// CtrlShareProgress1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fGanttCharts.Controls.CtrlShareProgress CtrlShareProgress1;
     }
 }

@@ -466,8 +466,8 @@ namespace SweetSoft.QLDA.DataAccess
 				
 				TableSchema.TableColumn colvarMaTinh = new TableSchema.TableColumn(schema);
 				colvarMaTinh.ColumnName = "MaTinh";
-				colvarMaTinh.DataType = DbType.AnsiString;
-				colvarMaTinh.MaxLength = 2;
+				colvarMaTinh.DataType = DbType.String;
+				colvarMaTinh.MaxLength = 10;
 				colvarMaTinh.AutoIncrement = false;
 				colvarMaTinh.IsNullable = true;
 				colvarMaTinh.IsPrimaryKey = false;
@@ -479,7 +479,7 @@ namespace SweetSoft.QLDA.DataAccess
 				
 				TableSchema.TableColumn colvarMaXa = new TableSchema.TableColumn(schema);
 				colvarMaXa.ColumnName = "MaXa";
-				colvarMaXa.DataType = DbType.AnsiString;
+				colvarMaXa.DataType = DbType.String;
 				colvarMaXa.MaxLength = 10;
 				colvarMaXa.AutoIncrement = false;
 				colvarMaXa.IsNullable = true;
@@ -1293,77 +1293,6 @@ namespace SweetSoft.QLDA.DataAccess
 		{
 			QueryCommand cmdDel = new QueryCommand("DELETE FROM [aspnet_UsersInRoles] WHERE [aspnet_UsersInRoles].[UserId] = @UserId", AspnetUser.Schema.Provider.Name);
 			cmdDel.AddParameter("@UserId", varUserId, DbType.Guid);
-			DataService.ExecuteQuery(cmdDel);
-		}
-		
-		 
-		public SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection() { return AspnetUser.GetTblCongViecCollection(this.UserId); }
-		public static SweetSoft.QLDA.DataAccess.TblCongViecCollection GetTblCongViecCollection(Guid varUserId)
-		{
-		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[TblCongViec] INNER JOIN [TblCongViec_NhanVien] ON [TblCongViec].[IdCongViec] = [TblCongViec_NhanVien].[IdCongViec] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmd.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
-			TblCongViecCollection coll = new TblCongViecCollection();
-			coll.LoadAndCloseReader(rdr);
-			return coll;
-		}
-		
-		public static void SaveTblCongViecMap(Guid varUserId, TblCongViecCollection items)
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (TblCongViec item in items)
-			{
-				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
-				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item.GetPrimaryKeyValue());
-				varTblCongViecNhanVien.Save();
-			}
-		}
-		public static void SaveTblCongViecMap(Guid varUserId, System.Web.UI.WebControls.ListItemCollection itemList) 
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
-			{
-				if (l.Selected) 
-				{
-					TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-					varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
-					varTblCongViecNhanVien.SetColumnValue("IdCongViec", l.Value);
-					varTblCongViecNhanVien.Save();
-				}
-			}
-		}
-		public static void SaveTblCongViecMap(Guid varUserId , Guid[] itemList) 
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (Guid item in itemList) 
-			{
-				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", varUserId);
-				varTblCongViecNhanVien.SetColumnValue("IdCongViec", item);
-				varTblCongViecNhanVien.Save();
-			}
-		}
-		
-		public static void DeleteTblCongViecMap(Guid varUserId) 
-		{
-			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdNhanVien] = @IdNhanVien", AspnetUser.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdNhanVien", varUserId, DbType.Guid);
 			DataService.ExecuteQuery(cmdDel);
 		}
 		

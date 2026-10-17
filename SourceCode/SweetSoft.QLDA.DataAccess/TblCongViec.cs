@@ -161,11 +161,10 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdCongViecCha.AutoIncrement = false;
 				colvarIdCongViecCha.IsNullable = true;
 				colvarIdCongViecCha.IsPrimaryKey = false;
-				colvarIdCongViecCha.IsForeignKey = true;
+				colvarIdCongViecCha.IsForeignKey = false;
 				colvarIdCongViecCha.IsReadOnly = false;
 				colvarIdCongViecCha.DefaultSetting = @"";
-				
-					colvarIdCongViecCha.ForeignKeyTableName = "TblCongViec";
+				colvarIdCongViecCha.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdCongViecCha);
 				
 				TableSchema.TableColumn colvarIdCongViecPhuThuoc = new TableSchema.TableColumn(schema);
@@ -175,11 +174,10 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdCongViecPhuThuoc.AutoIncrement = false;
 				colvarIdCongViecPhuThuoc.IsNullable = true;
 				colvarIdCongViecPhuThuoc.IsPrimaryKey = false;
-				colvarIdCongViecPhuThuoc.IsForeignKey = true;
+				colvarIdCongViecPhuThuoc.IsForeignKey = false;
 				colvarIdCongViecPhuThuoc.IsReadOnly = false;
 				colvarIdCongViecPhuThuoc.DefaultSetting = @"";
-				
-					colvarIdCongViecPhuThuoc.ForeignKeyTableName = "TblCongViec";
+				colvarIdCongViecPhuThuoc.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdCongViecPhuThuoc);
 				
 				TableSchema.TableColumn colvarIdDoUuTien = new TableSchema.TableColumn(schema);
@@ -663,16 +661,6 @@ namespace SweetSoft.QLDA.DataAccess
         }
         
 		
-		#region PrimaryKey Methods		
-		
-        protected override void SetPrimaryKey(object oValue)
-        {
-            base.SetPrimaryKey(oValue);
-            
-            SetPKValues();
-        }
-        
-		
 		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection colTblKhaiBaoGioChiTietRecords;
 		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioChiTietCollection TblKhaiBaoGioChiTietRecords()
 		{
@@ -697,28 +685,6 @@ namespace SweetSoft.QLDA.DataAccess
 			
 		
 		#region ForeignKey Properties
-		
-		/// <summary>
-		/// Returns a TblCongViec ActiveRecord object related to this TblCongViec
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblCongViec ParentTblCongViec
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViecCha); }
-			set { SetColumnValue("IdCongViecCha", value.IdCongViec); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a TblCongViec ActiveRecord object related to this TblCongViec
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblCongViec ParentTblCongViecToIdCongViecPhuThuoc
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViecPhuThuoc); }
-			set { SetColumnValue("IdCongViecPhuThuoc", value.IdCongViec); }
-		}
-		
 		
 		/// <summary>
 		/// Returns a TblDoUuTien ActiveRecord object related to this TblCongViec
@@ -757,80 +723,7 @@ namespace SweetSoft.QLDA.DataAccess
 		
 		
 		
-		#region Many To Many Helpers
-		
-		 
-		public SweetSoft.QLDA.DataAccess.AspnetUserCollection GetAspnetUserCollection() { return TblCongViec.GetAspnetUserCollection(this.IdCongViec); }
-		public static SweetSoft.QLDA.DataAccess.AspnetUserCollection GetAspnetUserCollection(Guid varIdCongViec)
-		{
-		    SubSonic.QueryCommand cmd = new SubSonic.QueryCommand("SELECT * FROM [dbo].[aspnet_Users] INNER JOIN [TblCongViec_NhanVien] ON [aspnet_Users].[UserId] = [TblCongViec_NhanVien].[IdNhanVien] WHERE [TblCongViec_NhanVien].[IdCongViec] = @IdCongViec", TblCongViec.Schema.Provider.Name);
-			cmd.AddParameter("@IdCongViec", varIdCongViec, DbType.Guid);
-			IDataReader rdr = SubSonic.DataService.GetReader(cmd);
-			AspnetUserCollection coll = new AspnetUserCollection();
-			coll.LoadAndCloseReader(rdr);
-			return coll;
-		}
-		
-		public static void SaveAspnetUserMap(Guid varIdCongViec, AspnetUserCollection items)
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdCongViec] = @IdCongViec", TblCongViec.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdCongViec", varIdCongViec, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (AspnetUser item in items)
-			{
-				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-				varTblCongViecNhanVien.SetColumnValue("IdCongViec", varIdCongViec);
-				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", item.GetPrimaryKeyValue());
-				varTblCongViecNhanVien.Save();
-			}
-		}
-		public static void SaveAspnetUserMap(Guid varIdCongViec, System.Web.UI.WebControls.ListItemCollection itemList) 
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdCongViec] = @IdCongViec", TblCongViec.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdCongViec", varIdCongViec, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (System.Web.UI.WebControls.ListItem l in itemList) 
-			{
-				if (l.Selected) 
-				{
-					TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-					varTblCongViecNhanVien.SetColumnValue("IdCongViec", varIdCongViec);
-					varTblCongViecNhanVien.SetColumnValue("IdNhanVien", l.Value);
-					varTblCongViecNhanVien.Save();
-				}
-			}
-		}
-		public static void SaveAspnetUserMap(Guid varIdCongViec , Guid[] itemList) 
-		{
-			QueryCommandCollection coll = new SubSonic.QueryCommandCollection();
-			//delete out the existing
-			 QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdCongViec] = @IdCongViec", TblCongViec.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdCongViec", varIdCongViec, DbType.Guid);
-			coll.Add(cmdDel);
-			DataService.ExecuteTransaction(coll);
-			foreach (Guid item in itemList) 
-			{
-				TblCongViecNhanVien varTblCongViecNhanVien = new TblCongViecNhanVien();
-				varTblCongViecNhanVien.SetColumnValue("IdCongViec", varIdCongViec);
-				varTblCongViecNhanVien.SetColumnValue("IdNhanVien", item);
-				varTblCongViecNhanVien.Save();
-			}
-		}
-		
-		public static void DeleteAspnetUserMap(Guid varIdCongViec) 
-		{
-			QueryCommand cmdDel = new QueryCommand("DELETE FROM [TblCongViec_NhanVien] WHERE [TblCongViec_NhanVien].[IdCongViec] = @IdCongViec", TblCongViec.Schema.Provider.Name);
-			cmdDel.AddParameter("@IdCongViec", varIdCongViec, DbType.Guid);
-			DataService.ExecuteQuery(cmdDel);
-		}
-		
-		#endregion
+		//no ManyToMany tables defined (0)
 		
         
         

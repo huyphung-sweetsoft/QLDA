@@ -161,11 +161,10 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdCongViecBiAnhHuong.AutoIncrement = false;
 				colvarIdCongViecBiAnhHuong.IsNullable = true;
 				colvarIdCongViecBiAnhHuong.IsPrimaryKey = false;
-				colvarIdCongViecBiAnhHuong.IsForeignKey = true;
+				colvarIdCongViecBiAnhHuong.IsForeignKey = false;
 				colvarIdCongViecBiAnhHuong.IsReadOnly = false;
 				colvarIdCongViecBiAnhHuong.DefaultSetting = @"";
-				
-					colvarIdCongViecBiAnhHuong.ForeignKeyTableName = "TblCongViec";
+				colvarIdCongViecBiAnhHuong.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdCongViecBiAnhHuong);
 				
 				TableSchema.TableColumn colvarTenVanDe = new TableSchema.TableColumn(schema);
@@ -321,11 +320,10 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarIdCongViecPhatSinh.AutoIncrement = false;
 				colvarIdCongViecPhatSinh.IsNullable = true;
 				colvarIdCongViecPhatSinh.IsPrimaryKey = false;
-				colvarIdCongViecPhatSinh.IsForeignKey = true;
+				colvarIdCongViecPhatSinh.IsForeignKey = false;
 				colvarIdCongViecPhatSinh.IsReadOnly = false;
 				colvarIdCongViecPhatSinh.DefaultSetting = @"";
-				
-					colvarIdCongViecPhatSinh.ForeignKeyTableName = "TblCongViec";
+				colvarIdCongViecPhatSinh.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarIdCongViecPhatSinh);
 				
 				TableSchema.TableColumn colvarNguonGocVanDe = new TableSchema.TableColumn(schema);
@@ -485,28 +483,6 @@ namespace SweetSoft.QLDA.DataAccess
 			
 		
 		#region ForeignKey Properties
-		
-		/// <summary>
-		/// Returns a TblCongViec ActiveRecord object related to this TblVanDe
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViec
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViecPhatSinh); }
-			set { SetColumnValue("IdCongViecPhatSinh", value.IdCongViec); }
-		}
-		
-		
-		/// <summary>
-		/// Returns a TblCongViec ActiveRecord object related to this TblVanDe
-		/// 
-		/// </summary>
-		public SweetSoft.QLDA.DataAccess.TblCongViec TblCongViecToIdCongViecBiAnhHuong
-		{
-			get { return SweetSoft.QLDA.DataAccess.TblCongViec.FetchByID(this.IdCongViecBiAnhHuong); }
-			set { SetColumnValue("IdCongViecBiAnhHuong", value.IdCongViec); }
-		}
-		
 		
 		/// <summary>
 		/// Returns a TblDuAn ActiveRecord object related to this TblVanDe
