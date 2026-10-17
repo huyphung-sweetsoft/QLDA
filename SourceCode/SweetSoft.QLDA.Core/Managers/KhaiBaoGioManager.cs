@@ -1212,5 +1212,92 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repo.LayPhienTheoNhanVien(idNhanVien);
         }
+
+        // ===== READ API V2: khong ghi DB va khong thay doi API 1.x =====
+        public List<Kbg20DuAn> LayDanhSachDuAn(Guid idNhanVien)
+        {
+            return _repo.LayDuAnNhanVien(idNhanVien);
+        }
+        public Kbg20TrangDuAn LayTrangDuAn(Guid idNhanVien, Guid idDuAn)
+        {
+            if (idNhanVien == Guid.Empty) throw new UnauthorizedAccessException("Chua xac dinh nhan vien.");
+            var ketQua = new Kbg20TrangDuAn { ServerNowUtc = ChuanGiay(DateTime.UtcNow) };
+            ketQua.DuAn = _repo.LayDuAnNhanVien(idNhanVien);
+            if (ketQua.DuAn.Count == 0) return ketQua;
+            if (idDuAn == Guid.Empty) idDuAn = ketQua.DuAn[0].IdDuAn;
+            if (!ketQua.DuAn.Any(d => d.IdDuAn == idDuAn))
+                throw new UnauthorizedAccessException("Ban khong co quyen xem khai bao gio cua du an nay.");
+            ketQua.IdDuAn=idDuAn;
+            ketQua.CongViec=_repo.LayCongViecCuaNhanVien(idNhanVien,idDuAn);
+            ketQua.DongHo=LayDongHoHienThi(idNhanVien,ketQua.ServerNowUtc)
+                .Where(d=>d.Phien.IdDuAn==idDuAn).ToList();
+            ketQua.LichSu=_repo.LayLichSuPhien(idNhanVien,idDuAn,40);
+            // Tong he thong: da ket toan + du lieu ao chua ket toan, rieng tung task va loai gio.
+            foreach(var d in ketQua.DongHo) {
+                var task=ketQua.CongViec.FirstOrDefault(x=>x.IdCongViec==d.Phien.IdCongViec);
+                if(task==null) continue;
+                long chuaKetToan=Math.Max(0,d.SoGiayHienTai-d.Phien.SoGiayDaKetToan);
+                if(d.Phien.LoaiGio==Kbg20LoaiGio.Thuong) task.SoGiayThuong+=chuaKetToan;
+                else task.SoGiayTangCa+=chuaKetToan;
+            }
+            return ketQua;
+        }
+        public List<Kbg20DongHo> LayDongHoHienThi(Guid idNhanVien, DateTime utcNow)
+        {
+            DateTime now=ChuanGiay(utcNow);
+            var result=new List<Kbg20DongHo>();
+            var taskHan=new Dictionary<Guid,KhaiBaoGio20Repository.CongViec>();
+            foreach(var phien in _repo.LayPhienTheoNhanVien(idNhanVien)) {
+                DateTime start=phien.DaTinhDenLucUtc??phien.BatDauLucUtc;
+                if(start<phien.BatDauLucUtc) start=phien.BatDauLucUtc;
+                DateTime end=now;
+                if(phien.KetThucLucUtc.HasValue && end>phien.KetThucLucUtc.Value)end=phien.KetThucLucUtc.Value;
+                DateTime? cutoff=null;
+                if(phien.LoaiGio==Kbg20LoaiGio.TangCa) {
+                    cutoff=MocNgatTangCaUtc(phien.BatDauLucUtc);
+                } else if(!phien.LaTiepTucQuaHan) {
+                    // Chi doc han theo task, khong lay khoa ghi va cache trong cung request.
+                    KhaiBaoGio20Repository.CongViec task;
+                    if(!taskHan.TryGetValue(phien.IdCongViec,out task)) {
+                        task=_repo.LayMocHanCongViec(phien.IdCongViec);
+                        taskHan[phien.IdCongViec]=task;
+                    }
+                    if(task!=null) cutoff=MocHetHanUtc(task);
+                }
+                if(cutoff.HasValue && end>cutoff.Value)end=cutoff.Value;
+                if(end<start)end=start;
+                long pending=0;
+                bool ticking=false;
+                DateTime? boundary=null;
+                if(phien.LoaiGio==Kbg20LoaiGio.TangCa) {
+                    pending=Math.Max(0,(long)(end-start).TotalSeconds);
+                    ticking=now<cutoff && now>=phien.BatDauLucUtc;
+                    boundary=cutoff;
+                } else {
+                    DateTime localStart=GioDiaPhuong(start),localEnd=GioDiaPhuong(end);
+                    for(DateTime day=localStart.Date;day<=localEnd.Date;day=day.AddDays(1))
+                        foreach(var ca in LayCa(day)) {
+                            DateTime a=localStart>ca.BatDau?localStart:ca.BatDau;
+                            DateTime b=localEnd<ca.KetThuc?localEnd:ca.KetThuc;
+                            if(b>a)pending+=(long)(b-a).TotalSeconds;
+                        }
+                    DateTime localNow=GioDiaPhuong(now);
+                    if(!cutoff.HasValue || now<cutoff.Value) {
+                        foreach(var ca in LayCa(localNow.Date))
+                            if(localNow>=ca.BatDau && localNow<ca.KetThuc) {
+                                ticking=true;boundary=GioUtc(ca.KetThuc);break;
+                            }
+                    }
+                    if(cutoff.HasValue && (!boundary.HasValue || cutoff.Value<boundary.Value))
+                        boundary=cutoff;
+                }
+                result.Add(new Kbg20DongHo { Phien=phien,
+                    SoGiayHienTai=phien.SoGiayDaKetToan+pending,
+                    DangCongGio=ticking,
+                    MocDungCongLucUtc=boundary });
+            }
+            return result;
+        }
+
     }
 }

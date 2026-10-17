@@ -291,4 +291,43 @@ namespace SweetSoft.QLDA.Core.Managers
         public int SoPhienDaTuNgat { get; set; }
         public int SoKhoangDaGhi { get; set; }
     }
+    // ===== READ MODELS 2.0: khong sua bat ky type 1.x nao =====
+    public sealed class Kbg20DuAn
+    {
+        public Guid IdDuAn { get; set; }
+        public string MaDuAn { get; set; }
+        public string TenDuAn { get; set; }
+    }
+    public sealed class Kbg20CongViec
+    {
+        public Guid IdCongViec { get; set; }
+        public Guid IdDuAn { get; set; }
+        public Guid? IdCongViecCha { get; set; }
+        public string MaCongViec { get; set; }
+        public string TenCongViec { get; set; }
+        public DateTime? NgayBatDau { get; set; }
+        public DateTime? NgayKetThuc { get; set; }
+        public int TrangThai { get; set; }
+        public bool ChoDuyet { get; set; }
+        public bool LaPhanCongTrucTiep { get; set; }
+        public long SoGiayThuong { get; set; }
+        public long SoGiayTangCa { get; set; }
+    }
+    public sealed class Kbg20DongHo
+    {
+        public Kbg20Phien Phien { get; set; }
+        public long SoGiayHienTai { get; set; }
+        public bool DangCongGio { get; set; }
+        public DateTime? MocDungCongLucUtc { get; set; }
+    }
+    public sealed class Kbg20TrangDuAn
+    {
+        public Guid IdDuAn { get; set; }
+        public DateTime ServerNowUtc { get; set; }
+        public List<Kbg20DuAn> DuAn { get; set; } = new List<Kbg20DuAn>();
+        public List<Kbg20CongViec> CongViec { get; set; } = new List<Kbg20CongViec>();
+        public List<Kbg20DongHo> DongHo { get; set; } = new List<Kbg20DongHo>();
+        public List<Kbg20Phien> LichSu { get; set; } = new List<Kbg20Phien>();
+    }
+
 }

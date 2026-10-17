@@ -186,6 +186,7 @@
             .ks-journal-table th,.ks-journal-table td { padding:8px 5px; }
         }
     </style>
+    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -208,6 +209,34 @@
             <b>Tài khoản này không phải tài khoản nhân viên.</b><br />
             Trang bấm giờ làm việc chỉ dành cho nhân viên.
         </asp:Panel>
+
+        <%-- V2: chi render khi feature flag da bat. V1 phia duoi duoc giu nguyen. --%>
+        <% if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat()) { %>
+        <section id="kbg20Page" class="kbg20-page"
+                 data-api-url="<%= ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio20.ashx") %>"
+                 data-request-token="<%= Kbg20RequestToken() %>">
+            <div class="kbg20-toolbar">
+                <div><h2>Khai báo giờ 2.0</h2><p>Nhiều công việc, nhiều phiên độc lập · Giờ hệ thống theo ca</p></div>
+                <div class="kbg20-filters">
+                    <label for="kbg20Project">Dự án</label>
+                    <select id="kbg20Project" aria-label="Chọn dự án"><option value="">Đang tải...</option></select>
+                    <button type="button" id="kbg20Reload" class="kbg20-btn kbg20-outline"><i class="fas fa-sync-alt" aria-hidden="true"></i> Làm mới</button>
+                </div>
+            </div>
+            <div id="kbg20Message" role="status" aria-live="polite"></div>
+            <div class="kbg20-summary" id="kbg20Summary" aria-label="Tổng quan giờ và đồng hồ"></div>
+            <div class="kbg20-search"><label for="kbg20Search">Tìm công việc</label>
+                <input type="search" id="kbg20Search" placeholder="Mã hoặc tên công việc" autocomplete="off" /></div>
+            <h3>Công việc của tôi <span id="kbg20TaskCount"></span></h3>
+            <div id="kbg20Tasks" class="kbg20-tasks"></div>
+            <h3>Đồng hồ đang mở <span id="kbg20OpenCount"></span></h3>
+            <div id="kbg20Timers" class="kbg20-timers"></div>
+            <h3>Nhật ký phiên gần đây</h3>
+            <div id="kbg20History" class="kbg20-history"></div>
+            <p class="kbg20-note">Giờ hệ thống của mỗi đồng hồ được cộng độc lập, kể cả khi các khoảng thời gian trùng nhau.
+                Không đóng phiên khi nghỉ trưa/cuối ca. Đối soát sau phê duyệt sẽ được tích hợp với luồng duyệt công việc.</p>
+        </section>
+        <% } %>
 
         <%-- ===== Vùng chính: Thẻ tổng hợp ngày + Danh sách công việc ===== --%>
         <asp:UpdatePanel ID="upnlMain" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
@@ -407,6 +436,7 @@
 </asp:Content>
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>"></script>
     <script type="text/javascript">
         var KhaiBaoGioJs = (function ($) {
             var cfg = null;

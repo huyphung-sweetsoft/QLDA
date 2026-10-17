@@ -37,6 +37,18 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+        // Ma token chi dung de chong CSRF trong POST V2, rang buoc user + ngay UTC.
+        // Khong su dung trong V1. Handler kiem tra chu ky va user server-side.
+        protected string Kbg20RequestToken()
+        {
+            Guid uid;
+            if (!TryGetCurrentUserId(out uid)) return string.Empty;
+            string payload = uid.ToString("N") + "|" + DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+            byte[] signed = System.Web.Security.MachineKey.Protect(
+                System.Text.Encoding.UTF8.GetBytes(payload), "KBG20", "WebActionV1");
+            return HttpUtility.HtmlAttributeEncode(Convert.ToBase64String(signed));
+        }
+
         #region Vòng đời trang
 
         protected void Page_Load(object sender, EventArgs e)
@@ -46,6 +58,16 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
             {
                 Response.Redirect(GetRelativeClientPath("/login"), false);
                 Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
+            // V2 co giao dien/endpoint rieng. Khong goi GetTodayView 1.x khi da cat sang V2.
+            if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+            {
+                upnlMain.Visible = false;
+                btnTaskAction.Visible = false;
+                btnRefresh.Visible = false;
+                if (!IsPostBack) InitHeader(userId);
                 return;
             }
 

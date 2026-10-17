@@ -1094,5 +1094,113 @@ namespace SweetSoft.QLDA.Core.Respositories
                 return cmd.ExecuteScalar() != null;
             }
         }
+
+        // Chi doc moc han de ve dong ho; khong lay UPDLOCK/HOLDLOCK tu API Start.
+        internal CongViec LayMocHanCongViec(Guid id)
+        {
+            using(var con=MoKetNoi())
+            using(var cmd=Lenh(con,null,@"SELECT NgayBatDau,NgayKetThuc FROM dbo.TblCongViec WHERE IdCongViec=@T"))
+            {
+                P(cmd,"@T",SqlDbType.UniqueIdentifier,id);
+                using(var rd=cmd.ExecuteReader()) {
+                    if(!rd.Read())return null;
+                    return new CongViec {
+                        IdCongViec=id,
+                        NgayBatDau=rd.IsDBNull(0)?(DateTime?)null:rd.GetDateTime(0),
+                        NgayKetThuc=rd.IsDBNull(1)?(DateTime?)null:rd.GetDateTime(1)
+                    };
+                }
+            }
+        }
+        // ===== API DOC V2: tat ca queries gioi han theo nhan vien dang nhap =====
+        internal List<Kbg20DuAn> LayDuAnNhanVien(Guid nv)
+        {
+            var list = new List<Kbg20DuAn>();
+            using (var con = MoKetNoi())
+            using (var cmd = Lenh(con, null, @"SELECT d.IdDuAn,d.MaDuAn,d.TenDuAn
+                FROM dbo.TblDuAn d WHERE ISNULL(d.DaXoa,0)=0 AND
+                (EXISTS(SELECT 1 FROM dbo.TblCongViec t
+                        INNER JOIN dbo.TblCongViec_NhanVien a ON a.IdCongViec=t.IdCongViec
+                        WHERE t.IdDuAn=d.IdDuAn AND a.IdNhanVien=@U AND ISNULL(t.DaXoa,0)=0)
+                 OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p
+                        WHERE p.IdDuAn=d.IdDuAn AND p.IdNhanVien=@U))
+                ORDER BY d.TenDuAn,d.MaDuAn"))
+            {
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
+                using (var r = cmd.ExecuteReader())
+                    while(r.Read()) list.Add(new Kbg20DuAn {
+                        IdDuAn=r.GetGuid(0), MaDuAn=r.IsDBNull(1)?"":Convert.ToString(r.GetValue(1)),
+                        TenDuAn=r.IsDBNull(2)?"":Convert.ToString(r.GetValue(2)) });
+            }
+            return list;
+        }
+        internal List<Kbg20CongViec> LayCongViecCuaNhanVien(Guid nv, Guid idDuAn)
+        {
+            var list = new List<Kbg20CongViec>();
+            using (var con = MoKetNoi())
+            using (var cmd = Lenh(con,null,@"SELECT t.IdCongViec,t.IdDuAn,t.IdCongViecCha,
+                    t.MaCongViec,t.TenCongViec,t.NgayBatDau,t.NgayKetThuc,t.TrangThai,
+                    ISNULL(t.ChoDuyet,0),
+                    CASE WHEN EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a
+                      WHERE a.IdCongViec=t.IdCongViec AND a.IdNhanVien=@U) THEN 1 ELSE 0 END,
+                    ISNULL(g.Thuong,0),ISNULL(g.TangCa,0)
+                FROM dbo.TblCongViec t
+                OUTER APPLY(SELECT SUM(CASE WHEN p.LoaiGio=1 THEN k.SoGiay ELSE 0 END) Thuong,
+                           SUM(CASE WHEN p.LoaiGio=2 THEN k.SoGiay ELSE 0 END) TangCa
+                    FROM dbo.TblKhaiBaoGioPhien p
+                    LEFT JOIN dbo.TblKhaiBaoGioKhoangTinh k ON k.IdPhien=p.IdPhien
+                    WHERE p.IdNhanVien=@U AND p.IdCongViec=t.IdCongViec) g
+                WHERE t.IdDuAn=@D AND ISNULL(t.DaXoa,0)=0 AND
+                  (EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a
+                           WHERE a.IdCongViec=t.IdCongViec AND a.IdNhanVien=@U)
+                   OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p
+                           WHERE p.IdCongViec=t.IdCongViec AND p.IdNhanVien=@U))
+                ORDER BY t.MaCongViec,t.NgayKetThuc"))
+            {
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
+                P(cmd,"@D",SqlDbType.UniqueIdentifier,idDuAn);
+                using (var r=cmd.ExecuteReader()) while(r.Read()) list.Add(new Kbg20CongViec {
+                    IdCongViec=r.GetGuid(0), IdDuAn=r.GetGuid(1),
+                    IdCongViecCha=r.IsDBNull(2)?(Guid?)null:r.GetGuid(2),
+                    MaCongViec=r.IsDBNull(3)?"":Convert.ToString(r.GetValue(3)),
+                    TenCongViec=r.IsDBNull(4)?"":Convert.ToString(r.GetValue(4)),
+                    NgayBatDau=r.IsDBNull(5)?(DateTime?)null:r.GetDateTime(5),
+                    NgayKetThuc=r.IsDBNull(6)?(DateTime?)null:r.GetDateTime(6),
+                    TrangThai=Convert.ToInt32(r.GetValue(7)),ChoDuyet=Convert.ToBoolean(r.GetValue(8)),
+                    LaPhanCongTrucTiep=Convert.ToInt32(r.GetValue(9))==1,
+                    SoGiayThuong=Convert.ToInt64(r.GetValue(10)),SoGiayTangCa=Convert.ToInt64(r.GetValue(11)) });
+            }
+            return list;
+        }
+        internal List<Kbg20Phien> LayLichSuPhien(Guid nv, Guid duAn, int limit)
+        {
+            var list=new List<Kbg20Phien>();
+            using (var con=MoKetNoi())
+            using (var cmd=Lenh(con,null,@"SELECT TOP (@Limit)
+                  p.IdPhien,p.IdNhanVien,p.IdCongViec,p.IdDuAn,p.LoaiGio,
+                  p.BatDauLuc,p.KetThucLuc,p.DaTinhDenLuc,p.LaTiepTucQuaHan,p.NguonBatDau,
+                  t.MaCongViec,t.TenCongViec,d.MaDuAn,d.TenDuAn,
+                  ISNULL((SELECT SUM(k.SoGiay) FROM dbo.TblKhaiBaoGioKhoangTinh k WHERE k.IdPhien=p.IdPhien),0)
+                FROM dbo.TblKhaiBaoGioPhien p
+                INNER JOIN dbo.TblCongViec t ON t.IdCongViec=p.IdCongViec
+                INNER JOIN dbo.TblDuAn d ON d.IdDuAn=p.IdDuAn
+                WHERE p.IdNhanVien=@U AND p.IdDuAn=@D AND p.KetThucLuc IS NOT NULL
+                ORDER BY p.BatDauLuc DESC,p.IdPhien"))
+            {
+                P(cmd,"@Limit",SqlDbType.Int,Math.Max(1,Math.Min(100,limit)));
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
+                P(cmd,"@D",SqlDbType.UniqueIdentifier,duAn);
+                using(var r=cmd.ExecuteReader()) while(r.Read()) {
+                    var p=DocPhien(r);
+                    p.MaCongViec=r.IsDBNull(10)?"":Convert.ToString(r.GetValue(10));
+                    p.TenCongViec=r.IsDBNull(11)?"":Convert.ToString(r.GetValue(11));
+                    p.MaDuAn=r.IsDBNull(12)?"":Convert.ToString(r.GetValue(12));
+                    p.TenDuAn=r.IsDBNull(13)?"":Convert.ToString(r.GetValue(13));
+                    p.SoGiayDaKetToan=Convert.ToInt64(r.GetValue(14)); list.Add(p);
+                }
+            }
+            return list;
+        }
+
     }
 }

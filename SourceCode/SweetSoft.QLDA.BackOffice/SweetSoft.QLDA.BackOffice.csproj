@@ -473,13 +473,6 @@
     <Compile Include="fEmailTemplate\EmailTemplates.aspx.designer.cs">
       <DependentUpon>EmailTemplates.aspx</DependentUpon>
     </Compile>
-    <Compile Include="fEmployeeDashboard\Controls\CtrlEmployeeDashboard.ascx.cs">
-      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="fEmployeeDashboard\Controls\CtrlEmployeeDashboard.ascx.designer.cs">
-      <DependentUpon>CtrlEmployeeDashboard.ascx</DependentUpon>
-    </Compile>
     <Compile Include="fEmployeeDashboard\EmployeeDashboard.aspx.cs">
       <DependentUpon>EmployeeDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -980,7 +973,6 @@
     <Content Include="fEmailTemplate\Controls\CtrlTemplates.ascx" />
     <Content Include="fEmailTemplate\EmailTemplateDetail.aspx" />
     <Content Include="fEmailTemplate\EmailTemplates.aspx" />
-    <Content Include="fEmployeeDashboard\Controls\CtrlEmployeeDashboard.ascx" />
     <Content Include="fEmployeeDashboard\EmployeeDashboard.aspx" />
     <Content Include="fExecuteContracts\Controls\CtrlHopDongThucHien.ascx" />
     <Content Include="fExecuteContracts\HopDongThucHienDetail.aspx" />
@@ -1075,6 +1067,7 @@
     <Content Include="robots.txt" />
     <Content Include="SeedAdministrativeData.aspx" />
     <Content Include="Styles\css\floating-work-timer.css" />
+    <Content Include="Styles\css\kbg20-page.css" />
     <Content Include="Styles\css\landingpage.css" />
     <Content Include="Styles\images\addImage.jpg" />
     <Content Include="Styles\images\background-app.png" />
@@ -1089,6 +1082,7 @@
     <Content Include="Styles\images\SweetSoft-logo-light.png" />
     <Content Include="Styles\js\dashboard.js" />
     <Content Include="Styles\js\floating-work-timer.js" />
+    <Content Include="Styles\js\kbg20-page.js" />
     <Content Include="Styles\js\trang-chu.js" />
     <Content Include="Styles\plugins\ckeditor\lang\vi.js" />
     <Content Include="Styles\plugins\ckeditor\plugins\image2\lang\vi.js" />
@@ -1766,6 +1760,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="fKhaiBaoGio\FloatingWorkTimer.ashx" />
+    <Content Include="fKhaiBaoGio\KhaiBaoGio20.ashx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -2434,6 +2429,7 @@
     <Folder Include="bin\en-US\" />
     <Folder Include="bin\vi-VN\" />
     <Folder Include="Controllers\" />
+    <Folder Include="fEmployeeDashboard\Controls\" />
     <Folder Include="obj\" />
     <Folder Include="Views\CtrlTask\" />
     <Folder Include="_RFMng\scripts\codemirror-5.17.0\bin\" />
