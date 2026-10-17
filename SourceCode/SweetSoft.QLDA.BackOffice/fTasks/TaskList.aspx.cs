@@ -182,33 +182,42 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
             ddlEditCongViecCha.Enabled = false;
             UpdateMinStartDate();
+            // Chuẩn bị dữ liệu lịch trước khi mở popup: nút Lịch chỉ chạy client, không postback gây giật chiều cao.
+            if (task.NgayBatDau.HasValue && task.NgayKetThuc.HasValue)
+            {
+                try { hdfLocalScheduleJson.Value = BuildLocalTaskScheduleJson(task); }
+                catch (Exception ex) { hdfLocalScheduleJson.Value = string.Empty; System.Diagnostics.Trace.TraceError("Lịch dự kiến: " + ex); }
+            }
             upModal.Update();
             mdlEditTask.OpenModal(true, IsPostBack ? 0 : 1000);
         }
         #endregion
         protected void btnViewScheduleInEdit_Click(object sender, EventArgs e)
         {
-            // Luôn dựng lịch mới từ task hiện tại, kể cả khi task thiếu ngày hợp lệ.
-            hdfLocalScheduleJson.Value = string.Empty;
+            // Fallback cho công việc chưa được pre-load lịch (ví dụ dữ liệu vừa thay đổi).
             if (!Guid.TryParse(hfEditTaskId.Value, out Guid taskId)) return;
             TblCongViec taskSched = TaskManager.Instance.FetchById(taskId);
-            if (taskSched == null) return;
-
+            if (taskSched == null || taskSched.IdDuAn != CurrentProjectId || taskSched.DaXoa == true) return;
             if (!taskSched.NgayBatDau.HasValue || !taskSched.NgayKetThuc.HasValue)
             {
-                ShowNotify("Công việc này chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch biểu!", MSGType.Warning);
+                ShowNotify("Công việc chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch dự kiến!", MSGType.Warning);
                 return;
             }
+            try { hdfLocalScheduleJson.Value = BuildLocalTaskScheduleJson(taskSched); }
+            catch (Exception ex) { ShowNotify("Không tải được lịch dự kiến: " + ex.Message, MSGType.Error); return; }
+            upModal.Update();
+            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "OpenSliderJS", "setTimeout(function(){openLocalTaskSchedule();},70);", true);
+        }
 
-            List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskId);
+        private string BuildLocalTaskScheduleJson(TblCongViec taskSched)
+        {
+            List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskSched.IdCongViec);
             var dict = new Dictionary<string, object>();
             DateTime current = taskSched.NgayBatDau.Value.Date;
             DateTime end = taskSched.NgayKetThuc.Value.Date;
             string txtTask = GetResourceText(BackEndResourceKeys.TASK).ToLower();
             string txtFree = GetResourceText(BackEndResourceKeys.FREE);
-            string txtHoliday = GetResourceText(BackEndResourceKeys.HOLIDAY);
             string txtWeekend = GetResourceText(BackEndResourceKeys.WEEKEND);
-
             while (current <= end)
             {
                 string status = "";
@@ -216,7 +225,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 string displayText = "";
                 TblLichNgoaiLe exceptionDay = LichBieuChungManager.Instance.GetExceptionByDate(current);
                 bool isWeekend = current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday;
-
                 if (exceptionDay != null)
                 {
                     status = "holiday";
@@ -229,33 +237,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 }
                 else
                 {
-                    var tasksToday = leafTasks.Where(t => t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
+                    var tasksToday = leafTasks.Where(t => t.NgayBatDau.HasValue && t.NgayKetThuc.HasValue && t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
                     if (tasksToday.Count > 0)
                     {
                         status = "busy";
-                        foreach (var t in tasksToday)
-                            activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
+                        foreach (var t in tasksToday) activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
                         displayText = tasksToday.Count == 1 ? $"[{tasksToday[0].MaCongViec}]" : $"{tasksToday.Count} {txtTask}";
                     }
-                    else
-                    {
-                        status = "free";
-                        displayText = txtFree;
-                    }
+                    else { status = "free"; displayText = txtFree; }
                 }
                 dict.Add(current.ToString("yyyy-MM-dd"), new { status = status, text = displayText, tasks = activeTasks });
                 current = current.AddDays(1);
             }
-
-            // Nạp chuỗi JSON vào thẻ HiddenField
-            hdfLocalScheduleJson.Value = Newtonsoft.Json.JsonConvert.SerializeObject(dict);
-
-            upModal.Update();
-
-            // Kích hoạt Javascript để hiệu ứng trượt mở ra
-            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "OpenSliderJS",
-                "setTimeout(function() { openLocalTaskSchedule(); renderLocalSchedule(); }, 100);", true);
+            return Newtonsoft.Json.JsonConvert.SerializeObject(dict);
         }
+
         private void Reminder_Callback(object sender, Guid taskId)
         {
             if (taskId == Guid.Empty)

@@ -1,6 +1,9 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlProjectTabs.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs" %>
 
 <style>
+    /* Tránh chớp cấu hình cũ: server đánh dấu tab chưa ghim trước khi HTML tới trình duyệt. */
+    .project-feature-tabs li[data-server-pinned="0"] { display:none!important; }
+    .project-feature-tabs.project-tabs-restoring,.project-feature-tabs.project-tabs-restoring.project-tabs-open { transition:none!important; }
     /* Thanh ProjectTabs mini: mot hang, thap gon, khong chiem chieu cao noi dung */
     .project-feature-tabs { position: relative; display: block; /* Thu gon vung hover theo chieu rong thuc te cua nhom tab + nut Them, khong de ca hang trang kich hoat hieu ung mo rong. */ width: fit-content !important; max-width: 100%; overflow-x: auto !important; overflow-y: hidden !important; margin: 0 auto 8px 0 !important; padding: 1px 0 3px !important; border: 0 !important; outline: none !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
     .project-feature-tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
@@ -163,7 +166,7 @@
     @media(prefers-reduced-motion:reduce) { .ql-customize .ql-app { transition:none; } }
 </style>
 
-<nav id="projectFeatureTabs" class="project-feature-tabs mb-3" aria-label="Chức năng trong dự án">
+<nav id="projectFeatureTabs" class="project-feature-tabs project-tabs-restoring mb-3" aria-label="Chức năng trong dự án">
     <ul runat="server" id="ulProjectTabs" class="nav nav-pills align-items-center"></ul>
 </nav>
 
@@ -177,8 +180,8 @@
                     <div class="ql-intro-title">Ghim chức năng &amp; điều hướng nhanh</div>
                     <p class="ql-intro-desc">Chọn những chức năng muốn hiển thị trên thanh công cụ. Có thể ghim hoặc bỏ ghim nhiều chức năng rồi lưu một lần.</p>
                     <div class="ql-shortcuts" aria-label="Các phím tắt chuyển trang">
-                        <span class="ql-shortcut"><kbd class="ql-kbd">Shift + 1…9</kbd><span>Chức năng 1–9</span></span>
-                        <span class="ql-shortcut"><kbd class="ql-kbd">Shift + 0</kbd><span>Chức năng 10</span></span>
+                        <span class="ql-shortcut"><kbd class="ql-kbd">Shift + 1…9</kbd><span>Tab ghim thứ 1–9</span></span>
+                        <span class="ql-shortcut"><kbd class="ql-kbd">Shift + 0</kbd><span>Tab ghim thứ 10</span></span>
                         <span class="ql-shortcut"><kbd class="ql-kbd">Shift + Tab</kbd><span>Trang kế tiếp</span></span>
                         <span class="ql-shortcut"><kbd class="ql-kbd">Shift + →</kbd><span>Trang kế tiếp</span></span>
                         <span class="ql-shortcut"><kbd class="ql-kbd">Shift + ←</kbd><span>Trang trước</span></span>
@@ -258,7 +261,8 @@
         });
 
         // Lần đầu truy cập: ghim 3 chức năng đầu. Những lần sau dùng cấu hình đã lưu.
-        var saved = localStorage.getItem('SweetSoft_PinnedProjectTabs_v4');
+        var saved = null;
+        try { saved = localStorage.getItem('SweetSoft_PinnedProjectTabs_v4'); } catch (e) {}
         if (saved) {
             try {
                 var parsed = JSON.parse(saved);
@@ -276,15 +280,11 @@
             return availableKeys.indexOf(key) !== -1 && list.indexOf(key) === index;
         });
 
-        // Luôn giữ tab đang xem để người dùng không mất dấu trang hiện tại.
-        if (activeKey && pinnedKeys.indexOf(activeKey) === -1) {
-            pinnedKeys.push(activeKey);
-        }
-
-        // Nếu cấu hình rỗng hoặc không còn tab hợp lệ, giữ lại ít nhất một chức năng.
-        if (pinnedKeys.length === 0 && allTabs.length > 0) {
-            pinnedKeys.push(activeKey || allTabs[0].key);
-        }
+        // Chỉ đồng bộ cookie với cấu hình đã ghim. Không tự lưu tab đang xem khi chuyển trang.
+        // Tab hiện tại vẫn được hiển thị tạm thời nhưng không tự ghim vĩnh viễn.
+        if (pinnedKeys.length === 0 && allTabs.length > 0) pinnedKeys.push(allTabs[0].key);
+        syncProjectPinnedTabsCookie(pinnedKeys);
+        if (activeKey && pinnedKeys.indexOf(activeKey) === -1) pinnedKeys.push(activeKey);
 
         // Sắp xếp thanh tab theo thứ tự server khai báo, chỉ hiển thị các tab được ghim.
         $ul.empty();
@@ -293,6 +293,7 @@
         allTabs.forEach(function (tab) {
             if (pinnedKeys.indexOf(tab.key) !== -1) {
                 var $li = tab.$el;
+                $li.removeAttr('data-server-pinned').show();
 
                 if (tab.key !== activeKey) {
                     var $a = $li.find('a').first();
@@ -313,7 +314,7 @@
 
                         // Cap nhat trang thai ngay tren client, khong tai lai ca trang.
                         pinnedKeys = pinnedKeys.filter(function (key) { return key !== tab.key; });
-                        localStorage.setItem('SweetSoft_PinnedProjectTabs_v4', JSON.stringify(pinnedKeys));
+                        persistProjectPinnedTabs();
 
                         // An tab vua bo ghim; van giu doi tuong trong allTabs de popup co the them lai.
                         if (tab.$el && tab.$el.length) {
@@ -340,6 +341,30 @@
             '</a></li>');
         $ul.append($btnCustomize);
     });
+
+    // Cookie chỉ chứa các khóa ghim cố định, giúp server lọc tab ngay trong HTML (tránh chớp mỗi lần chuyển trang).
+    function syncProjectPinnedTabsCookie(keys) {
+        try { document.cookie = 'SweetSoft_PinnedProjectTabs_v4=' + encodeURIComponent(keys.join('|')) + '; path=/; max-age=31536000; SameSite=Lax'; } catch (e) {}
+    }
+    function persistProjectPinnedTabs() {
+        try { localStorage.setItem('SweetSoft_PinnedProjectTabs_v4', JSON.stringify(pinnedKeys)); } catch (e) {}
+        syncProjectPinnedTabsCookie(pinnedKeys);
+    }
+    // Giữ trạng thái mở/đóng trước khi trang được vẽ, không chạy animation mỗi lần điều hướng.
+    (function restoreProjectTabAppearance() {
+        var panel = document.getElementById('projectFeatureTabs');
+        if (!panel) return;
+        var isOpen = false;
+        try { isOpen = localStorage.getItem('SweetSoft_ProjectFunctionsOpen_v1') === 'true'; } catch (e) {}
+        panel.classList.toggle('project-tabs-open', isOpen);
+        function reveal() {
+            window.requestAnimationFrame(function () {
+                window.requestAnimationFrame(function () { panel.classList.remove('project-tabs-restoring'); });
+            });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal);
+        else reveal();
+    })();
 
     // Cap nhat so chuc nang chua ghim ngay tren nut +, khong can reload trang.
     function updateCustomizeButtonCount() {
@@ -382,7 +407,7 @@
         }
 
         pinnedKeys = tempPinnedKeys.slice();
-        localStorage.setItem('SweetSoft_PinnedProjectTabs_v4', JSON.stringify(pinnedKeys));
+        persistProjectPinnedTabs();
         location.reload();
     }
 
@@ -417,11 +442,12 @@
                 var badgeIcon = isCurrent ? 'fa-lock' : (isPinned ? 'fa-check' : 'fa-plus');
                 var stateLabel = isCurrent ? 'Đang mở' : (isPinned ? 'Đã ghim' : 'Chưa ghim');
                 var hint = isCurrent ? 'Chức năng đang mở luôn được ghim' : (isPinned ? 'Bỏ ghim ' + tab.name : 'Ghim ' + tab.name);
-                if (index < 10) hint += '. Phím chuyển trang: Shift + ' + ((index + 1) % 10);
+                var pinnedOrder = getPinnedNavigationTabs().findIndex(function (item) { return item.key === tab.key; });
+                if (pinnedOrder >= 0 && pinnedOrder < 10) hint += '. Phím chuyển trang: Shift + ' + ((pinnedOrder + 1) % 10);
                 html += '<button type="button" class="ql-app ql-theme-' + (index % 8) + (isPinned ? ' is-pinned' : '') + (isCurrent ? ' is-current' : '') + '"' +
                     ' data-ql-key="' + escapeCustomizeHtml(tab.key) + '" title="' + escapeCustomizeHtml(hint) + '"' +
                     ' aria-label="' + escapeCustomizeHtml(hint) + '" aria-pressed="' + (isPinned ? 'true' : 'false') + '"' + (isCurrent ? ' disabled="disabled"' : '') + '>' +
-                    '<span class="ql-app-order" aria-hidden="true">' + (index + 1) + '</span>' +
+                    '<span class="ql-app-order" aria-hidden="true">' + (pinnedOrder >= 0 ? (pinnedOrder + 1) : '+') + '</span>' +
                     '<span class="ql-app-badge" aria-hidden="true"><i class="fas ' + badgeIcon + '"></i></span>' +
                     '<span class="ql-app-icon" aria-hidden="true"><i class="' + escapeCustomizeHtml(tab.icon || 'fas fa-folder') + '"></i></span>' +
                     '<span class="ql-app-name">' + escapeCustomizeHtml(tab.name) + '</span>' +
@@ -462,9 +488,18 @@
                 return parsed.href;
             } catch (error) { return null; }
         }
+        // Chỉ dùng các tab được ghim VÀ đang hiện trên thanh (không tính nút Thêm).
+        // Thứ tự là thứ tự thanh công cụ, không phải thứ tự 10 chức năng gốc.
+        function getPinnedNavigationTabs() {
+            return allTabs.filter(function (tab) {
+                return pinnedKeys.indexOf(tab.key) !== -1 && tab.$el && tab.$el.length &&
+                    tab.$el.parent().length > 0 && tab.$el.css('display') !== 'none';
+            });
+        }
         function navigateProjectTab(index) {
-            if (index < 0 || index >= allTabs.length) return false;
-            var tab = allTabs[index];
+            var tabs = getPinnedNavigationTabs();
+            if (index < 0 || index >= tabs.length) return false;
+            var tab = tabs[index];
             var url = validProjectTabUrl(tab);
             if (!url) return false;
             if (tab.key === activeKey) return true;
@@ -472,12 +507,13 @@
             return true;
         }
         function navigateProjectRelative(direction) {
-            if (!allTabs.length) return false;
-            var index = allTabs.findIndex(function (tab) { return tab.key === activeKey; });
-            if (index < 0) index = 0;
-            for (var attempt = 1; attempt <= allTabs.length; attempt++) {
-                var nextIndex = (index + direction * attempt + allTabs.length * (attempt + 1)) % allTabs.length;
-                if (nextIndex !== index && validProjectTabUrl(allTabs[nextIndex])) return navigateProjectTab(nextIndex);
+            var tabs = getPinnedNavigationTabs();
+            if (tabs.length < 2) return false;
+            var index = tabs.findIndex(function (tab) { return tab.key === activeKey; });
+            if (index < 0) index = direction > 0 ? -1 : 0;
+            for (var attempt = 1; attempt <= tabs.length; attempt++) {
+                var nextIndex = ((index + direction * attempt) % tabs.length + tabs.length) % tabs.length;
+                if (nextIndex !== index && validProjectTabUrl(tabs[nextIndex])) return navigateProjectTab(nextIndex);
             }
             return false;
         }
@@ -510,7 +546,8 @@
             // Shift+1 ... Shift+9, Shift+0 -> chức năng thứ 10.
             if (number !== null) {
                 var index = number === 0 ? 9 : number - 1;
-                if (index < allTabs.length && validProjectTabUrl(allTabs[index])) {
+                var pinnedTabs = getPinnedNavigationTabs();
+                if (index < pinnedTabs.length && validProjectTabUrl(pinnedTabs[index])) {
                     e.preventDefault();
                     navigateProjectTab(index);
                 }
@@ -519,7 +556,7 @@
             // Shift+Tab là thao tác lấy trang kế; Shift+mũi tên trái/phải cũng chuyển lùi/tiến.
             if (e.key === 'Tab' || code === 'ArrowRight' || code === 'ArrowLeft') {
                 var direction = code === 'ArrowLeft' ? -1 : 1;
-                if (allTabs.length > 1) { e.preventDefault(); navigateProjectRelative(direction); }
+                if (getPinnedNavigationTabs().length > 1) { e.preventDefault(); navigateProjectRelative(direction); }
             }
         });
         function resetLauncherBulkFilter() {
