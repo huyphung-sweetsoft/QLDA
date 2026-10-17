@@ -222,51 +222,6 @@ namespace SweetSoft.QLDA.BackOffice.fEmployeeDashboard
         protected global::System.Web.UI.WebControls.Repeater rptDays;
 
         /// <summary>
-        /// divTaskChart control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl divTaskChart;
-
-        /// <summary>
-        /// lblTotalTasksChart control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalTasksChart;
-
-        /// <summary>
-        /// lblTaskOverdueChart control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTaskOverdueChart;
-
-        /// <summary>
-        /// lblTaskDueSoonChart control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTaskDueSoonChart;
-
-        /// <summary>
-        /// lblTaskNormalChart control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTaskNormalChart;
-
-        /// <summary>
         /// divProjectChart control.
         /// </summary>
         /// <remarks>
@@ -312,6 +267,51 @@ namespace SweetSoft.QLDA.BackOffice.fEmployeeDashboard
         protected global::System.Web.UI.WebControls.Label lblProjectNormalChart;
 
         /// <summary>
+        /// rptProjectStatusRows control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptProjectStatusRows;
+
+        /// <summary>
+        /// hfEdDailyKey control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfEdDailyKey;
+
+        /// <summary>
+        /// mdlTimeProjects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlTimeProjects;
+
+        /// <summary>
+        /// rptTodayTimeProjects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptTodayTimeProjects;
+
+        /// <summary>
+        /// pnlNoTodayTimeProjects control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoTodayTimeProjects;
+
+        /// <summary>
         /// mdlProjects control.
         /// </summary>
         /// <remarks>
@@ -346,6 +346,15 @@ namespace SweetSoft.QLDA.BackOffice.fEmployeeDashboard
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlNoProjects;
+
+        /// <summary>
+        /// rptProjectTasks control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptProjectTasks;
 
         /// <summary>
         /// mdlTasks control.
