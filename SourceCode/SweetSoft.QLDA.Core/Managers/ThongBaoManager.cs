@@ -62,7 +62,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public ThongBaoManager(IAppContext applicationContext = null) : base(applicationContext)
         {
             _auditManager = new AuditManager(GetClientInfo());
-            _repository   = new ThongBaoRepository(_auditManager);
+            _repository = new ThongBaoRepository(_auditManager);
         }
 
         #endregion
@@ -85,12 +85,12 @@ namespace SweetSoft.QLDA.Core.Managers
         /// <param name="idDuAn">FK đến TblDuAn (nullable)</param>
         /// <returns>Bản ghi vừa được tạo, hoặc null nếu có lỗi</returns>
         public TblThongBao Create(
-            Guid   userId,
+            Guid userId,
             string tieuDe,
-            string noiDung          = null,
-            string loaiThongBao     = ThongBaoTypes.HeThong,
-            Guid?  idCongViec       = null,
-            Guid?  idDuAn           = null,
+            string noiDung = null,
+            string loaiThongBao = ThongBaoTypes.HeThong,
+            Guid? idCongViec = null,
+            Guid? idDuAn = null,
             string duongDanLienKet = null)
         {
             if (userId == Guid.Empty)
@@ -103,21 +103,21 @@ namespace SweetSoft.QLDA.Core.Managers
 
             TblThongBao item = new TblThongBao
             {
-                IdThongBao      = Guid.NewGuid(),
-                UserId          = userId,
-                IdCongViec      = idCongViec,
-                IdDuAn          = idDuAn,
-                TieuDe          = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
-                NoiDung         = noiDung,
-                LoaiThongBao    = loaiThongBao,
+                IdThongBao = Guid.NewGuid(),
+                UserId = userId,
+                IdCongViec = idCongViec,
+                IdDuAn = idDuAn,
+                TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
+                NoiDung = noiDung,
+                LoaiThongBao = loaiThongBao,
                 DuongDanLienKet = string.IsNullOrWhiteSpace(duongDanLienKet) ? null : duongDanLienKet.Trim(),
-                DaDoc           = false,
-                NgayDoc         = null,
-                DaXoa           = false,
-                NguoiTao        = currentUser,
-                NgayTao         = DateTime.Now,
-                NguoiCapNhat    = currentUser,
-                NgayCapNhat     = DateTime.Now
+                DaDoc = false,
+                NgayDoc = null,
+                DaXoa = false,
+                NguoiTao = currentUser,
+                NgayTao = DateTime.Now,
+                NguoiCapNhat = currentUser,
+                NgayCapNhat = DateTime.Now
             };
 
             var result = _repository.Insert(item);
@@ -389,7 +389,7 @@ namespace SweetSoft.QLDA.Core.Managers
         // =========================================================================
         public TblThongBao CreateMeetingReminderNotification(
             Guid userId, string tieuDe, string noiDung, Guid? idDuAn,
-            string meetingName, DateTime startTime, string room)
+            string meetingName, DateTime startTime, string room, bool isOnline = false)
         {
             if (userId == Guid.Empty) return null;
             string currentUser = _applicationContext?.UserName ?? "System";
@@ -415,31 +415,62 @@ namespace SweetSoft.QLDA.Core.Managers
 
             var result = _repository.Insert(item);
             if (result != null)
-            {
-                SendMeetingReminderEmail(result, meetingName, startTime, room);
-            }
+                SendMeetingReminderEmail(result, meetingName, startTime, room, isOnline);
             return result;
         }
 
-        private void SendMeetingReminderEmail(TblThongBao notification, string meetingName, DateTime startTime, string room)
+        private static string GetSafeMeetingLink(string room, bool isOnline)
+        {
+            if (!isOnline || string.IsNullOrWhiteSpace(room)) return null;
+            Uri uri;
+            if (!Uri.TryCreate(room.Trim(), UriKind.Absolute, out uri)) return null;
+            if (uri.Scheme != Uri.UriSchemeHttps || string.IsNullOrWhiteSpace(uri.Host) ||
+                !string.IsNullOrEmpty(uri.UserInfo) || uri.AbsoluteUri.Length > 2048) return null;
+            return uri.AbsoluteUri;
+        }
+
+        private void SendMeetingReminderEmail(TblThongBao notification, string meetingName, DateTime startTime, string room, bool isOnline)
         {
             Task.Run(async () =>
             {
                 try
                 {
                     var recipient = UserManager.Instance.GetUserById(notification.UserId);
+                    if (recipient == null) return;
                     var memUser = System.Web.Security.Membership.GetUser(recipient.UserName);
                     string email = memUser != null ? memUser.Email : null;
+                    if (string.IsNullOrWhiteSpace(email)) return;
 
-                    if (recipient == null || string.IsNullOrWhiteSpace(email)) return;
+                    string joinUrl = GetSafeMeetingLink(room, isOnline);
+                    string encodedRoom = HttpUtility.HtmlEncode(string.IsNullOrWhiteSpace(room) ? "Chưa cung cấp" : room);
+                    string joinSection = string.Empty;
+                    if (!string.IsNullOrEmpty(joinUrl))
+                    {
+                        string link = HttpUtility.HtmlAttributeEncode(joinUrl);
+                        joinSection = "<div style=\"margin:24px 0;text-align:center;\">" +
+                            "<a href=\"" + link + "\" target=\"_blank\" rel=\"noopener noreferrer\" " +
+                            "style=\"display:inline-block;padding:13px 22px;border-radius:8px;background:#54218d;" +
+                            "color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;\">" +
+                            "Tham gia cuộc họp</a>" +
+                            "<div style=\"margin-top:9px;font-size:12px;color:#64748b;overflow-wrap:anywhere;\">" +
+                            "Nếu nút không hoạt động, mở liên kết: <a href=\"" + link + "\" " +
+                            "style=\"color:#54218d;\">" + HttpUtility.HtmlEncode(joinUrl) + "</a></div></div>";
+                    }
+                    else if (isOnline)
+                    {
+                        joinSection = "<p style=\"margin:14px 0;color:#a16207;font-size:13px;\">" +
+                            "Liên kết họp trực tuyến chưa hợp lệ. Vui lòng liên hệ người chủ trì.</p>";
+                    }
 
                     var placeholdersBody = new Dictionary<string, string>
                     {
                         { "[[COMPANY_NAME]]", "SweetSoft QLDA" },
-                        { "[[FULL_NAME]]", recipient.DisplayName },
-                        { "[[MEETING_NAME]]", meetingName },
+                        { "[[FULL_NAME]]", HttpUtility.HtmlEncode(recipient.DisplayName ?? recipient.UserName) },
+                        { "[[MEETING_NAME]]", HttpUtility.HtmlEncode(meetingName ?? string.Empty) },
                         { "[[START_TIME]]", startTime.ToString("HH:mm dd/MM/yyyy") },
-                        { "[[ROOM]]", string.IsNullOrEmpty(room) ? "Phòng họp" : room }
+                        { "[[MEETING_TYPE]]", isOnline ? "Trực tuyến (Online)" : "Trực tiếp (Offline)" },
+                        { "[[ROOM]]", encodedRoom },
+                        { "[[MEETING_JOIN_SECTION]]", joinSection }
                     };
 
                     var emailManager = new EmailManager(SweetContext.CreateBackgroundContext());
@@ -448,7 +479,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         refType: EmailType.Notification,
                         customerId: notification.UserId,
                         toEmail: email,
-                        templateKey: "TemplateMeetingReminder", // Cần cấu hình template này
+                        templateKey: "TemplateMeetingReminder",
                         formatType: EmailFormatTypes.Admin,
                         placeholdersBody: placeholdersBody,
                         attachments: null,

@@ -63,8 +63,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
         protected bool IsDelete => this.CURRENT_PAGE.IsDelete;
 
+        protected string LaborLoadButtonId
+        {
+            get { var c = CalendarFindControl(this, "CtrlMeetGioCongTab1") as CtrlMeetGioCongTab; return c == null ? string.Empty : c.LoadButtonClientId; }
+        }
         protected void Page_Load(object sender, EventArgs e)
         {
+            CtrlMeetGioCongTab tab = CalendarFindControl(this, "CtrlMeetGioCongTab1") as CtrlMeetGioCongTab;
+            if (tab != null) { tab.ProjectId = ProjectId; tab.CanViewLabor = CanReadMeetings && CanSwitchMeetingView; }
             RegisterAsyncButton();
         }
 
@@ -78,11 +84,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             get { return Convert.ToString(ViewState["CalendarMode"]) == "week" ? "week" : "month"; }
             set { ViewState["CalendarMode"] = value == "week" ? "week" : "month"; }
-        }
-        private bool CalendarMine
-        {
-            get { return ViewState["CalendarMine"] is bool ? (bool)ViewState["CalendarMine"] : !CanSwitchMeetingView; }
-            set { ViewState["CalendarMine"] = value; }
         }
         // Find recursively so adding markup does not require the user to hand-edit *.designer.cs.
         private static Control CalendarFindControl(Control parent, string id)
@@ -109,11 +110,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             NewMeetingHandlerCallback?.Invoke(selected.Date, EventArgs.Empty);
         }
 
-        protected void btnCalendarMine_Click(object sender, EventArgs e)
-        {
-            CalendarMine = !CalendarMine;
-            upMain.Update();
-        }
         protected void btnCalendarNavigate_Click(object sender, EventArgs e)
         {
             var button = sender as LinkButton;
@@ -143,8 +139,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             var actionHost = upMain.ContentTemplateContainer.FindControl("tagOther") as HtmlGenericControl;
             var switcher = actionHost != null ? actionHost.FindControl("meetViewSwitcher") as HtmlGenericControl : null;
             if (switcher != null) switcher.Visible = CanSwitchMeetingView;
-            var mineButton = upMain.ContentTemplateContainer.FindControl("btnCalendarMine") as LinkButton;
-            if (mineButton != null) mineButton.CssClass = "meet-cal-period-btn" + (CalendarMine ? " is-active" : "");
             PlaceHolder host = upMain.ContentTemplateContainer.FindControl("phMeetingCalendar") as PlaceHolder;
             if (host != null)
             {
@@ -171,6 +165,16 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (DateTime.TryParse(Convert.ToString(input), out date)) return date.TimeOfDay;
             return fallback;
         }
+        // Các ca bị tắt trong cấu hình tuần không có đủ cặp giờ bắt đầu/kết thúc.
+        // Kiểm tra từ dữ liệu lưu trong DB thay vì chỉ dùng LaNgayLamViec (true cả khi làm nửa ngày).
+        private static bool CalendarHasShift(object from, object to)
+        {
+            if (from == null || to == null || from == DBNull.Value || to == DBNull.Value) return false;
+            TimeSpan start = CalendarTime(from, TimeSpan.Zero);
+            TimeSpan end = CalendarTime(to, TimeSpan.Zero);
+            return end > start && end > TimeSpan.Zero;
+        }
+
         private static string CalendarEsc(string text) { return HttpUtility.HtmlEncode(text ?? string.Empty); }
         private static string CalendarPreview(string html)
         {
@@ -327,15 +331,23 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             var meetings = MeetManager.Instance.GetMeetingsByProject(ProjectId) ?? new List<TblLichHop>();
             meetings = meetings.Where(m => m != null && m.DaXoa != true && m.ThoiGianKetThuc > m.ThoiGianBatDau && m.ThoiGianBatDau < end && m.ThoiGianKetThuc > start).ToList();
             Dictionary<Guid, CalendarAttendees> attendees = LoadCalendarAttendees();
-            if (CalendarMine && _calendarAttendeesLoaded)
-            {
-                Guid userId = SweetContext.Current.UserId;
-                meetings = meetings.Where(m => (m.IdNguoiTao == userId) ||
-                    (attendees.ContainsKey(m.IdLichHop) && attendees[m.IdLichHop].IncludesCurrentUser)).ToList();
-            }
+            // Calendar luôn hiển thị cuộc họp do chính người dùng chủ trì hoặc có tên trong TblLichHop_NhanVien.
+            // Nếu truy vấn người tham gia lỗi, chỉ còn các cuộc họp người dùng làm chủ trì; không trả về toàn bộ lịch dự án.
+            Guid currentUserId = SweetContext.Current.UserId;
+            meetings = meetings.Where(m => m.IdNguoiTao == currentUserId ||
+                (attendees.ContainsKey(m.IdLichHop) && attendees[m.IdLichHop].IncludesCurrentUser)).ToList();
             Dictionary<Guid, string> chairs = LoadCalendarChairNames(meetings);
             var configs = new SubSonic.Select().From(TblCauHinhTuanLamViec.Schema).ExecuteTypedList<TblCauHinhTuanLamViec>();
-            var configByDay = configs.GroupBy(c => Convert.ToInt32(c.NgayTrongTuan)).ToDictionary(g => g.Key, g => g.First());
+            // Hỗ trợ cả quy ước thứ trong tuần 0–6 (CN=0) và 1–7 (CN=7).
+            bool configHasSundayZero = configs.Any(c => Convert.ToInt32(c.NgayTrongTuan) == 0);
+            var configByDay = new Dictionary<int, TblCauHinhTuanLamViec>();
+            foreach (TblCauHinhTuanLamViec config in configs)
+            {
+                int number = Convert.ToInt32(config.NgayTrongTuan);
+                int dayNumber = configHasSundayZero ? number : (number == 7 ? 0 : number);
+                if (dayNumber >= 0 && dayNumber <= 6 && !configByDay.ContainsKey(dayNumber))
+                    configByDay[dayNumber] = config;
+            }
             var holidays = new SubSonic.Select().From(TblLichNgoaiLe.Schema)
                 .Where(TblLichNgoaiLe.Columns.DaXoa).IsEqualTo(false)
                 .And(TblLichNgoaiLe.Columns.NgayBatDau).IsLessThan(end)
@@ -345,8 +357,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             var html = new StringBuilder(23000);
             string label = weekView ? "Tuần " + start.ToString("dd/MM") + " – " + end.AddDays(-1).ToString("dd/MM/yyyy") : "Tháng " + anchor.ToString("MM/yyyy");
             html.Append("<div class='meet-cal-period-data' data-cal-period='" + CalendarEsc(label) + "' style='display:none'></div>");
-            if (CalendarMine && !_calendarAttendeesLoaded)
-                html.Append("<div class='meet-cal-warning'>Không đọc được danh sách nhân viên tham gia. Tạm hiển thị lịch chung của dự án.</div>");
+            if (!_calendarAttendeesLoaded)
+                html.Append("<div class='meet-cal-warning'>Không đọc được danh sách người tham gia. Tạm thời chỉ hiển thị các cuộc họp bạn chủ trì.</div>");
             html.Append("<div class='meet-cal-scroll'><div class='meet-calendar-grid" + (weekView ? " is-week" : " is-month") + "'>");
             foreach (string dayName in new[] { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật" }) html.Append("<div class='meet-cal-dow'>" + dayName + "</div>");
             for (int dayIndex = 0; dayIndex < cells; dayIndex++)
@@ -357,12 +369,23 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 bool isWorkingDay = hasConfig ? dayConfig.LaNgayLamViec : date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday;
                 TblLichNgoaiLe holiday = holidays.FirstOrDefault(h => date.Date >= h.NgayBatDau.Date && date.Date <= h.NgayKetThuc.Date);
                 bool isOff = holiday != null || !isWorkingDay;
+                bool morningOnly = false;
+                bool afternoonOnly = false;
+                if (!isOff && hasConfig)
+                {
+                    bool hasMorning = CalendarHasShift(dayConfig.GioBatDauSang, dayConfig.GioKetThucSang);
+                    bool hasAfternoon = CalendarHasShift(dayConfig.GioBatDauChieu, dayConfig.GioKetThucChieu);
+                    morningOnly = hasMorning && !hasAfternoon;
+                    afternoonOnly = !hasMorning && hasAfternoon;
+                }
                 var dayMeetings = meetings.Where(m => m.ThoiGianBatDau < date.AddDays(1) && m.ThoiGianKetThuc > date).ToList();
-                html.Append("<div class='meet-cal-day" + (isOff ? " is-off" : "") + (dayMeetings.Count > 0 ? " has-meetings" : "") + (date.Date == DateTime.Today ? " is-today" : "") + (!weekView && date.Month != anchor.Month ? " is-outside" : "") + "' data-day-label='" + date.ToString("dd/MM/yyyy") + "' data-meet-count='" + dayMeetings.Count + "'" + (dayMeetings.Count > 0 ? " tabindex='0' role='button' aria-label='Xem " + dayMeetings.Count + " cuộc họp ngày " + date.ToString("dd/MM/yyyy") + "'" : "") + ">");
+                html.Append("<div class='meet-cal-day" + (isOff ? " is-off" : "") + (morningOnly ? " is-morning-only" : "") + (afternoonOnly ? " is-afternoon-only" : "") + (dayMeetings.Count > 0 ? " has-meetings" : "") + (date.Date == DateTime.Today ? " is-today" : "") + (!weekView && date.Month != anchor.Month ? " is-outside" : "") + "' data-day-label='" + date.ToString("dd/MM/yyyy") + "' data-meet-count='" + dayMeetings.Count + "'" + (dayMeetings.Count > 0 ? " tabindex='0' role='button' aria-label='Xem " + dayMeetings.Count + " cuộc họp ngày " + date.ToString("dd/MM/yyyy") + "'" : "") + ">");
                 html.Append("<div class='meet-cal-day-top'><span class='meet-cal-day-number'>" + date.Day + "</span>");
                 html.Append("<span class='meet-cal-day-tools'>");
-                if (holiday != null) html.Append("<span class='meet-cal-day-badge' title='" + CalendarEsc(holiday.TenNgoaiLe) + "'><i class='fas fa-umbrella-beach'></i> " + CalendarEsc(holiday.TenNgoaiLe) + "</span>");
+                if (holiday != null) html.Append("<span class='meet-cal-day-badge' title='" + CalendarAttr(holiday.TenNgoaiLe) + "'><i class='fas fa-umbrella-beach'></i> " + CalendarEsc(holiday.TenNgoaiLe) + "</span>");
                 else if (isOff) html.Append("<span class='meet-cal-day-badge'><i class='fas fa-mug-hot'></i> Nghỉ</span>");
+                else if (morningOnly) html.Append("<span class='meet-cal-day-badge is-half-day' title='Làm ca sáng, nghỉ ca chiều'><i class='fas fa-adjust' aria-hidden='true'></i> Nghỉ chiều</span>");
+                else if (afternoonOnly) html.Append("<span class='meet-cal-day-badge is-half-day' title='Nghỉ ca sáng, làm ca chiều'><i class='fas fa-adjust' aria-hidden='true'></i> Nghỉ sáng</span>");
                 if (CURRENT_PAGE.IsAdd) html.Append("<button type='button' class='meet-cal-create' title='Tạo cuộc họp' aria-label='Tạo cuộc họp ngày " + date.ToString("dd/MM/yyyy") + "' onclick='event.stopPropagation();return SweetMeetCalendar.createMeeting(&quot;" + date.ToString("yyyy-MM-dd") + "&quot;);'><i class='fas fa-plus' aria-hidden='true'></i></button>");
                 html.Append("</span></div>");
                 // Calendar gọn: một ngày chỉ có thẻ họp, không hiển thị ca sáng/chiều.

@@ -257,8 +257,8 @@
                                 <div class="meeting-form-field">
                                     <label class="form-label">Hình thức họp</label>
                                     <div class="meeting-method-box"><asp:DropDownList runat="server" ID="ddlHinhThucHop" CssClass="form-select" aria-label="Hình thức họp">
-                                        <asp:ListItem Value="0" Text="Offline" Selected="True" />
-                                        <asp:ListItem Value="1" Text="Online" />
+                                        <asp:ListItem Value="0" Text="Offline · Trực tiếp" Selected="True" />
+                                        <asp:ListItem Value="1" Text="Online · Trực tuyến" />
                                     </asp:DropDownList></div>
                                 </div>
                             </div>
@@ -358,17 +358,17 @@
             <SweetSoft:ExtraButton runat="server" ID="btnXacNhanNhanVien" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" OnClick="btnXacNhanNhanVien_Click">Xác nhận</SweetSoft:ExtraButton>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
-    <SweetSoft:ExtraModal runat="server" ID="mdlMeetJoinReminder" Type="Primary" Title="Cuộc họp đang diễn ra">
+    <SweetSoft:ExtraModal runat="server" ID="mdlMeetJoinReminder" Type="Primary" Title="Nhắc tham gia cuộc họp">
         <ContentTemplate>
             <div class="meet-join-reminder">
                 <asp:HiddenField runat="server" ID="hfMeetJoinId" />
                 <asp:HiddenField runat="server" ID="hfMeetJoinPending" Value="0" />
                 <span class="meet-join-symbol"><i class="fas fa-video" aria-hidden="true"></i></span>
-                <p class="meet-join-lead"><asp:Literal runat="server" ID="litMeetJoinTitle" /></p>
-                <asp:Literal runat="server" ID="litMeetJoinType" />
-                <div class="meet-join-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><div><asp:Literal runat="server" ID="litMeetJoinLocation" /></div></div>
-                <div class="meet-join-sub">Bạn nằm trong danh sách tham gia. Xác nhận một lần để không hiện lại lời nhắc này trên các lần tải trang tiếp theo.</div>
-                <asp:Literal runat="server" ID="litMeetJoinWarning" />
+                <p class="meet-join-lead" id="meetJoinTitleText"><asp:Literal runat="server" ID="litMeetJoinTitle" /></p>
+                <div id="meetJoinTypeText"><asp:Literal runat="server" ID="litMeetJoinType" /></div>
+                <div class="meet-join-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i><div id="meetJoinLocationText"><asp:Literal runat="server" ID="litMeetJoinLocation" /></div></div>
+                <div class="meet-join-sub">Bạn là người chủ trì hoặc người tham gia cuộc họp. Xác nhận để không nhận lại lời nhắc trong phiên làm việc.</div>
+                <div id="meetJoinWarningText"><asp:Literal runat="server" ID="litMeetJoinWarning" /></div>
             </div>
         </ContentTemplate>
         <FooterTemplate>
@@ -387,68 +387,106 @@
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script type="text/javascript">
-        // Server chỉ gắn cờ. Chờ window.load + 3 giây trước khi hiển thị ExtraModal.
-        // Không phụ thuộc CMSMasterJs.OpenDialog (hàm có thể chưa được đăng ký).
+        // Nhắc trước giờ họp 5 phút: kiểm tra từ server mỗi 20s, không cần refresh trang.
+        // Chỉ thay nội dung bên trong ExtraModal; không chỉnh khung/header/nút X bằng CSS.
         (function () {
-            var pendingId = '<%= JoinReminderPendingField.ClientID %>';
+            if (window.MeetJoinReminder && window.MeetJoinReminder.initialized) return;
             var modalId = '<%= JoinReminderModal.ClientID %>';
-            function openBootstrapModal(attempt) {
-                var element = document.getElementById(modalId);
-                if (!element) return;
-                try {
-                    if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
-                        var instance = typeof window.bootstrap.Modal.getOrCreateInstance === 'function'
-                            ? window.bootstrap.Modal.getOrCreateInstance(element)
-                            : new window.bootstrap.Modal(element);
-                        instance.show();
-                        return;
-                    }
-                    if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
-                        window.jQuery(element).modal('show');
-                        return;
-                    }
-                } catch (error) { if (window.console) console.warn('Chưa thể mở ExtraModal:', error); }
-                if (attempt < 20) window.setTimeout(function () { openBootstrapModal(attempt + 1); }, 150);
-                else if (window.console) console.error('Bootstrap Modal chưa sẵn sàng để mở nhắc cuộc họp.');
-            }
-            function beginReminder() {
-                // Đánh dấu ngay để không chạy hai lần sau UpdatePanel hoặc các sự kiện load.
-                var field = document.getElementById(pendingId);
-                if (!field || field.value !== '1') return;
-                field.value = '0';
-                var overlay = document.getElementById('meetJoinPreparingOverlay');
-                if (overlay) {
-                    overlay.hidden = false;
-                    overlay.classList.remove('is-done');
-                    // Kích hoạt animation sau khi layout được tạo để thanh tiến trình chạy trọn 3s.
-                    void overlay.offsetWidth;
-                    overlay.classList.add('is-running');
+            var meetingIdFieldId = '<%= JoinMeetingIdClientField.ClientID %>';
+            var confirmButtonId = '<%= JoinConfirmationClientButton.ClientID %>';
+            var endpoint = '<%= ResolveUrl("~/fMeets/MeetList.aspx") %>/GetUpcomingJoinReminder';
+            var projectId = '<%= CurrentProjectId.ToString("D") %>';
+            var polling = false, lastShownId = '', startAtMs = 0, activeReminder = null;
+            var dismissed = Object.create(null);
+            var api = window.MeetJoinReminder = {
+                initialized: true,
+                openBeforeConfirm: function (button) {
+                    var raw = button.getAttribute('data-join-url');
+                    if (!raw) return true;
+                    try { var url = new URL(raw, window.location.origin); if (url.protocol === 'https:' || url.protocol === 'http:') window.open(url.href, '_blank', 'noopener,noreferrer'); } catch (e) { }
+                    return true;
                 }
+            };
+            function modalElement() { return document.getElementById(modalId); }
+            function titleForTime() { return Date.now() < startAtMs ? 'Cuộc họp đã mở' : 'Cuộc họp đã bắt đầu'; }
+            function syncTitle() {
+                if (!activeReminder) return;
+                var root = modalElement(), state = titleForTime();
+                if (!root) return;
+                var heading = root.querySelector('.modal-title, .modal-header h1, .modal-header h2, .modal-header h3, .modal-header h4, .modal-header h5');
+                if (heading) heading.textContent = state;
+                var lead = document.getElementById('meetJoinTitleText');
+                if (lead) { lead.textContent = ''; lead.appendChild(document.createTextNode('Cuộc họp '));
+                    var strong = document.createElement('strong'); strong.textContent = activeReminder.MeetingName || ''; lead.appendChild(strong);
+                    lead.appendChild(document.createTextNode(state === 'Cuộc họp đã mở' ? ' đã mở' : ' đã bắt đầu')); }
+            }
+            function setReminderData(info) {
+                activeReminder = info;
+                lastShownId = info.MeetingId;
+                startAtMs = Date.now() + (Number(info.SecondsUntilStart) || 0) * 1000;
+                var hidden = document.getElementById(meetingIdFieldId);
+                if (hidden) hidden.value = info.MeetingId;
+                var type = document.getElementById('meetJoinTypeText');
+                if (type) type.innerHTML = info.IsOnline ? '<span class="meet-join-type"><i class="fas fa-video"></i> Họp Online</span>' : '<span class="meet-join-type is-offline"><i class="fas fa-users"></i> Họp trực tiếp</span>';
+                var place = document.getElementById('meetJoinLocationText');
+                if (place) place.textContent = (info.IsOnline ? 'Liên kết họp: ' : 'Địa điểm: ') + (info.Place || 'Chưa cung cấp');
+                var warning = document.getElementById('meetJoinWarningText');
+                if (warning) warning.textContent = info.IsOnline && !info.JoinUrl ? 'Liên kết chưa hợp lệ. Vui lòng hỏi người chủ trì để nhận URL họp.' : '';
+                var button = document.getElementById(confirmButtonId);
+                if (button) { button.removeAttribute('data-join-url'); if (info.JoinUrl) button.setAttribute('data-join-url', info.JoinUrl); button.innerHTML = info.JoinUrl ? '<i class="fas fa-external-link-alt me-1" aria-hidden="true"></i> Tham gia cuộc họp' : '<i class="fas fa-check-circle me-1" aria-hidden="true"></i> Xác nhận tham gia'; }
+                syncTitle();
+            }
+            function showBootstrapModal(attempt) {
+                var el = modalElement(); if (!el) return;
+                try {
+                    if (window.bootstrap && window.bootstrap.Modal) {
+                        (window.bootstrap.Modal.getOrCreateInstance ? window.bootstrap.Modal.getOrCreateInstance(el) : new window.bootstrap.Modal(el)).show(); return;
+                    }
+                    if (window.jQuery && typeof window.jQuery.fn.modal === 'function') { window.jQuery(el).modal('show'); return; }
+                } catch (error) { if (window.console) console.warn('Không thể mở nhắc họp:', error); }
+                if (attempt < 20) window.setTimeout(function () { showBootstrapModal(attempt + 1); }, 150);
+            }
+            function openReminder(info, initial) {
+                var modal = modalElement();
+                if (!modal || modal.classList.contains('show') || modal.classList.contains('in')) return;
+                setReminderData(info);
+                if (!initial) { showBootstrapModal(0); return; }
+                // Giữ loading 3s khi vừa vào trang như giao diện trước đó.
+                var overlay = document.getElementById('meetJoinPreparingOverlay');
+                if (overlay) { overlay.hidden = false; overlay.classList.remove('is-done'); void overlay.offsetWidth; overlay.classList.add('is-running'); }
                 window.setTimeout(function () {
                     if (overlay) overlay.classList.add('is-done');
                     window.setTimeout(function () {
                         if (overlay) { overlay.hidden = true; overlay.classList.remove('is-running', 'is-done'); }
-                        openBootstrapModal(0);
+                        syncTitle(); showBootstrapModal(0);
                     }, 180);
                 }, 3000);
             }
-            // Load xong toàn bộ trang (kể cả các script do ScriptManager nạp) rồi mới đếm 3 giây.
-            if (document.readyState === 'complete') beginReminder();
-            else window.addEventListener('load', beginReminder, { once: true });
-            if (window.Sys && Sys.Application) Sys.Application.add_load(function () {
-                if (document.readyState === 'complete') beginReminder();
-            });
-        })();
-    </script>
-    <script type="text/javascript">
-        window.MeetJoinReminder = window.MeetJoinReminder || {
-            openBeforeConfirm: function(button) {
-                var raw=button.getAttribute('data-join-url');
-                if(!raw)return true;
-                try { var url=new URL(raw,window.location.origin);if(url.protocol==='https:'||url.protocol==='http:')window.open(url.href,'_blank','noopener,noreferrer'); } catch(e) { }
-                return true;
+            function check(initial) {
+                if (polling || document.hidden) return;
+                polling = true;
+                fetch(endpoint, { method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({projectId:projectId,ignoredIds:Object.keys(dismissed)}),cache:'no-store' })
+                    .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
+                    .then(function (response) {
+                        var info = response && response.d ? response.d : response;
+                        if (!info || !info.Available || !info.MeetingId || dismissed[info.MeetingId]) return;
+                        var modal = modalElement();
+                        if (modal && (modal.classList.contains('show') || modal.classList.contains('in'))) return;
+                        if (lastShownId === info.MeetingId) return;
+                        openReminder(info, initial);
+                    })
+                    .catch(function (error) { if (window.console) console.warn('Không thể kiểm tra lịch họp sắp diễn ra:', error); })
+                    .then(function () { polling = false; });
             }
-        };
+            function init() {
+                var modal = modalElement();
+                if (modal) { var hideHandler = function () { if (lastShownId) dismissed[lastShownId] = true; activeReminder = null; }; modal.addEventListener('hidden.bs.modal', hideHandler); if (window.jQuery) window.jQuery(modal).on('hidden.bs.modal.meetreminder', hideHandler); }
+                check(true); window.setInterval(function () { check(false); }, 20000);
+                window.setInterval(syncTitle, 1000);
+                document.addEventListener('visibilitychange', function () { if (!document.hidden) check(false); });
+            }
+            if (document.readyState === 'complete') init(); else window.addEventListener('load', init, { once:true });
+        })();
     </script>
     <script type="text/javascript">
         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(function () {
