@@ -127,6 +127,12 @@ body { word-wrap: break-word; }
 .fw-bold { font-weight: 700; }
 .ps-3 { padding-left: 12px; }
 .w-100 { width: 100%; }
+.report-assignee-compact { display: none !important; }
+.report-assignee-expanded { display: block !important; border: 0; padding: 0; }
+.report-person-row { display: block; margin: 3px 0; font-size: 12px; line-height: 1.4; }
+.report-person-hours { display: inline; margin-left: 8px; color: #64748b; font-weight: 600; }
+.report-task-hours { display: inline; margin-left: 6px; font-size: 11px; color: #64748b; }
+.report-assignee-more,.report-assignee-tooltip { display: none !important; }
 @page { size: A4; margin: 0; }
 </style>";
                 string fullHtml = cssStyles + htmlBody;
@@ -671,6 +677,36 @@ body { word-wrap: break-word; }
         {
             return value.ToString("0.###", CultureInfo.InvariantCulture);
         }
+
+        // Danh sách nhân viên gốc giữ nguyên; thời lượng tạm là 0, chưa đọc DB giờ công.
+        // Giao diện hiển thị hai tên đầu, mở chi tiết bằng nút +n; PDF hiện toàn bộ.
+        protected string RenderReportAssignees(object namesValue, bool showWorkHours)
+        {
+            string raw = namesValue == null || namesValue == DBNull.Value ? string.Empty : Convert.ToString(namesValue);
+            if (string.IsNullOrWhiteSpace(raw)) return "—";
+            string[] parts = raw.Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            var names = new List<string>();
+            foreach (string part in parts) if (!string.IsNullOrWhiteSpace(part)) names.Add(part.Trim());
+            if (names.Count == 0) return "—";
+            var html = new StringBuilder(400);
+            html.Append("<div class='report-assignee-box' data-report-hours='").Append(showWorkHours ? "1" : "0").Append("'>");
+            html.Append("<div class='report-assignee-compact'>");
+            for (int i = 0; i < names.Count && i < 2; i++)
+                html.Append("<span class='report-person-chip'>").Append(System.Web.HttpUtility.HtmlEncode(names[i])).Append("</span>");
+            int remaining = names.Count - 2;
+            string caption = remaining > 0 ? "+" + remaining.ToString(CultureInfo.InvariantCulture) : "⌄";
+            html.Append("<button type='button' class='report-assignee-more' aria-label='Xem chi tiết người thực hiện' aria-expanded='false' data-collapsed-label='").Append(caption).Append("'>").Append(caption).Append("</button>");
+            html.Append("</div><div class='report-assignee-expanded'>");
+            foreach (string name in names)
+            {
+                html.Append("<div class='report-person-row'><span class='report-person-name'>").Append(System.Web.HttpUtility.HtmlEncode(name)).Append("</span>");
+                if (showWorkHours) html.Append("<span class='report-person-hours'>0 giờ</span>");
+                html.Append("</div>");
+            }
+            html.Append("</div></div>");
+            return html.ToString();
+        }
+
         #region Helpers dùng cho file ASPX
         protected string GetDeadlineClass(object ngayKetThucObj)
         {

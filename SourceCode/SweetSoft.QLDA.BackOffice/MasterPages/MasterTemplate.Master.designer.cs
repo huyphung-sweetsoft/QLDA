@@ -348,6 +348,24 @@ namespace SweetSoft.QLDA.BackOffice.MasterPages
         protected global::System.Web.UI.WebControls.ContentPlaceHolder cpModalMain;
 
         /// <summary>
+        /// CtrlFloatingWorkTimer1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UserControl CtrlFloatingWorkTimer1;
+
+        /// <summary>
+        /// CtrlTodaySchedule1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.Controls.TodaySchedule.CtrlTodaySchedule CtrlTodaySchedule1;
+
+        /// <summary>
         /// cpVendorScript control.
         /// </summary>
         /// <remarks>

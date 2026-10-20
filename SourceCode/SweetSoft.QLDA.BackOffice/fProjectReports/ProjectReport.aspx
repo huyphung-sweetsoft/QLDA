@@ -80,6 +80,47 @@
 .empty-state i { font-size: 50px; color: #94a3b8; margin-bottom: 15px; }
 .empty-state h4 { color: #334155; font-weight: 700; font-size: 18px; margin-bottom: 5px; }
 .empty-state p { color: #64748b; font-size: 14px; margin:0; }
+/* Khung bộ lọc đứng yên; chỉ cuộn vùng giấy báo cáo trên desktop. */
+@media (min-width:1200px) { .report-layout { flex-direction:row;align-items:stretch;gap:22px;min-height:240px;overflow:hidden; } }
+@media (min-width:1200px) { .report-layout .sidebar-left { position:relative;top:auto;width:230px;flex:0 0 230px;align-self:stretch;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:1px 4px 12px 0;scrollbar-width:thin; } }
+@media (min-width:1200px) { .report-layout .main-center { flex:1 1 auto;min-width:0;min-height:0;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable; } }
+/* Mục lục báo cáo, mở mặc định; mũi tên lên khi mở và xuống khi thu gọn. */
+.report-toc { min-width:0;margin-top:8px;border:1px solid #e0d5ef;border-radius:11px;background:#fff;overflow:hidden;box-shadow:0 2px 10px rgba(60,27,111,.05); }
+.report-toc-head { display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;background:#f7f3fc;color:#54218d;font-size:12.5px;font-weight:800; }
+.report-toc-title { display:flex;align-items:center;gap:8px;min-width:0; }
+.report-toc-toggle { display:inline-flex;align-items:center;justify-content:center;flex:0 0 31px;width:31px;height:31px;padding:0;border:1px solid #dbcaf1;border-radius:8px;background:#fff;color:#5a2493;font-size:12px;cursor:pointer;transition:background .18s,border-color .18s; }
+.report-toc-toggle:hover { background:#eee3fc;border-color:#b991e5; }
+.report-toc-toggle:focus-visible,.report-toc-link:focus-visible { outline:2px solid #a57bd9;outline-offset:2px; }
+.report-toc-toggle .report-toc-arrow { display:inline-block;transition:transform .2s ease; }
+.report-toc.is-collapsed .report-toc-toggle .report-toc-arrow { transform:rotate(180deg); }
+.report-toc-list { display:flex;flex-direction:column;gap:2px;max-height:320px;padding:8px;opacity:1;overflow:hidden;transition:max-height .25s ease,padding .2s ease,opacity .18s ease; }
+.report-toc.is-collapsed .report-toc-list { max-height:0;padding-top:0;padding-bottom:0;opacity:0;visibility:hidden;pointer-events:none; }
+.report-toc-link { display:flex;align-items:flex-start;gap:8px;width:100%;padding:8px 7px;min-height:34px;border:1px solid transparent;border-radius:7px;background:transparent;color:#625675;font-size:11.8px;font-weight:650;line-height:1.45;text-align:left;cursor:pointer;transition:background .15s,color .15s; }
+.report-toc-link:hover,.report-toc-link.is-active { border-color:#e2d0f7;background:#f3edfc;color:#54218d; }
+.report-toc-index { flex:0 0 21px;color:#7940b0;font-weight:800; }
+.report-toc-link-label { flex:1;min-width:0; }
+/* Nhân sự: hai tên đầu, nút +n và bảng mở rộng. */
+.report-assignee-box { position:relative;min-width:0;max-width:100%; }
+.report-assignee-compact { display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-width:0; }
+.report-person-chip { display:inline-flex;align-items:center;max-width:100%;padding:3px 7px;border:1px solid #dfe4ed;border-radius:7px;background:#f7f8fb;color:#445065;font-size:11.5px;font-weight:650;line-height:1.45;overflow-wrap:anywhere; }
+.report-assignee-more { display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:30px;height:30px;padding:0 7px;border:1px solid #cdb1ea;border-radius:999px;background:#f0e7fd;color:#632c9d;font-size:11.5px;font-weight:800;cursor:pointer;transition:background .16s,transform .16s; }
+.report-assignee-more:hover,.report-assignee-more:focus-visible { background:#e4d1fa;transform:translateY(-1px);outline:2px solid #ceb2ed;outline-offset:1px; }
+.report-assignee-more[aria-expanded=true] { background:#54218d;border-color:#54218d;color:#fff; }
+.report-assignee-expanded { display:none;flex-direction:column;margin-top:8px;padding:5px 8px;border:1px solid #e5daf2;border-radius:9px;background:#fbf9ff; }
+.report-assignee-box.is-expanded .report-assignee-expanded { display:flex; }
+.report-assignee-box.is-expanded .report-person-chip { display:none; }
+.report-person-row { display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:6px 1px;border-bottom:1px dashed #e8e0ef;color:#3c465a;font-size:11.7px;line-height:1.45; }
+.report-person-row:last-child { border-bottom:0; }
+.report-person-name { min-width:0;overflow-wrap:anywhere; }
+.report-person-hours { flex:0 0 auto;color:#7043a1;font-size:11px;font-weight:800;white-space:nowrap; }
+.report-task-hours { display:none;margin-left:7px;color:#735391;font-size:11.5px;font-weight:750;white-space:nowrap; }
+.report-row-expanded .report-task-hours { display:inline; }
+.report-assignee-tooltip { position:fixed;z-index:99990;box-sizing:border-box;width:290px;max-width:calc(100vw - 20px);padding:12px 14px;border:1px solid #d5c1ec;border-radius:12px;background:#fff;color:#342641;box-shadow:0 14px 35px rgba(43,22,76,.19);pointer-events:none; }
+.report-assignee-tooltip-title { margin:0 0 7px;color:#54218d;font-size:12.5px;font-weight:800; }
+.report-assignee-tooltip-person { padding:5px 0;border-bottom:1px dashed #e9e2f0;font-size:12px;line-height:1.45;overflow-wrap:anywhere; }
+.report-assignee-tooltip-note { margin-top:9px;color:#80579c;font-size:11.4px;font-weight:750;line-height:1.4; }
+@media (max-width:1199.98px) { .report-toc { margin-bottom:8px; } }
+@media (prefers-reduced-motion:reduce) { .report-toc-list,.report-toc-toggle .report-toc-arrow,.report-assignee-more { transition:none; } }
     </style>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -117,6 +158,19 @@
                                 <asp:LinkButton ID="btnExportPDF" runat="server" CssClass="btn-export btn-export-pdf" OnClick="btnExportPDF_Click">
                                     <i class="fas fa-file-pdf"></i> <%= GetResourceText(BackEndResourceKeys.EXPORT_PDF) %>
                                 </asp:LinkButton>
+                                <nav class="report-toc" aria-label="Mục lục báo cáo">
+                                    <div class="report-toc-head">
+                                        <span class="report-toc-title"><i class="fas fa-list-ul" aria-hidden="true"></i> Mục lục báo cáo</span>
+                                        <button type="button" class="report-toc-toggle" aria-label="Thu gọn mục lục" aria-expanded="true" title="Thu gọn / Mở mục lục"><i class="fas fa-chevron-up report-toc-arrow" aria-hidden="true"></i></button>
+                                    </div>
+                                    <div class="report-toc-list">
+                                        <button type="button" class="report-toc-link is-active" data-report-target="reportTop"><span class="report-toc-index">0.</span><span class="report-toc-link-label">Đến đầu trang</span></button>
+                                        <button type="button" class="report-toc-link" data-report-target="doingTasksSection"><span class="report-toc-index">1.</span><span class="report-toc-link-label">Công việc đang thực hiện</span></button>
+                                        <button type="button" class="report-toc-link" data-report-target="todoTasksSection"><span class="report-toc-index">2.</span><span class="report-toc-link-label">Công việc chưa bắt đầu</span></button>
+                                        <button type="button" class="report-toc-link" data-report-target="issuesSection"><span class="report-toc-index">3.</span><span class="report-toc-link-label">Vấn đề</span></button>
+                                        <button type="button" class="report-toc-link" data-report-target="reportBottom"><span class="report-toc-index">4.</span><span class="report-toc-link-label">Cuối trang</span></button>
+                                    </div>
+                                </nav>
                             </div>
                             <div class="main-center">
                                 <asp:PlaceHolder ID="phNotStarted" runat="server" Visible="false">
@@ -127,7 +181,7 @@
                                     </div>
                                 </asp:PlaceHolder>
                                 <asp:PlaceHolder ID="phReportContent" runat="server">
-                                    <div class="report-paper">
+                                    <div class="report-paper" id="reportTop">
                                         <div class="report-header">
                                             <h1><%= GetResourceText(BackEndResourceKeys.PROJECT_REPORT) %></h1>
                                             <div class="sub-date">
@@ -167,7 +221,7 @@
                                                 <thead class="text-center">
                                                     <tr>
                                                         <th width="45%" class="text-start ps-3">CÔNG VIỆC</th>
-                                                        <th width="20%" class="text-start"><%= GetResourceText(BackEndResourceKeys.ASSIGNEE) %></th>
+                                                        <th width="20%" class="text-start"><span id="reportDoingAssigneeHeader">Người thực hiện</span></th>
                                                         <th width="17%"><%= GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
                                                         <th width="18%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                                                     </tr>
@@ -175,11 +229,11 @@
                                                 <tbody>
                                                     <asp:Repeater ID="rptDoingTasks" runat="server">
                                                         <ItemTemplate>
-                                                            <tr data-deadline-state='<%# GetDeadlineState(Eval("NgayKetThuc")) %>'>
+                                                            <tr class="report-doing-row" data-deadline-state='<%# GetDeadlineState(Eval("NgayKetThuc")) %>'>
                                                                 <td class="text-start ps-3">
-                                                                    <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span></div>
+                                                                    <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span><span class="report-task-hours">(0 giờ công)</span></div>
                                                                 </td>
-                                                                <td class="text-start"><%# string.IsNullOrEmpty(Convert.ToString(Eval("NhanVienThucHien"))) ? "—" : Eval("NhanVienThucHien") %></td>
+                                                                <td class="text-start"><%# RenderReportAssignees(Eval("NhanVienThucHien"), true) %></td>
                                                                 <td class="text-center fw-bold <%# GetDeadlineClass(Eval("NgayKetThuc")) %>"><%# Eval("NgayKetThuc", "{0:dd/MM/yyyy}") %></td>
                                                                 <td class="text-center" style="vertical-align: middle;">
                                                                     <div class="report-badge badge-doing" style="margin-bottom: 4px;">Đang làm</div>
@@ -214,7 +268,7 @@
                                                                 <td class="text-start ps-3">
                                                                     <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span></div>
                                                                 </td>
-                                                                <td class="text-start"><%# string.IsNullOrEmpty(Convert.ToString(Eval("NhanVienThucHien"))) ? "—" : Eval("NhanVienThucHien") %></td>
+                                                                <td class="text-start"><%# RenderReportAssignees(Eval("NhanVienThucHien"), false) %></td>
                                                                 <td class="text-center fw-bold <%# GetDeadlineClass(Eval("NgayKetThuc")) %>"><%# Eval("NgayKetThuc", "{0:dd/MM/yyyy}") %></td>
                                                                 <td class="text-center">
                                                                     <div class="report-badge badge-todo" style="margin-bottom: 4px;">Chưa bắt đầu</div>
@@ -265,6 +319,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                        <div id="reportBottom" aria-hidden="true"></div>
                                     </div>
                                 </asp:PlaceHolder>
                             </div>
@@ -279,6 +334,82 @@
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script>
+
+        // Độc lập AJAX WebForms; tất cả thao tác mục lục/nhân sự thực hiện trên trình duyệt.
+        (function () {
+            window.ProjectReportUI = window.ProjectReportUI || {};
+            var ui = window.ProjectReportUI;
+            var activeTip = null;
+            function getPane() { return document.querySelector('.report-layout .main-center'); }
+            function reducedMotion() { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+            function reportOffset() { return typeof getReportScrollTopOffset === 'function' ? getReportScrollTopOffset() : 88; }
+            function isInternal(pane) { return pane && pane.scrollHeight > pane.clientHeight + 3 && window.getComputedStyle(pane).overflowY !== 'visible'; }
+            function markActive(id) { document.querySelectorAll('.report-toc-link').forEach(function (node) { node.classList.toggle('is-active', node.getAttribute('data-report-target') === id); }); }
+            ui.scrollTo = function (targetId) {
+                var target = document.getElementById(targetId);
+                if (!target) return;
+                var pane = getPane();
+                var behavior = reducedMotion() ? 'auto' : 'smooth';
+                if (isInternal(pane)) {
+                    var top = target.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 16;
+                    pane.scrollTo({ top: Math.max(0, top), behavior: behavior });
+                } else {
+                    var topPage = window.pageYOffset + target.getBoundingClientRect().top - reportOffset();
+                    window.scrollTo({ top: Math.max(0, topPage), behavior: behavior });
+                }
+                markActive(targetId);
+            };
+            function fitViewport() {
+                var layout = document.querySelector('.report-layout');
+                if (!layout) return;
+                if (window.innerWidth < 1200) { layout.style.height = ''; return; }
+                var top = layout.getBoundingClientRect().top;
+                layout.style.height = Math.max(240, Math.floor(window.innerHeight - top - 22)) + 'px';
+            }
+            function refreshAssigneeHeader() {
+                var head = document.getElementById('reportDoingAssigneeHeader');
+                if (head) head.textContent = document.querySelector('#doingTasksTable .report-assignee-box.is-expanded') ? 'Người thực hiện (số giờ công)' : 'Người thực hiện';
+            }
+            function closeTooltip() { if (activeTip) { activeTip.remove(); activeTip = null; } }
+            function showTooltip(box) {
+                if (!box || box.classList.contains('is-expanded')) return;
+                var names = box.querySelectorAll('.report-person-name');
+                if (!names.length) return;
+                closeTooltip();
+                var tip = document.createElement('div'); tip.className = 'report-assignee-tooltip'; tip.setAttribute('role', 'tooltip');
+                var title = document.createElement('div'); title.className = 'report-assignee-tooltip-title'; title.textContent = 'Danh sách người thực hiện'; tip.appendChild(title);
+                names.forEach(function (item) { var line = document.createElement('div'); line.className = 'report-assignee-tooltip-person'; line.textContent = item.textContent; tip.appendChild(line); });
+                var note = document.createElement('div'); note.className = 'report-assignee-tooltip-note'; note.textContent = box.getAttribute('data-report-hours') === '1' ? 'Ấn để xem chi tiết giờ công' : 'Ấn để xem chi tiết nhân sự'; tip.appendChild(note);
+                document.body.appendChild(tip);
+                var rect = box.getBoundingClientRect(), width = tip.offsetWidth, height = tip.offsetHeight;
+                var x = rect.right + 12;
+                if (x + width > window.innerWidth - 10) x = Math.max(10, rect.left - width - 12);
+                tip.style.left = Math.max(10, x) + 'px';
+                tip.style.top = Math.max(10, Math.min(rect.top, window.innerHeight - height - 10)) + 'px';
+                activeTip = tip;
+            }
+            if (!window.__projectReportDelegatesAttached) {
+                window.__projectReportDelegatesAttached = true;
+                document.addEventListener('click', function (event) {
+                    var tocBtn = event.target.closest('.report-toc-toggle');
+                    if (tocBtn) { var toc = tocBtn.closest('.report-toc'); toc.classList.toggle('is-collapsed'); var open = !toc.classList.contains('is-collapsed'); tocBtn.setAttribute('aria-expanded', String(open)); tocBtn.setAttribute('aria-label', open ? 'Thu gọn mục lục' : 'Mở mục lục'); return; }
+                    var jump = event.target.closest('.report-toc-link');
+                    if (jump) { ui.scrollTo(jump.getAttribute('data-report-target')); return; }
+                    var more = event.target.closest('.report-assignee-more');
+                    if (more) { var box = more.closest('.report-assignee-box'); if (!box) return; var expanded = !box.classList.contains('is-expanded'); box.classList.toggle('is-expanded', expanded); more.setAttribute('aria-expanded', String(expanded)); more.setAttribute('aria-label', expanded ? 'Thu gọn danh sách người thực hiện' : 'Xem chi tiết người thực hiện'); more.textContent = expanded ? '−' : (more.getAttribute('data-collapsed-label') || '⌄'); var row = box.closest('.report-doing-row'); if (row) row.classList.toggle('report-row-expanded', expanded); refreshAssigneeHeader(); closeTooltip(); }
+                });
+                document.addEventListener('mouseover', function (event) { var box = event.target.closest('.report-assignee-box'); if (box && (!event.relatedTarget || !box.contains(event.relatedTarget))) showTooltip(box); });
+                document.addEventListener('mouseout', function (event) { var box = event.target.closest('.report-assignee-box'); if (box && (!event.relatedTarget || !box.contains(event.relatedTarget))) closeTooltip(); });
+                document.addEventListener('focusin', function (event) { if (event.target.matches('.report-assignee-more')) showTooltip(event.target.closest('.report-assignee-box')); });
+                document.addEventListener('focusout', function (event) { if (event.target.matches('.report-assignee-more')) closeTooltip(); });
+                document.addEventListener('scroll', closeTooltip, true);
+                window.addEventListener('resize', function () { closeTooltip(); fitViewport(); });
+            }
+            ui.initialize = function () { fitViewport(); refreshAssigneeHeader(); closeTooltip(); };
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ui.initialize);
+            else ui.initialize();
+            if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(ui.initialize);
+        })();
         function toggleCustomDates(val) {
             var dateGroups = document.querySelectorAll('.custom-date-group');
             if (val === 'CUSTOM') {
@@ -317,6 +448,10 @@
 
         function scrollToReportHeading(section) {
             if (!section) return;
+            if (window.ProjectReportUI && window.ProjectReportUI.scrollTo && section.id) {
+                window.ProjectReportUI.scrollTo(section.id);
+                return;
+            }
             var targetTop = window.pageYOffset + section.getBoundingClientRect().top - getReportScrollTopOffset();
             window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
         }

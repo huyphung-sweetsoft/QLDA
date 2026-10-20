@@ -33,6 +33,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.UpdatePanel upProjectDetail;
 
         /// <summary>
+        /// CtrlProjectTabs1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
+
+        /// <summary>
         /// lblTenDuAn control.
         /// </summary>
         /// <remarks>
@@ -112,15 +121,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lbtEditProject;
-
-        /// <summary>
-        /// CtrlProjectTabs1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs CtrlProjectTabs1;
 
         /// <summary>
         /// lblKhachHang control.
@@ -347,7 +347,6 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblSoHopDong;
 
-
         /// <summary>
         /// lblNoContract control.
         /// </summary>
@@ -392,6 +391,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlEmptyRecentHistory;
+
+        /// <summary>
+        /// litProjectPersonal control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litProjectPersonal;
+
+        /// <summary>
+        /// mdlPersonalDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlPersonalDetail;
 
         /// <summary>
         /// mdlStatusChange control.

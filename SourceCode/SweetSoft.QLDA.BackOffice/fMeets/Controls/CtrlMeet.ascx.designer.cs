@@ -123,15 +123,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.LinkButton btnCalendarWeek;
 
         /// <summary>
-        /// btnCalendarMine control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCalendarMine;
-
-        /// <summary>
         /// tagOther control.
         /// </summary>
         /// <remarks>
@@ -229,6 +220,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnCreateCalendarMeeting;
+
+        /// <summary>
+        /// CtrlMeetGioCongTab1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fMeets.Controls.CtrlMeetGioCongTab CtrlMeetGioCongTab1;
 
         /// <summary>
         /// btnRefreshMeetingStatuses control.

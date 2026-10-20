@@ -77,7 +77,7 @@
     .mc-day:nth-child(7n + 6) .custom-task-tooltip, .mc-day:nth-child(7n) .custom-task-tooltip { left: auto !important; right: -10px !important; transform: none !important; }
     .mc-day:nth-child(7n + 6) .custom-task-tooltip::after, .mc-day:nth-child(7n) .custom-task-tooltip::after { left: auto !important; right: 24px !important; margin-left: 0 !important; }
 
-    .btn-tool-folder { border-radius: 7px; padding: 6px 12px; min-height: 36px; font-size: 12.5px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease; box-shadow: none; background-color: #f5f3ff !important; color: #6d28d9 !important; border: 1px solid #c4b5fd !important; }
+    .btn-tool-folder { border-radius: 7px; padding: 6px 12px; height: 36px; min-height: 36px; box-sizing: border-box; font-size: 12.5px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease; box-shadow: none; background-color: #f5f3ff !important; color: #6d28d9 !important; border: 1px solid #c4b5fd !important; }
     .btn-tool-folder:hover { transform: translateY(-1px); background-color: #ede9fe !important; color: #5b21b6 !important; border-color: #a78bfa !important; box-shadow: 0 2px 6px rgba(109, 40, 217, 0.12); }
     .btn-tool-folder.active-filter { background-color: #8b5cf6 !important; color: #ffffff !important; border-color: #8b5cf6 !important; box-shadow: 0 2px 6px rgba(139, 92, 246, 0.22); }
 
@@ -86,9 +86,11 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 9px;
-        min-height: 42px;
-        padding: 5px 13px 5px 8px !important;
+        gap: 8px;
+        height: 36px;
+        min-height: 36px;
+        box-sizing: border-box;
+        padding: 3px 11px 3px 7px !important;
         border: 1px solid transparent !important;
         border-radius: 12px !important;
         font-size: 13px !important;
@@ -108,9 +110,9 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        flex: 0 0 29px;
-        width: 29px;
-        height: 29px;
+        flex: 0 0 26px;
+        width: 26px;
+        height: 26px;
         margin: 0;
         border: 1px solid transparent;
         border-radius: 9px;
@@ -129,8 +131,8 @@
         align-items: center;
         justify-content: center;
         flex: 0 0 auto;
-        min-width: 24px;
-        height: 24px;
+        min-width: 22px;
+        height: 22px;
         box-sizing: border-box;
         padding: 0 7px;
         border: 1px solid transparent;
@@ -299,17 +301,18 @@
 
     @media (max-width: 575.98px) {
         .btn-filter-modern {
-            min-height: 39px;
+            height: 36px;
+            min-height: 36px;
             gap: 7px;
-            padding: 4px 10px 4px 6px !important;
+            padding: 3px 10px 3px 6px !important;
             font-size: 12px !important;
             border-radius: 10px !important;
         }
 
         .btn-filter-modern i {
-            flex-basis: 27px;
-            width: 27px;
-            height: 27px;
+            flex-basis: 26px;
+            width: 26px;
+            height: 26px;
             border-radius: 8px;
             font-size: 12px;
         }

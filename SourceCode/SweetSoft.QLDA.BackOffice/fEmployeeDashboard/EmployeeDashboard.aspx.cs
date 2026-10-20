@@ -1,5 +1,6 @@
 ﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -88,11 +89,15 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
                 List<ProjectItem> projects = LoadProjects(userId);
                 List<TaskItem> allTasks = LoadTasks(userId);
                 List<IssueItem> issues = LoadIssues(userId);
-                List<TodayTimeProjectItem> todayTimeProjects = LoadTodayTimeProjects(userId, allTasks);
+                List<TodayTimeProjectItem> todayTimeProjects = LoadTodayTimeProjects(userId, allTasks, projects);
                 rptTodayTimeProjects.DataSource = todayTimeProjects;
                 rptTodayTimeProjects.DataBind();
                 pnlNoTodayTimeProjects.Visible = todayTimeProjects.Count == 0;
-                hfEdDailyKey.Value = userId.ToString("N") + "_" + DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+                // Chi nhac khi thuc su co viec can xu ly tai du an dang thuc hien;
+                // popup chon du an van hien ca du an 0 (chua bat dau) / 3 (hoan thanh).
+                hfEdDailyKey.Value = todayTimeProjects.Any(x => x.TaskCount > 0 && x.StatusCode == (int)DuAnStatus.DangThucHien)
+                    ? userId.ToString("N") + "_" + DateTime.Today.ToString("yyyyMMdd", CultureInfo.InvariantCulture)
+                    : string.Empty;
                 List<MeetingItem> meetings = LoadMeetings(userId);
                 List<ExceptionItem> exceptions = LoadExceptions();
                 Dictionary<DayOfWeek, WorkdayConfiguration> workdayConfigurations = LoadWorkdayConfigurations();
@@ -348,7 +353,52 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
             lblPosition.Text = Server.HtmlEncode(positionName);
         }
 
-        private List<TodayTimeProjectItem> LoadTodayTimeProjects(Guid userId, List<TaskItem> currentWeekTasks)
+        // TrangThai du an lay truc tiep tu dbo.TblDuAn, KHONG suy ra tu PhanTramHoanThanh.
+        // 0 = Chua bat dau, 3 = Hoan thanh theo enum DuAnStatus hien hanh.
+        private static string ProjectStatusText(int code)
+        {
+            switch ((DuAnStatus)code)
+            {
+                case DuAnStatus.ChuaBatDau: return "Chưa bắt đầu";
+                case DuAnStatus.DangThucHien: return "Đang thực hiện";
+                case DuAnStatus.TamDung: return "Tạm dừng";
+                case DuAnStatus.HoanThanh: return "Hoàn thành";
+                case DuAnStatus.KetThuc: return "Kết thúc";
+                default: return "Chưa xác định";
+            }
+        }
+
+        private static string ProjectStatusCss(int code)
+        {
+            switch ((DuAnStatus)code)
+            {
+                case DuAnStatus.ChuaBatDau: return "is-not-started";
+                case DuAnStatus.DangThucHien: return "is-in-progress";
+                case DuAnStatus.TamDung: return "is-paused";
+                case DuAnStatus.HoanThanh: return "is-completed";
+                case DuAnStatus.KetThuc: return "is-ended";
+                default: return "";
+            }
+        }
+
+        private static int ProjectStatusOrder(int code)
+        {
+            switch ((DuAnStatus)code)
+            {
+                case DuAnStatus.DangThucHien: return 0;
+                case DuAnStatus.ChuaBatDau: return 1;
+                case DuAnStatus.TamDung: return 2;
+                case DuAnStatus.HoanThanh: return 3;
+                case DuAnStatus.KetThuc: return 4;
+                default: return 5;
+            }
+        }
+
+        /// <summary>
+        /// Hien thi tat ca du an ma nhan vien dang la thanh vien, phan nhom theo TrangThai.
+        /// So luong "viec can lam" van chi tinh viec hom nay hoac da qua han.
+        /// </summary>
+        private List<TodayTimeProjectItem> LoadTodayTimeProjects(Guid userId, List<TaskItem> currentWeekTasks, List<ProjectItem> availableProjects)
         {
             DateTime today = DateTime.Today;
             List<TaskItem> source = currentWeekTasks;
@@ -358,18 +408,42 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
                 try { _weekStart = GetMonday(today); _weekEnd = _weekStart.AddDays(6); source = LoadTasks(userId); }
                 finally { _weekStart = savedStart; _weekEnd = savedEnd; }
             }
-            return source.Where(t => t.ProjectId != Guid.Empty && !t.IsCompleted &&
-                (t.IsOverdue || ((t.StartDate ?? t.EndDate ?? today).Date <= today && (t.EndDate ?? t.StartDate ?? today).Date >= today)))
+
+            var activeTasks = source.Where(t => t.ProjectId != Guid.Empty && !t.IsCompleted &&
+                (t.IsOverdue || ((t.StartDate ?? t.EndDate ?? today).Date <= today &&
+                                  (t.EndDate ?? t.StartDate ?? today).Date >= today)))
                 .GroupBy(t => t.ProjectId)
-                .Select(g => new TodayTimeProjectItem
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            List<TodayTimeProjectItem> results = (availableProjects ?? new List<ProjectItem>())
+                .Select(project =>
                 {
-                    Code = g.First().ProjectCode,
-                    Name = g.First().ProjectName,
-                    TaskCount = g.Count(),
-                    OverdueCount = g.Count(t => t.IsOverdue),
-                    NavigateUrl = ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio.aspx") + "?projectId=" + HttpUtility.UrlEncode(g.Key.ToString("D"))
+                    List<TaskItem> tasks;
+                    if (!activeTasks.TryGetValue(project.Id, out tasks)) tasks = new List<TaskItem>();
+                    return new TodayTimeProjectItem
+                    {
+                        Code = project.Code,
+                        Name = project.Name,
+                        StatusCode = project.StatusCode,
+                        StatusText = project.StatusText,
+                        StatusCss = project.StatusCss,
+                        TaskCount = tasks.Count,
+                        OverdueCount = tasks.Count(task => task.IsOverdue),
+                        NavigateUrl = GetKhaiBaoGioUrl(project.Id)
+                    };
                 })
-                .OrderByDescending(x => x.OverdueCount).ThenBy(x => x.Name).ToList();
+                .OrderBy(item => ProjectStatusOrder(item.StatusCode))
+                .ThenByDescending(item => item.OverdueCount)
+                .ThenBy(item => item.Name)
+                .ToList();
+
+            int? previousStatus = null;
+            foreach (TodayTimeProjectItem item in results)
+            {
+                item.ShowGroupHeader = !previousStatus.HasValue || item.StatusCode != previousStatus.Value;
+                previousStatus = item.StatusCode;
+            }
+            return results;
         }
 
 
@@ -387,7 +461,7 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
             DataTable table = Query(@"
 SELECT DISTINCT t.IdCongViec, t.IdDuAn, d.MaDuAn, d.TenDuAn, t.MaCongViec, t.TenCongViec,
        t.NgayBatDau, t.NgayKetThuc, t.ThoiHanNgay, t.PhanTramHoanThanh,
-       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai
+       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai, d.TrangThai AS TrangThaiDuAn
 FROM dbo.TblCongViec_NhanVien tn
 INNER JOIN dbo.TblCongViec t ON t.IdCongViec = tn.IdCongViec
 INNER JOIN dbo.TblDuAn d ON d.IdDuAn = t.IdDuAn
@@ -408,13 +482,6 @@ SELECT d.IdDuAn, d.MaDuAn, d.TenDuAn, d.NgayBatDau, d.NgayDuKienHoanThanh,
 FROM dbo.TblThanhVienDuAn tv
 INNER JOIN dbo.TblDuAn d ON d.IdDuAn = tv.IdDuAn
 WHERE tv.IdNhanVien = @UserId AND ISNULL(tv.DaXoa, 0) = 0 AND ISNULL(d.DaXoa, 0) = 0
-  AND EXISTS (
-      SELECT 1 FROM dbo.TblCongViec_NhanVien tn
-      INNER JOIN dbo.TblCongViec t ON t.IdCongViec = tn.IdCongViec
-      WHERE tn.IdNhanVien = @UserId AND t.IdDuAn = d.IdDuAn
-        AND ISNULL(t.DaXoa, 0) = 0
-        AND ISNULL(t.PhanTramHoanThanh, 0) < 100
-  )
 GROUP BY d.IdDuAn, d.MaDuAn, d.TenDuAn, d.NgayBatDau, d.NgayDuKienHoanThanh, d.TrangThai
 ORDER BY CASE WHEN d.NgayDuKienHoanThanh IS NULL THEN 1 ELSE 0 END,
          d.NgayDuKienHoanThanh ASC, d.TenDuAn ASC;", GuidParameter("@UserId", userId));
@@ -428,8 +495,10 @@ ORDER BY CASE WHEN d.NgayDuKienHoanThanh IS NULL THEN 1 ELSE 0 END,
 
                 DateTime deadlineDate;
                 bool hasDeadline = TryDate(row["NgayDuKienHoanThanh"], out deadlineDate);
-                bool projectOverdue = hasDeadline && deadlineDate.Date < DateTime.Today && progress < 100;
-                bool projectDueSoon = hasDeadline && deadlineDate.Date >= DateTime.Today && (deadlineDate.Date - DateTime.Today).TotalDays <= 2 && progress < 100;
+                int projectStatusCode = IntValue(row["TrangThai"]);
+                bool projectFinished = projectStatusCode == (int)DuAnStatus.HoanThanh || projectStatusCode == (int)DuAnStatus.KetThuc;
+                bool projectOverdue = !projectFinished && hasDeadline && deadlineDate.Date < DateTime.Today && progress < 100;
+                bool projectDueSoon = !projectFinished && hasDeadline && deadlineDate.Date >= DateTime.Today && (deadlineDate.Date - DateTime.Today).TotalDays <= 2 && progress < 100;
 
                 items.Add(new ProjectItem
                 {
@@ -440,7 +509,10 @@ ORDER BY CASE WHEN d.NgayDuKienHoanThanh IS NULL THEN 1 ELSE 0 END,
                     TaskSummary = total == 0 ? "Chưa có công việc" : completed + "/" + total + " công việc hoàn thành",
                     Deadline = FormatDate(row["NgayDuKienHoanThanh"], "Hạn: "),
                     IsOverdue = projectOverdue,
-                    IsDueSoon = projectDueSoon
+                    IsDueSoon = projectDueSoon,
+                    StatusCode = projectStatusCode,
+                    StatusText = ProjectStatusText(projectStatusCode),
+                    StatusCss = ProjectStatusCss(projectStatusCode)
                 });
             }
             return items;
@@ -451,7 +523,7 @@ ORDER BY CASE WHEN d.NgayDuKienHoanThanh IS NULL THEN 1 ELSE 0 END,
             DataTable table = Query(@"
 SELECT DISTINCT t.IdCongViec, t.IdDuAn, d.MaDuAn, d.TenDuAn, t.MaCongViec, t.TenCongViec,
        t.NgayBatDau, t.NgayKetThuc, t.ThoiHanNgay, t.PhanTramHoanThanh,
-       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai
+       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai, d.TrangThai AS TrangThaiDuAn
 FROM dbo.TblCongViec_NhanVien tn
 INNER JOIN dbo.TblCongViec t ON t.IdCongViec = tn.IdCongViec
 INNER JOIN dbo.TblDuAn d ON d.IdDuAn = t.IdDuAn
@@ -476,7 +548,7 @@ ORDER BY t.NgayKetThuc, t.TenCongViec;",
             DataTable table = Query(@"
 SELECT DISTINCT t.IdCongViec, t.IdDuAn, d.MaDuAn, d.TenDuAn, t.MaCongViec, t.TenCongViec,
        t.NgayBatDau, t.NgayKetThuc, t.ThoiHanNgay, t.PhanTramHoanThanh,
-       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai
+       CONVERT(nvarchar(100), t.TrangThai) AS TrangThai, d.TrangThai AS TrangThaiDuAn
 FROM dbo.TblCongViec_NhanVien tn
 INNER JOIN dbo.TblCongViec t ON t.IdCongViec = tn.IdCongViec
 INNER JOIN dbo.TblDuAn d ON d.IdDuAn = t.IdDuAn
@@ -515,6 +587,7 @@ ORDER BY t.NgayKetThuc, t.TenCongViec;",
                     ProjectId = GuidValue(row["IdDuAn"]),
                     ProjectCode = FirstNonEmpty(Value(row, "MaDuAn"), "DỰ ÁN"),
                     ProjectName = FirstNonEmpty(Value(row, "TenDuAn"), "Chưa đặt tên dự án"),
+                    ProjectStatusCode = IntValue(row["TrangThaiDuAn"]),
                     TaskCode = FirstNonEmpty(Value(row, "MaCongViec"), "CÔNG VIỆC"),
                     TaskName = FirstNonEmpty(Value(row, "TenCongViec"), "Chưa đặt tên công việc"),
                     StartDate = hasStart ? (DateTime?)startDate.Date : null,
@@ -1075,6 +1148,9 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public int Progress { get; set; }
             public string TaskSummary { get; set; }
             public string Deadline { get; set; }
+            public int StatusCode { get; set; }
+            public string StatusText { get; set; }
+            public string StatusCss { get; set; }
             public bool IsOverdue { get; set; }
             public bool IsDueSoon { get; set; }
         }
@@ -1085,6 +1161,7 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public Guid ProjectId { get; set; }
             public string ProjectCode { get; set; }
             public string ProjectName { get; set; }
+            public int ProjectStatusCode { get; set; }
             public string TaskCode { get; set; }
             public string TaskName { get; set; }
             public DateTime? StartDate { get; set; }
@@ -1148,6 +1225,10 @@ WHERE LoweredUserName = @LoweredUserName OR UserName = @UserName;",
             public int TaskCount { get; set; }
             public int OverdueCount { get; set; }
             public string NavigateUrl { get; set; }
+            public int StatusCode { get; set; }
+            public string StatusText { get; set; }
+            public string StatusCss { get; set; }
+            public bool ShowGroupHeader { get; set; }
         }
 
         public class CalendarDayItem
