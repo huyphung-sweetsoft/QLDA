@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -96,6 +96,9 @@
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.9\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=4.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.4.2.3\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.EnterpriseLibrary.Common, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <HintPath>..\Libraries\Microsoft.Practices.EnterpriseLibrary.Common.dll</HintPath>
       <Private>True</Private>
@@ -117,8 +120,17 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.6.0.0\lib\net461\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.3.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.SystemWeb, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.4.3\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.0.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
@@ -517,6 +529,13 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fGanttCharts\Controls\CtrlShareProgress.ascx.cs">
+      <DependentUpon>CtrlShareProgress.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fGanttCharts\Controls\CtrlShareProgress.ascx.designer.cs">
+      <DependentUpon>CtrlShareProgress.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fGanttCharts\Gantts.aspx.cs">
       <DependentUpon>Gantts.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -888,6 +907,9 @@
     <Compile Include="SeedAdministrativeData.aspx.designer.cs">
       <DependentUpon>SeedAdministrativeData.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Realtime\QldaRealtimeSettings.cs" />
+    <Compile Include="Realtime\QldaRealtimeHub.cs" />
+    <Compile Include="Realtime\QldaRealtimePublisher.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="WebService.asmx.cs">
       <DependentUpon>WebService.asmx</DependentUpon>
@@ -997,6 +1019,7 @@
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
+    <Content Include="fGanttCharts\Controls\CtrlShareProgress.ascx" />
     <Content Include="fGanttCharts\Gantts.aspx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
@@ -1058,6 +1081,7 @@
     <Content Include="fUsers\RoleDetail.aspx" />
     <Content Include="fUsers\RoleList.aspx" />
     <Content Include="fUsers\UserList.aspx" />
+    <Content Include="GeneratedProgressReports\ProgressReportAccess.aspx" />
     <Content Include="Global.asax" />
     <Content Include="LockScreen.aspx" />
     <Content Include="Login.aspx" />
@@ -1082,6 +1106,7 @@
     <Content Include="Styles\images\SweetSoft-logo-light.png" />
     <Content Include="Styles\js\dashboard.js" />
     <Content Include="Styles\js\floating-work-timer.js" />
+    <Content Include="Styles\js\kbg20-doi-soat.js" />
     <Content Include="Styles\js\kbg20-page.js" />
     <Content Include="Styles\js\trang-chu.js" />
     <Content Include="Styles\plugins\ckeditor\lang\vi.js" />
@@ -1767,6 +1792,7 @@
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.4.js" />
     <Content Include="Scripts\jquery-1.6.4.min.js" />
+    <Content Include="Styles\js\qlda-realtime-client.js" />
     <Content Include="Scripts\jquery.signalR-2.4.3.js" />
     <Content Include="Scripts\jquery.signalR-2.4.3.min.js" />
     <Content Include="Styles\css\app.css" />

@@ -2,6 +2,7 @@
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.Utils;
+using SweetSoft.QLDA.Core.ScheduleManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -58,6 +59,65 @@ namespace SweetSoft.QLDA.Core.Respositories
                 .IsEqualTo(projectId)
                 .ExecuteTypedList<TblLichHop>();
         }
+        /// <summary>
+        /// Lấy tất cả lịch họp liên quan đến một nhân viên trong khoảng [start, endExclusive).
+        /// Có trong danh sách mời HOẶC là người tạo/chủ trì; KHÔNG lọc XacNhanThamGia.
+        /// Hai mốc thời gian và GUID được chuẩn hóa từ kiểu dữ liệu server, không lấy SQL từ client.
+        /// </summary>
+        public List<TomTatCuocHop> GetMeetingsByEmployeeInRange(Guid idNhanVien, DateTime start, DateTime endExclusive)
+        {
+            var items = new List<TomTatCuocHop>();
+            if (idNhanVien == Guid.Empty || endExclusive <= start || (endExclusive - start).TotalDays > 62)
+                return items;
+
+            string userId = idNhanVien.ToString("D");
+            string begin = start.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
+            string end = endExclusive.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
+            // Mọi giá trị SQL ở đây đều là GUID/DateTime đã định kiểu và format cố định.
+            string sql = $@"
+                SELECT m.IdLichHop, m.IdDuAn, m.MaCuocHop, m.TenCuocHop,
+                       m.ThoiGianBatDau, m.ThoiGianKetThuc, m.DiaDiemHop,
+                       m.LaHopOnline, m.IdNguoiTao,
+                       ISNULL(p.TenDuAn, N'') AS TenDuAn,
+                       ISNULL(u.DisplayName, N'') AS TenNguoiChuTri,
+                       ISNULL(nv.XacNhanThamGia, 0) AS DaThamGia
+                FROM dbo.TblLichHop AS m
+                LEFT JOIN dbo.TblLichHop_NhanVien AS nv
+                    ON nv.IdLichHop = m.IdLichHop AND nv.IdNhanVien = '{userId}'
+                LEFT JOIN dbo.TblDuAn AS p ON p.IdDuAn = m.IdDuAn
+                LEFT JOIN dbo.aspnet_Users AS u ON u.UserId = m.IdNguoiTao
+                WHERE m.DaXoa = 0
+                  AND m.ThoiGianKetThuc > m.ThoiGianBatDau
+                  AND m.ThoiGianBatDau < CONVERT(datetime, '{end}', 126)
+                  AND m.ThoiGianKetThuc > CONVERT(datetime, '{begin}', 126)
+                  AND (m.IdNguoiTao = '{userId}' OR nv.IdNhanVien IS NOT NULL)
+                ORDER BY m.ThoiGianBatDau, m.IdLichHop;";
+            using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+            {
+                while (reader != null && reader.Read())
+                {
+                    Guid idChuTri = reader["IdNguoiTao"] == DBNull.Value
+                        ? Guid.Empty : (Guid)reader["IdNguoiTao"];
+                    items.Add(new TomTatCuocHop
+                    {
+                        IdLichHop = (Guid)reader["IdLichHop"],
+                        IdDuAn = (Guid)reader["IdDuAn"],
+                        MaCuocHop = Convert.ToString(reader["MaCuocHop"]),
+                        TenCuocHop = Convert.ToString(reader["TenCuocHop"]),
+                        ThoiGianBatDau = Convert.ToDateTime(reader["ThoiGianBatDau"]),
+                        ThoiGianKetThuc = Convert.ToDateTime(reader["ThoiGianKetThuc"]),
+                        DiaDiemHop = Convert.ToString(reader["DiaDiemHop"]),
+                        LaHopOnline = Convert.ToBoolean(reader["LaHopOnline"]),
+                        IdNguoiTao = idChuTri,
+                        TenNguoiChuTri = Convert.ToString(reader["TenNguoiChuTri"]),
+                        LaChuTri = idChuTri == idNhanVien,
+                        DaThamGia = Convert.ToBoolean(reader["DaThamGia"])
+                    });
+                }
+            }
+            return items;
+        }
+
         public Guid? GetLinkedDocumentId(Guid idLichHop)
         {
             return GetLinkedDocumentId(idLichHop, false);

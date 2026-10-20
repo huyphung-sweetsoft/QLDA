@@ -1,4 +1,4 @@
-
+﻿
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using System;
@@ -267,6 +267,12 @@ namespace SweetSoft.QLDA.BackOffice
                 Guid idThongBao;
                 if (!Guid.TryParse(id, out idThongBao))
                     return new { success = false, message = "Invalid id" };
+
+                // Khong duoc danh dau da doc thong bao cua tai khoan khac.
+                // Callback realtime nam trong ThongBaoManager, khong gui lap lai tu WebService.
+                var notification = ThongBaoManager.Instance.GetById(idThongBao);
+                if (notification == null || notification.UserId != userId || notification.DaXoa == true)
+                    return new { success = false, message = "Notification not found" };
 
                 ThongBaoManager.Instance.MarkAsRead(idThongBao);
 

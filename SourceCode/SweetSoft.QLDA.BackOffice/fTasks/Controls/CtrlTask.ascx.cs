@@ -1046,45 +1046,55 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         public override void ConfirmRequest(ConfirmResult e)
         {
-            CtrlSwapPhase1.ConfirmRequest(e);
-            CtrlChonNhanVienTask1.ConfirmRequest(e);
-            if (e != null && e.Submit &&
-                e.CommandName != "CONFIRM_SWAP_PHASES" &&
-                e.CommandName != "CONFIRM_REORDER_PHASES" &&
-                e.CommandName != "CONFIRM_OVERLOAD_ASSIGN_TASK")
+            if (e == null || !e.Submit) return;
+
+            // Dieu phoi CHINH XAC theo CommandName, khong duoc roi xuong nhanh xoa task.
+            switch (e.CommandName)
             {
-                Guid taskId = Guid.Empty;
-                if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
-                {
-                    ShowInvalidDataError();
+                case "CONFIRM_SWAP_PHASES":
+                case "CONFIRM_REORDER_PHASES":
+                    CtrlSwapPhase1.ConfirmRequest(e);
                     return;
-                }
-                TblCongViec task = TaskManager.Instance.FetchById(taskId);
-                if (task == null)
-                {
-                    ShowInvalidNotFoundData();
+                case "CONFIRM_TASK_ASSIGNMENT_CHANGES":
+                case "CONFIRM_OVERLOAD_ASSIGN_TASK": // ten lenh cu, giu tuong thich
+                    CtrlChonNhanVienTask1.ConfirmRequest(e);
                     return;
-                }
-                try
+                case "TASK_DELETE":
+                    break;
+                default:
+                    return;
+            }
+            Guid taskId;
+            if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+            TblCongViec task = TaskManager.Instance.FetchById(taskId);
+            if (task == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+            try
+            {
+                TaskManager.Instance.DeleteTask(task);
+                if (task.IdCongViecCha.HasValue)
                 {
-                    TaskManager.Instance.DeleteTask(task);
-                    if (task.IdCongViecCha.HasValue)
-                    {
-                        if (_dictPriorities == null || _dictPriorities.Count == 0)
-                            _dictPriorities = TaskManager.Instance.GetDictPriorities();
-                        TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                        TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
-                        TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
-                    }
-                    hfDeletingTaskId.Value = string.Empty;
-                    ShowSuccessDeleteData();
-                    grvData.CurrentPageIndex = 1;
-                    Rebind();
+                    if (_dictPriorities == null || _dictPriorities.Count == 0)
+                        _dictPriorities = TaskManager.Instance.GetDictPriorities();
+                    TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
+                    TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
+                    TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
                 }
-                catch (Exception exc)
-                {
-                    ShowNotify(exc.Message, MSGType.Error);
-                }
+                hfDeletingTaskId.Value = string.Empty;
+                ShowSuccessDeleteData();
+                grvData.CurrentPageIndex = 1;
+                Rebind();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
             }
         }
         #endregion

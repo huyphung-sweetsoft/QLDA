@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Configuration;
 using SweetSoft.QLDA.Core.Managers;
+using TrangThaiTask = SweetSoft.QLDA.Core.EnumHelper.TrangThaiCongViec;
 
 namespace SweetSoft.QLDA.Core.Respositories
 {
@@ -908,12 +909,14 @@ namespace SweetSoft.QLDA.Core.Respositories
         }
         internal void ChuyenTrangThaiDangLam(SqlConnection con, SqlTransaction tx, Guid taskId, DateTime nowLocal)
         {
-            using (var cmd = Lenh(con, tx, @"UPDATE dbo.TblCongViec SET TrangThai=1,NgayCapNhat=@Now,
-                NguoiCapNhat=N'KhaiBaoGio20' WHERE IdCongViec=@T AND TrangThai=0
+            using (var cmd = Lenh(con, tx, @"UPDATE dbo.TblCongViec SET TrangThai=@DangLam,NgayCapNhat=@Now,
+                NguoiCapNhat=N'KhaiBaoGio20' WHERE IdCongViec=@T AND TrangThai=@ChuaBatDau
                 AND ISNULL(ChoDuyet,0)=0 AND (DaXoa=0 OR DaXoa IS NULL)"))
             {
                 P(cmd, "@Now", SqlDbType.DateTime, nowLocal);
                 P(cmd, "@T", SqlDbType.UniqueIdentifier, taskId);
+                P(cmd, "@DangLam", SqlDbType.TinyInt, (byte)TrangThaiTask.DangThucHien);
+                P(cmd, "@ChuaBatDau", SqlDbType.TinyInt, (byte)TrangThaiTask.ChuaBatDau);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -922,13 +925,14 @@ namespace SweetSoft.QLDA.Core.Respositories
             // KHONG goi ThongBaoManager.Create (ham do se gui Email).
             using (var cmd = Lenh(con, tx, @"INSERT INTO dbo.TblThongBao
               (IdThongBao,UserId,IdCongViec,IdDuAn,TieuDe,NoiDung,LoaiThongBao,
-               DuongDanLienKet,DaDoc,DaXoa,NguoiTao,NgayTao)
-              VALUES (NEWID(),@U,@T,@D,@Title,@Body,'CONG_VIEC',NULL,0,0,N'KhaiBaoGio20',@Now)"))
+               DuongDanLienKet,DaDoc,DaXoa,NguoiTao,NgayTao,NguoiCapNhat,NgayCapNhat)
+              VALUES (NEWID(),@U,@T,@D,@Title,@Body,'CONG_VIEC',NULL,0,0,N'KhaiBaoGio20',@Now,N'KhaiBaoGio20',@Now)"))
             {
                 P(cmd, "@U", SqlDbType.UniqueIdentifier, nv);
                 P(cmd, "@T", SqlDbType.UniqueIdentifier, task.IdCongViec);
                 P(cmd, "@D", SqlDbType.UniqueIdentifier, task.IdDuAn);
-                P(cmd, "@Title", SqlDbType.NVarChar, "Đã tự bắt đầu đồng hồ giám sát: " + task.MaCongViec);
+                string tieuDe = "Đã tự bắt đầu đồng hồ giám sát: " + task.MaCongViec;
+                P(cmd, "@Title", SqlDbType.NVarChar, tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe);
                 P(cmd, "@Body", SqlDbType.NVarChar, "Hệ thống đã bắt đầu tính giờ công việc " + task.MaCongViec +
                      " (" + task.TenCongViec + ") vì công việc con " + conTask.MaCongViec + " được bắt đầu.");
                 P(cmd, "@Now", SqlDbType.DateTime, nowLocal);
@@ -937,9 +941,9 @@ namespace SweetSoft.QLDA.Core.Respositories
         }
         internal void KhoaTheoDuAn(SqlConnection con, SqlTransaction tx, Guid duAn)
         {
-            using (var cmd = Lenh(con, tx, @"DECLARE @r INT;
-             EXEC @r=sp_getapplock @Resource=@R, @LockMode='Exclusive',@LockOwner='Transaction',@LockTimeout=15000;
-             IF @r<0 THROW 51020,N'Khong lay duoc khoa giao dich khai bao gio.',1;"))
+            using (var cmd = Lenh(con, tx, @"DECLARE @Kbg20LockResult INT;
+             EXEC @Kbg20LockResult=sp_getapplock @Resource=@R, @LockMode='Exclusive',@LockOwner='Transaction',@LockTimeout=15000;
+             IF @Kbg20LockResult<0 THROW 51020,N'Khong lay duoc khoa giao dich khai bao gio.',1;"))
             {
                 P(cmd, "@R", SqlDbType.NVarChar, "KBG20:DUAN:" + duAn.ToString("N"));
                 cmd.ExecuteNonQuery();
@@ -957,6 +961,23 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
             return list;
         }
+        // 2B: Lay cac phien con mo trong DU AN cho thao tac sua ke hoach co cascade.
+        // Lock du an (sp_getapplock) phai duoc lay TRUOC khi goi phuong thuc nay.
+        internal List<Kbg20Phien> LayPhienMoCuaDuAn(SqlConnection con, SqlTransaction tx, Guid idDuAn)
+        {
+            var list = new List<Kbg20Phien>();
+            using (var cmd = Lenh(con, tx, @"SELECT IdPhien,IdNhanVien,IdCongViec,IdDuAn,LoaiGio,
+                  BatDauLuc,KetThucLuc,DaTinhDenLuc,LaTiepTucQuaHan,NguonBatDau
+                  FROM dbo.TblKhaiBaoGioPhien WITH (UPDLOCK,HOLDLOCK)
+                  WHERE IdDuAn=@D AND KetThucLuc IS NULL ORDER BY IdCongViec,IdPhien"))
+            {
+                P(cmd, "@D", SqlDbType.UniqueIdentifier, idDuAn);
+                using (var rd = cmd.ExecuteReader())
+                    while (rd.Read()) list.Add(DocPhien(rd));
+            }
+            return list;
+        }
+
         // Idempotency: cung IdThaoTac cua mot lan bam khong duoc tao lai phien
         // ke ca khi phien truoc da dung. Dung chung transaction/app lock.
         internal Kbg20Phien LayPhienTheoThaoTac(SqlConnection con, SqlTransaction tx,
@@ -994,8 +1015,12 @@ namespace SweetSoft.QLDA.Core.Respositories
                 {
                     if (!rd.Read()) return Kbg20LyDoKetThuc.CongViecBiKhoa;
                     if (Convert.ToInt32(rd.GetValue(5)) == 0) return Kbg20LyDoKetThuc.GoPhanCong;
-                    // 2 = hoan thanh dung han; 3 = hoan thanh tre (khong phai huy).
-                    if (Convert.ToInt32(rd.GetValue(0)) == 2 || Convert.ToInt32(rd.GetValue(0)) == 3 ||
+                    // TrangThai=4 la "Cho duyet" theo enum Task, KHONG phu thuoc co ChoDuyet cu.
+                    // Job la hang rao du phong; buoc 2 se dong chinh xac tai thoi diem gui duyet.
+                    int trangThai = Convert.ToInt32(rd.GetValue(0));
+                    if (trangThai == (int)TrangThaiTask.HoanThanh ||
+                        trangThai == (int)TrangThaiTask.HoanThanhTre ||
+                        trangThai == (int)TrangThaiTask.ChoDuyet ||
                         rd.GetBoolean(1) || rd.GetBoolean(2) || rd.GetBoolean(3) ||
                         Convert.ToInt32(rd.GetValue(4)) !=
                             (int)SweetSoft.QLDA.Core.EnumHelper.Defines.DuAnStatus.DangThucHien)
@@ -1087,10 +1112,13 @@ namespace SweetSoft.QLDA.Core.Respositories
                   (SELECT IdCongViec,IdCongViecCha,TrangThai,DaXoa FROM dbo.TblCongViec WHERE IdCongViecCha=@T
                    UNION ALL SELECT c.IdCongViec,c.IdCongViecCha,c.TrangThai,c.DaXoa
                    FROM dbo.TblCongViec c INNER JOIN H ON c.IdCongViecCha=H.IdCongViec)
-                  SELECT TOP 1 1 FROM H WHERE (DaXoa=0 OR DaXoa IS NULL) AND TrangThai NOT IN (2,3)
+                  SELECT TOP 1 1 FROM H WHERE (DaXoa=0 OR DaXoa IS NULL)
+                    AND TrangThai NOT IN (@HoanThanh,@HoanThanhTre)
                   OPTION (MAXRECURSION 100)"))
             {
                 P(cmd, "@T", SqlDbType.UniqueIdentifier, task);
+                P(cmd, "@HoanThanh", SqlDbType.TinyInt, (byte)TrangThaiTask.HoanThanh);
+                P(cmd, "@HoanThanhTre", SqlDbType.TinyInt, (byte)TrangThaiTask.HoanThanhTre);
                 return cmd.ExecuteScalar() != null;
             }
         }
@@ -1143,7 +1171,14 @@ namespace SweetSoft.QLDA.Core.Respositories
                     ISNULL(t.ChoDuyet,0),
                     CASE WHEN EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a
                       WHERE a.IdCongViec=t.IdCongViec AND a.IdNhanVien=@U) THEN 1 ELSE 0 END,
-                    ISNULL(g.Thuong,0),ISNULL(g.TangCa,0)
+                    ISNULL(g.Thuong,0),ISNULL(g.TangCa,0),
+                    CASE WHEN EXISTS (SELECT 1 FROM dbo.TblKhaiBaoGioPhien p
+                        WHERE p.IdNhanVien=@U AND p.IdCongViec=t.IdCongViec AND p.LoaiGio=1)
+                        THEN 1 ELSE 0 END AS DaTungBatDauThuong,
+                    CASE WHEN EXISTS (SELECT 1 FROM dbo.TblKhaiBaoGioPhien p
+                        WHERE p.IdNhanVien=@U AND p.IdCongViec=t.IdCongViec AND p.LoaiGio=2)
+                        THEN 1 ELSE 0 END AS DaTungBatDauTangCa,
+                    t.ThoiHanNgay
                 FROM dbo.TblCongViec t
                 OUTER APPLY(SELECT SUM(CASE WHEN p.LoaiGio=1 THEN k.SoGiay ELSE 0 END) Thuong,
                            SUM(CASE WHEN p.LoaiGio=2 THEN k.SoGiay ELSE 0 END) TangCa
@@ -1151,10 +1186,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                     LEFT JOIN dbo.TblKhaiBaoGioKhoangTinh k ON k.IdPhien=p.IdPhien
                     WHERE p.IdNhanVien=@U AND p.IdCongViec=t.IdCongViec) g
                 WHERE t.IdDuAn=@D AND ISNULL(t.DaXoa,0)=0 AND
-                  (EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a
-                           WHERE a.IdCongViec=t.IdCongViec AND a.IdNhanVien=@U)
-                   OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p
-                           WHERE p.IdCongViec=t.IdCongViec AND p.IdNhanVien=@U))
+                  EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a
+                         WHERE a.IdCongViec=t.IdCongViec AND a.IdNhanVien=@U)
                 ORDER BY t.MaCongViec,t.NgayKetThuc"))
             {
                 P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
@@ -1168,10 +1201,61 @@ namespace SweetSoft.QLDA.Core.Respositories
                     NgayKetThuc=r.IsDBNull(6)?(DateTime?)null:r.GetDateTime(6),
                     TrangThai=Convert.ToInt32(r.GetValue(7)),ChoDuyet=Convert.ToBoolean(r.GetValue(8)),
                     LaPhanCongTrucTiep=Convert.ToInt32(r.GetValue(9))==1,
-                    SoGiayThuong=Convert.ToInt64(r.GetValue(10)),SoGiayTangCa=Convert.ToInt64(r.GetValue(11)) });
+                    SoGiayThuong=Convert.ToInt64(r.GetValue(10)),SoGiayTangCa=Convert.ToInt64(r.GetValue(11)),
+                    DaTungBatDauThuong=Convert.ToInt32(r.GetValue(12))==1,
+                    DaTungBatDauTangCa=Convert.ToInt32(r.GetValue(13))==1,
+                    ThoiHanNgay=r.IsDBNull(14)?(int?)null:Convert.ToInt32(r.GetValue(14)) });
             }
             return list;
         }
+        // Chi truy van khi phien dang mo chua co khoang da ket toan trong ngay.
+        internal Kbg20GioTheoNgay LayTenCongViecChoLichSu(Guid idCongViec)
+        {
+            using (var con = MoKetNoi())
+            using (var cmd = Lenh(con, null, @"SELECT MaCongViec,TenCongViec FROM dbo.TblCongViec WHERE IdCongViec=@T"))
+            {
+                P(cmd, "@T", SqlDbType.UniqueIdentifier, idCongViec);
+                using (var r = cmd.ExecuteReader())
+                    return r.Read() ? new Kbg20GioTheoNgay {
+                        IdCongViec = idCongViec,
+                        MaCongViec = r.IsDBNull(0) ? "" : Convert.ToString(r.GetValue(0)),
+                        TenCongViec = r.IsDBNull(1) ? "" : Convert.ToString(r.GetValue(1))
+                    } : new Kbg20GioTheoNgay { IdCongViec = idCongViec, MaCongViec = "Công việc", TenCongViec = "Không tìm thấy thông tin" };
+            }
+        }
+
+        // Chi doc gio da KET TOAN theo k.NgayLam cua tung khoang, khong theo ngay Start/Stop.
+        // Bao gom ca nhung phien da dung hoac bat dau tu ngay truoc; khong gioi han TOP 40.
+        internal List<Kbg20GioTheoNgay> LayGioDaKetToanTrongNgay(Guid nv, Guid duAn, DateTime ngay)
+        {
+            var list = new List<Kbg20GioTheoNgay>();
+            using (var con = MoKetNoi())
+            using (var cmd = Lenh(con, null, @"SELECT p.IdCongViec,
+                       ISNULL(t.MaCongViec,N''), ISNULL(t.TenCongViec,N''),
+                       SUM(CASE WHEN p.LoaiGio=1 THEN k.SoGiay ELSE CAST(0 AS bigint) END),
+                       SUM(CASE WHEN p.LoaiGio=2 THEN k.SoGiay ELSE CAST(0 AS bigint) END)
+                FROM dbo.TblKhaiBaoGioKhoangTinh k
+                INNER JOIN dbo.TblKhaiBaoGioPhien p ON p.IdPhien=k.IdPhien
+                INNER JOIN dbo.TblCongViec t ON t.IdCongViec=p.IdCongViec
+                WHERE p.IdNhanVien=@U AND p.IdDuAn=@D AND k.NgayLam=@Ngay
+                GROUP BY p.IdCongViec,t.MaCongViec,t.TenCongViec
+                ORDER BY t.MaCongViec,t.TenCongViec"))
+            {
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
+                P(cmd,"@D",SqlDbType.UniqueIdentifier,duAn);
+                P(cmd,"@Ngay",SqlDbType.Date,ngay.Date);
+                using (var r = cmd.ExecuteReader()) while (r.Read())
+                    list.Add(new Kbg20GioTheoNgay {
+                        IdCongViec = r.GetGuid(0),
+                        MaCongViec = r.IsDBNull(1) ? "" : Convert.ToString(r.GetValue(1)),
+                        TenCongViec = r.IsDBNull(2) ? "" : Convert.ToString(r.GetValue(2)),
+                        SoGiayThuong = r.IsDBNull(3) ? 0L : Convert.ToInt64(r.GetValue(3)),
+                        SoGiayTangCa = r.IsDBNull(4) ? 0L : Convert.ToInt64(r.GetValue(4))
+                    });
+            }
+            return list;
+        }
+
         internal List<Kbg20Phien> LayLichSuPhien(Guid nv, Guid duAn, int limit)
         {
             var list=new List<Kbg20Phien>();

@@ -1,4 +1,4 @@
-<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.Profile" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.Profile" %>
 
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fFilesBox/FilesBox.ascx" TagPrefix="SweetSoft" TagName="FilesBox" %>
@@ -23,6 +23,30 @@
         .otp-input input::-webkit-outer-spin-button, .otp-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .otp-input input[type=number] { -moz-appearance: textfield; }
         @media (max-width: 468px) { .otp-input input { width: 40px; height: 40px; margin: 0px 4px; } }
+
+        /* PROFILE - Thong tin ca nhan & cong tac (chi ap dung tab nay) */
+        #personal-info .profile-personal-card { background: #f8f9fd; border: 1px solid #e7e8f0 !important; border-radius: 12px; box-shadow: none; }
+        #personal-info .profile-personal-card > .card-body { padding: 22px 24px 20px; }
+        #personal-info .profile-personal-form { max-width: 1160px; margin: 0 auto; color: #384357; }
+        #personal-info .profile-personal-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 17px; padding-bottom: 11px; border-bottom: 1px solid #e2e5ee; }
+        #personal-info .profile-personal-heading-icon { flex: 0 0 34px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; background: #f0e9fa; color: #64269b; font-size: 14px; }
+        #personal-info .profile-personal-heading-title { margin: 0; font-size: 15px; font-weight: 700; color: #3f235e; line-height: 1.35; }
+        #personal-info .profile-personal-heading-sub { display: block; margin-top: 2px; font-size: 12px; color: #798397; line-height: 1.4; }
+        #personal-info .profile-personal-address-heading { display: flex; align-items: center; gap: 8px; margin: 16px 0 14px; padding-top: 15px; border-top: 1px solid #e2e5ee; font-size: 13px; font-weight: 700; color: #513174; }
+        #personal-info .profile-personal-address-heading i { color: #7137a5; }
+        #personal-info .profile-field { margin-bottom: 0; min-width: 0; }
+        #personal-info .profile-field > .form-label { display: block; margin-bottom: 7px; font-size: 12.5px; font-weight: 650; color: #485469; }
+        #personal-info .profile-field .form-control, #personal-info .profile-field select { min-height: 39px; border-radius: 7px; border-color: #dce1ec; background-color: #fff; color: #344054; font-size: 13.5px; }
+        #personal-info .profile-field .form-control:focus, #personal-info .profile-field select:focus { border-color: #a37acf; box-shadow: 0 0 0 3px rgba(113, 55, 165, 0.09); }
+        #personal-info .profile-field .select2-container, #personal-info .profile-field .bootstrap-select { max-width: 100%; }
+        #personal-info .profile-field-help { display: block; margin-top: 5px; font-size: 11.5px; line-height: 1.35; color: #8b94a5; }
+        #personal-info .profile-personal-actions { display: flex; justify-content: flex-end; padding-top: 17px; margin-top: 16px; border-top: 1px solid #e2e5ee; }
+        @media(max-width:767.98px) {
+            #personal-info .profile-personal-card > .card-body { padding: 15px 14px; }
+            #personal-info .profile-personal-heading { align-items: flex-start; }
+            #personal-info .profile-personal-heading-title { font-size: 14px; }
+            #personal-info .profile-personal-actions { padding-top: 14px; }
+        }
     </style>
 </asp:Content>
 
@@ -134,28 +158,29 @@
                                 </div>
                             </div>
 
-                            <!-- TAB 2: THÔNG TIN CÁ NHÂN -->
+                            <!-- TAB 2: THONG TIN CA NHAN & CONG TAC -->
                             <asp:PlaceHolder ID="plhPersonalContent" runat="server">
                                 <div class="tab-pane mt-2" id="personal-info" role="tabpanel">
-                                    <div class="card card-grid-view shadow-none border">
+                                    <div class="card profile-personal-card shadow-none">
                                         <div class="card-body">
                                             <asp:UpdatePanel runat="server" ID="upnlPersonalInfo" UpdateMode="Conditional">
                                                 <ContentTemplate>
-                                                    <div class="row js-update-personal validationEngineContainer p-3">
-                                                        <div class="col-md-4 col-sm-6">
-                                                            <div class="mb-3">
-                                                                <label for="<%= txtCCCD.ClientID %>" class="form-label label-valid"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></label>
-                                                                <SweetSoft:ExtraTextBox runat="server" ID="txtCCCD" Required="true"></SweetSoft:ExtraTextBox>
+                                                    <div class="profile-personal-form js-update-personal validationEngineContainer">
+                                                        <!-- Header phang, khong long card mau trang -->
+                                                        <div class="profile-personal-heading">
+                                                            <span class="profile-personal-heading-icon"><i class="fas fa-user-circle"></i></span>
+                                                            <div>
+                                                                <h5 class="profile-personal-heading-title">Thông tin cá nhân</h5>
+                                                                <span class="profile-personal-heading-sub">Cập nhật thông tin cơ bản và địa chỉ liên hệ của bạn</span>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4 col-sm-6">
-                                                            <div class="mb-3">
+
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6 profile-field">
                                                                 <label for="<%= txtNgaySinh.ClientID %>" class="form-label"><%= GetResourceText(BackEndResourceKeys.DATE_OF_BIRTH) %></label>
                                                                 <asp:TextBox runat="server" ID="txtNgaySinh" type="date" CssClass="form-control"></asp:TextBox>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-md-4 col-sm-6">
-                                                            <div class="mb-3">
+                                                            <div class="col-md-6 profile-field">
                                                                 <label for="<%= ddlGioiTinh.ClientID %>" class="form-label"><%= GetResourceText(BackEndResourceKeys.GIOI_TINH) %></label>
                                                                 <SweetSoft:ExtraDropdown runat="server" ID="ddlGioiTinh" SimpleInit="true">
                                                                     <asp:ListItem Text="-- Chọn --" Value=""></asp:ListItem>
@@ -165,13 +190,28 @@
                                                                 </SweetSoft:ExtraDropdown>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-12">
-                                                            <div class="mb-3">
-                                                                <label for="<%= txtDiaChi.ClientID %>" class="form-label"><%= GetResourceText(BackEndResourceKeys.ADDRESS) %></label>
-                                                                <SweetSoft:ExtraTextBox runat="server" ID="txtDiaChi" TextMode="MultiLine" Rows="2"></SweetSoft:ExtraTextBox>
+
+                                                        <div class="profile-personal-address-heading">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                            <span>Địa chỉ liên hệ</span>
+                                                        </div>
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6 profile-field">
+                                                                <label for="<%= ddlTinhThanh.ClientID %>" class="form-label">Tỉnh / Thành phố</label>
+                                                                <SweetSoft:ExtraDropdown runat="server" ID="ddlTinhThanh" AutoPostBack="true" EnableSearch="true" OnSelectedIndexChanged="ddlTinhThanh_SelectedValueChanged"></SweetSoft:ExtraDropdown>
+                                                            </div>
+                                                            <div class="col-md-6 profile-field">
+                                                                <label for="<%= ddlXaPhuong.ClientID %>" class="form-label">Xã / Phường / Đặc khu</label>
+                                                                <SweetSoft:ExtraDropdown runat="server" ID="ddlXaPhuong" EnableSearch="true"></SweetSoft:ExtraDropdown>
+                                                            </div>
+                                                            <div class="col-12 profile-field">
+                                                                <label for="<%= txtDiaChi.ClientID %>" class="form-label">Địa chỉ chi tiết</label>
+                                                                <SweetSoft:ExtraTextBox runat="server" ID="txtDiaChi"></SweetSoft:ExtraTextBox>
+                                                                <span class="profile-field-help">Số nhà, tên đường, tòa nhà... (không cần nhập lại tỉnh và xã/phường).</span>
                                                             </div>
                                                         </div>
-                                                        <div class="col-lg-12 text-end mt-2">
+
+                                                        <div class="profile-personal-actions">
                                                             <SweetSoft:ExtraButton runat="server" ID="lbtUpdatePersonal" CssClass="waves-effect waves-light" ButtonStyle="Primary" ButtonIcon="Save" IsPace="true" OnClientClick="return CMSMasterJs.ValidForm('.js-update-personal');" OnClick="lbtUpdatePersonal_Click"></SweetSoft:ExtraButton>
                                                         </div>
                                                     </div>

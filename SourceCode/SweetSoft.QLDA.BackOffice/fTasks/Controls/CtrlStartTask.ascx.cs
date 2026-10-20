@@ -19,11 +19,17 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
     public partial class CtrlStartTask : BaseAdminUserControl
     {
         public event EventHandler ActionStarted;
+        // Diem mo rong TUY CHON cho trang KhaiBaoGio 2.0. TaskList goc khong gan callback.
+        // Callback bao phan luu Task cua partner va Start dong ho trong CUNG transaction.
+        public Action<Guid, Action> LuuBatDauQuaKbg20 { get; set; }
+        public Guid? IdDuAnNguonKbg20 { get; set; }
 
         private Guid ProjectId
         {
             get
             {
+                if (IdDuAnNguonKbg20.HasValue && IdDuAnNguonKbg20.Value != Guid.Empty)
+                    return IdDuAnNguonKbg20.Value;
                 if (this.Page is BaseAdminPage basePage && basePage.CurrentProjectId != Guid.Empty)
                     return basePage.CurrentProjectId;
                 return Guid.Empty;
@@ -181,16 +187,24 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     TblCongViec task = TblCongViec.FetchByID(taskId);
                     if (task != null)
                     {
-                        task.TrangThai = 1;
-                        task.NgayCapNhat = DateTime.Now;
-                        task.Save();
-                        if (task.IdCongViecCha.HasValue && this.ProjectId != Guid.Empty)
+                        // Ngiu yen tung lenh cua partner; trang KBG20 chi bao giao dich o ngoai.
+                        Action luuNghiepVuTask = () =>
                         {
-                            var dictPriorities = TaskManager.Instance.GetDictPriorities();
-                            TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, dictPriorities);
-                            TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
-                            TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
-                        }
+                            task.TrangThai = 1;
+                            task.NgayCapNhat = DateTime.Now;
+                            task.Save();
+                            if (task.IdCongViecCha.HasValue && this.ProjectId != Guid.Empty)
+                            {
+                                var dictPriorities = TaskManager.Instance.GetDictPriorities();
+                                TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, dictPriorities);
+                                TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
+                                TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
+                            }
+                        };
+                        if (LuuBatDauQuaKbg20 != null)
+                            LuuBatDauQuaKbg20(task.IdCongViec, luuNghiepVuTask);
+                        else
+                            luuNghiepVuTask();
                         ShowNotify("Công việc đã chuyển sang trạng thái Đang thực hiện!", MSGType.Success);
                         mdlStartTask.CloseModal();
                         if (ActionStarted != null)

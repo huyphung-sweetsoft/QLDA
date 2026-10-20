@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace SweetSoft.QLDA.Core.Managers
@@ -291,7 +291,6 @@ namespace SweetSoft.QLDA.Core.Managers
         public int SoPhienDaTuNgat { get; set; }
         public int SoKhoangDaGhi { get; set; }
     }
-    // ===== READ MODELS 2.0: khong sua bat ky type 1.x nao =====
     public sealed class Kbg20DuAn
     {
         public Guid IdDuAn { get; set; }
@@ -300,6 +299,7 @@ namespace SweetSoft.QLDA.Core.Managers
     }
     public sealed class Kbg20CongViec
     {
+        public int? ThoiHanNgay { get; set; }  // Gia tri thoi han tu TblCongViec, khong tinh lai theo lich.
         public Guid IdCongViec { get; set; }
         public Guid IdDuAn { get; set; }
         public Guid? IdCongViecCha { get; set; }
@@ -310,6 +310,9 @@ namespace SweetSoft.QLDA.Core.Managers
         public int TrangThai { get; set; }
         public bool ChoDuyet { get; set; }
         public bool LaPhanCongTrucTiep { get; set; }
+        // Cần đọc từ phiên (không suy đoán từ số giây; phiên 0 giây vẫn tính là đã bắt đầu).
+        public bool DaTungBatDauThuong { get; set; }
+        public bool DaTungBatDauTangCa { get; set; }
         public long SoGiayThuong { get; set; }
         public long SoGiayTangCa { get; set; }
     }
@@ -320,6 +323,29 @@ namespace SweetSoft.QLDA.Core.Managers
         public bool DangCongGio { get; set; }
         public DateTime? MocDungCongLucUtc { get; set; }
     }
+    // Tong gio CUA MOT NGAY dia phuong, chi trong DU AN hien tai va cua chinh nhan vien.
+    // Khong tron tong gio task voi thoi gian thuc troi qua; nhieu task cung luc van cong rieng.
+    public sealed class Kbg20GioTheoNgay
+    {
+        public Guid IdCongViec { get; set; }
+        public string MaCongViec { get; set; }
+        public string TenCongViec { get; set; }
+        public long SoGiayThuong { get; set; }
+        public long SoGiayTangCa { get; set; }
+        public long TongSoGiay { get { return SoGiayThuong + SoGiayTangCa; } }
+    }
+
+    public sealed class Kbg20LichSuNgay
+    {
+        public Guid IdDuAn { get; set; }
+        public DateTime NgayLam { get; set; }
+        public DateTime ServerNowUtc { get; set; }
+        public List<Kbg20GioTheoNgay> CongViec { get; set; } = new List<Kbg20GioTheoNgay>();
+        public long SoGiayThuong { get { long n = 0; foreach (var x in CongViec) n += x.SoGiayThuong; return n; } }
+        public long SoGiayTangCa { get { long n = 0; foreach (var x in CongViec) n += x.SoGiayTangCa; return n; } }
+        public long TongSoGiay { get { return SoGiayThuong + SoGiayTangCa; } }
+    }
+
     public sealed class Kbg20TrangDuAn
     {
         public Guid IdDuAn { get; set; }
@@ -329,5 +355,6 @@ namespace SweetSoft.QLDA.Core.Managers
         public List<Kbg20DongHo> DongHo { get; set; } = new List<Kbg20DongHo>();
         public List<Kbg20Phien> LichSu { get; set; } = new List<Kbg20Phien>();
     }
+
 
 }

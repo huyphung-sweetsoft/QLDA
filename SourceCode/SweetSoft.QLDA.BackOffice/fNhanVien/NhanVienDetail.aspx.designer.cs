@@ -114,24 +114,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.WebControls.Literal ltrThamNien;
 
         /// <summary>
-        /// ltrTinhTrangCongTac control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrTinhTrangCongTac;
-
-        /// <summary>
-        /// ltrCCCD control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrCCCD;
-
-        /// <summary>
         /// ltrNgaySinh control.
         /// </summary>
         /// <remarks>
@@ -150,6 +132,24 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         protected global::System.Web.UI.WebControls.Literal ltrGioiTinh;
 
         /// <summary>
+        /// ltrTinhThanh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrTinhThanh;
+
+        /// <summary>
+        /// ltrXaPhuong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrXaPhuong;
+
+        /// <summary>
         /// ltrDiaChi control.
         /// </summary>
         /// <remarks>
@@ -157,6 +157,24 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal ltrDiaChi;
+
+        /// <summary>
+        /// boxDiaChiDayDu control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl boxDiaChiDayDu;
+
+        /// <summary>
+        /// ltrDiaChiDayDu control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrDiaChiDayDu;
 
         /// <summary>
         /// ltrCountAllProj control.

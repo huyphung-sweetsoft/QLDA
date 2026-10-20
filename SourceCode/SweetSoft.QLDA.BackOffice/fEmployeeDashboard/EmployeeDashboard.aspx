@@ -370,7 +370,7 @@
 .ed-pop-search input { box-sizing:border-box; }
 .ed-project-detail { position:relative; }
 .ed-project-quick { position:relative; }
-.ed-project-quick::after { content:"Đi đến trang Khai báo giờ của dự án";position:absolute;right:0;bottom:calc(100% + 9px);width:220px;padding:8px 11px;border-radius:7px;background:#352344;color:#fff;font-size:11px;font-weight:600;line-height:1.4;text-align:center;white-space:normal;opacity:0;visibility:hidden;transform:translateY(5px);pointer-events:none;transition:opacity .15s ease,transform .15s ease,visibility .15s ease; }
+.ed-project-quick::after { content:"Đi đến trang Tính giờ công việc của dự án";position:absolute;right:0;bottom:calc(100% + 9px);width:220px;padding:8px 11px;border-radius:7px;background:#352344;color:#fff;font-size:11px;font-weight:600;line-height:1.4;text-align:center;white-space:normal;opacity:0;visibility:hidden;transform:translateY(5px);pointer-events:none;transition:opacity .15s ease,transform .15s ease,visibility .15s ease; }
 .ed-project-quick:hover::after,.ed-project-quick:focus-visible::after { opacity:1;visibility:visible;transform:translateY(0); }
 .ed-time-updated { grid-template-columns:1fr;max-height:min(52vh,460px); }
 .ed-time-updated .ed-time-project { padding:14px;min-height:81px; }
@@ -493,7 +493,7 @@
             <div class="ed-stat-val"><asp:Label ID="lblIssueCount" runat="server" /></div><div class="ed-stat-lbl">Vấn đề<br/>được giao</div><i class="fas fa-life-ring ed-stat-ic"></i>
         </asp:LinkButton>
         <div class="ed-header-tools">
-            <button type="button" class="ed-time-entry" onclick="return edOpenDashboardModal('mdlTimeProjects');" aria-label="Chọn dự án để khai báo giờ làm"><span class="ed-time-entry-icon"><i class="far fa-clock" aria-hidden="true"></i></span><span><strong>Khai báo giờ</strong><small>Chọn dự án hôm nay</small></span><i class="fas fa-angle-right ed-time-entry-arrow" aria-hidden="true"></i></button>
+            <button type="button" class="ed-time-entry" onclick="return edOpenDashboardModal('mdlTimeProjects');" aria-label="Chọn dự án để tính giờ công việc"><span class="ed-time-entry-icon"><i class="far fa-clock" aria-hidden="true"></i></span><span><strong>Tính giờ công việc</strong><small>Chọn dự án hôm nay</small></span><i class="fas fa-angle-right ed-time-entry-arrow" aria-hidden="true"></i></button>
             <div class="ed-header-time"><div class="ed-week-label"><i class="far fa-calendar-alt"></i> Tổng quan theo tuần</div><div class="ed-week-title"><asp:Label ID="lblWeekRange" runat="server" /></div><div class="ed-week-actions"><asp:HyperLink ID="lnkPreviousWeek" runat="server" CssClass="ed-week-btn" Text="‹ Trước" /><asp:HyperLink ID="lnkCurrentWeek" runat="server" CssClass="ed-week-btn ed-current" Text="Hiện tại" /><asp:HyperLink ID="lnkNextWeek" runat="server" CssClass="ed-week-btn" Text="Sau ›" /></div></div>
         </div>
     </div>
@@ -535,14 +535,14 @@
 <asp:HiddenField ID="hfEdDailyKey" runat="server" ClientIDMode="Static" />
 <div class="ed-modal-host">
 
-<SweetSoft:ExtraModal ID="mdlTimeProjects" runat="server" Title="Khai báo giờ làm hôm nay" Type="Primary" Width="76%">
+<SweetSoft:ExtraModal ID="mdlTimeProjects" runat="server" Title="Tính giờ công việc hôm nay" Type="Primary" Width="76%">
     <ContentTemplate>
         <div class="ed-time-modal ed-time-dialog-updated">
-            <div class="ed-time-intro"><span class="ed-time-intro-icon"><i class="far fa-clock"></i></span><div><h3>Chọn dự án để bắt đầu khai báo giờ</h3><p>Danh sách chỉ gồm các dự án có công việc của bạn cần thực hiện hôm nay hoặc đã quá hạn.</p></div></div>
-            <div class="ed-pop-filter"><label class="ed-pop-search"><i class="fas fa-search"></i><input type="search" placeholder="Tìm tên hoặc mã dự án..." aria-label="Tìm dự án khai báo giờ" oninput="edFilterTimeProjects(this)" /></label></div>
+            <div class="ed-time-intro"><span class="ed-time-intro-icon"><i class="far fa-clock"></i></span><div><h3>Chọn dự án để tính giờ công việc</h3><p>Danh sách chỉ gồm các dự án có công việc của bạn cần thực hiện hôm nay hoặc đã quá hạn.</p></div></div>
+            <div class="ed-pop-filter"><label class="ed-pop-search"><i class="fas fa-search"></i><input type="search" placeholder="Tìm tên hoặc mã dự án..." aria-label="Tìm dự án tính giờ công việc" oninput="edFilterTimeProjects(this)" /></label></div>
             <div class="ed-time-projects ed-time-updated"><asp:Repeater ID="rptTodayTimeProjects" runat="server"><ItemTemplate>
-                <a class="ed-time-project" href='<%#: Eval("NavigateUrl") %>' title="Đi đến trang Khai báo giờ của dự án này"><span class="ed-time-project-mark"><i class="fas fa-folder-open"></i></span><span class="ed-time-project-content"><small><%#: Eval("Code") %></small><strong><%#: Eval("Name") %></strong><span><i class="fas fa-list-check"></i> <%#: Eval("TaskCount") %> công việc cần làm<asp:PlaceHolder runat="server" Visible='<%# (int)Eval("OverdueCount") > 0 %>'> · <i class="fas fa-exclamation-triangle"></i> <%#: Eval("OverdueCount") %> quá hạn</asp:PlaceHolder></span></span><span class="ed-time-go-label">Khai báo giờ <i class="fas fa-arrow-right"></i></span></a>
-            </ItemTemplate></asp:Repeater><asp:Panel ID="pnlNoTodayTimeProjects" runat="server" CssClass="ed-time-no-project" Visible="false"><i class="far fa-check-circle"></i><strong>Hôm nay chưa có dự án cần khai báo giờ</strong><span>Không có công việc đang trong thời hạn hoặc quá hạn chưa hoàn thành được giao cho bạn.</span></asp:Panel></div>
+                <a class="ed-time-project" href='<%#: Eval("NavigateUrl") %>' title="Đi đến trang Tính giờ công việc của dự án này"><span class="ed-time-project-mark"><i class="fas fa-folder-open"></i></span><span class="ed-time-project-content"><small><%#: Eval("Code") %></small><strong><%#: Eval("Name") %></strong><span><i class="fas fa-list-check"></i> <%#: Eval("TaskCount") %> công việc cần làm<asp:PlaceHolder runat="server" Visible='<%# (int)Eval("OverdueCount") > 0 %>'> · <i class="fas fa-exclamation-triangle"></i> <%#: Eval("OverdueCount") %> quá hạn</asp:PlaceHolder></span></span><span class="ed-time-go-label">Tính giờ <i class="fas fa-arrow-right"></i></span></a>
+            </ItemTemplate></asp:Repeater><asp:Panel ID="pnlNoTodayTimeProjects" runat="server" CssClass="ed-time-no-project" Visible="false"><i class="far fa-check-circle"></i><strong>Hôm nay chưa có dự án cần tính giờ</strong><span>Không có công việc đang trong thời hạn hoặc quá hạn chưa hoàn thành được giao cho bạn.</span></asp:Panel></div>
             <div class="ed-time-search-empty" data-ed-time-empty hidden>Không tìm thấy dự án phù hợp.</div>
             <p class="ed-time-footnote"><i class="fas fa-info-circle"></i> Lời nhắc chỉ tự xuất hiện một lần mỗi ngày trên trình duyệt này. Bạn có thể mở lại bất cứ lúc nào.</p>
         </div>
@@ -574,7 +574,7 @@
                 <section class="ed-project-detail" aria-live="polite" aria-label="Công việc thuộc dự án đang chọn">
                     <div class="ed-project-focus">
                         <div><span class="ed-project-focus-code" data-ed-selected-code>CHỌN DỰ ÁN</span><h3 class="ed-project-focus-name" data-ed-selected-name>Danh sách công việc</h3><div class="ed-project-focus-meta"><span><i class="far fa-calendar-alt"></i> <span data-ed-selected-deadline>—</span></span><span><i class="fas fa-tasks"></i> <span data-ed-selected-summary>—</span></span></div></div>
-                        <a href="#" class="ed-project-quick" data-ed-project-go title="Mở trang Khai báo giờ của dự án này" aria-label="Đi đến trang Khai báo giờ của dự án được chọn"><i class="far fa-clock"></i> Khai báo giờ <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                        <a href="#" class="ed-project-quick" data-ed-project-go title="Mở trang Tính giờ công việc của dự án này" aria-label="Đi đến trang Tính giờ công việc của dự án được chọn"><i class="far fa-clock"></i> Tính giờ công việc <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
                     </div>
                     <div class="ed-project-tasks-top"><h3><i class="fas fa-list-check me-1"></i> Các công việc của dự án</h3><span class="ed-project-task-count" data-ed-project-task-count>0 công việc</span></div>
                     <div class="ed-project-tasks-scroll" data-ed-project-tasks>

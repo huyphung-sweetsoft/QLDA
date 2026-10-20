@@ -14,6 +14,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
     public partial class CtrlFastReviewTask : BaseAdminUserControl
     {
         public event EventHandler ActionCompleted;
+        // Chi duoc gan boi host KhaiBaoGio 2.0; CtrlTask goc van chay y nhu cu.
+        public Action<Guid, Action> LuuDuyetQuaKbg20 { get; set; }
 
         /// <summary>
         /// Quyền PM được truyền từ CtrlTask theo quyền thực tế của trang.
@@ -283,6 +285,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ? "<span class=\"fr-badge fr-badge-late\"><i class=\"fas fa-times-circle me-1\"></i>Yêu cầu hoàn thành bị từ chối</span>"
                 : "<span class=\"fr-badge fr-badge-ontime\"><i class=\"fas fa-check-circle me-1\"></i>Yêu cầu hoàn thành đã được duyệt</span>";
 
+            // Giao diện thông báo cũ vẫn vào popup TaskList; cung cấp đường đi nhanh đến tab Khai báo giờ.
+            if (!isRejected && task != null && Kbg20TichHopTask.DuocKichHoat)
+            {
+                string khaiBaoUrl = "/fKhaiBaoGio/KhaiBaoGio.aspx?projectId=" + Convert.ToString(task.IdDuAn)
+                    + "&reconcile=1&taskId=" + task.IdCongViec.ToString("D");
+                ltrCompletionDecisionBadge.Text += "<div style=\"margin-top:12px\"><a class=\"btn btn-primary btn-sm\" href=\""
+                    + HttpUtility.HtmlAttributeEncode(khaiBaoUrl)
+                    + "\"><i class=\"far fa-clock me-1\"></i>Khai báo giờ thủ công</a></div>";
+            }
             ltrCompletionResultTaskName.Text = HttpUtility.HtmlEncode(taskName);
             ltrCompletionResultDate.Text = notification.NgayTao.ToString("dd/MM/yyyy HH:mm");
             ltrCompletionResultBody.Text = HttpUtility.HtmlEncode(notification.NoiDung ?? string.Empty);
@@ -335,6 +346,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     + (task.NgayKetThuc.HasValue ? task.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "Không có");
             }
 
+            if (approved && Kbg20TichHopTask.DuocKichHoat)
+                body += "\r\nBạn có thể vào trang Tính giờ công việc > Khai báo giờ thủ công để nhập hoặc sửa số giờ tự khai của mình.";
+
             foreach (Guid recipientId in recipientIds.Where(x => x != Guid.Empty).Distinct())
             {
                 try
@@ -346,7 +360,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         loaiThongBao: ThongBaoTypes.CongViec,
                         idCongViec: task.IdCongViec,
                         idDuAn: task.IdDuAn,
-                        duongDanLienKet: "CtrlTaskCompletionResult");
+                        duongDanLienKet: (approved && Kbg20TichHopTask.DuocKichHoat)
+                            ? "/fKhaiBaoGio/KhaiBaoGio.aspx?projectId=" + Convert.ToString(task.IdDuAn)
+                              + "&reconcile=1&taskId=" + task.IdCongViec.ToString("D")
+                            : "CtrlTaskCompletionResult");
                 }
                 catch (Exception ex)
                 {
@@ -403,9 +420,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     task.LyDoTre = null;
 
                 task.NgayCapNhat = DateTime.Now;
-                task.Save();
-
-                UpdateParentTask(task.IdCongViecCha);
+                Action luuNghiepVuTask = () =>
+                {
+                    task.Save();
+                    UpdateParentTask(task.IdCongViecCha);
+                };
+                if (LuuDuyetQuaKbg20 != null)
+                    LuuDuyetQuaKbg20(task.IdCongViec, luuNghiepVuTask);
+                else
+                    Kbg20TichHopTask.DuyetHoanThanh(ProjectId,task.IdCongViec,luuNghiepVuTask);
                 NotifyAssignedEmployeesOfDecision(task, approved: true, isLate: isLate, rejectionReason: null);
 
                 ShowNotify(
