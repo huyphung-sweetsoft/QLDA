@@ -370,7 +370,7 @@
 .ed-pop-search input { box-sizing:border-box; }
 .ed-project-detail { position:relative; }
 .ed-project-quick { position:relative; }
-.ed-project-quick::after { content:"Đi đến trang Khai báo giờ của dự án";position:absolute;right:0;bottom:calc(100% + 9px);width:220px;padding:8px 11px;border-radius:7px;background:#352344;color:#fff;font-size:11px;font-weight:600;line-height:1.4;text-align:center;white-space:normal;opacity:0;visibility:hidden;transform:translateY(5px);pointer-events:none;transition:opacity .15s ease,transform .15s ease,visibility .15s ease; }
+.ed-project-quick::after { content:"Đi đến trang Tính giờ công việc của dự án";position:absolute;right:0;bottom:calc(100% + 9px);width:220px;padding:8px 11px;border-radius:7px;background:#352344;color:#fff;font-size:11px;font-weight:600;line-height:1.4;text-align:center;white-space:normal;opacity:0;visibility:hidden;transform:translateY(5px);pointer-events:none;transition:opacity .15s ease,transform .15s ease,visibility .15s ease; }
 .ed-project-quick:hover::after,.ed-project-quick:focus-visible::after { opacity:1;visibility:visible;transform:translateY(0); }
 .ed-time-updated { grid-template-columns:1fr;max-height:min(52vh,460px); }
 .ed-time-updated .ed-time-project { padding:14px;min-height:81px; }

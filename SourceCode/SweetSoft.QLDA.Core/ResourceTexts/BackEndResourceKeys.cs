@@ -424,6 +424,7 @@ namespace SweetSoft.QLDA.Core.ResourceTexts
         public const string END = "END";
         public const string PROVINCE_CITY = "PROVINCE_CITY";
         public const string WARD_COMMUNE = "WARD_COMMUNE";
+        public const string TASK_TIME_TRACKING = "TASK_TIME_TRACKING";
         ///---------------------------------------------------
         // Class
         public const string CLASS = "CLASS";

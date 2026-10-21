@@ -10,6 +10,10 @@ using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Web;
 
 namespace SweetSoft.QLDA.BackOffice.fNhanVien
 {
@@ -18,7 +22,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.LichBieu;
         public override bool IsLogin => true;
 
-        // Biến lưu ID người đang bị soi lịch
         private Guid TargetUserId
         {
             get => ViewState["TargetUserId"] != null ? (Guid)ViewState["TargetUserId"] : Guid.Empty;
@@ -29,174 +32,137 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         {
             if (!IsPostBack)
             {
-                // [ĐÃ SỬA]: Gỡ bỏ check quyền (!this.IsView) mù quáng ở đây.
-                // Chuyển việc xét duyệt vào hàm InitSecurityAndTargetUser để nhân viên được tự xem lịch mình.
                 if (!InitSecurityAndTargetUser())
                 {
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error403), true);
                     return;
                 }
-
-                // Mặc định load ngày hôm nay, chế độ "Tháng"
-                hfCurrentDate.Value = DateTime.Today.ToString("yyyy-MM-dd");
+                hfCurrentDate.Value = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 hfViewMode.Value = "month";
-
                 LoadCalendarData();
             }
         }
 
-        #region 1. Xử lý Bảo mật & Phân quyền
+        #region 1. Bảo mật & phân quyền (giữ nguyên quy tắc đang sử dụng)
         private bool InitSecurityAndTargetUser()
         {
             Guid loggedInUser = SweetContext.Current.UserId;
             string rawQueryId = Request.QueryString["Id"];
             bool isFromProfile = Request.QueryString["from"] == "profile";
-            bool hasParentDetail = !string.IsNullOrEmpty(rawQueryId); // Cờ kiểm tra xem có đi qua trang Chi tiết không
-
+            bool hasParentDetail = !string.IsNullOrEmpty(rawQueryId);
             string rollbackUrl = "";
 
             if (hasParentDetail)
             {
-                // Giải mã chuỗi bảo mật về lại GUID trần
                 string plainId = SecurityUtilities.UnprotectUrlParameter(rawQueryId);
-
                 if (Guid.TryParse(plainId, out Guid queryId))
                 {
                     TargetUserId = queryId;
-
                     if (queryId == loggedInUser)
                     {
                         litTitle.Text = GetResourceText(BackEndResourceKeys.MY_PERSONAL_SCHEDULE);
-                        // [HỢP LỆ]: Tự xem mình thì pass luôn, không cần check quyền!
                     }
                     else
                     {
-                        // [CHẶN]: Nếu xem lịch người khác thì mới bắt đầu lôi quyền Module ra check
-                        bool hasViewRight = this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien);
-                        if (!hasViewRight)
-                        {
-                            return false; // Báo hiệu cho Page_Load đuổi ra 403
-                        }
-
-                        TargetUserId = queryId;
-
+                        if (!this.IsUserRight(ActionKeys.View, ModuleKeys.NhanVien)) return false;
                         AspnetUser targetUser = UserManager.Instance.GetUserById(queryId);
-                        litTitle.Text = targetUser != null ?
-                            string.Format(GetResourceText(BackEndResourceKeys.SCHEDULE_OF_USER), targetUser.DisplayName) :
-                            GetResourceText(BackEndResourceKeys.EMPLOYEE_SCHEDULE);
+                        litTitle.Text = targetUser != null
+                            ? string.Format(GetResourceText(BackEndResourceKeys.SCHEDULE_OF_USER), targetUser.DisplayName)
+                            : GetResourceText(BackEndResourceKeys.EMPLOYEE_SCHEDULE);
                     }
-
-                    // Đã đi qua trang Chi tiết thì Lùi 1 bước PHẢI LÀ trang Chi tiết
                     rollbackUrl = RewriteURLHelper.ViewDetailEmp(queryId);
                 }
                 else
                 {
-                    // Lỗi format ID thì đuổi ra 404
                     Response.Redirect(GetRelativeClientPath(RewriteURLHelper.Error404), true);
                     return true;
                 }
             }
             else
             {
-                // Vào thẳng từ Menu -> Tự xem lịch mình, không có trang cha
                 TargetUserId = loggedInUser;
                 litTitle.Text = GetResourceText(BackEndResourceKeys.MY_PERSONAL_SCHEDULE);
             }
 
-            // --- BUILD BREADCRUMB ---
             Navigation1.MainTitle = GetResourceText(BackEndResourceKeys.PERSONAL_SCHEDULE);
             var navLinks = new Dictionary<string, string>();
-
             if (hasParentDetail)
             {
                 if (isFromProfile)
-                {
                     navLinks.Add(GetRelativeClientPath(RewriteURLHelper.Profile), GetResourceText(BackEndResourceKeys.PROFILE));
-                }
                 else
-                {
                     navLinks.Add(GetRelativeClientPath(RewriteURLHelper.NhanVien), GetResourceText(BackEndResourceKeys.EMPLOYEE_LIST));
-                }
 
                 if (isFromProfile && !rollbackUrl.Contains("from=profile"))
-                {
                     rollbackUrl += (rollbackUrl.Contains("?") ? "&" : "?") + "from=profile";
-                }
                 navLinks.Add(GetRelativeClientPath(rollbackUrl), GetResourceText(BackEndResourceKeys.EMPLOYEE_DETAIL));
             }
-
             Navigation1.keyValuePairUrls = navLinks;
-
-            return true; // Pass ải an ninh thành công!
+            return true;
         }
         #endregion
 
-        #region 2. Động cơ tính toán Ngày & Render
+        #region 2. Tính kỳ lịch và tải dữ liệu
+        // CtrlMeet dùng 5 hoặc 6 hàng tùy tháng; lịch cá nhân áp dụng cách tính tương tự.
+        private void GetCalendarPeriod(out DateTime refDate, out DateTime startDate, out DateTime endDate)
+        {
+            if (!DateTime.TryParseExact(hfCurrentDate.Value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out refDate)
+                || refDate.Year < 2000 || refDate.Year > 2100)
+                refDate = DateTime.Today;
+
+            bool weekView = hfViewMode.Value == "week";
+            DateTime first = weekView ? refDate.Date : new DateTime(refDate.Year, refDate.Month, 1);
+            int offset = ((int)first.DayOfWeek + 6) % 7;
+            startDate = first.AddDays(-offset);
+            int days = weekView ? 7 : Math.Max(35, ((offset + DateTime.DaysInMonth(refDate.Year, refDate.Month) + 6) / 7) * 7);
+            endDate = startDate.AddDays(days - 1); // Manager đang nhận hai đầu mốc bao gồm ngày cuối.
+        }
+
         private void LoadCalendarData()
         {
-            if (!DateTime.TryParseExact(hfCurrentDate.Value, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out DateTime refDate))
+            GetCalendarPeriod(out DateTime refDate, out DateTime startDate, out DateTime endDate);
+            hfCurrentDate.Value = refDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            bool weekView = hfViewMode.Value == "week";
+            if (weekView)
             {
-                refDate = DateTime.Today;
-            }
-            DateTime startDate, endDate;
-
-            if (hfViewMode.Value == "month")
-            {
-                DateTime firstDayOfMonth = new DateTime(refDate.Year, refDate.Month, 1);
-                int diffStart = (int)firstDayOfMonth.DayOfWeek - (int)DayOfWeek.Monday;
-                if (diffStart < 0) diffStart += 7;
-                startDate = firstDayOfMonth.AddDays(-diffStart);
-
-                endDate = startDate.AddDays(41);
-                litDateRange.Text = $"{GetResourceText(BackEndResourceKeys.MONTH)} {refDate.Month}/{refDate.Year}";
-                btnViewMonth.CssClass = "btn-cal active";
-                btnViewWeek.CssClass = "btn-cal";
+                litDateRange.Text = $"{GetResourceText(BackEndResourceKeys.WEEK)} {GetResourceText(BackEndResourceKeys.FROM)} {startDate:dd/MM} – {endDate:dd/MM/yyyy}";
+                btnViewWeek.CssClass = "personal-cal-btn active";
+                btnViewMonth.CssClass = "personal-cal-btn";
             }
             else
             {
-                int diffStart = (int)refDate.DayOfWeek - (int)DayOfWeek.Monday;
-                if (diffStart < 0) diffStart += 7;
-                startDate = refDate.AddDays(-diffStart);
-                endDate = startDate.AddDays(6);
-                string tuKhoaWeek = GetResourceText(BackEndResourceKeys.WEEK);
-                string tuKhoaFrom = GetResourceText(BackEndResourceKeys.FROM);
-                litDateRange.Text = $"{tuKhoaWeek} {tuKhoaFrom} {startDate:dd/MM} - {endDate:dd/MM/yyyy}";
-                btnViewWeek.CssClass = "btn-cal active";
-                btnViewMonth.CssClass = "btn-cal";
+                litDateRange.Text = $"{GetResourceText(BackEndResourceKeys.MONTH)} {refDate:MM/yyyy}";
+                btnViewMonth.CssClass = "personal-cal-btn active";
+                btnViewWeek.CssClass = "personal-cal-btn";
             }
-
-            var data = LichTrinhManager.Instance.LayLichTrinhNhanVien(TargetUserId, startDate, endDate);
+            var data = LichTrinhManager.Instance.LayLichTrinhNhanVienCoCuocHop(TargetUserId, startDate, endDate);
             hfScheduleDataJSON.Value = JsonConvert.SerializeObject(data);
         }
         #endregion
 
-        #region 3. Sự kiện Nút bấm (Postback ngầm qua UpdatePanel)
+        #region 3. Điều hướng (UpdatePanel)
         protected void btnPrev_Click(object sender, EventArgs e)
         {
-            DateTime curr = DateTime.Parse(hfCurrentDate.Value);
-            hfCurrentDate.Value = hfViewMode.Value == "month" ? curr.AddMonths(-1).ToString("yyyy-MM-dd") : curr.AddDays(-7).ToString("yyyy-MM-dd");
+            GetCalendarPeriod(out DateTime current, out DateTime start, out DateTime end);
+            hfCurrentDate.Value = (hfViewMode.Value == "week" ? current.AddDays(-7) : current.AddMonths(-1)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             LoadCalendarData();
         }
-
         protected void btnNext_Click(object sender, EventArgs e)
         {
-            DateTime curr = DateTime.Parse(hfCurrentDate.Value);
-            hfCurrentDate.Value = hfViewMode.Value == "month" ? curr.AddMonths(1).ToString("yyyy-MM-dd") : curr.AddDays(7).ToString("yyyy-MM-dd");
+            GetCalendarPeriod(out DateTime current, out DateTime start, out DateTime end);
+            hfCurrentDate.Value = (hfViewMode.Value == "week" ? current.AddDays(7) : current.AddMonths(1)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             LoadCalendarData();
         }
-
         protected void btnToday_Click(object sender, EventArgs e)
         {
-            hfCurrentDate.Value = DateTime.Today.ToString("yyyy-MM-dd");
+            hfCurrentDate.Value = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             LoadCalendarData();
         }
-
         protected void btnViewMonth_Click(object sender, EventArgs e)
         {
             hfViewMode.Value = "month";
             LoadCalendarData();
         }
-
         protected void btnViewWeek_Click(object sender, EventArgs e)
         {
             hfViewMode.Value = "week";
@@ -204,80 +170,127 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
         }
         #endregion
 
-        #region 4. Xử lý mở Modal Chi tiết bằng C# (Chuẩn ExtraModal)
+        #region 4. Modal chi tiết ngày (ExtraModal)
+        private static string Esc(string value) => HttpUtility.HtmlEncode(value ?? string.Empty);
+
         protected void btnOpenModalDay_Click(object sender, EventArgs e)
         {
-            // 1. Đọc index từ JS gửi lên
-            if (!int.TryParse(hfSelectedDateIndex.Value, out int dataIndex)) return;
+            if (!int.TryParse(hfSelectedDateIndex.Value, out int index) || index < 0 || TargetUserId == Guid.Empty) return;
+            // Tải lại dữ liệu phía server, không dùng JSON HiddenField mà trình duyệt có thể sửa.
+            GetCalendarPeriod(out DateTime refDate, out DateTime start, out DateTime end);
+            var days = LichTrinhManager.Instance.LayLichTrinhNhanVienCoCuocHop(TargetUserId, start, end);
+            if (days == null) return;
+            List<ThongTinLichNgay> dayList = days.ToList();
+            if (index >= dayList.Count) return;
+            ThongTinLichNgay day = dayList[index];
+            if (day == null || !Convert.ToBoolean(day.ChoPhepClick) || day.Ngay.Date < start || day.Ngay.Date > end) return;
 
-            // 2. Phục hồi cục data JSON đang chứa danh sách lịch
-            string jsonStr = hfScheduleDataJSON.Value;
-            if (string.IsNullOrEmpty(jsonStr)) return;
+            mdlDayDetail.Title = GetResourceText(BackEndResourceKeys.SCHEDULE_DETAILS) + " - " + day.Ngay.ToString("dd/MM/yyyy");
+            var html = new StringBuilder(2500);
+            string status = day.TrangThaiLich ?? "free";
 
-            var scheduleList = JsonConvert.DeserializeObject<List<ThongTinLichNgay>>(jsonStr);
-
-            if (dataIndex < 0 || dataIndex >= scheduleList.Count) return;
-            var dayData = scheduleList[dataIndex];
-
-            // 3. Set Tiêu đề cho Modal
-            string dateStr = dayData.Ngay.ToString("dd/MM/yyyy");
-            mdlDayDetail.Title = $"{GetResourceText(BackEndResourceKeys.SCHEDULE_DETAILS)} - {dateStr}";
-
-            // 4. Render nội dung HTML
-            string htmlContent = "";
-
-            if (dayData.TrangThaiLich == "holiday")
+            if (status == "holiday")
             {
-                string holidayTitle = GetResourceText(BackEndResourceKeys.HOLIDAY) ?? "NGÀY NGHỈ LỄ";
-                htmlContent = $@"
-                    <div style='background-color: #fef3c7; color: #b45309; padding: 20px; border-radius: 8px; border-left: 5px solid #f59e0b; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>
-                        <h4 style='margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase;'>🎈 {holidayTitle}</h4>
-                        <p style='margin: 0; font-size: 16px; font-weight: 600;'>{dayData.TenNgoaiLe}</p>
-                    </div>";
+                html.Append("<div class='personal-day-notice is-holiday'><i class='fas fa-umbrella-beach'></i><span><strong>")
+                    .Append(Esc(GetResourceText(BackEndResourceKeys.HOLIDAY) ?? "Ngày nghỉ lễ"))
+                    .Append("</strong><div>").Append(Esc(day.TenNgoaiLe)).Append("</div></span></div>");
             }
-            else if (dayData.TrangThaiLich == "busy" && dayData.DanhSachCongViec != null)
+
+            List<TomTatCongViec> tasks = day.DanhSachCongViec != null
+                ? day.DanhSachCongViec.Where(t => t != null).ToList()
+                : new List<TomTatCongViec>();
+            List<TomTatCuocHop> meetings = day.DanhSachCuocHop != null
+                ? day.DanhSachCuocHop.Where(m => m != null)
+                    .OrderBy(m => m.ThoiGianBatDau).ToList()
+                : new List<TomTatCuocHop>();
+            if (tasks.Count == 0 && meetings.Count == 0)
             {
-                // Gom nhóm Task theo Dự án
-                var projGroups = new Dictionary<string, List<TomTatCongViec>>();
-                string otherProjectText = GetResourceText(BackEndResourceKeys.OTHER_PROJECT_UNIDENTIFIED) ?? "Dự án khác";
-
-                foreach (var task in dayData.DanhSachCongViec)
+                if (status == "weekend")
+                    html.Append("<div class='personal-day-notice is-weekend'><i class='fas fa-mug-hot'></i><span>Ngày nghỉ, không có công việc được liệt kê.</span></div>");
+                else if (status == "busy")
+                    html.Append("<div class='personal-day-notice'><i class='far fa-calendar-check'></i><span>Ngày có lịch làm việc, chưa có công việc chi tiết.</span></div>");
+                else if (status != "holiday")
+                    html.Append("<div class='personal-day-notice'><i class='far fa-calendar'></i><span>Chưa có công việc trong ngày này.</span></div>");
+            }
+            if (tasks.Count > 0)
+            {
+                var groups = tasks.GroupBy(t => string.IsNullOrWhiteSpace(t.TenDuAn)
+                    ? (GetResourceText(BackEndResourceKeys.OTHER_PROJECT_UNIDENTIFIED) ?? "Dự án khác")
+                    : t.TenDuAn).ToList();
+                html.Append("<div class='personal-day-intro'><span class='personal-day-intro-icon'><i class='fas fa-briefcase'></i></span><span><strong class='personal-day-intro-title'>")
+                    .Append(tasks.Count).Append(" công việc trong ngày</strong><small class='personal-day-intro-subtitle'>Thuộc ")
+                    .Append(groups.Count).Append(" dự án</small></span></div>");
+                foreach (var group in groups)
                 {
-                    string pName = string.IsNullOrEmpty(task.TenDuAn) ? otherProjectText : task.TenDuAn;
-                    if (!projGroups.ContainsKey(pName))
-                        projGroups[pName] = new List<TomTatCongViec>();
-
-                    projGroups[pName].Add(task);
-                }
-
-                // Render HTML cho danh sách công việc
-                foreach (var proj in projGroups)
-                {
-                    htmlContent += $@"
-                        <div style='background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); overflow: hidden;'>
-                            <div style='background: linear-gradient(to right, #eff6ff, #ffffff); border-bottom: 1px solid #e2e8f0; padding: 10px 15px; color: #1e3a8a; font-weight: 800; font-size: 14px;'>
-                                <i class='fas fa-folder-open me-2'></i> {proj.Key}
-                            </div>
-                            <div style='padding: 10px 15px;'>";
-
-                    foreach (var task in proj.Value)
+                    html.Append("<section class='personal-day-project'><div class='personal-day-project-head'><span><i class='fas fa-folder-open me-1'></i> ")
+                        .Append(Esc(group.Key)).Append("</span><strong class='personal-day-project-count'>")
+                        .Append(group.Count()).Append(" công việc</strong></div><div>");
+                    foreach (var task in group)
                     {
-                        htmlContent += $@"
-                                <div style='padding: 8px 0; border-bottom: 1px dashed #cbd5e1; font-size: 13px; color: #334155; display: flex; align-items: flex-start; gap: 8px;'>
-                                    <span style='background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; white-space: nowrap;'>
-                                        {task.MaCongViec}
-                                    </span>
-                                    <span style='font-weight: 600; line-height: 1.4;'>{task.TenCongViec}</span>
-                                </div>";
+                        html.Append("<div class='personal-day-task'>");
+                        if (!string.IsNullOrWhiteSpace(task.MaCongViec))
+                            html.Append("<span class='personal-day-task-code'>").Append(Esc(task.MaCongViec)).Append("</span>");
+                        html.Append("<span class='personal-day-task-name'>").Append(Esc(task.TenCongViec)).Append("</span></div>");
                     }
-                    htmlContent += "</div></div>";
+                    html.Append("</div></section>");
                 }
             }
-
-            // Dán HTML vào Literal
-            litModalContent.Text = htmlContent;
-
-            // 5. Cập nhật giao diện và gọi lệnh Mở Modal chuẩn
+            // Nhất quán với lịch tuần: công việc trước, lịch họp sau.
+            if (meetings.Count > 0)
+            {
+                html.Append("<div class='personal-day-meeting-head'><i class='fas fa-calendar-alt'></i> ")
+                    .Append(meetings.Count).Append(" cuộc họp</div>");
+                foreach (TomTatCuocHop meeting in meetings)
+                {
+                    DateTime now = DateTime.Now;
+                    byte meetingStatus = (byte)(now >= meeting.ThoiGianKetThuc ? 3
+                        : now >= meeting.ThoiGianBatDau ? 2
+                        : meeting.ThoiGianBatDau <= now.AddMinutes(15) ? 1 : 0);
+                    string[] statusLabels = { "Đã lên lịch", "Sắp diễn ra", "Đang diễn ra", "Đã kết thúc" };
+                    int idx = meetingStatus <= 3 ? meetingStatus : (byte)0;
+                    DateTime from = meeting.ThoiGianBatDau > day.Ngay.Date
+                        ? meeting.ThoiGianBatDau : day.Ngay.Date;
+                    DateTime until = meeting.ThoiGianKetThuc < day.Ngay.Date.AddDays(1)
+                        ? meeting.ThoiGianKetThuc : day.Ngay.Date.AddDays(1);
+                    string endTime = until == day.Ngay.Date.AddDays(1)
+                        ? "24:00" : until.ToString("HH:mm");
+                    html.Append("<div class='personal-day-meeting is-status-").Append(idx).Append("'>")
+                        .Append("<div class='personal-day-meeting-top'><strong><i class='far fa-clock'></i> ")
+                        .Append(from.ToString("HH:mm")).Append("–").Append(endTime)
+                        .Append("</strong><span class='personal-day-meeting-status'>")
+                        .Append(statusLabels[idx]);
+                    // Giữ tông tím; chỉ báo họp đang diễn ra bằng chấm pulse ngay cạnh trạng thái.
+                    if (idx == 2)
+                        html.Append("<i class='personal-meeting-pulse' aria-hidden='true'></i>");
+                    html.Append("</span></div>")
+                        .Append("<div class='personal-day-meeting-name'>");
+                    if (meeting.LaChuTri)
+                        html.Append("<i class='fas fa-crown personal-meeting-host' title='Người chủ trì'></i> ");
+                    html.Append(Esc(meeting.TenCuocHop)).Append("</div>")
+                        .Append("<div class='personal-day-meeting-meta'><i class='fas fa-folder-open'></i> ")
+                        .Append(Esc(string.IsNullOrWhiteSpace(meeting.TenDuAn) ? "Dự án khác" : meeting.TenDuAn))
+                        .Append("</div>")
+                        .Append("<div class='personal-day-meeting-meta'><i class='fas fa-user-tie'></i> ")
+                        .Append(Esc(meeting.LaChuTri ? "Chủ trì cuộc họp" :
+                            string.IsNullOrWhiteSpace(meeting.TenNguoiChuTri) ? "Chưa rõ người chủ trì" : meeting.TenNguoiChuTri))
+                        .Append("</div>");
+                    html.Append("<div class='personal-day-meeting-meta'><i class='fas ")
+                        .Append(meeting.LaHopOnline ? "fa-video" : "fa-map-marker-alt")
+                        .Append("'></i> ")
+                        .Append(Esc(string.IsNullOrWhiteSpace(meeting.DiaDiemHop)
+                            ? "Chưa có địa điểm" : meeting.DiaDiemHop)).Append("</div>");
+                    Uri onlineUrl;
+                    if (meeting.LaHopOnline && Uri.TryCreate(meeting.DiaDiemHop, UriKind.Absolute, out onlineUrl)
+                        && (onlineUrl.Scheme == Uri.UriSchemeHttp || onlineUrl.Scheme == Uri.UriSchemeHttps))
+                    {
+                        html.Append("<a class='personal-day-join' target='_blank' rel='noopener noreferrer' href='")
+                            .Append(HttpUtility.HtmlAttributeEncode(onlineUrl.AbsoluteUri))
+                            .Append("'><i class='fas fa-external-link-alt'></i> Mở phòng họp</a>");
+                    }
+                    html.Append("</div>");
+                }
+            }
+            litModalContent.Text = html.ToString();
             upModal.Update();
             mdlDayDetail.OpenModal(true);
         }

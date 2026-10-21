@@ -5,6 +5,7 @@ using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 
@@ -13,14 +14,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
     public partial class CtrlFastCompleteTask : BaseAdminUserControl
     {
         public event EventHandler ActionCompleted;
+        // TaskList khong gan hook nay => hanh vi goc cua partner duoc giu nguyen.
+        public Action<Guid, bool, Action> LuuHoanThanhQuaKbg20 { get; set; }
+        public Action<TblCongViec, bool> SauKhiHoanThanhKbg20 { get; set; }
+        public Guid? IdDuAnNguonKbg20 { get; set; }
+        public bool? LaPmNguonKbg20 { get; set; }
 
         // Dùng trực tiếp hàm phân quyền PM mà dự án đã có.
-        private bool IsPM => this.CURRENT_PAGE.IsPM;
+        private bool IsPM => LaPmNguonKbg20 ?? this.CURRENT_PAGE.IsPM;
 
         private Guid ProjectId
         {
             get
             {
+                if (IdDuAnNguonKbg20.HasValue && IdDuAnNguonKbg20.Value != Guid.Empty)
+                    return IdDuAnNguonKbg20.Value;
                 if (this.Page is BaseAdminPage basePage &&
                     basePage.CurrentProjectId != Guid.Empty)
                 {
@@ -194,6 +202,19 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 }
 
                 // Lưu ngày nhân viên báo hoàn thành; NgayKetThuc vẫn là ngày dự kiến.
+                // V2 khi bat dong bo: nguoi gui phai la nhan vien duoc giao truc tiep.
+                // Khong thay doi quy tac PM xac nhan truc tiep cua partner.
+                if (Kbg20TichHopTask.DuocKichHoat && !IsPM)
+                {
+                    var me = SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current == null
+                        ? null : SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.User;
+                    if (me == null || !TaskManager.Instance.GetAssignedNhanVienIds(task.IdCongViec).Contains(me.UserId))
+                    {
+                        ShowNotify("Bạn không còn được phân công trực tiếp vào công việc này.", MSGType.Warning);
+                        return;
+                    }
+                }
+
                 task.NgayHoanThanhThucTe = actualDate;
                 task.LyDoTre = isLate ? reason : null;
 
@@ -211,12 +232,31 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 }
 
                 task.NgayCapNhat = DateTime.Now;
-                task.Save();
+                // Chi gom Save + rollup cua partner thanh mot Action, khong sua kiem tra tre han.
+                Action luuNghiepVuTask = () =>
+                {
+                    task.Save();
+                    if (IsPM) UpdateParentTask(task.IdCongViecCha);
+                };
+                if (LuuHoanThanhQuaKbg20 != null)
+                    LuuHoanThanhQuaKbg20(task.IdCongViec, IsPM, luuNghiepVuTask);
+                else
+                    Kbg20TichHopTask.LuuHoanThanh(ProjectId,task.IdCongViec,IsPM,luuNghiepVuTask);
+                if (SauKhiHoanThanhKbg20 != null)
+                    SauKhiHoanThanhKbg20(task, IsPM);
+                else if (Kbg20TichHopTask.DuocKichHoat)
+                {
+                    try
+                    {
+                        var nguoi = SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current.User;
+                        if (nguoi != null)
+                            Kbg20TichHopTask.PhatThongBaoNhom(ProjectId, task.IdCongViec, nguoi.UserId, IsPM);
+                    }
+                    catch (Exception ex) { System.Diagnostics.Trace.TraceError("KBG20 notify: " + ex); }
+                }
 
                 if (IsPM)
                 {
-                    UpdateParentTask(task.IdCongViecCha);
-
                     ShowNotify(
                         isLate
                             ? "Đã xác nhận hoàn thành công việc trễ hạn!"

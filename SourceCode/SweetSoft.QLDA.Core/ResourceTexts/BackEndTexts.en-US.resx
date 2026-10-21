@@ -3505,4 +3505,7 @@
   <data name="PROJECT_TEMPLATE_LIST" xml:space="preserve">
     <value>Project template list</value>
   </data>
+  <data name="TASK_TIME_TRACKING" xml:space="preserve">
+    <value>Task time tracking</value>
+  </data>
 </root>

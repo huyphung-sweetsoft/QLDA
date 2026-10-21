@@ -1,4 +1,4 @@
-//-----------------------PROGRAMER LOGS---------------------------
+﻿//-----------------------PROGRAMER LOGS---------------------------
 
 using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Utils;
@@ -99,6 +99,14 @@ namespace SweetSoft.QLDA.BackOffice.Common
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Document/{SecurityUtilities.ProtectUrlParameter(documentId.ToString())}";
         }
+        /// <summary>
+        /// Duong dan tinh gio trong mot du an (ProjectId duoc bao ve nhu cac tab du an khac).
+        /// </summary>
+        public static string ProjectTimeTracking(Guid projectId)
+        {
+            return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/TimeTracking";
+        }
+
         public static string ProjectTasks(Guid projectId)
         {
             return $"/Project/{SecurityUtilities.ProtectUrlParameter(projectId.ToString())}/Tasks";

@@ -57,8 +57,10 @@ namespace SweetSoft.QLDA.BackOffice
             txtConfirmPassword.PlaceHolder = txtFullName.PlaceHolder
                 = txtEmail.PlaceHolder = txtNewPassword.PlaceHolder
                 = txtOldPassword.PlaceHolder = txtPhone.PlaceHolder
-                = txtUserName.PlaceHolder = txtCCCD.PlaceHolder
+                = txtUserName.PlaceHolder
                 = txtDiaChi.PlaceHolder = GetResourceText(BackEndResourceKeys.ENTER_THE_VALUE);
+
+            ddlTinhThanh.PlaceHolder = ddlXaPhuong.PlaceHolder = GetResourceText(BackEndResourceKeys.SELECT_VALUE);
 
             lbtChangePassword.ToolTip = lbtChangePassword.Text = GetResourceText(BackEndResourceKeys.CONFIRM);
             lbtUpdate.ToolTip = lbtUpdate.Text = GetResourceText(BackEndResourceKeys.UPDATE);
@@ -112,8 +114,23 @@ namespace SweetSoft.QLDA.BackOffice
                 fbImage.IsMultiple = false;
                 fbImage.LoadFile(TempAvatarSessionId, FileUploadTypes.UserAvatar);
 
-                // TAB 2: THÔNG TIN CÁ NHÂN
-                txtCCCD.Text = user.IdCCCD;
+                // TAB 2: THÔNG TIN CÁ NHÂN - đồng bộ với CtrlNhanVienPopup
+                // Chỉ tải danh mục khi trang render lần đầu; các postback giữ lựa chọn qua ViewState.
+                if (user.LaNhanVien)
+                {
+                    ControlHelpers helper = new ControlHelpers();
+                    helper.BindTinhThanh(ddlTinhThanh);
+                    ddlTinhThanh.ClearSelection();
+                    helper.BindXaPhuong(ddlXaPhuong, string.Empty);
+
+                    if (!string.IsNullOrWhiteSpace(user.MaTinh))
+                    {
+                        ddlTinhThanh.SelectedValue = user.MaTinh;
+                        helper.BindXaPhuong(ddlXaPhuong, user.MaTinh);
+                        if (!string.IsNullOrWhiteSpace(user.MaXa))
+                            ddlXaPhuong.SelectedValue = user.MaXa;
+                    }
+                }
                 txtDiaChi.Text = user.DiaChi;
 
                 if (user.NgaySinh.HasValue)
@@ -264,8 +281,15 @@ namespace SweetSoft.QLDA.BackOffice
         }
 
         // ==========================================
-        // CẬP NHẬT TAB 2: THÔNG TIN CÁ NHÂN
+        // TAB 2: ĐỊA CHỈ - CHỌN TỈNH ĐỂ NẠP XÃ/PHƯỜNG
         // ==========================================
+        protected void ddlTinhThanh_SelectedValueChanged(object sender, EventArgs e)
+        {
+            string maTinh = ddlTinhThanh.SelectedValue;
+            new ControlHelpers().BindXaPhuong(ddlXaPhuong, maTinh ?? string.Empty);
+            // upnlPersonalInfo tự cập nhật vì dropdown nằm trong UpdatePanel.
+        }
+
         // ==========================================
         // CẬP NHẬT TAB 2: THÔNG TIN CÁ NHÂN
         // ==========================================
@@ -286,21 +310,13 @@ namespace SweetSoft.QLDA.BackOffice
                 AspnetUser user = userManager.GetUserById(SweetContext.Current.UserId);
                 if (user == null) return;
 
-                // Kiểm tra trùng CCCD
-                if (user.LaNhanVien && !string.IsNullOrEmpty(txtCCCD.Text))
-                {
-                    if (userManager.IsCCCDExist(user.UserId, txtCCCD.Text))
-                    {
-                        validationEngine.AddErrorPrompt(txtCCCD.ClientID, GetResourceText(BackEndResourceKeys.CCCD_ALREADY_EXISTS));
-                        validationEngine.ShowErrorPrompt();
-                        return;
-                    }
-                }
-
-                // Gán dữ liệu của Form Tab 2
-                user.IdCCCD = txtCCCD.Text;
-                user.GioiTinh = ddlGioiTinh.SelectedValue;
-                user.DiaChi = txtDiaChi.Text;
+                // Gán dữ liệu của form Tab 2.
+                // CCCD đã bỏ khỏi giao diện, giữ nguyên dữ liệu cũ nếu có.
+                user.GioiTinh = string.IsNullOrWhiteSpace(ddlGioiTinh.SelectedValue) ? null : ddlGioiTinh.SelectedValue;
+                user.DiaChi = (txtDiaChi.Text ?? string.Empty).Trim();
+                user.MaTinh = string.IsNullOrWhiteSpace(ddlTinhThanh.SelectedValue) ? null : ddlTinhThanh.SelectedValue;
+                user.MaXa = string.IsNullOrWhiteSpace(user.MaTinh) || string.IsNullOrWhiteSpace(ddlXaPhuong.SelectedValue)
+                    ? null : ddlXaPhuong.SelectedValue;
 
                 if (DateTime.TryParse(txtNgaySinh.Text, out DateTime tempDOB))
                 {

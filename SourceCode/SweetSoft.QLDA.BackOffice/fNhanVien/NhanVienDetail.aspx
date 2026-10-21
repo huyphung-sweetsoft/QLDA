@@ -32,8 +32,7 @@
         .side-panel-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* ============================================================
-           PROJECT LIST
-           ============================================================ */
+           PROJECT LIST ================================ */
         .section-card { margin-bottom: 32px; }
         .project-box { border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05); transition: all 0.2s ease; }
         .project-box:hover { border-color: #3a6ea5; box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.08); transform: translateY(-1px); }
@@ -151,6 +150,188 @@
         .tooltip-task-list li:first-child { padding-top: 0; }
         .t-project-name { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; color: #64748b; }
         .t-code { display: inline-block; color: #2563eb; font-weight: 700; margin-right: 6px; }
+
+        /* ============================================================
+           NHAN VIEN DETAIL — HEADER PHẲNG + CARD CÂN CHIỀU CAO
+           Phạm vi giới hạn vào các class nvd- của trang chi tiết.
+           ============================================================ */
+        .nvd-detail-layout { align-items: stretch !important; height: auto; overflow: visible; }
+        .nvd-left-column { min-width: 0; min-height: 0; height: auto; overflow: visible; }
+
+        /* Hồ sơ phía trên chỉ cao theo nội dung, không kéo giãn. */
+        .nvd-left-column > .nvd-profile-card {
+            flex: 0 0 auto !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible;
+        }
+        .nvd-profile-card > .nvd-profile-body {
+            flex: 0 0 auto !important;
+            padding: 13px 18px !important;
+            min-height: 0 !important;
+        }
+        .nvd-profile-card .nvd-profile-avatar { width: 78px !important; height: 78px !important; }
+        .nvd-profile-name { font-size: 19px; line-height: 1.3; }
+        .nvd-profile-details { font-size: 12.5px !important; line-height: 1.35; }
+        .nvd-profile-details > div { min-width: 0; overflow-wrap: anywhere; }
+
+        /* Card dưới tự giãn tới đáy cột bên phải, nhưng KHÔNG thu nhỏ/cắt nội dung. */
+        .nvd-left-column > .nvd-info-card {
+            display: flex;
+            flex-direction: column;
+            flex: 1 0 auto !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            min-width: 0;
+            background: #fff !important;
+            border-radius: 10px;
+        }
+        /* Tiêu đề cùng nền card, chỉ có đường ngăn mảnh — bỏ hẳn thanh card-header trắng. */
+        .nvd-info-card > .nvd-info-header {
+            flex: 0 0 auto;
+            min-height: 49px;
+            margin: 0 18px;
+            padding: 14px 0 12px !important;
+            gap: 10px;
+            background: transparent !important;
+            border: 0 !important;
+            border-bottom: 1px solid #e9eaf1 !important;
+            border-radius: 0 !important;
+        }
+        .nvd-info-header h6 {
+            margin: 0;
+            min-width: 0;
+            font-size: 13.5px;
+            line-height: 1.4;
+            color: #344054 !important;
+        }
+        .nvd-info-card > .nvd-info-body {
+            flex: 1 0 auto !important;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 13px 18px 16px !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            background: transparent !important;
+        }
+        .nvd-info-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+        .nvd-info-tile {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 12px 13px;
+            min-height: 61px;
+            min-width: 0;
+            border: 1px solid #e7eaf1;
+            border-radius: 8px;
+            background: #f8f9fc;
+            transition: border-color .16s ease,background-color .16s ease;
+        }
+        .nvd-info-tile:hover { border-color: #d5caec; background: #fcfaff; }
+        .nvd-info-tile--accent { background: #f8f5fd; border-color: #e8ddf7; }
+        .nvd-info-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            flex: 0 0 32px;
+            width: 32px;
+            height: 32px;
+            background: #eae2f7;
+            color: #6b3aa4;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .nvd-info-icon--neutral { background: #e9edf4; color: #627187; }
+        .nvd-info-content { min-width: 0; display: flex; flex-direction: column; gap: 3px; justify-content: center; }
+        .nvd-info-label { display: block; color: #768195; text-transform: uppercase; font-size: 10px; letter-spacing: .35px; font-weight: 700; line-height: 1.3; }
+        .nvd-info-value { display: block; color: #283142; font-size: 13px; line-height: 1.4; font-weight: 700; overflow-wrap: anywhere; }
+        .nvd-info-value--accent { color: #633298; }
+
+        /* Địa chỉ có cấu trúc theo từng trường, tự giãn phần hữu ích khi còn diện tích. */
+        .nvd-address-panel {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            min-width: 0;
+            min-height: 0;
+            border: 1px solid #e4e7ef;
+            border-radius: 9px;
+            padding: 14px 15px 15px;
+            background: #fff;
+        }
+        .nvd-address-title { display: flex; align-items: center; gap: 8px; color: #344054; font-size: 13px; font-weight: 700; margin: 0; }
+        .nvd-address-title i { color: #6b3aa4; }
+        .nvd-address-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+        .nvd-address-location {
+            min-width: 0;
+            min-height: 60px;
+            background: #f8f9fc;
+            border-radius: 7px;
+            border: 1px solid #edf0f5;
+            padding: 10px 12px;
+        }
+        .nvd-address-value { margin-top: 4px; display: block; color: #344054; font-size: 12.5px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+        .nvd-address-details {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+            min-height: 63px;
+            margin: 0;
+            padding: 10px 12px;
+            background: #f8f9fc;
+            border: 1px solid #edf0f5;
+            border-radius: 7px;
+        }
+        .nvd-address-details .nvd-address-value { font-weight: 650; }
+        .nvd-address-summary {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            margin-top: 0;
+            padding: 10px 12px;
+            background: #faf8ff;
+            border: 1px solid #eee7f8;
+            border-radius: 7px;
+            color: #605777;
+            font-size: 12px;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+        .nvd-address-summary i { color: #8761b7; margin-top: 2px; flex: 0 0 auto; }
+        .nvd-info-empty { color: #98a2b3; font-weight: 500; }
+
+        @media (max-width: 991.98px) {
+            .nvd-left-column > .nvd-info-card { flex-grow: 0 !important; }
+            .nvd-address-panel, .nvd-address-details { flex-grow: 0; }
+        }
+        @media (max-width: 767.98px) {
+            .nvd-profile-card > .nvd-profile-body { padding: 15px !important; }
+            .nvd-profile-details { font-size: 12px !important; }
+        }
+        @media (max-width: 575.98px) {
+            .nvd-profile-card .nvd-profile-avatar { width: 70px !important; height: 70px !important; }
+            .nvd-profile-name { font-size: 17px; }
+            .nvd-info-card > .nvd-info-header { margin: 0 13px; padding: 12px 0 11px !important; }
+            .nvd-info-card > .nvd-info-body { padding: 12px 13px 14px !important; gap: 9px; }
+            .nvd-info-grid { gap: 8px; }
+            .nvd-info-tile { min-height: 57px; padding: 9px; gap: 8px; }
+            .nvd-info-icon { flex-basis: 27px; width: 27px; height: 27px; }
+            .nvd-info-label { font-size: 9.5px; }
+            .nvd-info-value { font-size: 12px; }
+            .nvd-address-panel { padding: 11px; gap: 9px; }
+            .nvd-address-location { padding: 9px; min-height: 55px; }
+            .nvd-address-details { padding: 10px; min-height: 57px; }
+            .nvd-address-value { font-size: 12px; }
+        }
+        @media (max-width: 380px) {
+            .nvd-info-grid, .nvd-address-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </asp:Content>
 
@@ -163,29 +344,28 @@
                 <!-- ====================================================
                      MAIN LAYOUT
                      ==================================================== -->
-                <div class="row align-items-stretch">
+                <div class="row align-items-stretch nvd-detail-layout">
 
                     <!-- =================================================
                          LEFT COLUMN
                          ================================================= -->
-                    <div class="col-xl-8 col-lg-7 d-flex flex-column gap-3">
+                    <div class="col-xl-8 col-lg-7 d-flex flex-column gap-3 nvd-left-column">
 
                         <!-- ================================
                              EMPLOYEE SUMMARY
                              ================================ -->
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body d-flex flex-column flex-md-row align-items-center gap-4">
+                        <div class="card shadow-sm border-0 nvd-profile-card">
+                            <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3 nvd-profile-body">
                                 <div class="flex-shrink-0">
-                                    <img id="imgAvatar" runat="server" src="/Styles/images/user-icon.png" class="rounded-circle border border-3 border-primary shadow-sm" style="width:100px;height:100px;object-fit:cover;" onerror="this.src='/Styles/images/user-icon.png'" />
+                                    <img id="imgAvatar" runat="server" src="/Styles/images/user-icon.png" class="rounded-circle border border-3 border-primary shadow-sm nvd-profile-avatar" style="width:78px;height:78px;object-fit:cover;" onerror="this.src='/Styles/images/user-icon.png'" />
                                 </div>
                                 <div class="flex-grow-1 w-100 text-center text-md-start">
-                                    <div class="d-flex flex-column flex-md-row align-items-center gap-2 mb-2">
-                                        <h4 class="mb-0 fw-bold text-dark">
+                                    <div class="d-flex flex-column flex-md-row align-items-center gap-2 mb-1">
+                                        <h4 class="mb-0 fw-bold text-dark nvd-profile-name">
                                             <asp:Literal ID="ltrTenNhanVien" runat="server" />
                                         </h4>
-                                        <span class="badge bg-success rounded-pill px-3 py-1"><%= GetResourceText(BackEndResourceKeys.ACTIVE) %></span>
                                     </div>
-                                    <div class="row g-2 text-muted" style="font-size:14px;">
+                                    <div class="row g-1 text-muted nvd-profile-details" style="font-size:13px;">
                                         <div class="col-sm-6">
                                             <%= GetResourceText(BackEndResourceKeys.CHUC_DANH) %>: <strong class="text-dark"><asp:Literal ID="ltrChucDanh" runat="server" /></strong>
                                         </div>
@@ -204,59 +384,77 @@
                         </div>
 
                         <!-- ================================
-                             PERSONAL / WORK INFO
+                             PERSONAL / WORK INFO — ĐỒNG BỘ POPUP THÊM/SỬA
                              ================================ -->
-                        <div class="card shadow-sm border-0 flex-grow-1">
-                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
+                        <div class="card shadow-sm border-0 flex-grow-1 nvd-info-card">
+                            <div class="d-flex justify-content-between align-items-center nvd-info-header">
                                 <h6 class="mb-0 fw-bold text-dark">
                                     <i class="fas fa-id-card text-primary me-2"></i><%= GetResourceText(BackEndResourceKeys.PERSONAL_AND_WORK_INFORMATION) %>
                                 </h6>
                                 <SweetSoft:ExtraButton runat="server" ID="btnEditProfile" CssClass="btn-sm btn-light border text-primary fw-bold" ButtonIcon="Edit" OnClick="btnEditProfile_Click"></SweetSoft:ExtraButton>
                             </div>
-                            <div class="card-body d-flex flex-column gap-4">
-                                <div class="d-flex flex-wrap border rounded bg-light">
-                                    <div class="flex-fill p-3 border-end">
-                                        <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.JOIN_DATE) %></span>
-                                        <span class="fw-bold text-dark fs-6"><asp:Literal ID="ltrNgayGiaNhap" runat="server" /></span>
+                            <div class="card-body nvd-info-body">
+                                <!-- Công tác: hai chỉ số cân đối, nổi bật ở đầu khối -->
+                                <div class="nvd-info-grid">
+                                    <div class="nvd-info-tile nvd-info-tile--accent">
+                                        <span class="nvd-info-icon"><i class="far fa-calendar-check"></i></span>
+                                        <div class="nvd-info-content">
+                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.JOIN_DATE) %></span>
+                                            <span class="nvd-info-value"><asp:Literal ID="ltrNgayGiaNhap" runat="server" /></span>
+                                        </div>
                                     </div>
-                                    <div class="flex-fill p-3 border-end">
-                                        <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.SENIORITY) %></span>
-                                        <span class="fw-bold text-primary fs-6"><asp:Literal ID="ltrThamNien" runat="server" /></span>
-                                    </div>
-                                    <div class="flex-fill p-3">
-                                        <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.WORK_STATUS) %></span>
-                                        <asp:Literal ID="ltrTinhTrangCongTac" runat="server" />
+                                    <div class="nvd-info-tile nvd-info-tile--accent">
+                                        <span class="nvd-info-icon"><i class="far fa-clock"></i></span>
+                                        <div class="nvd-info-content">
+                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.SENIORITY) %></span>
+                                            <span class="nvd-info-value nvd-info-value--accent"><asp:Literal ID="ltrThamNien" runat="server" /></span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <div class="spec-tile">
-                                            <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.EMPLOYEE_CCCD) %></span>
-                                            <span class="fw-bold text-dark"><asp:Literal ID="ltrCCCD" runat="server" /></span>
+                                <!-- Cá nhân: không hiển thị CCCD / Trạng thái công tác -->
+                                <div class="nvd-info-grid">
+                                    <div class="nvd-info-tile">
+                                        <span class="nvd-info-icon nvd-info-icon--neutral"><i class="fas fa-birthday-cake"></i></span>
+                                        <div class="nvd-info-content">
+                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.DATE_OF_BIRTH) %></span>
+                                            <span class="nvd-info-value"><asp:Literal ID="ltrNgaySinh" runat="server" /></span>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="spec-tile">
-                                            <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.DATE_OF_BIRTH) %></span>
-                                            <span class="fw-bold text-dark"><asp:Literal ID="ltrNgaySinh" runat="server" /></span>
+                                    <div class="nvd-info-tile">
+                                        <span class="nvd-info-icon nvd-info-icon--neutral"><i class="far fa-user"></i></span>
+                                        <div class="nvd-info-content">
+                                            <span class="nvd-info-label"><%= GetResourceText(BackEndResourceKeys.GIOI_TINH) %></span>
+                                            <span class="nvd-info-value"><asp:Literal ID="ltrGioiTinh" runat="server" /></span>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="spec-tile">
-                                            <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.GIOI_TINH) %></span>
-                                            <span class="fw-bold text-dark"><asp:Literal ID="ltrGioiTinh" runat="server" /></span>
+                                </div>
+
+                                <!-- Địa chỉ: hiển thị riêng cấp tỉnh / cấp xã và địa chỉ chi tiết -->
+                                <div class="nvd-address-panel">
+                                    <div class="nvd-address-title"><i class="fas fa-map-marker-alt"></i> Địa chỉ liên hệ</div>
+                                    <div class="nvd-address-grid">
+                                        <div class="nvd-address-location">
+                                            <span class="nvd-info-label">Tỉnh / Thành phố</span>
+                                            <span class="nvd-address-value"><asp:Literal ID="ltrTinhThanh" runat="server" /></span>
+                                        </div>
+                                        <div class="nvd-address-location">
+                                            <span class="nvd-info-label">Xã / Phường / Đặc khu</span>
+                                            <span class="nvd-address-value"><asp:Literal ID="ltrXaPhuong" runat="server" /></span>
                                         </div>
                                     </div>
-                                    <div class="col-12" style="min-width:0;">
-                                        <div class="spec-tile" style="height:auto;">
-                                            <span class="spec-label d-block"><%= GetResourceText(BackEndResourceKeys.ADDRESS) %></span>
-                                            <span class="fw-bold text-dark d-block" style="overflow-wrap:anywhere;word-break:break-word;white-space:normal;"><asp:Literal ID="ltrDiaChi" runat="server" /></span>
-                                        </div>
+                                    <div class="nvd-address-details">
+                                        <span class="nvd-info-label">Địa chỉ chi tiết</span>
+                                        <span class="nvd-address-value"><asp:Literal ID="ltrDiaChi" runat="server" /></span>
+                                    </div>
+                                    <div class="nvd-address-summary" id="boxDiaChiDayDu" runat="server">
+                                        <i class="fas fa-map"></i>
+                                        <span><asp:Literal ID="ltrDiaChiDayDu" runat="server" /></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
 <!-- =================================================

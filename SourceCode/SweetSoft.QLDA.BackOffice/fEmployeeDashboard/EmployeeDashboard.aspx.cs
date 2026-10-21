@@ -447,10 +447,10 @@ WHERE u.UserId = @UserId AND ISNULL(u.IsDeleted, 0) = 0;", GuidParameter("@UserI
         }
 
 
-        /// <summary>Đường dẫn Khai báo giờ. Dự án chỉ xuất hiện trong HTML sau khi được lọc theo user.</summary>
+        /// <summary>Đường dẫn Tính giờ công việc trong dự án, ProjectId được bảo vệ.</summary>
         protected string GetKhaiBaoGioUrl(Guid projectId)
         {
-            return ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio.aspx") + "?projectId=" + HttpUtility.UrlEncode(projectId.ToString("D"));
+            return GetRelativeClientPath(RewriteURLHelper.ProjectTimeTracking(projectId));
         }
 
         /// <summary>Tất cả công việc được giao cho user trong các dự án đang hiển thị, kể cả đã hoàn thành.</summary>

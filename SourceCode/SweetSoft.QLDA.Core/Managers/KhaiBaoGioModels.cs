@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace SweetSoft.QLDA.Core.Managers
@@ -238,4 +238,123 @@ namespace SweetSoft.QLDA.Core.Managers
             get { return Shifts.Count > 0 ? Shifts[0] : null; }
         }
     }
+}
+
+// ============================================================================
+// KHAI BAO GIO 2.0 — BO SUNG VAO CUNG FILE, KHONG XOA API 1.0.
+// - 1.0 phuc vu trang WebForms cu, chua ket noi UI 2.0.
+// - 2.0 la API moi, doc/ghi dung 3 bang V2; khong dual-write 3 bang cu.
+// ============================================================================
+namespace SweetSoft.QLDA.Core.Managers
+{
+    // API 2.0 doc lap voi Models cua KhaiBaoGio 1.0.
+    public enum Kbg20LoaiGio : byte { Thuong = 1, TangCa = 2 }
+    public enum Kbg20NguonBatDau : byte { ThuCong = 1, TuDongTuCongViecCon = 2 }
+    public enum Kbg20LyDoKetThuc : byte
+    {
+        TuDung = 1, HetHanCongViec = 2, GuiDuyetHoanThanh = 3,
+        GoPhanCong = 4, TuNgatTangCa = 5, CongViecBiKhoa = 6, QuanTriDieuChinh = 7
+    }
+    public class Kbg20KetQua
+    {
+        public bool ThanhCong { get; set; }
+        public bool CanXacNhanQuaHan { get; set; }
+        public bool CanXacNhanPhuThuoc { get; set; }
+        public string ThongBao { get; set; }
+        public Guid? IdPhien { get; set; }
+        public int SoPhienTuDong { get; set; }
+        public List<string> CanhBao { get; set; } = new List<string>();
+        public static Kbg20KetQua Loi(string thongBao) { return new Kbg20KetQua { ThongBao = thongBao }; }
+        public static Kbg20KetQua Ok(string thongBao) { return new Kbg20KetQua { ThanhCong = true, ThongBao = thongBao }; }
+    }
+    public class Kbg20Phien
+    {
+        public Guid IdPhien { get; set; }
+        public Guid IdNhanVien { get; set; }
+        public Guid IdCongViec { get; set; }
+        public Guid IdDuAn { get; set; }
+        public Kbg20LoaiGio LoaiGio { get; set; }
+        public DateTime BatDauLucUtc { get; set; }
+        public DateTime? KetThucLucUtc { get; set; }
+        public DateTime? DaTinhDenLucUtc { get; set; }
+        public bool LaTiepTucQuaHan { get; set; }
+        public byte NguonBatDau { get; set; }
+        public string MaCongViec { get; set; }
+        public string TenCongViec { get; set; }
+        public string MaDuAn { get; set; }
+        public string TenDuAn { get; set; }
+        public long SoGiayDaKetToan { get; set; }
+    }
+    public class Kbg20ThongKeKetToan
+    {
+        public int SoPhienDaXuLy { get; set; }
+        public int SoPhienDaTuNgat { get; set; }
+        public int SoKhoangDaGhi { get; set; }
+    }
+    public sealed class Kbg20DuAn
+    {
+        public Guid IdDuAn { get; set; }
+        public string MaDuAn { get; set; }
+        public string TenDuAn { get; set; }
+    }
+    public sealed class Kbg20CongViec
+    {
+        public int? ThoiHanNgay { get; set; }  // Gia tri thoi han tu TblCongViec, khong tinh lai theo lich.
+        public Guid IdCongViec { get; set; }
+        public Guid IdDuAn { get; set; }
+        public Guid? IdCongViecCha { get; set; }
+        public string MaCongViec { get; set; }
+        public string TenCongViec { get; set; }
+        public DateTime? NgayBatDau { get; set; }
+        public DateTime? NgayKetThuc { get; set; }
+        public int TrangThai { get; set; }
+        public bool ChoDuyet { get; set; }
+        public bool LaPhanCongTrucTiep { get; set; }
+        // Cần đọc từ phiên (không suy đoán từ số giây; phiên 0 giây vẫn tính là đã bắt đầu).
+        public bool DaTungBatDauThuong { get; set; }
+        public bool DaTungBatDauTangCa { get; set; }
+        public long SoGiayThuong { get; set; }
+        public long SoGiayTangCa { get; set; }
+    }
+    public sealed class Kbg20DongHo
+    {
+        public Kbg20Phien Phien { get; set; }
+        public long SoGiayHienTai { get; set; }
+        public bool DangCongGio { get; set; }
+        public DateTime? MocDungCongLucUtc { get; set; }
+    }
+    // Tong gio CUA MOT NGAY dia phuong, chi trong DU AN hien tai va cua chinh nhan vien.
+    // Khong tron tong gio task voi thoi gian thuc troi qua; nhieu task cung luc van cong rieng.
+    public sealed class Kbg20GioTheoNgay
+    {
+        public Guid IdCongViec { get; set; }
+        public string MaCongViec { get; set; }
+        public string TenCongViec { get; set; }
+        public long SoGiayThuong { get; set; }
+        public long SoGiayTangCa { get; set; }
+        public long TongSoGiay { get { return SoGiayThuong + SoGiayTangCa; } }
+    }
+
+    public sealed class Kbg20LichSuNgay
+    {
+        public Guid IdDuAn { get; set; }
+        public DateTime NgayLam { get; set; }
+        public DateTime ServerNowUtc { get; set; }
+        public List<Kbg20GioTheoNgay> CongViec { get; set; } = new List<Kbg20GioTheoNgay>();
+        public long SoGiayThuong { get { long n = 0; foreach (var x in CongViec) n += x.SoGiayThuong; return n; } }
+        public long SoGiayTangCa { get { long n = 0; foreach (var x in CongViec) n += x.SoGiayTangCa; return n; } }
+        public long TongSoGiay { get { return SoGiayThuong + SoGiayTangCa; } }
+    }
+
+    public sealed class Kbg20TrangDuAn
+    {
+        public Guid IdDuAn { get; set; }
+        public DateTime ServerNowUtc { get; set; }
+        public List<Kbg20DuAn> DuAn { get; set; } = new List<Kbg20DuAn>();
+        public List<Kbg20CongViec> CongViec { get; set; } = new List<Kbg20CongViec>();
+        public List<Kbg20DongHo> DongHo { get; set; } = new List<Kbg20DongHo>();
+        public List<Kbg20Phien> LichSu { get; set; } = new List<Kbg20Phien>();
+    }
+
+
 }

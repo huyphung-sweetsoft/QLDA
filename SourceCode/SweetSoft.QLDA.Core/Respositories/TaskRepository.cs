@@ -186,7 +186,7 @@ namespace SweetSoft.QLDA.Core.Respositories
                 INNER JOIN [dbo].[TblCongViec_NhanVien] cn ON t.IdCongViec = cn.IdCongViec
                 WHERE t.IdDuAn = '{idDuAn}' 
                   AND cn.IdNhanVien = '{idNhanVien}'
-                  AND t.TrangThai != 2 
+                  AND t.TrangThai NOT IN (2, 3)
                   AND (t.DaXoa = 0 OR t.DaXoa IS NULL)";
 
             IDataReader reader = new SubSonic.InlineQuery().ExecuteReader(sql);
