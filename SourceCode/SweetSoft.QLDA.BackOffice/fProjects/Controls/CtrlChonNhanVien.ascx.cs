@@ -139,7 +139,7 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             int totalTaskDays = 0;
             if (StartDate.HasValue && EndDate.HasValue && EndDate.Value >= StartDate.Value)
             {
-                totalTaskDays = (EndDate.Value.Date - StartDate.Value.Date).Days + 1;
+                totalTaskDays = LichBieuChungManager.Instance.CountWorkingDaysInRange(StartDate.Value.Date, EndDate.Value.Date);
             }
 
             // Không còn Timeline theo cửa sổ 28 ngày: chỉ hiển thị thời hạn thật của dự án.
@@ -258,6 +258,36 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         /* ===================== BIND DATA ===================== */
 
+        // Cùng cách tính với CtrlChonNhanVienTask: chỉ tính những ngày làm việc
+        // có công việc chưa hoàn thành; ngày lễ/cuối tuần không thuộc mẫu số Y.
+        // Với popup chọn người cho dự án, KHÔNG loại trừ công việc thuộc dự án
+        // hiện tại vì tất cả công việc đang thực hiện đều chiếm lịch của nhân viên.
+        private Dictionary<Guid, int> CalculateBusyDaysForProjectPeriod(IEnumerable<AspnetUser> users,
+            DateTime startDate, DateTime endDate)
+        {
+            var result = new Dictionary<Guid, int>();
+            foreach (AspnetUser user in users)
+            {
+                var schedule = LichTrinhManager.Instance.LayLichTrinhNhanVien(
+                    user.UserId, startDate.Date, endDate.Date);
+                int busyDays = 0;
+                if (schedule != null)
+                {
+                    busyDays = schedule
+                        .Where(day => day.Ngay.Date >= startDate.Date
+                            && day.Ngay.Date <= endDate.Date
+                            && day.TrangThaiLich == "busy"
+                            && day.DanhSachCongViec != null
+                            && day.DanhSachCongViec.Any(task => task.TrangThai != 2 && task.TrangThai != 3))
+                        .Select(day => day.Ngay.Date)
+                        .Distinct()
+                        .Count();
+                }
+                result[user.UserId] = busyDays;
+            }
+            return result;
+        }
+
         private void BindData()
         {
             if (!StartDate.HasValue || !EndDate.HasValue) return;
@@ -307,6 +337,14 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     }
                 }
             }
+            // X/Y dựa trên khoảng thời gian THẬT của dự án, không dựa vào tháng
+            // đang mở của lịch mini. Một nhân viên bận nhiều task trong cùng ngày
+            // cũng chỉ bị trừ một ngày.
+            int totalWorkingDays = Math.Max(0,
+                LichBieuChungManager.Instance.CountWorkingDaysInRange(StartDate.Value.Date, EndDate.Value.Date));
+            Dictionary<Guid, int> busyDaysByUser = CalculateBusyDaysForProjectPeriod(
+                visible, StartDate.Value.Date, EndDate.Value.Date);
+
             HashSet<Guid> pickedSet = new HashSet<Guid>(picked);
             visible = visible.OrderByDescending(u => pickedSet.Contains(u.UserId))
                 .ThenBy(u => u.DisplayName).ThenBy(u => u.UserId).ToList();
@@ -315,6 +353,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
             {
                 DataRow info; allRows.TryGetValue(user.UserId, out info);
                 int count = tasks.ContainsKey(user.UserId) ? tasks[user.UserId] : 0;
+                int busyDays = busyDaysByUser.ContainsKey(user.UserId) ? busyDaysByUser[user.UserId] : 0;
+                int freeDays = Math.Max(0, totalWorkingDays - Math.Min(totalWorkingDays, busyDays));
                 list.Add(new
                 {
                     UserId = user.UserId,
@@ -325,6 +365,9 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     IsOriginal = OriginalUserIds.Contains(user.UserId),
                     IsPicked = picked.Contains(user.UserId),
                     TaskCount = count,
+                    BusyDays = busyDays,
+                    FreeDays = freeDays,
+                    TotalWorkingDays = totalWorkingDays,
                     TaskTooltipJson = JsonConvert.SerializeObject(tooltipTasks.ContainsKey(user.UserId) ? tooltipTasks[user.UserId] : new List<object>())
                 });
             }

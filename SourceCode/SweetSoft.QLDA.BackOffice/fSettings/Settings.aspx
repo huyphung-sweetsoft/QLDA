@@ -215,7 +215,7 @@
                                                                     ID="txtDefaultAfternoonStart"
                                                                     TextMode="Time"
                                                                     CssClass="form-control">
-                                                                </asp:TextBox>
+                                                                </asp:TextBox>n
                                                             </div>
                                                         </div>
 
