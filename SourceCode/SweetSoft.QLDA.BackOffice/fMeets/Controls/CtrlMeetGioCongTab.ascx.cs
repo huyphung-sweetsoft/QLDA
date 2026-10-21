@@ -721,15 +721,15 @@ ORDER BY SoThuTu ASC;";
                         foreach (KeyValuePair<Guid, Tuple<bool, decimal?>> input in posted)
                         {
                             const string sql = @"
-UPDATE dbo.TblLichHopGioCong WITH (UPDLOCK, SERIALIZABLE)
-SET SoGioThucTe=@SoGioThucTe, DaThamGiaOverride=@DaThamGiaOverride,
-    NguoiCapNhat=@NguoiCapNhat, NgayCapNhat=GETDATE()
-WHERE IdLichHop=@IdLichHop AND IdNhanVien=@IdNhanVien;
-IF @@ROWCOUNT = 0
-    INSERT INTO dbo.TblLichHopGioCong
-      (IdLichHop, IdNhanVien, SoGioThucTe, DaThamGiaOverride, NguoiCapNhat, NgayCapNhat)
-    VALUES
-      (@IdLichHop, @IdNhanVien, @SoGioThucTe, @DaThamGiaOverride, @NguoiCapNhat, GETDATE());";
+                                UPDATE dbo.TblLichHopGioCong WITH (UPDLOCK, SERIALIZABLE)
+                                SET SoGioThucTe=@SoGioThucTe, DaThamGiaOverride=@DaThamGiaOverride,
+                                    NguoiCapNhat=@NguoiCapNhat, NgayCapNhat=GETDATE()
+                                WHERE IdLichHop=@IdLichHop AND IdNhanVien=@IdNhanVien;
+                                IF @@ROWCOUNT = 0
+                                    INSERT INTO dbo.TblLichHopGioCong
+                                      (IdLichHop, IdNhanVien, SoGioThucTe, DaThamGiaOverride, NguoiCapNhat, NgayCapNhat)
+                                    VALUES
+                                      (@IdLichHop, @IdNhanVien, @SoGioThucTe, @DaThamGiaOverride, @NguoiCapNhat, GETDATE());";
                             using (SqlCommand command = new SqlCommand(sql, connection, transaction))
                             {
                                 command.Parameters.Add(GuidParameter("@IdLichHop", meetingId));
@@ -748,9 +748,6 @@ IF @@ROWCOUNT = 0
                     }
                 }
 
-                // Chỉ nạp lại bảng nhân viên của cuộc họp đang chọn.
-                // Không DataBind lại rptMeetings / thanh lọc, để các nút chọn cuộc họp
-                // không bị tái tạo liên tục sau khi bấm Lưu.
                 BindSelectedMeeting(meetingId);
                 Label resultLabel = LaborErrorLabel;
                 if (resultLabel != null)
