@@ -188,7 +188,7 @@
                                                     <div class="row">
                                                         <div class="col-lg-6">
                                                             <div class="mt-3">
-                                                                <label class="form-label">Ca sáng - Bắt đầu</label>
+                                                                <label class="form-label">Buổi sáng - Bắt đầu</label>
                                                                 <asp:TextBox runat="server"
                                                                     ID="txtDefaultMorningStart"
                                                                     TextMode="Time"
@@ -199,7 +199,7 @@
 
                                                         <div class="col-lg-6">
                                                             <div class="mt-3">
-                                                                <label class="form-label">Ca sáng - Kết thúc</label>
+                                                                <label class="form-label"> Buổi sáng - Kết thúc</label>
                                                                 <asp:TextBox runat="server"
                                                                     ID="txtDefaultMorningEnd"
                                                                     TextMode="Time"
@@ -210,7 +210,7 @@
 
                                                         <div class="col-lg-6">
                                                             <div class="mt-3">
-                                                                <label class="form-label">Ca chiều - Bắt đầu</label>
+                                                                <label class="form-label">Buổi chiều - Bắt đầu</label>
                                                                 <asp:TextBox runat="server"
                                                                     ID="txtDefaultAfternoonStart"
                                                                     TextMode="Time"
@@ -221,7 +221,7 @@
 
                                                         <div class="col-lg-6">
                                                             <div class="mt-3">
-                                                                <label class="form-label">Ca chiều - Kết thúc</label>
+                                                                <label class="form-label">Buổi chiều - Kết thúc</label>
                                                                 <asp:TextBox runat="server"
                                                                     ID="txtDefaultAfternoonEnd"
                                                                     TextMode="Time"

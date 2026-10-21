@@ -805,6 +805,63 @@ namespace SweetSoft.QLDA.DataAccess
 		        colTblCongViecNhanVienRecords[e.NewIndex].IdNhanVien = UserId;
             }
 		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoatCollection colTblKhaiBaoGioDoiSoatRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoatCollection TblKhaiBaoGioDoiSoatRecords()
+		{
+			if(colTblKhaiBaoGioDoiSoatRecords == null)
+			{
+				colTblKhaiBaoGioDoiSoatRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoatCollection().Where(TblKhaiBaoGioDoiSoat.Columns.IdNhanVien, UserId).Load();
+				colTblKhaiBaoGioDoiSoatRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioDoiSoatRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioDoiSoatRecords;
+		}
+				
+		void colTblKhaiBaoGioDoiSoatRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioDoiSoatRecords[e.NewIndex].IdNhanVien = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection colTblKhaiBaoGioPhienRecords;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection TblKhaiBaoGioPhienRecords()
+		{
+			if(colTblKhaiBaoGioPhienRecords == null)
+			{
+				colTblKhaiBaoGioPhienRecords = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection().Where(TblKhaiBaoGioPhien.Columns.IdNguoiKichHoat, UserId).Load();
+				colTblKhaiBaoGioPhienRecords.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioPhienRecords_ListChanged);
+			}
+			return colTblKhaiBaoGioPhienRecords;
+		}
+				
+		void colTblKhaiBaoGioPhienRecords_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioPhienRecords[e.NewIndex].IdNguoiKichHoat = UserId;
+            }
+		}
+		private SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection colTblKhaiBaoGioPhienRecordsFromAspnetUser;
+		public SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection TblKhaiBaoGioPhienRecordsFromAspnetUser()
+		{
+			if(colTblKhaiBaoGioPhienRecordsFromAspnetUser == null)
+			{
+				colTblKhaiBaoGioPhienRecordsFromAspnetUser = new SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhienCollection().Where(TblKhaiBaoGioPhien.Columns.IdNhanVien, UserId).Load();
+				colTblKhaiBaoGioPhienRecordsFromAspnetUser.ListChanged += new ListChangedEventHandler(colTblKhaiBaoGioPhienRecordsFromAspnetUser_ListChanged);
+			}
+			return colTblKhaiBaoGioPhienRecordsFromAspnetUser;
+		}
+				
+		void colTblKhaiBaoGioPhienRecordsFromAspnetUser_ListChanged(object sender, ListChangedEventArgs e)
+		{
+            if (e.ListChangedType == ListChangedType.ItemAdded)
+            {
+		        // Set foreign key value
+		        colTblKhaiBaoGioPhienRecordsFromAspnetUser[e.NewIndex].IdNhanVien = UserId;
+            }
+		}
 		private SweetSoft.QLDA.DataAccess.TblChiPhiCollection colTblChiPhiRecords;
 		public SweetSoft.QLDA.DataAccess.TblChiPhiCollection TblChiPhiRecords()
 		{
@@ -1717,6 +1774,39 @@ namespace SweetSoft.QLDA.DataAccess
                     }
                }
 		
+                if (colTblKhaiBaoGioDoiSoatRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioDoiSoat item in colTblKhaiBaoGioDoiSoatRecords)
+                    {
+                        if (item.IdNhanVien != UserId)
+                        {
+                            item.IdNhanVien = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblKhaiBaoGioPhienRecords != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhien item in colTblKhaiBaoGioPhienRecords)
+                    {
+                        if (item.IdNguoiKichHoat == null ||item.IdNguoiKichHoat != UserId)
+                        {
+                            item.IdNguoiKichHoat = UserId;
+                        }
+                    }
+               }
+		
+                if (colTblKhaiBaoGioPhienRecordsFromAspnetUser != null)
+                {
+                    foreach (SweetSoft.QLDA.DataAccess.TblKhaiBaoGioPhien item in colTblKhaiBaoGioPhienRecordsFromAspnetUser)
+                    {
+                        if (item.IdNhanVien != UserId)
+                        {
+                            item.IdNhanVien = UserId;
+                        }
+                    }
+               }
+		
                 if (colTblChiPhiRecords != null)
                 {
                     foreach (SweetSoft.QLDA.DataAccess.TblChiPhi item in colTblChiPhiRecords)
@@ -1919,6 +2009,21 @@ namespace SweetSoft.QLDA.DataAccess
                 if (colTblCongViecNhanVienRecords != null)
                 {
                     colTblCongViecNhanVienRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioDoiSoatRecords != null)
+                {
+                    colTblKhaiBaoGioDoiSoatRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioPhienRecords != null)
+                {
+                    colTblKhaiBaoGioPhienRecords.SaveAll();
+               }
+		
+                if (colTblKhaiBaoGioPhienRecordsFromAspnetUser != null)
+                {
+                    colTblKhaiBaoGioPhienRecordsFromAspnetUser.SaveAll();
                }
 		
                 if (colTblChiPhiRecords != null)

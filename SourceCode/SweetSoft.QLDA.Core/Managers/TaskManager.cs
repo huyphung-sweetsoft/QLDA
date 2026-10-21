@@ -41,29 +41,109 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repository.GetTaskCountsByProject(idDuAn);
         }
+        // Luu thong bao sau commit (khong gui email truoc khi SQL transaction commit).
+        // Neu co TransactionScope bao ngoai, su kien Completed cua ambient transaction thuc su
+        // moi phat thong bao. Ve lau dai co the chuyen sang outbox neu can delivery dam bao.
+        private sealed class ThongBaoThayDoiPhanCong
+        {
+            public Guid NguoiNhan, DuAn, CongViec;
+            public string TieuDe, NoiDung, Loai;
+        }
+
+        private static void PhatThongBaoDaCommit(List<ThongBaoThayDoiPhanCong> ds,
+            System.Transactions.Transaction giaoDichBenNgoai)
+        {
+            if (ds == null || ds.Count == 0) return;
+            Action gui = () =>
+            {
+                foreach (var thongBao in ds)
+                {
+                    try
+                    {
+                        var result = ThongBaoManager.Instance.Create(
+                            userId: thongBao.NguoiNhan,
+                            tieuDe: thongBao.TieuDe,
+                            noiDung: thongBao.NoiDung,
+                            loaiThongBao: thongBao.Loai,
+                            idCongViec: thongBao.CongViec == Guid.Empty ? (Guid?)null : thongBao.CongViec,
+                            idDuAn: thongBao.DuAn,
+                            guiEmail: false); // 2A: chi thong bao tren web, khong tu gui mail
+                        if (result == null)
+                            SysLogger.LogError("Task: khong tao duoc thong bao sau commit, Task=" + thongBao.CongViec);
+                    }
+                    catch (Exception exc)
+                    {
+                        SysLogger.LogError(exc, "Task: loi tao thong bao sau commit, Task=" + thongBao.CongViec);
+                    }
+                }
+            };
+            if (giaoDichBenNgoai == null) { gui(); return; }
+            giaoDichBenNgoai.TransactionCompleted += (sender, args) =>
+            {
+                if (args.Transaction.TransactionInformation.Status == TransactionStatus.Committed) gui();
+            };
+        }
+
+        private static ThongBaoThayDoiPhanCong TaoThongBaoGoPhanCong(
+            Guid idDuAn, TblCongViec task, Guid idNhanVien,
+            KhaiBaoGio20Manager.KetQuaGoPhanCong daChot, bool doRoiDuAn)
+        {
+            int trongCa = daChot == null ? 0 : daChot.SoPhienTrongCa;
+            int tangCa = daChot == null ? 0 : daChot.SoPhienTangCa;
+            string ten = "[" + (task.MaCongViec ?? "--") + "] " + (task.TenCongViec ?? "Công việc");
+            bool coChot = trongCa + tangCa > 0;
+            string lyDo = doRoiDuAn
+                ? "Bạn không còn tham gia dự án này nên đã được gỡ khỏi công việc."
+                : "Bạn đã được gỡ khỏi danh sách nhân sự thực hiện công việc.";
+            string chiTiet = coChot
+                ? " Hệ thống đã tự động dừng " + trongCa + " phiên giờ trong ca và " + tangCa +
+                  " phiên tăng ca tại thời điểm gỡ phân công. Toàn bộ giờ đã ghi nhận vẫn được bảo lưu."
+                : (daChot == null
+                    ? " Không có thông tin chốt phiên KhaiBaoGio 2.0 trong lần cập nhật này."
+                    : " Không có phiên tính giờ 2.0 nào đang mở cần dừng. Giờ đã ghi nhận trước đây vẫn được bảo lưu.");
+            return new ThongBaoThayDoiPhanCong
+            {
+                NguoiNhan = idNhanVien, DuAn = idDuAn, CongViec = task.IdCongViec,
+                Loai = ThongBaoTypes.CongViec, // icon Cong viec trong chuong, KHONG phai HE_THONG
+                TieuDe = (coChot ? "Đã dừng tính giờ và gỡ khỏi công việc: " : "Bạn đã bị gỡ khỏi công việc: ") + ten,
+                NoiDung = "Công việc: " + ten + ". " + lyDo + chiTiet
+            };
+        }
+
         public void RemoveUserFromActiveTasks(Guid idDuAn, Guid idNhanVien)
         {
-            // 1. Gọi Repo lấy danh sách Task chưa hoàn thành
-            List<Guid> tasksToRemove = _repository.GetActiveTaskIdsOfUserInProject(idDuAn, idNhanVien);
-
-            // 2. Xử lý gỡ phân công và bắn thông báo
-            foreach (Guid taskId in tasksToRemove)
+            if (idDuAn == Guid.Empty || idNhanVien == Guid.Empty)
+                throw new ArgumentException("Dự án hoặc nhân viên không hợp lệ.");
+            // Doc so bo NGOAI transaction de khong giu lock row assignment trong khi cho AppLock.
+            var duKienGo = _repository.GetActiveTaskIdsOfUserInProject(idDuAn, idNhanVien)
+                .Distinct().ToList();
+            Transaction ambientBenNgoai = Transaction.Current;
+            var dsThongBao = new List<ThongBaoThayDoiPhanCong>();
+            using (var scope = new TransactionScope())
             {
-                _repository.RemoveAssignment(taskId, idNhanVien);
-
-                TblCongViec task = FetchById(taskId);
-                if (task != null)
+                KhaiBaoGio20Manager.PhienDongBoPhanCong khoa = null;
+                try
                 {
-                    ThongBaoManager.Instance.Create(
-                        userId: idNhanVien,
-                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {task.TenCongViec} do không còn tham gia dự án.",
-                        noiDung: $"Công việc: {task.TenCongViec}",
-                        loaiThongBao: ThongBaoTypes.HeThong,
-                        idCongViec: taskId,
-                        idDuAn: idDuAn
-                    );
+                    if (duKienGo.Count > 0 && KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+                        khoa = new KhaiBaoGio20Manager().MoDongBoPhanCongTrongTransactionScope(idDuAn);
+                    // Doc lai SAU khi giu khoa; neu membership vua doi thi fail-closed.
+                    var tasksToRemove = _repository.GetActiveTaskIdsOfUserInProject(idDuAn, idNhanVien)
+                        .Distinct().ToList();
+                    if (!new HashSet<Guid>(duKienGo).SetEquals(tasksToRemove))
+                        throw new InvalidOperationException("Danh sách phân công đã thay đổi, vui lòng thử lại.");
+                    foreach (Guid taskId in tasksToRemove)
+                    {
+                        TblCongViec task = FetchById(taskId);
+                        if (task == null || task.IdDuAn != idDuAn) continue;
+                        var daChot = khoa == null ? null : khoa.ChotPhien(taskId, idNhanVien, DateTime.UtcNow);
+                        _repository.RemoveAssignment(taskId, idNhanVien);
+                        dsThongBao.Add(TaoThongBaoGoPhanCong(idDuAn, task, idNhanVien, daChot, true));
+                    }
                 }
+                finally { if (khoa != null) khoa.Dispose(); }
+                scope.Complete();
             }
+            PhatThongBaoDaCommit(dsThongBao, ambientBenNgoai);
         }
         public void ValidateCanCompleteProject(Guid idDuAn)
         {
@@ -74,7 +154,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 if (daXoa) continue;
 
                 int trangThai = row[ColTrangThai] != DBNull.Value ? Convert.ToInt32(row[ColTrangThai]) : 0;
-                if (trangThai != 2 && trangThai != 3) // 2: Hoàn thành, 3: Đã hủy
+                if (trangThai != 2 && trangThai != 3) // 2: Hoàn thành, 3: Hoàn thành trễ
                 {
                     throw new SweetSoft.QLDA.Core.ExceptionHelpers.BusinessException("Không thể hoàn thành dự án do vẫn còn Công việc chưa hoàn thành hoặc chưa bị hủy.", null, SweetSoft.QLDA.Core.ExceptionHelpers.ErrorCodes.Conflict);
                 }
@@ -1232,107 +1312,102 @@ namespace SweetSoft.QLDA.Core.Managers
 
         public void UpdateAssignments(Guid idDuAn, Guid idCongViec, List<Guid> newAssigneeIds)
         {
-            TblCongViec task = FetchById(idCongViec);
+            if (idDuAn == Guid.Empty || idCongViec == Guid.Empty)
+                throw new ArgumentException("Dự án hoặc công việc không hợp lệ.");
             DuAnManager.Instance.EnsureCanModifyStructure(idDuAn);
-            if (task == null)
-                throw new InvalidOperationException("Không tìm thấy công việc.");
+            TblCongViec task = FetchById(idCongViec);
+            if (task == null || task.IdDuAn != idDuAn)
+                throw new InvalidOperationException("Không tìm thấy công việc thuộc dự án hiện tại.");
+            if (task.TrangThai == (byte)TrangThaiCongViec.HoanThanh ||
+                task.TrangThai == (byte)TrangThaiCongViec.HoanThanhTre ||
+                task.TrangThai == (byte)TrangThaiCongViec.ChoDuyet)
+                throw new InvalidOperationException("Không thể thay đổi phân công của công việc đã hoàn thành hoặc đang chờ duyệt.");
+            newAssigneeIds = (newAssigneeIds ?? new List<Guid>())
+                .Where(x => x != Guid.Empty).Distinct().ToList();
 
-            if (task.TrangThai == 2)
-                throw new InvalidOperationException(
-                    "Không thể thay đổi nhân sự của công việc đã hoàn thành.");
-
-            // Lọc trùng lặp do mảng từ Client đẩy lên (phòng hờ)
-            newAssigneeIds = (newAssigneeIds ?? new List<Guid>()).Distinct().ToList();
-
-            // Lấy thông tin công việc để dùng trong thông báo
-            TblCongViec congViec = FetchById(idCongViec);
-
+            // Query so bo truoc TransactionScope, tranh dao nguoc lock assignment -> AppLock.
+            List<Guid> danhSachTam = _repository.GetAssignedNhanVienIds(idCongViec).Distinct().ToList();
+            bool canDongKBG = KhaiBaoGioManager.KhaiBaoGio20DaKichHoat();
+            Transaction ambientBenNgoai = Transaction.Current;
+            var dsThongBao = new List<ThongBaoThayDoiPhanCong>();
             using (var scope = new TransactionScope())
             {
-                // 1. So sánh Diff
-                List<Guid> danhSachCu = _repository.GetAssignedNhanVienIds(idCongViec);
-                List<Guid> canGo = danhSachCu.Except(newAssigneeIds).ToList();
-                List<Guid> canThem = newAssigneeIds.Except(danhSachCu).ToList();
-
-                // 2. Gỡ những người bị bỏ tick
-                string tenCongViec = congViec != null ? congViec.TenCongViec : "Công việc";
-                foreach (Guid id in canGo)
+                KhaiBaoGio20Manager.PhienDongBoPhanCong khoa = null;
+                try
                 {
-                    _repository.RemoveAssignment(idCongViec, id);
+                    if (canDongKBG && danhSachTam.Except(newAssigneeIds).Any())
+                        khoa = new KhaiBaoGio20Manager().MoDongBoPhanCongTrongTransactionScope(idDuAn);
+                    task = FetchById(idCongViec);
+                    if (task == null || task.IdDuAn != idDuAn ||
+                        task.TrangThai == (byte)TrangThaiCongViec.HoanThanh ||
+                        task.TrangThai == (byte)TrangThaiCongViec.HoanThanhTre ||
+                        task.TrangThai == (byte)TrangThaiCongViec.ChoDuyet)
+                        throw new InvalidOperationException("Trạng thái công việc đã thay đổi, vui lòng tải lại.");
 
-                    ThongBaoManager.Instance.Create(
-                        userId: id,
-                        tieuDe: $"Bạn đã bị gỡ khỏi công việc: {tenCongViec}",
-                        noiDung: $"Công việc: {tenCongViec}",
-                        loaiThongBao: ThongBaoTypes.HeThong,
-                        idCongViec: idCongViec,
-                        idDuAn: idDuAn
-                    );
-                }
-
-                // 3. Chuẩn bị dữ liệu Auto-Join
-                List<Guid> thanhVienHienTai = ThanhVienDuAnManager.Instance.GetAllActiveMemberIds(idDuAn);
-                TblVaiTroDuAn vaiTroThanhVien = VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
-
-                // 4. Thêm những người mới được tick
-                foreach (Guid id in canThem)
-                {
-                    _repository.AddAssignment(idCongViec, id);
-
-                    // Hiệu ứng phụ: Auto-Join Dự án
-                    if (!thanhVienHienTai.Contains(id))
+                    List<Guid> danhSachCu = _repository.GetAssignedNhanVienIds(idCongViec).Distinct().ToList();
+                    // Trong luc popup mo neu user khac doi danh sach, yeu cau reload de tranh go nham.
+                    if (!new HashSet<Guid>(danhSachTam).SetEquals(danhSachCu))
+                        throw new InvalidOperationException("Phân công vừa thay đổi, vui lòng mở lại danh sách.");
+                    List<Guid> canGo = danhSachCu.Except(newAssigneeIds).ToList();
+                    if (canDongKBG && canGo.Count > 0 && khoa == null)
+                        throw new InvalidOperationException("Phân công có thay đổi đồng thời, vui lòng thử lại.");
+                    List<Guid> canThem = newAssigneeIds.Except(danhSachCu).ToList();
+                    foreach (Guid id in canGo)
                     {
-                        ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn
-                        {
-                            IdDuAn = idDuAn,
-                            IdNhanVien = id,
-                            IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
-                        });
-
-                        // Cập nhật lại mảng hiện tại để đề phòng gán liên tiếp người ngoài dự án
-                        thanhVienHienTai.Add(id);
-
-                        TblDuAn d = DuAnManager.Instance.GetDuAnById(idDuAn);
-                        string tenDuAn = d != null ? d.TenDuAn : "Dự án";
-
-                        ThongBaoManager.Instance.Create(
-                            userId: id,
-                            tieuDe: $"Bạn đã được thêm vào dự án: {tenDuAn}",
-                            noiDung: $"Dự án: {tenDuAn}",
-                            loaiThongBao: ThongBaoTypes.DuAn,
-                            idDuAn: idDuAn
-                        );
+                        // Ket toan + dong CHI phien cua nguoi nay tren task nay, truoc khi xoa assignment.
+                        var daChot = khoa == null ? null : khoa.ChotPhien(idCongViec, id, DateTime.UtcNow);
+                        _repository.RemoveAssignment(idCongViec, id);
+                        dsThongBao.Add(TaoThongBaoGoPhanCong(idDuAn, task, id, daChot, false));
                     }
 
-                    // Thông báo: gửi cho nhân viên vừa được giao công việc
-                    // IdNhanVien trong TblCongViec_NhanVien chính là aspnet_Users.UserId
-                    Guid assigneeUserId = id;
-                    if (congViec != null && assigneeUserId != Guid.Empty)
+                    List<Guid> thanhVienHienTai = canThem.Count == 0
+                        ? new List<Guid>() : ThanhVienDuAnManager.Instance.GetAllActiveMemberIds(idDuAn);
+                    TblVaiTroDuAn vaiTroThanhVien = canThem.Count == 0
+                        ? null : VaiTroDuAnManager.Instance.GetActiveByIdVaiTro("NGUOI_THAM_GIA");
+                    if (canThem.Count > 0 && vaiTroThanhVien == null)
+                        throw new InvalidOperationException("Không có vai trò thành viên dự án NGUOI_THAM_GIA.");
+                    foreach (Guid id in canThem)
                     {
-                        System.Threading.Tasks.Task.Run(() =>
+                        _repository.AddAssignment(idCongViec, id);
+                        if (!thanhVienHienTai.Contains(id))
                         {
-                            try
+                            ThanhVienDuAnManager.Instance.AddOrUpdate(new TblThanhVienDuAn
                             {
-                                string tieuDe = $"Bạn được giao công việc: {congViec.TenCongViec}";
-
-                                ThongBaoManager.Instance.Create(
-                                    userId: assigneeUserId,
-                                    tieuDe: tieuDe,
-                                    loaiThongBao: ThongBaoTypes.CongViec,
-                                    idCongViec: idCongViec,
-                                    idDuAn: idDuAn
-                                );
-                            }
-                            catch (Exception ex)
+                                IdDuAn = idDuAn,
+                                IdNhanVien = id,
+                                IdVaiTroDuAn = vaiTroThanhVien.IdVaiTroDuAn
+                            });
+                            thanhVienHienTai.Add(id);
+                            TblDuAn d = DuAnManager.Instance.GetDuAnById(idDuAn);
+                            string tenDuAn = d != null ? d.TenDuAn : "Dự án";
+                            dsThongBao.Add(new ThongBaoThayDoiPhanCong
                             {
-                                SysLogger.LogError(ex, "Failed to create ThongBao for task assignment");
-                            }
+                                NguoiNhan = id, DuAn = idDuAn, CongViec = Guid.Empty,
+                                Loai = ThongBaoTypes.DuAn,
+                                TieuDe = "Bạn đã được thêm vào dự án: " + tenDuAn,
+                                NoiDung = "Bạn đã được thêm vào dự án " + tenDuAn + " để tham gia thực hiện công việc."
+                            });
+                        }
+                        // Khong dung Task.Run trong transaction: co the gui truoc commit, khong co noiDung.
+                        // Them vao task DANG THUC HIEN khong tu dong Start dong ho cho nguoi moi.
+                        string ten = "[" + (task.MaCongViec ?? "--") + "] " + (task.TenCongViec ?? "Công việc");
+                        string khoangNgay = task.NgayBatDau.HasValue && task.NgayKetThuc.HasValue
+                            ? " Kế hoạch: " + task.NgayBatDau.Value.ToString("dd/MM/yyyy") + "–" +
+                              task.NgayKetThuc.Value.ToString("dd/MM/yyyy") + "." : "";
+                        dsThongBao.Add(new ThongBaoThayDoiPhanCong
+                        {
+                            NguoiNhan = id, DuAn = idDuAn, CongViec = idCongViec,
+                            Loai = ThongBaoTypes.CongViec,
+                            TieuDe = "Bạn được giao công việc: " + ten,
+                            NoiDung = "Bạn vừa được phân công công việc " + ten + "." + khoangNgay +
+                                " Đồng hồ tính giờ của bạn chưa tự bắt đầu; hãy mở Tính giờ công việc khi đến lúc thực hiện."
                         });
                     }
                 }
-
+                finally { if (khoa != null) khoa.Dispose(); }
                 scope.Complete();
             }
+            PhatThongBaoDaCommit(dsThongBao, ambientBenNgoai);
         }
         public string GetValueForTrangThaiCongViec(TrangThaiCongViec impact)
         {

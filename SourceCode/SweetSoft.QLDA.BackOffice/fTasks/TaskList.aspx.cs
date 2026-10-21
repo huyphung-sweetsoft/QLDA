@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Transactions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -394,6 +395,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             bool isPhase = TaskManager.Instance.CheckPhase(task);
             bool isFatherTask = TaskManager.Instance.CheckHasChildTasks(CurrentProjectId, task);
             byte oldStatus = task.TrangThai;
+            // Snapshot truoc khi sua object SubSonic, phuc vu doi chieu sau khi lay AppLock.
+            DateTime? ngayBatDauCu = task.NgayBatDau;
+            DateTime? ngayKetThucCu = task.NgayKetThuc;
+            Guid? phuThuocCu = task.IdCongViecPhuThuoc;
             string tenCv = txtEditTenCv.Text.Trim();
 
             if (string.IsNullOrEmpty(tenCv)) { ShowNotify(GetResourceText(BackEndResourceKeys.CAN_NOT_BE_BLANK), MSGType.Error); return; }
@@ -520,21 +525,70 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             task.TenCongViec = tenCv;
             task.MoTa = txtEditMoTa.Text.Trim();
             task.NgayCapNhat = DateTime.Now;
-            task.Save();
+            // GIU NGUYEN tat ca AutoSet* cua partner (tham so true khong doi).
+            // Chi boc mot giao dich bao ve quanh phan save + lan truyen du lieu.
+            Action luuVaDongBoLichPartner = () =>
+            {
+                task.Save();
 
-            if (isFatherTask)
-            {
-                TaskManager.Instance.AutoSetFirstChildStartTime(CurrentProjectId, task.IdCongViec, task.NgayBatDau.Value, true);
-            }
-            else
-            {
-                TaskManager.Instance.AutoSetDependentTime(CurrentProjectId, task.IdCongViec, true);
-                if (task.IdCongViecCha.HasValue)
+                if (isFatherTask)
                 {
-                    TaskManager.Instance.AutoSetParentPriority(CurrentProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                    TaskManager.Instance.AutoSetParentTime(CurrentProjectId, task.IdCongViecCha.Value, true);
-                    TaskManager.Instance.AutoSetParentStatus(CurrentProjectId, task.IdCongViecCha.Value);
+                    TaskManager.Instance.AutoSetFirstChildStartTime(CurrentProjectId, task.IdCongViec, task.NgayBatDau.Value, true);
                 }
+                else
+                {
+                    TaskManager.Instance.AutoSetDependentTime(CurrentProjectId, task.IdCongViec, true);
+                    if (task.IdCongViecCha.HasValue)
+                    {
+                        TaskManager.Instance.AutoSetParentPriority(CurrentProjectId, task.IdCongViecCha.Value, _dictPriorities);
+                        TaskManager.Instance.AutoSetParentTime(CurrentProjectId, task.IdCongViecCha.Value, true);
+                        TaskManager.Instance.AutoSetParentStatus(CurrentProjectId, task.IdCongViecCha.Value);
+                    }
+                }
+            };
+
+            try
+            {
+                if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+                {
+                    // ReadCommitted thay vi Serializable mac dinh de tranh giu range lock qua lon.
+                    var tuyChon = new TransactionOptions
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+                        Timeout = TimeSpan.FromMinutes(2)
+                    };
+                    using (var giaoDich = new TransactionScope(TransactionScopeOption.Required, tuyChon))
+                    using (var dongBo = new KhaiBaoGio20Manager().MoDongBoKeHoachTrongTransactionScope(CurrentProjectId))
+                    {
+                        dongBo.KiemTraBanGhiGoc(task.IdCongViec, ngayBatDauCu,
+                            ngayKetThucCu, phuThuocCu, oldStatus);
+                        dongBo.ChotGioTheoLichCu();       // Lich CU, dung moc hieu luc.
+                        luuVaDongBoLichPartner();          // KHONG thay doi AutoSetDependentTime.
+                        dongBo.KiemTraVaApDungLichMoi();  // Lich MOI, khong tinh nguoc.
+                        giaoDich.Complete();
+                    }
+                }
+                else
+                {
+                    // Flag V2 tat: giu nguyen luong cu, khong can ket noi KBG20.
+                    luuVaDongBoLichPartner();
+                }
+            }
+            catch (Exception ex)
+            {
+                string maThamChieu = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpperInvariant();
+                SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,
+                    "KBG20 DongBoKeHoach TaskList | Ma=" + maThamChieu + " | Task=" + task.IdCongViec);
+                // Chi hien ro loi NGHIEP VU duoc kiem soat; khong dua SQL exception ra trinh duyet.
+                bool loiNghiepVu = ex is InvalidOperationException &&
+                    (ex.Message.StartsWith("Du lieu cong viec vua duoc nguoi khac cap nhat") ||
+                     ex.Message.StartsWith("Khong the doi ngay bat dau cua cong viec") ||
+                     ex.Message.StartsWith("Khong the chuyen task [") ||
+                     ex.Message.StartsWith("Cong viec ["));
+                ShowNotify(loiNghiepVu ? ex.Message :
+                    "Không thể lưu thay đổi kế hoạch an toàn. Mã tham chiếu: " + maThamChieu,
+                    MSGType.Error);
+                return;
             }
 
             ShowNotify(GetResourceText(BackEndResourceKeys.DATA_HAS_BEEN_UPDATED_SUCCESSFULLY), MSGType.Success);

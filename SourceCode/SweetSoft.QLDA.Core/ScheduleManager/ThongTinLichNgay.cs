@@ -22,9 +22,31 @@ namespace SweetSoft.QLDA.Core.ScheduleManager
         // Chỉ có giá trị khi TrangThaiLich == "busy"
         public List<TomTatCongViec> DanhSachCongViec { get; set; }
 
+        // Lịch họp là loại sự kiện riêng, không được cộng vào số lượng công việc.
+        public List<TomTatCuocHop> DanhSachCuocHop { get; set; }
+
         public ThongTinLichNgay()
         {
             DanhSachCongViec = new List<TomTatCongViec>();
+            DanhSachCuocHop = new List<TomTatCuocHop>();
         }
+    }
+
+    /// <summary>Thông tin cuộc họp dùng trong lịch cá nhân, không thay đổi TblLichHop.</summary>
+    public class TomTatCuocHop
+    {
+        public Guid IdLichHop { get; set; }
+        public Guid IdDuAn { get; set; }
+        public string TenDuAn { get; set; }
+        public string MaCuocHop { get; set; }
+        public string TenCuocHop { get; set; }
+        public DateTime ThoiGianBatDau { get; set; }
+        public DateTime ThoiGianKetThuc { get; set; }
+        public string DiaDiemHop { get; set; }
+        public bool LaHopOnline { get; set; }
+        public Guid IdNguoiTao { get; set; }
+        public string TenNguoiChuTri { get; set; }
+        public bool LaChuTri { get; set; }
+        public bool DaThamGia { get; set; }
     }
 }

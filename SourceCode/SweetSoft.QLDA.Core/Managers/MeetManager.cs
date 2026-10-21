@@ -81,6 +81,13 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             return _repository.GetMeetingsByProject(projectId);
         }
+        /// <summary>Lịch họp theo nhân viên trên mọi dự án, không phụ thuộc ProjectId.</summary>
+        public List<SweetSoft.QLDA.Core.ScheduleManager.TomTatCuocHop> GetMeetingsByEmployeeInRange(
+            Guid idNhanVien, DateTime startDate, DateTime endExclusive)
+        {
+            return _repository.GetMeetingsByEmployeeInRange(idNhanVien, startDate, endExclusive);
+        }
+
         public string GetValueForTrangThaiCuoHop(object status)
         {
             switch (status)

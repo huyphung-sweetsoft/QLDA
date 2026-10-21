@@ -294,6 +294,7 @@
     <Compile Include="Managers\HopDongThucHienManager.cs" />
     <Compile Include="Managers\IssueManager.cs" />
     <Compile Include="Managers\KhachHangManager.cs" />
+    <Compile Include="Managers\KhaiBaoGio20DoiSoatManager.cs" />
     <Compile Include="Managers\KhaiBaoGioCloseJob.cs" />
     <Compile Include="Managers\KhaiBaoGioManager.cs" />
     <Compile Include="Managers\KhaiBaoGioModels.cs" />

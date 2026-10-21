@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -132,9 +133,53 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             string notUpdatedText = GetResourceText(BackEndResourceKeys.NOT_UPDATED_YET);
 
             ltrTenNhanVien.Text = row["DisplayName"].ToString();
-            ltrCCCD.Text = !string.IsNullOrEmpty(row["IdCCCD"].ToString()) ? row["IdCCCD"].ToString() : notUpdatedText;
             ltrGioiTinh.Text = !string.IsNullOrEmpty(row["GioiTinh"].ToString()) ? row["GioiTinh"].ToString() : notUpdatedText;
-            ltrDiaChi.Text = !string.IsNullOrEmpty(row["DiaChi"].ToString()) ? row["DiaChi"].ToString() : GetResourceText(BackEndResourceKeys.ADDRESS_NOT_UPDATED_YET);
+            // Địa chỉ mới đồng bộ 3 trường trong CtrlNhanVienPopup: DiaChi / MaTinh / MaXa.
+            // GetUserForDetail đi qua Repository và có thể chưa SELECT MaTinh, MaXa.
+            string diaChiChiTiet = row["DiaChi"] == DBNull.Value ? string.Empty : row["DiaChi"].ToString().Trim();
+            string maTinh = ReadOptionalColumn(row, "MaTinh");
+            string maXa = ReadOptionalColumn(row, "MaXa");
+            if (!row.Table.Columns.Contains("MaTinh") || !row.Table.Columns.Contains("MaXa"))
+            {
+                AspnetUser nhanVien = UserManager.Instance.GetUserById(idNhanVien);
+                if (nhanVien != null)
+                {
+                    maTinh = nhanVien.MaTinh;
+                    maXa = nhanVien.MaXa;
+                }
+            }
+
+            ThongTinDiaChiHanhChinh tenDiaChi =
+                UserManager.Instance.GetTenDiaChiHanhChinh(maTinh, maXa);
+
+            string tenTinh = tenDiaChi.TenTinhThanh;
+            string tenXa = tenDiaChi.TenXaPhuong;
+            string diaChiChuaCapNhat = GetResourceText(BackEndResourceKeys.ADDRESS_NOT_UPDATED_YET);
+            if (string.IsNullOrWhiteSpace(diaChiChuaCapNhat)) diaChiChuaCapNhat = notUpdatedText;
+
+            ltrTinhThanh.Text = EncodeOrEmptyText(tenTinh, notUpdatedText); 
+            ltrXaPhuong.Text = EncodeOrEmptyText(tenXa, notUpdatedText);
+            ltrDiaChi.Text = EncodeOrEmptyText(diaChiChiTiet, diaChiChuaCapNhat);
+
+            // Tóm tắt địa chỉ chỉ xuất hiện khi có tỉnh hoặc xã, tránh lặp lại 
+            // nguyên vẹn mỗi "Địa chỉ chi tiết" của bản ghi cũ.
+            boxDiaChiDayDu.Visible = !string.IsNullOrWhiteSpace(tenTinh) || !string.IsNullOrWhiteSpace(tenXa);
+            if (boxDiaChiDayDu.Visible)
+            {
+                var diaChiParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(diaChiChiTiet)) diaChiParts.Add(diaChiChiTiet);
+                if (!string.IsNullOrWhiteSpace(tenXa) &&
+                    diaChiChiTiet.IndexOf(tenXa, StringComparison.OrdinalIgnoreCase) < 0)
+                    diaChiParts.Add(tenXa);
+                if (!string.IsNullOrWhiteSpace(tenTinh) &&
+                    diaChiChiTiet.IndexOf(tenTinh, StringComparison.OrdinalIgnoreCase) < 0)
+                    diaChiParts.Add(tenTinh);
+                ltrDiaChiDayDu.Text = HttpUtility.HtmlEncode(string.Join(", ", diaChiParts));
+            }
+            else
+            {
+                ltrDiaChiDayDu.Text = string.Empty;
+            }
 
             if (row["NgaySinh"] != DBNull.Value)
             {
@@ -151,28 +196,6 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             ltrEmail.Text = !string.IsNullOrEmpty(row["Email"].ToString()) && !row["Email"].ToString().Contains("no-email.com") ? row["Email"].ToString() : notUpdatedText;
             ltrPhone.Text = !string.IsNullOrEmpty(row["MobileAlias"].ToString()) ? row["MobileAlias"].ToString() : notUpdatedText;
 
-            bool isActivated = true;
-            if (row.Table.Columns.Contains("IsActivated") && row["IsActivated"] != DBNull.Value)
-            {
-                isActivated = Convert.ToBoolean(row["IsActivated"]);
-            }
-            else if (row.Table.Columns.Contains("IsLockedOut") && row["IsLockedOut"] != DBNull.Value)
-            {
-                isActivated = !Convert.ToBoolean(row["IsLockedOut"]);
-            }
-            else if (row.Table.Columns.Contains("DaXoa") && row["DaXoa"] != DBNull.Value)
-            {
-                isActivated = !Convert.ToBoolean(row["DaXoa"]);
-            }
-
-            if (isActivated)
-            {
-                ltrTinhTrangCongTac.Text = string.Format("<span class=\"fw-bold text-success fs-6\">{0}</span>", GetResourceText(BackEndResourceKeys.WORKING));
-            }
-            else
-            {
-                ltrTinhTrangCongTac.Text = string.Format("<span class=\"fw-bold text-secondary fs-6\">{0}</span>", GetResourceText(BackEndResourceKeys.INACTIVE) ?? "Đã nghỉ");
-            }
 
             if (row["NgayGiaNhap"] != DBNull.Value)
             {
@@ -384,6 +407,20 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 break;
             }
             return value;
+        }
+
+        private static string ReadOptionalColumn(DataRow row, string columnName)
+        {
+            if (row == null || !row.Table.Columns.Contains(columnName) || row[columnName] == DBNull.Value)
+                return string.Empty;
+            return Convert.ToString(row[columnName]).Trim();
+        }
+
+        private static string EncodeOrEmptyText(string value, string fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "<span class=\"nvd-info-empty\">" + HttpUtility.HtmlEncode(fallback) + "</span>";
+            return HttpUtility.HtmlEncode(value.Trim());
         }
 
         private string CalculateSeniority(DateTime joinDate)

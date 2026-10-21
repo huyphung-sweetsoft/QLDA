@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SubSonic;
 using SweetSoft.QLDA.Core.Caches;
 using SweetSoft.QLDA.Core.EnumHelper;
@@ -18,6 +18,8 @@ using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,6 +38,13 @@ namespace SweetSoft.QLDA.Core.Managers
         UpgradeToReal,//Nâng cấp nhân sự chay lên có quyền đăng nhập
         UpdateReal//Chỉnh sửa nhân sự có quyền đăng nhập (thông tin cá nhân + thông tin tài khoản)
     }
+    /// <summary>Tên hành chính dùng để hiển thị địa chỉ nhân viên.</summary>
+    public sealed class ThongTinDiaChiHanhChinh
+    {
+        public string TenTinhThanh { get; set; } = string.Empty;
+        public string TenXaPhuong { get; set; } = string.Empty;
+    }
+
     public class UserManager : BaseManager
     {   
         private static readonly Lazy<UserManager> _instance = new Lazy<UserManager>(() => new UserManager());
@@ -494,6 +503,52 @@ namespace SweetSoft.QLDA.Core.Managers
         public DataTable GetUserForDetail(Guid userId)
         {
             return _repository.GetNhanVienForDetail(userId);
+        }
+
+        /// <summary>
+        /// Tra tên tỉnh/thành và xã/phường theo mã hành chính lưu trong aspnet_Users.
+        /// Không phụ thuộc các trường SELECT của UserRepository.GetNhanVienForDetail.
+        /// </summary>
+        public ThongTinDiaChiHanhChinh GetTenDiaChiHanhChinh(string maTinh, string maXa)
+        {
+            var result = new ThongTinDiaChiHanhChinh();
+            maTinh = string.IsNullOrWhiteSpace(maTinh) ? null : maTinh.Trim();
+            maXa = string.IsNullOrWhiteSpace(maXa) ? null : maXa.Trim();
+            if (maTinh == null && maXa == null) return result;
+
+            ConnectionStringSettings settings =
+                ConfigurationManager.ConnectionStrings["SweetSoft.QLDA.BackOffice"];
+            if (settings == null || string.IsNullOrWhiteSpace(settings.ConnectionString))
+                throw new ConfigurationErrorsException(
+                    "Không tìm thấy connection string 'SweetSoft.QLDA.BackOffice'.");
+
+            const string sql = @"
+SELECT
+    (SELECT TOP (1) TenTinhThanh
+     FROM TblTinhThanh WHERE MaTinh = @MaTinh) AS TenTinhThanh,
+    (SELECT TOP (1) TenXaPhuong
+     FROM TblXaPhuong
+     WHERE MaXa = @MaXa AND (@MaTinh IS NULL OR MaTinh = @MaTinh)) AS TenXaPhuong";
+
+            using (var connection = new SqlConnection(settings.ConnectionString))
+            using (var command = new SqlCommand(sql, connection))
+            {
+                command.Parameters.Add("@MaTinh", SqlDbType.VarChar, 2).Value =
+                    (object)maTinh ?? DBNull.Value;
+                command.Parameters.Add("@MaXa", SqlDbType.VarChar, 10).Value =
+                    (object)maXa ?? DBNull.Value;
+
+                connection.Open();
+                using (SqlDataReader reader = command.ExecuteReader(CommandBehavior.SingleRow))
+                {
+                    if (reader.Read())
+                    {
+                        result.TenTinhThanh = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+                        result.TenXaPhuong = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+                    }
+                }
+            }
+            return result;
         }
 
         #endregion

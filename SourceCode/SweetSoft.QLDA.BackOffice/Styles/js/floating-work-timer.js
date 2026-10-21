@@ -156,11 +156,91 @@
         }
         return false;
     }
+    /* KBG2: multi-session view. Backend numbers remain authoritative. */
+    var multiList = document.getElementById('kbgFloatMultiList');
+    function multiClock(sec) { return formatClock(Math.max(0, Number(sec) || 0)); }
+    function multiSeconds(t, now) {
+        var sec = Number(t.seconds) || 0;
+        if (t.counting === true) {
+            var end = t.boundary == null ? now : Math.min(now, Number(t.boundary));
+            sec += Math.max(0, Math.floor((end - Number(state.serverNow)) / 1000));
+        }
+        return sec;
+    }
+    function tickMulti(now) {
+        if (!state || !state.timers || !state.timers.length) return;
+        var first = state.timers[0];
+        var firstSec = multiSeconds(first, now);
+        write('compact-time', multiClock(firstSec));
+        write('detail-time', multiClock(firstSec));
+        write('compact-state', state.timers.length + ' ĐỒNG HỒ');
+        write('detail-status', state.timers.filter(function(t){return t.counting===true;}).length + ' đang cộng');
+        root.classList.toggle('is-break', !state.timers.some(function(t){return t.counting===true;}));
+        if (multiList) {
+            var values = multiList.querySelectorAll('[data-kbg-multi-id]');
+            for (var i = 0; i < values.length; i++) {
+                var id = values[i].getAttribute('data-kbg-multi-id');
+                for (var j = 0; j < state.timers.length; j++) {
+                    if (state.timers[j].id === id) {
+                        values[i].textContent = multiClock(multiSeconds(state.timers[j], now));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    function setMultiSnapshot(s, startTime, finishTime) {
+        if (!s || !s.timers || !s.timers.length) { hide(); return; }
+        var wasHidden = root.hidden;
+        state = s;
+        offline = false;
+        offsetMs = Number(s.serverNow) - (startTime + finishTime) / 2;
+        root.hidden = false;
+        root.classList.add('is-multi');
+        root.classList.remove('is-offline');
+        var first = s.timers[0];
+        write('compact-code', s.timers.length + ' đồng hồ');
+        write('task-code', first.taskCode || 'Công việc');
+        write('project-code', first.projectCode || 'Dự án');
+        write('task-name', first.taskName || '');
+        write('project-name', s.timers.length + ' phiên đang mở trên các dự án');
+        write('tooltip-code', s.timers.length + ' đồng hồ đang mở');
+        write('tooltip-name', first.taskName || '');
+        write('tooltip-project', 'Nhấn để xem danh sách công việc');
+        write('watch-label', 'Thời gian phiên đầu tiên');
+        if (multiList) {
+            multiList.hidden = false;
+            multiList.textContent = '';
+            var pageUrl = root.getAttribute('data-time-page');
+            for (var k = 0; k < s.timers.length; k++) {
+                var t = s.timers[k];
+                var line = document.createElement('div');line.className = 'kbg-float-multi-row';
+                var title = document.createElement('div'); title.className = 'kbg-float-multi-title';
+                title.textContent = (t.projectCode || 'Dự án') + ' / ' + (t.taskCode || 'Công việc') +
+                    ' · ' + (t.type === 2 ? 'Tăng ca' : 'Giờ thường') + (t.source === 2 ? ' (tự động)' : '');
+                line.appendChild(title);
+                var name = document.createElement('div');name.className = 'kbg-float-multi-name';
+                name.textContent = t.taskName || '';line.appendChild(name);
+                var bottom = document.createElement('div');bottom.className = 'kbg-float-multi-bottom';
+                var time = document.createElement('strong');time.setAttribute('data-kbg-multi-id', t.id);
+                time.textContent = multiClock(t.seconds);bottom.appendChild(time);
+                var link = document.createElement('a');link.textContent = 'Mở dự án';
+                try {var u = new URL(pageUrl,window.location.href);u.searchParams.set('projectId',t.projectId);link.href=u.href;}
+                catch (_) {link.href=pageUrl;}
+                bottom.appendChild(link);line.appendChild(bottom);multiList.appendChild(line);
+            }
+        }
+        if (wasHidden) restorePosition();
+        tickMulti(Date.now() + offsetMs);
+        placeOverlays();
+    }
+
     function tick() {
         var toast = document.getElementById('liveToast');
         root.classList.toggle('is-toast-visible', !!(toast && toast.classList.contains('show')));
         if (!state || root.hidden || offline) return;
         var serverNow = Date.now() + offsetMs;
+        if (state.version === 2) { tickMulti(serverNow); return; }
         if (serverNow >= Number(state.dayEnd)) {
             hide(); // The close job may commit later; do not display an expired running timer.
             return;
@@ -177,6 +257,9 @@
         write('detail-status', resting ? 'Nghỉ trưa' : 'Đang chạy');
     }
     function setSnapshot(s, startTime, finishTime) {
+        if (s && s.version === 2) { setMultiSnapshot(s, startTime, finishTime); return; }
+        root.classList.remove('is-multi');
+        if (multiList) multiList.hidden = true;
         if (!s || s.running !== true) { hide(); return; }
         var wasHidden = root.hidden;
         state = s;

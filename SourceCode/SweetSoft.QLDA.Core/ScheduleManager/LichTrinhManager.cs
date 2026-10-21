@@ -27,6 +27,33 @@ namespace SweetSoft.QLDA.Core.ScheduleManager
             _tuanRepository = new CauHinhTuanLamViecRepository(_auditManager);
             _ngoaiLeRepository = new LichNgoaiLeRepository(_auditManager);
         }
+        /// <summary>
+        /// Chỉ dành cho LichCaNhan. Giữ hàm cũ nguyên vẹn để lịch mini của nhân viên
+        /// và logic phân bổ công việc không tự đổi theo lịch họp.
+        /// </summary>
+        public List<ThongTinLichNgay> LayLichTrinhNhanVienCoCuocHop(
+            Guid idNhanVien, DateTime startDate, DateTime endDate)
+        {
+            var days = LayLichTrinhNhanVien(idNhanVien, startDate, endDate);
+            if (days == null || days.Count == 0) return days;
+            DateTime endExclusive = endDate.Date.AddDays(1);
+            var meetings = MeetManager.Instance.GetMeetingsByEmployeeInRange(
+                idNhanVien, startDate.Date, endExclusive);
+            foreach (var day in days)
+            {
+                DateTime begin = day.Ngay.Date;
+                DateTime next = begin.AddDays(1);
+                day.DanhSachCuocHop = meetings
+                    .Where(m => m.ThoiGianBatDau < next && m.ThoiGianKetThuc > begin)
+                    .OrderBy(m => m.ThoiGianBatDau).ThenBy(m => m.TenCuocHop)
+                    .ToList();
+                if (day.DanhSachCuocHop.Count > 0) day.ChoPhepClick = true;
+                // Không đổi TrangThaiLich: ngày lễ/cuối tuần vẫn là ngày nghỉ,
+                // còn giao diện tự xét có cuộc họp để không ghi sai "Trống".
+            }
+            return days;
+        }
+
         public List<ThongTinLichNgay> LayLichTrinhNhanVien(Guid idNhanVien, DateTime startDate, DateTime endDate)
         {
             List<ThongTinLichNgay> ketQua = new List<ThongTinLichNgay>();

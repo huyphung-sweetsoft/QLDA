@@ -29,6 +29,7 @@ public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
         response.Cache.SetNoStore();
         response.Cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
         response.TrySkipIisCustomErrors = true;
+        response.SuppressFormsAuthenticationRedirect = true;
 
         if (!string.Equals(context.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
         {
@@ -50,6 +51,36 @@ public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
             {
                 response.StatusCode = 403;
                 response.Write("{\"error\":\"not_employee\"}");
+                return;
+            }
+
+            if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+            {
+                DateTime utc = DateTime.UtcNow;
+                var timers = new KhaiBaoGio20Manager().LayDongHoHienThi(user.UserId, utc);
+                var dto = new
+                {
+                    version = 2,
+                    running = timers.Count > 0,
+                    serverNow = (long)(utc - Epoch).TotalMilliseconds,
+                    timers = timers.Select(x => new
+                    {
+                        id = x.Phien.IdPhien.ToString("D"),
+                        taskId = x.Phien.IdCongViec.ToString("D"),
+                        projectId = x.Phien.IdDuAn.ToString("D"),
+                        taskCode = x.Phien.MaCongViec,
+                        taskName = x.Phien.TenCongViec,
+                        projectCode = x.Phien.MaDuAn,
+                        projectName = x.Phien.TenDuAn,
+                        type = (byte)x.Phien.LoaiGio,
+                        source = x.Phien.NguonBatDau,
+                        seconds = x.SoGiayHienTai,
+                        counting = x.DangCongGio,
+                        boundary = x.MocDungCongLucUtc.HasValue
+                            ? (long?)(x.MocDungCongLucUtc.Value - Epoch).TotalMilliseconds : null
+                    }).ToArray()
+                };
+                response.Write(new JavaScriptSerializer().Serialize(dto));
                 return;
             }
 

@@ -132,15 +132,6 @@ namespace SweetSoft.QLDA.BackOffice
         protected global::System.Web.UI.UpdatePanel upnlPersonalInfo;
 
         /// <summary>
-        /// txtCCCD control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraTextBox txtCCCD;
-
-        /// <summary>
         /// txtNgaySinh control.
         /// </summary>
         /// <remarks>
@@ -157,6 +148,24 @@ namespace SweetSoft.QLDA.BackOffice
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlGioiTinh;
+
+        /// <summary>
+        /// ddlTinhThanh control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlTinhThanh;
+
+        /// <summary>
+        /// ddlXaPhuong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlXaPhuong;
 
         /// <summary>
         /// txtDiaChi control.

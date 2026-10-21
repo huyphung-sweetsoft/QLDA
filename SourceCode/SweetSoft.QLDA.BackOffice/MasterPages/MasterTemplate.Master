@@ -1,4 +1,4 @@
-<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterTemplate.master.cs" Inherits="SweetSoft.QLDA.BackOffice.MasterPages.MasterTemplate" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="MasterTemplate.master.cs" Inherits="SweetSoft.QLDA.BackOffice.MasterPages.MasterTemplate" %>
 
 <%--//-----------------------PROGRAMER LOGS-----------------------------%>
 <%--
@@ -22,6 +22,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="shortcut icon" href="/favicon.ico">
     <asp:PlaceHolder runat="server">
         <script type="text/javascript">
+            // PACE: khong coi cac ket noi realtime / refresh ngam la "dang tai trang".
+            // Khai bao truoc ScriptManager (pace.min.js duoc nap qua CompositeScript).
+            // Gioi han ignoreURLs vao request ngam; request nguoi dung van hien Pace.
+            window.paceOptions = {
+                ajax: {
+                    trackWebSockets: false,
+                    ignoreURLs: [
+                        'socket.io',
+                        'qlda-realtime',
+                        '/signalr/',
+                        'WebService.asmx/GetLatestNotifications',
+                        'WebService.asmx/GetUnreadCount',
+                        'FloatingWorkTimer.ashx',
+                        'KhaiBaoGio20.ashx'
+                    ]
+                }
+            };
+
             var timerStart = Date.now();
             var CMSMasterJs = {
                 get HostPath() {
@@ -875,6 +893,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div>
         <%-- Floating timer: chỉ đọc trạng thái, không tạo postback --%>
         <script src="<%= ResolveUrl("~/Styles/js/floating-work-timer.js") %>"></script>
+        <%-- SignalR Dot 3: mot client tren moi trang Master, khong can cho Task. --%>
+        <% if (SweetSoft.QLDA.BackOffice.Realtime.QldaRealtimeSettings.NotificationsEnabled) { %>
+        <script src="<%= ResolveUrl("~/Scripts/jquery.signalR-2.4.3.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Styles/js/qlda-realtime-client.js") %>?v=20261019rt3"></script>
+        <% } %>
         <%--Render from server--%>
         <asp:ContentPlaceHolder runat="server" ID="cpVendorScript"></asp:ContentPlaceHolder>
 
@@ -1030,7 +1053,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 var _preview = null;
                 var _previewTarget = null;
                 var _requestToken = 0;
-                var _listRequest = null; // Hủy request cũ nếu người dùng đóng/mở hoặc DOM đổi.
+                var _listElement = null; // ASP.NET UpdatePanel có thể thay DOM của chuông.
+                var _notificationRealtimeEnabled = <%= SweetSoft.QLDA.BackOffice.Realtime.QldaRealtimeSettings.NotificationsEnabled ? "true" : "false" %>;
+                var _realtimeRefreshTimer = null;
+                var _pollInFlight = false, _pollAgain = false;
 
                 var iconMap = {
                     'CONG_VIEC': { icon: 'bx bx-task', css: 'qlda-noti-icon-task', label: 'Công việc' },
@@ -1306,15 +1332,49 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     _initialized = false;
                 }
                 function pollNotifications() {
-                    // Không truy vấn GetLatestNotifications mỗi 30 giây nữa (tránh tự tải
-                    // thêm bản ghi khi người dùng chưa nhấn Xem thêm).
+                    if (_pollInFlight) { _pollAgain = true; return; }
+                    _pollInFlight = true;
                     $.ajax({
                         type: 'POST', url: '/WebService.asmx/GetUnreadCount',
                         contentType: 'application/json; charset=utf-8', dataType: 'json'
                     }).done(function (res) {
                         if (!res || !res.d || !res.d.success) return;
-                        updateBadge(Number(res.d.count) || 0);
+                        updateBadge(Number(res.d.unreadCount) || 0);
+                        if (_initialized && _currentPage > 0 && !_loading && mergeItems(res.d.data)) {
+                            draw();
+                        }
+                    }).always(function () {
+                        _pollInFlight = false;
+                        if (_pollAgain) {
+                            _pollAgain = false;
+                            pollNotifications();
+                        }
                     });
+                }
+                function scheduleRealtimeNotificationRefresh() {
+                    // Nen duy nhat signal "co thay doi"; du lieu that lay qua WebService.
+                    if (_realtimeRefreshTimer != null) clearTimeout(_realtimeRefreshTimer);
+                    _realtimeRefreshTimer = setTimeout(function () {
+                        _realtimeRefreshTimer = null;
+                        pollNotifications();
+                    }, 160);
+                }
+                function connectNotificationRealtime() {
+                    if (!_notificationRealtimeEnabled || !window.QldaRealtime ||
+                        typeof window.QldaRealtime.on !== 'function') return;
+                    window.QldaRealtime.on(function (event) {
+                        if (!event) return;
+                        if (event.kind === 'notifications-changed' ||
+                            event.kind === 'connection-restored') {
+                            scheduleRealtimeNotificationRefresh();
+                        }
+                    });
+                    var connecting = window.QldaRealtime.start('<%= ResolveUrl("~/qlda-realtime") %>');
+                    if (connecting && typeof connecting.fail === 'function') {
+                        connecting.fail(function () {
+                            // Mat ket noi => chuong van poll 30 giay. Khong can alert.
+                        });
+                    }
                 }
                 function getContent(n) {
                     var candidates = [n.noiDung, n.noiDungThongBao, n.moTa, n.moTaThongBao, n.content, n.message, n.thongDiep];
@@ -1682,6 +1742,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 });
 
                 pollNotifications();
+                connectNotificationRealtime();
                 setInterval(pollNotifications, 30000);
             })();
         </script>

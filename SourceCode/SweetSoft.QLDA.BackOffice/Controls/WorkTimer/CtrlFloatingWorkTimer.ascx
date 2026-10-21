@@ -36,9 +36,11 @@
         </div>
         <div class="kbg-float-task-name" data-kbg="task-name"></div>
         <div class="kbg-float-project-name" data-kbg="project-name"></div>
+        <%-- V2: danh sach cac phien dang mo, hidden khi phan hoi API V1 --%>
+        <div id="kbgFloatMultiList" class="kbg-float-multi-list" hidden></div>
         <div class="kbg-float-watch">
             <strong data-kbg="detail-time">00:00:00</strong>
-            <span>Thời gian công việc hôm nay</span>
+            <span data-kbg="watch-label">Thời gian công việc hôm nay</span>
         </div>
         <a id="kbgFloatGoto" class="kbg-float-goto" href="<%= ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio.aspx") %>">
             Đến trang Khai báo giờ <i class="mdi mdi-arrow-top-right" aria-hidden="true"></i>

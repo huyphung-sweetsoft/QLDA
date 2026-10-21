@@ -2,6 +2,7 @@
 using SweetSoft.QLDA.Core.Functions;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
+using SweetSoft.QLDA.Core.ResourceTexts;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,10 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Diagnostics;
+using System.Transactions;
+using SweetSoft.QLDA.BackOffice.fTasks.Controls;
+using SweetSoft.QLDA.Core.EnumHelper;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
 {
     /// <summary>
@@ -24,13 +29,23 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
     /// </summary>
     public partial class KhaiBaoGio : BaseAdminPage
     {
-        public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.EmployeeDashboard;
+        // Giong TaskList: tab du an can dung ModuleKey dung de CtrlProjectTabs active.
+        // Duong V1 ngoai du an van giu module EmployeeDashboard.
+        public override ModuleKeys PAGE_FUNCTION_CODE =>
+            CurrentProjectId != Guid.Empty ? ModuleKeys.KhaiBaoGio : ModuleKeys.EmployeeDashboard;
 
         /// <summary>
         /// Bỏ qua kiểm tra quyền Menu tự động của BaseAdminPage để nhân viên không bị lỗi 403.
         /// Trang này kiểm soát quyền truy cập trực tiếp bằng cờ LaNhanVien.
         /// </summary>
         public override bool IsLogin => true;
+
+        /// <summary>
+        /// Trang trong du an va V2 duoc kich hoat => chi render / xu ly V2.
+        /// Ngoai du an van giu V1 de khong pha duong legacy chua chuyen doi.
+        /// </summary>
+        protected bool LaGiaoDienKbg20 =>
+            CurrentProjectId != Guid.Empty && KhaiBaoGioManager.KhaiBaoGio20DaKichHoat();
 
         private static readonly string[] Weekdays =
             { "Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7" };
@@ -49,10 +64,103 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
                 return;
             }
 
+            bool dungV2 = LaGiaoDienKbg20;
+
+            // Chặn hẳn UpdatePanel V1 trên server: không render và không tải dữ liệu.
+            // Controls vẫn tồn tại trong control tree để bảo toàn WebForms/designer V1.
+            upnlMain.Visible = !dungV2;
+            btnTaskAction.Visible = !dungV2;
+            btnRefresh.Visible = !dungV2;
+
+            if (dungV2)
+            {
+                AspnetUser employee = UserManager.Instance.GetUserById(userId);
+                pnlNotEmployee.Visible = employee == null || !employee.LaNhanVien;
+            }
+
+            // Tieu chuan TaskList: gan project tabs tren moi request, breadcrumb chi lan dau.
+            CauHinhDieuHuongDuAn(!IsPostBack);
+
+            // Giống TaskList: nút workflow dùng AJAX, không reload toàn bộ trang.
+            // Nút ở cpMain, popup ở cpModalMain: đăng ký bằng ScriptManager để
+            // tránh trigger cross naming-container trong markup.
+            if (dungV2 && !pnlNotEmployee.Visible)
+            {
+                var workflowTrigger = TimControl<LinkButton>(Page, "btnKbg20Workflow");
+                var sm = ScriptManager.GetCurrent(Page);
+                if (workflowTrigger != null && sm != null)
+                    sm.RegisterAsyncPostBackControl(workflowTrigger);
+            }
+
+            // Chỉ hook các Ctrl Task khi đang thực sự dùng UI V2.
+            if (dungV2 && Kbg20TichHopTask.DuocKichHoat && !pnlNotEmployee.Visible)
+                CaiDatKbg20TaskHooks(userId);
+
             if (IsPostBack) return;
+
+            // V2 lấy dữ liệu bằng KhaiBaoGio20.ashx; KHÔNG gọi GetTodayView/BindAll của V1.
+            if (dungV2) return;
 
             InitHeader(userId);
             BindAll(null, null);
+        }
+
+        /// <summary>
+        /// Cau hinh Navigation / CtrlProjectTabs o Page_Load, nhu TaskList.
+        /// Tim control qua cpMain de khong phu thuoc file .aspx.designer.cs
+        /// (ban giao 2D khong kem designer cua solution nguoi dung).
+        /// </summary>
+        private void CauHinhDieuHuongDuAn(bool lanDau)
+        {
+            if (CurrentProjectId == Guid.Empty) return;
+
+            Control content = Master != null ? Master.FindControl("cpMain") : null;
+            if (content == null)
+                throw new InvalidOperationException("Khong tim thay ContentPlaceHolder cpMain cua MasterTemplate.");
+
+            var projectTabs = content.FindControl("ProjectTabsKbg")
+                as SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs;
+            if (projectTabs == null)
+                throw new InvalidOperationException("Khong tim thay ProjectTabsKbg trong KhaiBaoGio.aspx.");
+
+            // CtrlProjectTabs.BindTabs() chay o OnPreRender, can duoc gan tren moi postback.
+            projectTabs.ProjectId = CurrentProjectId;
+
+            if (!lanDau) return;
+
+            var navigation = content.FindControl("NavigationKbg")
+                as SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb;
+            if (navigation == null)
+                throw new InvalidOperationException("Khong tim thay NavigationKbg trong KhaiBaoGio.aspx.");
+
+            // Theo cung cau truc TaskList: Danh sach du an -> Chuc nang hien tai.
+            navigation.MainTitle = "Tính giờ công việc";
+            navigation.keyValuePairUrls = new Dictionary<string, string>
+            {
+                { GetRelativeClientPath(RewriteURLHelper.Projects), GetResourceText(BackEndResourceKeys.PROJECT_LIST) },
+                { "javascript:;", "Tính giờ công việc" }
+            };
+        }
+
+        /// <summary>
+        /// Tao token cho lenh POST cua KhaiBaoGio20.ashx.
+        /// Phai khop CheckToken: MachineKey / purpose / user id / ngay UTC.
+        /// Khong phai token V1 va khong thay doi cach xac thuc cua API.
+        /// </summary>
+        protected string Kbg20RequestToken()
+        {
+            AspnetUser user = SweetContext.Current != null ? SweetContext.Current.User : null;
+            if (user == null || user.UserId == Guid.Empty)
+                throw new UnauthorizedAccessException("Khong xac dinh duoc nhan vien dang nhap de tao token tinh gio.");
+
+            string payload = user.UserId.ToString("N") + "|"
+                           + DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+            byte[] encrypted = MachineKey.Protect(
+                System.Text.Encoding.UTF8.GetBytes(payload), "KBG20", "WebActionV1");
+            if (encrypted == null || encrypted.Length == 0)
+                throw new InvalidOperationException("Khong tao duoc token bao ve thao tac tinh gio.");
+
+            return Convert.ToBase64String(encrypted);
         }
 
         private void InitHeader(Guid userId)
@@ -301,6 +409,9 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
 
         protected void btnTaskAction_Click(object sender, EventArgs e)
         {
+            // Không cho POST V1 Start/Stop khi dự án đang chạy V2.
+            if (LaGiaoDienKbg20) return;
+
             // Đọc dữ liệu trước khi xóa để tránh giữ lại yêu cầu cũ
             // trong trạng thái xử lý phía server.
             string rawTaskId = hdfActionTaskId.Value;
@@ -391,6 +502,7 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
 
         protected void btnRefresh_Click(object sender, EventArgs e)
         {
+            if (LaGiaoDienKbg20) return;
             try
             {
                 // Chốt sổ do job Hangfire đảm nhiệm; làm mới chỉ đọc lại dữ liệu.
@@ -615,5 +727,171 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
         }
 
         #endregion
+    
+        // KBG20 2D - KHONG viet lai handler cua partner; chi host cac Ctrl goc.
+        private static T TimControl<T>(Control root,string id) where T : Control
+        {
+            if(root==null)return null;
+            if(root.ID==id)return root as T;
+            foreach(Control child in root.Controls)
+            {
+                var hit=TimControl<T>(child,id);
+                if(hit!=null)return hit;
+            }
+            return null;
+        }
+        private bool LaPmDuAn(Guid uid)
+        {
+            Guid? pm=DuAnManager.Instance.LayIdNhanVienQuanLy(CurrentProjectId);
+            return pm.HasValue && pm.Value==uid;
+        }
+        private static Guid NhanVienDangNhap()
+        {
+            var u=SweetContext.Current==null?null:SweetContext.Current.User;
+            return u==null?Guid.Empty:u.UserId;
+        }
+        private void CaiDatKbg20TaskHooks(Guid uid)
+        {
+            var start=TimControl<CtrlStartTask>(Page,"KbgCtrlStartTask");
+            var complete=TimControl<CtrlFastCompleteTask>(Page,"KbgCtrlFastCompleteTask");
+            var review=TimControl<CtrlFastReviewTask>(Page,"KbgCtrlFastReviewTask");
+            if(start!=null)
+            {
+                start.IdDuAnNguonKbg20=CurrentProjectId;
+                start.LuuBatDauQuaKbg20=(task,luuTask) =>
+                {
+                    XacThucKbg20Workflow(task,uid,false);
+                    bool overtime=string.Equals(Convert.ToString(ViewState["Kbg20FlowType"]),"overtime",StringComparison.OrdinalIgnoreCase);
+                    bool overdue=ViewState["Kbg20FlowOverdue"] is bool && (bool)ViewState["Kbg20FlowOverdue"];
+                    Kbg20TichHopTask.StartTaskVaGio(CurrentProjectId,task,uid,Guid.NewGuid(),
+                        overdue,true,overtime,luuTask);
+                };
+                start.ActionStarted+=(sender,args)=>DangKyRefeshKbg20();
+            }
+            if(complete!=null)
+            {
+                complete.IdDuAnNguonKbg20=CurrentProjectId;
+                complete.LaPmNguonKbg20=LaPmDuAn(uid);
+                // Ban than CtrlFastCompleteTask goi Kbg20TichHopTask.LuuHoanThanh neu co flag.
+                complete.ActionCompleted+=(sender,args)=>DangKyRefeshKbg20();
+            }
+            if(review!=null)
+            {
+                review.IsPM=LaPmDuAn(uid);
+                review.ActionCompleted+=(sender,args)=>DangKyRefeshKbg20();
+            }
+        }
+        private void DangKyRefeshKbg20()
+        {
+            // Ctrl Task has called ExtraModal.CloseModal() before raising the event.
+            // Do NOT reload the page: it interrupts the close animation and resets KBG20 UI.
+            ScriptManager.RegisterStartupScript(Page,Page.GetType(),"Kbg20WorkflowRefresh_"+Guid.NewGuid().ToString("N"),
+                "window.setTimeout(function(){if(typeof window.Kbg20RefreshAfterWorkflow==='function')" +
+                "window.Kbg20RefreshAfterWorkflow();},260);",true);
+        }
+        private TblCongViec XacThucKbg20Workflow(Guid taskId,Guid userId,bool laPm)
+        {
+            if(!Kbg20TichHopTask.DuocKichHoat || taskId==Guid.Empty || userId==Guid.Empty || CurrentProjectId==Guid.Empty)
+                throw new UnauthorizedAccessException("Khong duoc phep thao tac.");
+            var task=TaskManager.Instance.FetchById(taskId);
+            if(task==null || task.IdDuAn!=CurrentProjectId || task.DaXoa==true)
+                throw new UnauthorizedAccessException("Task khong thuoc du an hoac da xoa.");
+            if(!laPm && !TaskManager.Instance.GetAssignedNhanVienIds(taskId).Contains(userId))
+                throw new UnauthorizedAccessException("Ban khong duoc phan cong truc tiep vao task nay.");
+            return task;
+        }
+        private static List<StartTaskDependencyWarning> CanhBaoPhuThuocTuTaskList(TblCongViec task)
+        {
+            var list=new List<StartTaskDependencyWarning>();
+            if(task.IdCongViecPhuThuoc.HasValue)
+            {
+                var dep=TaskManager.Instance.FetchById(task.IdCongViecPhuThuoc.Value);
+                if(dep!=null && dep.TrangThai!=2 && dep.TrangThai!=3)
+                    list.Add(new StartTaskDependencyWarning{DependencyTask=dep,ParentTask=null,TargetTask=task});
+            }
+            Guid? id=task.IdCongViecCha;
+            var seen=new HashSet<Guid>();
+            while(id.HasValue && seen.Add(id.Value))
+            {
+                var parent=TaskManager.Instance.FetchById(id.Value);
+                if(parent==null)break;
+                if(parent.IdCongViecPhuThuoc.HasValue)
+                {
+                    var dep=TaskManager.Instance.FetchById(parent.IdCongViecPhuThuoc.Value);
+                    if(dep!=null && dep.TrangThai!=2 && dep.TrangThai!=3)
+                        list.Add(new StartTaskDependencyWarning{DependencyTask=dep,ParentTask=parent,TargetTask=task});
+                }
+                id=parent.IdCongViecCha;
+            }
+            return list;
+        }
+        protected void btnKbg20Workflow_Click(object sender,EventArgs e)
+        {
+            try
+            {
+                var uid=NhanVienDangNhap();
+                Guid id;
+                if(!Guid.TryParse(Request.Form["kbg20FlowTask"],out id))throw new InvalidOperationException("Ma cong viec khong hop le.");
+                string action=Request.Form["kbg20FlowAction"];
+                bool pm=LaPmDuAn(uid);
+                // PM duoc xac nhan hoan thanh truc tiep du khong duoc phan cong.
+                // Hanh dong start va gui duyet cua nhan vien van doi hoi phan cong.
+                var task=XacThucKbg20Workflow(id,uid,pm && (action=="review" || action=="complete"));
+                if(action=="start")
+                {
+                    if(task.TrangThai!=0)throw new InvalidOperationException("Task khong con o trang thai Chua bat dau.");
+                    if(task.NgayBatDau.HasValue && task.NgayBatDau.Value.Date>DateTime.Today)
+                        throw new InvalidOperationException("Task chua den ngay bat dau.");
+                    if(TaskManager.Instance.CheckHasChildTasks(CurrentProjectId,task))
+                        throw new InvalidOperationException("Task cha co con, nut Start tu TaskList khong ap dung truc tiep.");
+                    var ctrl=TimControl<CtrlStartTask>(Page,"KbgCtrlStartTask");
+                    if(ctrl==null)throw new InvalidOperationException("Khong tim thay CtrlStartTask.");
+                    ViewState["Kbg20FlowType"]=Request.Form["kbg20FlowType"];
+                    ViewState["Kbg20FlowOverdue"]=string.Equals(Request.Form["kbg20FlowOverdue"],"1",StringComparison.Ordinal);
+                    ctrl.OpenModal(id,task.MaCongViec,task.TenCongViec,CanhBaoPhuThuocTuTaskList(task));
+                    CapNhatPanelPopupPartner();
+                }
+                else if(action=="complete")
+                {
+                    if(task.TrangThai!=1)throw new InvalidOperationException("Chi gui hoan thanh task dang thuc hien.");
+                    var ctrl=TimControl<CtrlFastCompleteTask>(Page,"KbgCtrlFastCompleteTask");
+                    if(ctrl==null)throw new InvalidOperationException("Khong tim thay CtrlFastCompleteTask.");
+                    ctrl.OpenModal(id,task.MaCongViec,task.TenCongViec);
+                    CapNhatPanelPopupPartner();
+                }
+                else if(action=="review")
+                {
+                    if(!pm)throw new UnauthorizedAccessException("Chi PM cua du an moi co quyen duyet.");
+                    var ctrl=TimControl<CtrlFastReviewTask>(Page,"KbgCtrlFastReviewTask");
+                    if(ctrl==null)throw new InvalidOperationException("Khong tim thay CtrlFastReviewTask.");
+                    ctrl.OpenModal(CurrentProjectId,id,task.MaCongViec,task.TenCongViec);
+                    CapNhatPanelPopupPartner();
+                }
+                else throw new InvalidOperationException("Thao tac chua duoc ho tro.");
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("KBG20 workflow: khong the mo popup Task partner: {0}", ex);
+                ShowNotify(ex.Message, SweetSoft.QLDA.BackOffice.Common.MSGType.Warning);
+                // Không để nút chỉ reload mà im lặng nếu ShowNotify không hiện trên AJAX.
+                ScriptManager.RegisterStartupScript(Page, GetType(),
+                    "Kbg20WorkflowError_" + Guid.NewGuid().ToString("N"),
+                    "(function(){var m=" + new JavaScriptSerializer().Serialize(ex.Message).Replace("<", @"\u003c") +
+                    ";var el=document.getElementById('kbg20Message');" +
+                    "if(el){el.textContent=m;el.style.display='block';}" +
+                    "else{window.alert(m);}})();", true);
+            }
+        }
+
+        // Popup partner dat o cpModalMain, khac naming container voi nut mo.
+        // Chu dong cap nhat host panel de HTML/hidden fields va script OpenModal
+        // duoc gui ve trong cung mot AJAX response.
+        private void CapNhatPanelPopupPartner()
+        {
+            var panel = TimControl<UpdatePanel>(Page, "upnlKbg20PartnerModals");
+            if (panel == null)
+                throw new InvalidOperationException("Khong tim thay panel chua cac Ctrl Task trong cpModalMain.");
+            panel.Update();
+        }
     }
 }

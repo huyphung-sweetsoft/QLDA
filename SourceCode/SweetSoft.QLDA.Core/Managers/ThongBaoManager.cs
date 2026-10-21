@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.Core.EnumHelper.Defines;
+﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
 using SweetSoft.QLDA.Core.MailManager;
@@ -67,6 +67,67 @@ namespace SweetSoft.QLDA.Core.Managers
 
         #endregion
 
+        // DOT 3 - Core KHONG tham chieu BackOffice/SignalR. Startup gan callback
+        // luc website khoi dong; publication la best-effort, khong anh huong DB.
+        public static Action<Guid> SauKhiThongBaoThayDoi { get; set; }
+
+        private static void PhatThayDoiSauLuu(Guid userId)
+        {
+            if (userId == Guid.Empty) return;
+            Action<Guid> callback = SauKhiThongBaoThayDoi;
+            if (callback == null) return;
+
+            var transaction = System.Transactions.Transaction.Current;
+            if (transaction == null)
+            {
+                PhatAnToan(callback, userId);
+                return;
+            }
+
+            // Quan trong: KBG/Task co the tao thong bao TRONG TransactionScope.
+            // Tuyet doi khong publish truoc COMMIT, khong publish khi rollback.
+            try
+            {
+                transaction.TransactionCompleted += (sender, e) =>
+                {
+                    try
+                    {
+                        if (e.Transaction != null &&
+                            e.Transaction.TransactionInformation.Status ==
+                                System.Transactions.TransactionStatus.Committed)
+                            PhatAnToan(callback, userId);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.TraceError("QLDA notifications realtime completion: {0}", ex);
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                // Dang trong transaction thi KHONG duoc fallback publish ngay.
+                System.Diagnostics.Trace.TraceError("QLDA notifications realtime subscribe: {0}", ex);
+            }
+        }
+
+        private static void PhatAnToan(Action<Guid> callback, Guid userId)
+        {
+            try
+            {
+                // Dam bao publisher chay ngoai ambient transaction.
+                using (var suppressed = new System.Transactions.TransactionScope(
+                    System.Transactions.TransactionScopeOption.Suppress))
+                {
+                    callback(userId);
+                    suppressed.Complete();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("QLDA notifications realtime callback: {0}", ex);
+            }
+        }
+
         #region Create
 
         /// <summary>
@@ -87,11 +148,12 @@ namespace SweetSoft.QLDA.Core.Managers
         public TblThongBao Create(
             Guid userId,
             string tieuDe,
-            string noiDung = null,
-            string loaiThongBao = ThongBaoTypes.HeThong,
-            Guid? idCongViec = null,
-            Guid? idDuAn = null,
-            string duongDanLienKet = null)
+            string noiDung          = null,
+            string loaiThongBao     = ThongBaoTypes.HeThong,
+            Guid?  idCongViec       = null,
+            Guid?  idDuAn           = null,
+            string duongDanLienKet = null,
+            bool guiEmail = true)
         {
             if (userId == Guid.Empty)
                 return null;
@@ -121,10 +183,12 @@ namespace SweetSoft.QLDA.Core.Managers
             };
 
             var result = _repository.Insert(item);
+            if (result != null) PhatThayDoiSauLuu(result.UserId);
 
-            if (result != null)
+            if (result != null && guiEmail)
             {
-                // Gửi Email Notification trong background
+                // Mac dinh true de giu nguyen hanh vi cac luong cu.
+                // Rieng 2A guiEmail=false theo chinh sach chi thong bao web.
                 SendEmailNotification(result);
             }
 
@@ -144,10 +208,10 @@ namespace SweetSoft.QLDA.Core.Managers
                 try
                 {
                     var recipient = UserManager.Instance.GetUserById(notification.UserId);
+                    if (recipient == null) return;
                     var memUser = System.Web.Security.Membership.GetUser(recipient.UserName);
                     string email = memUser != null ? memUser.Email : null;
-                    if (recipient == null ||
-                        string.IsNullOrWhiteSpace(email))
+                    if (string.IsNullOrWhiteSpace(email))
                     {
                         return;
                     }
@@ -270,6 +334,7 @@ namespace SweetSoft.QLDA.Core.Managers
             };
 
             var result = _repository.Insert(item);
+            if (result != null) PhatThayDoiSauLuu(result.UserId);
 
             if (result != null)
             {
@@ -356,7 +421,10 @@ namespace SweetSoft.QLDA.Core.Managers
         /// </summary>
         public void MarkAsRead(Guid idThongBao)
         {
+            TblThongBao item = _repository.GetById(idThongBao);
+            if (item == null || item.DaXoa == true) return;
             _repository.MarkAsRead(idThongBao);
+            PhatThayDoiSauLuu(item.UserId);
         }
 
         /// <summary>
@@ -365,6 +433,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public void MarkAllAsRead(Guid userId)
         {
             _repository.MarkAllAsRead(userId);
+            PhatThayDoiSauLuu(userId);
         }
 
         /// <summary>
@@ -380,7 +449,9 @@ namespace SweetSoft.QLDA.Core.Managers
             string currentUser = _applicationContext?.UserName ?? "System";
             item.NguoiCapNhat = currentUser;
 
-            return _repository.Delete(item);
+            bool deleted = _repository.Delete(item);
+            if (deleted) PhatThayDoiSauLuu(item.UserId);
+            return deleted;
         }
 
         #endregion
@@ -414,6 +485,7 @@ namespace SweetSoft.QLDA.Core.Managers
             };
 
             var result = _repository.Insert(item);
+            if (result != null) PhatThayDoiSauLuu(result.UserId);
             if (result != null)
                 SendMeetingReminderEmail(result, meetingName, startTime, room, isOnline);
             return result;
@@ -523,6 +595,7 @@ namespace SweetSoft.QLDA.Core.Managers
             };
 
             var result = _repository.Insert(item);
+            if (result != null) PhatThayDoiSauLuu(result.UserId);
             if (result != null)
             {
                 SendTaskReminderEmail(result, taskCode, taskName, deadline);

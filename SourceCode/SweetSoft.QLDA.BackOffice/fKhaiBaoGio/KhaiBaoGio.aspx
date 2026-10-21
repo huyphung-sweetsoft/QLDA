@@ -1,5 +1,10 @@
-﻿<%@ Page Title="Khai báo giờ làm" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="KhaiBaoGio.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fKhaiBaoGio.KhaiBaoGio" %>
+﻿<%@ Page Title="Tính giờ công việc" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="KhaiBaoGio.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fKhaiBaoGio.KhaiBaoGio" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
+<%@ Import Namespace="SweetSoft.QLDA.BackOffice.Realtime" %>
+<%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
+<%@ Register Src="~/fTasks/Controls/CtrlStartTask.ascx" TagPrefix="SweetSoft" TagName="CtrlStartTask" %>
+<%@ Register Src="~/fTasks/Controls/CtrlFastCompleteTask.ascx" TagPrefix="SweetSoft" TagName="CtrlFastCompleteTask" %>
+<%@ Register Src="~/fTasks/Controls/CtrlFastReviewTask.ascx" TagPrefix="SweetSoft" TagName="CtrlFastReviewTask" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
@@ -186,12 +191,26 @@
             .ks-journal-table th,.ks-journal-table td { padding:8px 5px; }
         }
     </style>
+    <style>
+        .ks-page.is-project-scoped { max-width:none; width:100%; padding:8px 0 18px; margin:0; }
+        .ks-page.is-project-scoped .ks-header { display:none; }
+        .kbg-project-shell { min-width:0; }
+        .kbg20-feature-off { margin:12px 4px; padding:15px; border:1px solid #dcd4ed; background:#f8f5ff; border-radius:10px; color:#58338a; font-size:13px; }
+    </style>
+    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261019v46" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
-    <div class="ks-page">
+    <%-- Chi trang theo du an moi co breadcrumb/tab. Trang V1 ngoai du an giu bo cuc cu. --%>
+    <% if (CurrentProjectId != Guid.Empty) { %>
+    <div class="row"><div class="col-xl-12"><div class="card p-2 kbg-project-shell">
+        <SweetSoft:Navigation runat="server" ID="NavigationKbg" />
+        <SweetSoft:CtrlProjectTabs runat="server" ID="ProjectTabsKbg" />
+    <% } %>
+    <div class="ks-page <%= CurrentProjectId != Guid.Empty ? "is-project-scoped" : "" %>">
 
-        <%-- ===== Đầu trang ===== --%>
+        <%-- V1: greeting / dashboard link; V2 has a separate compact header. --%>
+        <% if (!LaGiaoDienKbg20) { %>
         <div class="ks-header">
             <div class="ks-header-left">
                 <div class="ks-avatar"><asp:Literal ID="ltrInitial" runat="server"></asp:Literal></div>
@@ -202,6 +221,7 @@
             </div>
             <a id="lnkDashboard" runat="server" class="ks-link"><i class="fas fa-chart-pie me-1"></i>Xem thống kê tổng quan</a>
         </div>
+        <% } %>
 
         <asp:Panel ID="pnlNotEmployee" runat="server" Visible="false" CssClass="ks-empty">
             <i class="fas fa-user-slash"></i>
@@ -209,7 +229,181 @@
             Trang bấm giờ làm việc chỉ dành cho nhân viên.
         </asp:Panel>
 
-        <%-- ===== Vùng chính: Thẻ tổng hợp ngày + Danh sách công việc ===== --%>
+        <% if (CurrentProjectId != Guid.Empty && !KhaiBaoGioManager.KhaiBaoGio20DaKichHoat()) { %>
+        <div class="kbg20-feature-off" role="status">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            Chức năng Tính giờ công việc 2.0 chưa được kích hoạt trên môi trường này.
+            Vui lòng kiểm tra cấu hình KhaiBaoGio20.KichHoat trước khi thao tác.
+        </div>
+        <% } %>
+
+        <%-- V2 chi hien trong project da giai ma duoc; V1 ngoai du an khong bi sua. --%>
+        <% if (LaGiaoDienKbg20 && !pnlNotEmployee.Visible) { %>
+        <%-- Bridge server-side: postback co WebForms ViewState/EventValidation. KBG20 V1 khong goi. --%>
+        <input type="hidden" id="kbg20FlowTask" name="kbg20FlowTask" value="" />
+        <input type="hidden" id="kbg20FlowAction" name="kbg20FlowAction" value="" />
+        <input type="hidden" id="kbg20FlowOverdue" name="kbg20FlowOverdue" value="0" />
+        <input type="hidden" id="kbg20FlowType" name="kbg20FlowType" value="regular" />
+        <%-- Tách bridge của KBG20 thành một UpdatePanel, giống luồng postback
+             của CtrlTask bên partner. Không thực hiện full-page postback khi mở popup. --%>
+        <asp:UpdatePanel ID="upnlKbg20WorkflowBridge" runat="server" UpdateMode="Conditional">
+          <ContentTemplate>
+            <asp:LinkButton ID="btnKbg20Workflow" runat="server" CssClass="ks-hidden"
+              CausesValidation="false" OnClick="btnKbg20Workflow_Click" style="display:none">Mở xử lý công việc</asp:LinkButton>
+          </ContentTemplate>
+        </asp:UpdatePanel>
+        <script type="text/javascript">
+            // Bridge gọi popup Task qua UpdatePanel. Không gửi chồng nhiều async postback:
+            // ASP.NET AJAX có thể hủy request cũ hoặc bỏ click mới mà không có feedback.
+            (function () {
+                var opening = false;
+                function showWorkflowMessage(text, isError) {
+                    var el = document.getElementById('kbg20Message');
+                    if (!el) { if (isError && window.console) console.error(text); return; }
+                    el.textContent = text;
+                    el.className = isError ? 'kbg20-error' : '';
+                }
+                function requestManager() {
+                    return window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager
+                        ? Sys.WebForms.PageRequestManager.getInstance() : null;
+                }
+                var hookedManager = null;
+                function hookEndRequest(manager) {
+                    if (!manager || hookedManager === manager) return;
+                    manager.add_endRequest(function (sender, args) {
+                        if (!opening) return;
+                        opening = false;
+                        var err = args.get_error && args.get_error();
+                        if (err) showWorkflowMessage('Không mở được popup xử lý công việc: ' + err.message, true);
+                        // Không đánh dấu lỗi là handled: giữ luồng xử lý lỗi mặc định của site.
+                    });
+                    hookedManager = manager;
+                }
+                window.kbg20WorkflowPostback = function (action,taskId,isOverdue,isOvertime) {
+                    var manager = requestManager();
+                    hookEndRequest(manager);
+                    if (opening || (manager && manager.get_isInAsyncPostBack())) {
+                        showWorkflowMessage('Đang xử lý yêu cầu trước trên trang. Vui lòng chờ hoàn tất rồi bấm lại.', false);
+                        return false;
+                    }
+                    var trigger = document.querySelector('[id$="btnKbg20Workflow"]');
+                    if (!trigger || typeof trigger.click !== 'function') {
+                        showWorkflowMessage('Không tìm thấy nút mở popup Task. Vui lòng tải lại trang.', true);
+                        return false;
+                    }
+                    var set = function (id, value) {
+                        var el = document.getElementById(id);
+                        if (!el) throw new Error('Không tìm thấy trường ' + id);
+                        el.value = value;
+                    };
+                    try {
+                        set('kbg20FlowAction', action);
+                        set('kbg20FlowTask', taskId);
+                        set('kbg20FlowOverdue', isOverdue ? '1' : '0');
+                        set('kbg20FlowType', isOvertime ? 'overtime' : 'regular');
+                        opening = true;
+                        showWorkflowMessage('Đang mở cửa sổ xử lý công việc…', false);
+                        trigger.click();
+                        // Nếu browser không sinh async postback, tránh giữ khóa vô thời hạn.
+                        window.setTimeout(function () {
+                            if (opening && (!manager || !manager.get_isInAsyncPostBack())) {
+                                opening = false;
+                                showWorkflowMessage('Không nhận được yêu cầu mở popup. Kiểm tra Console/Network rồi thử lại.', true);
+                            }
+                        }, 1200);
+                        return true;
+                    } catch (error) {
+                        opening = false;
+                        showWorkflowMessage('Không thể mở popup xử lý công việc: ' + error.message, true);
+                        if (window.console) console.error('KBG20 workflow bridge', error);
+                        return false;
+                    }
+                };
+            })();
+        </script>
+        <section id="kbg20Page" class="kbg20-page"
+                 data-api-url="<%= ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio20.ashx") %>"
+                 data-realtime-url="<%= ResolveUrl("~/qlda-realtime") %>"
+                 data-project-id="<%= CurrentProjectId.ToString("D") %>"
+                 data-request-token="<%= Kbg20RequestToken() %>">
+            <%-- KBG20 V4.1: soft-table layout; preserve V1 branch and Task partner controls. --%>
+            <div id="kbg20Message" role="status" aria-live="polite"></div>
+            <div class="kbg20-view-switch" role="tablist" aria-label="Chức năng tính giờ">
+                <button type="button" id="kbg20TabWork" class="kbg20-view-tab is-selected" role="tab" aria-selected="true" aria-controls="kbg20WorkView"><i class="fas fa-stopwatch" aria-hidden="true"></i> Tính giờ</button>
+                <button type="button" id="kbg20TabHistory" class="kbg20-view-tab" role="tab" aria-selected="false" aria-controls="kbg20HistoryView"><i class="far fa-calendar-alt" aria-hidden="true"></i> Nhật ký ngày làm việc</button>
+                <button type="button" id="kbg20TabManual" class="kbg20-view-tab" role="tab" aria-selected="false" aria-controls="kbg20ManualView"><i class="fas fa-clipboard-list" aria-hidden="true"></i> Khai báo giờ thủ công</button>
+            </div>
+            <div id="kbg20WorkView" role="tabpanel" aria-labelledby="kbg20TabWork">
+                <div class="kbg20-v41-workbar">
+                    <div class="kbg20-schedule" id="kbg20Schedule" aria-label="Lịch làm việc hôm nay"></div>
+                    <div class="kbg20-v41-tools">
+                        <div id="kbg20TaskFilters" class="kbg20-task-filters" role="group" aria-label="Lọc công việc">
+                            <button type="button" class="kbg20-filter-chip is-selected" data-task-filter="today" aria-pressed="true">Hôm nay <span data-filter-count="today">0</span></button>
+                            <button type="button" class="kbg20-filter-chip" data-task-filter="open" aria-pressed="false">Đang tính giờ <span data-filter-count="open">0</span></button>
+                            <button type="button" class="kbg20-filter-chip" data-task-filter="pending" aria-pressed="false">Chờ duyệt <span data-filter-count="pending">0</span></button>
+                            <button type="button" class="kbg20-filter-chip" data-task-filter="overdue" aria-pressed="false">Quá hạn <span data-filter-count="overdue">0</span></button>
+                            <button type="button" class="kbg20-filter-chip" data-task-filter="upcoming" aria-pressed="false">Sắp tới <span data-filter-count="upcoming">0</span></button>
+                        </div>
+                        <div class="kbg20-search"><label class="visually-hidden" for="kbg20Search">Tìm công việc</label>
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input type="search" id="kbg20Search" placeholder="Tìm mã hoặc tên công việc" autocomplete="off" /></div>
+                        <button type="button" id="kbg20Reload" class="kbg20-btn kbg20-outline kbg20-icon-refresh kbg20-v42-reload"
+                            aria-label="Làm mới dữ liệu tính giờ" title="Làm mới dữ liệu"><i class="fas fa-sync-alt" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div class="kbg20-v41-table" aria-label="Danh sách công việc tính giờ">
+                    <div class="kbg20-v41-table-head kbg20-v41-taskgrid" aria-hidden="true">
+                        <span>Công việc</span><span>Ngày bắt đầu</span><span>Thời hạn</span><span>Kết thúc dự kiến</span>
+                        <span>Trạng thái</span><span>Tổng trong ca</span><span><i class="fas fa-moon" aria-hidden="true"></i> Tổng tăng ca</span><span>Hành động</span>
+                    </div>
+                    <div id="kbg20Tasks" class="kbg20-tasks"></div>
+                </div>
+                <div class="kbg20-v41-foot">
+                    <span><span id="kbg20ListTitle">Công việc hôm nay</span> <span id="kbg20TaskCount"></span> · Số giờ là tổng tích lũy qua mọi phiên, mọi ngày.</span>
+                    <div id="kbg20Summary" class="kbg20-summary" aria-label="Số phiên đang mở"></div>
+                </div>
+                <div id="kbg20LoadMoreWrap" class="kbg20-load-more" hidden="hidden">
+                    <button type="button" class="kbg20-btn kbg20-outline" id="kbg20LoadMore">Xem thêm công việc</button>
+                    <span id="kbg20LoadMoreHint"></span>
+                </div>
+            </div>
+            <div id="kbg20HistoryView" role="tabpanel" aria-labelledby="kbg20TabHistory" hidden="hidden">
+                <div class="kbg20-history-toolbar">
+                    <div class="kbg20-history-desc"><h3>Nhật ký ngày làm việc <small>· Dự án hiện tại</small></h3>
+                        <p>Thời gian của chính bạn <strong>trong dự án này</strong>. Không tính các dự án khác.</p></div>
+                    <div class="kbg20-history-date-controls">
+                        <button type="button" id="kbg20HistoryPrev" class="kbg20-btn kbg20-outline" aria-label="Ngày trước đó" title="Ngày trước đó"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                        <label for="kbg20HistoryDate">Ngày xem</label>
+                        <input type="date" id="kbg20HistoryDate" />
+                        <button type="button" id="kbg20HistoryNext" class="kbg20-btn kbg20-outline" aria-label="Ngày kế tiếp" title="Ngày kế tiếp" disabled="disabled"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" id="kbg20HistoryToday" class="kbg20-btn kbg20-outline">Hôm nay</button>
+                    </div>
+                </div>
+                <div id="kbg20HistoryStatus" class="kbg20-history-status" role="status" aria-live="polite"></div>
+                <div id="kbg20HistoryTotals" class="kbg20-history-totals"></div>
+                <div id="kbg20History" class="kbg20-history-list"></div>
+                <p class="kbg20-history-footnote">Tổng thời gian được ghi nhận theo từng công việc. Nếu hai đồng hồ chạy trùng thời gian, thời lượng vẫn được cộng độc lập cho từng công việc; đây không phải tổng số giờ đồng hồ thực trôi qua.</p>
+            </div>
+            <div id="kbg20ManualView" role="tabpanel" aria-labelledby="kbg20TabManual" hidden="hidden">
+                <div class="kbg20-v41-manual-heading">
+                    <div><h3>Khai báo giờ thủ công <small>· Công việc đã hoàn thành</small></h3>
+                        <p>Đối chiếu giờ hệ thống với giờ của chính bạn. Mỗi lần chỉnh sửa được lưu thành một phiên bản.</p></div>
+                    <div class="kbg20-v41-manual-filters" id="kbg20ManualFilters" role="group" aria-label="Lọc tình trạng khai giờ">
+                        <button type="button" class="kbg20-filter-chip is-selected" data-manual-filter="all">Tất cả</button>
+                        <button type="button" class="kbg20-filter-chip" data-manual-filter="missing">Chưa khai</button>
+                        <button type="button" class="kbg20-filter-chip" data-manual-filter="saved">Đã khai</button>
+                    </div>
+                </div>
+                <div class="kbg20-v41-manual-table" id="kbg20ManualList" aria-live="polite"></div>
+                <p class="kbg20-v41-disclaimer">Trong tab này, tổng giờ hệ thống của từng loại (trong ca/tăng ca) được làm tròn đến phút gần nhất; từ 30 giây trở lên làm tròn lên. Giờ gốc theo giây và lịch sử khai báo vẫn được bảo lưu.</p>
+                <button type="button" id="kbg20ReconcileListOpen" class="kbg20-v41-reconcile-hidden" hidden="hidden" aria-label="Mở danh sách khai báo giờ thủ công">Mở khai báo giờ thủ công</button>
+            </div>
+        </section>
+        <% } %>
+
+        <%-- V1 CHI render khi V2 khong hoat dong. Tranh 2 trang + 2 bo dem cung luc. --%>
+        <% if (!LaGiaoDienKbg20) { %>
+        <%-- ===== V1: Thẻ tổng hợp ngày + Danh sách công việc ===== --%>
         <asp:UpdatePanel ID="upnlMain" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <Triggers>
                 <asp:AsyncPostBackTrigger ControlID="btnTaskAction" EventName="Click" />
@@ -305,7 +499,7 @@
                         <asp:Repeater ID="rptTasks" runat="server" EnableViewState="false" OnItemDataBound="rptTasks_ItemDataBound">
                             <ItemTemplate>
                                 <asp:PlaceHolder ID="phGroup" runat="server" Visible="false">
-                                    <div class="ks-group-title <%# ((TaskRowView)Container.DataItem).TrangThaiDongHo == TrangThaiDongHoTask.DangChay ? "is-running-title" : (((TaskRowView)Container.DataItem).Nhom == NhomTaskView.QuaHan ? "is-overdue" : "") %>">
+                                    <div class="ks-group-title <%# ((TaskRowView)Container.DataItem).Nhom == NhomTaskView.QuaHan ? "is-overdue" : "" %>">
                                         <asp:Literal ID="ltrGroup" runat="server"></asp:Literal>
                                     </div>
                                 </asp:PlaceHolder>
@@ -377,11 +571,26 @@
         <input type="hidden" runat="server" id="hdfActionType" ClientIDMode="Static" value="" />
         <asp:LinkButton ID="btnTaskAction" runat="server" CssClass="ks-hidden" OnClick="btnTaskAction_Click" CausesValidation="false"></asp:LinkButton>
         <asp:LinkButton ID="btnRefresh" runat="server" CssClass="ks-hidden" OnClick="btnRefresh_Click" CausesValidation="false"></asp:LinkButton>
+        <% } %>
 
     </div>
+    <% if (CurrentProjectId != Guid.Empty) { %>
+    </div></div></div>
+    <% } %>
 </asp:Content>
 
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
+    <% if (LaGiaoDienKbg20) { %>
+      <%-- Giống CtrlTask: host các control gốc trong vùng AJAX thực sự được cập nhật.
+           Đây là vùng host giao diện, KHÔNG sao chép nghiệp vụ của partner. --%>
+      <asp:UpdatePanel ID="upnlKbg20PartnerModals" runat="server" UpdateMode="Conditional">
+        <ContentTemplate>
+          <SweetSoft:CtrlStartTask ID="KbgCtrlStartTask" runat="server" />
+          <SweetSoft:CtrlFastCompleteTask ID="KbgCtrlFastCompleteTask" runat="server" />
+          <SweetSoft:CtrlFastReviewTask ID="KbgCtrlFastReviewTask" runat="server" />
+        </ContentTemplate>
+      </asp:UpdatePanel>
+    <% } else { %>
     <%-- Modal chỉ đọc: lấy nhật ký từ dữ liệu GetTodayView của chính user đăng nhập. --%>
     <div id="ksJournalModal" class="ks-journal-mask" hidden role="presentation">
         <div class="ks-journal-dialog" role="dialog" aria-modal="true" aria-labelledby="ksJournalTitle" tabindex="-1">
@@ -401,12 +610,42 @@
             </div>
         </div>
     </div>
+    <% } %>
+    <% if (LaGiaoDienKbg20) { %>
+        <%-- Dùng ExtraModal CHÍNH THỨC giống CtrlFastCompleteTask/Review của partner.
+             Dữ liệu đối soát vẫn nạp bằng API V2; không có form WebForms thứ hai. --%>
+        <SweetSoft:ExtraModal runat="server" ID="mdlKbg20Manual" ClientIDMode="Static"
+            Type="Primary" Title="Khai báo giờ thủ công" Width="1160px">
+          <ContentTemplate>
+            <div id="kbg20ReconcileContent" class="kbg20-reconcile-content"></div>
+          </ContentTemplate>
+          <FooterTemplate>
+            <%-- Nút thao tác nằm tại chân ExtraModal, cạnh nút Đóng mặc định của control. --%>
+            <div id="kbg20ReconcileFooterActions" class="kbg20-reconcile-footer-actions" hidden="hidden">
+              <button type="button" id="kbg20ManualBack" class="kbg20-btn kbg20-outline">Quay lại danh sách</button>
+              <button type="button" id="kbg20ManualSave" class="kbg20-btn">Lưu giờ khai báo</button>
+            </div>
+          </FooterTemplate>
+        </SweetSoft:ExtraModal>
+        <%-- Thong bao luu thanh cong qua CMSMasterJs.ShowNotify (toastr) tu MasterTemplate. --%>
+    <% } %>
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server">
 </asp:Content>
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
+    <% if (LaGiaoDienKbg20) { %>
+    <%-- Dot 2: chi tai SignalR cho trang KBG20 khi co flag, khong dong vao MasterTemplate. --%>
+    <%-- Khi chuong realtime bat, MasterTemplate da tai 2 script SignalR.
+         Neu tat chuong, KBG van tu tai nhu Dot 2. --%>
+    <% if (QldaRealtimeSettings.KhaiBaoGioEnabled && !QldaRealtimeSettings.NotificationsEnabled) { %>
+    <script src="<%= ResolveUrl("~/Scripts/jquery.signalR-2.4.3.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/qlda-realtime-client.js") %>?v=20261019rt1"></script>
+    <% } %>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261020rt2hf2"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261019v46"></script>
+    <% } else { %>
     <script type="text/javascript">
         var KhaiBaoGioJs = (function ($) {
             var cfg = null;
@@ -1113,4 +1352,5 @@
             };
         })(jQuery);
     </script>
+    <% } %>
 </asp:Content>
