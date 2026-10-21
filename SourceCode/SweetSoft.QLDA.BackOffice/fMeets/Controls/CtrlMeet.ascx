@@ -2,6 +2,7 @@
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fMeets/Controls/CtrlXemNhanVienMeet.ascx" TagPrefix="SweetSoft" TagName="CtrlXemNhanVienMeet" %>
 <%@ Register Src="~/fMeets/Controls/CtrlViewMeetDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewMeetDetail" %>
+<%@ Register Src="~/fMeets/Controls/CtrlMeetGioCongTab.ascx" TagPrefix="SweetSoft" TagName="CtrlMeetGioCongTab" %>
 <style>
     .avatar-group { display: inline-flex !important; align-items: center; justify-content: center; gap: 6px !important; flex-wrap: nowrap !important; white-space: nowrap !important; }
     .avatar-stack-container { display: flex; align-items: center; min-width: 0; }
@@ -38,6 +39,8 @@
     .meeting-action-group .btn-grid-action { width: 32px; min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
     .meeting-action-group .btn-smart-link { width: 32px; min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
     .meeting-table-cell { vertical-align: middle !important; }
+
+
     @media (max-width: 991.98px) {
         .meeting-name-main { font-size: 16px; }
         .meeting-status-badge { min-width: 100px; padding: 5px 9px; }
@@ -53,10 +56,18 @@
     .meet-view-shell .meet-view-button:hover:not(.is-active) { background:#ede4f9;color:#4a187c; }
     .meet-view-shell .meet-view-button.is-active { border-color:#54218d;background:#54218d;color:#fff;cursor:default; }
     .meet-view-shell .meet-view-button:focus-visible { outline:2px solid #9f74cb;outline-offset:2px; }
-    .meet-view-shell.meet-mode-calendar .meet-panel-list { display:none; }
-    .meet-view-shell.meet-mode-list .meet-panel-calendar { display:none; }
+     .meet-view-shell.meet-mode-calendar .meet-panel-list,.meet-view-shell.meet-mode-labor .meet-panel-list { display:none; }
+    .meet-view-shell.meet-mode-list .meet-panel-calendar,.meet-view-shell.meet-mode-labor .meet-panel-calendar { display:none; }
+    .meet-view-shell.meet-mode-list .meet-panel-labor,.meet-view-shell.meet-mode-calendar .meet-panel-labor { display:none; }
+    .meet-panel-labor { min-width:0;width:100%; }
     .meet-display-stage { position:relative;min-height:180px; }
     .meet-view-panel { width:100%; }
+    /* Tab Gio cong khong duoc day rong container chung cua Danh sach/Lich. */
+    .meet-view-shell { width:100%;max-width:100%;min-width:0;box-sizing:border-box; }
+    .meet-view-shell .meet-display-stage { width:100%;max-width:100%;min-width:0;box-sizing:border-box; }
+    .meet-view-shell .meet-display-stage>.meet-view-panel { width:100%;max-width:100%;min-width:0;box-sizing:border-box; }
+    .meet-view-shell.meet-mode-labor .meet-panel-labor { overflow-x:clip; }
+
     .meet-calendar-area { padding:13px 14px 16px;background:#fff; }
     .meet-cal-toolbar { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;margin-bottom:12px; }
     .meet-cal-heading { display:flex;align-items:center;gap:10px;min-width:0; }
@@ -85,6 +96,14 @@
     .meet-cal-day.is-today .meet-cal-day-number { background:#54218d;color:#fff; }
     .meet-cal-day.is-outside .meet-cal-day-number { color:#a5a1ae; }
     .meet-cal-day-badge { display:inline-flex;align-items:center;gap:3px;max-width:93px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 5px;border-radius:5px;background:#fff0df;color:#a05e21;font-size:9.5px;font-weight:750; }
+    /* Ngày chỉ làm một ca: nửa nghỉ được tô rất nhẹ, vẫn giữ đầy đủ nội dung cuộc họp. */
+    .meet-cal-day.is-morning-only { background:linear-gradient(to bottom,#fff 0%,#fff 49%,#fff7ef 49%,#fff7ef 100%); }
+    .meet-cal-day.is-afternoon-only { background:linear-gradient(to bottom,#fff7ef 0%,#fff7ef 49%,#fff 49%,#fff 100%); }
+    .meet-cal-day.is-morning-only:hover,.meet-cal-day.is-afternoon-only:hover { box-shadow:inset 0 0 0 2px #d0b7ed; }
+    .meet-cal-day.is-today.is-morning-only,.meet-cal-day.is-today.is-afternoon-only { box-shadow:inset 0 0 0 2px #af8cdb; }
+    .meet-cal-day.is-today.is-morning-only:hover,.meet-cal-day.is-today.is-afternoon-only:hover { box-shadow:inset 0 0 0 2px #7440b1; }
+    .meet-cal-day-badge.is-half-day { max-width:124px;border:1px solid #f2d6b4;background:#fff0df;color:#945516;font-size:9.5px;font-weight:750; }
+    .meet-cal-day-badge.is-half-day i { font-size:10px; }
     .meet-cal-shift { margin-top:5px;padding:5px;border:1px solid #eee9f5;border-radius:6px;background:#fbfaff; }
     .meet-cal-shift.pm { background:#f4fafb;border-color:#e1eff0; }
     .meet-cal-shift.off { opacity:.72;background:#faf7f5; }
@@ -131,13 +150,13 @@
     .meet-cal-day.is-today:hover { box-shadow:inset 0 0 0 2px #7440b1; }
     .meet-cal-day.is-off:hover { background:#fff3eb; }
     .meet-cal-day-tools { display:flex;align-items:center;gap:5px;min-width:0; }
-    .meet-cal-create { position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 25px;width:25px;height:25px;padding:0;border:1px solid #d9c6f1;border-radius:7px;background:#f4ecff;color:#6430a0;font-size:12px;opacity:.48;cursor:pointer;transition:opacity .16s ease,background .16s ease,border-color .16s ease,transform .16s ease; }
-    .meet-cal-day:hover .meet-cal-create,.meet-cal-create:focus-visible { opacity:1;border-color:#a57bd9;background:#e9dcfb;transform:translateY(-1px); }
+    .meet-cal-create { position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 25px;width:25px;height:25px;padding:0;border:1px solid #d9c6f1;border-radius:7px;background:#f4ecff;color:#6430a0;font-size:12px;opacity:0;pointer-events:none;transform:translateY(3px);cursor:pointer;transition:opacity .18s ease,visibility .18s ease,transform .18s ease,background .18s ease,border-color .18s ease; }
+    .meet-cal-day:hover .meet-cal-create,.meet-cal-day:focus-within .meet-cal-create,.meet-cal-create:focus-visible { opacity:1;pointer-events:auto;border-color:#a57bd9;background:#e9dcfb;transform:translateY(0); }
     .meet-cal-create:focus-visible { outline:2px solid #7950b9;outline-offset:2px; }
     .meet-cal-create::after { content:'Tạo cuộc họp';position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,4px);padding:7px 11px;border-radius:8px;background:#4f158d;color:#fff;box-shadow:0 6px 18px rgba(61,26,114,.19);white-space:nowrap;font-size:11.5px;font-weight:750;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:30; }
     .meet-cal-create:hover::after,.meet-cal-create:focus-visible::after { opacity:1;transform:translate(-50%,0); }
     @media(hover:none) {
-        .meet-cal-create { opacity:1; }
+        .meet-cal-create { opacity:1;pointer-events:auto;transform:none; }
     }
     .meet-cal-day:focus-visible { outline:2px solid #7946b6;outline-offset:-2px; }
     .meet-cal-day-items { display:flex;flex-direction:column;gap:5px;min-width:0;margin-top:8px; }
@@ -229,7 +248,7 @@
         .meet-cal-day,.meet-cal-event { transition:none!important; }
         .meet-cal-status-dot,.meet-cal-tooltip-status-dot { animation:none!important; }
     }
-    /* Một thanh công cụ dùng chung cho Danh sách và Calendar, không nhảy vị trí khi chuyển view. */
+    /* Một thanh công cụ cố định cho Danh sách, Lịch và Giờ công; không nhảy vị trí. */
     .meet-view-shell .meet-shared-toolbar { display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:14px;row-gap:8px;min-height:68px;padding:10px 14px!important;margin:0;background:transparent;border:0!important; }
     .meet-view-shell .meet-shared-toolbar>.meet-list-filters { grid-column:1/3;grid-row:1;min-width:0; }
     .meet-view-shell .meet-shared-toolbar>.meet-cal-heading { grid-column:1;grid-row:1;min-width:0; }
@@ -237,6 +256,11 @@
     .meet-view-shell .meet-shared-toolbar>.meet-common-actions { grid-column:3;grid-row:1;justify-self:end;display:flex;align-items:center;gap:8px;margin:0;min-width:0;white-space:nowrap; }
     .meet-view-shell.meet-mode-list .meet-shared-toolbar>.meet-cal-heading,.meet-view-shell.meet-mode-list .meet-shared-toolbar>.meet-cal-navigation { display:none!important; }
     .meet-view-shell.meet-mode-calendar .meet-shared-toolbar>.meet-list-filters { display:none!important; }
+    .meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-list-filters,.meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-cal-heading,.meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-cal-navigation { display:none!important; }
+    /* Không co thanh công cụ ở chế độ Giờ công: giữ cùng chiều cao/cột với hai tab khác. */
+    .meet-view-shell .meet-shared-toolbar>.meet-labor-heading { display:none!important; }
+    .meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-labor-heading { display:flex!important;grid-column:1;grid-row:1;min-width:0; }
+    .meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-common-actions { grid-column:3;grid-row:1; }
     .meet-view-shell .meet-panel-calendar .meet-calendar-area { padding:10px 14px 16px;background:#fff; }
     .meet-view-shell .meet-panel-list>.listSearchTagBox { padding:0 14px; }
     @media(max-width:1280px) {
@@ -245,6 +269,7 @@
         .meet-view-shell .meet-shared-toolbar>.meet-cal-heading { grid-column:1; }
         .meet-view-shell .meet-shared-toolbar>.meet-cal-navigation { grid-column:1/-1;grid-row:2;justify-self:center; }
         .meet-view-shell .meet-shared-toolbar>.meet-common-actions { grid-column:2;grid-row:1; }
+        .meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-common-actions { grid-column:2;grid-row:1; }
     }
     @media(max-width:760px) {
         .meet-view-shell .meet-shared-toolbar { grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;padding:9px 10px!important; }
@@ -254,6 +279,8 @@
         .meet-view-shell .meet-shared-toolbar>.meet-cal-navigation { grid-row:3; }
         .meet-view-shell .meet-shared-toolbar>.meet-common-actions { justify-self:end; }
         .meet-view-shell .meet-shared-toolbar>.meet-cal-navigation { justify-self:stretch; }
+        .meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-labor-heading { grid-column:1;grid-row:2; }
+        .meet-view-shell.meet-mode-labor .meet-shared-toolbar>.meet-common-actions { grid-column:1;grid-row:1; }
         .meet-view-shell .meet-shared-toolbar>.meet-list-filters .input-group { min-width:0; }
         .meet-view-shell .meet-panel-calendar .meet-calendar-area { padding:8px 10px 12px; }
     }
@@ -284,6 +311,7 @@
         </div>
 
 <div class="meet-cal-heading"><span class="meet-cal-heading-icon"><i class="far fa-calendar-alt"></i></span><span><strong class="meet-cal-period" id="meetCalPeriodLabel">Lịch họp</strong><small class="meet-cal-subtitle">Lịch họp theo ngày · Hiển thị tối đa 2 cuộc họp/ngày</small></span></div>
+<div class="meet-cal-heading meet-labor-heading"><span class="meet-cal-heading-icon"><i class="far fa-clock"></i></span><span><strong class="meet-cal-period">Giờ công cuộc họp</strong><small class="meet-cal-subtitle">Theo dõi người tham gia và công thực tế</small></span></div>
 
 <div class="meet-cal-navigation">
                         <asp:LinkButton runat="server" ID="btnCalendarPrev" CssClass="meet-cal-nav" OnClick="btnCalendarNavigate_Click" CommandArgument="prev" CausesValidation="false" ToolTip="Kỳ trước"><i class="fas fa-chevron-left"></i></asp:LinkButton>
@@ -291,13 +319,13 @@
                         <asp:LinkButton runat="server" ID="btnCalendarNext" CssClass="meet-cal-nav" OnClick="btnCalendarNavigate_Click" CommandArgument="next" CausesValidation="false" ToolTip="Kỳ sau"><i class="fas fa-chevron-right"></i></asp:LinkButton>
                         <asp:LinkButton runat="server" ID="btnCalendarMonth" CssClass="meet-cal-period-btn" OnClick="btnCalendarMode_Click" CommandArgument="month" CausesValidation="false"><i class="far fa-calendar"></i> Tháng</asp:LinkButton>
                         <asp:LinkButton runat="server" ID="btnCalendarWeek" CssClass="meet-cal-period-btn" OnClick="btnCalendarMode_Click" CommandArgument="week" CausesValidation="false"><i class="fas fa-calendar-week"></i> Tuần</asp:LinkButton>
-                        <asp:LinkButton runat="server" ID="btnCalendarMine" CssClass="meet-cal-period-btn" OnClick="btnCalendarMine_Click" CausesValidation="false" ToolTip="Chỉ hiển thị cuộc họp tôi tham gia hoặc tạo"><i class="fas fa-user-check"></i> Của tôi</asp:LinkButton>
                     </div>
 
 <div runat="server" id="tagOther" class="meet-common-actions">
             <div id="meetViewSwitcher" runat="server" class="meet-view-switcher" aria-label="Chuyển chế độ xem cuộc họp">
                 <button type="button" class="meet-view-button" data-meet-view="list" onclick="return SweetMeetCalendar.changeView('list');" aria-label="Xem danh sách cuộc họp" title="Danh sách cuộc họp" aria-pressed="false"><i class="fas fa-list-ul" aria-hidden="true"></i><span>Danh sách</span></button>
                 <button type="button" class="meet-view-button" data-meet-view="calendar" onclick="return SweetMeetCalendar.changeView('calendar');" aria-label="Xem lịch cuộc họp" title="Lịch cuộc họp" aria-pressed="false"><i class="far fa-calendar-alt" aria-hidden="true"></i><span>Lịch</span></button>
+                <button type="button" class="meet-view-button" data-meet-view="labor" onclick="return SweetMeetCalendar.changeView('labor');" aria-label="Xem giờ công tham gia cuộc họp" title="Giờ công cuộc họp" aria-pressed="false"><i class="far fa-clock" aria-hidden="true"></i><span>Giờ công</span></button>
             </div>
             <asp:UpdatePanel runat="server" ID="pnlButtons" UpdateMode="Conditional">
                 <ContentTemplate>
@@ -398,6 +426,7 @@
                     <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center meeting-table-cell" HeaderStyle-Width="150px">
                         <ItemTemplate>
                             <div class="meeting-action-group">
+
                                 <asp:LinkButton runat="server" ID="lbtMeetingFiles" Visible='<%# this.IsView %>' CommandName="MEETING_FILES" CommandArgument='<%# Eval("IdLichHop") %>' CausesValidation="false" CssClass="btn btn-outline-primary btn-sm text-center btn-smart-link" ToolTip="File đính kèm lịch họp">
                                     <i class="fas fa-folder-open"></i>
                                 </asp:LinkButton>
@@ -433,6 +462,9 @@
                 <asp:LinkButton runat="server" ID="btnCreateCalendarMeeting" OnClick="btnCreateCalendarMeeting_Click" CausesValidation="false" Style="display:none;"></asp:LinkButton>
             </div>
 </div>
+<div class="meet-view-panel meet-panel-labor">
+    <SweetSoft:CtrlMeetGioCongTab runat="server" ID="CtrlMeetGioCongTab1" />
+</div>
 </div>
             <asp:LinkButton runat="server" ID="btnRefreshMeetingStatuses" OnClick="btnRefreshMeetingStatuses_Click" CausesValidation="false" Style="display:none;"></asp:LinkButton>
             <SweetSoft:CtrlViewMeetDetail runat="server" ID="CtrlViewMeetDetail1" />
@@ -447,7 +479,6 @@
             </div>
         </ContentTemplate>
         <FooterTemplate>
-            <button type="button" class="btn btn-outline-secondary" onclick="return SweetMeetCalendar.closeDay();"><i class="fas fa-times me-1" aria-hidden="true"></i>Đóng</button>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
 </div>
@@ -499,15 +530,17 @@
                 button.setAttribute('aria-pressed', active ? 'true' : 'false');
             }
         }
-        function changeView(view) {
+        function changeView(view, skipLoad) {
             var node = shell(); if (!node) return false;
             var canList = node.getAttribute('data-can-list') === '1';
-            if (view !== 'list' && view !== 'calendar') return false;
+            if (view !== 'list' && view !== 'calendar' && view !== 'labor') return false;
             if (!canList) view = 'calendar';
             node.classList.toggle('meet-mode-list', view === 'list');
             node.classList.toggle('meet-mode-calendar', view === 'calendar');
+            node.classList.toggle('meet-mode-labor', view === 'labor');
             updateLabels(node, view);
-            if (canList) { try { sessionStorage.setItem(storageKey(), view); } catch (e) {} }
+            if (canList) { try { sessionStorage.setItem(storageKey(), view); } catch (e) { } }
+            if (view === 'labor' && (!skipLoad || !node.querySelector('.meet-panel-labor .mlt-layout[data-loaded="1"]'))) { var load = document.getElementById('<%= LaborLoadButtonId %>'); if (load) load.click(); }
             return false;
         }
         // Giữ alias cũ cho những vị trí khác có thể vẫn đang gọi toggleView().
@@ -523,44 +556,43 @@
             var grid = node.querySelector('.meet-calendar-grid'), buttons = node.querySelectorAll('.meet-cal-period-btn');
             for (var j = 0; j < buttons.length; j++) {
                 var id = buttons[j].id || '';
-                if (id.indexOf('btnCalendarMine') !== -1) continue;
                 var week = !!(grid && grid.classList.contains('is-week'));
                 buttons[j].classList.toggle('is-active', id.indexOf('btnCalendarWeek') !== -1 ? week : !week);
             }
             var view = node.getAttribute('data-can-list') === '1' ? 'list' : 'calendar';
-            if (view === 'list') { try { view = sessionStorage.getItem(storageKey()) || 'list'; } catch (e) {} }
-            changeView(view);
+            if (view === 'list') { try { view = sessionStorage.getItem(storageKey()) || 'list'; } catch (e) { } }
+            changeView(view, true);
         }
         function createMeeting(dateText) {
-            var chosen=document.getElementById('<%= CalendarCreateHidden.ClientID %>');
-            var button=document.getElementById('<%= CalendarCreateButton.ClientID %>');
-            if(!chosen||!button||!/^(\d{4})-(\d{2})-(\d{2})$/.test(dateText||''))return false;
-            chosen.value=dateText;
+            var chosen = document.getElementById('<%= CalendarCreateHidden.ClientID %>');
+            var button = document.getElementById('<%= CalendarCreateButton.ClientID %>');
+            if (!chosen || !button || !/^(\d{4})-(\d{2})-(\d{2})$/.test(dateText || '')) return false;
+            chosen.value = dateText;
             button.click();
             return false;
         }
         function openDetail(id) {
-            var hidden=document.getElementById('meetCalendarSelectedId'),button=document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');
-            if(!hidden||!button||!/^[a-f0-9-]{36}$/i.test(id))return false;
-            function submitDetail(){hidden.value=id;button.click();}
-            var $modal=$('#<%= mdlCalendarDayMeetings.ClientID %>');
-            if($modal.hasClass('show')||$modal.is(':visible')){$modal.one('hidden.bs.modal',submitDetail);$modal.modal('hide');}
+            var hidden = document.getElementById('meetCalendarSelectedId'), button = document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');
+            if (!hidden || !button || !/^[a-f0-9-]{36}$/i.test(id)) return false;
+            function submitDetail() { hidden.value = id; button.click(); }
+            var $modal = $('#<%= mdlCalendarDayMeetings.ClientID %>');
+            if ($modal.hasClass('show') || $modal.is(':visible')) { $modal.one('hidden.bs.modal', submitDetail); $modal.modal('hide'); }
             else submitDetail();
             return false;
         }
         function openDay(day) {
-            if(!day || Number(day.getAttribute('data-meet-count')||0)<1)return false;
-            var source=day.querySelector('.meet-cal-day-all');if(!source)return false;
-            var $modal=$('#<%= mdlCalendarDayMeetings.ClientID %>');if(!$modal.length)return false;
-            $('#meetDayModalDate').text('Ngày '+(day.getAttribute('data-day-label')||''));
-            $('#meetDayModalCount').text(day.getAttribute('data-meet-count')+' cuộc họp');
+            if (!day || Number(day.getAttribute('data-meet-count') || 0) < 1) return false;
+            var source = day.querySelector('.meet-cal-day-all'); if (!source) return false;
+            var $modal = $('#<%= mdlCalendarDayMeetings.ClientID %>'); if (!$modal.length) return false;
+            $('#meetDayModalDate').text('Ngày ' + (day.getAttribute('data-day-label') || ''));
+            $('#meetDayModalCount').text(day.getAttribute('data-meet-count') + ' cuộc họp');
             $('#meetDayModalMeetings').html(source.innerHTML);
-            $modal.modal('show');return false;
+            $modal.modal('show'); return false;
         }
-        function closeDay(){$('#<%= mdlCalendarDayMeetings.ClientID %>').modal('hide');return false;}
-        if(window.Sys&&Sys.Application)Sys.Application.add_load(initialize);
-        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize);else initialize();
-        return {changeView:changeView,toggleView:toggleView,openDetail:openDetail,openDay:openDay,closeDay:closeDay,createMeeting:createMeeting};
+        function closeDay() { $('#<%= mdlCalendarDayMeetings.ClientID %>').modal('hide'); return false; }
+        if (window.Sys && Sys.Application) Sys.Application.add_load(initialize);
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize); else initialize();
+        return { changeView: changeView, toggleView: toggleView, openDetail: openDetail, openDay: openDay, closeDay: closeDay, createMeeting: createMeeting };
     })();
 </script>
 <script type="text/javascript">
@@ -568,35 +600,35 @@
     (function () {
         if (window.meetCalendarTooltipDelegated) return;
         window.meetCalendarTooltipDelegated = true;
-        var floatTip=null;
-        function removeTip(){if(floatTip&&floatTip.parentNode)floatTip.parentNode.removeChild(floatTip);floatTip=null;}
-        function placeTip(el,anchor){
-            var rect=anchor.getBoundingClientRect(),w=el.offsetWidth,h=el.offsetHeight,gap=12;
-            var rightAvailable=window.innerWidth-rect.right-12,leftAvailable=rect.left-12;
-            var x=rightAvailable>=w+gap?rect.right+gap:(leftAvailable>=w+gap?rect.left-w-gap:Math.max(10,Math.min(rect.right+gap,window.innerWidth-w-10)));
-            var y=Math.max(10,Math.min(rect.top+(rect.height-h)/2,window.innerHeight-h-10));
-            el.style.left=Math.round(x)+'px';el.style.top=Math.round(y)+'px';el.classList.toggle('is-left',x<rect.left);
+        var floatTip = null;
+        function removeTip() { if (floatTip && floatTip.parentNode) floatTip.parentNode.removeChild(floatTip); floatTip = null; }
+        function placeTip(el, anchor) {
+            var rect = anchor.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight, gap = 12;
+            var rightAvailable = window.innerWidth - rect.right - 12, leftAvailable = rect.left - 12;
+            var x = rightAvailable >= w + gap ? rect.right + gap : (leftAvailable >= w + gap ? rect.left - w - gap : Math.max(10, Math.min(rect.right + gap, window.innerWidth - w - 10)));
+            var y = Math.max(10, Math.min(rect.top + (rect.height - h) / 2, window.innerHeight - h - 10));
+            el.style.left = Math.round(x) + 'px'; el.style.top = Math.round(y) + 'px'; el.classList.toggle('is-left', x < rect.left);
         }
-        function showTip(button){
-            var content=button.querySelector('.meet-cal-popover');if(!content)return;
-            removeTip();floatTip=document.createElement('div');floatTip.className='meet-cal-float-tip';floatTip.setAttribute('role','tooltip');
-            floatTip.innerHTML=content.innerHTML;document.body.appendChild(floatTip);placeTip(floatTip,button);
+        function showTip(button) {
+            var content = button.querySelector('.meet-cal-popover'); if (!content) return;
+            removeTip(); floatTip = document.createElement('div'); floatTip.className = 'meet-cal-float-tip'; floatTip.setAttribute('role', 'tooltip');
+            floatTip.innerHTML = content.innerHTML; document.body.appendChild(floatTip); placeTip(floatTip, button);
         }
-        document.addEventListener('pointerover',function(e){var ev=e.target.closest&&e.target.closest('.meet-cal-event');if(ev&&(!e.relatedTarget||!ev.contains(e.relatedTarget)))showTip(ev);});
-        document.addEventListener('pointerout',function(e){var ev=e.target.closest&&e.target.closest('.meet-cal-event');if(ev&&(!e.relatedTarget||!ev.contains(e.relatedTarget)))removeTip();});
-        document.addEventListener('focusin',function(e){var ev=e.target.closest&&e.target.closest('.meet-cal-event');if(ev)showTip(ev);});
-        document.addEventListener('focusout',function(e){if(e.target.closest&&e.target.closest('.meet-cal-event'))removeTip();});
-        document.addEventListener('click',function(e){
-            if(e.target.closest&&e.target.closest('.meet-cal-event')){removeTip();return;}
-            var day=e.target.closest&&e.target.closest('.meet-cal-day.has-meetings');
-            if(day){e.preventDefault();SweetMeetCalendar.openDay(day);}
+        document.addEventListener('pointerover', function (e) { var ev = e.target.closest && e.target.closest('.meet-cal-event'); if (ev && (!e.relatedTarget || !ev.contains(e.relatedTarget))) showTip(ev); });
+        document.addEventListener('pointerout', function (e) { var ev = e.target.closest && e.target.closest('.meet-cal-event'); if (ev && (!e.relatedTarget || !ev.contains(e.relatedTarget))) removeTip(); });
+        document.addEventListener('focusin', function (e) { var ev = e.target.closest && e.target.closest('.meet-cal-event'); if (ev) showTip(ev); });
+        document.addEventListener('focusout', function (e) { if (e.target.closest && e.target.closest('.meet-cal-event')) removeTip(); });
+        document.addEventListener('click', function (e) {
+            if (e.target.closest && e.target.closest('.meet-cal-event')) { removeTip(); return; }
+            var day = e.target.closest && e.target.closest('.meet-cal-day.has-meetings');
+            if (day) { e.preventDefault(); SweetMeetCalendar.openDay(day); }
         });
-        document.addEventListener('keydown',function(e){
-            if((e.key==='Enter'||e.key===' ')&&e.target.matches('.meet-cal-day.has-meetings')){e.preventDefault();SweetMeetCalendar.openDay(e.target);}
-            if(e.key==='Escape')removeTip();
+        document.addEventListener('keydown', function (e) {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.meet-cal-day.has-meetings')) { e.preventDefault(); SweetMeetCalendar.openDay(e.target); }
+            if (e.key === 'Escape') removeTip();
         });
-        window.addEventListener('scroll',removeTip,true);window.addEventListener('resize',removeTip);
-        if(window.Sys&&Sys.Application)Sys.Application.add_load(removeTip);
+        window.addEventListener('scroll', removeTip, true); window.addEventListener('resize', removeTip);
+        if (window.Sys && Sys.Application) Sys.Application.add_load(removeTip);
     })();
 </script>
 <script type="text/javascript">
@@ -604,6 +636,8 @@
         if (window.meetStatusAutoRefreshTimer) return;
 
         window.meetStatusAutoRefreshTimer = window.setInterval(function () {
+            // Tránh mất các giờ công PM đang nhập khi bộ đếm tự đồng bộ trạng thái.
+            if (document.querySelector('.meet-view-shell.meet-mode-labor')) return;
             // Không thay giao diện đang xem trong lúc popup mở hoặc một async postback khác còn chạy.
             if ($('.modal.show:visible, .modal.in:visible, .offcanvas.show:visible').length > 0) return;
             if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {

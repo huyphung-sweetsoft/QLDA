@@ -108,8 +108,8 @@
 .ed-dashboard .ed-day-hours i { color: #64748b; }
 .ed-dashboard .ed-day-events { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .ed-dashboard .ed-event { padding: 6px 8px; border-radius: 6px; border-left: 3px solid #cbd5e1; background: #f8fafc; font-size: 11.5px; line-height: 1.3; }
-.ed-dashboard .ed-event.meeting { border-left-color: #3b82f6; background: #eff6ff; }
-.ed-dashboard .ed-event.task { border-left-color: #10b981; background: #ecfdf5; }
+.ed-dashboard .ed-event.meeting { border-left-color: #7c3aed; background: #f5f0ff; }
+.ed-dashboard .ed-event.task { border-left-color: #2563eb; background: #eff6ff; }
 .ed-dashboard .ed-event.special { border-left-color: #f59e0b; background: #fffbeb; }
 .ed-dashboard .ed-event-time { display: inline-flex; max-width: 100%; font-size: 10px; font-weight: 750; margin-bottom: 5px; padding: 2px 5px; border-radius: 4px; color: #475569; background: rgba(255, 255, 255, .82); font-variant-numeric: tabular-nums; }
 .ed-dashboard .ed-event strong { display: block; color: var(--ed-text-main); font-weight: 600; }
@@ -213,8 +213,8 @@
 .ed-dashboard .ed-day-summary { display:flex;flex-direction:column;gap:6px;margin-top:auto; }
 .ed-dashboard .ed-day-count { display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;min-height:32px;padding:5px 8px;border:1px solid #dce5f0;border-radius:6px;background:#f8fafc;color:#475569;font-size:11.5px;font-weight:650;white-space:nowrap; }
 .ed-dashboard .ed-day-count span { display:inline-flex;align-items:center;gap:6px;min-width:0; }
-.ed-dashboard .ed-day-count.is-meeting { border-color:#cfe0fd;background:#eff6ff;color:#2459a8; }
-.ed-dashboard .ed-day-count.is-task { border-color:#ccece0;background:#effaf5;color:#117654; }
+.ed-dashboard .ed-day-count.is-meeting { border-color:#d9c5fb;background:#f5efff;color:#6b21a8; }
+.ed-dashboard .ed-day-count.is-task { border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8; }
 .ed-dashboard .ed-day-count .ed-day-value { flex:0 0 auto;min-width:23px;padding:2px 5px;border:1px solid currentColor;border-radius:5px;text-align:center;background:#fff;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums; }
 .ed-dashboard .ed-day.is-day-off { opacity:1; }
 .ed-dashboard .ed-charts-grid { gap:12px;margin-bottom:0; }
@@ -359,8 +359,8 @@
 .ed-calendar-week-head b { font-size:12px;color:#313e54; }
 .ed-calendar-week-head small { color:#75819a;font-size:11px; }
 .ed-calendar-event-line { padding:8px;background:#f6f8fc;border-left:3px solid #a897be;border-radius:6px; }
-.ed-calendar-event-line.is-task { background:#eef9f5;border-left-color:#11a87b; }
-.ed-calendar-event-line.is-meeting { background:#eef4ff;border-left-color:#4981e0; }
+.ed-calendar-event-line.is-task { background:#eff6ff;border-left-color:#2563eb; }
+.ed-calendar-event-line.is-meeting { background:#f4edff;border-left-color:#7c3aed; }
 .ed-calendar-event-line strong { display:block;font-size:11.5px;color:#34425a;line-height:1.4; }
 .ed-calendar-event-line span { display:block;font-size:10.5px;color:#66778b;margin-top:3px; }
 .ed-calendar-empty-day { margin:auto;text-align:center;color:#99a3b2;font-size:11px; }
@@ -469,6 +469,31 @@
 [id$="mdlProjects"].ed-popup-is-closing .modal-dialog,[id$="mdlTasks"].ed-popup-is-closing .modal-dialog,[id$="mdlIssues"].ed-popup-is-closing .modal-dialog,[id$="mdlCalendar"].ed-popup-is-closing .modal-dialog,[id$="mdlTimeProjects"].ed-popup-is-closing .modal-dialog { width:var(--ed-popup-close-width)!important;max-width:none!important;transform:none!important;transition:none!important;animation:none!important; }
 
 @media(max-width:680px) { [id$="mdlTasks"].modal .modal-dialog,[id$="mdlTasks"] .modal-dialog,[id$="mdlTasks"].ed-task-modal-compact .modal-dialog { width:calc(100vw - 16px)!important; } }
+
+/* TrangThai cua TblDuAn; doc lap voi nhom danh gia tre han/sap den han. */
+.ed-project-status { display:inline-flex;align-items:center;justify-content:center;gap:5px;max-width:100%;min-height:23px;padding:3px 8px;border:1px solid #dce4ec;border-radius:7px;background:#f1f5f9;color:#475569;font-size:10.5px;font-weight:800;line-height:1.3;white-space:nowrap; }
+.ed-project-status[hidden] { display:none!important; }
+.ed-project-status:before { content:'';width:6px;height:6px;flex:none;border-radius:50%;background:currentColor; }
+.ed-project-status.is-not-started { color:#935b0f;background:#fff7e6;border-color:#f3dba2; }
+.ed-project-status.is-in-progress { color:#2563a6;background:#eff6ff;border-color:#bfdbfe; }
+.ed-project-status.is-paused { color:#6b7280;background:#f1f5f9;border-color:#cbd5e1; }
+.ed-project-status.is-completed { color:#147d4e;background:#eafaf0;border-color:#b6e8ca; }
+.ed-project-status.is-ended { color:#7c5362;background:#f8edf1;border-color:#ebced9; }
+.ed-board-row-code-line { display:flex;flex-wrap:wrap;align-items:center;gap:6px; }
+.ed-board-row-code-line .ed-project-status { font-size:10px;min-height:20px;padding:2px 6px; }
+.ed-project-picker-head .ed-project-status { font-size:10px;padding:2px 7px; }
+.ed-project-focus-heading { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px; }
+.ed-project-focus-heading .ed-project-focus-code { margin-bottom:0; }
+.ed-time-group-title { display:flex;align-items:center;gap:9px;min-width:0;padding:10px 12px 8px;margin-top:4px;border:1px solid #eee9f5;border-radius:9px;background:#f9f7fd;color:#4b366c;font-size:12px;font-weight:800; }
+.ed-time-group-title:first-child { margin-top:0; }
+.ed-time-group-title:after { content:'';height:1px;background:#e5dcee;flex:1;min-width:10px; }
+.ed-time-group-title[hidden] { display:none!important; }
+.ed-time-group-count { order:2;color:#7c6b91;font-size:10.5px;font-weight:700;white-space:nowrap; }
+.ed-time-project-heading { display:flex;align-items:center;flex-wrap:wrap;gap:7px;min-width:0; }
+.ed-time-project-heading small { flex:1 1 auto; }
+.ed-time-project-heading .ed-project-status { font-size:10px;min-height:21px;padding:2px 7px; }
+.ed-time-project[hidden] { display:none!important; }
+@media(max-width:640px) { .ed-time-group-title { padding:9px; } .ed-time-project { flex-wrap:wrap; } .ed-time-go-label { margin-left:auto; } .ed-project-focus-heading { gap:6px; } }
 </style>
 </asp:Content>
 <asp:Content ID="ContentMain" ContentPlaceHolderID="cpMain" runat="server">
@@ -493,7 +518,7 @@
             <div class="ed-stat-val"><asp:Label ID="lblIssueCount" runat="server" /></div><div class="ed-stat-lbl">Vấn đề<br/>được giao</div><i class="fas fa-life-ring ed-stat-ic"></i>
         </asp:LinkButton>
         <div class="ed-header-tools">
-            <button type="button" class="ed-time-entry" onclick="return edOpenDashboardModal('mdlTimeProjects');" aria-label="Chọn dự án để tính giờ công việc"><span class="ed-time-entry-icon"><i class="far fa-clock" aria-hidden="true"></i></span><span><strong>Tính giờ công việc</strong><small>Chọn dự án hôm nay</small></span><i class="fas fa-angle-right ed-time-entry-arrow" aria-hidden="true"></i></button>
+            <button type="button" class="ed-time-entry" onclick="return edOpenDashboardModal('mdlTimeProjects');" aria-label="Chọn dự án để khai báo giờ làm"><span class="ed-time-entry-icon"><i class="far fa-clock" aria-hidden="true"></i></span><span><strong>Khai báo giờ</strong><small>Chọn dự án của bạn</small></span><i class="fas fa-angle-right ed-time-entry-arrow" aria-hidden="true"></i></button>
             <div class="ed-header-time"><div class="ed-week-label"><i class="far fa-calendar-alt"></i> Tổng quan theo tuần</div><div class="ed-week-title"><asp:Label ID="lblWeekRange" runat="server" /></div><div class="ed-week-actions"><asp:HyperLink ID="lnkPreviousWeek" runat="server" CssClass="ed-week-btn" Text="‹ Trước" /><asp:HyperLink ID="lnkCurrentWeek" runat="server" CssClass="ed-week-btn ed-current" Text="Hiện tại" /><asp:HyperLink ID="lnkNextWeek" runat="server" CssClass="ed-week-btn" Text="Sau ›" /></div></div>
         </div>
     </div>
@@ -508,12 +533,12 @@
     </section>
     <div class="ed-charts-grid ed-project-overview-grid">
         <section class="ed-panel ed-chart-project-panel" aria-labelledby="edProjectChartHeading">
-            <div class="ed-panel-head"><div class="ed-panel-heading"><span class="ed-panel-icon" style="background:#f5eafa;color:#a443c4"><i class="fas fa-chart-pie"></i></span><div><h2 id="edProjectChartHeading" class="ed-panel-title">Trạng thái dự án</h2><div class="ed-panel-subtitle">Chọn trạng thái để lọc bảng dự án bên cạnh</div></div></div></div>
+            <div class="ed-panel-head"><div class="ed-panel-heading"><span class="ed-panel-icon" style="background:#f5eafa;color:#a443c4"><i class="fas fa-chart-pie"></i></span><div><h2 id="edProjectChartHeading" class="ed-panel-title">Tình hình thời hạn dự án</h2><div class="ed-panel-subtitle">Phân loại theo thời hạn; trạng thái dự án hiển thị trên từng thẻ</div></div></div></div>
             <div class="ed-panel-body"><div class="ed-chart-container"><div class="ed-donut-wrapper ed-project-donut" id="divProjectChart" runat="server"><div class="ed-donut-center"><asp:Label ID="lblTotalProjectsChart" runat="server" CssClass="ed-donut-number" /><span class="ed-donut-label">dự án</span></div></div>
-            <div class="ed-chart-legend" role="group" aria-label="Lọc dự án theo trạng thái">
+            <div class="ed-chart-legend" role="group" aria-label="Lọc dự án theo thời hạn">
                 <button type="button" class="ed-legend-item ed-project-legend is-active" data-ed-status-filter="overdue" aria-pressed="true" onclick="return edFilterProjectDashboard('overdue');"><span class="ed-dot" style="background:#ef4444"></span><span>Trễ hạn</span><asp:Label ID="lblProjectOverdueChart" runat="server" CssClass="ed-project-legend-number" /></button>
                 <button type="button" class="ed-legend-item ed-project-legend" data-ed-status-filter="soon" aria-pressed="false" onclick="return edFilterProjectDashboard('soon');"><span class="ed-dot" style="background:#f59e0b"></span><span>Sắp đến hạn</span><asp:Label ID="lblProjectDueSoonChart" runat="server" CssClass="ed-project-legend-number" /></button>
-                <button type="button" class="ed-legend-item ed-project-legend" data-ed-status-filter="inprogress" aria-pressed="false" onclick="return edFilterProjectDashboard('inprogress');"><span class="ed-dot" style="background:#3b82f6"></span><span>Đang thực hiện</span><asp:Label ID="lblProjectNormalChart" runat="server" CssClass="ed-project-legend-number" /></button>
+                <button type="button" class="ed-legend-item ed-project-legend" data-ed-status-filter="inprogress" aria-pressed="false" onclick="return edFilterProjectDashboard('inprogress');"><span class="ed-dot" style="background:#3b82f6"></span><span>Còn lại</span><asp:Label ID="lblProjectNormalChart" runat="server" CssClass="ed-project-legend-number" /></button>
             </div></div></div>
         </section>
         <section class="ed-panel ed-project-board-panel" aria-labelledby="edProjectBoardHeading">
@@ -521,7 +546,7 @@
             <div class="ed-panel-body ed-board-body"><div class="ed-project-board-list" data-ed-project-board aria-live="polite">
                 <asp:Repeater ID="rptProjectStatusRows" runat="server"><ItemTemplate>
                     <button type="button" class="ed-board-row" data-ed-board-project data-project-status='<%# (bool)Eval("IsOverdue") ? "overdue" : ((bool)Eval("IsDueSoon") ? "soon" : "inprogress") %>' data-project-id='<%# Eval("Id") %>' data-project-name='<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("Name"))) %>' onclick="return edOpenProjectTasksFromBoard(this);" hidden>
-                        <span class="ed-board-row-info"><span class="ed-board-row-code"><i class="fas fa-folder-open"></i> <%#: Eval("Code") %></span><strong class="ed-board-row-name"><%#: Eval("Name") %></strong><span class="ed-board-row-meta"><i class="far fa-calendar-alt"></i> <%#: Eval("Deadline") %></span></span>
+                        <span class="ed-board-row-info"><span class="ed-board-row-code-line"><span class="ed-board-row-code"><i class="fas fa-folder-open"></i> <%#: Eval("Code") %></span><span class='<%# "ed-project-status " + Eval("StatusCss") %>'><%#: Eval("StatusText") %></span></span><strong class="ed-board-row-name"><%#: Eval("Name") %></strong><span class="ed-board-row-meta"><i class="far fa-calendar-alt"></i> <%#: Eval("Deadline") %></span></span>
                         <span class="ed-board-row-side"><span class="ed-board-row-percent"><%#: Eval("Progress") %>%</span><i class="fas fa-chevron-right" aria-hidden="true"></i></span>
                         <span class="ed-board-row-track"><i style='width:<%#: Eval("Progress") %>%'></i></span>
                     </button>
@@ -535,14 +560,15 @@
 <asp:HiddenField ID="hfEdDailyKey" runat="server" ClientIDMode="Static" />
 <div class="ed-modal-host">
 
-<SweetSoft:ExtraModal ID="mdlTimeProjects" runat="server" Title="Tính giờ công việc hôm nay" Type="Primary" Width="76%">
+<SweetSoft:ExtraModal ID="mdlTimeProjects" runat="server" Title="Chọn dự án khai báo giờ" Type="Primary" Width="76%">
     <ContentTemplate>
         <div class="ed-time-modal ed-time-dialog-updated">
-            <div class="ed-time-intro"><span class="ed-time-intro-icon"><i class="far fa-clock"></i></span><div><h3>Chọn dự án để tính giờ công việc</h3><p>Danh sách chỉ gồm các dự án có công việc của bạn cần thực hiện hôm nay hoặc đã quá hạn.</p></div></div>
-            <div class="ed-pop-filter"><label class="ed-pop-search"><i class="fas fa-search"></i><input type="search" placeholder="Tìm tên hoặc mã dự án..." aria-label="Tìm dự án tính giờ công việc" oninput="edFilterTimeProjects(this)" /></label></div>
+            <div class="ed-time-intro"><span class="ed-time-intro-icon"><i class="far fa-clock"></i></span><div><h3>Chọn dự án để khai báo giờ</h3><p>Dự án bạn tham gia được chia nhóm theo trạng thái. Số công việc cần làm chỉ tính các việc hôm nay hoặc quá hạn.</p></div></div>
+            <div class="ed-pop-filter"><label class="ed-pop-search"><i class="fas fa-search"></i><input type="search" placeholder="Tìm tên hoặc mã dự án..." aria-label="Tìm dự án khai báo giờ" oninput="edFilterTimeProjects(this)" /></label></div>
             <div class="ed-time-projects ed-time-updated"><asp:Repeater ID="rptTodayTimeProjects" runat="server"><ItemTemplate>
-                <a class="ed-time-project" href='<%#: Eval("NavigateUrl") %>' title="Đi đến trang Tính giờ công việc của dự án này"><span class="ed-time-project-mark"><i class="fas fa-folder-open"></i></span><span class="ed-time-project-content"><small><%#: Eval("Code") %></small><strong><%#: Eval("Name") %></strong><span><i class="fas fa-list-check"></i> <%#: Eval("TaskCount") %> công việc cần làm<asp:PlaceHolder runat="server" Visible='<%# (int)Eval("OverdueCount") > 0 %>'> · <i class="fas fa-exclamation-triangle"></i> <%#: Eval("OverdueCount") %> quá hạn</asp:PlaceHolder></span></span><span class="ed-time-go-label">Tính giờ <i class="fas fa-arrow-right"></i></span></a>
-            </ItemTemplate></asp:Repeater><asp:Panel ID="pnlNoTodayTimeProjects" runat="server" CssClass="ed-time-no-project" Visible="false"><i class="far fa-check-circle"></i><strong>Hôm nay chưa có dự án cần tính giờ</strong><span>Không có công việc đang trong thời hạn hoặc quá hạn chưa hoàn thành được giao cho bạn.</span></asp:Panel></div>
+                <asp:PlaceHolder runat="server" Visible='<%# (bool)Eval("ShowGroupHeader") %>'><div class="ed-time-group-title" data-ed-time-group='<%# Eval("StatusCode") %>'><span class='<%# "ed-project-status " + Eval("StatusCss") %>'><%#: Eval("StatusText") %></span><span class="ed-time-group-count" data-ed-time-group-count></span></div></asp:PlaceHolder>
+                <a class="ed-time-project" data-ed-time-status='<%# Eval("StatusCode") %>' href='<%#: Eval("NavigateUrl") %>' title="Đi đến trang Khai báo giờ của dự án này"><span class="ed-time-project-mark"><i class="fas fa-folder-open"></i></span><span class="ed-time-project-content"><span class="ed-time-project-heading"><small><%#: Eval("Code") %></small><span class='<%# "ed-project-status " + Eval("StatusCss") %>'><%#: Eval("StatusText") %></span></span><strong><%#: Eval("Name") %></strong><span><i class="fas fa-list-check"></i> <%#: Eval("TaskCount") %> công việc cần làm<asp:PlaceHolder runat="server" Visible='<%# (int)Eval("OverdueCount") > 0 %>'> · <i class="fas fa-exclamation-triangle"></i> <%#: Eval("OverdueCount") %> quá hạn</asp:PlaceHolder></span></span><span class="ed-time-go-label">Khai báo giờ <i class="fas fa-arrow-right"></i></span></a>
+            </ItemTemplate></asp:Repeater><asp:Panel ID="pnlNoTodayTimeProjects" runat="server" CssClass="ed-time-no-project" Visible="false"><i class="far fa-check-circle"></i><strong>Chưa có dự án tham gia</strong><span>Danh sách sẽ xuất hiện khi bạn được thêm vào một dự án.</span></asp:Panel></div>
             <div class="ed-time-search-empty" data-ed-time-empty hidden>Không tìm thấy dự án phù hợp.</div>
             <p class="ed-time-footnote"><i class="fas fa-info-circle"></i> Lời nhắc chỉ tự xuất hiện một lần mỗi ngày trên trình duyệt này. Bạn có thể mở lại bất cứ lúc nào.</p>
         </div>
@@ -559,8 +585,8 @@
                     <div class="ed-pop-filter"><label class="ed-pop-search"><i class="fas fa-search" aria-hidden="true"></i><input type="search" autocomplete="off" placeholder="Tìm dự án..." aria-label="Tìm dự án" oninput="edFilterDashboardModal(this)" /></label></div>
                     <div class="ed-project-list" role="listbox" aria-label="Chọn dự án" data-ed-project-list>
                         <asp:Repeater ID="rptProjectsAll" runat="server"><ItemTemplate>
-                            <button type="button" class="ed-project-picker" role="option" aria-selected="false" data-ed-item data-ed-project-choice data-project-id='<%# Eval("Id") %>' data-project-url='<%# Server.HtmlEncode(GetKhaiBaoGioUrl((Guid)Eval("Id"))) %>' data-project-code='<%# Server.HtmlEncode(Convert.ToString(Eval("Code"))) %>' data-project-name='<%# Server.HtmlEncode(Convert.ToString(Eval("Name"))) %>' data-project-deadline='<%# Server.HtmlEncode(Convert.ToString(Eval("Deadline"))) %>' data-project-summary='<%# Server.HtmlEncode(Convert.ToString(Eval("TaskSummary"))) %>' data-ed-search='<%# Server.HtmlEncode(Convert.ToString(Eval("Code")) + " " + Convert.ToString(Eval("Name"))) %>' onclick="return edSelectDashboardProject(this)">
-                                <span class="ed-project-picker-head"><span><i class="far fa-folder-open"></i> <%#: Eval("Code") %></span></span>
+                            <button type="button" class="ed-project-picker" role="option" aria-selected="false" data-ed-item data-ed-project-choice data-project-id='<%# Eval("Id") %>' data-project-url='<%# Server.HtmlEncode(GetKhaiBaoGioUrl((Guid)Eval("Id"))) %>' data-project-code='<%# Server.HtmlEncode(Convert.ToString(Eval("Code"))) %>' data-project-name='<%# Server.HtmlEncode(Convert.ToString(Eval("Name"))) %>' data-project-deadline='<%# Server.HtmlEncode(Convert.ToString(Eval("Deadline"))) %>' data-project-summary='<%# Server.HtmlEncode(Convert.ToString(Eval("TaskSummary"))) %>' data-project-status-text='<%# Server.HtmlEncode(Convert.ToString(Eval("StatusText"))) %>' data-project-status-css='<%# Server.HtmlEncode(Convert.ToString(Eval("StatusCss"))) %>' data-ed-search='<%# Server.HtmlEncode(Convert.ToString(Eval("Code")) + " " + Convert.ToString(Eval("Name"))) %>' onclick="return edSelectDashboardProject(this)">
+                                <span class="ed-project-picker-head"><span><i class="far fa-folder-open"></i> <%#: Eval("Code") %></span><span class='<%# "ed-project-status " + Eval("StatusCss") %>'><%#: Eval("StatusText") %></span></span>
                                 <strong class="ed-project-picker-name"><%#: Eval("Name") %></strong>
                                 <span class="ed-project-picker-meta"><span><i class="fas fa-list-check"></i> <%#: Eval("TaskSummary") %></span><span><i class="far fa-calendar-alt"></i> <%#: Eval("Deadline") %></span></span>
                                 <span class="ed-project-mini-progress"><span class="ed-project-mini-track"><span style='width:<%#: Eval("Progress") %>%'></span></span><b><%#: Eval("Progress") %>%</b></span>
@@ -573,8 +599,8 @@
                 </aside>
                 <section class="ed-project-detail" aria-live="polite" aria-label="Công việc thuộc dự án đang chọn">
                     <div class="ed-project-focus">
-                        <div><span class="ed-project-focus-code" data-ed-selected-code>CHỌN DỰ ÁN</span><h3 class="ed-project-focus-name" data-ed-selected-name>Danh sách công việc</h3><div class="ed-project-focus-meta"><span><i class="far fa-calendar-alt"></i> <span data-ed-selected-deadline>—</span></span><span><i class="fas fa-tasks"></i> <span data-ed-selected-summary>—</span></span></div></div>
-                        <a href="#" class="ed-project-quick" data-ed-project-go title="Mở trang Tính giờ công việc của dự án này" aria-label="Đi đến trang Tính giờ công việc của dự án được chọn"><i class="far fa-clock"></i> Tính giờ công việc <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                        <div><div class="ed-project-focus-heading"><span class="ed-project-focus-code" data-ed-selected-code>CHỌN DỰ ÁN</span><span class="ed-project-status" data-ed-selected-status hidden></span></div><h3 class="ed-project-focus-name" data-ed-selected-name>Danh sách công việc</h3><div class="ed-project-focus-meta"><span><i class="far fa-calendar-alt"></i> <span data-ed-selected-deadline>—</span></span><span><i class="fas fa-tasks"></i> <span data-ed-selected-summary>—</span></span></div></div>
+                        <a href="#" class="ed-project-quick" data-ed-project-go title="Mở trang Khai báo giờ của dự án này" aria-label="Đi đến trang Khai báo giờ của dự án được chọn"><i class="far fa-clock"></i> Khai báo giờ <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
                     </div>
                     <div class="ed-project-tasks-top"><h3><i class="fas fa-list-check me-1"></i> Các công việc của dự án</h3><span class="ed-project-task-count" data-ed-project-task-count>0 công việc</span></div>
                     <div class="ed-project-tasks-scroll" data-ed-project-tasks>
@@ -685,7 +711,7 @@
     var edActiveProjectFilter = null;
     function edFilterProjectDashboard(status) {
         edProjectDashboardStatus = ['overdue', 'soon', 'inprogress'].indexOf(status) >= 0 ? status : 'overdue';
-        var names = { overdue: 'trễ hạn', soon: 'sắp đến hạn', inprogress: 'đang thực hiện' };
+        var names = { overdue: 'trễ hạn', soon: 'sắp đến hạn', inprogress: 'còn lại' };
         document.querySelectorAll('[data-ed-status-filter]').forEach(function (button) { var active = button.getAttribute('data-ed-status-filter') === edProjectDashboardStatus; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', active ? 'true' : 'false'); });
         var count = 0;
         document.querySelectorAll('[data-ed-board-project]').forEach(function (row) { var visible = row.getAttribute('data-project-status') === edProjectDashboardStatus; row.hidden = !visible; if (visible) count++; });
@@ -748,6 +774,12 @@
             var el = panel.querySelector(pair[0]);
             if (el) el.textContent = button.getAttribute(pair[1]) || '—';
         });
+        var statusBadge = panel.querySelector('[data-ed-selected-status]');
+        if (statusBadge) {
+            statusBadge.textContent = button.getAttribute('data-project-status-text') || '';
+            statusBadge.className = 'ed-project-status ' + (button.getAttribute('data-project-status-css') || '');
+            statusBadge.hidden = !statusBadge.textContent;
+        }
         var go = panel.querySelector('[data-ed-project-go]');
         if (go) go.setAttribute('href', button.getAttribute('data-project-url') || '#');
         var visibleCount = 0;
@@ -783,6 +815,16 @@
         modal.querySelectorAll('.ed-time-project').forEach(function (card) {
             card.hidden = !!term && card.textContent.toLocaleLowerCase('vi').indexOf(term) < 0;
             if (!card.hidden) count++;
+        });
+        modal.querySelectorAll('[data-ed-time-group]').forEach(function (header) {
+            var code = header.getAttribute('data-ed-time-group');
+            var countInGroup = 0;
+            modal.querySelectorAll('.ed-time-project').forEach(function (card) {
+                if (!card.hidden && card.getAttribute('data-ed-time-status') === code) countInGroup++;
+            });
+            header.hidden = countInGroup === 0;
+            var countLabel = header.querySelector('[data-ed-time-group-count]');
+            if (countLabel) countLabel.textContent = countInGroup + ' dự án';
         });
         var empty = modal.querySelector('[data-ed-time-empty]');
         if (empty) empty.hidden = count > 0 || !term;
@@ -877,7 +919,12 @@
         document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && pinnedTip) { var old = pinnedTip; hideTip(true); old.focus(); } else if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('[data-ed-tip-trigger]')) { event.preventDefault(); event.target.click(); } });
         window.addEventListener('scroll', positionTip, true); window.addEventListener('resize', positionTip);
         function remindOnceToday() { if (dailyStartupDone) return; dailyStartupDone = true; var field = document.getElementById('hfEdDailyKey'); if (!field || !field.value || !document.querySelector('.ed-time-project')) return; var key = 'SweetSoft_KhaiBaoGio_Dashboard_' + field.value; try { if (localStorage.getItem(key) === '1') return; } catch (error) { } var attempts = 0; function waitForModal() { var modal = typeof edFindDashboardModal === 'function' ? edFindDashboardModal('mdlTimeProjects') : null; var ready = modal && (window.bootstrap && window.bootstrap.Modal || window.jQuery && window.jQuery.fn && window.jQuery.fn.modal); if (!ready) { if (attempts++ < 25) window.setTimeout(waitForModal, 350); return; } if (document.querySelector('.modal.show') && !modal.classList.contains('show')) { if (attempts++ < 25) window.setTimeout(waitForModal, 350); return; } edOpenDashboardModal('mdlTimeProjects'); try { localStorage.setItem(key, '1'); } catch (error) { } } window.setTimeout(waitForModal, 750); }
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', remindOnceToday); else remindOnceToday();
+        function initTimeGroupCounts() {
+            var field = document.querySelector('.ed-time-dialog-updated .ed-pop-search input');
+            if (field && typeof edFilterTimeProjects === 'function') edFilterTimeProjects(field);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { initTimeGroupCounts(); remindOnceToday(); });
+        else { initTimeGroupCounts(); remindOnceToday(); }
     })();
 </script>
 

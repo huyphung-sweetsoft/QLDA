@@ -62,7 +62,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public ThongBaoManager(IAppContext applicationContext = null) : base(applicationContext)
         {
             _auditManager = new AuditManager(GetClientInfo());
-            _repository   = new ThongBaoRepository(_auditManager);
+            _repository = new ThongBaoRepository(_auditManager);
         }
 
         #endregion
@@ -146,7 +146,7 @@ namespace SweetSoft.QLDA.Core.Managers
         /// <param name="idDuAn">FK đến TblDuAn (nullable)</param>
         /// <returns>Bản ghi vừa được tạo, hoặc null nếu có lỗi</returns>
         public TblThongBao Create(
-            Guid   userId,
+            Guid userId,
             string tieuDe,
             string noiDung          = null,
             string loaiThongBao     = ThongBaoTypes.HeThong,
@@ -165,21 +165,21 @@ namespace SweetSoft.QLDA.Core.Managers
 
             TblThongBao item = new TblThongBao
             {
-                IdThongBao      = Guid.NewGuid(),
-                UserId          = userId,
-                IdCongViec      = idCongViec,
-                IdDuAn          = idDuAn,
-                TieuDe          = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
-                NoiDung         = noiDung,
-                LoaiThongBao    = loaiThongBao,
+                IdThongBao = Guid.NewGuid(),
+                UserId = userId,
+                IdCongViec = idCongViec,
+                IdDuAn = idDuAn,
+                TieuDe = tieuDe.Length > 255 ? tieuDe.Substring(0, 255) : tieuDe,
+                NoiDung = noiDung,
+                LoaiThongBao = loaiThongBao,
                 DuongDanLienKet = string.IsNullOrWhiteSpace(duongDanLienKet) ? null : duongDanLienKet.Trim(),
-                DaDoc           = false,
-                NgayDoc         = null,
-                DaXoa           = false,
-                NguoiTao        = currentUser,
-                NgayTao         = DateTime.Now,
-                NguoiCapNhat    = currentUser,
-                NgayCapNhat     = DateTime.Now
+                DaDoc = false,
+                NgayDoc = null,
+                DaXoa = false,
+                NguoiTao = currentUser,
+                NgayTao = DateTime.Now,
+                NguoiCapNhat = currentUser,
+                NgayCapNhat = DateTime.Now
             };
 
             var result = _repository.Insert(item);

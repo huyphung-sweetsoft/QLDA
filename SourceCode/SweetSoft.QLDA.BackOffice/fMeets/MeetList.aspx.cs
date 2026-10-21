@@ -19,6 +19,7 @@ using System.Linq;
 using System.Transactions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.Services;
 
 namespace SweetSoft.QLDA.BackOffice.fMeets
 {
@@ -41,6 +42,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         private T UI<T>(string id) where T : Control { return FindChild(this, id) as T; }
         protected DropDownList MeetingTypeSelect => UI<DropDownList>("ddlHinhThucHop");
         private HiddenField JoinMeetingIdField => UI<HiddenField>("hfMeetJoinId");
+        protected HiddenField JoinMeetingIdClientField => JoinMeetingIdField;
         protected HiddenField JoinReminderPendingField => UI<HiddenField>("hfMeetJoinPending");
         protected SweetSoft.QLDA.Controls.ExtraModal JoinReminderModal => UI<SweetSoft.QLDA.Controls.ExtraModal>("mdlMeetJoinReminder");
         private Literal JoinTitleLiteral => UI<Literal>("litMeetJoinTitle");
@@ -48,6 +50,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         private Literal JoinTypeLiteral => UI<Literal>("litMeetJoinType");
         private Literal JoinWarningLiteral => UI<Literal>("litMeetJoinWarning");
         private LinkButton JoinConfirmationButton => UI<LinkButton>("btnConfirmMeetJoin");
+        protected LinkButton JoinConfirmationClientButton => JoinConfirmationButton;
 
         private Guid MeetId
         {
@@ -81,7 +84,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                 };
                 ApplyControlsText();
                 CtrlMeet1.InitControls();
-                ShowActiveMeetingReminder();
             }
         }
 
@@ -533,45 +535,88 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             string sql = "UPDATE dbo.TblLichHop_NhanVien SET XacNhanThamGia=1 WHERE IdLichHop='" + SqlGuid(meetingId) + "' AND IdNhanVien IN (" + members + "); SELECT @@ROWCOUNT AS ChangedRows;";
             using (IDataReader reader = new InlineQuery().ExecuteReader(sql)) { if (reader.Read()) { /* Đã cập nhật. */ } }
         }
-        private void ShowActiveMeetingReminder()
+        // Endpoint AJAX chỉ trả về cuộc họp liên quan đến chính người đang đăng nhập.
+        // Cho phép nhắc từ 5 phút trước giờ bắt đầu đến khi cuộc họp kết thúc.
+        public sealed class UpcomingJoinReminderInfo
         {
-            // Chỉ nhắc thành viên có quan hệ TblLichHop_NhanVien chưa xác nhận, đang trong giờ họp.
-            string sql = "SELECT TOP 1 m.IdLichHop,m.TenCuocHop,m.DiaDiemHop,m.LaHopOnline,m.ThoiGianBatDau,m.ThoiGianKetThuc " +
-                "FROM dbo.TblLichHop m INNER JOIN dbo.TblLichHop_NhanVien p ON p.IdLichHop=m.IdLichHop " +
-                "WHERE m.IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND p.IdNhanVien='" + SqlGuid(SweetContext.Current.UserId) + "' " +
-                "AND ISNULL(m.DaXoa,0)=0 AND ISNULL(p.XacNhanThamGia,0)=0 " +
-                "AND m.ThoiGianBatDau<=GETDATE() AND m.ThoiGianKetThuc>GETDATE() " +
-                "ORDER BY m.ThoiGianBatDau DESC";
+            public bool Available { get; set; }
+            public string MeetingId { get; set; }
+            public string MeetingName { get; set; }
+            public string Place { get; set; }
+            public bool IsOnline { get; set; }
+            public string JoinUrl { get; set; }
+            public int SecondsUntilStart { get; set; }
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static UpcomingJoinReminderInfo GetUpcomingJoinReminder(string projectId, string[] ignoredIds)
+        {
+            var empty = new UpcomingJoinReminderInfo { Available = false };
+            Guid project;
+            if (!Guid.TryParse(projectId, out project) || project == Guid.Empty) return empty;
+            HttpContext context = HttpContext.Current;
+            if (context == null || context.User == null || !context.User.Identity.IsAuthenticated) return empty;
+            Guid userId = SweetContext.Current.UserId;
+            if (userId == Guid.Empty) return empty;
+            // Bỏ qua những lời nhắc đã đóng trong tab này để vẫn nhắc được cuộc họp kế tiếp.
+            var ignored = new List<Guid>();
+            if (ignoredIds != null)
+            {
+                foreach (string rawId in ignoredIds.Take(100))
+                {
+                    Guid parsedId;
+                    if (Guid.TryParse(rawId, out parsedId) && parsedId != Guid.Empty && !ignored.Contains(parsedId)) ignored.Add(parsedId);
+                }
+            }
+            string ignoreSql = ignored.Count == 0 ? string.Empty :
+                "AND m.IdLichHop NOT IN (" + string.Join(",", ignored.Select(id => "'" + SqlGuid(id) + "'")) + ") ";
+
+            // Mốc 5 phút được đối chiếu bằng SQL Server GETDATE(), tránh lệch múi giờ trình duyệt.
+            // Người chủ trì có thể không nằm trong danh sách TblLichHop_NhanVien.
+            string sql = "SELECT TOP 25 m.IdLichHop,m.TenCuocHop,m.DiaDiemHop,m.LaHopOnline," +
+                " DATEDIFF(SECOND,GETDATE(),m.ThoiGianBatDau) AS SecondsUntilStart " +
+                "FROM dbo.TblLichHop m WHERE m.IdDuAn='" + SqlGuid(project) + "' " +
+                ignoreSql +
+                "AND ISNULL(m.DaXoa,0)=0 AND m.ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) " +
+                "AND m.ThoiGianKetThuc>GETDATE() " +
+                "AND (m.IdNguoiTao='" + SqlGuid(userId) + "' OR EXISTS " +
+                "(SELECT 1 FROM dbo.TblLichHop_NhanVien p WHERE p.IdLichHop=m.IdLichHop " +
+                "AND p.IdNhanVien='" + SqlGuid(userId) + "' AND ISNULL(p.XacNhanThamGia,0)=0)) " +
+                "AND NOT EXISTS (SELECT 1 FROM dbo.TblLichHop_NhanVien confirmed " +
+                "WHERE confirmed.IdLichHop=m.IdLichHop AND confirmed.IdNhanVien='" + SqlGuid(userId) + "' " +
+                "AND ISNULL(confirmed.XacNhanThamGia,0)=1) " +
+                "ORDER BY CASE WHEN m.ThoiGianBatDau<=GETDATE() THEN 0 ELSE 1 END,m.ThoiGianBatDau ASC";
             try
             {
                 using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
                 {
-                    if (!reader.Read()) return;
-                    Guid id;
-                    if (!Guid.TryParse(Convert.ToString(reader["IdLichHop"]), out id)) return;
-                    string name = Convert.ToString(reader["TenCuocHop"]);
-                    string place = Convert.ToString(reader["DiaDiemHop"]);
-                    bool online = reader["LaHopOnline"] != DBNull.Value && Convert.ToBoolean(reader["LaHopOnline"]);
-                    string validUrl = string.Empty;
-                    bool canOpenUrl = online && TryMeetingUrl(place, out validUrl);
-                    JoinMeetingIdField.Value = id.ToString("D");
-                    JoinTitleLiteral.Text = "Cuộc họp <strong>" + HttpUtility.HtmlEncode(name) + "</strong> đang diễn ra";
-                    JoinLocationLiteral.Text = (online ? "Liên kết họp: " : "Địa điểm: ") + HttpUtility.HtmlEncode(string.IsNullOrWhiteSpace(place) ? "Chưa cung cấp" : place);
-                    JoinTypeLiteral.Text = online ? "<span class='meet-join-type'><i class='fas fa-video'></i> Họp Online</span>" : "<span class='meet-join-type is-offline'><i class='fas fa-users'></i> Họp trực tiếp</span>";
-                    JoinWarningLiteral.Text = online && !canOpenUrl ? "<span class='meet-join-warning'>Liên kết chưa hợp lệ. Bạn vẫn có thể xác nhận; vui lòng hỏi người chủ trì để nhận URL họp.</span>" : "";
-                    JoinConfirmationButton.Attributes.Remove("data-join-url");
-                    if (canOpenUrl) JoinConfirmationButton.Attributes["data-join-url"] = validUrl;
+                    while (reader.Read())
+                    {
+                        Guid id;
+                        if (!Guid.TryParse(Convert.ToString(reader["IdLichHop"]), out id)) continue;
+                        // Người chủ trì chưa có bản ghi trong bảng tham gia được ghi nhận qua session.
+                        string acknowledgedKey = "MeetJoinAcknowledged_" + userId.ToString("N") + "_" + id.ToString("N");
+                        if (context.Session != null && context.Session[acknowledgedKey] is bool && (bool)context.Session[acknowledgedKey]) continue;
+                        bool isOnline = reader["LaHopOnline"] != DBNull.Value && Convert.ToBoolean(reader["LaHopOnline"]);
+                        string place = Convert.ToString(reader["DiaDiemHop"]);
+                        string validUrl;
+                        return new UpcomingJoinReminderInfo
+                        {
+                            Available = true,
+                            MeetingId = id.ToString("D"),
+                            MeetingName = Convert.ToString(reader["TenCuocHop"]),
+                            Place = place,
+                            IsOnline = isOnline,
+                            JoinUrl = isOnline && TryMeetingUrl(place, out validUrl) ? validUrl : string.Empty,
+                            SecondsUntilStart = Convert.ToInt32(reader["SecondsUntilStart"])
+                        };
+                    }
                 }
-                // Không gọi ExtraModal.OpenModal ở Page_Load: nó sinh CMSMasterJs.OpenDialog trước khi JS sẵn sàng.
-                // Đánh dấu và để client hiển thị loading 3s sau window.load rồi mở qua Bootstrap Modal.
-                JoinReminderPendingField.Value = "1";
             }
-            catch (Exception exc)
-            {
-                // Không chặn trang Meet khi DB chưa chạy migration. Ghi log/ thông báo cho Admin.
-                System.Diagnostics.Trace.TraceError("Meet join reminder: " + exc);
-            }
+            catch (Exception ex) { System.Diagnostics.Trace.TraceError("Meet 5-minute reminder: " + ex); }
+            return empty;
         }
+
         protected void btnConfirmMeetJoin_Click(object sender, EventArgs e)
         {
             try
@@ -583,12 +628,24 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     "INNER JOIN dbo.TblLichHop m ON m.IdLichHop=p.IdLichHop " +
                     "WHERE p.IdLichHop='" + SqlGuid(meetingId) + "' AND p.IdNhanVien='" + SqlGuid(SweetContext.Current.UserId) + "' " +
                     "AND m.IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND ISNULL(m.DaXoa,0)=0 " +
-                    "AND m.ThoiGianBatDau<=GETDATE() AND m.ThoiGianKetThuc>GETDATE() AND p.XacNhanThamGia=0; " +
+                    "AND m.ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) AND m.ThoiGianKetThuc>GETDATE() AND ISNULL(p.XacNhanThamGia,0)=0; " +
                     "SELECT @@ROWCOUNT AS ChangedRows;";
                 int changed = 0;
                 using (IDataReader reader = new InlineQuery().ExecuteReader(sql)) if (reader.Read()) changed = Convert.ToInt32(reader["ChangedRows"]);
-                JoinReminderModal.CloseModal();
-                if (changed == 0) ShowNotify("Cuộc họp đã kết thúc, bạn đã xác nhận hoặc không còn là thành viên tham gia.", MSGType.Error);
+                if (changed == 0)
+                {
+                    // Người chủ trì không nhất thiết nằm trong TblLichHop_NhanVien.
+                    string hostSql = "SELECT TOP 1 IdLichHop FROM dbo.TblLichHop WHERE IdLichHop='" + SqlGuid(meetingId) + "' " +
+                        "AND IdDuAn='" + SqlGuid(CurrentProjectId) + "' AND IdNguoiTao='" + SqlGuid(SweetContext.Current.UserId) + "' " +
+                        "AND ISNULL(DaXoa,0)=0 AND ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) AND ThoiGianKetThuc>GETDATE()";
+                    bool hostCanConfirm;
+                    using (IDataReader reader = new InlineQuery().ExecuteReader(hostSql)) hostCanConfirm = reader.Read();
+                    if (hostCanConfirm)
+                        Session["MeetJoinAcknowledged_" + SweetContext.Current.UserId.ToString("N") + "_" + meetingId.ToString("N")] = true;
+                    else
+                        ShowNotify("Cuộc họp đã kết thúc, bạn đã xác nhận hoặc không còn là thành viên tham gia.", MSGType.Error);
+                }
+                // Sau postback, modal tự đóng. Không gọi CMSMasterJs.OpenDialog/CloseDialog.
             }
             catch (Exception exc) { ShowNotify("Không thể xác nhận tham gia: " + exc.Message, MSGType.Error); }
         }
