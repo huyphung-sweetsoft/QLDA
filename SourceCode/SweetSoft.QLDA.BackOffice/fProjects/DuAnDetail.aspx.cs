@@ -249,9 +249,15 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
             return (decimal)(end.Value - start.Value).TotalMinutes / 60m;
         }
 
+        // Số giờ ở badge: "Giờ công: 1". Thời lượng cuộc họp: "(1 giờ)".
+        private static string PersonalHourValue(decimal hours)
+        {
+            return hours.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+        }
+
         private static string PersonalHourText(decimal hours)
         {
-            return hours.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " giờ";
+            return PersonalHourValue(hours) + " giờ";
         }
 
         private static string PersonalMeetingDayText(DateTime? start, DateTime? end)
@@ -265,7 +271,14 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
         private static string PersonalMeetingTimeText(DateTime? start, DateTime? end)
         {
             if (!start.HasValue) return "Chưa xác định giờ";
-            return start.Value.ToString("HH:mm") + " – " + (end.HasValue ? end.Value.ToString("HH:mm") : "Chưa xác định");
+            string timeRange = start.Value.ToString("HH:mm") + " – "
+                + (end.HasValue ? end.Value.ToString("HH:mm") : "Chưa xác định");
+            if (end.HasValue && end.Value > start.Value)
+            {
+                decimal durationHours = (decimal)(end.Value - start.Value).TotalMinutes / 60m;
+                timeRange += " (" + PersonalHourText(durationHours) + ")";
+            }
+            return timeRange;
         }
 
         private void BindPersonalProjectView()
@@ -433,7 +446,7 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
                    .Append("</span></div><div class='pd-personal-due'>")
                    .Append(dueDate.HasValue ? "<span><i class='far fa-calendar-alt me-1'></i>Hạn " + dueDate.Value.ToString("dd/MM/yyyy") + "</span>" : "<span><i class='far fa-calendar-alt me-1'></i>Chưa có hạn</span>");
             if (overdue) builder.Append("<span class='pd-personal-tag is-overdue'>Quá hạn</span>");
-            builder.Append("<span>").Append(progress).Append("%</span></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>0 giờ</span></div><div class='pd-personal-progress'><span style='width:")
+            builder.Append("<span>").Append(progress).Append("%</span></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: 0</span></div><div class='pd-personal-progress'><span style='width:")
                    .Append(progress).Append("%'></span></div></article>");
         }
 
@@ -456,8 +469,8 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
                    .Append(PersonalMeetingDayText(start, finish))
                    .Append("</span></div><div class='pd-personal-schedule-line'><i class='far fa-clock'></i><span>")
                    .Append(PersonalMeetingTimeText(start, finish))
-                   .Append("</span></div></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>")
-                   .Append(PersonalHourText(PersonalMeetingHours(meet)))
+                   .Append("</span></div></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: ")
+                   .Append(PersonalHourValue(PersonalMeetingHours(meet)))
                    .Append("</span></div></article>");
         }
 
@@ -479,7 +492,7 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
                    .Append("</span></div><div class='pd-personal-meta'>")
                    .Append("<span><i class='far fa-calendar-alt me-1'></i>")
                    .Append(created.HasValue ? "Ngày tạo " + created.Value.ToString("dd/MM/yyyy") : "Chưa có ngày tạo")
-                   .Append("</span></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>0 giờ</span></div></article>");
+                   .Append("</span></div></div><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: 0</span></div></article>");
         }
 
         private static void AppendPersonalTaskDetail(StringBuilder builder, DataRow task, DateTime now)
@@ -498,7 +511,7 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
                    .Append(done ? "is-done" : status == 1 ? "is-progress" : string.Empty)
                    .Append("'>")
                    .Append(statusName)
-                   .Append("</span><span class='pd-personal-hours'><i class='far fa-clock'></i>0 giờ</span></div></div><div class='pd-detail-subrow'><span><i class='far fa-calendar-alt me-1'></i>")
+                   .Append("</span><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: 0</span></div></div><div class='pd-detail-subrow'><span><i class='far fa-calendar-alt me-1'></i>")
                    .Append(dueDate.HasValue ? "Hạn " + dueDate.Value.ToString("dd/MM/yyyy") : "Chưa có hạn")
                    .Append("</span>");
             if (overdue) builder.Append("<span class='pd-personal-tag is-overdue'>Quá hạn</span>");
@@ -517,8 +530,8 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
                    .Append(ended ? string.Empty : inProgress ? "is-progress" : "is-upcoming")
                    .Append("'>")
                    .Append(ended ? "Đã kết thúc" : inProgress ? "Đang diễn ra" : "Sắp diễn ra")
-                   .Append("</span><span class='pd-personal-hours'><i class='far fa-clock'></i>")
-                   .Append(PersonalHourText(PersonalMeetingHours(meet)))
+                   .Append("</span><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: ")
+                   .Append(PersonalHourValue(PersonalMeetingHours(meet)))
                    .Append("</span></div></div><div class='pd-personal-schedule'>")
                    .Append("<div class='pd-personal-schedule-line'><i class='far fa-calendar-alt'></i><span>")
                    .Append(PersonalMeetingDayText(start, finish))
@@ -539,7 +552,7 @@ ORDER BY v.NgayTao DESC,v.TenVanDe;";
                    .Append(processed ? "is-done" : processing ? "is-progress" : string.Empty)
                    .Append("'>")
                    .Append(EncodePersonal(PersonalIssueStatus(status)))
-                   .Append("</span><span class='pd-personal-hours'><i class='far fa-clock'></i>0 giờ</span></div></div>")
+                   .Append("</span><span class='pd-personal-hours'><i class='far fa-clock'></i>Giờ công: 0</span></div></div>")
                    .Append("<div class='pd-detail-subrow'><span><i class='far fa-calendar-alt me-1'></i>")
                    .Append(created.HasValue ? "Ngày tạo " + created.Value.ToString("dd/MM/yyyy") : "Chưa có ngày tạo")
                    .Append("</span></div></div>");

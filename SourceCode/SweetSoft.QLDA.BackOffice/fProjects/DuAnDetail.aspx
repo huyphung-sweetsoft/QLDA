@@ -64,7 +64,7 @@
         .pd-personal-tag.is-done { background:#e5f8ec; color:#19754e; }
         .pd-personal-tag.is-overdue { background:#fff0ef; color:#bf5146; }
         .pd-personal-tag.is-upcoming { background:#f0eaff; color:#7334b2; }
-        .pd-personal-hours { flex-shrink:0; display:inline-flex; align-items:center; gap:5px; border:1px solid #e4d2f7; border-radius:8px; background:#f9f4fe; padding:5px 8px; color:#6d329e; font-size:11.5px; font-weight:800; }
+        .pd-personal-hours { flex-shrink:0; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; border:1px solid #e4d2f7; border-radius:8px; background:#f9f4fe; padding:5px 8px; color:#6d329e; font-size:11.5px; font-weight:800; }
         .pd-personal-task-header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
         .pd-personal-task-title { flex:1; min-width:0; }
         .pd-personal-task-heading { display:flex; align-items:center; flex-wrap:wrap; gap:6px 7px; }
