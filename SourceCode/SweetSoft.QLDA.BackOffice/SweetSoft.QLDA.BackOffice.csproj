@@ -256,6 +256,13 @@
     <Compile Include="Controls\Dashboard\CtrlProjectDashboardTabs.ascx.designer.cs">
       <DependentUpon>CtrlProjectDashboardTabs.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TodaySchedule\CtrlTodaySchedule.ascx.cs">
+      <DependentUpon>CtrlTodaySchedule.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\TodaySchedule\CtrlTodaySchedule.ascx.designer.cs">
+      <DependentUpon>CtrlTodaySchedule.ascx</DependentUpon>
+    </Compile>
     <Compile Include="Data\Administrative\AdministrativeDataSeeder.cs" />
     <Compile Include="Data\Administrative\ProvinceSeedModel.cs" />
     <Compile Include="Data\Administrative\WardSeedModel.cs" />
@@ -591,6 +598,13 @@
     </Compile>
     <Compile Include="fMeets\Controls\CtrlMeet.ascx.designer.cs">
       <DependentUpon>CtrlMeet.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlMeetGioCongTab.ascx.cs">
+      <DependentUpon>CtrlMeetGioCongTab.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fMeets\Controls\CtrlMeetGioCongTab.ascx.designer.cs">
+      <DependentUpon>CtrlMeetGioCongTab.ascx</DependentUpon>
     </Compile>
     <Compile Include="fMeets\Controls\CtrlViewMeetDetail.ascx.cs">
       <DependentUpon>CtrlViewMeetDetail.ascx</DependentUpon>
@@ -967,6 +981,7 @@
     <Content Include="Controls\Dashboard\dashboard-resource.js" />
     <Content Include="Controls\Dashboard\dashboard-style.css" />
     <Content Include="Controls\Dashboard\dashboard.js" />
+    <Content Include="Controls\TodaySchedule\CtrlTodaySchedule.ascx" />
     <Content Include="Controls\WorkTimer\CtrlFloatingWorkTimer.ascx" />
     <Content Include="fCosts\Controls\CtrlCost.ascx" />
     <Content Include="fCosts\Controls\CtrlViewCostDetail.ascx" />
@@ -1028,6 +1043,7 @@
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
     <Content Include="fMeets\Controls\CtrlMeet.ascx" />
+    <Content Include="fMeets\Controls\CtrlMeetGioCongTab.ascx" />
     <Content Include="fMeets\Controls\CtrlViewMeetDetail.ascx" />
     <Content Include="fMeets\Controls\CtrlXemNhanVienMeet.ascx" />
     <Content Include="fMeets\MeetList.aspx" />
