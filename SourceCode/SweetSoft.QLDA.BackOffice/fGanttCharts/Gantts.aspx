@@ -8,6 +8,11 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
+        .gantt-report-actions { display:inline-flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap; }
+        .gantt-report-actions .share-progress-trigger { margin-left:0; }
+        .gantt-report-actions .gantt-report-history-trigger { color:#5b2692;background:#faf6ff;border-color:#d9c5f0;box-shadow:none; }
+        .gantt-report-actions .gantt-report-history-trigger:hover { color:#452070;background:#efe5fb;border-color:#bfa2de; }
+        @media(max-width:700px) { .gantt-report-actions { width:100%;justify-content:flex-end; } }
         /* CSS cho link tên công việc trong Popup */
     .task-name-link {
         color: #542e88 !important; /* Màu tím mặc định */
@@ -117,7 +122,10 @@
                     <div class="legend-item"><span class="legend-swatch" style="background-color:#cbd5e1; width: 14px; height: 14px; border-radius: 3px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.NOT_YET_STARTED) %></div>
                     <div class="legend-item"><span class="legend-swatch" style="background:#ea4335;border-radius:0;width:2px;height:14px; display: inline-block;"></span> <%= GetResourceText(BackEndResourceKeys.TODAY) %></div>
                     <div class="legend-item"><i class="fas fa-long-arrow-alt-right" style="color:#ff9800;"></i> <%= GetResourceText(BackEndResourceKeys.DEPENDENT_LINK) %></div>
-                    <button type="button" class="share-progress-trigger" onclick="return openShareProgressSelector(event);"><i class="fas fa-paper-plane"></i> Gửi tiến độ cho khách hàng</button>
+                    <div class="gantt-report-actions">
+                        <button type="button" class="share-progress-trigger" onclick="return openShareProgressSelector(event);"><i class="fas fa-file-alt"></i> Tạo báo cáo tiến độ</button>
+                        <button type="button" class="share-progress-trigger gantt-report-history-trigger" onclick="return shareProgressOpenHistory(event);"><i class="fas fa-history"></i> Nhật ký báo cáo</button>
+                    </div>
                 </div>
 
                 <div class="gantt">
@@ -322,20 +330,20 @@ var shouldReopenTaskInfo = false;
             $('#<%= modalIssues.ClientID %>').modal('hide');
 
             // Chờ 350ms cho hiệu ứng tắt xong xuôi rồi gọi Server bật Popup Task
-            setTimeout(function() {
+            setTimeout(function () {
                 document.getElementById('<%= hdfTaskIdToView.ClientID %>').value = taskId;
                 document.getElementById('<%= btnTriggerViewTask.ClientID %>').click();
-                    }, 350);
+            }, 350);
         }
         function openIssueDetail(issueId) {
             shouldReopenTaskInfo = true;
-            
+
             // 1. Ép Bootstrap TẮT Popup 1 ngay lập tức
             $('#<%= modalIssues.ClientID %>').modal('hide');
-            
+
             // 2. Chờ 350ms cho hiệu ứng tắt xong xuôi và lớp nền đen biến mất
             // Rồi mới bấm nút ẩn để gọi Server vẽ lên Popup 2
-            setTimeout(function() {
+            setTimeout(function () {
                 document.getElementById('<%= hdfIssueIdToView.ClientID %>').value = issueId;
                 document.getElementById('<%= btnTriggerViewIssue.ClientID %>').click();
             }, 350);
@@ -350,7 +358,7 @@ var shouldReopenTaskInfo = false;
         function bindModalEvents() {
             // Xóa rác event cũ (phòng khi postback UpdatePanel làm nhân đôi event)
             $(document).off('hidden.bs.modal.ganttReopen');
-            
+
             // Lắng nghe sự kiện: Lúc nào có 1 cái Modal nào đó VỪA BỊ ĐÓNG LẠI XONG
             $(document).on('hidden.bs.modal.ganttReopen', '.modal', function (e) {
                 // Ta soi xem: Nếu cái Modal vừa bị đóng là thằng Popup 2 (CtrlViewIssueDetail) 
@@ -374,7 +382,7 @@ var shouldReopenTaskInfo = false;
                 }
             });
         } else {
-            window.addEventListener('DOMContentLoaded', function() {
+            window.addEventListener('DOMContentLoaded', function () {
                 bindModalEvents();
                 renderGanttChart();
             });
@@ -397,14 +405,14 @@ var shouldReopenTaskInfo = false;
             const collapsedIds = Array.from(document.querySelectorAll('.task-row-wrap.collapsed')).map(el => el.dataset.id);
             const allRows = document.querySelectorAll('.task-row-wrap');
             const allTracks = document.querySelectorAll('.task-track');
-            
+
             const svgGroup = document.getElementById("linesGroup");
-            if(svgGroup) svgGroup.innerHTML = ''; 
+            if (svgGroup) svgGroup.innerHTML = '';
 
             allRows.forEach((row, index) => {
                 const track = allTracks[index];
                 const id = row.dataset.id;
-                
+
                 let isHidden = false;
                 for (let cid of collapsedIds) {
                     if (id !== cid && id.startsWith(cid + ".")) { isHidden = true; break; }
@@ -412,15 +420,15 @@ var shouldReopenTaskInfo = false;
 
                 if (isHidden) {
                     row.classList.add('hidden-task');
-                    if (track) { 
-                        track.classList.add('hidden-task'); 
-                        const bar = track.querySelector('.bar'); 
-                        if (bar) bar.style.width = '0%'; 
+                    if (track) {
+                        track.classList.add('hidden-task');
+                        const bar = track.querySelector('.bar');
+                        if (bar) bar.style.width = '0%';
                     }
                 } else {
                     const wasHidden = row.classList.contains('hidden-task');
                     row.classList.remove('hidden-task');
-                    
+
                     if (track) {
                         track.classList.remove('hidden-task');
                         if (wasHidden) {
@@ -431,7 +439,7 @@ var shouldReopenTaskInfo = false;
                 }
 
                 if (track) {
-                    const hasChild = track.dataset.haschild === 'true'; 
+                    const hasChild = track.dataset.haschild === 'true';
                     if (hasChild) {
                         const isCollapsed = row.classList.contains('collapsed');
                         if (!isCollapsed) track.classList.add('hide-bar');
@@ -446,7 +454,7 @@ var shouldReopenTaskInfo = false;
         function drawDependencies() {
             const svgGroup = document.getElementById("linesGroup");
             if (!svgGroup) return;
-            svgGroup.innerHTML = ''; 
+            svgGroup.innerHTML = '';
 
             const tracks = document.querySelectorAll(".task-track:not(.hidden-task):not(.hide-bar)");
             tracks.forEach(curTrack => {
@@ -454,15 +462,15 @@ var shouldReopenTaskInfo = false;
                 if (!depId || depId === "") return;
 
                 const preTrack = document.querySelector(`.task-track[data-taskid='${depId}']`);
-                if (!preTrack || preTrack.classList.contains("hidden-task") || preTrack.classList.contains("hide-bar")) return; 
-                
+                if (!preTrack || preTrack.classList.contains("hidden-task") || preTrack.classList.contains("hide-bar")) return;
+
                 const curBar = curTrack.querySelector(".bar");
                 const preBar = preTrack.querySelector(".bar");
                 if (!curBar || !preBar || curBar.style.width === '0%' || preBar.style.width === '0%') return;
 
                 const startX = preBar.offsetLeft + (preBar.offsetWidth / 2);
                 const startY = preTrack.offsetTop + preBar.offsetTop + preBar.offsetHeight;
-                
+
                 const endX = curBar.offsetLeft;
                 const endY = curTrack.offsetTop + curBar.offsetTop + (curBar.offsetHeight / 2);
 
@@ -484,14 +492,14 @@ var shouldReopenTaskInfo = false;
         function renderGanttChart() {
             if (typeof GANTT_TOTAL_DAYS === 'undefined') return;
 
-            const MIN_DAY_WIDTH = 60; 
+            const MIN_DAY_WIDTH = 60;
             const ganttViewWidth = document.querySelector('.gantt').clientWidth;
-            const chartColWidth = ganttViewWidth - 350; 
+            const chartColWidth = ganttViewWidth - 350;
             const totalWidth = Math.max(GANTT_TOTAL_DAYS * MIN_DAY_WIDTH, chartColWidth);
 
             const header = document.getElementById("chartHeader");
             const chartTracks = document.getElementById("chartTracks");
-            
+
             header.style.width = totalWidth + 'px';
             chartTracks.style.width = totalWidth + 'px';
 
@@ -512,11 +520,11 @@ var shouldReopenTaskInfo = false;
             tracks.forEach((track) => {
                 const start = parseFloat(track.dataset.start);
                 const end = parseFloat(track.dataset.end);
-                const status = track.dataset.status; 
-                
+                const status = track.dataset.status;
+
                 const taskId = track.dataset.taskid;
-                const taskCode = track.dataset.id; 
-                
+                const taskCode = track.dataset.id;
+
                 GANTT_DATE_LABELS.forEach((label, i) => {
                     const gl = document.createElement("div"); gl.className = "grid-line"; gl.style.left = pct(i) + "%";
                     track.appendChild(gl);

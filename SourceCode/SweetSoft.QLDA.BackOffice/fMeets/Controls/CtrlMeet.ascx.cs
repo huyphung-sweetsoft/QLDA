@@ -265,34 +265,37 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         }
         private string BuildCalendarEventButton(TblLichHop meeting, DateTime day, Dictionary<Guid, CalendarAttendees> attendees, Dictionary<Guid, string> chairs)
         {
+            string id = meeting.IdLichHop.ToString("D");
             string title = CalendarEsc(meeting.TenCuocHop);
-            string place = CalendarEsc(meeting.DiaDiemHop);
-            string description = CalendarEsc(CalendarPreview(meeting.NoiDungCuocHop));
             byte statusCode = CalendarStatusAt(meeting, DateTime.Now);
-            string status = CalendarEsc(GetTrangThaiCuocHopText(statusCode));
             string time = CalendarDisplayTime(meeting.ThoiGianBatDau, meeting.ThoiGianKetThuc, day);
             bool ownerIsMe = meeting.IdNguoiTao == SweetContext.Current.UserId;
-            CalendarAttendees participant;
-            attendees.TryGetValue(meeting.IdLichHop, out participant);
-            string chairText = "Chưa xác định người chủ trì";
-            string chairClass = "";
-            if (ownerIsMe) { chairText = "Bạn là người chủ trì"; chairClass = " is-self"; }
-            else if (meeting.IdNguoiTao != Guid.Empty)
-            {
-                string chairName;
-                if (chairs.TryGetValue(meeting.IdNguoiTao, out chairName)) chairText = chairName + " là người chủ trì";
-            }
-            var html = new StringBuilder(800);
-            html.Append("<button type='button' class='meet-cal-event is-status-" + statusCode + (ownerIsMe ? " is-hosted" : "") + "' data-meet-status='" + statusCode + "' onclick='return SweetMeetCalendar.openDetail(&quot;" + meeting.IdLichHop.ToString("D") + "&quot;);' aria-label='" + CalendarAttr(status + ". " + (ownerIsMe ? "Bạn chủ trì: " : "Xem cuộc họp: ") + meeting.TenCuocHop) + "'>");
-            if (ownerIsMe) html.Append("<i class='fas fa-crown meet-cal-host-icon' title='Bạn là người chủ trì' aria-hidden='true'></i>");
-            if (statusCode == 1 || statusCode == 2) html.Append("<span class='meet-cal-status-dot' aria-hidden='true'></span>");
-            html.Append("<span class='meet-cal-event-time'>" + CalendarEsc(time.Split('–')[0]) + "</span><span class='meet-cal-event-text'>" + title + "</span>");
-            html.Append("<span class='meet-cal-popover'><span class='meet-cal-tooltip-head'><strong class='meet-cal-tooltip-title'>" + title + "</strong><span class='meet-cal-tooltip-status is-status-" + statusCode + "'>" + status + "<i class='meet-cal-tooltip-status-dot' aria-hidden='true'></i></span></span><span class='meet-cal-chair" + chairClass + "'><i class='fas fa-user-tie'></i> " + CalendarEsc(chairText) + "</span>");
-            if (participant != null) html.Append("<span><i class='fas fa-users'></i> " + participant.Count + " người tham gia" + (participant.IncludesCurrentUser ? " · <b>Bạn tham gia</b>" : "") + "</span>");
-            html.Append("<span><i class='far fa-clock'></i> " + CalendarEsc(meeting.ThoiGianBatDau.ToString("dd/MM HH:mm")) + " – " + CalendarEsc(meeting.ThoiGianKetThuc.ToString("dd/MM HH:mm")) + "</span>");
-            html.Append("<span><i class='fas fa-map-marker-alt'></i> " + (string.IsNullOrWhiteSpace(place) ? "Chưa có địa điểm" : place) + "</span>");
-            if (!string.IsNullOrWhiteSpace(description)) html.Append("<small>" + description + "</small>");
-            html.Append("</span></button>");
+            string jsId = "&quot;" + id + "&quot;";
+
+            // Outside is a div rather than button: a button cannot contain action buttons.
+            // Permission-based actions are the same paths as the GridView Action column.
+            var html = new StringBuilder(680);
+            html.Append("<div class='meet-cal-event meet-cal-flip-card is-status-" + statusCode +
+                        (ownerIsMe ? " is-hosted" : "") +
+                        "' data-meet-status='" + statusCode + "' data-meet-id='" + id + "'>");
+            html.Append("<div class='meet-cal-flip-inner'>");
+            html.Append("<button type='button' class='meet-cal-flip-face meet-cal-flip-front' onclick='return SweetMeetCalendar.openAction(&quot;view&quot;," + jsId + ");' aria-label='Xem cuộc họp " + CalendarAttr(meeting.TenCuocHop) + "'>");
+            if (ownerIsMe)
+                html.Append("<i class='fas fa-crown meet-cal-host-icon' title='Bạn là người chủ trì' aria-hidden='true'></i>");
+            if (statusCode == 1 || statusCode == 2)
+                html.Append("<span class='meet-cal-status-dot' aria-hidden='true'></span>");
+            html.Append("<span class='meet-cal-event-time'>" + CalendarEsc(time.Split('–')[0]) + "</span>");
+            html.Append("<span class='meet-cal-event-text'>" + title + "</span></button>");
+            // Hai lớp độc lập: nền chứa tên căn giữa; thanh thao tác nổi về phía người xem.
+            html.Append("<div class='meet-cal-flip-face meet-cal-flip-back'><div class='meet-cal-flip-backplate'><span class='meet-cal-flip-title' title='" + CalendarAttr(meeting.TenCuocHop) + "'>" + title + "</span></div><div class='meet-cal-flip-actions'>");
+            if (CanReadMeetings)
+                html.Append("<button type='button' class='meet-cal-flip-action' title='Xem chi tiết' aria-label='Xem chi tiết " + CalendarAttr(meeting.TenCuocHop) + "' onclick='return SweetMeetCalendar.openAction(&quot;view&quot;," + jsId + ");'><i class='far fa-eye' aria-hidden='true'></i></button>");
+            if (IsEdit)
+                html.Append("<button type='button' class='meet-cal-flip-action' title='Chỉnh sửa' aria-label='Chỉnh sửa " + CalendarAttr(meeting.TenCuocHop) + "' onclick='return SweetMeetCalendar.openAction(&quot;edit&quot;," + jsId + ");'><i class='fas fa-pencil-alt' aria-hidden='true'></i></button>");
+            if (IsDelete)
+                html.Append("<button type='button' class='meet-cal-flip-action is-delete' title='Xóa cuộc họp' aria-label='Xóa " + CalendarAttr(meeting.TenCuocHop) + "' onclick='return SweetMeetCalendar.openAction(&quot;delete&quot;," + jsId + ");'><i class='fas fa-trash' aria-hidden='true'></i></button>");
+            html.Append("</div></div>");
+            html.Append("</div></div>");
             return html.ToString();
         }
         // Mỗi ngày tối đa hai cuộc họp hiển thị trực tiếp. Toàn bộ lịch họp được giữ
@@ -505,20 +508,42 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         {
             try
             {
-                // Sử dụng postback đã có để mở chi tiết từ calendar qua đúng server.
+                // Calendar actions reuse the same server permissions and callbacks as GridView.
                 Guid calendarMeetId;
                 if (Guid.TryParse(Request.Form["meetCalendarSelectedId"], out calendarMeetId) && calendarMeetId != Guid.Empty)
                 {
-                    if (!CanReadMeetings) { ShowAccessDeniedNotify(); return; }
                     TblLichHop selectedMeet = TblLichHop.FetchByID(calendarMeetId);
                     if (selectedMeet == null || selectedMeet.DaXoa == true || selectedMeet.IdDuAn != ProjectId)
                     {
                         ShowInvalidNotFoundData();
                         return;
                     }
-                    CtrlViewMeetDetail1.OpenModal(calendarMeetId);
-                    upMain.Update();
-                    return;
+                    string action = (Request.Form["meetCalendarActionType"] ?? "view").Trim().ToLowerInvariant();
+                    switch (action)
+                    {
+                        case "view":
+                            if (!CanReadMeetings) { ShowAccessDeniedNotify(); return; }
+                            CtrlViewMeetDetail1.OpenModal(calendarMeetId);
+                            upMain.Update();
+                            return;
+                        case "edit":
+                            if (!IsEdit) { ShowAccessDeniedNotify(); return; }
+                            if (EditMeetingHandlerCallback != null)
+                                EditMeetingHandlerCallback(calendarMeetId, EventArgs.Empty);
+                            return;
+                        case "delete":
+                            if (!IsDelete) { ShowAccessDeniedNotify(); return; }
+                            ConfirmResult result = new ConfirmResult { CommandName = "MEETING_DELETE", Value = selectedMeet };
+                            CURRENT_PAGE.CurrentConfirmResult = result;
+                            MessageBox msg = new MessageBox(GetResourceText(BackEndResourceKeys.NOTIFICATION),
+                                "Bạn có chắc chắn xóa cuộc họp: " + selectedMeet.TenCuocHop + "?",
+                                MSGButton.DeleteCancel, MSGIcon.Error);
+                            OpenMessageBox(msg, result, false, false);
+                            return;
+                        default:
+                            ShowInvalidDataError();
+                            return;
+                    }
                 }
                 bool hasChanged = UpdateMeetingStatuses();
 
@@ -741,7 +766,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (e != null && e.Submit && e.CommandName != null && e.CommandName.Contains("MEETING_DELETE"))
             {
                 TblLichHop meet = e.Value as TblLichHop;
-                if (meet == null)
+                if (!IsDelete) { ShowAccessDeniedNotify(); return; }
+                if (meet == null || meet.DaXoa == true || meet.IdDuAn != ProjectId)
                 {
                     ShowInvalidNotFoundData();
                     return;

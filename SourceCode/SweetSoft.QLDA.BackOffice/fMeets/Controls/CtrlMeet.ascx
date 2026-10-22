@@ -284,6 +284,112 @@
         .meet-view-shell .meet-shared-toolbar>.meet-list-filters .input-group { min-width:0; }
         .meet-view-shell .meet-panel-calendar .meet-calendar-area { padding:8px 10px 12px; }
     }
+
+    /* Flip card tham chiếu kết cấu hai mặt từ SweetSoft Portfolio.
+       Giữ lật NGANG (rotateY), chỉ tác động các thẻ cuộc họp. */
+    .meet-calendar-area .meet-cal-event.meet-cal-flip-card {
+        display:block;position:relative;width:100%;height:46px;min-height:46px;max-height:46px;
+        margin:0;padding:0;overflow:visible;perspective:960px;
+        cursor:default;box-sizing:border-box;filter:none;
+    }
+    .meet-calendar-area .meet-cal-day-items .meet-cal-flip-card { padding:0; }
+    .meet-cal-flip-card.is-status-0 { --meet-flip-bg:#f2ecfa; --meet-flip-text:#52227e; }
+    .meet-cal-flip-card.is-status-1 { --meet-flip-bg:#efe5ff; --meet-flip-text:#542083; }
+    .meet-cal-flip-card.is-status-2 { --meet-flip-bg:#eafaf0; --meet-flip-text:#167746; }
+    .meet-cal-flip-card.is-status-3 { --meet-flip-bg:#f3f5f8; --meet-flip-text:#637287; }
+    .meet-cal-flip-inner {
+        position:relative;display:block;width:100%;height:100%;border-radius:5px;
+        transform:rotateY(0deg);transform-style:preserve-3d;
+        -webkit-transform-style:preserve-3d;
+        transition:transform .76s cubic-bezier(.22,.61,.36,1);
+        will-change:transform;
+    }
+    .meet-cal-flip-card:hover .meet-cal-flip-inner,
+    .meet-cal-flip-card:focus-within .meet-cal-flip-inner { transform:rotateY(180deg); }
+    .meet-cal-flip-face {
+        position:absolute;inset:0;box-sizing:border-box;display:flex;min-width:0;
+        border-radius:5px;color:var(--meet-flip-text,#52227e);
+        backface-visibility:hidden;-webkit-backface-visibility:hidden;
+        transform-style:preserve-3d;-webkit-transform-style:preserve-3d;
+    }
+    /* Mặt trước giống thẻ lịch hiện có, vẫn click để mở chi tiết. */
+    .meet-cal-flip-front {
+        align-items:center;justify-content:flex-start;gap:4px;width:100%;padding:5px 6px;
+        border:1px solid rgba(113,76,156,.19);background:var(--meet-flip-bg,#f2ecfa);
+        appearance:none;color:inherit;font:inherit;text-align:left;cursor:pointer;
+        box-shadow:inset 0 1px rgba(255,255,255,.8),0 1px 4px rgba(51,23,86,.08);
+        transform:rotateY(0deg) translateZ(1px);
+    }
+    .meet-cal-flip-front .meet-cal-event-time { flex:0 0 auto;font-weight:800; }
+    .meet-cal-flip-front .meet-cal-event-text { flex:1;min-width:0; }
+    .meet-cal-flip-front .meet-cal-status-dot { pointer-events:none; }
+    /* Mặt sau gồm nền chứa tên và lớp thao tác nổi phía trước. */
+    .meet-cal-flip-back {
+        display:block;padding:0;background:transparent;
+        transform:rotateY(180deg) translateZ(1px);
+    }
+    .meet-cal-flip-backplate {
+        position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+        padding:16px 7px 2px;min-width:0;box-sizing:border-box;border-radius:6px;
+        border:1px solid rgba(116,73,168,.26);
+        background:linear-gradient(145deg,rgba(255,255,255,.93),var(--meet-flip-bg,#f2ecfa));
+        box-shadow:inset 0 1px rgba(255,255,255,.9),0 4px 12px rgba(51,22,90,.14);
+        transform:translateZ(0px);
+    }
+    .meet-cal-flip-back .meet-cal-flip-title {
+        display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;
+        white-space:nowrap;text-align:center;color:var(--meet-flip-text,#52227e);
+        font-size:10.5px;font-weight:750;line-height:1.25;
+    }
+    /* Các nút nổi (lớp trên) xuất hiện dần trong nửa sau vòng lật.
+       Không xoay chữ/nút riêng nên không bị hiệu ứng phản chiếu ngược. */
+    .meet-cal-flip-actions {
+        position:absolute;z-index:2;left:50%;top:2px;
+        display:flex;align-items:center;justify-content:center;gap:7px;
+        width:max-content;max-width:calc(100% - 8px);min-width:0;
+        padding:2px 6px;border:1px solid rgba(135,98,184,.23);
+        border-radius:8px;background:rgba(255,255,255,.98);
+        box-shadow:0 7px 16px rgba(52,27,94,.23);line-height:1;
+        opacity:0;pointer-events:none;
+        transform:translateX(-50%) translateY(7px) translateZ(30px) scale(.88);
+        transition:opacity .18s ease,transform .30s cubic-bezier(.22,.8,.24,1);
+    }
+    .meet-cal-flip-card:hover .meet-cal-flip-actions,
+    .meet-cal-flip-card:focus-within .meet-cal-flip-actions {
+        opacity:1;pointer-events:auto;
+        transform:translateX(-50%) translateY(0px) translateZ(30px) scale(1);
+        transition-delay:.29s,.29s;
+    }
+    .meet-cal-flip-action {
+        display:inline-flex;align-items:center;justify-content:center;
+        flex:0 0 24px;width:24px;height:21px;padding:0;
+        border:1px solid rgba(106,55,157,.24);border-radius:5px;
+        background:#fff;color:#5c2a94;font-size:11px;line-height:1;cursor:pointer;
+        box-shadow:0 2px 6px rgba(63,28,111,.08);
+        transition:background-color .15s,border-color .15s,transform .15s,box-shadow .15s;
+    }
+    .meet-cal-flip-action:hover { background:#fff;border-color:#9b73c8;transform:translateY(-1px);box-shadow:0 5px 12px rgba(63,28,111,.18); }
+    .meet-cal-flip-action.is-delete { color:#cb3750;border-color:#f0c6ce; }
+    .meet-cal-flip-action.is-delete:hover { background:#fff0f2;border-color:#e892a2; }
+    .meet-cal-flip-action:focus-visible,.meet-cal-flip-front:focus-visible { outline:2px solid #7842b5;outline-offset:1px; }
+    .meet-calendar-grid.is-month .meet-cal-day { min-height:161px; }
+    /* Cùng hiệu ứng trong popup danh sách cuộc họp của một ngày. */
+    .meet-day-modal-events .meet-cal-event.meet-cal-flip-card {
+        position:relative;display:block;height:58px;min-height:58px;max-height:58px;
+        padding:0;margin:0;overflow:visible;perspective:960px;
+    }
+    .meet-day-modal-events .meet-cal-flip-backplate { padding-top:22px; }
+    .meet-day-modal-events .meet-cal-flip-actions { top:5px;gap:10px; }
+    .meet-day-modal-events .meet-cal-flip-action { width:28px;height:26px;flex-basis:28px;font-size:12px; }
+    .meet-day-modal-events .meet-cal-flip-title { font-size:12px; }
+    @media(hover:none) {
+        .meet-cal-flip-card:focus-within .meet-cal-flip-inner { transform:rotateY(180deg); }
+    }
+    @media(prefers-reduced-motion:reduce) {
+        .meet-cal-flip-inner { transition:none!important;will-change:auto; }
+        .meet-cal-flip-actions { transition:none!important;transition-delay:0s!important; }
+    }
+
 </style>
 
 <div id="meetViewShell" runat="server" class="meet-view-shell meet-mode-list">
@@ -458,6 +564,7 @@
                 <div class="meet-cal-legend"><span><i class="meet-cal-legend-status scheduled"></i> Đã lên lịch</span><span><i class="meet-cal-legend-status soon"></i> Sắp diễn ra</span><span><i class="meet-cal-legend-status live"></i> Đang diễn ra</span><span><i class="meet-cal-legend-status done"></i> Đã kết thúc</span><span><i class="fas fa-crown" style="color:#d69a19"></i> Bạn chủ trì</span><span><i class="meet-cal-dot off"></i> Ngày nghỉ / ngày lễ</span><span><i class="far fa-hand-pointer"></i> Bấm ngày để xem đủ cuộc họp · Bấm cuộc họp để mở chi tiết</span></div>
                 <asp:PlaceHolder runat="server" ID="phMeetingCalendar"></asp:PlaceHolder>
                 <input type="hidden" id="meetCalendarSelectedId" name="meetCalendarSelectedId" value="" />
+                <input type="hidden" id="meetCalendarActionType" name="meetCalendarActionType" value="" />
                 <asp:HiddenField runat="server" ID="hdfCalendarCreateDate" />
                 <asp:LinkButton runat="server" ID="btnCreateCalendarMeeting" OnClick="btnCreateCalendarMeeting_Click" CausesValidation="false" Style="display:none;"></asp:LinkButton>
             </div>
@@ -571,15 +678,25 @@
             button.click();
             return false;
         }
-        function openDetail(id) {
-            var hidden = document.getElementById('meetCalendarSelectedId'), button = document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');
-            if (!hidden || !button || !/^[a-f0-9-]{36}$/i.test(id)) return false;
-            function submitDetail() { hidden.value = id; button.click(); }
+        function openAction(action, id) {
+            var hidden = document.getElementById('meetCalendarSelectedId');
+            var kind = document.getElementById('meetCalendarActionType');
+            var button = document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');
+            if (!hidden || !kind || !button || !/^[a-f0-9-]{36}$/i.test(id)) return false;
+            if (action !== 'view' && action !== 'edit' && action !== 'delete') return false;
+            function submitAction() {
+                hidden.value = id;
+                kind.value = action;
+                button.click();
+            }
             var $modal = $('#<%= mdlCalendarDayMeetings.ClientID %>');
-            if ($modal.hasClass('show') || $modal.is(':visible')) { $modal.one('hidden.bs.modal', submitDetail); $modal.modal('hide'); }
-            else submitDetail();
+            if ($modal.hasClass('show') || $modal.is(':visible')) {
+                $modal.one('hidden.bs.modal', submitAction);
+                $modal.modal('hide');
+            } else submitAction();
             return false;
         }
+        function openDetail(id) { return openAction('view', id); }
         function openDay(day) {
             if (!day || Number(day.getAttribute('data-meet-count') || 0) < 1) return false;
             var source = day.querySelector('.meet-cal-day-all'); if (!source) return false;
@@ -592,7 +709,7 @@
         function closeDay() { $('#<%= mdlCalendarDayMeetings.ClientID %>').modal('hide'); return false; }
         if (window.Sys && Sys.Application) Sys.Application.add_load(initialize);
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize); else initialize();
-        return { changeView: changeView, toggleView: toggleView, openDetail: openDetail, openDay: openDay, closeDay: closeDay, createMeeting: createMeeting };
+        return { changeView: changeView, toggleView: toggleView, openDetail: openDetail, openAction: openAction, openDay: openDay, closeDay: closeDay, createMeeting: createMeeting };
     })();
 </script>
 <script type="text/javascript">
@@ -647,6 +764,8 @@
             // Không gửi lại ID của cuộc họp vừa mở khiến timer tự mở lại popup chi tiết.
             var selected = document.getElementById('meetCalendarSelectedId');
             if (selected) selected.value = '';
+            var kind = document.getElementById('meetCalendarActionType');
+            if (kind) kind.value = '';
             var refreshButton = document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');
             if (refreshButton) refreshButton.click();
         }, 60000);

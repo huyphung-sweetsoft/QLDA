@@ -33,6 +33,15 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
         protected global::System.Web.UI.WebControls.Label lblPresetStatus;
 
         /// <summary>
+        /// litReportNameInput control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litReportNameInput;
+
+        /// <summary>
         /// ltrTaskChoices control.
         /// </summary>
         /// <remarks>
@@ -85,6 +94,15 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnCreateProgress;
+
+        /// <summary>
+        /// btnLoadProgressHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnLoadProgressHistory;
 
         /// <summary>
         /// hdfShareProgressOutcome control.
@@ -157,5 +175,185 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblCreateMessage;
+
+        /// <summary>
+        /// modalProgressHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal modalProgressHistory;
+
+        /// <summary>
+        /// upShareProgressHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upShareProgressHistory;
+
+        /// <summary>
+        /// ltrProgressHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal ltrProgressHistory;
+
+        /// <summary>
+        /// lblProgressHistoryCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblProgressHistoryCount;
+
+        /// <summary>
+        /// btnHistoryPrevious control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnHistoryPrevious;
+
+        /// <summary>
+        /// lblProgressHistoryPage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblProgressHistoryPage;
+
+        /// <summary>
+        /// btnHistoryNext control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnHistoryNext;
+
+        /// <summary>
+        /// upShareProgressOtpReset control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upShareProgressOtpReset;
+
+        /// <summary>
+        /// btnRequestProgressOtpReset control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnRequestProgressOtpReset;
+
+        /// <summary>
+        /// btnResetProgressOtp control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnResetProgressOtp;
+
+        /// <summary>
+        /// hdfProgressOtpResetRequestId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressOtpResetRequestId;
+
+        /// <summary>
+        /// hdfProgressOtpResetStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressOtpResetStatus;
+
+        /// <summary>
+        /// hdfProgressOtpResetValue control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressOtpResetValue;
+
+        /// <summary>
+        /// hdfProgressOtpResetMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressOtpResetMessage;
+
+        /// <summary>
+        /// upShareProgressDelete control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upShareProgressDelete;
+
+        /// <summary>
+        /// btnRequestProgressDelete control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnRequestProgressDelete;
+
+        /// <summary>
+        /// btnDeleteProgressReport control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnDeleteProgressReport;
+
+        /// <summary>
+        /// hdfProgressDeleteRequestId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressDeleteRequestId;
+
+        /// <summary>
+        /// hdfProgressDeleteStatus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressDeleteStatus;
+
+        /// <summary>
+        /// hdfProgressDeleteMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hdfProgressDeleteMessage;
     }
 }

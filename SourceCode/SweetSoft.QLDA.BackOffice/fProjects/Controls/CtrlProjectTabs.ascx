@@ -18,10 +18,57 @@
     .project-feature-tabs .nav-link:not(.active):hover > i { color: #54218d !important; opacity: 1 !important; }
     .project-feature-tabs .nav-pills .nav-link.active, .project-feature-tabs .nav-pills .show > .nav-link { color: #ffffff !important; background: #54218d !important; border-color: #54218d !important; box-shadow: none !important; font-weight: 650; }
     .project-feature-tabs .nav-pills .nav-link.active:hover { color: #ffffff !important; background: #481879 !important; border-color: #481879 !important; transform: none; box-shadow: none !important; }
-    /* Nut bo ghim nho gon, chi hien ro khi hover tab */
-    .project-feature-tabs .unpin-btn { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; margin-left: 5px !important; border-radius: 50%; color: inherit !important; background: rgba(255, 255, 255, .16); font-size: 9px; line-height: 1; }
-    .project-feature-tabs .nav-link:not(.active) .unpin-btn { background: #ebe3f7; color: #65469d !important; }
-    .project-feature-tabs .nav-link:hover .unpin-btn, .project-feature-tabs .nav-link:focus-visible .unpin-btn { opacity: 1 !important; }
+    /* Luon dat san cho nut X: chi thay opacity/transform, khong thay doi width khi hover. */
+    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .unpin-btn {
+        display:inline-flex !important;
+        flex:0 0 15px;
+        width:15px;height:15px;
+        margin-left:10px !important; /* Chua du cho label dich 7px ma khong cham nut X. */
+        align-items:center;justify-content:center;
+        border-radius:50%;
+        color:#65469d !important;
+        background:#ebe3f7;
+        font-size:9px;line-height:1;
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        transform:translateX(-7px) scale(.83);
+        transition:opacity .2s ease,transform .30s cubic-bezier(.16,1,.3,1),visibility 0s linear .3s;
+    }
+    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link):hover > .unpin-btn,
+    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link):focus-visible > .unpin-btn {
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+        transform:translateX(0) scale(1);
+        transition-delay:0s;
+    }
+    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .unpin-btn:hover {
+        background:#d9c7f3;
+        color:#54218d !important;
+    }
+    /* Icon va nhan tinh gon luc binh thuong; khi hover chi dung transform.
+       Khong thay doi padding/gap/width -> cac tab ke tiep dung yen. */
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link) > i {
+        transform:rotate(0deg);
+        transform-origin:50% 55%;
+        transition:transform .36s cubic-bezier(.22,.74,.25,1) !important;
+        will-change:transform;
+    }
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link):hover > i,
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link):focus-visible > i {
+        /* Giu nguyen 60 do suot thoi gian hover, khong tu quay lai. */
+        transform:rotate(45deg);
+    }
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link) > .project-tab-label {
+        transform:translateX(0);
+        transition:transform .36s cubic-bezier(.22,.74,.25,1) !important;
+    }
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link):hover > .project-tab-label,
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link):focus-visible > .project-tab-label {
+        /* Day chu cung nhiep voi icon, khong doi chieu rong nav-link. */
+        transform:translateX(7px);
+    }
     /* Nut Them dong bo chieu cao voi tab, huy hieu dem rat nho */
     .project-feature-tabs .nav-link.project-tab-customize-link { display: inline-flex !important; gap: 6px; min-height: 32px; padding: 5px 8px !important; color: #54218d !important; background: transparent !important; border: 1px solid transparent !important; border-radius: 8px !important; box-shadow: none !important; font-weight: 650; }
     .project-feature-tabs .nav-link.project-tab-customize-link:not(.active):hover { color: #35105f !important; background: #e8dcfb !important; border-color: transparent !important; box-shadow: none !important; }
@@ -54,9 +101,7 @@
     .project-feature-tabs .project-tab-customize-count { flex: 0 0 auto; width: 0; min-width: 0; max-width: 0; height: 18px; margin-left: 0; padding: 0; border-width: 0; overflow: hidden; opacity: 0; transition: max-width 1.15s cubic-bezier(.2, .7, .25, 1), width 1.15s cubic-bezier(.2, .7, .25, 1), opacity .62s ease .10s, margin-left 1.15s cubic-bezier(.2, .7, .25, 1), padding 1.15s cubic-bezier(.2, .7, .25, 1), border-width 1.15s ease; }
     .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:hover .project-tab-customize-label, .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:focus-visible .project-tab-customize-label { max-width: 60px; margin-left: 6px; opacity: 1; }
     .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:hover .project-tab-customize-count, .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:focus-visible .project-tab-customize-count { width: auto; min-width: 18px; max-width: 28px; margin-left: 6px; padding: 0 4px; border-width: 1px; opacity: 1; }
-    /* Nut bo ghim khong chiem chieu rong khi tab dang thu gon. */
-    .project-feature-tabs .unpin-btn { display: none !important; }
-    .project-feature-tabs .nav-pills .nav-link:not(.active):hover .unpin-btn, .project-feature-tabs .nav-pills .nav-link:not(.active):focus-visible .unpin-btn { display: inline-flex !important; }
+    /* Nut bo ghim luon duoc giu cho 15px + 5px gap, khong co display:none/block luc hover. */
     /* Mở rộng đồng loạt cả hàng tab khi rê chuột vào vùng thanh điều hướng. Không yêu cầu rê đúng từng icon; focus bàn phím cũng mở rộng toàn hàng. */
     .project-feature-tabs:hover .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .project-tab-label, .project-feature-tabs:focus-within .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .project-tab-label { max-width: 190px; margin-left: 6px; opacity: 1; }
     .project-feature-tabs:hover .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-label, .project-feature-tabs:focus-within .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-label { max-width: 60px; margin-left: 6px; opacity: 1; }
@@ -93,6 +138,16 @@
         .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link { min-height:31px!important;gap:5px!important;padding:5px 7px!important;font-size:12px!important; }
         .project-feature-tabs .project-tab-customize-label { font-size:12px!important; }
         .project-feature-tabs .project-tab-customize-count { min-width:20px!important;height:19px!important;font-size:12px!important; }
+    }
+    /* De sat icon va ten hon: tong khoang cach 2px + 3px = 5px (truoc la 12px).
+       Doi margin o trang thai THUONG, khong doi khi hover. */
+    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > i,
+    .project-feature-tabs .nav-pills .nav-link.active:not(.project-tab-customize-link) > i { margin-right:2px!important; }
+    .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link) > .project-tab-label { margin-left:1px!important; }
+    @media (prefers-reduced-motion: reduce) {
+        .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link) > i,
+        .project-feature-tabs .nav-pills .nav-link:not(.project-tab-customize-link) > .project-tab-label,
+        .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .unpin-btn { transition:none !important; }
     }
     /* Dùng khung ExtraModal mặc định của SweetSoft. Không can thiệp modal-content, border, overflow hay nút X. */
     #<%= mdlProjectQuickLauncher.ClientID %> .modal-dialog { max-width:1040px; }
@@ -262,7 +317,7 @@
 
         // Lần đầu truy cập: ghim 3 chức năng đầu. Những lần sau dùng cấu hình đã lưu.
         var saved = null;
-        try { saved = localStorage.getItem('SweetSoft_PinnedProjectTabs_v4'); } catch (e) {}
+        try { saved = localStorage.getItem('SweetSoft_PinnedProjectTabs_v4'); } catch (e) { }
         if (saved) {
             try {
                 var parsed = JSON.parse(saved);
@@ -297,13 +352,11 @@
 
                 if (tab.key !== activeKey) {
                     var $a = $li.find('a').first();
-                    var $unpinBtn = $('<span class="ms-2 text-muted unpin-btn" title="Bỏ ghim" style="cursor:pointer;opacity:0;transition:opacity .18s;"><i class="fas fa-times"></i></span>');
+                    // Chua san width cua X tren moi tab khong active.
+                    // Khong dung .hover() de sua opacity inline: CSS chi animate ben trong tab.
+                    var $unpinBtn = $('<span class="unpin-btn" title="Bỏ ghim" aria-label="Bỏ ghim chức năng" style="cursor:pointer;"><i class="fas fa-times" aria-hidden="true"></i></span>');
                     $a.find('.unpin-btn').remove();
                     $a.append($unpinBtn);
-                    $a.hover(
-                        function () { $unpinBtn.css('opacity', '1'); },
-                        function () { $unpinBtn.css('opacity', '0'); }
-                    );
 
                     $unpinBtn.on('click', function (e) {
                         e.preventDefault();
@@ -344,10 +397,10 @@
 
     // Cookie chỉ chứa các khóa ghim cố định, giúp server lọc tab ngay trong HTML (tránh chớp mỗi lần chuyển trang).
     function syncProjectPinnedTabsCookie(keys) {
-        try { document.cookie = 'SweetSoft_PinnedProjectTabs_v4=' + encodeURIComponent(keys.join('|')) + '; path=/; max-age=31536000; SameSite=Lax'; } catch (e) {}
+        try { document.cookie = 'SweetSoft_PinnedProjectTabs_v4=' + encodeURIComponent(keys.join('|')) + '; path=/; max-age=31536000; SameSite=Lax'; } catch (e) { }
     }
     function persistProjectPinnedTabs() {
-        try { localStorage.setItem('SweetSoft_PinnedProjectTabs_v4', JSON.stringify(pinnedKeys)); } catch (e) {}
+        try { localStorage.setItem('SweetSoft_PinnedProjectTabs_v4', JSON.stringify(pinnedKeys)); } catch (e) { }
         syncProjectPinnedTabsCookie(pinnedKeys);
     }
     // Giữ trạng thái mở/đóng trước khi trang được vẽ, không chạy animation mỗi lần điều hướng.
@@ -355,7 +408,7 @@
         var panel = document.getElementById('projectFeatureTabs');
         if (!panel) return;
         var isOpen = false;
-        try { isOpen = localStorage.getItem('SweetSoft_ProjectFunctionsOpen_v1') === 'true'; } catch (e) {}
+        try { isOpen = localStorage.getItem('SweetSoft_ProjectFunctionsOpen_v1') === 'true'; } catch (e) { }
         panel.classList.toggle('project-tabs-open', isOpen);
         function reveal() {
             window.requestAnimationFrame(function () {
