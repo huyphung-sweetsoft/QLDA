@@ -1,7 +1,9 @@
 ﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.BackOffice.MasterPages;
+using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Functions;
+using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.ResourceTexts;
 using System;
@@ -15,6 +17,22 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
     public partial class Gantts : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.GanttChart;
+
+        // MasterTemplate sends ConfirmResult to the PAGE. Forward Gantt confirmations
+        // to CtrlShareProgress; other modules remain handled by the page's base implementation.
+        public override void ConfirmRequest(ConfirmResult result)
+        {
+            if (result != null && result.CommandName != null &&
+                (result.CommandName.StartsWith("GANTT_REPORT_RESET_OTP:", StringComparison.Ordinal) ||
+                 result.CommandName.StartsWith("GANTT_REPORT_DELETE:", StringComparison.Ordinal)))
+            {
+                var progress = FindControlRecursive(this, "CtrlShareProgress1") as SweetSoft.QLDA.BackOffice.fGanttCharts.Controls.CtrlShareProgress;
+                if (progress != null) progress.ConfirmRequest(result);
+                return;
+            }
+            base.ConfirmRequest(result);
+        }
+
 
         protected void Page_Load(object sender, EventArgs e)
         {
