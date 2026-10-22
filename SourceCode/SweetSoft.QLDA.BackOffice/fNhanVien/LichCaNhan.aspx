@@ -165,6 +165,139 @@
         .personal-day-join { display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;border:1px solid #d9c6f0;border-radius:7px;background:#f0e8fb;color:#54218d;font-size:11px;font-weight:750;text-decoration:none!important; }
         .personal-day-join:hover { background:#e7d8fa;color:#42166f; }
         @media(prefers-reduced-motion:reduce) { .personal-cal .personal-meeting-pulse,.personal-day-meeting .personal-meeting-pulse { animation:none!important; } }
+
+
+        /* ============================================================
+           FLIP 3D - chỉ lịch tháng: giữ nguyên mặt trước, lật trên trục X.
+           Lịch tuần vẫn hiện đầy đủ công việc và hover tooltip như hiện tại.
+           ============================================================ */
+        .personal-cal .personal-cal-day.has-flip {
+            display:flex; flex-direction:column; gap:0;
+            /* Chừa 1px nền lưới ở đáy để viền ngang không bị lớp 3D phủ mất. */
+            padding:0 0 1px;
+            background:#e8e1ef!important; box-shadow:none!important;
+            perspective:1200px; -webkit-perspective:1200px;
+            isolation:isolate;
+        }
+        /* Cả ngày chỉ có công việc / chỉ có lịch họp / có cả hai:
+           các dòng đều bắt đầu ngay bên dưới số ngày, không căn giữa ô nữa. */
+        .personal-cal .personal-cal-grid.is-month .personal-cal-day.has-flip .personal-cal-month-summary {
+            flex:0 0 auto;
+            justify-content:flex-start;
+            margin-top:0;
+        }
+        /* Viền dưới ngày hiện tại giữ tím, các ngày khác theo màu đường lưới. */
+        .personal-cal .personal-cal-day.has-flip.is-today {
+            background:#aa84d6!important;
+        }
+        .personal-cal .personal-cal-day.has-flip .personal-cal-flip-inner {
+            position:relative; display:flex; flex:1 1 auto; flex-direction:column;
+            width:100%; min-height:0;
+            transform:rotateX(0deg); transform-style:preserve-3d;
+            -webkit-transform-style:preserve-3d;
+            transition:transform .74s cubic-bezier(.22,.70,.19,1);
+            will-change:transform;
+        }
+        @media(hover:hover) and (pointer:fine) {
+            .personal-cal .personal-cal-day.has-flip:hover .personal-cal-flip-inner {
+                transform:rotateX(180deg);
+            }
+        }
+        .personal-cal .personal-cal-day.has-flip:focus-within .personal-cal-flip-inner,
+        .personal-cal .personal-cal-day.has-flip.is-flip-open .personal-cal-flip-inner {
+            transform:rotateX(180deg);
+        }
+        .personal-cal .personal-cal-day.has-flip .personal-cal-flip-face {
+            box-sizing:border-box; width:100%;
+            backface-visibility:hidden; -webkit-backface-visibility:hidden;
+        }
+        .personal-cal .personal-cal-day.has-flip .personal-cal-flip-front {
+            position:relative; display:flex; flex:1 1 auto; flex-direction:column;
+            gap:7px; min-height:0; padding:8px 7px;
+            background:#fff;
+            transform:translateZ(1px);
+        }
+        .personal-cal .personal-cal-day.has-flip.is-outside .personal-cal-flip-front {background:#fbfafc;}
+        .personal-cal .personal-cal-day.has-flip.is-holiday .personal-cal-flip-front {background:#fffcf6;}
+        .personal-cal .personal-cal-day.has-flip.is-weekend .personal-cal-flip-front {background:#f8fafc;}
+        .personal-cal .personal-cal-day.has-flip.is-today .personal-cal-flip-front {
+            background:#faf5ff;box-shadow:inset 0 0 0 2px #aa84d6;
+        }
+        .personal-cal .personal-cal-day.has-flip .personal-cal-flip-back {
+            position:absolute; inset:0;display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:5px;
+            padding:8px 6px;
+            overflow:visible;
+            color:#fff;
+            background:linear-gradient(155deg,rgba(121,67,177,.94),rgba(73,26,127,.97));
+            border:1px solid rgba(225,205,251,.6);
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
+            transform:rotateX(180deg) translateZ(1px);
+            transform-style:preserve-3d;
+            -webkit-transform-style:preserve-3d;
+            text-align:center;
+        }
+        .personal-cal .personal-cal-flip-back::before {
+            content:'';position:absolute;inset:0;pointer-events:none;
+            background:radial-gradient(ellipse at 25% 0,rgba(255,255,255,.20),transparent 66%);
+        }
+        .personal-cal .personal-cal-flip-date {
+            position:relative;display:block;max-width:100%;
+            font-size:11.5px;font-weight:850;line-height:1.15;
+            white-space:nowrap;
+            transform:translateZ(15px);
+        }
+        .personal-cal .personal-cal-flip-summary {
+            position:relative;max-width:100%;font-size:10px;
+            font-weight:650;line-height:1.15;color:#f0e6fb;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+            transform:translateZ(18px);
+        }
+        .personal-cal .personal-cal-flip-action {
+            position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;
+            gap:6px;flex:0 0 auto;min-height:33px;max-width:100%;
+            margin-top:3px;padding:7px 10px;
+            border:1px solid rgba(255,255,255,.85);border-radius:8px;
+            color:#4d197f;background:linear-gradient(180deg,#fff,#f1e8fb);
+            box-shadow:0 5px 0 rgba(47,11,89,.29),0 12px 19px rgba(30,9,67,.31),
+                       0 1px 1px rgba(255,255,255,.8) inset;
+            font-size:11px;font-weight:850;line-height:1.1;
+            white-space:nowrap;cursor:pointer;
+            transform:translateZ(38px);
+            transition:background-color .16s,box-shadow .16s,transform .16s;
+        }
+        .personal-cal .personal-cal-flip-action:hover,
+        .personal-cal .personal-cal-flip-action:focus-visible {
+            background:#fff;
+            box-shadow:0 7px 0 rgba(47,11,89,.24),0 14px 20px rgba(30,9,67,.35);
+            transform:translateZ(43px) translateY(-2px);
+        }
+        .personal-cal .personal-cal-flip-action:focus-visible {
+            outline:2px solid #fff;outline-offset:2px;
+        }
+        /* Tuần: giữ tương tác tooltip theo từng task/cuộc họp,
+           dùng nút chi tiết trực tiếp thay vì lật toàn bộ danh sách dài. */
+        .personal-cal .personal-cal-week-detail {
+            display:inline-flex;align-items:center;justify-content:center;gap:6px;
+            align-self:center;margin-top:auto;padding:6px 9px;min-height:30px;
+            border:1px solid #d6c0ed;border-radius:7px;
+            background:#f4edfd;color:#59278c;
+            font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;
+            transition:border-color .16s,background-color .16s,transform .16s;
+        }
+        .personal-cal .personal-cal-week-detail:hover,
+        .personal-cal .personal-cal-week-detail:focus-visible {
+            background:#e9ddf9;border-color:#b990de;transform:translateY(-1px);
+        }
+        .personal-cal .personal-cal-week-detail:focus-visible {outline:2px solid #8155bd;outline-offset:2px;}
+        @media(prefers-reduced-motion:reduce) {
+            .personal-cal .personal-cal-day.has-flip .personal-cal-flip-inner,
+            .personal-cal .personal-cal-flip-action,
+            .personal-cal .personal-cal-week-detail {transition:none!important;}
+        }
+
+        .personal-cal .personal-cal-day.is-clickable {cursor:default;}
+        .personal-cal .personal-cal-day.has-flip .personal-cal-flip-front {cursor:pointer;}
     </style>
 </asp:Content>
 
@@ -203,7 +336,7 @@
                         <span class="personal-cal-legend-item"><i class="personal-cal-legend-dot free" aria-hidden="true"></i> Ngày trống</span>
                         <span class="personal-cal-legend-item"><i class="personal-cal-legend-dot off" aria-hidden="true"></i> Ngày lễ</span>
                         <span class="personal-cal-legend-item"><i class="personal-cal-legend-dot weekend" aria-hidden="true"></i> Cuối tuần</span>
-                        <span class="personal-cal-legend-item personal-cal-legend-hint"><i class="far fa-hand-pointer" aria-hidden="true"></i> Chọn ngày để xem chi tiết</span>
+                        <span class="personal-cal-legend-item personal-cal-legend-hint"><i class="far fa-hand-pointer" aria-hidden="true"></i> Rê chuột vào ô ngày để lật thẻ</span>
                     </div>
                     <div class="personal-cal-scroll">
                         <div id="calendarGrid" class="personal-cal-grid is-month" role="grid" aria-label="Lưới lịch cá nhân">
@@ -339,9 +472,11 @@
                     var taskCount = tasks.length, meetingCount = meetings.length;
                     var outside = !week && current && key.slice(0, 7) !== current.slice(0, 7);
                     var clickable = canOpen(day);
-                    var cell = document.createElement('div'); cell.className = 'personal-cal-day' + (clickable ? ' is-clickable' : '') + (outside ? ' is-outside' : '') + (status === 'holiday' ? ' is-holiday' : '') + (status === 'weekend' ? ' is-weekend' : '') + (key === today ? ' is-today' : '');
+                    // Chỉ lật card của lịch tháng. Lịch tuần có tooltip riêng nên không lật.
+                    var flip = !week && clickable;
+                    var cell = document.createElement('div'); cell.className = 'personal-cal-day' + (clickable ? ' is-clickable' : '') + (flip ? ' has-flip' : '') + (outside ? ' is-outside' : '') + (status === 'holiday' ? ' is-holiday' : '') + (status === 'weekend' ? ' is-weekend' : '') + (key === today ? ' is-today' : '');
                     cell.setAttribute('role','gridcell'); cell.setAttribute('data-day-index',index);
-                    if (clickable) { cell.tabIndex = 0; cell.setAttribute('aria-label','Xem lịch ngày ' + key.slice(8,10) + '/' + key.slice(5,7) + '/' + key.slice(0,4)); }
+                    if (clickable) cell.setAttribute('aria-label','Lịch ngày ' + key.slice(8,10) + '/' + key.slice(5,7) + '/' + key.slice(0,4));
                     var count = (taskCount ? '<span class="personal-cal-day-count" title="' + taskCount + ' công việc"><i class="fas fa-briefcase" aria-hidden="true"></i> ' + taskCount + '</span>' : '') +
                         (meetingCount ? '<span class="personal-cal-day-meeting-count" title="' + meetingCount + ' cuộc họp"><i class="far fa-calendar-alt" aria-hidden="true"></i> ' + meetingCount + '</span>' : '');
                     var content = '<div class="personal-cal-day-top"><span class="personal-cal-day-number">' + date.getDate() + '</span><span class="personal-cal-day-tags">' + count + '</span></div>';
@@ -371,6 +506,27 @@
                             }).forEach(function(meeting) { if (meeting) content += renderMeeting(meeting,key); });
                             content += '</div>';
                         }
+                    }
+                    if (flip) {
+                        // Sử dụng lại HTML mặt trước cũ để không đổi badge, ngày trống/nghỉ, số lượng.
+                        var dateLabel = ('0' + date.getDate()).slice(-2) + '/' + ('0' + (date.getMonth() + 1)).slice(-2);
+                        var brief = taskCount && meetingCount ? taskCount + ' công việc · ' + meetingCount + ' họp'
+                            : taskCount ? taskCount + ' công việc'
+                            : meetingCount ? meetingCount + ' cuộc họp'
+                            : status === 'holiday' ? (day.TenNgoaiLe || words.holiday || 'Ngày lễ')
+                            : status === 'weekend' ? (words.weekend || 'Cuối tuần')
+                            : status === 'busy' ? 'Có lịch làm việc' : 'Ngày trống';
+                        content = '<div class="personal-cal-flip-inner">' +
+                            '<div class="personal-cal-flip-face personal-cal-flip-front">' + content + '</div>' +
+                            '<div class="personal-cal-flip-face personal-cal-flip-back">' +
+                            '<strong class="personal-cal-flip-date">Ngày ' + dateLabel + '</strong>' +
+                            '<span class="personal-cal-flip-summary" title="' + html(brief) + '">' + html(brief) + '</span>' +
+                            '<button type="button" class="personal-cal-flip-action" data-personal-action="open-day" aria-label="Xem chi tiết ngày ' + dateLabel + '">' +
+                            '<i class="far fa-eye" aria-hidden="true"></i> Xem chi tiết</button>' +
+                            '</div></div>';
+                    } else if (week && clickable) {
+                        content += '<button type="button" class="personal-cal-week-detail" data-personal-action="open-day" aria-label="Xem chi tiết ngày ' + key.slice(8,10) + '/' + key.slice(5,7) + '">' +
+                            '<i class="far fa-eye" aria-hidden="true"></i> Xem chi tiết</button>';
                     }
                     cell.innerHTML = content; frag.appendChild(cell);
                 });
@@ -410,18 +566,33 @@
                 removeTooltip(); input.value = String(index); button.click(); return false;
             }
             function onClick(e) {
-                var target = e.target.closest && e.target.closest('.personal-cal-day.is-clickable');
-                if (!target) return;
-                e.preventDefault(); openDay(Number(target.getAttribute('data-day-index')));
-            }
-            function onKey(e) {
-                if (e.key !== 'Enter' && e.key !== ' ') return;
-                var target = e.target.closest && e.target.closest('.personal-cal-day.is-clickable');
-                if (!target) return;
-                e.preventDefault(); openDay(Number(target.getAttribute('data-day-index')));
+                var action = e.target.closest && e.target.closest('[data-personal-action="open-day"]');
+                if (action) {
+                    var cell = action.closest('.personal-cal-day.is-clickable');
+                    if (!cell) return;
+                    e.preventDefault();
+                    openDay(Number(cell.getAttribute('data-day-index')));
+                    return;
+                }
+                // Điện thoại/màn hình cảm ứng: chạm mặt trước một lần để lật,
+                // rồi nhấn nút 'Xem chi tiết' ở mặt sau.
+                var front = e.target.closest && e.target.closest('.personal-cal-flip-front');
+                var clickedCard = front && front.closest('.personal-cal-day.has-flip');
+                var isTouch = window.matchMedia && window.matchMedia('(hover:none)').matches;
+                var opened = document.querySelectorAll('#calendarGrid .personal-cal-day.is-flip-open');
+                for (var i = 0; i < opened.length; i++) {
+                    if (opened[i] !== clickedCard) opened[i].classList.remove('is-flip-open');
+                }
+                if (clickedCard && isTouch) {
+                    e.preventDefault(); clickedCard.classList.add('is-flip-open');
+                }
             }
             document.addEventListener('click', onClick);
-            document.addEventListener('keydown', onKey);
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                var opened = document.querySelectorAll('#calendarGrid .personal-cal-day.is-flip-open');
+                for (var i = 0; i < opened.length; i++) opened[i].classList.remove('is-flip-open');
+            });
             document.addEventListener('pointerover', function (e) { var el = e.target.closest && e.target.closest('.personal-cal-event'); if (el && el !== toolAnchor) showTooltip(el); });
             document.addEventListener('pointerout', function (e) { var el = e.target.closest && e.target.closest('.personal-cal-event'); if (el && (!e.relatedTarget || !el.contains(e.relatedTarget))) removeTooltip(); });
             document.addEventListener('focusin', function (e) { var el = e.target.closest && e.target.closest('.personal-cal-event'); if (el) showTooltip(el); });

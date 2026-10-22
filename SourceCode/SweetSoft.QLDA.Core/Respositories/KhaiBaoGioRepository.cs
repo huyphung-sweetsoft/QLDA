@@ -1,4 +1,4 @@
-using SubSonic;
+﻿using SubSonic;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -821,6 +821,23 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
             return a;
         }
+        // Chi xet SU KIEN CA NHAN (bo qua cac dot legacy sau PM duyet).
+        internal bool CaNhanDaBaoXong(SqlConnection con, SqlTransaction tx, Guid nhanVien, Guid task)
+        {
+            using (var cmd = Lenh(con, tx, @"SELECT TOP (1) LoaiSuKien
+                FROM dbo.TblKhaiBaoGioDoiSoat WITH (HOLDLOCK)
+                WHERE IdNhanVien=@U AND IdCongViec=@T AND LoaiSuKien IN (1,2,3,4)
+                ORDER BY LanDoiSoat DESC, PhienBan DESC, NgayTao DESC"))
+            {
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nhanVien);
+                P(cmd,"@T",SqlDbType.UniqueIdentifier,task);
+                var value=cmd.ExecuteScalar();
+                if(value==null || value==DBNull.Value) return false;
+                int status=Convert.ToInt32(value);
+                return status==1 || status==3 || status==4;
+            }
+        }
+
         internal bool DaTungBatDau(SqlConnection con, SqlTransaction tx, Guid idNv, Guid idTask)
         {
             using (var cmd = Lenh(con, tx, @"SELECT TOP 1 1 FROM dbo.TblKhaiBaoGioPhien WITH (UPDLOCK,HOLDLOCK)
@@ -1108,12 +1125,16 @@ namespace SweetSoft.QLDA.Core.Respositories
         }
         internal bool ConHauDueChuaHoanThanh(SqlConnection con, SqlTransaction tx, Guid task)
         {
+            // Chi xet nhanh cong viec CON DANG HIEU LUC. Neu TrangThai NULL, coi la CHUA xong.
+            // Xet toan bo hau due (khong chi con truc tiep). Task cho PM duyet (4) van chua xong.
             using (var cmd = Lenh(con, tx, @";WITH H AS
-                  (SELECT IdCongViec,IdCongViecCha,TrangThai,DaXoa FROM dbo.TblCongViec WHERE IdCongViecCha=@T
-                   UNION ALL SELECT c.IdCongViec,c.IdCongViecCha,c.TrangThai,c.DaXoa
-                   FROM dbo.TblCongViec c INNER JOIN H ON c.IdCongViecCha=H.IdCongViec)
-                  SELECT TOP 1 1 FROM H WHERE (DaXoa=0 OR DaXoa IS NULL)
-                    AND TrangThai NOT IN (@HoanThanh,@HoanThanhTre)
+                  (SELECT IdCongViec,IdCongViecCha,TrangThai FROM dbo.TblCongViec
+                   WHERE IdCongViecCha=@T AND ISNULL(DaXoa,0)=0
+                   UNION ALL SELECT c.IdCongViec,c.IdCongViecCha,c.TrangThai
+                   FROM dbo.TblCongViec c INNER JOIN H ON c.IdCongViecCha=H.IdCongViec
+                   WHERE ISNULL(c.DaXoa,0)=0)
+                  SELECT TOP 1 1 FROM H
+                   WHERE TrangThai IS NULL OR TrangThai NOT IN (@HoanThanh,@HoanThanhTre)
                   OPTION (MAXRECURSION 100)"))
             {
                 P(cmd, "@T", SqlDbType.UniqueIdentifier, task);

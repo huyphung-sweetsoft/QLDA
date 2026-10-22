@@ -1,4 +1,4 @@
-﻿a<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlChonNhanVien.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChonNhanVien" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlChonNhanVien.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChonNhanVien" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <style>
 #<%= mdlMemberPicker.ClientID %> .modal-dialog{max-width:1360px;width:calc(100vw - 32px)}
@@ -61,10 +61,20 @@
 .ppm-badge[hidden]{display:none!important}
 .ppm-badge{background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd}
 .ppm-badge.new{background:#f2eafb;color:#6b21a8;border-color:#e3d3fc}
-/* Badge số ngày trống giống CtrlChonNhanVienTask: xanh khi còn trống,
-   xám khi hết ngày trống hoặc khoảng dự án không có ngày làm việc. */
-.ppm-root .ppm-badge.ppm-availability{background:#198754;border-color:#198754;color:#fff;font-weight:600}
-.ppm-root .ppm-badge.ppm-availability.is-unavailable{background:#6c757d;border-color:#6c757d;color:#fff}
+/* Badge Trống X/Y: giữ nguyên class bg-success/bg-secondary từ
+   CtrlChonNhanVienTask.badgeFor(); chỉ sao chép style kích thước của
+   .tmp-v3-list .row-default-view>.d-flex .badge bên control Task.
+   KHÔNG tự đặt màu hay border-radius: Bootstrap quyết định y hệt Task. */
+.ppm-root .ppm-row [data-ppm-badge].badge{
+    flex:0 0 auto;
+    font-size:10px!important;
+    padding:4px 6px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    max-width:125px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
 .ppm-pane-content{overflow-y:auto;overscroll-behavior:contain}
 .ppm-person-title{overflow:hidden}
 
@@ -239,364 +249,369 @@
 <script type="text/javascript">
 (function(){
     var rootId='ppmRoot_<%= ClientID %>';
-    var popupId='ppmMini_<%= ClientID %>';
-    var tooltipId='ppmTooltip_<%= ClientID %>';
-    var stateMap=window.__projectPickerState=window.__projectPickerState||{};
-    var state=stateMap[rootId]||(stateMap[rootId]={mini:null,pinned:null});
-    state.miniCache=state.miniCache||{};
-    var fields={picked:'hfPickedClient',original:'hfOriginalClient',miniUser:'hfMiniUser',miniMonth:'hfMiniMonth',miniPayload:'hfMiniPayload',miniButton:'btnLoadMiniMonth'};
-    function root(){return document.getElementById(rootId)}
-    function field(name){var r=root();return r?r.querySelector('[id$="'+fields[name]+'"]'):null}
-    function value(name){var f=field(name);return f?f.value:''}
-    function encode(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
-    function parse(s){try{return JSON.parse(s||'{}')||{}}catch(e){return {}}}
-    function picked(){return new Set(value('picked').split(',').filter(Boolean))}
-    function savePicked(set){var f=field('picked');if(f)f.value=Array.from(set).join(',')}
-    function userRows(){var r=root();return r?Array.from(r.querySelectorAll('[data-ppm-list] > .ppm-row[data-ppm-id], [data-ppm-source] > .ppm-row[data-ppm-id]')):[]}
-    function personName(row){var e=row.querySelector('.ppm-person-title b');return e?e.textContent.trim():'Nhân viên'}
-    function badgeTooltipHtml(row){
-        var name=personName(row),tasks=parse(row.dataset.ppmTasks||'[]');
-        if(!Array.isArray(tasks))tasks=[];
-        var html='<div class="tmp-tooltip-heading">Công việc của '+encode(name)+'</div>';
-        if(!tasks.length)return html+'<div style="color:#64748b;font-size:11.5px">Chưa tải được chi tiết công việc.</div>';
-        html+='<div class="tmp-other-heading">Đang đảm nhận '+tasks.length+' công việc trong dự án</div><ul class="tooltip-task-list">';
-        tasks.forEach(function(t){
-            html+='<li><div class="ppm-task-item-name"><span class="t-code">'+(t.code?'['+encode(t.code)+'] ':'')+'</span>'+encode(t.name||'Chưa có tên')+'</div>'+
-                '<span class="ppm-task-date"><i class="far fa-calendar-alt me-1"></i>'+encode(t.start||'Chưa xác định')+' – '+encode(t.end||'Chưa xác định')+'</span></li>';
+    var popupId ='ppmMini_<%= ClientID %>';
+    var tooltipId ='ppmTooltip_<%= ClientID %>';
+    var stateMap = window.__projectPickerState = window.__projectPickerState || {};
+    var state = stateMap[rootId] || (stateMap[rootId] = { mini: null, pinned: null });
+    state.miniCache = state.miniCache || {};
+    var fields = { picked: 'hfPickedClient', original: 'hfOriginalClient', miniUser: 'hfMiniUser', miniMonth: 'hfMiniMonth', miniPayload: 'hfMiniPayload', miniButton: 'btnLoadMiniMonth' };
+    function root() { return document.getElementById(rootId) }
+    function field(name) { var r = root(); return r ? r.querySelector('[id$="' + fields[name] + '"]') : null }
+    function value(name) { var f = field(name); return f ? f.value : '' }
+    function encode(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') }
+    function parse(s) { try { return JSON.parse(s || '{}') || {} } catch (e) { return {} } }
+    function picked() { return new Set(value('picked').split(',').filter(Boolean)) }
+    function savePicked(set) { var f = field('picked'); if (f) f.value = Array.from(set).join(',') }
+    function userRows() { var r = root(); return r ? Array.from(r.querySelectorAll('[data-ppm-list] > .ppm-row[data-ppm-id], [data-ppm-source] > .ppm-row[data-ppm-id]')) : [] }
+    function personName(row) { var e = row.querySelector('.ppm-person-title b'); return e ? e.textContent.trim() : 'Nhân viên' }
+    function badgeTooltipHtml(row) {
+        var name = personName(row), tasks = parse(row.dataset.ppmTasks || '[]');
+        if (!Array.isArray(tasks)) tasks = [];
+        var html = '<div class="tmp-tooltip-heading">Công việc của ' + encode(name) + '</div>';
+        if (!tasks.length) return html + '<div style="color:#64748b;font-size:11.5px">Chưa tải được chi tiết công việc.</div>';
+        html += '<div class="tmp-other-heading">Đang đảm nhận ' + tasks.length + ' công việc trong dự án</div><ul class="tooltip-task-list">';
+        tasks.forEach(function (t) {
+            html += '<li><div class="ppm-task-item-name"><span class="t-code">' + (t.code ? '[' + encode(t.code) + '] ' : '') + '</span>' + encode(t.name || 'Chưa có tên') + '</div>' +
+                '<span class="ppm-task-date"><i class="far fa-calendar-alt me-1"></i>' + encode(t.start || 'Chưa xác định') + ' – ' + encode(t.end || 'Chưa xác định') + '</span></li>';
         });
-        return html+'</ul>';
+        return html + '</ul>';
     }
-    function badge(row,chosen){
-        var b=row.querySelector('[data-ppm-badge]');if(!b)return;
-        var old=row.dataset.ppmOriginal==='1',num=parseInt(row.dataset.ppmTaskcount||'0',10)||0;
-        b.className='ppm-badge'+(chosen&&!old?' new':'');
-        b.hidden=false;
-        if(!chosen){
+    function badge(row, chosen) {
+        var b = row.querySelector('[data-ppm-badge]'); if (!b) return;
+        var old = row.dataset.ppmOriginal === '1', num = parseInt(row.dataset.ppmTaskcount || '0', 10) || 0;
+        b.className = 'ppm-badge' + (chosen && !old ? ' new' : '');
+        b.hidden = false;
+        if (!chosen) {
             // Cùng quy tắc badgeFor() trong CtrlChonNhanVienTask.
             // Bỏ toàn bộ tooltip trạng thái đã chọn để không giữ tooltip cũ khi bỏ tick.
-            var total=Math.max(0,parseInt(row.dataset.ppmWorkingdays||'0',10)||0);
-            var free=Math.max(0,Math.min(total,parseInt(row.dataset.ppmFree||'0',10)||0));
-            b.className='ppm-badge ppm-availability'+(!free?' is-unavailable':'');
-            b.textContent=!total?'Không có ngày làm việc':'Trống '+free+'/'+total+' ngày';
-            b.removeAttribute('data-ppm-taskbadge');b.removeAttribute('data-tooltip-content');
-            b.removeAttribute('tabindex');b.removeAttribute('role');b.removeAttribute('aria-label');
-            b.title=!total?'Khoảng thời gian dự án không có ngày làm việc':
-                'Còn trống '+free+' trên '+total+' ngày làm việc của dự án';
+            var total = Math.max(0, parseInt(row.dataset.ppmWorkingdays || '0', 10) || 0);
+            var free = Math.max(0, Math.min(total, parseInt(row.dataset.ppmFree || '0', 10) || 0));
+            // Y nguyên CtrlChonNhanVienTask.badgeFor(): dùng trực tiếp Bootstrap
+            // bg-secondary / bg-success và icon fas fa-calendar-check me-1.
+            // Không tái tạo màu bằng CSS riêng của CtrlChonNhanVien.
+            b.className = 'badge ' + (!total || !free ? 'bg-secondary' : 'bg-success');
+            if (!total) b.textContent = 'Không có ngày làm việc';
+            else if (!free) b.textContent = 'Trống 0/' + total + ' ngày';
+            else b.innerHTML = '<i class="fas fa-calendar-check me-1"></i>Trống ' + free + '/' + total + ' ngày';
+            b.removeAttribute('data-ppm-taskbadge'); b.removeAttribute('data-tooltip-content');
+            b.removeAttribute('tabindex'); b.removeAttribute('role'); b.removeAttribute('aria-label');
+            b.title = !total ? 'Khoảng thời gian dự án không có ngày làm việc' :
+                'Còn trống ' + free + ' trên ' + total + ' ngày làm việc của dự án';
             return;
         }
         // Người đã chọn: giữ nguyên badge/tooltip danh sách công việc cũ.
-        b.textContent=old?(num>0?'Đảm nhận '+num+' công việc':'Đã tham gia'):'Sẽ tham gia';
-        if(old&&num>0){
-            b.setAttribute('data-ppm-taskbadge','1');
-            b.setAttribute('data-tooltip-content',encodeURIComponent(badgeTooltipHtml(row)));
-            b.tabIndex=0;
-            b.setAttribute('role','button');
-            b.setAttribute('aria-label','Xem danh sách '+num+' công việc của '+personName(row));
-            b.title='Di chuột xem, bấm để ghim danh sách công việc';
-        }else{
-            b.removeAttribute('data-ppm-taskbadge');b.removeAttribute('data-tooltip-content');
-            b.removeAttribute('tabindex');b.removeAttribute('role');b.removeAttribute('aria-label');
-            b.title=old?'Đã tham gia dự án':'Nhân viên vừa được chọn, chưa lưu';
+        b.textContent = old ? (num > 0 ? 'Đảm nhận ' + num + ' công việc' : 'Đã tham gia') : 'Sẽ tham gia';
+        if (old && num > 0) {
+            b.setAttribute('data-ppm-taskbadge', '1');
+            b.setAttribute('data-tooltip-content', encodeURIComponent(badgeTooltipHtml(row)));
+            b.tabIndex = 0;
+            b.setAttribute('role', 'button');
+            b.setAttribute('aria-label', 'Xem danh sách ' + num + ' công việc của ' + personName(row));
+            b.title = 'Di chuột xem, bấm để ghim danh sách công việc';
+        } else {
+            b.removeAttribute('data-ppm-taskbadge'); b.removeAttribute('data-tooltip-content');
+            b.removeAttribute('tabindex'); b.removeAttribute('role'); b.removeAttribute('aria-label');
+            b.title = old ? 'Đã tham gia dự án' : 'Nhân viên vừa được chọn, chưa lưu';
         }
     }
-    function updateSummary(){
-        var r=root();if(!r)return;
-        var original=new Set(value('original').split(',').filter(Boolean)),selected=picked(),keep=0,add=0,remove=0;
-        selected.forEach(function(id){if(original.has(id))keep++;else add++});
-        original.forEach(function(id){if(!selected.has(id))remove++});
-        var target=r.querySelector('[data-ppm-summary]');if(target)target.textContent=selected.size+' thành viên sau lưu · Giữ '+keep+' · Thêm '+add+' · Gỡ '+remove;
+    function updateSummary() {
+        var r = root(); if (!r) return;
+        var original = new Set(value('original').split(',').filter(Boolean)), selected = picked(), keep = 0, add = 0, remove = 0;
+        selected.forEach(function (id) { if (original.has(id)) keep++; else add++ });
+        original.forEach(function (id) { if (!selected.has(id)) remove++ });
+        var target = r.querySelector('[data-ppm-summary]'); if (target) target.textContent = selected.size + ' thành viên sau lưu · Giữ ' + keep + ' · Thêm ' + add + ' · Gỡ ' + remove;
     }
-    function renderList(){
-        var r=root();if(!r)return;
-        var left=r.querySelector('[data-ppm-list="selected"]'),right=r.querySelector('[data-ppm-list="candidate"]');
-        if(!left||!right)return;
-        var scrollLeft=left.scrollTop,scrollRight=right.scrollTop,selected=picked();
-        r.querySelectorAll('.ppm-empty').forEach(function(e){e.remove()});
-        userRows().forEach(function(row){
-            var isSelected=selected.has(row.dataset.ppmId),cb=row.querySelector('input[type="checkbox"]');
-            if(cb)cb.checked=isSelected;
-            row.classList.toggle('is-picked',isSelected);
-            badge(row,isSelected);
-            (isSelected?left:right).appendChild(row);
+    function renderList() {
+        var r = root(); if (!r) return;
+        var left = r.querySelector('[data-ppm-list="selected"]'), right = r.querySelector('[data-ppm-list="candidate"]');
+        if (!left || !right) return;
+        var scrollLeft = left.scrollTop, scrollRight = right.scrollTop, selected = picked();
+        r.querySelectorAll('.ppm-empty').forEach(function (e) { e.remove() });
+        userRows().forEach(function (row) {
+            var isSelected = selected.has(row.dataset.ppmId), cb = row.querySelector('input[type="checkbox"]');
+            if (cb) cb.checked = isSelected;
+            row.classList.toggle('is-picked', isSelected);
+            badge(row, isSelected);
+            (isSelected ? left : right).appendChild(row);
         });
-        if(!left.querySelector('.ppm-row'))left.innerHTML='<div class="ppm-empty">Chưa chọn nhân viên cho dự án.</div>';
-        if(!right.querySelector('.ppm-row'))right.innerHTML='<div class="ppm-empty">Không có ứng viên phù hợp.</div>';
-        left.scrollTop=scrollLeft;right.scrollTop=scrollRight;
-        r.querySelectorAll('[data-ppm-count]').forEach(function(e){
-            e.textContent=r.querySelectorAll('[data-ppm-list="'+e.dataset.ppmCount+'"] > .ppm-row').length;
+        if (!left.querySelector('.ppm-row')) left.innerHTML = '<div class="ppm-empty">Chưa chọn nhân viên cho dự án.</div>';
+        if (!right.querySelector('.ppm-row')) right.innerHTML = '<div class="ppm-empty">Không có ứng viên phù hợp.</div>';
+        left.scrollTop = scrollLeft; right.scrollTop = scrollRight;
+        r.querySelectorAll('[data-ppm-count]').forEach(function (e) {
+            e.textContent = r.querySelectorAll('[data-ppm-list="' + e.dataset.ppmCount + '"] > .ppm-row').length;
         });
         updateSummary();
     }
-    function closeTip(){var t=document.getElementById(tooltipId);if(t)t.classList.remove('show','tmp-tooltip-below');state.pinned=null;var p=document.getElementById(popupId);if(p)p.querySelectorAll('.mc-day.show-tooltip').forEach(function(e){e.classList.remove('show-tooltip')});var r=root();if(r)r.querySelectorAll('[data-ppm-taskbadge].show-tooltip').forEach(function(e){e.classList.remove('show-tooltip')})}
-    function closeMini(resetFields){
-        var p=document.getElementById(popupId);if(p){p.hidden=true;p.classList.remove('show','tmp-from-left','tmp-from-right');}
-        state.mini=null;closeTip();
-        if(resetFields){['miniUser','miniMonth','miniPayload'].forEach(function(k){var f=field(k);if(f)f.value=(k==='miniPayload'?'{}':'')})}
+    function closeTip() { var t = document.getElementById(tooltipId); if (t) t.classList.remove('show', 'tmp-tooltip-below'); state.pinned = null; var p = document.getElementById(popupId); if (p) p.querySelectorAll('.mc-day.show-tooltip').forEach(function (e) { e.classList.remove('show-tooltip') }); var r = root(); if (r) r.querySelectorAll('[data-ppm-taskbadge].show-tooltip').forEach(function (e) { e.classList.remove('show-tooltip') }) }
+    function closeMini(resetFields) {
+        var p = document.getElementById(popupId); if (p) { p.hidden = true; p.classList.remove('show', 'tmp-from-left', 'tmp-from-right'); }
+        state.mini = null; closeTip();
+        if (resetFields) { ['miniUser', 'miniMonth', 'miniPayload'].forEach(function (k) { var f = field(k); if (f) f.value = (k === 'miniPayload' ? '{}' : '') }) }
     }
-    function projectNotifyVisible(){var n=document.getElementById('modal-notify');return !!(n&&(n.classList.contains('show')||n.getAttribute('aria-hidden')==='false'||(n.style.display==='block')))}
-    function dateFromKey(k){var s=k.split('-');return new Date(+s[0],+s[1]-1,+s[2])}
-    function dayKey(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
-    function dateShort(k){var p=k.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
-    function monthKey(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)}
+    function projectNotifyVisible() { var n = document.getElementById('modal-notify'); return !!(n && (n.classList.contains('show') || n.getAttribute('aria-hidden') === 'false' || (n.style.display === 'block'))) }
+    function dateFromKey(k) { var s = k.split('-'); return new Date(+s[0], +s[1] - 1, +s[2]) }
+    function dayKey(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2) }
+    function dateShort(k) { var p = k.split('-'); return p[2] + '/' + p[1] + '/' + p[0] }
+    function monthKey(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) }
     // Cùng tooltip-task-list, tmp-tooltip-heading và cú pháp TaskMemberCalendarEngine.
     // Chỉ khác nghiệp vụ: nhóm công việc thuộc dự án hiện tại hay dự án khác.
-    function taskDayTooltip(info,key,employee,outside){
-        if(!info)return '';
-        var tasks=info.tasks||[],own=tasks.filter(function(t){return t.currentProject}),other=tasks.filter(function(t){return !t.currentProject});
-        var p=key.split('-');
-        var html='<div class="tmp-tooltip-heading">'+(employee?encode(employee)+' · ':'Ngày ')+p[2]+'/'+p[1]+'/'+p[0]+'</div>';
-        function group(items,heading){
-            if(!items.length)return '';
-            var s='<div class="tmp-other-heading">'+heading+' ('+items.length+')</div><ul class="tooltip-task-list">';
-            items.forEach(function(t){s+='<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>'+encode(t.projectName||'')+'</div><span class="t-code">['+encode(t.code||'')+']</span>'+encode(t.name||'')+'</li>'});
-            return s+'</ul>';
+    function taskDayTooltip(info, key, employee, outside) {
+        if (!info) return '';
+        var tasks = info.tasks || [], own = tasks.filter(function (t) { return t.currentProject }), other = tasks.filter(function (t) { return !t.currentProject });
+        var p = key.split('-');
+        var html = '<div class="tmp-tooltip-heading">' + (employee ? encode(employee) + ' · ' : 'Ngày ') + p[2] + '/' + p[1] + '/' + p[0] + '</div>';
+        function group(items, heading) {
+            if (!items.length) return '';
+            var s = '<div class="tmp-other-heading">' + heading + ' (' + items.length + ')</div><ul class="tooltip-task-list">';
+            items.forEach(function (t) { s += '<li><div class="t-project-name"><i class="fas fa-cube me-1"></i>' + encode(t.projectName || '') + '</div><span class="t-code">[' + encode(t.code || '') + ']</span>' + encode(t.name || '') + '</li>' });
+            return s + '</ul>';
         }
-        html+=group(own,'Công việc thuộc dự án này')+group(other,'Công việc thuộc dự án khác');
-        if(!tasks.length)html+='<div style="font-size:11.5px;color:#64748b">'+encode(info.text||'Chưa có lịch công việc')+'</div>';
+        html += group(own, 'Công việc thuộc dự án này') + group(other, 'Công việc thuộc dự án khác');
+        if (!tasks.length) html += '<div style="font-size:11.5px;color:#64748b">' + encode(info.text || 'Chưa có lịch công việc') + '</div>';
         return html;
     }
     // Các hàm dựng ô và header lấy đúng từ Task; dữ liệu dự án chỉ đổi ở taskDayTooltip().
-    function toKey(y,m,d){return y+'-'+('0'+(m+1)).slice(-2)+'-'+('0'+d).slice(-2)}
-    function escAttr(s){return encode(s)}
-    function titleText(st){return 'Tháng '+(st.month+1)+', '+st.year}
-    var WEEKDAYS=['T2','T3','T4','T5','T6','T7','CN'];
-        function buildGridHtml(st) {
-            var now = new Date();
-            var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
-            var offset = (new Date(st.year, st.month, 1).getDay() + 6) % 7;
-            var html = '<div class="mc-grid">';
+    function toKey(y, m, d) { return y + '-' + ('0' + (m + 1)).slice(-2) + '-' + ('0' + d).slice(-2) }
+    function escAttr(s) { return encode(s) }
+    function titleText(st) { return 'Tháng ' + (st.month + 1) + ', ' + st.year }
+    var WEEKDAYS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    function buildGridHtml(st) {
+        var now = new Date();
+        var todayKey = toKey(now.getFullYear(), now.getMonth(), now.getDate());
+        var offset = (new Date(st.year, st.month, 1).getDay() + 6) % 7;
+        var html = '<div class="mc-grid">';
 
-            for (var i = 0; i < 42; i++) {
-                var d = new Date(st.year, st.month, 1 - offset + i);
-                var key = toKey(d.getFullYear(), d.getMonth(), d.getDate());
-                var inRange = !!st.minKey && key >= st.minKey && key <= st.maxKey;
-                var info = inRange ? st.data[key] : null;
+        for (var i = 0; i < 42; i++) {
+            var d = new Date(st.year, st.month, 1 - offset + i);
+            var key = toKey(d.getFullYear(), d.getMonth(), d.getDate());
+            var inRange = !!st.minKey && key >= st.minKey && key <= st.maxKey;
+            var info = inRange ? st.data[key] : null;
 
-                var cls = 'mc-day';
-                if (d.getMonth() !== st.month) cls += ' out-month';
-                if (!inRange) cls += ' out-range';
-                else if (info && info.status) cls += ' st-' + info.status;
-                // Có task hiện tại mà không vướng task khác: màu tím, không ghi là 'Trống'.
-                if (info && info.current && info.status === 'free') cls += ' st-current-only';
-                if (key === todayKey) cls += ' today';
-                if (info && info.current) cls += ' has-current';
+            var cls = 'mc-day';
+            if (d.getMonth() !== st.month) cls += ' out-month';
+            if (!inRange) cls += ' out-range';
+            else if (info && info.status) cls += ' st-' + info.status;
+            // Có task hiện tại mà không vướng task khác: màu tím, không ghi là 'Trống'.
+            if (info && info.current && info.status === 'free') cls += ' st-current-only';
+            if (key === todayKey) cls += ' today';
+            if (info && info.current) cls += ' has-current';
 
-                var extra = '';
-                var tooltipHtml = '';
-                var clickAttr = '';
+            var extra = '';
+            var tooltipHtml = '';
+            var clickAttr = '';
 
-                if (info) {
-                    var label = info.current && info.status === 'free' ? 'Task này' : String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
-                    if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
-                    var hasOthers = !!(info.tasks && info.tasks.length);
-                    var hasCurrent = !!info.current;
-                    if (hasOthers || hasCurrent) {
-                        cls += ' has-tooltip';
-                        var listHtml = taskDayTooltip(info, key, '', false);
-                        clickAttr = ' data-tooltip-content="' + encodeURIComponent(listHtml) + '"';
-                    } else if (info.text) {
-                        clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
-                    }
+            if (info) {
+                var label = info.current && info.status === 'free' ? 'Task này' : String(info.text || '').replace(/^[^A-Za-z0-9\u00C0-\u1EF9]+/, '');
+                if (label) extra = '<span class="mc-label">' + escAttr(label) + '</span>';
+                var hasOthers = !!(info.tasks && info.tasks.length);
+                var hasCurrent = !!info.current;
+                if (hasOthers || hasCurrent) {
+                    cls += ' has-tooltip';
+                    var listHtml = taskDayTooltip(info, key, '', false);
+                    clickAttr = ' data-tooltip-content="' + encodeURIComponent(listHtml) + '"';
+                } else if (info.text) {
+                    clickAttr = ' title="' + escAttr(d.getDate() + '/' + (d.getMonth() + 1) + ' - ' + info.text) + '"';
                 }
-                html += '<div class="' + cls + '" data-day-key="' + key + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
             }
-            return html + '</div>';
+            html += '<div class="' + cls + '" data-day-key="' + key + '"' + clickAttr + '><span class="mc-num">' + d.getDate() + '</span>' + extra + '</div>';
         }
-        function renderMiniCalendar(cal) {
-            var st = cal.data('mc');
-            var html = '<div class="mc-header">' +
-                '<span class="mc-title">' + titleText(st) + '</span>' +
-                '<div class="mc-nav">' +
-                '<button type="button" class="mc-nav-btn" title="Tháng trước" data-ppm-month-change="-1">&#9650;</button>' +
-                '<button type="button" class="mc-nav-btn" title="Tháng sau" data-ppm-month-change="1">&#9660;</button>' +
-                '</div></div>';
+        return html + '</div>';
+    }
+    function renderMiniCalendar(cal) {
+        var st = cal.data('mc');
+        var html = '<div class="mc-header">' +
+            '<span class="mc-title">' + titleText(st) + '</span>' +
+            '<div class="mc-nav">' +
+            '<button type="button" class="mc-nav-btn" title="Tháng trước" data-ppm-month-change="-1">&#9650;</button>' +
+            '<button type="button" class="mc-nav-btn" title="Tháng sau" data-ppm-month-change="1">&#9660;</button>' +
+            '</div></div>';
 
-            html += '<div class="mc-weekdays">';
-            for (var w = 0; w < 7; w++) {
-                html += '<span' + (w >= 5 ? ' class="mc-we"' : '') + '>' + WEEKDAYS[w] + '</span>';
-            }
-            html += '</div>';
-
-            html += '<div class="mc-viewport">' + buildGridHtml(st) + '</div>';
-            cal.html(html);
+        html += '<div class="mc-weekdays">';
+        for (var w = 0; w < 7; w++) {
+            html += '<span' + (w >= 5 ? ' class="mc-we"' : '') + '>' + WEEKDAYS[w] + '</span>';
         }
+        html += '</div>';
 
-    function transitionMonth(cal,oldMonth){
-        var st=cal.data('mc'),viewport=cal.find('.mc-viewport');
-        if(!viewport.length||oldMonth==null||oldMonth===st.year+'-'+st.month){renderMiniCalendar(cal);return;}
-        closeTip();viewport.addClass('is-animating');
+        html += '<div class="mc-viewport">' + buildGridHtml(st) + '</div>';
+        cal.html(html);
+    }
+
+    function transitionMonth(cal, oldMonth) {
+        var st = cal.data('mc'), viewport = cal.find('.mc-viewport');
+        if (!viewport.length || oldMonth == null || oldMonth === st.year + '-' + st.month) { renderMiniCalendar(cal); return; }
+        closeTip(); viewport.addClass('is-animating');
         cal.find('.mc-title').text(titleText(st));
-        var grids=viewport.children('.mc-grid');
-        if(grids.length>1){
-            grids.not(':last').each(function(){if(this.getAnimations)this.getAnimations().forEach(function(a){a.cancel()})}).remove();
-            var lastEl=grids.last()[0];
-            if(lastEl&&lastEl.getAnimations)lastEl.getAnimations().forEach(function(a){a.cancel()});
+        var grids = viewport.children('.mc-grid');
+        if (grids.length > 1) {
+            grids.not(':last').each(function () { if (this.getAnimations) this.getAnimations().forEach(function (a) { a.cancel() }) }).remove();
+            var lastEl = grids.last()[0];
+            if (lastEl && lastEl.getAnimations) lastEl.getAnimations().forEach(function (a) { a.cancel() });
         }
-        var oldGrid=viewport.children('.mc-grid').last(),newGrid=$(buildGridHtml(st));
+        var oldGrid = viewport.children('.mc-grid').last(), newGrid = $(buildGridHtml(st));
         viewport.append(newGrid);
-        var prev=oldMonth.split('-'),oldIndex=(+prev[0])*12+(+prev[1]),newIndex=st.year*12+st.month,dir=newIndex>oldIndex?1:-1;
-        var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if(reduceMotion||!newGrid[0].animate){oldGrid.remove();viewport.removeClass('is-animating');return;}
-        var opts={duration:260,easing:'cubic-bezier(0.22, 1, 0.36, 1)',fill:'both'};
-        oldGrid[0].animate([{transform:'translateY(0)',opacity:1},{transform:'translateY('+(-dir*40)+'%)',opacity:0}],opts).onfinish=function(){oldGrid.remove()};
-        newGrid[0].animate([{transform:'translateY('+(dir*40)+'%)',opacity:0},{transform:'translateY(0)',opacity:1}],opts).onfinish=function(){viewport.removeClass('is-animating')};
+        var prev = oldMonth.split('-'), oldIndex = (+prev[0]) * 12 + (+prev[1]), newIndex = st.year * 12 + st.month, dir = newIndex > oldIndex ? 1 : -1;
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion || !newGrid[0].animate) { oldGrid.remove(); viewport.removeClass('is-animating'); return; }
+        var opts = { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'both' };
+        oldGrid[0].animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(' + (-dir * 40) + '%)', opacity: 0 }], opts).onfinish = function () { oldGrid.remove() };
+        newGrid[0].animate([{ transform: 'translateY(' + (dir * 40) + '%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], opts).onfinish = function () { viewport.removeClass('is-animating') };
     }
-    function showTip(cell){
-        if(projectNotifyVisible())return;
-        var raw=cell.getAttribute('data-tooltip-content');if(!raw)return;
-        var el=document.getElementById(tooltipId);if(!el)return;
-        try{el.innerHTML=decodeURIComponent(raw)}catch(e){return}
+    function showTip(cell) {
+        if (projectNotifyVisible()) return;
+        var raw = cell.getAttribute('data-tooltip-content'); if (!raw) return;
+        var el = document.getElementById(tooltipId); if (!el) return;
+        try { el.innerHTML = decodeURIComponent(raw) } catch (e) { return }
         el.classList.add('show');
-        var rect=cell.getBoundingClientRect(),w=el.offsetWidth,h=el.offsetHeight;
-        var left=Math.max(10,Math.min(innerWidth-w-10,rect.left+rect.width/2-w/2));
-        var top=rect.top-h-10,below=false;
-        if(top<10){top=Math.max(10,Math.min(innerHeight-h-10,rect.bottom+10));below=true}
-        el.classList.toggle('tmp-tooltip-below',below);
-        el.style.left=left+'px';el.style.top=top+'px';
-        el.style.setProperty('--arrow-left',Math.max(5,Math.min(95,(rect.left+rect.width/2-left)/w*100))+'%');
+        var rect = cell.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+        var left = Math.max(10, Math.min(innerWidth - w - 10, rect.left + rect.width / 2 - w / 2));
+        var top = rect.top - h - 10, below = false;
+        if (top < 10) { top = Math.max(10, Math.min(innerHeight - h - 10, rect.bottom + 10)); below = true }
+        el.classList.toggle('tmp-tooltip-below', below);
+        el.style.left = left + 'px'; el.style.top = top + 'px';
+        el.style.setProperty('--arrow-left', Math.max(5, Math.min(95, (rect.left + rect.width / 2 - left) / w * 100)) + '%');
     }
-    function hasCachedMonth(id,month){
-        var data=state.miniCache[id],date=dateFromKey(month+'-01'),offset=(date.getDay()+6)%7;
-        if(!data)return false;
-        var first=new Date(date.getFullYear(),date.getMonth(),1-offset);
-        for(var i=0;i<42;i++){
-            if(!Object.prototype.hasOwnProperty.call(data,dayKey(new Date(first.getFullYear(),first.getMonth(),first.getDate()+i))))return false;
+    function hasCachedMonth(id, month) {
+        var data = state.miniCache[id], date = dateFromKey(month + '-01'), offset = (date.getDay() + 6) % 7;
+        if (!data) return false;
+        var first = new Date(date.getFullYear(), date.getMonth(), 1 - offset);
+        for (var i = 0; i < 42; i++) {
+            if (!Object.prototype.hasOwnProperty.call(data, dayKey(new Date(first.getFullYear(), first.getMonth(), first.getDate() + i)))) return false;
         }
         return true;
     }
-    function requestMini(id,month){
-        if(projectNotifyVisible())return;
-        var user=field('miniUser'),mo=field('miniMonth'),payload=field('miniPayload'),button=field('miniButton');
-        if(!user||!mo||!payload||!button)return;
-        if(!state.mini||state.mini.id!==id)closeMini(false);else closeTip();
+    function requestMini(id, month) {
+        if (projectNotifyVisible()) return;
+        var user = field('miniUser'), mo = field('miniMonth'), payload = field('miniPayload'), button = field('miniButton');
+        if (!user || !mo || !payload || !button) return;
+        if (!state.mini || state.mini.id !== id) closeMini(false); else closeTip();
         // Các tháng đã có dữ liệu trượt ngay, không postback và không dựng lại popup.
-        if(hasCachedMonth(id,month)){
-            state.mini={id:id,month:month};
-            user.value=id;mo.value=month;
-            renderMini(id,month,JSON.stringify(state.miniCache[id]));
+        if (hasCachedMonth(id, month)) {
+            state.mini = { id: id, month: month };
+            user.value = id; mo.value = month;
+            renderMini(id, month, JSON.stringify(state.miniCache[id]));
             return;
         }
-        user.value=id;mo.value=month;
-        state.mini={id:id,month:month};
-        state.loadingMonth=month;
+        user.value = id; mo.value = month;
+        state.mini = { id: id, month: month };
+        state.loadingMonth = month;
         button.click();
     }
     // Thuật toán calendarPosition() từ CtrlChonNhanVienTask: đo CHÍNH CỘT ĐỐI DIỆN.
-    function calendarPosition(button){
-        var r=root(),pop=document.getElementById(popupId);
-        if(!r||!pop||!button||!document.contains(button))return;
-        var ownPanel=button.closest('.ppm-pane');
-        var panes=r.querySelectorAll('.ppm-list > .ppm-pane');
-        if(!ownPanel||panes.length!==2)return;
-        var other=ownPanel===panes[0]?panes[1]:panes[0];
-        var ownList=button.closest('.ppm-pane-content');
-        var br=button.getBoundingClientRect(),pr=other.getBoundingClientRect(),rr=r.getBoundingClientRect();
-        if(ownList){var lr=ownList.getBoundingClientRect();if(br.bottom<lr.top||br.top>lr.bottom){closeMini(false);return}}
-        var left=pr.left-rr.left+5,top=pr.top-rr.top+5,width=Math.max(215,pr.width-10),height=Math.max(235,pr.height-10);
-        pop.style.left=Math.round(left)+'px';pop.style.top=Math.round(top)+'px';
-        pop.style.width=Math.round(width)+'px';pop.style.height=Math.round(height)+'px';
-        pop.classList.toggle('tmp-from-left',ownPanel===panes[0]);
-        pop.classList.toggle('tmp-from-right',ownPanel!==panes[0]);
-        pop.style.setProperty('--tmp-arrow-y',Math.max(16,Math.min(height-16,br.top+br.height/2-pr.top))+'px');
-        var available=height-125;
-        var size=Math.max(33,Math.min(59,Math.floor((available-10)/6)));
-        pop.style.setProperty('--tmp-day-size',size+'px');
+    function calendarPosition(button) {
+        var r = root(), pop = document.getElementById(popupId);
+        if (!r || !pop || !button || !document.contains(button)) return;
+        var ownPanel = button.closest('.ppm-pane');
+        var panes = r.querySelectorAll('.ppm-list > .ppm-pane');
+        if (!ownPanel || panes.length !== 2) return;
+        var other = ownPanel === panes[0] ? panes[1] : panes[0];
+        var ownList = button.closest('.ppm-pane-content');
+        var br = button.getBoundingClientRect(), pr = other.getBoundingClientRect(), rr = r.getBoundingClientRect();
+        if (ownList) { var lr = ownList.getBoundingClientRect(); if (br.bottom < lr.top || br.top > lr.bottom) { closeMini(false); return } }
+        var left = pr.left - rr.left + 5, top = pr.top - rr.top + 5, width = Math.max(215, pr.width - 10), height = Math.max(235, pr.height - 10);
+        pop.style.left = Math.round(left) + 'px'; pop.style.top = Math.round(top) + 'px';
+        pop.style.width = Math.round(width) + 'px'; pop.style.height = Math.round(height) + 'px';
+        pop.classList.toggle('tmp-from-left', ownPanel === panes[0]);
+        pop.classList.toggle('tmp-from-right', ownPanel !== panes[0]);
+        pop.style.setProperty('--tmp-arrow-y', Math.max(16, Math.min(height - 16, br.top + br.height / 2 - pr.top)) + 'px');
+        var available = height - 125;
+        var size = Math.max(33, Math.min(59, Math.floor((available - 10) / 6)));
+        pop.style.setProperty('--tmp-day-size', size + 'px');
     }
-    function renderMini(id,month,json){
-        if(projectNotifyVisible()){closeMini(true);return}
-        var row=userRows().find(function(r){return r.dataset.ppmId===id});
-        var pop=document.getElementById(popupId);if(!row||!pop)return;
-        var button=row.querySelector('[data-ppm-calendar]');if(!button)return;
-        var first=dateFromKey(month+'-01'),y=first.getFullYear(),m=first.getMonth(),days=parse(json);
-        state.miniCache[id]=Object.assign(state.miniCache[id]||{},days);
-        days=state.miniCache[id];
-        pop.querySelector('[data-ppm-title]').textContent='Lịch · '+personName(row);
-        var cal=$(pop.querySelector('[data-ppm-calendar-body]'));
-        var offset=(first.getDay()+6)%7,lo=dayKey(new Date(y,m,1-offset)),hi=dayKey(new Date(y,m,42-offset));
-        var previous=cal.data('mc'),oldMonth=previous?(previous.year+'-'+previous.month):null;
-        cal.data('mc',{data:days,minKey:lo,maxKey:hi,year:y,month:m});
-        if(pop.classList.contains('show')&&oldMonth)transitionMonth(cal,oldMonth);
+    function renderMini(id, month, json) {
+        if (projectNotifyVisible()) { closeMini(true); return }
+        var row = userRows().find(function (r) { return r.dataset.ppmId === id });
+        var pop = document.getElementById(popupId); if (!row || !pop) return;
+        var button = row.querySelector('[data-ppm-calendar]'); if (!button) return;
+        var first = dateFromKey(month + '-01'), y = first.getFullYear(), m = first.getMonth(), days = parse(json);
+        state.miniCache[id] = Object.assign(state.miniCache[id] || {}, days);
+        days = state.miniCache[id];
+        pop.querySelector('[data-ppm-title]').textContent = 'Lịch · ' + personName(row);
+        var cal = $(pop.querySelector('[data-ppm-calendar-body]'));
+        var offset = (first.getDay() + 6) % 7, lo = dayKey(new Date(y, m, 1 - offset)), hi = dayKey(new Date(y, m, 42 - offset));
+        var previous = cal.data('mc'), oldMonth = previous ? (previous.year + '-' + previous.month) : null;
+        cal.data('mc', { data: days, minKey: lo, maxKey: hi, year: y, month: m });
+        if (pop.classList.contains('show') && oldMonth) transitionMonth(cal, oldMonth);
         else renderMiniCalendar(cal);
-        pop.hidden=false;pop.classList.add('show');
+        pop.hidden = false; pop.classList.add('show');
         calendarPosition(button);
-        state.mini={id:id,month:month};
+        state.mini = { id: id, month: month };
     }
-    function init(){
-        var r=root();if(!r)return;
+    function init() {
+        var r = root(); if (!r) return;
         // Close popover when a new picker session starts; the server clears mini fields on OpenPicker/BindData.
         renderList();
-        if(!projectNotifyVisible()&&value('miniUser')&&value('miniMonth')&&value('miniPayload')!=='{}')renderMini(value('miniUser'),value('miniMonth'),value('miniPayload'));
-        else if(projectNotifyVisible())closeMini(true);
-        else if(!value('miniUser')||!value('miniMonth')){state.miniCache={};closeMini(false)}
+        if (!projectNotifyVisible() && value('miniUser') && value('miniMonth') && value('miniPayload') !== '{}') renderMini(value('miniUser'), value('miniMonth'), value('miniPayload'));
+        else if (projectNotifyVisible()) closeMini(true);
+        else if (!value('miniUser') || !value('miniMonth')) { state.miniCache = {}; closeMini(false) }
     }
-    if(!window.__ppmProjectListeners)window.__ppmProjectListeners={};
-    if(!window.__ppmProjectListeners[rootId]){
-        window.__ppmProjectListeners[rootId]=true;
-        document.addEventListener('change',function(e){
-            var r=root(),cb=e.target.closest('.ppm-row input[type="checkbox"]');
-            if(!r||!cb||!r.contains(cb))return;
-            var row=cb.closest('.ppm-row'),set=picked();if(!row)return;
-            if(cb.checked)set.add(row.dataset.ppmId);else set.delete(row.dataset.ppmId);
-            savePicked(set);renderList();closeTip();
+    if (!window.__ppmProjectListeners) window.__ppmProjectListeners = {};
+    if (!window.__ppmProjectListeners[rootId]) {
+        window.__ppmProjectListeners[rootId] = true;
+        document.addEventListener('change', function (e) {
+            var r = root(), cb = e.target.closest('.ppm-row input[type="checkbox"]');
+            if (!r || !cb || !r.contains(cb)) return;
+            var row = cb.closest('.ppm-row'), set = picked(); if (!row) return;
+            if (cb.checked) set.add(row.dataset.ppmId); else set.delete(row.dataset.ppmId);
+            savePicked(set); renderList(); closeTip();
         });
-        document.addEventListener('click',function(e){
-            var r=root();if(!r)return;
-            var cal=e.target.closest('[data-ppm-calendar]');
-            if(cal&&r.contains(cal)){e.preventDefault();e.stopPropagation();var row=cal.closest('.ppm-row');if(row)requestMini(row.dataset.ppmId,monthKey(new Date()));return}
-            if(!e.target.closest('#'+popupId)&&!e.target.closest('#'+tooltipId)&&!e.target.closest('[id$="btnLoadMiniMonth"]')){closeMini(false)}
+        document.addEventListener('click', function (e) {
+            var r = root(); if (!r) return;
+            var cal = e.target.closest('[data-ppm-calendar]');
+            if (cal && r.contains(cal)) { e.preventDefault(); e.stopPropagation(); var row = cal.closest('.ppm-row'); if (row) requestMini(row.dataset.ppmId, monthKey(new Date())); return }
+            if (!e.target.closest('#' + popupId) && !e.target.closest('#' + tooltipId) && !e.target.closest('[id$="btnLoadMiniMonth"]')) { closeMini(false) }
         });
-        document.addEventListener('click',function(e){
-            var pop=document.getElementById(popupId);
-            if(!pop||!pop.contains(e.target))return;
+        document.addEventListener('click', function (e) {
+            var pop = document.getElementById(popupId);
+            if (!pop || !pop.contains(e.target)) return;
             e.stopPropagation();
-            if(e.target.closest('[data-ppm-pop-close]')){closeMini(true);return}
-            var nav=e.target.closest('[data-ppm-month-change]');
-            var d=nav?parseInt(nav.getAttribute('data-ppm-month-change'),10):0;
-            if(d&&state.mini){var now=dateFromKey(state.mini.month+'-01');now.setMonth(now.getMonth()+d);requestMini(state.mini.id,monthKey(now));return}
-            var cell=e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
-            if(cell&&r.contains(cell)){if(state.pinned===cell){closeTip();return}closeTip();state.pinned=cell;cell.classList.add('show-tooltip');showTip(cell)}
+            if (e.target.closest('[data-ppm-pop-close]')) { closeMini(true); return }
+            var nav = e.target.closest('[data-ppm-month-change]');
+            var d = nav ? parseInt(nav.getAttribute('data-ppm-month-change'), 10) : 0;
+            if (d && state.mini) { var now = dateFromKey(state.mini.month + '-01'); now.setMonth(now.getMonth() + d); requestMini(state.mini.id, monthKey(now)); return }
+            var cell = e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
+            if (cell && r.contains(cell)) { if (state.pinned === cell) { closeTip(); return } closeTip(); state.pinned = cell; cell.classList.add('show-tooltip'); showTip(cell) }
         });
-        document.addEventListener('keydown',function(e){
-            var b=e.target.closest('[data-ppm-taskbadge]');
-            if(!b||!root()||!root().contains(b))return;
-            if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click()}
-            if(e.key==='Escape')closeTip();
+        document.addEventListener('keydown', function (e) {
+            var b = e.target.closest('[data-ppm-taskbadge]');
+            if (!b || !root() || !root().contains(b)) return;
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); b.click() }
+            if (e.key === 'Escape') closeTip();
         });
-        document.addEventListener('mouseover',function(e){
-            var pop=document.getElementById(popupId),cell=e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
-            if(cell&&((pop&&pop.contains(cell))||(root()&&root().contains(cell)))&&!state.pinned)showTip(cell);
+        document.addEventListener('mouseover', function (e) {
+            var pop = document.getElementById(popupId), cell = e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
+            if (cell && ((pop && pop.contains(cell)) || (root() && root().contains(cell))) && !state.pinned) showTip(cell);
         });
-        document.addEventListener('mouseout',function(e){
-            var pop=document.getElementById(popupId),cell=e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
-            if(cell&&((pop&&pop.contains(cell))||(root()&&root().contains(cell)))&&!state.pinned&&!(e.relatedTarget&&cell.contains(e.relatedTarget)))closeTip();
+        document.addEventListener('mouseout', function (e) {
+            var pop = document.getElementById(popupId), cell = e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]');
+            if (cell && ((pop && pop.contains(cell)) || (root() && root().contains(cell))) && !state.pinned && !(e.relatedTarget && cell.contains(e.relatedTarget))) closeTip();
         });
-        document.addEventListener('click',function(e){
-            var t=document.getElementById(tooltipId);
-            if(t&&!t.contains(e.target)&&!e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]'))closeTip();
+        document.addEventListener('click', function (e) {
+            var t = document.getElementById(tooltipId);
+            if (t && !t.contains(e.target) && !e.target.closest('.mc-day.has-tooltip,[data-ppm-taskbadge]')) closeTip();
         });
-        document.addEventListener('scroll',function(e){
-            var r=root();if(r&&r.contains(e.target))closeMini(false);
-        },true);
+        document.addEventListener('scroll', function (e) {
+            var r = root(); if (r && r.contains(e.target)) closeMini(false);
+        }, true);
         // This runs in capture phase BEFORE the WebForms save postback, so an open calendar cannot overlay MessageBox.
-        document.addEventListener('click',function(e){
-            var save=e.target.closest('[id$="btnConfirm"]');
-            if(!save)return;
-            var parentModal=save.closest('.modal');
-            if(save.id==='<%= btnConfirm.ClientID %>'||(parentModal&&parentModal.contains(root())))closeMini(true);
-        },true);
-        // SweetSoft MessageBox may be opened by async postback; also watch its visibility.
-        function bindNotify(){
-            var notify=document.getElementById('modal-notify');if(!notify||notify.__ppmObserved)return;
-            notify.__ppmObserved=true;
-            new MutationObserver(function(){if(projectNotifyVisible())closeMini(true)}).observe(notify,{attributes:true,attributeFilter:['class','style','aria-hidden']});
+        document.addEventListener('click', function (e) {
+            var save = e.target.closest('[id$="btnConfirm"]');
+            if (!save) return;
+            var parentModal = save.closest('.modal');
+            if (save.id ==='<%= btnConfirm.ClientID %>' || (parentModal && parentModal.contains(root()))) closeMini(true);
+        }, true);
+            // SweetSoft MessageBox may be opened by async postback; also watch its visibility.
+            function bindNotify() {
+                var notify = document.getElementById('modal-notify'); if (!notify || notify.__ppmObserved) return;
+                notify.__ppmObserved = true;
+                new MutationObserver(function () { if (projectNotifyVisible()) closeMini(true) }).observe(notify, { attributes: true, attributeFilter: ['class', 'style', 'aria-hidden'] });
+            }
+            document.addEventListener('show.bs.modal', function (e) { if (e.target && e.target.id === 'modal-notify') closeMini(true) });
+            if (typeof Sys !== 'undefined' && Sys.Application && Sys.Application.add_load) { Sys.Application.add_load(function () { bindNotify(); init() }) }
+            window.addEventListener('resize', function () { closeMini(false) });
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { bindNotify(); init() });
+            else { bindNotify(); init() }
         }
-        document.addEventListener('show.bs.modal',function(e){if(e.target&&e.target.id==='modal-notify')closeMini(true)});
-        if(typeof Sys!=='undefined'&&Sys.Application&&Sys.Application.add_load){Sys.Application.add_load(function(){bindNotify();init()})}
-        window.addEventListener('resize',function(){closeMini(false)});
-        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){bindNotify();init()});
-        else{bindNotify();init()}
-    }
-})();
+    })();
 
 </script>
 <script type="text/javascript">

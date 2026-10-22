@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlTask" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <%@ Register Src="~/fTasks/Controls/CtrlChonNhanVienTask.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVienTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlXemNhanVienTask.ascx" TagPrefix="SweetSoft" TagName="CtrlXemNhanVienTask" %>
@@ -502,7 +502,7 @@
                                     </asp:LinkButton>
                                 </div>
                                 <div style="width: 10%; text-align: right;" class="flex-shrink-0">
-                                    <asp:LinkButton runat="server" ID="lbtAddChild" CommandName="ITEM_ADD_CHILD" CommandArgument='<%# Eval("IdCongViec") %>' CssClass="btn-add-subtask-right" ToolTip="Thêm công việc con" Visible='<%# this.IsAdd %>'>
+                                    <asp:LinkButton runat="server" ID="lbtAddChild" CommandName="ITEM_ADD_CHILD" CommandArgument='<%# Eval("IdCongViec") %>' CssClass="btn-add-subtask-right" ToolTip="Thêm công việc con" Visible='<%# this.IsAdd && (Eval("TrangThai").ToString() == "0" || Eval("TrangThai").ToString() == "1") %>'>
                                         <i class="fas fa-plus"></i>
                                     </asp:LinkButton>
                                 </div>
@@ -561,16 +561,16 @@
                         <HeaderStyle Width="110px"/>
                         <ItemStyle Width="110px"/>
                         <ItemTemplate>
-                            <asp:Literal runat="server" Visible='<%# CheckIsFatherTask(Eval("IdCongViec")) || Eval("TrangThai").ToString() == "2" || Eval("TrangThai").ToString() == "3" || (Eval("TrangThai").ToString() == "4" && !this.IsPM) || (!this.IsEdit && Eval("TrangThai").ToString() != "4") %>' Text='<%# GetTaskStatusBadge(Eval("TrangThai")) %>'></asp:Literal>
+                            <asp:Literal runat="server" Visible='<%# (CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "0") || Eval("TrangThai").ToString() == "2" || Eval("TrangThai").ToString() == "3" || (Eval("TrangThai").ToString() == "4" && !this.IsPM) || (!this.IsEdit && Eval("TrangThai").ToString() != "4") %>' Text='<%# GetTaskStatusBadge(Eval("TrangThai")) %>'></asp:Literal>
                             <asp:LinkButton runat="server" ID="lbtStatusStart" CommandName="START_TASK" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsEdit && !CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "0" %>' CssClass="badge-pill-custom badge-status-btn badge-status-todo btn-start-task" ToolTip="Bắt đầu thực hiện">
                                 <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
                                 <span class="status-hover"><i class="fas fa-play me-1"></i>Bắt đầu!</span>
                             </asp:LinkButton>
-                            <asp:LinkButton runat="server" ID="lbtStatusFastComplete" CommandName="FAST_COMPLETE" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsEdit && !CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "1" %>' CssClass="badge-pill-custom badge-status-btn badge-status-doing" ToolTip="Xác nhận hoàn thành">
+                            <asp:LinkButton runat="server" ID="lbtStatusFastComplete" CommandName="FAST_COMPLETE" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsEdit && Eval("TrangThai").ToString() == "1" %>' CssClass="badge-pill-custom badge-status-btn badge-status-doing" ToolTip="Xác nhận hoàn thành">
                                 <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
                                 <span class="status-hover"><i class="fas fa-check-double me-1"></i>Chốt xong!</span>
                             </asp:LinkButton>
-                            <asp:LinkButton runat="server" ID="lbtStatusFastReview" CommandName="REVIEW_COMPLETE" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsPM && !CheckIsFatherTask(Eval("IdCongViec")) && Eval("TrangThai").ToString() == "4" %>' CssClass="badge-pill-custom badge-status-btn badge-status-review" ToolTip="Duyệt hoặc từ chối yêu cầu hoàn thành">
+                            <asp:LinkButton runat="server" ID="lbtStatusFastReview" CommandName="REVIEW_COMPLETE" CommandArgument='<%# Eval("IdCongViec") %>' Visible='<%# this.IsPM && Eval("TrangThai").ToString() == "4" %>' CssClass="badge-pill-custom badge-status-btn badge-status-review" ToolTip="Duyệt hoặc từ chối yêu cầu hoàn thành">
                                 <span class="status-normal"><%# GetTaskStatusTextOnly(Eval("TrangThai")) %></span>
                                 <span class="status-hover"><i class="fas fa-clipboard-check me-1"></i>Duyệt nhanh</span>
                             </asp:LinkButton>

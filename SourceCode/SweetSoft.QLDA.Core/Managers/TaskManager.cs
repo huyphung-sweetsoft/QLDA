@@ -180,28 +180,84 @@ namespace SweetSoft.QLDA.Core.Managers
             }
             return dict;
         }
+        /// <summary>
+        /// 4C.2: Xoa mem toan bo nhanh; chot DUNG phien dang mo cua tung Task bi xoa,
+        /// KHONG dong phien Task cha hay Task khac ngoai nhanh. Bao toan toan bo lich su gio.
+        /// SQL Task, KBG20 va reindex chung TransactionScope. Thong bao sau COMMIT.
+        /// </summary>
         public TblCongViec DeleteTask(TblCongViec task)
         {
             if (task == null) return null;
-            DuAnManager.Instance.EnsureCanModifyStructure(task.IdDuAn);
-            List<Guid> nhanVienIds = _repository.GetAssignedNhanVienIds(task.IdCongViec);
-            foreach(Guid id in nhanVienIds)
-            {
-                ThongBaoManager.Instance.Create
-                    (
-                        userId: id,
-                        tieuDe: $"Công việc {task.TenCongViec} đã bị xóa",
-                        noiDung: $"Công việc {task.TenCongViec} được giao cho bạn đã bị xóa khỏi dự án",
-                        loaiThongBao: ThongBaoTypes.CongViec,
-                        idCongViec: task.IdCongViec
-                    );
-            }
-            _repository.DeleteTask(task);
-            if (!string.IsNullOrEmpty(task.MaCongViec))
-            {
-                ReindexTaskCodesAfterDelete(task.IdDuAn, task.MaCongViec);
-            }
+            Guid projectId = task.IdDuAn;
+            DuAnManager.Instance.EnsureCanModifyStructure(projectId);
+            if (task.IdCongViec == Guid.Empty || projectId == Guid.Empty)
+                throw new InvalidOperationException("Không xác định được công việc hoặc dự án cần xóa.");
 
+            Transaction ambientBenNgoai = Transaction.Current;
+            var dsThongBao = new List<ThongBaoThayDoiPhanCong>();
+            using (var scope = new TransactionScope())
+            {
+                KhaiBaoGio20Manager.PhienDongBoPhanCong khoa = null;
+                try
+                {
+                    // Khoa du an TRUOC truy van nhanh/phan cong, dung thu tu AppLock cua timer.
+                    if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+                        khoa = new KhaiBaoGio20Manager().MoDongBoPhanCongTrongTransactionScope(projectId);
+
+                    TblCongViec taskMoi = FetchById(task.IdCongViec);
+                    if (taskMoi == null || taskMoi.IdDuAn != projectId || taskMoi.DaXoa == true)
+                        throw new InvalidOperationException("Công việc đã bị xóa hoặc dữ liệu vừa thay đổi.");
+
+                    // Khoanh nhanh theo CUNG bo loc voi SQL Delete (ca DaXoa=NULL),
+                    // tranh bo sot dong ho cua Task con tren du lieu legacy.
+                    List<TblCongViec> nhanh = _repository.GetActiveDeleteBranch(projectId, taskMoi.IdCongViec);
+
+                    // Chi phat mot thong bao cho moi nhan vien, ke ca duoc giao nhieu Task trong nhanh.
+                    var thongBaoTheoNguoi = new Dictionary<Guid, List<string>>();
+                    foreach (TblCongViec node in nhanh)
+                    {
+                        foreach (Guid nhanVien in _repository.GetAssignedNhanVienIds(node.IdCongViec).Distinct())
+                        {
+                            if (!thongBaoTheoNguoi.ContainsKey(nhanVien))
+                                thongBaoTheoNguoi[nhanVien] = new List<string>();
+                            thongBaoTheoNguoi[nhanVien].Add("[" + (node.MaCongViec ?? "--") + "] " +
+                                (node.TenCongViec ?? "Công việc"));
+                        }
+                    }
+
+                    // Lay ca phien cua Task (KHONG chi nguoi dang duoc phan cong), do co the
+                    // ton tai phien mo duoc tao truoc khi phan cong thay doi.
+                    DateTime utc = DateTime.UtcNow;
+                    if (khoa != null)
+                        foreach (TblCongViec node in nhanh)
+                            khoa.ChotTatCaPhienCuaTaskBiXoa(node.IdCongViec, utc);
+
+                    _repository.DeleteTask(taskMoi); // xoa mem ca nhanh (khong xoa bang gio)
+                    if (!string.IsNullOrEmpty(taskMoi.MaCongViec))
+                        ReindexTaskCodesAfterDelete(projectId, taskMoi.MaCongViec);
+
+                    foreach (var item in thongBaoTheoNguoi)
+                    {
+                        string cacTask = string.Join("; ", item.Value.Take(4));
+                        string conLai = item.Value.Count > 4 ? "; và " + (item.Value.Count - 4) + " công việc khác" : "";
+                        dsThongBao.Add(new ThongBaoThayDoiPhanCong
+                        {
+                            NguoiNhan = item.Key,
+                            DuAn = projectId,
+                            // Cong viec da xoa khong con URL chi tiet hop le.
+                            CongViec = Guid.Empty,
+                            Loai = ThongBaoTypes.CongViec,
+                            TieuDe = "Công việc được phân công đã bị xóa",
+                            NoiDung = "Các công việc đã xóa: " + cacTask + conLai +
+                                ". Đồng hồ đang chạy trên các công việc này đã được chốt; " +
+                                "toàn bộ giờ công và lịch sử đã ghi được bảo lưu."
+                        });
+                    }
+                }
+                finally { if (khoa != null) khoa.Dispose(); }
+                scope.Complete();
+            }
+            PhatThongBaoDaCommit(dsThongBao, ambientBenNgoai);
             return task;
         }
         public TblDoUuTien GetPriorityById(Guid idDoUuTien) => _repository.GetPriorityById(idDoUuTien);
@@ -1277,6 +1333,74 @@ namespace SweetSoft.QLDA.Core.Managers
             return _repository.GetRootTaskByStageId(idGiaiDoanDuAn);
         }
 
+        /// <summary>
+        /// DOT 4B: Khong duoc bao hoan thanh / PM duyet mot Task cha
+        /// neu bat ky Task con/hau due con hieu luc nao chua dat 2 hoac 3.
+        /// Task la khong co con: giu nguyen quy trinh hoan thanh hien tai.
+        /// Goi lai phuong thuc nay ngay TRUOC khi Save, ke ca khi popup da mo tu truoc.
+        /// </summary>
+        /// <summary>
+        /// 4C.1: Chi duoc them con vao nhanh ma tat ca to tien con o trang thai 0/1.
+        /// Kiem tra tren server; khong duoc dua vao Visible cua nut trong GridView.
+        /// </summary>
+        public void DamBaoDuocThemCongViecCon(Guid projectId, Guid parentTaskId)
+        {
+            if (projectId == Guid.Empty || parentTaskId == Guid.Empty)
+                throw new InvalidOperationException("Không xác định được dự án hoặc công việc cha.");
+
+            var visited = new HashSet<Guid>();
+            Guid? currentId = parentTaskId;
+            while (currentId.HasValue && currentId.Value != Guid.Empty)
+            {
+                if (!visited.Add(currentId.Value))
+                    throw new InvalidOperationException("Cấu trúc công việc có vòng lặp cha - con; không thể thêm công việc.");
+                TblCongViec current = FetchById(currentId.Value);
+                if (current == null || current.DaXoa == true || current.IdDuAn != projectId)
+                    throw new InvalidOperationException("Công việc cha hoặc cấp trên không còn hợp lệ trong dự án.");
+                if (current.TrangThai == 4 || current.TrangThai == 2 || current.TrangThai == 3)
+                    throw new InvalidOperationException("Không thể thêm công việc con vì [" +
+                        (current.MaCongViec ?? "--") + "] " + (current.TenCongViec ?? "Công việc") +
+                        " đang chờ duyệt hoặc đã hoàn thành.");
+                if (current.TrangThai != 0 && current.TrangThai != 1)
+                    throw new InvalidOperationException("Trạng thái công việc cha/cấp trên không hợp lệ để thêm công việc con.");
+                currentId = current.IdCongViecCha;
+            }
+        }
+
+        public void DamBaoHauDueDaHoanThanh(Guid projectId, Guid taskId)
+        {
+            if (projectId == Guid.Empty || taskId == Guid.Empty)
+                throw new InvalidOperationException("Khong xac dinh duoc du an hoac cong viec can hoan thanh.");
+
+            TblCongViec task = FetchById(taskId);
+            if (task == null || task.IdDuAn != projectId || task.DaXoa == true)
+                throw new InvalidOperationException("Cong viec khong con thuoc du an hoac da bi xoa.");
+
+            // Su dung logic duyet cay da co san: chi lay con con hieu luc,
+            // co HashSet visited de tranh lap vo han khi du lieu bi loi.
+            List<TblCongViec> hauDue = GetDescendantTasks(projectId, taskId);
+            if (hauDue.Any(t => t.IdCongViec == taskId))
+                throw new InvalidOperationException("Cau truc cong viec co vong lap cha - con, can kiem tra lai truoc khi hoan thanh.");
+
+            List<TblCongViec> chuaHoanThanh = hauDue
+                .Where(t => t.TrangThai != 2 && t.TrangThai != 3)
+                .OrderBy(t => t.MaCongViec)
+                .ToList();
+            if (chuaHoanThanh.Count == 0) return;
+
+            string chiTiet = string.Join("; ", chuaHoanThanh.Take(5).Select(t =>
+                "[" + (t.MaCongViec ?? "--") + "] " + (t.TenCongViec ?? "Công việc") +
+                " (" + (t.TrangThai == 0 ? "Chưa bắt đầu" :
+                          t.TrangThai == 1 ? "Đang thực hiện" :
+                          t.TrangThai == 4 ? "Chờ duyệt" : "Chưa hoàn thành") + ")"));
+            string conLai = chuaHoanThanh.Count > 5
+                ? " và " + (chuaHoanThanh.Count - 5) + " công việc khác" : string.Empty;
+            throw new InvalidOperationException(
+                "Chưa thể báo hoặc duyệt hoàn thành công việc này: còn " +
+                chuaHoanThanh.Count + " công việc con/cháu chưa hoàn thành. " +
+                "Cần hoàn thành 100% công việc con trước. " + chiTiet + conLai + ".");
+        }
+
         private List<TblCongViec> GetDescendantTasks(Guid projectId, Guid parentTaskId)
         {
             List<TblCongViec> result = new List<TblCongViec>();
@@ -2048,78 +2172,58 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         public void AutoSetParentStatus(Guid projectId, Guid parentTaskId)
         {
-            DataTable dtChildren = _repository.GetChildTasks(projectId, parentTaskId);
-            if (dtChildren != null && dtChildren.Rows.Count > 0)
+            // DOT 4: Dong bo 1 chieu CHI tu "Chua bat dau" (0) sang "Dang thuc hien" (1).
+            // KHONG tu dong ket thuc/tra ve trang thai, KHONG gan/xoa ngay hoan thanh thuc te.
+            // Hoan thanh cua moi task (ke ca task cha) thuoc flow bao hoan thanh va PM duyet.
+            if (projectId == Guid.Empty || parentTaskId == Guid.Empty) return;
+
+            // Duyet tung cap cha thay vi chi de quy khi cap hien tai thay doi:
+            // neu cha da la 1 nhung ong la 0, ong van can duoc kich hoat.
+            // visited ngan vong lap neu du lieu IdCongViecCha bi loi.
+            var visited = new HashSet<Guid>();
+            Guid? currentParentId = parentTaskId;
+
+            while (currentParentId.HasValue &&
+                   currentParentId.Value != Guid.Empty &&
+                   visited.Add(currentParentId.Value))
             {
-                int countNotStarted = 0;
-                int count2 = 0;
-                int count3 = 0;
-                int totalChildren = dtChildren.Rows.Count;
+                TblCongViec parentTask = FetchById(currentParentId.Value);
+                if (parentTask == null || parentTask.DaXoa == true || parentTask.IdDuAn != projectId)
+                    break;
 
-                foreach (DataRow row in dtChildren.Rows)
+                // Chi task con con hieu luc trong DU AN moi duoc tinh.
+                DataTable dtChildren = _repository.GetChildTasks(projectId, parentTask.IdCongViec);
+                if (parentTask.TrangThai == 0 && dtChildren != null && dtChildren.Rows.Count > 0)
                 {
-                    int trangThai = row["TrangThai"] != DBNull.Value ? Convert.ToInt32(row["TrangThai"]) : 0;
+                    bool hasStartedChild = false;
+                    foreach (DataRow row in dtChildren.Rows)
+                    {
+                        // 1: Dang thuc hien, 4: Cho duyet, 2/3: Da hoan thanh.
+                        // Tat ca deu chung to cong viec con da duoc bat dau truoc do.
+                        if (row[ColTrangThai] == DBNull.Value) continue;
+                        int childStatus = Convert.ToInt32(row[ColTrangThai]);
+                        if (childStatus == 1 || childStatus == 2 || childStatus == 3 || childStatus == 4)
+                        {
+                            hasStartedChild = true;
+                            break;
+                        }
+                    }
 
-                    if (trangThai == 0) countNotStarted++;
-                    else if (trangThai == 2) count2++;
-                    else if (trangThai == 3) count3++;
-                }
-
-                TblCongViec parentTask = FetchById(parentTaskId);
-                if (parentTask != null)
-                {
-                    byte newStatus = 1;
-                    if ((count2 + count3) == totalChildren)
+                    if (hasStartedChild)
                     {
-                        if (!parentTask.NgayHoanThanhThucTe.HasValue)
-                        {
-                            parentTask.NgayHoanThanhThucTe = DateTime.Now;
-                        }
-                        if (count2 == totalChildren)
-                        {
-                            newStatus = 2;
-                        }
-                        else if (count3 == totalChildren)
-                        {
-                            newStatus = 3;
-                        }
-                        else
-                        {
-                            newStatus = 2;
-                            if (parentTask.NgayKetThuc.HasValue && parentTask.NgayHoanThanhThucTe.HasValue)
-                            {
-                                if (parentTask.NgayHoanThanhThucTe.Value.Date > parentTask.NgayKetThuc.Value.Date)
-                                {
-                                    newStatus = 3;
-                                }
-                            }
-                        }
-                    }
-                    else if (countNotStarted == totalChildren)
-                    {
-                        newStatus = 0;
-                        parentTask.NgayHoanThanhThucTe = null;
-                    }
-                    else
-                    {
-                        parentTask.NgayHoanThanhThucTe = null;
-                    }
-                    if (parentTask.TrangThai != newStatus)
-                    {
-                        parentTask.TrangThai = newStatus;
+                        parentTask.TrangThai = 1;
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
-
-                        if (parentTask.IdCongViecCha.HasValue)
-                        {
-                            AutoSetParentStatus(projectId, parentTask.IdCongViecCha.Value);
-                        }
                     }
                 }
+
+                // KHONG cham vao 1/4/2/3, khong lam sach NgayHoanThanhThucTe.
+                currentParentId = parentTask.IdCongViecCha;
             }
         }
         public void AutoSetParentTime(Guid projectId, Guid parentId, bool forceUpdateStartedTask = false)
         {
+            // DOT 4: Chi dong bo KE HOACH. NgayHoanThanhThucTe do flow bao/duyet task quan ly.
             TblCongViec parentTask = FetchById(parentId);
             if (parentTask == null || parentTask.DaXoa == true) return;
 
@@ -2127,8 +2231,6 @@ namespace SweetSoft.QLDA.Core.Managers
             if (dtChildTasks != null && dtChildTasks.Rows.Count > 0)
             {
                 DateTime? maxEnd = null;
-                DateTime? maxActualEnd = null;
-                bool allChildrenHaveActualEndDate = true;
 
                 foreach (DataRow row in dtChildTasks.Rows)
                 {
@@ -2140,18 +2242,6 @@ namespace SweetSoft.QLDA.Core.Managers
                             maxEnd = ngayKt;
                     }
 
-                    // Tìm ngày hoàn thành thực tế lớn nhất của các task con.
-                    if (row["NgayHoanThanhThucTe"] != DBNull.Value &&
-                        DateTime.TryParse(row["NgayHoanThanhThucTe"].ToString(), out DateTime actualEnd))
-                    {
-                        if (!maxActualEnd.HasValue || actualEnd > maxActualEnd.Value)
-                            maxActualEnd = actualEnd;
-                    }
-                    else
-                    {
-                        // Nếu có task con chưa có ngày hoàn thành thực tế thì cha chưa thể hoàn thành.
-                        allChildrenHaveActualEndDate = false;
-                    }
                 }
 
                 if (maxEnd.HasValue && parentTask.NgayBatDau.HasValue)
@@ -2160,20 +2250,17 @@ namespace SweetSoft.QLDA.Core.Managers
                         parentTask.NgayBatDau.Value,
                         maxEnd.Value);
 
-                    DateTime? newActualEnd = allChildrenHaveActualEndDate ? maxActualEnd : null;
 
                     // Chỉ lưu task cha khi dữ liệu thực sự thay đổi.
                     bool parentChanged =
                         !parentTask.NgayKetThuc.HasValue ||
                         parentTask.NgayKetThuc.Value.Date != maxEnd.Value.Date ||
-                        parentTask.ThoiHanNgay != newThoiHan ||
-                        parentTask.NgayHoanThanhThucTe != newActualEnd;
+                        parentTask.ThoiHanNgay != newThoiHan;
 
                     if (parentChanged)
                     {
                         parentTask.NgayKetThuc = maxEnd.Value;
                         parentTask.ThoiHanNgay = newThoiHan;
-                        parentTask.NgayHoanThanhThucTe = newActualEnd;
                         parentTask.NgayCapNhat = DateTime.Now;
                         parentTask.Save();
                     }

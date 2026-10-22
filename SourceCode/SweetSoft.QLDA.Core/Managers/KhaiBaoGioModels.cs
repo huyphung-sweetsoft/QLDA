@@ -253,7 +253,8 @@ namespace SweetSoft.QLDA.Core.Managers
     public enum Kbg20LyDoKetThuc : byte
     {
         TuDung = 1, HetHanCongViec = 2, GuiDuyetHoanThanh = 3,
-        GoPhanCong = 4, TuNgatTangCa = 5, CongViecBiKhoa = 6, QuanTriDieuChinh = 7
+        GoPhanCong = 4, TuNgatTangCa = 5, CongViecBiKhoa = 6, QuanTriDieuChinh = 7,
+        BaoXongCaNhan = 8
     }
     public class Kbg20KetQua
     {

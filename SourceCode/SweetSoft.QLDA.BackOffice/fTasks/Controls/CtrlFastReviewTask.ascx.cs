@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.EnumHelper;
@@ -410,6 +410,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     return;
                 }
 
+                // DOT 4B: giu quyen TU CHOI yeu cau cu, chi chan Duyet neu hau due chua xong.
+                TaskManager.Instance.DamBaoHauDueDaHoanThanh(task.IdDuAn, task.IdCongViec);
+
                 bool isLate = task.NgayHoanThanhThucTe.Value.Date > task.NgayKetThuc.Value.Date;
                 if (isLate)
                     task.TrangThai = 3;
@@ -422,6 +425,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 task.NgayCapNhat = DateTime.Now;
                 Action luuNghiepVuTask = () =>
                 {
+                    // DOT 4B: kiem tra lai trong callback chot gio va luu Task.
+                    TaskManager.Instance.DamBaoHauDueDaHoanThanh(task.IdDuAn, task.IdCongViec);
                     task.Save();
                     UpdateParentTask(task.IdCongViecCha);
                 };
