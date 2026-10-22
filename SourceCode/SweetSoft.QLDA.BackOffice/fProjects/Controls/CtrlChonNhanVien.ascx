@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlChonNhanVien.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChonNhanVien" %>
+﻿a<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlChonNhanVien.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChonNhanVien" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.ResourceTexts" %>
 <style>
 #<%= mdlMemberPicker.ClientID %> .modal-dialog{max-width:1360px;width:calc(100vw - 32px)}
@@ -61,6 +61,10 @@
 .ppm-badge[hidden]{display:none!important}
 .ppm-badge{background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd}
 .ppm-badge.new{background:#f2eafb;color:#6b21a8;border-color:#e3d3fc}
+/* Badge số ngày trống giống CtrlChonNhanVienTask: xanh khi còn trống,
+   xám khi hết ngày trống hoặc khoảng dự án không có ngày làm việc. */
+.ppm-root .ppm-badge.ppm-availability{background:#198754;border-color:#198754;color:#fff;font-weight:600}
+.ppm-root .ppm-badge.ppm-availability.is-unavailable{background:#6c757d;border-color:#6c757d;color:#fff}
 .ppm-pane-content{overflow-y:auto;overscroll-behavior:contain}
 .ppm-person-title{overflow:hidden}
 
@@ -200,7 +204,7 @@
     </div>
     <div data-ppm-source style="display:none" aria-hidden="true">
       <asp:Repeater ID="rptCompanyMembers" runat="server" OnItemDataBound="rptCompanyMembers_ItemDataBound"><ItemTemplate>
-        <div class="ppm-row" data-ppm-id='<%# Eval("UserId") %>' data-ppm-original='<%# Convert.ToBoolean(Eval("IsOriginal")) ? "1" : "0" %>' data-ppm-taskcount='<%# Eval("TaskCount") %>' data-ppm-tasks='<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("TaskTooltipJson"))).Replace("'", "&#39;") %>'>
+        <div class="ppm-row" data-ppm-id='<%# Eval("UserId") %>' data-ppm-original='<%# Convert.ToBoolean(Eval("IsOriginal")) ? "1" : "0" %>' data-ppm-taskcount='<%# Eval("TaskCount") %>' data-ppm-free='<%# Eval("FreeDays") %>' data-ppm-workingdays='<%# Eval("TotalWorkingDays") %>' data-ppm-tasks='<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("TaskTooltipJson"))).Replace("'", "&#39;") %>'>
           <div class="ppm-checkbox"><asp:CheckBox ID="chkSelect" runat="server"/></div>
           <asp:HiddenField ID="hdfUserId" runat="server" Value='<%# Eval("UserId") %>'/>
           <span class="ppm-avatar"><%# Eval("AvatarHtml") %></span>
@@ -266,8 +270,21 @@
         var b=row.querySelector('[data-ppm-badge]');if(!b)return;
         var old=row.dataset.ppmOriginal==='1',num=parseInt(row.dataset.ppmTaskcount||'0',10)||0;
         b.className='ppm-badge'+(chosen&&!old?' new':'');
-        if(!chosen){b.textContent='';b.hidden=true;b.removeAttribute('title');b.removeAttribute('data-ppm-taskbadge');b.removeAttribute('data-tooltip-content');b.removeAttribute('tabindex');b.removeAttribute('role');return}
         b.hidden=false;
+        if(!chosen){
+            // Cùng quy tắc badgeFor() trong CtrlChonNhanVienTask.
+            // Bỏ toàn bộ tooltip trạng thái đã chọn để không giữ tooltip cũ khi bỏ tick.
+            var total=Math.max(0,parseInt(row.dataset.ppmWorkingdays||'0',10)||0);
+            var free=Math.max(0,Math.min(total,parseInt(row.dataset.ppmFree||'0',10)||0));
+            b.className='ppm-badge ppm-availability'+(!free?' is-unavailable':'');
+            b.textContent=!total?'Không có ngày làm việc':'Trống '+free+'/'+total+' ngày';
+            b.removeAttribute('data-ppm-taskbadge');b.removeAttribute('data-tooltip-content');
+            b.removeAttribute('tabindex');b.removeAttribute('role');b.removeAttribute('aria-label');
+            b.title=!total?'Khoảng thời gian dự án không có ngày làm việc':
+                'Còn trống '+free+' trên '+total+' ngày làm việc của dự án';
+            return;
+        }
+        // Người đã chọn: giữ nguyên badge/tooltip danh sách công việc cũ.
         b.textContent=old?(num>0?'Đảm nhận '+num+' công việc':'Đã tham gia'):'Sẽ tham gia';
         if(old&&num>0){
             b.setAttribute('data-ppm-taskbadge','1');

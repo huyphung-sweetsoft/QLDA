@@ -1,26 +1,46 @@
 <%@ WebHandler Language="C#" Class="FloatingWorkTimerHandler" %>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.SessionState;
+using SweetSoft.QLDA.Core.Helpers.Security;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
 
-// Inline .ashx: works with Web Application projects without modifying a .csproj to compile a new handler class.
-// Read-only: no Start/Stop endpoint is exposed here.
+// KhaiBaoGio 2.0: chi doc tat ca phien MO cua tai khoan, khong thay doi CSDL.
+// Inline .ashx: khong can code-behind, khong can them Compile vao .csproj.
 public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
 {
     public bool IsReusable { get { return false; } }
-
     private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-    private static long ToMs(DateTime local)
+
+    private static long Ms(DateTime utc)
     {
-        DateTime utc = DateTime.SpecifyKind(local, DateTimeKind.Local).ToUniversalTime();
-        return (long)(utc - Epoch).TotalMilliseconds;
+        return (long)(DateTime.SpecifyKind(utc, DateTimeKind.Utc) - Epoch).TotalMilliseconds;
     }
+
+    private static long? MsNullable(DateTime? utc)
+    {
+        return utc.HasValue ? (long?)Ms(utc.Value) : null;
+    }
+
+    private static void Write(HttpResponse response, object value)
+    {
+        response.Write(new JavaScriptSerializer().Serialize(value));
+    }
+
+    private static string ProjectTimeTrackingUrl(Guid projectId)
+    {
+        // Cung quy tac URL voi RewriteURLHelper.ProjectTasks/ProjectMeets.
+        // Khong gui GUID thuan len path: projectId phai duoc bao ve nhu cac trang du an.
+        string protectedId = SecurityUtilities.ProtectUrlParameter(projectId.ToString());
+        return VirtualPathUtility.ToAbsolute("~/Project/" + protectedId + "/TimeTracking");
+    }
+
     public void ProcessRequest(HttpContext context)
     {
         HttpResponse response = context.Response;
@@ -31,88 +51,80 @@ public class FloatingWorkTimerHandler : IHttpHandler, IReadOnlySessionState
         response.TrySkipIisCustomErrors = true;
         response.SuppressFormsAuthenticationRedirect = true;
 
-        if (!string.Equals(context.Request.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
+        if (context.Request.HttpMethod != "GET")
         {
             response.StatusCode = 405;
             response.AddHeader("Allow", "GET");
-            response.Write("{\"error\":\"method_not_allowed\"}");
+            Write(response, new { ok = false, error = "method_not_allowed" });
             return;
         }
+
         try
         {
             AspnetUser user = SweetContext.Current != null ? SweetContext.Current.User : null;
             if (user == null || user.UserId == Guid.Empty)
             {
                 response.StatusCode = 401;
-                response.Write("{\"error\":\"not_authenticated\"}");
+                Write(response, new { ok = false, error = "not_authenticated" });
                 return;
             }
             if (!user.LaNhanVien)
             {
                 response.StatusCode = 403;
-                response.Write("{\"error\":\"not_employee\"}");
+                Write(response, new { ok = false, error = "not_employee" });
+                return;
+            }
+            if (!KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+            {
+                // Dang chay V1: khong su dung so gio/cu phieu cua V1 de hien thi nhu V2.
+                Write(response, new { ok = true, running = false, disabled = true, serverNow = Ms(DateTime.UtcNow), timers = new object[0] });
                 return;
             }
 
-            if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+            DateTime nowUtc = DateTime.UtcNow;
+            var views = new KhaiBaoGio20Manager().LayDongHoHienThi(user.UserId, nowUtc);
+            var projectUrls = new Dictionary<Guid, string>();
+            var items = views.Select(x =>
             {
-                DateTime utc = DateTime.UtcNow;
-                var timers = new KhaiBaoGio20Manager().LayDongHoHienThi(user.UserId, utc);
-                var dto = new
+                Kbg20Phien p = x.Phien;
+                string projectUrl;
+                if (!projectUrls.TryGetValue(p.IdDuAn, out projectUrl))
                 {
-                    version = 2,
-                    running = timers.Count > 0,
-                    serverNow = (long)(utc - Epoch).TotalMilliseconds,
-                    timers = timers.Select(x => new
-                    {
-                        id = x.Phien.IdPhien.ToString("D"),
-                        taskId = x.Phien.IdCongViec.ToString("D"),
-                        projectId = x.Phien.IdDuAn.ToString("D"),
-                        taskCode = x.Phien.MaCongViec,
-                        taskName = x.Phien.TenCongViec,
-                        projectCode = x.Phien.MaDuAn,
-                        projectName = x.Phien.TenDuAn,
-                        type = (byte)x.Phien.LoaiGio,
-                        source = x.Phien.NguonBatDau,
-                        seconds = x.SoGiayHienTai,
-                        counting = x.DangCongGio,
-                        boundary = x.MocDungCongLucUtc.HasValue
-                            ? (long?)(x.MocDungCongLucUtc.Value - Epoch).TotalMilliseconds : null
-                    }).ToArray()
+                    projectUrl = ProjectTimeTrackingUrl(p.IdDuAn);
+                    projectUrls[p.IdDuAn] = projectUrl;
+                }
+                return new
+                {
+                    id = p.IdPhien.ToString("D"),
+                    taskId = p.IdCongViec.ToString("D"),
+                    projectId = p.IdDuAn.ToString("D"),
+                    code = p.MaCongViec ?? "",
+                    name = p.TenCongViec ?? "",
+                    projectCode = p.MaDuAn ?? "",
+                    projectName = p.TenDuAn ?? "",
+                    projectUrl = projectUrl,
+                    type = (byte)p.LoaiGio, // 1 = gio thuong; 2 = tang ca
+                    source = p.NguonBatDau,
+                    overdue = p.LaTiepTucQuaHan,
+                    seconds = x.SoGiayHienTai, // tong giay tinh rieng cua phien mo
+                    counting = x.DangCongGio, // phien dang mo CHUA chac dang cong gio
+                    boundary = MsNullable(x.MocDungCongLucUtc)
                 };
-                response.Write(new JavaScriptSerializer().Serialize(dto));
-                return;
-            }
+            }).ToArray();
 
-            DateTime now = DateTime.Now;
-            FloatingTimerSnapshot view = KhaiBaoGioManager.Instance.GetFloatingTimerSnapshot(user.UserId, now);
-            if (!view.Running)
+            Write(response, new
             {
-                response.Write("{\"running\":false}");
-                return;
-            }
-            var json = new
-            {
-                running = true,
-                taskId = view.TaskId.ToString("D"),
-                taskCode = view.TaskCode,
-                taskName = view.TaskName,
-                projectCode = view.ProjectCode,
-                projectName = view.ProjectName,
-                serverNow = ToMs(view.ServerNow),
-                runningSince = ToMs(view.RunningSince),
-                dayEnd = ToMs(view.DayEnd),
-                completedSeconds = view.CompletedSeconds,
-                capacitySeconds = view.CapacitySeconds,
-                segments = view.Segments.Select(x => new { start = ToMs(x.BatDau), end = ToMs(x.KetThuc) }).ToArray()
-            };
-            response.Write(new JavaScriptSerializer().Serialize(json));
+                ok = true,
+                running = items.Length > 0, // phien DANG MO, ke ca dang nghi/ngoai ca
+                serverNow = Ms(nowUtc),
+                timers = items
+            });
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Trace.TraceError("FloatingWorkTimer: {0}", ex);
+            System.Diagnostics.Trace.TraceError("FloatingWorkTimer V2: {0}", ex);
             response.StatusCode = 500;
-            response.Write("{\"error\":\"server_error\"}");
+            Write(response, new { ok = false, error = "server_error" });
         }
     }
 }

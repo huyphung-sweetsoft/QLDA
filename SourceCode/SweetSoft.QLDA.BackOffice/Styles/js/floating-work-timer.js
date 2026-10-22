@@ -1,348 +1,311 @@
-
-/* Floating Work Timer: read-only client; server is the source of truth. */
+/* Floating Timer V2 - independent timer sessions across projects; no SignalR dependency. */
 (function (window, document) {
     'use strict';
     if (window.KbgFloatingTimer && window.KbgFloatingTimer.__loaded) return;
     var root = document.getElementById('kbgFloatingTimer');
     if (!root) return;
+    var $id = function (id) { return document.getElementById(id); };
+    var pill = $id('kbgFloatToggle'), details = $id('kbgFloatDetails'), tip = $id('kbgFloatTip');
+    var list = $id('kbgFloatMultiList'), warning = $id('kbgFloatWarning');
+    if (!pill || !details || !tip || !list || !warning) return;
 
     var statusUrl = root.getAttribute('data-status-url');
     var userKey = root.getAttribute('data-user-key') || '';
-    var broadcastKey = 'kbg-timer-changed:' + userKey;
     var positionKey = 'kbg-float-position:' + userKey;
-    var state = null;
-    var offsetMs = 0;
-    var inFlight = false;
-    var queued = false;
-    var offline = false;
-    var lastShownSeconds = 0;
-    var channel = null;
-    var expanded = false;
-    var fields = {};
-    var nodeList = root.querySelectorAll('[data-kbg]');
-    for (var i = 0; i < nodeList.length; i++) {
-        fields[nodeList[i].getAttribute('data-kbg')] = nodeList[i];
-    }
-    var pill = document.getElementById('kbgFloatToggle');
-    var collapseBtn = document.getElementById('kbgFloatCollapse');
-    var details = document.getElementById('kbgFloatDetails');
-    var tip = document.getElementById('kbgFloatTip');
-    var savedPosition = null;
-    var drag = null;
-    var blockClickUntil = 0;
-    var margin = 12;
-    var gap = 10;
+    var broadcastKey = 'kbg-timer-changed:' + userKey;
+    var broadcastChannel = null;
+    var timers = [], clockNodes = [], serverNow = 0, clockDelta = 0, snapshotAt = 0;
+    var expanded = false, offline = false, inFlight = false, refreshQueued = false;
+    var activeController = null, activeTimeout = null, lastRequest = 0;
+    var retryTimer = null, stopped = false, savedPosition = null, drag = null, suppressClickUntil = 0;
+    var margin = 12, gap = 10;
 
-    function write(field, value) {
-        if (fields[field]) fields[field].textContent = value == null ? '' : String(value);
+    function vw() { return window.innerWidth || document.documentElement.clientWidth; }
+    function vh() { return window.innerHeight || document.documentElement.clientHeight; }
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+    function el(tag, className, value) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (value !== undefined && value !== null) node.textContent = String(value);
+        return node;
     }
-    function pad(num) { return (num < 10 ? '0' : '') + num; }
-    function formatClock(seconds) {
-        seconds = Math.max(0, Math.floor(seconds));
-        return pad(Math.floor(seconds / 3600)) + ':' + pad(Math.floor((seconds % 3600) / 60)) + ':' + pad(seconds % 60);
+    function formatTime(seconds) {
+        var n = Math.max(0, Math.floor(Number(seconds) || 0));
+        function pad(v) { return v < 10 ? '0' + v : String(v); }
+        return pad(Math.floor(n / 3600)) + ':' + pad(Math.floor(n / 60) % 60) + ':' + pad(n % 60);
     }
-    function clamp(value, low, high) { return Math.max(low, Math.min(high, value)); }
-    function viewportWidth() { return window.innerWidth || document.documentElement.clientWidth; }
-    function viewportHeight() { return window.innerHeight || document.documentElement.clientHeight; }
-
-    /* Save relative position so the timer stays in a sensible place on other screen sizes. */
-    try {
-        var stored = JSON.parse(window.localStorage.getItem(positionKey) || 'null');
-        if (stored && typeof stored.x === 'number' && isFinite(stored.x) &&
-            typeof stored.y === 'number' && isFinite(stored.y)) {
-            savedPosition = { x: clamp(stored.x, 0, 1), y: clamp(stored.y, 0, 1) };
+    function text(id, value) { var node = $id(id); if (node) node.textContent = value; }
+    function nowServer() { return Date.now() + clockDelta; }
+    function isCounting(t, now) {
+        return !!t.counting && !(t.boundary != null && now >= t.boundary);
+    }
+    function displayedSeconds(t, now) {
+        if (!t.counting || offline) return t.seconds;
+        var capped = t.boundary == null ? now : Math.min(now, t.boundary);
+        return Math.max(0, t.seconds + Math.max(0, Math.floor((capped - serverNow) / 1000)));
+    }
+    function updateLive() {
+        if (!timers.length || root.hidden) return;
+        var now = nowServer(), activeCount = 0;
+        for (var i = 0; i < clockNodes.length; i++) {
+            var entry = clockNodes[i];
+            var active = !offline && isCounting(entry.data, now);
+            if (active) activeCount++;
+            entry.number.textContent = formatTime(displayedSeconds(entry.data, now));
+            entry.status.textContent = offline ? 'Chưa đồng bộ' : (active ? 'Đang cộng giờ' : 'Tạm ngừng cộng');
+            entry.card.classList.toggle('is-counting', active);
+            entry.card.classList.toggle('is-not-counting', !active);
         }
-    } catch (ignoreStorage) { }
+        // clockNodes chi luu tung phien, so dem tu node khop voi timer.
+        text('kbgFloatCountLive', activeCount + ' đang cộng');
+        text('kbgFloatCountPaused', (timers.length - activeCount) + (offline ? ' chưa đồng bộ' : ' tạm ngừng'));
+        root.classList.toggle('is-no-active', activeCount === 0);
+        root.classList.toggle('is-offline', offline);
+        if (timers.length === 1) {
+            text('kbgFloatSummary', formatTime(displayedSeconds(timers[0], now)));
+            text('kbgFloatSubtitle', (timers[0].code || 'Công việc') + ' · ' + (timers[0].type === 2 ? 'Tăng ca' : 'Giờ thường'));
+        } else {
+            text('kbgFloatSummary', timers.length + ' phiên · ' + countProjects() + ' dự án');
+            text('kbgFloatSubtitle', offline ? 'Chưa đồng bộ' : (activeCount + ' đang cộng giờ'));
+        }
+    }
+    function countProjects() {
+        var ids = Object.create(null), count = 0;
+        timers.forEach(function (t) {
+            if (!ids[t.projectId]) { ids[t.projectId] = true; count++; }
+        });
+        return count;
+    }
+    function projectLink(url) {
+        // URL duoc tao trong handler, chi cho phep duong dan noi bo.
+        return typeof url === 'string' && url.charAt(0) === '/' && url.charAt(1) !== '/' ? url : null;
+    }
+    function renderList() {
+        clockNodes = [];
+        while (list.firstChild) list.removeChild(list.firstChild);
+        var groups = Object.create(null), order = [];
+        timers.forEach(function (t) {
+            var key = t.projectId;
+            if (!groups[key]) { groups[key] = []; order.push(key); }
+            groups[key].push(t);
+        });
+        order.sort(function (a, b) {
+            var x = groups[a][0], y = groups[b][0];
+            return (x.projectCode || x.projectName || '').localeCompare(y.projectCode || y.projectName || '', 'vi');
+        });
+        order.forEach(function (key) {
+            var entries = groups[key], head = entries[0];
+            var group = el('section', 'kbg-float-project');
+            var heading = el('div', 'kbg-float-project-head');
+            var nameWrap = el('div', 'kbg-float-project-title');
+            nameWrap.appendChild(el('span', 'kbg-float-folder', '▣'));
+            var nameText = el('div', 'kbg-float-project-label');
+            nameText.appendChild(el('strong', '', head.projectCode || 'Dự án'));
+            if (head.projectName) nameText.appendChild(el('span', '', head.projectName));
+            nameWrap.appendChild(nameText);
+            heading.appendChild(nameWrap);
+            var href = projectLink(head.projectUrl);
+            if (href) {
+                var open = el('a', 'kbg-float-open', 'Mở trang ↗');
+                open.setAttribute('href', href);
+                open.setAttribute('title', 'Đến trang Tính giờ của dự án ' + (head.projectCode || ''));
+                heading.appendChild(open);
+            }
+            group.appendChild(heading);
+            entries.sort(function (a, b) {
+                var task = (a.code || '').localeCompare(b.code || '', 'vi', { numeric: true });
+                return task || a.type - b.type || a.id.localeCompare(b.id);
+            });
+            entries.forEach(function (t) {
+                var card = el('article', 'kbg-float-task');
+                var top = el('div', 'kbg-float-task-top');
+                var label = el('div', 'kbg-float-task-name');
+                label.appendChild(el('strong', '', t.code || 'Công việc'));
+                label.appendChild(el('span', '', t.name || 'Chưa có tên công việc'));
+                top.appendChild(label);
+                var type = el('span', t.type === 2 ? 'kbg-float-type is-overtime' : 'kbg-float-type', t.type === 2 ? 'Tăng ca' : 'Giờ thường');
+                top.appendChild(type);
+                card.appendChild(top);
+                var bottom = el('div', 'kbg-float-task-bottom');
+                var number = el('strong', 'kbg-float-task-clock', formatTime(t.seconds));
+                number.setAttribute('title', 'Số giây của phiên này, không phải tổng toàn bộ công việc');
+                var status = el('span', 'kbg-float-task-status', 'Đang đồng bộ');
+                bottom.appendChild(number);
+                bottom.appendChild(status);
+                card.appendChild(bottom);
+                if (t.source === 2) card.appendChild(el('span', 'kbg-float-auto', 'Tự bắt đầu từ công việc con'));
+                group.appendChild(card);
+                clockNodes.push({ data: t, number: number, status: status, card: card });
+            });
+            list.appendChild(group);
+        });
+    }
+    function showDetails(isOpen) {
+        expanded = !!isOpen;
+        root.classList.toggle('is-expanded', expanded);
+        pill.setAttribute('aria-expanded', String(expanded));
+        details.setAttribute('aria-hidden', String(!expanded));
+        if (expanded) { placeOverlays(); }
+    }
+    function hide() {
+        root.hidden = true;
+        timers = []; clockNodes = []; offline = false;
+        showDetails(false);
+    }
+    function applySnapshot(data, sent, received) {
+        if (!data || data.ok !== true || !Array.isArray(data.timers)) throw new Error('Invalid V2 snapshot');
+        if (!data.running || !data.timers.length) { hide(); return; }
+        var unique = Object.create(null), next = [];
+        data.timers.forEach(function (t) {
+            if (!t || !t.id || !t.projectId || unique[t.id]) return;
+            unique[t.id] = true;
+            next.push({
+                id: String(t.id), taskId: String(t.taskId || ''), projectId: String(t.projectId),
+                code: String(t.code || ''), name: String(t.name || ''),
+                projectCode: String(t.projectCode || ''), projectName: String(t.projectName || ''),
+                projectUrl: t.projectUrl, type: Number(t.type) === 2 ? 2 : 1,
+                source: Number(t.source) || 1, overdue: !!t.overdue,
+                seconds: Math.max(0, Number(t.seconds) || 0), counting: t.counting === true,
+                boundary: t.boundary == null ? null : Number(t.boundary)
+            });
+        });
+        if (!next.length) { hide(); return; }
+        timers = next;
+        serverNow = Number(data.serverNow) || received;
+        clockDelta = serverNow - (sent + received) / 2;
+        snapshotAt = received;
+        offline = false;
+        warning.hidden = true;
+        var wasHidden = root.hidden;
+        root.hidden = false;
+        text('kbgFloatCount', timers.length + ' phiên · ' + countProjects() + ' dự án');
+        text('kbgFloatTipTitle', timers.length + ' phiên giờ đang mở');
+        text('kbgFloatTipBody', countProjects() + ' dự án. Bấm để xem từng công việc và giờ thường/tăng ca.');
+        renderList();
+        updateLive();
+        if (wasHidden) restorePosition();
+        placeOverlays();
+    }
+    function requestRefresh(force) {
+        if (stopped || !statusUrl) return;
+        if (document.hidden && !force) return;
+        if (inFlight) { refreshQueued = true; return; }
+        // Gom cac su kien focus/visibility kich hoat sat nhau.
+        if (!force && Date.now() - lastRequest < 1200) return;
+        inFlight = true;
+        lastRequest = Date.now();
+        var sent = Date.now();
+        var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        activeController = controller;
+        activeTimeout = controller ? window.setTimeout(function () { controller.abort(); }, 12000) : null;
+        var options = { method: 'GET', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } };
+        if (controller) options.signal = controller.signal;
+        window.fetch(statusUrl + '?_=' + sent, options)
+            .then(function (response) {
+                if (!response.ok) {
+                    var problem = new Error('HTTP ' + response.status);
+                    problem.status = response.status;
+                    throw problem;
+                }
+                return response.json();
+            })
+            .then(function (data) { if (!stopped) applySnapshot(data, sent, Date.now()); })
+            .catch(function (error) {
+                if (stopped) return;
+                if (error && (error.status === 401 || error.status === 403)) { hide(); return; }
+                if (timers.length) {
+                    var atFailure = nowServer();
+                    timers.forEach(function (t) { t.seconds = displayedSeconds(t, atFailure); });
+                    offline = true;
+                    warning.hidden = false;
+                    updateLive();
+                }
+            })
+            .then(function () {
+                if (activeTimeout) window.clearTimeout(activeTimeout);
+                activeController = null; activeTimeout = null;
+                inFlight = false;
+                if (refreshQueued && !stopped) {
+                    refreshQueued = false;
+                    // Mot lan gui lai duoc cho phep khi co thay doi trong luc fetch.
+                    requestRefresh(true);
+                }
+            });
+    }
+    function notifyChanged() {
+        try { window.localStorage.setItem(broadcastKey, String(Date.now())); } catch (ignoreStorage) { }
+        if (broadcastChannel) { try { broadcastChannel.postMessage('changed'); } catch (ignoreChannel) { } }
+        requestRefresh(true);
+    }
 
+    var dragStart = null, lastSaved = null;
+    try {
+        lastSaved = JSON.parse(window.localStorage.getItem(positionKey) || 'null');
+        if (lastSaved && isFinite(lastSaved.x) && isFinite(lastSaved.y))
+            savedPosition = { x: clamp(Number(lastSaved.x), 0, 1), y: clamp(Number(lastSaved.y), 0, 1) };
+    } catch (ignorePosition) { }
     function moveTo(left, top) {
-        var vw = viewportWidth();
-        var vh = viewportHeight();
-        var width = root.offsetWidth;
-        var height = root.offsetHeight;
-        var maxLeft = Math.max(margin, vw - width - margin);
-        var maxTop = Math.max(margin, vh - height - margin);
-        root.style.right = 'auto';
-        root.style.bottom = 'auto';
-        root.style.left = Math.round(clamp(left, margin, maxLeft)) + 'px';
-        root.style.top = Math.round(clamp(top, margin, maxTop)) + 'px';
+        var width = root.offsetWidth, height = root.offsetHeight;
+        root.style.right = 'auto'; root.style.bottom = 'auto';
+        root.style.left = Math.round(clamp(left, margin, Math.max(margin, vw() - width - margin))) + 'px';
+        root.style.top = Math.round(clamp(top, margin, Math.max(margin, vh() - height - margin))) + 'px';
     }
     function rememberPosition() {
+        if (root.hidden) return;
         var r = root.getBoundingClientRect();
-        var xRange = Math.max(1, viewportWidth() - r.width - 2 * margin);
-        var yRange = Math.max(1, viewportHeight() - r.height - 2 * margin);
         savedPosition = {
-            x: clamp((r.left - margin) / xRange, 0, 1),
-            y: clamp((r.top - margin) / yRange, 0, 1)
+            x: clamp((r.left - margin) / Math.max(1, vw() - r.width - margin * 2), 0, 1),
+            y: clamp((r.top - margin) / Math.max(1, vh() - r.height - margin * 2), 0, 1)
         };
-        try { window.localStorage.setItem(positionKey, JSON.stringify(savedPosition)); } catch (ignoreSave) { }
+        try { window.localStorage.setItem(positionKey, JSON.stringify(savedPosition)); } catch (ignore) { }
     }
     function restorePosition() {
         if (!savedPosition || root.hidden) return;
-        var xRange = Math.max(0, viewportWidth() - root.offsetWidth - 2 * margin);
-        var yRange = Math.max(0, viewportHeight() - root.offsetHeight - 2 * margin);
-        moveTo(margin + savedPosition.x * xRange, margin + savedPosition.y * yRange);
+        moveTo(margin + savedPosition.x * Math.max(0, vw() - root.offsetWidth - 2 * margin),
+            margin + savedPosition.y * Math.max(0, vh() - root.offsetHeight - 2 * margin));
     }
-
-    /* Keep both the expanded card and hover tooltip inside the viewport. */
     function placeOverlays() {
         if (root.hidden) return;
-        var r = root.getBoundingClientRect();
-        var vw = viewportWidth();
-        var vh = viewportHeight();
+        var r = root.getBoundingClientRect(), above = Math.max(0, r.top - gap - margin);
+        var below = Math.max(0, vh() - r.bottom - gap - margin);
         if (details) {
-            var panelWidth = details.offsetWidth;
-            var naturalHeight = details.scrollHeight;
-            var above = Math.max(0, r.top - margin - gap);
-            var below = Math.max(0, vh - r.bottom - margin - gap);
-            var putBelow = below >= above;
-            if (naturalHeight <= above && naturalHeight > below) putBelow = false;
-            if (naturalHeight <= below && naturalHeight > above) putBelow = true;
-            var space = Math.max(0, putBelow ? below : above);
-            details.style.maxHeight = Math.max(1, Math.floor(space)) + 'px';
-            var height = details.offsetHeight;
-            var panelLeft = clamp(r.right - panelWidth, margin, Math.max(margin, vw - panelWidth - margin));
-            var panelTop = putBelow ? r.bottom + gap : r.top - gap - height;
-            panelTop = clamp(panelTop, margin, Math.max(margin, vh - height - margin));
-            details.style.left = Math.round(panelLeft - r.left) + 'px';
-            details.style.top = Math.round(panelTop - r.top) + 'px';
-            root.classList.toggle('is-details-below', putBelow);
+            var panelW = details.offsetWidth;
+            // scrollHeight tu tinh du khi chua expanded, khong lam thay doi kich thuoc pill.
+            var heightWanted = details.scrollHeight;
+            var goesBelow = below > above;
+            if (heightWanted <= above && heightWanted > below) goesBelow = false;
+            if (heightWanted <= below && heightWanted > above) goesBelow = true;
+            var available = Math.max(80, goesBelow ? below : above);
+            details.style.maxHeight = Math.floor(available) + 'px';
+            var panelH = details.offsetHeight;
+            var left = clamp(r.right - panelW, margin, Math.max(margin, vw() - panelW - margin));
+            var top = goesBelow ? r.bottom + gap : r.top - gap - panelH;
+            top = clamp(top, margin, Math.max(margin, vh() - panelH - margin));
+            details.style.left = Math.round(left - r.left) + 'px';
+            details.style.top = Math.round(top - r.top) + 'px';
+            root.classList.toggle('is-details-below', goesBelow);
         }
         if (tip) {
-            var tipWidth = tip.offsetWidth;
-            var tipHeight = tip.offsetHeight;
-            var tipAbove = r.top - margin - gap;
-            var tipBelow = vh - r.bottom - margin - gap;
-            var tipGoesBelow = tipAbove < tipHeight && tipBelow > tipAbove;
-            var tipLeft = clamp(r.left + (r.width - tipWidth) / 2, margin,
-                Math.max(margin, vw - tipWidth - margin));
-            var tipTop = tipGoesBelow ? r.bottom + gap : r.top - gap - tipHeight;
-            tipTop = clamp(tipTop, margin, Math.max(margin, vh - tipHeight - margin));
-            tip.style.left = Math.round(tipLeft - r.left) + 'px';
-            tip.style.top = Math.round(tipTop - r.top) + 'px';
-            tip.style.setProperty('--kbg-tip-arrow-x', Math.round(clamp(r.left + r.width / 2 - tipLeft - 6, 14, tipWidth - 26)) + 'px');
-            root.classList.toggle('is-tip-below', tipGoesBelow);
+            var w = tip.offsetWidth, h = tip.offsetHeight;
+            var tipBelow = r.top - gap - margin < h && below >= above;
+            var tipL = clamp(r.left + (r.width - w) / 2, margin, Math.max(margin, vw() - w - margin));
+            var tipT = tipBelow ? r.bottom + gap : r.top - gap - h;
+            tipT = clamp(tipT, margin, Math.max(margin, vh() - h - margin));
+            tip.style.left = Math.round(tipL - r.left) + 'px';
+            tip.style.top = Math.round(tipT - r.top) + 'px';
+            tip.style.setProperty('--kbg-tip-arrow-x', Math.round(clamp(r.left + r.width / 2 - tipL - 5, 14, w - 26)) + 'px');
+            root.classList.toggle('is-tip-below', tipBelow);
         }
     }
-
-    function showDetails(show) {
-        expanded = !!show;
-        if (expanded && !root.hidden) placeOverlays();
-        root.classList.toggle('is-expanded', expanded);
-        pill.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-        details.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    }
-    function hide() {
-        state = null;
-        offline = false;
-        root.classList.remove('is-offline', 'is-break');
-        root.hidden = true;
-        showDetails(false);
-    }
-    function segmentsSeconds(from, to, segments) {
-        if (!(to > from) || !segments || !segments.length) return 0;
-        var seconds = 0;
-        for (var j = 0; j < segments.length; j++) {
-            var s = segments[j];
-            var beginning = Math.max(from, Number(s.start) || 0);
-            var finish = Math.min(to, Number(s.end) || 0);
-            if (finish > beginning) seconds += (finish - beginning) / 1000;
-        }
-        return Math.max(0, Math.round(seconds));
-    }
-    function onBreak(now, segments) {
-        if (!segments || segments.length < 2) return false;
-        for (var j = 0; j < segments.length - 1; j++) {
-            if (now >= Number(segments[j].end) && now < Number(segments[j + 1].start)) return true;
-        }
-        return false;
-    }
-    /* KBG2: multi-session view. Backend numbers remain authoritative. */
-    var multiList = document.getElementById('kbgFloatMultiList');
-    function multiClock(sec) { return formatClock(Math.max(0, Number(sec) || 0)); }
-    function multiSeconds(t, now) {
-        var sec = Number(t.seconds) || 0;
-        if (t.counting === true) {
-            var end = t.boundary == null ? now : Math.min(now, Number(t.boundary));
-            sec += Math.max(0, Math.floor((end - Number(state.serverNow)) / 1000));
-        }
-        return sec;
-    }
-    function tickMulti(now) {
-        if (!state || !state.timers || !state.timers.length) return;
-        var first = state.timers[0];
-        var firstSec = multiSeconds(first, now);
-        write('compact-time', multiClock(firstSec));
-        write('detail-time', multiClock(firstSec));
-        write('compact-state', state.timers.length + ' ĐỒNG HỒ');
-        write('detail-status', state.timers.filter(function(t){return t.counting===true;}).length + ' đang cộng');
-        root.classList.toggle('is-break', !state.timers.some(function(t){return t.counting===true;}));
-        if (multiList) {
-            var values = multiList.querySelectorAll('[data-kbg-multi-id]');
-            for (var i = 0; i < values.length; i++) {
-                var id = values[i].getAttribute('data-kbg-multi-id');
-                for (var j = 0; j < state.timers.length; j++) {
-                    if (state.timers[j].id === id) {
-                        values[i].textContent = multiClock(multiSeconds(state.timers[j], now));
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    function setMultiSnapshot(s, startTime, finishTime) {
-        if (!s || !s.timers || !s.timers.length) { hide(); return; }
-        var wasHidden = root.hidden;
-        state = s;
-        offline = false;
-        offsetMs = Number(s.serverNow) - (startTime + finishTime) / 2;
-        root.hidden = false;
-        root.classList.add('is-multi');
-        root.classList.remove('is-offline');
-        var first = s.timers[0];
-        write('compact-code', s.timers.length + ' đồng hồ');
-        write('task-code', first.taskCode || 'Công việc');
-        write('project-code', first.projectCode || 'Dự án');
-        write('task-name', first.taskName || '');
-        write('project-name', s.timers.length + ' phiên đang mở trên các dự án');
-        write('tooltip-code', s.timers.length + ' đồng hồ đang mở');
-        write('tooltip-name', first.taskName || '');
-        write('tooltip-project', 'Nhấn để xem danh sách công việc');
-        write('watch-label', 'Thời gian phiên đầu tiên');
-        if (multiList) {
-            multiList.hidden = false;
-            multiList.textContent = '';
-            var pageUrl = root.getAttribute('data-time-page');
-            for (var k = 0; k < s.timers.length; k++) {
-                var t = s.timers[k];
-                var line = document.createElement('div');line.className = 'kbg-float-multi-row';
-                var title = document.createElement('div'); title.className = 'kbg-float-multi-title';
-                title.textContent = (t.projectCode || 'Dự án') + ' / ' + (t.taskCode || 'Công việc') +
-                    ' · ' + (t.type === 2 ? 'Tăng ca' : 'Giờ thường') + (t.source === 2 ? ' (tự động)' : '');
-                line.appendChild(title);
-                var name = document.createElement('div');name.className = 'kbg-float-multi-name';
-                name.textContent = t.taskName || '';line.appendChild(name);
-                var bottom = document.createElement('div');bottom.className = 'kbg-float-multi-bottom';
-                var time = document.createElement('strong');time.setAttribute('data-kbg-multi-id', t.id);
-                time.textContent = multiClock(t.seconds);bottom.appendChild(time);
-                var link = document.createElement('a');link.textContent = 'Mở dự án';
-                try {var u = new URL(pageUrl,window.location.href);u.searchParams.set('projectId',t.projectId);link.href=u.href;}
-                catch (_) {link.href=pageUrl;}
-                bottom.appendChild(link);line.appendChild(bottom);multiList.appendChild(line);
-            }
-        }
-        if (wasHidden) restorePosition();
-        tickMulti(Date.now() + offsetMs);
-        placeOverlays();
-    }
-
-    function tick() {
-        var toast = document.getElementById('liveToast');
-        root.classList.toggle('is-toast-visible', !!(toast && toast.classList.contains('show')));
-        if (!state || root.hidden || offline) return;
-        var serverNow = Date.now() + offsetMs;
-        if (state.version === 2) { tickMulti(serverNow); return; }
-        if (serverNow >= Number(state.dayEnd)) {
-            hide(); // The close job may commit later; do not display an expired running timer.
-            return;
-        }
-        var seconds = Number(state.completedSeconds) +
-            segmentsSeconds(Number(state.runningSince), Math.min(serverNow, Number(state.dayEnd)), state.segments);
-        lastShownSeconds = Math.max(0, seconds);
-        var formatted = formatClock(lastShownSeconds);
-        write('compact-time', formatted);
-        write('detail-time', formatted);
-        var resting = onBreak(serverNow, state.segments);
-        root.classList.toggle('is-break', resting);
-        write('compact-state', resting ? 'ĐANG NGHỈ TRƯA' : 'ĐANG TÍNH GIỜ');
-        write('detail-status', resting ? 'Nghỉ trưa' : 'Đang chạy');
-    }
-    function setSnapshot(s, startTime, finishTime) {
-        if (s && s.version === 2) { setMultiSnapshot(s, startTime, finishTime); return; }
-        root.classList.remove('is-multi');
-        if (multiList) multiList.hidden = true;
-        if (!s || s.running !== true) { hide(); return; }
-        var wasHidden = root.hidden;
-        state = s;
-        offline = false;
-        root.classList.remove('is-offline');
-        offsetMs = Number(s.serverNow) - (startTime + finishTime) / 2;
-        root.hidden = false;
-        write('compact-code', s.taskCode || 'Công việc');
-        write('task-code', s.taskCode || 'Công việc');
-        write('project-code', s.projectCode || 'Dự án');
-        write('task-name', s.taskName || 'Công việc đang thực hiện');
-        write('project-name', s.projectName || '');
-        write('tooltip-code', (s.projectCode || 'Dự án') + ' · ' + (s.taskCode || 'Công việc'));
-        write('tooltip-name', s.taskName || 'Công việc đang thực hiện');
-        write('tooltip-project', s.projectName || '');
-        if (wasHidden) restorePosition();
-        tick();
-        placeOverlays();
-    }
-    function onError(status) {
-        if (status === 401 || status === 403) { hide(); return; }
-        if (state) {
-            offline = true;
-            root.classList.add('is-offline');
-            root.classList.remove('is-break');
-            write('compact-state', 'CHƯA ĐỒNG BỘ');
-            write('detail-status', 'Mất kết nối');
-            write('compact-time', formatClock(lastShownSeconds));
-            write('detail-time', formatClock(lastShownSeconds));
-        }
-    }
-    function refresh() {
-        if (inFlight) { queued = true; return; }
-        inFlight = true;
-        var startTime = Date.now();
-        var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        var timeout = controller ? window.setTimeout(function () { controller.abort(); }, 12000) : null;
-        var opts = { method: 'GET', credentials: 'same-origin', cache: 'no-store', headers: { 'Accept': 'application/json' } };
-        if (controller) opts.signal = controller.signal;
-        window.fetch(statusUrl + '?_=' + startTime, opts).then(function (response) {
-            if (!response.ok) {
-                var problem = new Error('HTTP ' + response.status);
-                problem.httpStatus = response.status;
-                throw problem;
-            }
-            return response.json();
-        }).then(function (data) {
-            setSnapshot(data, startTime, Date.now());
-        }).catch(function (error) {
-            onError(error && error.httpStatus);
-        }).then(function () {
-            if (timeout) window.clearTimeout(timeout);
-            inFlight = false;
-            if (queued) { queued = false; refresh(); }
-        });
-    }
-    function notifyChanged() {
-        try { window.localStorage.setItem(broadcastKey, String(Date.now())); } catch (ignore) { }
-        if (channel) { try { channel.postMessage('changed'); } catch (ignore2) { } }
-        refresh();
-    }
-
-    /* A short movement becomes a drag; a normal click still expands the card. */
     pill.addEventListener('pointerdown', function (event) {
-        if ((event.button !== undefined && event.button !== 0) ||
-            (event.isPrimary !== undefined && !event.isPrimary)) return;
+        if ((event.button !== undefined && event.button !== 0) || (event.isPrimary !== undefined && !event.isPrimary)) return;
         var r = root.getBoundingClientRect();
-        drag = {
-            id: event.pointerId,
-            startX: event.clientX,
-            startY: event.clientY,
-            left: r.left,
-            top: r.top,
-            moved: false
-        };
-        if (pill.setPointerCapture) {
-            try { pill.setPointerCapture(event.pointerId); } catch (ignoreCapture) { }
-        }
+        drag = { id: event.pointerId, x: event.clientX, y: event.clientY, left: r.left, top: r.top, moved: false };
+        if (pill.setPointerCapture) { try { pill.setPointerCapture(event.pointerId); } catch (ignore) { } }
     });
     pill.addEventListener('pointermove', function (event) {
         if (!drag || drag.id !== event.pointerId) return;
-        var dx = event.clientX - drag.startX;
-        var dy = event.clientY - drag.startY;
+        var dx = event.clientX - drag.x, dy = event.clientY - drag.y;
         if (!drag.moved && Math.sqrt(dx * dx + dy * dy) < 5) return;
         drag.moved = true;
         if (event.cancelable) event.preventDefault();
@@ -350,61 +313,64 @@
         moveTo(drag.left + dx, drag.top + dy);
         placeOverlays();
     });
-    function finishDrag(event) {
+    function endDrag(event) {
         if (!drag || drag.id !== event.pointerId) return;
-        if (drag.moved) {
-            rememberPosition();
-            blockClickUntil = Date.now() + 450;
-        }
+        if (drag.moved) { rememberPosition(); suppressClickUntil = Date.now() + 450; }
         root.classList.remove('is-dragging');
         if (pill.releasePointerCapture && pill.hasPointerCapture && pill.hasPointerCapture(event.pointerId)) {
-            try { pill.releasePointerCapture(event.pointerId); } catch (ignoreRelease) { }
+            try { pill.releasePointerCapture(event.pointerId); } catch (ignore) { }
         }
-        drag = null;
-        placeOverlays();
+        drag = null; placeOverlays();
     }
-    pill.addEventListener('pointerup', finishDrag);
-    pill.addEventListener('pointercancel', finishDrag);
+    pill.addEventListener('pointerup', endDrag);
+    pill.addEventListener('pointercancel', endDrag);
     pill.addEventListener('click', function (event) {
-        if (Date.now() < blockClickUntil) {
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
+        if (Date.now() < suppressClickUntil) { event.preventDefault(); event.stopPropagation(); return; }
         showDetails(!expanded);
     });
     pill.addEventListener('pointerenter', placeOverlays);
-    collapseBtn.addEventListener('click', function () { showDetails(false); pill.focus(); });
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && expanded) showDetails(false);
-    });
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
-    window.addEventListener('focus', function () { refresh(); });
-    window.addEventListener('resize', function () {
-        if (savedPosition && !root.hidden) restorePosition();
-        placeOverlays();
-    });
+    var close = $id('kbgFloatCollapse');
+    if (close) close.addEventListener('click', function () { showDetails(false); pill.focus(); });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && expanded) showDetails(false); });
+    window.addEventListener('resize', function () { restorePosition(); placeOverlays(); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) requestRefresh(false); });
+    window.addEventListener('focus', function () { requestRefresh(false); });
     window.addEventListener('storage', function (event) {
-        if (event.key === broadcastKey) refresh();
+        if (event.key === broadcastKey) requestRefresh(true);
         if (event.key === positionKey) {
             try {
-                var v = JSON.parse(event.newValue || 'null');
-                if (v && isFinite(v.x) && isFinite(v.y)) {
-                    savedPosition = { x: clamp(Number(v.x), 0, 1), y: clamp(Number(v.y), 0, 1) };
-                    restorePosition();
-                    placeOverlays();
+                var p = JSON.parse(event.newValue || 'null');
+                if (p && isFinite(p.x) && isFinite(p.y)) {
+                    savedPosition = { x: clamp(Number(p.x), 0, 1), y: clamp(Number(p.y), 0, 1) };
+                    restorePosition(); placeOverlays();
                 }
-            } catch (ignorePosition) { }
+            } catch (ignore) { }
         }
     });
     if (typeof window.BroadcastChannel !== 'undefined') {
         try {
-            channel = new window.BroadcastChannel(broadcastKey);
-            channel.onmessage = function () { refresh(); };
-        } catch (ignore3) { channel = null; }
+            broadcastChannel = new window.BroadcastChannel(broadcastKey);
+            broadcastChannel.onmessage = function () { requestRefresh(true); };
+        } catch (ignore) { }
     }
-    window.KbgFloatingTimer = { __loaded: true, refresh: refresh, notifyChanged: notifyChanged };
-    window.setInterval(tick, 1000);
-    window.setInterval(function () { if (!document.hidden) refresh(); }, 30000);
-    refresh();
+    window.addEventListener('pagehide', function () {
+        stopped = true;
+        if (activeController) activeController.abort();
+        if (activeTimeout) window.clearTimeout(activeTimeout);
+        if (broadcastChannel) broadcastChannel.close();
+    });
+    window.addEventListener('pageshow', function (event) {
+        // BFCache: pageshow co the goi lai cung mot window da pagehide.
+        if (event.persisted) {
+            stopped = false;
+            if (typeof window.BroadcastChannel !== 'undefined') {
+                try { broadcastChannel = new window.BroadcastChannel(broadcastKey); broadcastChannel.onmessage = function () { requestRefresh(true); }; } catch (ignore) { }
+            }
+            requestRefresh(true);
+        }
+    });
+    window.KbgFloatingTimer = { __loaded: true, refresh: function () { requestRefresh(true); }, notifyChanged: notifyChanged };
+    window.setInterval(updateLive, 1000);
+    window.setInterval(function () { if (!document.hidden && !stopped) requestRefresh(false); }, 30000);
+    requestRefresh(true);
 })(window, document);
