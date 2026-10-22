@@ -170,6 +170,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
         #bellDropdownWrapper .dropdown-notification.dropdown-toggle::after { display:none; }
         #bellDropdownWrapper .dropdown-notification { display:inline-flex; align-items:center; justify-content:center; width:32px; height:36px; text-decoration:none; transition:transform .18s ease; }
         #bellDropdownWrapper .dropdown-notification:hover { transform:translateY(-2px); }
+        /* Bell header: keep the actual hit target above decorative icon/badge and
+           avoid generic .ignore/data-bs-toggle click handlers racing with Hybrid. */
+        #bellDropdownWrapper #bellToggle { z-index:3;pointer-events:auto!important;cursor:pointer;touch-action:manipulation; }
+        #bellDropdownWrapper #bellToggle > i,
+        #bellDropdownWrapper #bellToggle > #badgeUnread { pointer-events:none; }
         #bellDropdownWrapper .dropdown-notification:focus-visible { outline:2px solid #c9a6ff; outline-offset:3px; border-radius:10px; }
         #bellDropdownWrapper #badgeUnread { padding:4px 6px; min-width:19px; line-height:1.1; box-shadow:0 0 0 2px #4a1387; }
         /* Popup canh theo mép phải vùng Master; giữ phần mũi nối nằm ngoài khung bo góc. */
@@ -294,6 +299,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
         /* Centered reading mode; stays inside the existing Bootstrap dropdown. */
         .qlda-noti-backdrop { position:fixed; inset:0; z-index:1068; background:rgba(27,13,49,.38); opacity:0; pointer-events:none; transition:opacity .22s ease; }
         .qlda-noti-backdrop.is-visible { opacity:1; pointer-events:auto; }
+        /* Backdrop chi duoc nhan click khi popup thuc su dang hien o che do rong. */
+        #bellDropdownWrapper:not(:has(.notification.show.qlda-noti-expanded)) #notificationViewBackdrop.is-visible { opacity:0!important;pointer-events:none!important; }
         #bellDropdownWrapper .notification.qlda-noti-expanded { top:50%!important; left:50%!important; right:auto!important; bottom:auto!important; transform:translate(-50%,-50%)!important; width:min(890px,calc(100vw - 48px))!important; max-width:none!important; height:min(760px,calc(100vh - 52px))!important; max-height:calc(100vh - 52px)!important; border-radius:22px; box-shadow:0 25px 85px rgba(24,10,53,.32)!important; }
         #bellDropdownWrapper .notification.qlda-noti-expanded::before { display:none; }
         #bellDropdownWrapper .qlda-noti-expanded .qlda-noti-surface { height:100%; border-radius:21px; }
@@ -370,18 +377,36 @@ scratch. This page gets rid of all links and provides the needed markup only.
         }
 
 
+        /* Đặt chuông chung hàng với .wrapperRight của menu tài khoản, không còn nhánh header riêng.
+           Chuông là HTML client; script sẽ gắn lại cùng phần tử nếu UpdatePanel thay DOM. */
+        .qlda-header-actions { display:flex;align-items:center;justify-content:flex-end;min-width:0;flex:0 0 auto; }
+        .qlda-header-actions .wrapperRight { display:flex;align-items:center; }
+        .qlda-header-actions .qlda-header-stable-user { display:flex;align-items:center;min-width:0; }
+        .qlda-header-actions #bellDropdownWrapper {
+            display:flex!important;align-items:center;flex:0 0 auto;position:relative;
+            margin:0 13px 0 0!important;visibility:visible!important;opacity:1!important;
+        }
+        .qlda-header-actions #bellToggle { display:inline-flex!important;visibility:visible!important;opacity:1!important; }
+        @media(max-width:575px) {
+            .qlda-header-actions #bellDropdownWrapper { margin-right:8px!important; }
+        }
+
         /* NOTIFICATION ASSISTANT: chỉ scoped trong .qna-widget; không sửa CSS chuông/ExtraModal. */
-        .qna-widget { position:fixed;right:24px;bottom:66px;z-index:1050;display:flex;flex-direction:column;align-items:flex-end;gap:12px;font-family:inherit;color:#38274e;max-width:calc(100vw - 24px);pointer-events:none; }
+        .qna-widget { position:fixed;left:24px;bottom:66px;z-index:1050;display:flex;flex-direction:column;align-items:flex-start;gap:12px;font-family:inherit;color:#38274e;max-width:calc(100vw - 24px);pointer-events:none; }
         .qna-widget[hidden] { display:none!important; }
         .qna-widget .qna-bubble { position:relative;width:290px;max-width:calc(100vw - 36px);padding:14px 15px 13px;border:1px solid #e4d3f5;border-radius:15px;background:#fff;box-shadow:0 14px 42px rgba(66,27,113,.21);pointer-events:auto;animation:qna-bubble-in .25s cubic-bezier(.2,.7,.2,1) both; }
-        .qna-widget .qna-bubble:after { content:'';position:absolute;right:26px;bottom:-8px;width:14px;height:14px;background:#fff;border-right:1px solid #e4d3f5;border-bottom:1px solid #e4d3f5;transform:rotate(45deg); }
+        .qna-widget .qna-bubble:after { content:'';position:absolute;left:26px;bottom:-8px;width:14px;height:14px;background:#fff;border-right:1px solid #e4d3f5;border-bottom:1px solid #e4d3f5;transform:rotate(45deg); }
         .qna-widget .qna-bubble strong { display:block;padding-right:23px;font-size:13.6px;line-height:1.4;font-weight:850;color:#58238d; }
         .qna-widget .qna-bubble p { margin:6px 0 11px;font-size:12px;line-height:1.5;color:#736780; }
+        .qna-widget .qna-meta { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px; }
+        .qna-widget .qna-type { display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#f3ebfd;color:#6b35aa;font-size:11px;font-weight:800; }
+        .qna-widget .qna-state { display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#efe7f7;color:#7c6d91;font-size:11px;font-weight:800; }
+        .qna-widget .qna-time { display:flex;align-items:center;gap:5px;margin:-1px 0 10px;color:#8a8095;font-size:11.3px; }
         .qna-widget .qna-bubble .qna-view { display:inline-flex;align-items:center;gap:6px;padding:7px 11px;background:#54218d;border:1px solid #54218d;border-radius:8px;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer; }
         .qna-widget .qna-bubble .qna-view:hover { background:#702eaf; }
         .qna-widget .qna-close { position:absolute;right:9px;top:9px;display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:7px;background:transparent;color:#9b86b0;font-size:18px;line-height:1;cursor:pointer; }
         .qna-widget .qna-close:hover { background:#f2ebfb;color:#54218d; }
-        .qna-widget .qna-trigger-wrap { position:relative;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 3px;pointer-events:auto; }
+        .qna-widget .qna-trigger-wrap { position:relative;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 3px;pointer-events:auto; }
         .qna-widget .qna-trigger { position:relative;display:grid;place-items:center;border:2px solid #e9dcf7;border-radius:50%;width:66px;height:66px;padding:4px;background:linear-gradient(145deg,#fff,#f5eaff);color:#6330aa;box-shadow:0 9px 27px rgba(72,31,128,.19);cursor:pointer;transition:transform .18s,box-shadow .18s; }
         .qna-widget .qna-trigger:hover { transform:translateY(-3px);box-shadow:0 12px 32px rgba(72,31,128,.27); }
         .qna-widget .qna-trigger:focus-visible,.qna-widget button:focus-visible { outline:2px solid #b58ae6;outline-offset:2px; }
@@ -390,6 +415,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
         .qna-widget .qna-dog-svg { width:61px;height:67px;overflow:visible; }
         .qna-widget .qna-bell-svg { width:35px;height:35px;overflow:visible; }
         .qna-widget .qna-bot-svg { width:54px;height:54px;overflow:visible; }
+        /* Mắt SVG chớp nhẹ mỗi lần chuông poll định kỳ, không làm robot dịch chuyển. */
+        .qna-widget .qna-bot-eye { transform-box:fill-box;transform-origin:center center; }
+        .qna-widget.qna-mode-hybrid.qna-blinking .qna-bot-eye { animation:qna-hybrid-blink .58s ease-in-out both; }
+        /* Khi có thông báo MỚI: cả robot và nút X nhún lấy đà, bật lên rồi tiếp đất. */
+        .qna-widget.qna-mode-hybrid.qna-jumping { animation:qna-hybrid-hop 1.12s both;transform-origin:left bottom;will-change:transform; }
+        /* Cả bubble, robot, badge và nút X chuyển động theo nhau. */
         .qna-widget .qna-dog-paw { transform-origin:78px 77px;animation:qna-wave 13s ease-in-out infinite; }
         .qna-widget .qna-mascot-dog,.qna-widget .qna-mascot-bell,.qna-widget .qna-mascot-bot { display:none; }
         .qna-widget.qna-mode-dog .qna-mascot-dog { display:block; }
@@ -405,14 +436,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
         .qna-widget.qna-mode-toast .qna-bubble,.qna-widget.qna-mode-hybrid .qna-bubble { opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s,visibility .2s,transform .2s;animation:none;pointer-events:none; }
         .qna-widget.qna-mode-toast.is-announcing .qna-bubble,.qna-widget.qna-mode-hybrid.is-announcing .qna-bubble,.qna-widget.qna-mode-toast:hover .qna-bubble,.qna-widget.qna-mode-hybrid:hover .qna-bubble,.qna-widget.qna-mode-toast:focus-within .qna-bubble,.qna-widget.qna-mode-hybrid:focus-within .qna-bubble { opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto; }
         .qna-widget.qna-mode-hybrid .qna-trigger { width:63px;height:63px;border-color:#d8c1f0;background:linear-gradient(135deg,#f4ebff,#fff); }
-        .qna-widget.qna-mode-hybrid .qna-trigger:after { content:'';position:absolute;inset:-6px;border:1px solid rgba(112,63,179,.32);border-radius:50%;animation:qna-pulse 7s ease-out infinite;pointer-events:none; }
+        /* Sóng Hybrid: đứng yên không có viền phụ; khi đến nhịp, 2 vòng sáng nối nhau lan rộng rồi biến mất. */
+        .qna-widget.qna-mode-hybrid .qna-trigger { isolation:isolate;overflow:visible; }
+        .qna-widget.qna-mode-hybrid .qna-trigger::before,
+        .qna-widget.qna-mode-hybrid .qna-trigger::after {
+            content:'';position:absolute;inset:-3px;box-sizing:border-box;
+            border:2px solid rgba(145,95,208,.62);border-radius:50%;
+            opacity:0;transform:scale(.93);pointer-events:none;z-index:-1;
+        }
+        .qna-widget.qna-mode-hybrid .qna-trigger::before {
+            animation:qna-ripple-first 7s ease-out infinite;
+        }
+        .qna-widget.qna-mode-hybrid .qna-trigger::after {
+            border-color:rgba(160,112,220,.48);
+            animation:qna-ripple-second 7s ease-out .24s infinite;
+        }
         .qna-widget.qna-mode-hybrid .qna-bubble { background:linear-gradient(150deg,#fff,#f9f4ff);border-color:#d9c2ef; }
         /* Hybrid: nút X nằm trên góc phải robot; số chưa đọc dời sang góc trái để không đè nhau. */
         .qna-widget.qna-mode-hybrid .qna-hide-hybrid { position:absolute;top:-12px;right:-10px;z-index:6;display:flex;align-items:center;justify-content:center;width:25px;height:25px;padding:0;border:1px solid #d9c7ed;border-radius:9px;background:#fff;color:#806393;font-size:19px;font-weight:600;line-height:1;cursor:pointer;box-shadow:0 3px 10px rgba(64,33,99,.15);transition:background .16s,color .16s,transform .16s; }
         .qna-widget.qna-mode-hybrid .qna-hide-hybrid:hover { background:#f1e7ff;color:#54218d;transform:scale(1.06); }
         .qna-widget.qna-mode-hybrid .qna-count { right:auto;left:-9px;top:-8px; }
         .qna-widget.qna-mode-hybrid .qna-count[hidden] { display:none!important; }
-        .qna-widget.qna-no-unread .qna-bubble { display:none!important; }
+        .qna-widget.qna-no-unread .qna-bubble { display:block; }
         /* Nút bật/tắt trợ lý ngay bên trong header bảng thông báo. */
         #bellDropdownWrapper .qna-hybrid-setting { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:9px 10px;border:1px solid #e7ddf4;border-radius:10px;background:#fbf8ff; }
         #bellDropdownWrapper .qna-hybrid-setting-label { display:flex;align-items:center;gap:8px;min-width:0;color:#512983; }
@@ -425,12 +470,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
         #bellDropdownWrapper .qna-hybrid-switch[aria-checked="false"] { flex-direction:row-reverse;padding:3px 4px 3px 9px;border-color:#d2c6df;background:#ede9f3;color:#7b7287; }
         #bellDropdownWrapper .qna-hybrid-switch:focus-visible,.qna-widget .qna-hide-hybrid:focus-visible { outline:2px solid #985fce;outline-offset:2px; }
 
-        body:has(.modal.show) .qna-widget { visibility:hidden;pointer-events:none; }
+        /* Modal/backdrop tự quản lý z-index; không ẩn robot bằng :has(.modal.show) vì ExtraModal có thể giữ class trong DOM. */
         @keyframes qna-wave { 0%,3%,9%,15%,100% { transform:rotate(0deg); } 5%,12% { transform:rotate(-27deg); } 7%,14% { transform:rotate(13deg); } }
         @keyframes qna-bubble-in { from { opacity:0;transform:translateY(9px) scale(.97); } to { opacity:1;transform:translateY(0) scale(1); } }
-        @keyframes qna-pulse { 0%,13%,100% { opacity:.75;transform:scale(1); } 9% { opacity:0;transform:scale(1.25); } }
-        @media(max-width:575px) { .qna-widget { right:12px;bottom:56px; } .qna-widget .qna-bubble { width:270px; } .qna-widget.qna-mode-toast .qna-bubble { width:290px; } }
-        @media(prefers-reduced-motion:reduce) { .qna-widget * { animation:none!important;transition:none!important; } }
+        /* 7 giây/nhịp, mỗi vòng lan chỉ trong ~0.8 giây, ngoài nhịp hoàn toàn trong suốt. */
+        @keyframes qna-ripple-first {
+            0%,1% { opacity:0;transform:scale(.93); }
+            3% { opacity:.72;transform:scale(1.04); }
+            6% { opacity:.45;transform:scale(1.23); }
+            11%,100% { opacity:0;transform:scale(1.53); }
+        }
+        @keyframes qna-ripple-second {
+            0%,1% { opacity:0;transform:scale(.93); }
+            3% { opacity:.65;transform:scale(1.04); }
+            6% { opacity:.38;transform:scale(1.23); }
+            11%,100% { opacity:0;transform:scale(1.53); }
+        }
+        @keyframes qna-hybrid-blink {
+            0%,17%,36%,53%,100% { transform:scaleY(1); }
+            24%,43% { transform:scaleY(.07); }
+        }
+        @keyframes qna-hybrid-hop {
+            0% { transform:translateY(0) scale(1); }
+            10% { transform:translateY(3px) scale(1.07,.93);animation-timing-function:cubic-bezier(.3,0,.28,1); }
+            38% { transform:translateY(-33px) scale(.97,1.04);animation-timing-function:cubic-bezier(.5,0,.78,1); }
+            64% { transform:translateY(0) scale(1.09,.91);animation-timing-function:cubic-bezier(.2,.7,.25,1); }
+            81% { transform:translateY(-7px) scale(.99,1.02);animation-timing-function:cubic-bezier(.35,0,.58,1); }
+            100% { transform:translateY(0) scale(1); }
+        }
+        @media(max-width:575px) { .qna-widget { left:12px;right:auto;bottom:56px; } .qna-widget .qna-bubble { width:270px; } .qna-widget.qna-mode-toast .qna-bubble { width:290px; } }
+        @media(prefers-reduced-motion:reduce) {
+            .qna-widget *,.qna-widget *::before,.qna-widget *::after { animation:none!important;transition:none!important; }
+            .qna-widget.qna-mode-hybrid .qna-trigger::before,.qna-widget.qna-mode-hybrid .qna-trigger::after { opacity:0!important; }
+        }
 
 
         /* Dropdown sau khi thêm Hybrid: cố định tổng chiều cao theo viewport, chỉ danh sách cuộn. */
@@ -442,7 +514,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         #bellDropdownWrapper .notification.show:not(.qlda-noti-expanded) .qlda-noti-footer { flex:0 0 auto;position:relative;z-index:4;background:#fff; }
         #bellDropdownWrapper .notification.qlda-noti-expanded .notification-body { min-height:0;flex:1 1 auto;max-height:none!important; }
         /* Ẩn mascot khi bảng thông báo mở để tránh đè nội dung và cản thao tác. */
-        body:has(#bellDropdownWrapper .notification.show) .qna-widget { opacity:0;pointer-events:none; }
+        body:has(#bellDropdownWrapper .notification.show) .qna-widget { opacity:0;visibility:hidden;pointer-events:none; }
         @media(max-width:575px) { #bellDropdownWrapper .notification.show:not(.qlda-noti-expanded) { height:min(680px,calc(100dvh - var(--qlda-noti-top,72px) - 8px))!important; } }
 
         .fs-14 {
@@ -597,38 +669,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             </div>
                                         </div>
                                     </div>
-                                    <asp:UpdatePanel runat="server" ID="pnlInfo" UpdateMode="Conditional">
-                                        <ContentTemplate>
-                                            <div class="flex justify-content-center align-items-center">
-                                                <ul runat="server" visible="false" class="flex justify-content-center align-items-center list-style-none mb-0 me-4">
-                                                    <li class="dropdown dropdown-language">
-                                                        <button class="btn dropdown-toggle d-block text-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <img runat="server" id="imgLanguage" src="/Administration/styles/images/flags/vi.jpg" alt="Header Language" height="16">
-                                                        </button>
-                                                        <ul class="dropdown-menu py-0" style="min-width: 50px;">
-                                                            <asp:UpdatePanel runat="server" UpdateMode="Conditional">
-                                                                <ContentTemplate>
-                                                                    <asp:Repeater runat="server" ID="rptLanguages">
-                                                                        <ItemTemplate>
-                                                                            <li>
-                                                                                <asp:LinkButton runat="server" ID="lbtChangeContentLanguage" CssClass="dropdown-item"
-                                                                                    CommandName="change-language" CommandArgument='<%# Eval("LangId") %>'
-                                                                                    OnCommand="lbtChangeContentLanguage_Command">
-                                                                                    <img src='<%# Eval("ImageUrl") %>' alt='<%# Eval("Name") %>' height="16" />
-                                                                                </asp:LinkButton>
-                                                                            </li>
-                                                                        </ItemTemplate>
-                                                                    </asp:Repeater>
-                                                                </ContentTemplate>
-                                                            </asp:UpdatePanel>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                                 <div class="wrapperRight">
-                                                     <%-- Notification center (giao diện và bộ lọc xử lý phía client). --%>
+                                    <%-- Chuông độc lập, tránh bị thay DOM khi AJAX popup cập nhật pnlInfo. --%>
+                                    <div class="qlda-header-actions">
                                                      <div class="dropdown m-3" id="bellDropdownWrapper">
-                                                         <a href="javascript:void(0)" class="dropdown-notification dropdown-toggle position-relative ignore"
-                                                            id="bellToggle" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                                         <a href="javascript:void(0)" class="dropdown-notification dropdown-toggle position-relative"
+                                                            id="bellToggle" data-bs-auto-close="true"
+                                                            onclick="return window.NotificationBell && window.NotificationBell.handleBellClick ? window.NotificationBell.handleBellClick(event) : false;"
                                                             aria-expanded="false" aria-label="Mở thông báo" title="Thông báo">
                                                              <i class="fas fa-bell font-size-22 text-warning" aria-hidden="true"></i>
                                                              <span id="badgeUnread" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
@@ -721,7 +767,36 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                              </div>
                                                          </div>
                                                      </div>
-
+                                    <asp:UpdatePanel runat="server" ID="pnlInfo" UpdateMode="Conditional">
+                                        <ContentTemplate>
+                                            <div class="flex justify-content-center align-items-center">
+                                                <ul runat="server" visible="false" class="flex justify-content-center align-items-center list-style-none mb-0 me-4">
+                                                    <li class="dropdown dropdown-language">
+                                                        <button class="btn dropdown-toggle d-block text-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <img runat="server" id="imgLanguage" src="/Administration/styles/images/flags/vi.jpg" alt="Header Language" height="16">
+                                                        </button>
+                                                        <ul class="dropdown-menu py-0" style="min-width: 50px;">
+                                                            <asp:UpdatePanel runat="server" UpdateMode="Conditional">
+                                                                <ContentTemplate>
+                                                                    <asp:Repeater runat="server" ID="rptLanguages">
+                                                                        <ItemTemplate>
+                                                                            <li>
+                                                                                <asp:LinkButton runat="server" ID="lbtChangeContentLanguage" CssClass="dropdown-item"
+                                                                                    CommandName="change-language" CommandArgument='<%# Eval("LangId") %>'
+                                                                                    OnCommand="lbtChangeContentLanguage_Command">
+                                                                                    <img src='<%# Eval("ImageUrl") %>' alt='<%# Eval("Name") %>' height="16" />
+                                                                                </asp:LinkButton>
+                                                                            </li>
+                                                                        </ItemTemplate>
+                                                                    </asp:Repeater>
+                                                                </ContentTemplate>
+                                                            </asp:UpdatePanel>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                                 <div class="qlda-header-stable-user">
+                                                 <div class="wrapperRight">
+                                                     <%-- Notification center (giao diện và bộ lọc xử lý phía client). --%>
                                                     <div class="avatar__image-box flex-center gap-2 cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
                                                         <div class="avatar__image">
                                                             <div class="wrapImgResize imgSquare rounded-circle">
@@ -761,11 +836,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                             </asp:LinkButton>
                                                         </li>
                                                     </ul>
+                                                 </div>
                                                 </div>
                                             </div>
 
                                         </ContentTemplate>
                                     </asp:UpdatePanel>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -869,16 +946,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <%-- Góc dưới: trợ lý nhắc thông báo, độc lập chuông và các UpdatePanel. --%>
         <aside id="qldaNotifyAssistant" class="qna-widget qna-mode-hybrid" hidden aria-label="Trợ lý nhắc thông báo">
             <div class="qna-bubble" role="status" aria-live="polite">
+                <div class="qna-meta">
+                    <span id="qnaType" class="qna-type">Thông báo</span>
+                    <span id="qnaState" class="qna-state">Trợ lý</span>
+                </div>
                 <strong id="qnaTitle">Bạn có thông báo mới</strong>
                 <p id="qnaDescription">Có thông báo chưa đọc cần xem.</p>
-                <button type="button" class="qna-view"><i class="bx bx-right-arrow-alt" aria-hidden="true"></i> Xem thông báo</button>
+                <div id="qnaTime" class="qna-time"><i class="bx bx-calendar" aria-hidden="true"></i><span>Di chuột để xem nhanh thông báo mới nhất</span></div>
+                <button type="button" class="qna-view"><i class="bx bx-right-arrow-alt" aria-hidden="true"></i> Mở thông báo</button>
             </div>
             <div class="qna-trigger-wrap">
                 <button type="button" class="qna-hide-hybrid" title="Đóng trợ lý · bật lại trong bảng thông báo" aria-label="Đóng trợ lý Hybrid">&times;</button>
                 <button type="button" class="qna-trigger" title="Xem thông báo" aria-label="Mở trung tâm thông báo">
                     <span class="qna-mascot-dog"><svg class="qna-dog-svg" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="52" cy="101" rx="29" ry="6" fill="#603a9b" opacity=".12"/><path d="M32 57q-11 4-11 20v11q0 14 15 14h33q15 0 15-14V77q0-17-14-21Z" fill="#a56a40"/><path d="M35 67q-6 10-5 22h45q2-15-6-22Z" fill="#fff0d4"/><g class="qna-dog-paw"><path d="M75 68Q91 52 92 65q4 9-3 15l-11 8Z" fill="#b87b4c" stroke="#92572f" stroke-width="2"/><ellipse cx="91" cy="66" rx="6" ry="7" fill="#b87b4c"/><circle cx="90" cy="64" r="2.2" fill="#e2a883"/></g><path d="M18 19 8 0Q6-5 26 5l11 13" fill="#a56a40" stroke="#92572f" stroke-width="2"/><path d="M68 18 84 1Q94-4 86 20l-5 11" fill="#a56a40" stroke="#92572f" stroke-width="2"/><path d="M20 22q8-18 30-18t32 22q9 21-2 38T50 78q-22 0-33-17T20 22" fill="#bd8353" stroke="#a26b41" stroke-width="2"/><path d="M23 44q-8 13 1 22Q35 83 52 83q21 0 31-15 8-13-1-24Q71 51 63 48q-5 12-13 11-10 0-15-11Z" fill="#fff0d4"/><circle cx="34" cy="40" r="4.6" fill="#3a2744"/><circle cx="67" cy="40" r="4.6" fill="#3a2744"/><circle cx="35.3" cy="38.5" r="1.3" fill="#fff"/><circle cx="68.3" cy="38.5" r="1.3" fill="#fff"/><ellipse cx="51" cy="55" rx="6" ry="4.2" fill="#3a2744"/><path d="M51 59q-1 7-7 7m7-7q1 7 8 7" stroke="#74506a" stroke-width="2.3" fill="none" stroke-linecap="round"/><ellipse cx="28" cy="52" rx="6" ry="3" fill="#e9a3a1" opacity=".7"/><ellipse cx="73" cy="52" rx="6" ry="3" fill="#e9a3a1" opacity=".7"/><path d="M34 85h12m10 0h12" stroke="#92572f" stroke-width="6" stroke-linecap="round"/></svg></span>
                     <span class="qna-mascot-bell"><svg class="qna-bell-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18 26c0-11 6-17 14-17s14 6 14 17v11c0 4 3 7 7 10H11c4-3 7-6 7-10Z" fill="#fff"/><path d="M28 10q4-7 8 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M26 51q6 11 12 0" fill="#fff"/><path d="M9 21q1-9 7-14M55 21q-1-9-7-14" stroke="#d9c0ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>
-                    <span class="qna-mascot-bot"> <svg class="qna-bot-svg" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M45 19V9" stroke="#a57ad8" stroke-width="4" stroke-linecap="round"/><circle cx="45" cy="7" r="5" fill="#f2bf60"/><rect x="13" y="20" width="64" height="55" rx="21" fill="#eee0ff" stroke="#ad84dd" stroke-width="3"/><rect x="21" y="29" width="48" height="34" rx="14" fill="#6530aa"/><ellipse cx="35" cy="46" rx="5" ry="6" fill="#fff"/><ellipse cx="55" cy="46" rx="5" ry="6" fill="#fff"/><path d="M38 57q7 7 15 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="13" cy="48" r="7" fill="#c29fe9"/><circle cx="77" cy="48" r="7" fill="#c29fe9"/><path d="M29 75v6m32-6v6" stroke="#8650b7" stroke-width="6" stroke-linecap="round"/></svg></span>
+                    <span class="qna-mascot-bot"> <svg class="qna-bot-svg" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M45 19V9" stroke="#a57ad8" stroke-width="4" stroke-linecap="round"/><circle cx="45" cy="7" r="5" fill="#f2bf60"/><rect x="13" y="20" width="64" height="55" rx="21" fill="#eee0ff" stroke="#ad84dd" stroke-width="3"/><rect x="21" y="29" width="48" height="34" rx="14" fill="#6530aa"/><ellipse class="qna-bot-eye" cx="35" cy="46" rx="5" ry="6" fill="#fff"/><ellipse class="qna-bot-eye" cx="55" cy="46" rx="5" ry="6" fill="#fff"/><path d="M38 57q7 7 15 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="13" cy="48" r="7" fill="#c29fe9"/><circle cx="77" cy="48" r="7" fill="#c29fe9"/><path d="M29 75v6m32-6v6" stroke="#8650b7" stroke-width="6" stroke-linecap="round"/></svg></span>
                     <span id="qnaCount" class="qna-count" aria-hidden="true">0</span>
                 </button>
             </div>
@@ -1046,6 +1128,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 var _loading = false;
                 var _initialized = false;
                 var _unreadCount = 0;
+                var _hasUnreadCount = false;
+                var _lastBellWrapper = null;
+                // Giữ chính phần tử chuông hiện có, kể cả khi UpdatePanel thay vùng tài khoản.
+                var _persistentBell = document.getElementById('bellDropdownWrapper');
+                var _bellRestorePending = false;
                 var _statusFilter = 'all';
                 var _typeFilter = 'all';
                 var _dateFilter = 'all';
@@ -1053,6 +1140,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 var _preview = null;
                 var _previewTarget = null;
                 var _requestToken = 0;
+                var _listRequest = null; // jqXHR cua trang thong bao dang tai; dung de huy request cu.
                 var _listElement = null; // ASP.NET UpdatePanel có thể thay DOM của chuông.
                 var _notificationRealtimeEnabled = <%= SweetSoft.QLDA.BackOffice.Realtime.QldaRealtimeSettings.NotificationsEnabled ? "true" : "false" %>;
                 var _realtimeRefreshTimer = null;
@@ -1155,8 +1243,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     if (changed) _items.sort(compareNewest);
                     return changed;
                 }
-                function updateBadge(count) {
-                    if (typeof count === 'number' && isFinite(count)) _unreadCount = Math.max(0, count);
+                function updateBadge(count, items) {
+                    if (typeof count === 'number' && isFinite(count)) {
+                        _unreadCount = Math.max(0, count);
+                        _hasUnreadCount = true;
+                    }
                     var badge = document.getElementById('badgeUnread');
                     var markAll = document.getElementById('btnMarkAllRead');
                     var subtitle = document.getElementById('notificationSubtitle');
@@ -1168,7 +1259,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     if (subtitle) subtitle.textContent = _unreadCount ? (_unreadCount + ' thông báo chưa đọc') : 'Bạn đã xem hết các thông báo mới';
                     if (markAll && !markAll.disabled) markAll.style.display = _unreadCount ? '' : 'none';
                     if (toggle) toggle.setAttribute('aria-label', _unreadCount ? 'Mở thông báo, ' + _unreadCount + ' chưa đọc' : 'Mở thông báo');
-                    if (window.QldaNotifyAssistant) window.QldaNotifyAssistant.update(_unreadCount);
+                    if (window.QldaNotifyAssistant) window.QldaNotifyAssistant.update(_unreadCount, Array.isArray(items) ? items : null);
                 }
                 function isUnread(n) { return n.daDoc === false || n.daDoc === 0 || n.daDoc === 'false' || n.daDoc === 'False'; }
                 // Tuần bắt đầu từ thứ Hai; mọi mốc thời gian theo múi giờ trình duyệt.
@@ -1289,8 +1380,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             return;
                         }
                         var result = res.d;
-                        if (page === 1) replaceItems(result.data);
-                        else mergeItems(result.data);
+                        if (page === 1) {
+                            replaceItems(result.data);
+                            // Chuông đã có nội dung: đồng bộ Hybrid luôn, không gọi API thêm.
+                            if (window.QldaNotifyAssistant && Array.isArray(result.data))
+                                window.QldaNotifyAssistant.update(_unreadCount, result.data);
+                        } else mergeItems(result.data);
                         _hasMore = !!result.hasMore;
                         _currentPage = page;
                         draw();
@@ -1331,7 +1426,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         '<strong>' + esc(message) + '</strong><span>Đóng rồi mở lại chuông để thử tải lại.</span></div>';
                     _initialized = false;
                 }
-                function pollNotifications() {
+                var _hybridPreviewRequest = null;
+                function loadHybridPreview() {
+                    if (_hybridPreviewRequest || _unreadCount <= 0 || !window.QldaNotifyAssistant) return;
+                    // GetUnreadCount có thể chỉ trả về số; lấy riêng trang 1 (10 bản ghi)
+                    // để Hybrid có title, content, link và id ngay cả khi chuông chưa mở.
+                    _hybridPreviewRequest = $.ajax({
+                        type: 'POST',
+                        url: '/WebService.asmx/GetNotifications',
+                        contentType: 'application/json; charset=utf-8',
+                        data: JSON.stringify({ page: 1 }), dataType: 'json',
+                        timeout: 10000
+                    }).done(function (res) {
+                        if (res && res.d && res.d.success && Array.isArray(res.d.data) &&
+                            window.QldaNotifyAssistant)
+                            window.QldaNotifyAssistant.update(_unreadCount, res.d.data);
+                    }).fail(function (xhr, status) {
+                        if (status !== 'abort') console.warn('[QLDA] Hybrid: không thể tải preview thông báo.', status);
+                    }).always(function () { _hybridPreviewRequest = null; });
+                }
+                function pollNotifications(isPeriodicRefresh) {
                     if (_pollInFlight) { _pollAgain = true; return; }
                     _pollInFlight = true;
                     $.ajax({
@@ -1339,7 +1453,33 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         contentType: 'application/json; charset=utf-8', dataType: 'json'
                     }).done(function (res) {
                         if (!res || !res.d || !res.d.success) return;
-                        updateBadge(Number(res.d.unreadCount) || 0);
+                        // WebService.asmx/GetUnreadCount trả về {success:true,count:N}.
+                        // Chỉ giữ unreadCount làm tương thích nếu có phiên bản API khác;
+                        // KHÔNG biến một thuộc tính thiếu/sai định dạng thành số 0.
+                        var rawCount = res.d.count !== undefined && res.d.count !== null
+                            ? res.d.count : res.d.unreadCount;
+                        if (rawCount === undefined || rawCount === null || rawCount === '') {
+                            console.warn('[QLDA] GetUnreadCount thiếu thuộc tính count:', res.d);
+                            return;
+                        }
+                        var count = Number(rawCount);
+                        if (!isFinite(count) || count < 0) {
+                            console.warn('[QLDA] GetUnreadCount trả count không hợp lệ:', rawCount);
+                            return;
+                        }
+                        count = Math.floor(count);
+                        // Nháy mắt đúng khi chuông hoàn tất lần poll 30 giây;
+                        // không nháy với các request realtime, modal hoặc UpdatePanel.
+                        if (isPeriodicRefresh === true && window.QldaNotifyAssistant &&
+                            typeof window.QldaNotifyAssistant.blink === 'function')
+                            window.QldaNotifyAssistant.blink();
+                        // Không chuyển bản ghi rút gọn (chỉ ID/trạng thái) thành preview.
+                        var previewReady = Array.isArray(res.d.data) && res.d.data.some(function (n) {
+                            return n && n.id !== undefined && n.id !== null &&
+                                isUnread(n) && (n.tieuDe || n.tieuDeThongBao);
+                        });
+                        updateBadge(count, previewReady ? res.d.data : null);
+                        if (count > 0 && !previewReady) loadHybridPreview();
                         if (_initialized && _currentPage > 0 && !_loading && mergeItems(res.d.data)) {
                             draw();
                         }
@@ -1429,14 +1569,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     preview.style.left = Math.round(left) + 'px';
                     preview.style.top = Math.round(top) + 'px';
                 }
-                function onItemClick(el, evt) {
-                    if (evt) evt.preventDefault();
-                    var item = el.closest('.notification-item');
-                    if (!item) return;
-                    var n = _byId[item.getAttribute('data-id')];
-                    var link = safeLink(el.getAttribute('href'));
+                // Một lối xử lý duy nhất cho click item trong danh sách và click preview Hybrid.
+                function activateNotification(n, rawLink, openBellWhenNoLink) {
+                    var link = safeLink(rawLink || (n && n.duongDanLienKet));
                     hidePreview();
-                    function navigate() { if (link !== '#') window.location.assign(link); }
+                    function navigate() {
+                        if (link !== '#') window.location.assign(link);
+                        else if (openBellWhenNoLink && window.NotificationBell && window.NotificationBell.openPanel)
+                            window.NotificationBell.openPanel();
+                    }
                     if (!n || !isUnread(n)) { navigate(); return; }
                     $.ajax({
                         type: 'POST', url: '/WebService.asmx/MarkNotificationAsRead',
@@ -1445,13 +1586,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     }).done(function (res) {
                         if (res && res.d && res.d.success === false) return;
                         n.daDoc = true;
+                        if (_byId[String(n.id)]) _byId[String(n.id)].daDoc = true;
                         updateBadge(Math.max(0, _unreadCount - 1));
                         draw();
                     }).always(navigate);
                 }
-                // Giữ API global để các đoạn mã khác đang dùng NotificationBell vẫn hoạt động.
+                function onItemClick(el, evt) {
+                    if (evt) evt.preventDefault();
+                    var item = el.closest('.notification-item');
+                    if (!item) return;
+                    activateNotification(_byId[item.getAttribute('data-id')], el.getAttribute('href'), false);
+                }
                 window.NotificationBell = window.NotificationBell || {};
                 window.NotificationBell.onItemClick = onItemClick;
+                window.NotificationBell.openFromAssistant = function (notification) {
+                    activateNotification(notification, notification && notification.duongDanLienKet, true);
+                };
+                window.NotificationBell.displayDate = displayDate;
+                window.NotificationBell.compareNewest = compareNewest;
+                window.NotificationBell.getUnreadCount = function () { return _unreadCount; };
+                window.NotificationBell.refreshHybridPreview = loadHybridPreview;
 
                 function updateStatusToggle() {
                     var btn = document.getElementById('btnToggleUnread');
@@ -1538,7 +1692,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 function syncNotificationBackdrop() {
                     var panel = document.querySelector('#bellDropdownWrapper .notification');
                     var backdrop = document.getElementById('notificationViewBackdrop');
-                    if (backdrop) backdrop.classList.toggle('is-visible', !!panel && panel.classList.contains('show') && _viewMode === 'expanded');
+                    if (!backdrop) return;
+                    var expandedAndVisible = !!panel && panel.classList.contains('show') &&
+                        panel.classList.contains('qlda-noti-expanded');
+                    backdrop.classList.toggle('is-visible', expandedAndVisible);
                 }
                 function setNotificationViewMode(mode) {
                     _viewMode = mode === 'expanded' ? 'expanded' : 'compact';
@@ -1602,11 +1759,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     }
                 });
                 function closeExpandedNotification() {
-                    var toggle = document.getElementById('bellToggle');
-                    if (!toggle) return;
-                    var dropdown = window.bootstrap && window.bootstrap.Dropdown ? window.bootstrap.Dropdown.getOrCreateInstance(toggle) : null;
-                    if (dropdown) dropdown.hide();
-                    else if (typeof $(toggle).dropdown === 'function') $(toggle).dropdown('hide');
+                    closeNotificationPanel();
                 }
                 $(document).on('click', '#notificationViewBackdrop, #btnCloseNotificationExpanded', function (event) {
                     event.preventDefault();
@@ -1665,45 +1818,119 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 }
                 var _notificationOpeningTimer = null;
                 var _notificationClosing = false;
-                var _allowNotificationHide = false;
-                var _notificationCloseTimer = null;
-                function finishNotificationHide() {
+                var _notificationManualMode = false;
+                // Dung chung mot API cho chuong header va nhan vat Hybrid.
+                // Bootstrap co the khong khoi tao do tai script/UpdatePanel; khi do dung fallback.
+                function getNotificationDropdown() {
                     var toggle = document.getElementById('bellToggle');
-                    var panel = document.querySelector('#bellDropdownWrapper .notification');
-                    _notificationCloseTimer = null;
-                    if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
-                    _notificationOpeningTimer = null;
-                    _allowNotificationHide = true;
-                    try {
-                        if (toggle && window.bootstrap && window.bootstrap.Dropdown) {
-                            var dropdown = window.bootstrap.Dropdown.getInstance(toggle);
-                            if (!dropdown && window.bootstrap.Dropdown.getOrCreateInstance) {
-                                dropdown = window.bootstrap.Dropdown.getOrCreateInstance(toggle);
-                            }
-                            if (dropdown) dropdown.hide();
-                        } else if (toggle && typeof $(toggle).dropdown === 'function') {
-                            $(toggle).dropdown('hide');
-                        }
-                    } finally {
-                        _allowNotificationHide = false;
-                        _notificationClosing = false;
-                        if (panel) panel.classList.remove('qlda-noti-closing', 'qlda-noti-opening');
-                    }
+                    if (!toggle || !window.bootstrap || !window.bootstrap.Dropdown) return null;
+                    var ctor = window.bootstrap.Dropdown;
+                    return typeof ctor.getOrCreateInstance === 'function'
+                        ? ctor.getOrCreateInstance(toggle)
+                        : (typeof ctor.getInstance === 'function' && ctor.getInstance(toggle)) || new ctor(toggle);
                 }
+                function manualNotificationShow() {
+                    var wrapper = document.getElementById('bellDropdownWrapper');
+                    var toggle = document.getElementById('bellToggle');
+                    var panel = wrapper && wrapper.querySelector('.notification');
+                    if (!wrapper || !toggle || !panel || panel.classList.contains('show')) return;
+                    $(wrapper).trigger('show.bs.dropdown');
+                    toggle.classList.add('show');
+                    panel.classList.add('show');
+                    toggle.setAttribute('aria-expanded', 'true');
+                    _notificationManualMode = true;
+                    $(wrapper).trigger('shown.bs.dropdown');
+                }
+                function manualNotificationHide() {
+                    var wrapper = document.getElementById('bellDropdownWrapper');
+                    var toggle = document.getElementById('bellToggle');
+                    var panel = wrapper && wrapper.querySelector('.notification');
+                    if (!wrapper || !toggle || !panel) return;
+                    panel.classList.remove('show', 'qlda-noti-opening', 'qlda-noti-closing');
+                    toggle.classList.remove('show');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    _notificationManualMode = false;
+                    $(wrapper).trigger('hidden.bs.dropdown');
+                    syncNotificationBackdrop();
+                }
+                function openNotificationPanel() {
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    if (!panel || panel.classList.contains('show')) return;
+                    try {
+                        var dropdown = getNotificationDropdown();
+                        if (dropdown) dropdown.show();
+                        else if (typeof $('#bellToggle').dropdown === 'function') $('#bellToggle').dropdown('show');
+                    } catch (error) {
+                        console.warn('[QLDA] Bootstrap dropdown: chuyen sang mo du phong.', error);
+                    }
+                    if (!panel.classList.contains('show')) manualNotificationShow();
+                }
+                function closeNotificationPanel() {
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    if (!panel) return;
+                    if (panel.classList.contains('show')) {
+                        try {
+                            var dropdown = getNotificationDropdown();
+                            if (dropdown) dropdown.hide();
+                            else if (typeof $('#bellToggle').dropdown === 'function') $('#bellToggle').dropdown('hide');
+                        } catch (error) {
+                            console.warn('[QLDA] Bootstrap dropdown: chuyen sang dong du phong.', error);
+                        }
+                    }
+                    // Neu thu vien khong dong duoc, khong de backdrop / class .show bi ket.
+                    if (panel.classList.contains('show')) manualNotificationHide();
+                    else syncNotificationBackdrop();
+                }
+                window.NotificationBell.openPanel = openNotificationPanel;
+                window.NotificationBell.closePanel = closeNotificationPanel;
+                window.NotificationBell.togglePanel = function () {
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    if (panel && panel.classList.contains('show')) closeNotificationPanel();
+                    else openNotificationPanel();
+                };
+                // Nút chuông và Hybrid dùng cùng open/close API. Gắn ngay trên
+                // chính thẻ <a> để không phụ thuộc bubbling của menu/Bootstrap.
+                // onclick được giữ khi ASP.NET UpdatePanel thay thế nút chuông.
+                window.NotificationBell.handleBellClick = function (event) {
+                    if (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    window.NotificationBell.togglePanel();
+                    return false;
+                };
+                // Chặn trạng thái kẹt khi Bootstrap được mở bằng API hoặc fallback.
+                // Click NGOÀI luôn đóng chuông, bất kể _notificationManualMode.
+                // Click trên chính chuông sẽ để handleBellClick tự toggle (tránh đóng-mở kép).
+                // Click trong popup (bộ lọc, list, xem thêm...) không bị can thiệp.
+                document.addEventListener('click', function (event) {
+                    var panel = document.querySelector('#bellDropdownWrapper .notification');
+                    if (!panel || !panel.classList.contains('show')) return;
+                    var target = event.target;
+                    if (!target || !target.closest) return;
+                    if (target.closest('#bellToggle')) return;
+                    if (target.closest('#bellDropdownWrapper .notification')) return;
+                    closeNotificationPanel();
+                }, true);
                 $(document).on('show.bs.dropdown', '#bellDropdownWrapper', function () {
-                    if (_notificationCloseTimer) clearTimeout(_notificationCloseTimer);
                     if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
                     _notificationOpeningTimer = null;
-                    _notificationCloseTimer = null;
                     _notificationClosing = false;
-                    _allowNotificationHide = false;
                     var panel = this.querySelector('.notification');
                     if (panel) panel.classList.remove('qlda-noti-closing', 'qlda-noti-open', 'qlda-noti-opening');
-                    setNotificationViewMode(_viewMode);
-                    positionNotificationDropdown();
-                    // Tải duy nhất trang 1 cho mỗi lần mở, bất kể đã mở trước đó.
-                    // Các bộ lọc chỉ chạy trong dữ liệu đã tải; nút Xem thêm do người dùng chủ động bấm.
-                    reloadFirstNotificationPage();
+                    try {
+                        setNotificationViewMode(_viewMode);
+                        positionNotificationDropdown();
+                    } catch (error) {
+                        // Khong de loi canh vi tri/bo loc ngan Bootstrap mo popup.
+                        console.warn('[QLDA] Khong the canh dropdown thong bao:', error);
+                    }
+                    // Tach fetch du lieu khoi su kien SHOW. AJAX gap loi van mo duoc chuong.
+                    // Moi lan mo chi nap trang 1, Xem them moi nap trang tiep theo.
+                    setTimeout(function () {
+                        try { reloadFirstNotificationPage(); }
+                        catch (error) { console.error('[QLDA] Loi nap thong bao:', error); }
+                    }, 0);
                 });
                 $(document).on('shown.bs.dropdown', '#bellDropdownWrapper', function () {
                     positionNotificationDropdown();
@@ -1719,31 +1946,104 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         _notificationOpeningTimer = null;
                     }, 670);
                 });
-                $(document).on('hide.bs.dropdown', '#bellDropdownWrapper', function (event) {
+                $(document).on('hide.bs.dropdown', '#bellDropdownWrapper', function () {
+                    // Khong preventDefault: Bootstrap phai duoc dong that de co the mo lai.
                     hidePreview();
                     closeNotificationViewMenu();
-                    var panel = this.querySelector('.notification');
-                    if (_allowNotificationHide || !panel || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-                    event.preventDefault();
-                    if (_notificationClosing) return;
-                    _notificationClosing = true;
                     if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
                     _notificationOpeningTimer = null;
-                    panel.classList.remove('qlda-noti-opening');
-                    prepareNotificationWaterfall();
-                    panel.classList.add('qlda-noti-closing');
-                    // Chờ chữ biến mất, các hàng tan theo thứ tự ngược rồi mới ẩn khung.
-                    _notificationCloseTimer = setTimeout(finishNotificationHide, 650);
+                    _notificationClosing = false;
+                    var panel = this.querySelector('.notification');
+                    if (panel) panel.classList.remove('qlda-noti-opening', 'qlda-noti-closing');
+                    var backdrop = document.getElementById('notificationViewBackdrop');
+                    if (backdrop) backdrop.classList.remove('is-visible');
                 });
 
                 $(document).on('hidden.bs.dropdown', '#bellDropdownWrapper', function () {
+                    _notificationManualMode = false;
                     closeNotificationViewMenu();
                     syncNotificationBackdrop();
                 });
 
-                pollNotifications();
+                // Gắn chuông vào cùng hàng của menu tài khoản. Dùng container riêng
+                // bên cạnh .wrapperRight để Bootstrap dropdown của avatar không chọn nhầm menu chuông.
+                // Nếu UpdatePanel render lại menu, giữ node cũ và di chuyển vào wrapper mới.
+                function ensureBellInAccountMenu() {
+                    if (!_persistentBell) return false;
+                    var header = document.querySelector('.wrapHeader .qlda-header-actions');
+                    if (!header) return false;
+                    var accountRegion = header.querySelector('[id$="pnlInfo"] .qlda-header-stable-user');
+                    if (!accountRegion) return false;
+                    if (_persistentBell.parentNode === accountRegion) return false;
+                    // Không mở popup trong lúc chuyển DOM; reset dropdown cũ nếu cần.
+                    var existingPanel = _persistentBell.querySelector('.notification');
+                    if (existingPanel && existingPanel.classList.contains('show')) closeNotificationPanel();
+                    accountRegion.insertBefore(_persistentBell, accountRegion.firstChild);
+                    return true;
+                }
+                function restoreBellAfterPartialPostback() {
+                    var moved = ensureBellInAccountMenu();
+                    var wrapper = document.getElementById('bellDropdownWrapper');
+                    if (!wrapper) return;
+                    var replaced = wrapper !== _lastBellWrapper;
+                    _lastBellWrapper = wrapper;
+                    if (!replaced && !moved) return;
+                    hidePreview();
+                    _notificationManualMode = false;
+                    _notificationClosing = false;
+                    if (_notificationOpeningTimer) clearTimeout(_notificationOpeningTimer);
+                    _notificationOpeningTimer = null;
+                    var panel = wrapper.querySelector('.notification');
+                    var toggle = wrapper.querySelector('#bellToggle');
+                    if (panel) panel.classList.remove('show', 'qlda-noti-opening', 'qlda-noti-closing');
+                    if (toggle) {
+                        toggle.classList.remove('show');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                    syncNotificationBackdrop();
+                    if (_hasUnreadCount) updateBadge(_unreadCount);
+                    // Đồng bộ count từ server khi DOM bị thay; không reset khi chỉ đóng popup.
+                    if (moved || replaced) pollNotifications();
+                }
+                if (window.Sys && Sys.Application)
+                    Sys.Application.add_load(restoreBellAfterPartialPostback);
+                if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                    var prmBell = Sys.WebForms.PageRequestManager.getInstance();
+                    if (prmBell) prmBell.add_endRequest(restoreBellAfterPartialPostback);
+                }
+                // ExtraModal/UpdatePanel không phải lúc nào cũng kích hoạt endRequest
+                // ở script này. Theo dõi DOM HEADER (không theo dõi toàn trang) để
+                // phục hồi node chuông ngay sau khi menu tài khoản bị thay.
+                var headerForBell = document.querySelector('.wrapHeader');
+                if (headerForBell && window.MutationObserver) {
+                    var bellObserver = new MutationObserver(function () {
+                        if (_bellRestorePending) return;
+                        var mount = document.querySelector('.wrapHeader .qlda-header-actions [id$="pnlInfo"] .qlda-header-stable-user');
+                        if (!mount || (_persistentBell && _persistentBell.parentNode === mount)) return;
+                        _bellRestorePending = true;
+                        // Microtask đủ để chờ hoàn thành đợt thay DOM hiện tại.
+                        Promise.resolve().then(function () {
+                            _bellRestorePending = false;
+                            restoreBellAfterPartialPostback();
+                        });
+                    });
+                    bellObserver.observe(headerForBell, { childList: true, subtree: true });
+                }
+                // Đóng bảng trước khi modal khác mở; sau khi modal đóng, đảm bảo
+                // backdrop và badge chuông không bị kẹt do cập nhật WebForms.
+                $(document).on('show.bs.modal', function (event) {
+                    if (!event.target || !event.target.closest || !event.target.closest('#bellDropdownWrapper'))
+                        closeNotificationPanel();
+                });
+                $(document).on('hidden.bs.modal', function () {
+                    restoreBellAfterPartialPostback();
+                    syncNotificationBackdrop();
+                });
+                // Xoa backdrop con sot tu lan mo truoc neu DOM duoc ASP.NET cap nhat.
+                syncNotificationBackdrop();
+                restoreBellAfterPartialPostback();
                 connectNotificationRealtime();
-                setInterval(pollNotifications, 30000);
+                setInterval(function () { pollNotifications(true); }, 30000);
             })();
         </script>
 
@@ -1895,130 +2195,339 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </script>
 
         <script type="text/javascript">
-            // Trợ lý nhận count từ updateBadge() đã có; không gọi WebService riêng.
+            // Hybrid: dùng chung dữ liệu/thao tác với chuông; chỉ announce khi phát hiện ID mới.
             (function () {
                 var host = document.getElementById('qldaNotifyAssistant');
                 if (!host || window.QldaNotifyAssistant) return;
+                var bubble = host.querySelector('.qna-bubble');
                 var trigger = host.querySelector('.qna-trigger');
                 var title = document.getElementById('qnaTitle');
                 var description = document.getElementById('qnaDescription');
                 var countLabel = document.getElementById('qnaCount');
-                var currentCount = 0, acknowledgedCount = 0, initialized = false, announceTimer = null, unseenNew = false;
+                var typeLabel = document.getElementById('qnaType');
+                var stateLabel = document.getElementById('qnaState');
+                var timeLabel = document.querySelector('#qnaTime span');
+                var currentCount = 0, activeItem = null, newestItem = null;
+                var announceTimer = null, announcingId = null, initializedIds = false;
+                var soundContext = null; // Web Audio: một âm báo nhẹ/ID, chỉ sau user gesture.
+                var pending = [], pendingSet = Object.create(null);
                 var accountKey = '<%= SweetContext.Current.UserId.ToString("N") %>';
-                var enabledKey = 'SweetSoftQLDA.NotiAssistant.HybridEnabled.v1.' + accountKey;
-                var storageKey = 'SweetSoftQLDA.NotiAssistant.dismissedCount.v1';
-                var idsKey = 'SweetSoftQLDA.NotiAssistant.seenNotificationIds.v1';
-                var seenIds = [], seenSet = Object.create(null);
-                function readSession(key, fallback) { try { var value = sessionStorage.getItem(key); return value === null ? fallback : value; } catch (e) { return fallback; } }
-                function writeSession(key, value) { try { sessionStorage.setItem(key, value); } catch (e) { } }
-                function readPreference() { try { return localStorage.getItem(enabledKey) !== '0'; } catch (e) { return true; } }
-                function writePreference(value) { try { localStorage.setItem(enabledKey, value ? '1' : '0'); } catch (e) { } }
-                var enabled = readPreference(); // Mặc định BẬT, kể cả khi số thông báo = 0.
-                acknowledgedCount = Math.max(0, parseInt(readSession(storageKey, '0'), 10) || 0);
-                try { var parsed = JSON.parse(readSession(idsKey, '[]')); if (Array.isArray(parsed)) { seenIds = parsed.slice(-160).map(String); seenIds.forEach(function (id) { seenSet[id] = true; }); } } catch (e) { }
-                function hideBubble() { host.classList.remove('is-announcing'); if (announceTimer) clearTimeout(announceTimer); announceTimer = null; }
+                var enabledKey = 'SweetSoftQLDA.NotiAssistant.HybridEnabled.v2.' + accountKey;
+                var announcedKey = 'SweetSoftQLDA.NotiAssistant.announcedIds.v2.' + accountKey;
+                var seenKey = 'SweetSoftQLDA.NotiAssistant.knownIds.v1.' + accountKey;
+
+                function readLocal(key, fallback) {
+                    try { var value = localStorage.getItem(key); return value === null ? fallback : value; }
+                    catch (e) { return fallback; }
+                }
+                function writeLocal(key, value) { try { localStorage.setItem(key, value); } catch (e) { } }
+                function parseIds(value) {
+                    try { var data = JSON.parse(value); return Array.isArray(data) ? data.slice(-300).map(String) : []; }
+                    catch (e) { return []; }
+                }
+                var enabled = readLocal(enabledKey, '1') !== '0';
+                var hasPriorBaseline = readLocal(seenKey, null) !== null;
+                var seenIds = parseIds(readLocal(seenKey, '[]'));
+                var announcedIds = parseIds(readLocal(announcedKey, '[]'));
+                var seenSet = Object.create(null), announcedSet = Object.create(null);
+                seenIds.forEach(function (id) { seenSet[id] = true; });
+                announcedIds.forEach(function (id) { announcedSet[id] = true; });
+
+                function addId(id, ids, set, key) {
+                    id = String(id);
+                    if (set[id]) return;
+                    set[id] = true;
+                    ids.push(id);
+                    if (ids.length > 300) {
+                        var removed = ids.shift();
+                        delete set[removed];
+                    }
+                    writeLocal(key, JSON.stringify(ids));
+                }
+                function pick() {
+                    for (var i = 0; i < arguments.length; i++) {
+                        if (arguments[i] !== null && arguments[i] !== undefined) {
+                            var value = String(arguments[i]).trim();
+                            if (value) return value;
+                        }
+                    }
+                    return '';
+                }
+                function unread(n) {
+                    return !!n && (n.daDoc === false || n.daDoc === 0 ||
+                        n.daDoc === 'false' || n.daDoc === 'False');
+                }
+                function typeText(n) {
+                    var code = pick(n && n.loaiThongBao).toUpperCase();
+                    var labels = {
+                        'LICH_HOP': 'Lịch họp', 'CONG_VIEC': 'Công việc',
+                        'DU_AN': 'Dự án', 'VAN_DE': 'Vấn đề',
+                        'TAI_LIEU': 'Tài liệu', 'HE_THONG': 'Hệ thống'
+                    };
+                    return labels[code] || pick(n && n.tenLoaiThongBao, n && n.loaiThongBaoText, 'Thông báo');
+                }
+                function contentText(n) {
+                    return pick(n && n.noiDung, n && n.noiDungThongBao, n && n.moTa,
+                        n && n.moTaThongBao, n && n.content, n && n.message,
+                        n && n.thongDiep);
+                }
+                function recent(n, maxAge) {
+                    // Chỉ ngoại lệ cho lần chạy đầu: cho phép announce thông báo tạo <= 5 phút.
+                    if (!n || !n.ngayTao) return false;
+                    var raw = String(n.ngayTao);
+                    var match = /\/Date\((-?\d+)(?:[+-]\d+)?\)\//.exec(raw);
+                    var date = match ? new Date(Number(match[1])) : null;
+                    if (!date) {
+                        var vn = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[\sT]+(\d{1,2}):(\d{2}))?/.exec(raw);
+                        if (vn) date = new Date(+vn[3], +vn[2] - 1, +vn[1], +(vn[4] || 0), +(vn[5] || 0));
+                        else date = new Date(raw);
+                    }
+                    var delta = Date.now() - date.getTime();
+                    return isFinite(delta) && delta >= -30000 && delta <= (maxAge || 300000);
+                }
+                function setBubble(n, isNew) {
+                    // Không announce: hover chỉ xem tổng chưa đọc, không hiện thông báo cũ.
+                    n = isNew ? n : null;
+                    activeItem = n || null;
+                    if (typeLabel) typeLabel.textContent = n ? typeText(n) : 'Thông báo';
+                    if (stateLabel) stateLabel.textContent = isNew ? 'Chưa đọc' : 'Trợ lý';
+                    if (title) title.textContent = n
+                        ? pick(n.tieuDe, n.tieuDeThongBao, 'Thông báo mới')
+                        : (currentCount ? 'Bạn có ' + currentCount + ' thông báo chưa đọc' : 'Bạn đã xem hết thông báo');
+                    if (description) description.textContent = n
+                        ? (contentText(n) || 'Nhấn để xem nội dung thông báo.')
+                        : (currentCount ? 'Nhấn robot hoặc nút mở thông báo để xem danh sách.' : 'Hiện không có thông báo chưa đọc.');
+                    if (timeLabel) timeLabel.textContent = n && window.NotificationBell && window.NotificationBell.displayDate
+                        ? window.NotificationBell.displayDate(n) : 'Di chuột để xem tổng số chưa đọc';
+                    if (trigger) trigger.setAttribute('aria-label', currentCount
+                        ? 'Mở danh sách ' + currentCount + ' thông báo chưa đọc' : 'Mở trung tâm thông báo');
+                }
                 function syncToggle() {
                     var toggle = document.getElementById('btnHybridAssistantToggle');
                     if (!toggle) return;
                     toggle.setAttribute('aria-checked', enabled ? 'true' : 'false');
                     toggle.setAttribute('aria-label', enabled ? 'Tắt trợ lý Hybrid' : 'Bật trợ lý Hybrid');
                     toggle.title = enabled ? 'Tắt trợ lý Hybrid' : 'Bật trợ lý Hybrid';
-                    var text = toggle.querySelector('.qna-hybrid-switch-text');
-                    if (text) text.textContent = enabled ? 'Bật' : 'Tắt';
+                    var label = toggle.querySelector('.qna-hybrid-switch-text');
+                    if (label) label.textContent = enabled ? 'Bật' : 'Tắt';
                 }
                 function noteCount() {
-                    if (countLabel) { countLabel.textContent = currentCount > 99 ? '99+' : String(currentCount); countLabel.hidden = !currentCount; }
+                    if (countLabel) {
+                        countLabel.textContent = currentCount > 99 ? '99+' : String(currentCount);
+                        countLabel.hidden = !currentCount;
+                    }
                     host.classList.toggle('qna-no-unread', currentCount === 0);
-                    if (title) title.textContent = 'Bạn có ' + currentCount + ' thông báo chưa đọc';
-                    if (description) description.textContent = 'SweetSoft có cập nhật mới. Nhấn xem để không bỏ lỡ thông tin quan trọng.';
-                    if (trigger) trigger.setAttribute('aria-label', currentCount ? 'Mở ' + currentCount + ' thông báo chưa đọc' : 'Mở trung tâm thông báo');
                 }
-                function reveal() {
-                    if (!enabled || !currentCount) { hideBubble(); return; }
-                    host.hidden = false;
-                    hideBubble();
+                function stopAnnouncement() {
+                    if (announceTimer) clearTimeout(announceTimer);
+                    announceTimer = null;
+                    announcingId = null;
+                    host.classList.remove('is-announcing');
+                }
+                function bellOpen() {
+                    return !!document.querySelector('#bellDropdownWrapper .notification.show');
+                }
+                function motionAllowed() {
+                    return enabled && !host.hidden && !document.hidden &&
+                        !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                }
+                // Gỡ class rồi ép reflow để lần poll tiếp theo luôn phát lại được animation.
+                function playMotion(className) {
+                    if (!motionAllowed()) return;
+                    host.classList.remove(className);
                     void host.offsetWidth;
-                    host.classList.add('is-announcing');
-                    announceTimer = setTimeout(hideBubble, 7500);
+                    host.classList.add(className);
                 }
-                function acknowledge() {
-                    acknowledgedCount = currentCount;
-                    unseenNew = false;
-                    writeSession(storageKey, String(acknowledgedCount));
-                    hideBubble();
-                    host.hidden = !enabled; // Đã xem vẫn giữ robot nếu công tắc đang Bật.
+                function blink() { playMotion('qna-blinking'); }
+                function jump() { playMotion('qna-jumping'); }
+                // Đồng bộ chớp mắt với sóng đầu tiên, không phát lặp theo sóng thứ hai.
+                // CSS chạy chu kỳ 7 giây; mỗi chu kỳ chỉ một lần blink.
+                if (trigger) trigger.addEventListener('animationiteration', function (event) {
+                    if (event.animationName === 'qna-ripple-first')
+                        setTimeout(blink, 320);
+                });
+                // Khớp nhịp sóng đầu lúc tải trang; không đổi chớp mắt khi poll 30 giây.
+                setTimeout(blink, 320);
+                // Dọn class sau khi animation hoàn thành; giảm chi phí rendering.
+                host.addEventListener('animationend', function (event) {
+                    if (event.animationName === 'qna-hybrid-blink') host.classList.remove('qna-blinking');
+                    if (event.animationName === 'qna-hybrid-hop') host.classList.remove('qna-jumping');
+                });
+                function unlockNotificationAudio() {
+                    if (!enabled) return;
+                    try {
+                        var AudioClass = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioClass) return;
+                        if (!soundContext) soundContext = new AudioClass();
+                        if (soundContext.state === 'suspended') {
+                            var resume = soundContext.resume();
+                            if (resume && typeof resume.catch === 'function') resume.catch(function () { });
+                        }
+                    } catch (e) { /* Không chặn thông báo khi trình duyệt không cho phát tiếng. */ }
+                }
+                // Phát đúng 1 lần khi bắt đầu thẻ chi tiết của một ID mới.
+                function playNotificationSound() {
+                    if (!enabled || !soundContext || soundContext.state !== 'running') return;
+                    try {
+                        var now = soundContext.currentTime;
+                        [0, 0.15].forEach(function (offset, i) {
+                            var osc = soundContext.createOscillator();
+                            var gain = soundContext.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = i ? 1046.5 : 783.99;
+                            gain.gain.setValueAtTime(0.0001, now + offset);
+                            gain.gain.exponentialRampToValueAtTime(0.045, now + offset + 0.022);
+                            gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.19);
+                            osc.connect(gain);
+                            gain.connect(soundContext.destination);
+                            osc.start(now + offset);
+                            osc.stop(now + offset + 0.20);
+                        });
+                    } catch (e) { /* Nếu phát âm thanh lỗi, preview vẫn phải hiển thị. */ }
+                }
+                document.addEventListener('pointerdown', unlockNotificationAudio, { capture: true });
+                document.addEventListener('keydown', unlockNotificationAudio, { capture: true });
+                function announceNext() {
+                    if (!enabled || announceTimer || bellOpen()) return;
+                    while (pending.length) {
+                        var item = pending.shift();
+                        var id = String(item.id);
+                        delete pendingSet[id];
+                        if (!unread(item) || announcedSet[id]) continue;
+                        addId(id, announcedIds, announcedSet, announcedKey);
+                        announcingId = id;
+                        setBubble(item, true);
+                        host.hidden = false;
+                        host.classList.add('is-announcing');
+                        jump();
+                        playNotificationSound();
+                        announceTimer = setTimeout(function () {
+                            stopAnnouncement();
+                            setBubble(null, false);
+                            announceNext();
+                        }, 5000);
+                        break;
+                    }
+                }
+                function ingest(items) {
+                    if (!Array.isArray(items)) return;
+                    var firstBatch = !initializedIds;
+                    initializedIds = true;
+                    // Lần đầu cài đặt chỉ ghi nhận các ID sẵn có (không phát âm báo cũ).
+                    // Các lần sau chỉ announce ID mới chưa đọc được tạo gần đây.
+
+                    items.forEach(function (item) {
+                        if (!item || item.id === undefined || item.id === null || !unread(item)) return;
+                        var id = String(item.id);
+                        var unknown = !seenSet[id];
+                        if (unknown) addId(id, seenIds, seenSet, seenKey);
+                        if (firstBatch && !hasPriorBaseline) {
+                            addId(id, announcedIds, announcedSet, announcedKey);
+                            return;
+                        }
+                        var eligible = !announcedSet[id] && unknown &&
+                            (!firstBatch || hasPriorBaseline) && recent(item, 300000);
+                        if (eligible && !pendingSet[id] && announcingId !== id) {
+                            pendingSet[id] = true;
+                            pending.push(item);
+                        }
+                    });
+                    hasPriorBaseline = true;
+                }
+                function update(count, items) {
+                    currentCount = Math.max(0, Number(count) || 0);
+                    noteCount();
+                    host.hidden = !enabled;
+                    if (!currentCount) {
+                        // Bắt đầu với hộp thư trống cũng phải tạo baseline, để
+                        // thông báo đầu tiên đến sau đó được coi là thông báo MỚI.
+                        if (!initializedIds) {
+                            initializedIds = true;
+                            hasPriorBaseline = true;
+                            writeLocal(seenKey, JSON.stringify(seenIds));
+                        }
+                        pending = [];
+                        pendingSet = Object.create(null);
+                        stopAnnouncement();
+                        newestItem = null;
+                        setBubble(null, false);
+                        return;
+                    }
+                    if (Array.isArray(items)) {
+                        var ordered = items.slice();
+                        if (window.NotificationBell && window.NotificationBell.compareNewest)
+                            ordered.sort(window.NotificationBell.compareNewest);
+                        ingest(ordered);
+                        newestItem = ordered.find(unread) || null;
+                    }
+                    if (!announceTimer) setBubble(null, false);
+                    announceNext();
                 }
                 function setEnabled(value) {
                     enabled = !!value;
-                    writePreference(enabled);
+                    writeLocal(enabledKey, enabled ? '1' : '0');
                     host.hidden = !enabled;
-                    if (!enabled) hideBubble();
-                    else if (currentCount > 0) reveal();
-                    else hideBubble();
-                    noteCount();
+                    if (!enabled) {
+                        stopAnnouncement();
+                        host.classList.remove('qna-blinking', 'qna-jumping');
+                    }
+                    else {
+                        setBubble(null, false);
+                        announceNext();
+                    }
                     syncToggle();
                 }
-                function ingestIds(items) {
-                    if (!Array.isArray(items)) return;
-                    var newFound = false;
-                    items.forEach(function (item) {
-                        if (!item || item.id === null || item.id === undefined) return;
-                        var id = String(item.id);
-                        if (seenSet[id]) return;
-                        if (seenIds.length && (item.daDoc === false || item.daDoc === 0 || item.daDoc === 'false' || item.daDoc === 'False')) newFound = true;
-                        seenSet[id] = true;
-                        seenIds.push(id);
-                    });
-                    if (seenIds.length > 160) {
-                        seenIds = seenIds.slice(-160);
-                        seenSet = Object.create(null);
-                        seenIds.forEach(function (id) { seenSet[id] = true; });
-                    }
-                    writeSession(idsKey, JSON.stringify(seenIds));
-                    if (newFound) unseenNew = true;
-                }
-                function update(count, items) {
-                    var next = Math.max(0, Number(count) || 0);
-                    var before = currentCount;
-                    currentCount = next;
-                    ingestIds(items);
-                    noteCount();
-                    host.hidden = !enabled;
-                    if (!next) { acknowledge(); initialized = true; return; }
-                    if (!initialized) {
-                        initialized = true;
-                        if (next > acknowledgedCount || unseenNew) reveal();
-                        else hideBubble();
-                        unseenNew = false;
-                        return;
-                    }
-                    if (next > acknowledgedCount || unseenNew) {
-                        if (next !== before || unseenNew) reveal();
-                    } else hideBubble();
-                    unseenNew = false;
-                }
                 function openBell() {
-                    acknowledge();
-                    var bell = document.getElementById('bellToggle');
-                    if (!bell) return;
-                    try { if (window.bootstrap && window.bootstrap.Dropdown) { window.bootstrap.Dropdown.getOrCreateInstance(bell).show(); } else bell.click(); }
-                    catch (e) { bell.click(); }
+                    stopAnnouncement();
+                    setBubble(null, false);
+                    if (window.NotificationBell && typeof window.NotificationBell.openPanel === 'function')
+                        window.NotificationBell.openPanel();
                 }
-                host.querySelector('.qna-hide-hybrid').addEventListener('click', function (event) { event.preventDefault(); event.stopPropagation(); setEnabled(false); });
-                host.querySelector('.qna-view').addEventListener('click', function (event) { event.preventDefault(); event.stopPropagation(); openBell(); });
-                trigger.addEventListener('click', function (event) { event.preventDefault(); event.stopPropagation(); openBell(); });
-                // Delegate click: Header nằm trong UpdatePanel và có thể được thay DOM sau AJAX.
-                document.addEventListener('click', function (event) {
-                    var control = event.target && event.target.closest ? event.target.closest('#btnHybridAssistantToggle') : null;
-                    if (control) { event.preventDefault(); event.stopPropagation(); setEnabled(!enabled); return; }
-                    if (event.target && event.target.closest && event.target.closest('#bellToggle')) acknowledge();
+                function openPreview() {
+                    // Chỉ thông báo mới trong 30 giây mới có hành động đi thẳng link.
+                    // Hover bình thường chỉ hiện số lượng, click mở danh sách chuông.
+                    var selected = announceTimer ? activeItem : null;
+                    stopAnnouncement();
+                    setBubble(null, false);
+                    if (selected && window.NotificationBell && typeof window.NotificationBell.openFromAssistant === 'function')
+                        window.NotificationBell.openFromAssistant(selected);
+                    else openBell();
+                }
+                host.querySelector('.qna-hide-hybrid').addEventListener('click', function (e) {
+                    e.preventDefault(); e.stopPropagation(); setEnabled(false);
                 });
-                if (window.jQuery) window.jQuery(document).on('show.bs.dropdown', '#bellDropdownWrapper', acknowledge);
+                host.querySelector('.qna-view').addEventListener('click', function (e) {
+                    e.preventDefault(); e.stopPropagation(); openPreview();
+                });
+                if (bubble) bubble.addEventListener('click', function (e) {
+                    if (e.target && e.target.closest && e.target.closest('.qna-view')) return;
+                    e.preventDefault(); e.stopPropagation(); openPreview();
+                });
+                trigger.addEventListener('click', function (e) {
+                    e.preventDefault(); e.stopPropagation(); openBell();
+                });
+                // Header có thể bị thay DOM bởi WebForms UpdatePanel.
+                document.addEventListener('click', function (e) {
+                    var toggle = e.target && e.target.closest ? e.target.closest('#btnHybridAssistantToggle') : null;
+                    if (toggle) { e.preventDefault(); e.stopPropagation(); setEnabled(!enabled); }
+                });
+                if (window.jQuery) window.jQuery(document).on('hidden.bs.dropdown', '#bellDropdownWrapper', announceNext);
                 if (window.Sys && Sys.Application) Sys.Application.add_load(syncToggle);
+                // Nếu request count hoàn tất trước khi Hybrid khởi tạo, đồng bộ lại một lần.
                 host.hidden = !enabled;
                 noteCount();
+                setBubble(null, false);
                 syncToggle();
-                window.QldaNotifyAssistant = { update: update, dismiss: acknowledge, openBell: openBell, setEnabled: setEnabled, isEnabled: function () { return enabled; } };
+                window.QldaNotifyAssistant = {
+                    update: update, blink: blink, dismiss: stopAnnouncement, openBell: openBell,
+                    setEnabled: setEnabled, isEnabled: function () { return enabled; }
+                };
+                if (window.NotificationBell && window.NotificationBell.getUnreadCount) {
+                    currentCount = window.NotificationBell.getUnreadCount();
+                    noteCount();
+                    if (currentCount > 0 && window.NotificationBell.refreshHybridPreview)
+                        window.NotificationBell.refreshHybridPreview();
+                }
             })();
         </script>
 
