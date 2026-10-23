@@ -325,8 +325,12 @@ namespace SweetSoft.QLDA.Core.Managers
                     var current=TaskManager.Instance.FetchById(task);
                     if(current==null || current.IdDuAn!=duAn || current.DaXoa==true || current.TrangThai!=0)
                         throw new InvalidOperationException("Task da thay doi trang thai trong khi mo popup. Vui long tai lai.");
-                    if(current.NgayBatDau.HasValue && current.NgayBatDau.Value.Date>DateTime.Today)
-                        throw new InvalidOperationException("Task chua den ngay bat dau.");
+                    // Dot 5: Cho phep mo popup Start som gio thuong; Manager kiem tra lai
+                    // ngay VN + phan viec den han trong transaction SAU khi luuTask().
+                    // Tang ca som khong nam trong nghiep vu dot 5.
+                    if(laTangCa && current.NgayBatDau.HasValue &&
+                        current.NgayBatDau.Value.Date>DateTime.Today)
+                        throw new InvalidOperationException("Chưa đến ngày bắt đầu; không được Start tăng ca sớm.");
                     if(!TaskManager.Instance.GetAssignedNhanVienIds(task).Contains(nhanVien))
                         throw new UnauthorizedAccessException("Ban khong con duoc phan cong truc tiep vao task.");
                     luuTask(); // Partner CtrlStartTask: 0->1, update cha nhu TaskList.

@@ -333,6 +333,15 @@ namespace SweetSoft.QLDA.Core.Managers
         public string TenCongViec { get; set; }
         public long SoGiayThuong { get; set; }
         public long SoGiayTangCa { get; set; }
+        // Metadata ngay chon: doc tu SQL, khong lam thay doi cong thuc gio.
+        public DateTime? NgayBatDauDuKien { get; set; }
+        public DateTime? NgayKetThucDuKien { get; set; }
+        public bool CoHoatDong { get; set; }
+        public bool DaXoa { get; set; }
+        public bool DangCoPhienMo { get; set; }
+        // Su kien bao hoan thanh phan viec gan nhat TINH DEN CUOI NGAY DANG XEM.
+        // 0: chua co, 1: bao, 2: rut, 3: sua, 4: PM chot.
+        public int LoaiSuKienCaNhan { get; set; }
         public long TongSoGiay { get { return SoGiayThuong + SoGiayTangCa; } }
     }
 

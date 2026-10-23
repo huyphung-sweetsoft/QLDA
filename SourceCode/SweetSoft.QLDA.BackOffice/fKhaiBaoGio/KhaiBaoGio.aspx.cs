@@ -845,8 +845,8 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
                 if(action=="start")
                 {
                     if(task.TrangThai!=0)throw new InvalidOperationException("Task khong con o trang thai Chua bat dau.");
-                    if(task.NgayBatDau.HasValue && task.NgayBatDau.Value.Date>DateTime.Today)
-                        throw new InvalidOperationException("Task chua den ngay bat dau.");
+                    // Dot 5: Ngay bat dau tuong lai KHONG chan mo popup Start cua partner.
+                    // API/Core se kiem tra Start som khi luu trong giao dich chung.
                     if(TaskManager.Instance.CheckHasChildTasks(CurrentProjectId,task))
                         throw new InvalidOperationException("Task cha co con, nut Start tu TaskList khong ap dung truc tiep.");
                     var ctrl=TimControl<CtrlStartTask>(Page,"KbgCtrlStartTask");

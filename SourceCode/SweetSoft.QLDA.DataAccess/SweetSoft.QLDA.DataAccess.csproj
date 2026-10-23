@@ -159,6 +159,8 @@
     <Compile Include="TblKhaiBaoGioPhienController.cs" />
     <Compile Include="TblLichHop.cs" />
     <Compile Include="TblLichHopController.cs" />
+    <Compile Include="TblLichHopGioCong.cs" />
+    <Compile Include="TblLichHopGioCongController.cs" />
     <Compile Include="TblLichHopNhanVien.cs" />
     <Compile Include="TblLichHopNhanVienController.cs" />
     <Compile Include="TblLichNgoaiLe.cs" />

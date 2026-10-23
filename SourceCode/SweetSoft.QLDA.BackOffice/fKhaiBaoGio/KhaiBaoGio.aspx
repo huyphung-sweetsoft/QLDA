@@ -194,7 +194,7 @@
         .kbg-project-shell { min-width:0; }
         .kbg20-feature-off { margin:12px 4px; padding:15px; border:1px solid #dcd4ed; background:#f8f5ff; border-radius:10px; color:#58338a; font-size:13px; }
     </style>
-    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261021uxcopy1" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261023dot6bfull1" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -650,7 +650,7 @@
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <% if (LaGiaoDienKbg20) { %>
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261021uxcopy1"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261023dot7a"></script>
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261021dot3fix1"></script>
     <% } else { %>
     <script type="text/javascript">

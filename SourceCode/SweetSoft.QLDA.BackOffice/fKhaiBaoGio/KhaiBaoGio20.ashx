@@ -160,7 +160,13 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         regular=lichSu.SoGiayThuong,overtime=lichSu.SoGiayTangCa,total=lichSu.TongSoGiay,
                         tasks=lichSu.CongViec.ConvertAll(x=>new {id=x.IdCongViec.ToString("D"),
                             code=x.MaCongViec,name=x.TenCongViec,
-                            regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,total=x.TongSoGiay})});
+                            regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,total=x.TongSoGiay,
+                            hadActivity=x.CoHoatDong,isOpen=x.DangCoPhienMo,deleted=x.DaXoa,
+                            isEarly=x.NgayBatDauDuKien.HasValue &&
+                                lichSu.NgayLam.Date<x.NgayBatDauDuKien.Value.Date,
+                            isOverdue=x.NgayKetThucDuKien.HasValue &&
+                                lichSu.NgayLam.Date>x.NgayKetThucDuKien.Value.Date,
+                            personalStatus=x.LoaiSuKienCaNhan})});
                     return;
                 }
                 var view=man.LayTrangDuAn(user.UserId,project);
@@ -171,7 +177,10 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 var exception=shifts.Count==0 ? LichBieuChungManager.Instance.GetExceptionByDate(localDay) : null;
                 Guid? pmId=DuAnManager.Instance.LayIdNhanVienQuanLy(view.IdDuAn);
                 var personalStates=new Kbg20BaoXongManager().LayTomTat(user.UserId,project);
+                var earlyBlockers=man.LayViecCanXuLyTruocStartSom(user.UserId,view.IdDuAn,localDay);
                 Write(context,new {ok=true,serverNow=Ms(now),workflowEnabled=Kbg20TichHopTask.DuocKichHoat,
+                    earlyStart=new {allowed=earlyBlockers.Count==0,remainingCount=earlyBlockers.Count,
+                        blockingTasks=earlyBlockers.GetRange(0,Math.Min(4,earlyBlockers.Count)).ToArray()},
                     isPm=pmId.HasValue && pmId.Value==user.UserId,projectId=view.IdDuAn.ToString("D"),
                     workCalendar=new {
                         day=localDay.ToString("yyyy-MM-dd"),
