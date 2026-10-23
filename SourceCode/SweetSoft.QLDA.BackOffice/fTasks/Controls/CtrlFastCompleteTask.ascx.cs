@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Managers;
@@ -75,6 +75,18 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ShowNotify(
                     "Công việc này chưa có ngày bắt đầu hoặc ngày kết thúc dự kiến hợp lệ!",
                     MSGType.Warning);
+                return;
+            }
+
+            // DOT 4B: kiem tra ngay tu luc mo de nguoi dung thay ro ly do.
+            // Kiem tra lan nua khi luu va trong callback giao dich o ben duoi.
+            try
+            {
+                TaskManager.Instance.DamBaoHauDueDaHoanThanh(task.IdDuAn, task.IdCongViec);
+            }
+            catch (InvalidOperationException exc)
+            {
+                ShowNotify(exc.Message, MSGType.Warning);
                 return;
             }
 
@@ -157,6 +169,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     return;
                 }
 
+                // DOT 4B: du popup mo khi con da xong, can doc lai tinh trang moi nhat.
+                // Ap dung nhu nhau voi nhan vien va PM xac nhan truc tiep.
+                TaskManager.Instance.DamBaoHauDueDaHoanThanh(task.IdDuAn, task.IdCongViec);
+
                 // Input type="date" gửi giá trị theo định dạng yyyy-MM-dd.
                 if (!DateTime.TryParseExact(
                     txtActualDate.Text,
@@ -235,6 +251,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 // Chi gom Save + rollup cua partner thanh mot Action, khong sua kiem tra tre han.
                 Action luuNghiepVuTask = () =>
                 {
+                    // DOT 4B: bao ve tai diem ghi; neu dong bo KBG20 bat thi
+                    // chay ben trong TransactionScope hien co, neu that bai khong chot gio.
+                    TaskManager.Instance.DamBaoHauDueDaHoanThanh(task.IdDuAn, task.IdCongViec);
                     task.Save();
                     if (IsPM) UpdateParentTask(task.IdCongViecCha);
                 };

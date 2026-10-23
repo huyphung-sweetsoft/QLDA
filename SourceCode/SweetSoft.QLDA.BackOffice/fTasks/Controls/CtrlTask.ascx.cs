@@ -282,18 +282,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (!TryGetNotificationTask(taskId, out TblCongViec task))
                 return;
 
-            // Giữ điều kiện hiện tại của nút FAST_COMPLETE: chỉ công việc con.
-            if (task.IdCongViecCha.HasValue)
-            {
-                CtrlFastCompleteTask1.OpenModal(
-                    task.IdCongViec,
-                    task.MaCongViec,
-                    task.TenCongViec);
-            }
-            else
-            {
-                ShowNotify("Chỉ có thể hoàn thành nhanh công việc con!", MSGType.Warning);
-            }
+            // DOT 4B: ca Task la, Task trung gian va Task goc deu duoc mo
+            // quy trinh hoan thanh hien co. Dieu kien 100% duoc kiem tra trong popup va server.
+            CtrlFastCompleteTask1.OpenModal(
+                task.IdCongViec,
+                task.MaCongViec,
+                task.TenCongViec);
         }
 
         private void OpenStartTaskFromNotification(Guid taskId)
@@ -704,7 +698,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowAccessDeniedNotify();
                         return;
                     }
-                    CtrlAddSubTask1.OpenModal(this.ProjectId, parentTaskId);
+                    try
+                    {
+                        TaskManager.Instance.DamBaoDuocThemCongViecCon(this.ProjectId, parentTaskId);
+                        CtrlAddSubTask1.OpenModal(this.ProjectId, parentTaskId);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        ShowNotify(ex.Message, MSGType.Warning);
+                    }
                     break;
 
                 case "ITEM_VIEW":
@@ -769,7 +771,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     if (Guid.TryParse(grvData.DataKeys[rowIndexComplete].Value.ToString(), out Guid taskIdComplete))
                     {
                         TblCongViec taskToComplete = TaskManager.Instance.FetchById(taskIdComplete);
-                        if (taskToComplete != null && taskToComplete.IdCongViecCha.HasValue)
+                        if (taskToComplete != null && taskToComplete.IdDuAn == this.ProjectId)
                             CtrlFastCompleteTask1.OpenModal(taskIdComplete, taskToComplete.MaCongViec, taskToComplete.TenCongViec);
                     }
                     break;
@@ -1046,55 +1048,45 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         public override void ConfirmRequest(ConfirmResult e)
         {
-            if (e == null || !e.Submit) return;
-
-            // Dieu phoi CHINH XAC theo CommandName, khong duoc roi xuong nhanh xoa task.
-            switch (e.CommandName)
+            CtrlSwapPhase1.ConfirmRequest(e);
+            CtrlChonNhanVienTask1.ConfirmRequest(e);
+            if (e != null && e.Submit &&
+                e.CommandName != "CONFIRM_SWAP_PHASES" &&
+                e.CommandName != "CONFIRM_REORDER_PHASES" &&
+                e.CommandName != "CONFIRM_OVERLOAD_ASSIGN_TASK")
             {
-                case "CONFIRM_SWAP_PHASES":
-                case "CONFIRM_REORDER_PHASES":
-                    CtrlSwapPhase1.ConfirmRequest(e);
-                    return;
-                case "CONFIRM_TASK_ASSIGNMENT_CHANGES":
-                case "CONFIRM_OVERLOAD_ASSIGN_TASK": // ten lenh cu, giu tuong thich
-                    CtrlChonNhanVienTask1.ConfirmRequest(e);
-                    return;
-                case "TASK_DELETE":
-                    break;
-                default:
-                    return;
-            }
-            Guid taskId;
-            if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
-            {
-                ShowInvalidDataError();
-                return;
-            }
-            TblCongViec task = TaskManager.Instance.FetchById(taskId);
-            if (task == null)
-            {
-                ShowInvalidNotFoundData();
-                return;
-            }
-            try
-            {
-                TaskManager.Instance.DeleteTask(task);
-                if (task.IdCongViecCha.HasValue)
+                Guid taskId = Guid.Empty;
+                if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
                 {
-                    if (_dictPriorities == null || _dictPriorities.Count == 0)
-                        _dictPriorities = TaskManager.Instance.GetDictPriorities();
-                    TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                    TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
-                    TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
+                    ShowInvalidDataError();
+                    return;
                 }
-                hfDeletingTaskId.Value = string.Empty;
-                ShowSuccessDeleteData();
-                grvData.CurrentPageIndex = 1;
-                Rebind();
-            }
-            catch (Exception exc)
-            {
-                ShowNotify(exc.Message, MSGType.Error);
+                TblCongViec task = TaskManager.Instance.FetchById(taskId);
+                if (task == null)
+                {
+                    ShowInvalidNotFoundData();
+                    return;
+                }
+                try
+                {
+                    TaskManager.Instance.DeleteTask(task);
+                    if (task.IdCongViecCha.HasValue)
+                    {
+                        if (_dictPriorities == null || _dictPriorities.Count == 0)
+                            _dictPriorities = TaskManager.Instance.GetDictPriorities();
+                        TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
+                        TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
+                        TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
+                    }
+                    hfDeletingTaskId.Value = string.Empty;
+                    ShowSuccessDeleteData();
+                    grvData.CurrentPageIndex = 1;
+                    Rebind();
+                }
+                catch (Exception exc)
+                {
+                    ShowNotify(exc.Message, MSGType.Error);
+                }
             }
         }
         #endregion

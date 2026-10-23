@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SubSonic;
 using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.Functions;
@@ -821,6 +821,44 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
             chkSelect.Enabled = !ViewOnly;
         }
+        // UX V3: Yêu cầu đóng sau khi có chỉnh sửa chưa lưu; chỉ xác nhận,
+        // tuyệt đối không ghi phân công xuống cơ sở dữ liệu tại đây.
+        protected void lbtRequestDiscardTaskAssign_Click(object sender, EventArgs e)
+        {
+            if (IdCongViec == Guid.Empty) return;
+            var originalIds = new HashSet<Guid>(ParseGuidIds(ViewState["TaskMemberOriginalSnapshot"] as string));
+            var proposedIds = new HashSet<Guid>(ParseGuidIds(hdfPickedIdsClient.Value));
+            var added = proposedIds.Except(originalIds).Count();
+            var removed = originalIds.Except(proposedIds).Count();
+            if (added == 0 && removed == 0)
+            {
+                CloseTaskMemberPickerAfterDiscard();
+                return;
+            }
+
+            string safeTaskName = HttpUtility.HtmlEncode(ViewState["TaskMemberTaskName"] as string ?? "Công việc hiện tại");
+            string html = "<div style='text-align:left;font-size:13px;line-height:1.6'>" +
+                "<div style='color:#475569;margin-bottom:8px'>Công việc: <strong>" + safeTaskName + "</strong></div>" +
+                "<div style='padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;margin-bottom:10px'>" +
+                "<strong style='color:#92400e'>Bạn đang có thay đổi chưa lưu</strong>" +
+                "<div style='color:#475569;margin-top:4px'>Thêm <strong>" + added +
+                "</strong> · Gỡ <strong>" + removed + "</strong> nhân viên</div></div>" +
+                "<div style='font-weight:600;color:#334155'>Đóng cửa sổ và bỏ tất cả thay đổi này?</div></div>";
+            var result = new ConfirmResult { CommandName = "CONFIRM_DISCARD_TASK_ASSIGNMENT_CHANGES" };
+            CURRENT_PAGE.CurrentConfirmResult = result;
+            OpenMessageBox(new MessageBox("Thay đổi phân công chưa lưu", html,
+                MSGButton.AcceptCancel, MSGIcon.Warning), result, false, false);
+        }
+
+        private void CloseTaskMemberPickerAfterDiscard()
+        {
+            // Đóng bằng chính ExtraModal như luồng Lưu thành công của control.
+            // Không Save, không gọi UpdateAssignments, không ảnh hưởng quyền phân công.
+            ScriptManager.RegisterStartupScript(Page, GetType(), "TaskMemberDiscardAccepted",
+                "if(window.TaskMemberDiscardGuard)window.TaskMemberDiscardGuard.cancelClose();", true);
+            mdlTaskMemberPicker.CloseModal();
+        }
+
         protected void btnConfirmTaskAssign_Click(object sender, EventArgs e)
         {
             if (ViewOnly) return;
@@ -1234,6 +1272,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         public override void ConfirmRequest(ConfirmResult e)
         {
+            if (e != null && e.CommandName == "CONFIRM_DISCARD_TASK_ASSIGNMENT_CHANGES")
+            {
+                if (e.Submit) CloseTaskMemberPickerAfterDiscard();
+                else ScriptManager.RegisterStartupScript(Page, GetType(), "TaskMemberDiscardCancelled",
+                    "if(window.TaskMemberDiscardGuard)window.TaskMemberDiscardGuard.cancelClose();", true);
+                return;
+            }
             if (e != null && e.Submit && e.CommandName == "CONFIRM_TASK_ASSIGNMENT_CHANGES")
             {
                 List<Guid> finalIds = e.Value as List<Guid>;
