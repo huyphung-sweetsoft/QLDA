@@ -99,26 +99,104 @@
 .report-toc-link:hover,.report-toc-link.is-active { border-color:#e2d0f7;background:#f3edfc;color:#54218d; }
 .report-toc-index { flex:0 0 21px;color:#7940b0;font-weight:800; }
 .report-toc-link-label { flex:1;min-width:0; }
-/* Nhân sự: hai tên đầu, nút +n và bảng mở rộng. */
-.report-assignee-box { position:relative;min-width:0;max-width:100%; }
-.report-assignee-compact { display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-width:0; }
-.report-person-chip { display:inline-flex;align-items:center;max-width:100%;padding:3px 7px;border:1px solid #dfe4ed;border-radius:7px;background:#f7f8fb;color:#445065;font-size:11.5px;font-weight:650;line-height:1.45;overflow-wrap:anywhere; }
-.report-assignee-more { display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:30px;height:30px;padding:0 7px;border:1px solid #cdb1ea;border-radius:999px;background:#f0e7fd;color:#632c9d;font-size:11.5px;font-weight:800;cursor:pointer;transition:background .16s,transform .16s; }
-.report-assignee-more:hover,.report-assignee-more:focus-visible { background:#e4d1fa;transform:translateY(-1px);outline:2px solid #ceb2ed;outline-offset:1px; }
-.report-assignee-more[aria-expanded=true] { background:#54218d;border-color:#54218d;color:#fff; }
-.report-assignee-expanded { display:none;flex-direction:column;margin-top:8px;padding:5px 8px;border:1px solid #e5daf2;border-radius:9px;background:#fbf9ff; }
-.report-assignee-box.is-expanded .report-assignee-expanded { display:flex; }
+/* Nhân sự báo cáo: phần thu gọn luôn một hàng, toàn ô là vùng tương tác. */
+#doingTasksTable td.report-assignee-cell,
+#todoTasksTable td.report-assignee-cell { cursor:pointer;vertical-align:middle;transition:background-color .16s ease; }
+#doingTasksTable td.report-assignee-cell:hover,
+#todoTasksTable td.report-assignee-cell:hover { background:#f8f4fe; }
+.report-assignee-box { display:block;width:100%;min-width:0;max-width:100%;border-radius:9px;outline:none;cursor:pointer; }
+.report-assignee-box:focus-visible { outline:2px solid #8b5cf6;outline-offset:3px; }
+.report-assignee-compact { display:flex;flex-wrap:nowrap;align-items:center;gap:5px;min-width:0;width:100%;overflow:hidden; }
+.report-person-chip { display:inline-flex;align-items:center;flex:0 1 auto;min-width:0;max-width:100%;padding:5px 8px;border:1px solid #e0e4ed;border-radius:7px;background:#f8f9fc;color:#48536a;font-size:11.5px;font-weight:650;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.report-person-chip-text { display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.report-assignee-more { display:inline-flex;align-items:center;justify-content:center;flex:0 0 31px;width:31px;height:31px;margin-left:auto;padding:0;border:1px solid #d6b9f0;border-radius:9px;background:#f0e7fb;color:#6630a2;font-size:11px;font-weight:800;line-height:1;white-space:nowrap;transition:background .16s,border-color .16s,color .16s; }
+.report-assignee-cell:hover .report-assignee-more { background:#e8d9fa;border-color:#bd90e9; }
+.report-assignee-box.is-expanded .report-assignee-more { background:#54218d;color:#fff;border-color:#54218d; }
+.report-assignee-box.is-expanded .report-assignee-compact { justify-content:space-between; }
+.report-assignee-expanded-title { display:none;min-width:0;flex:1 1 auto;color:#6b4398;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.report-assignee-box.is-expanded .report-assignee-expanded-title { display:inline-block; }
 .report-assignee-box.is-expanded .report-person-chip { display:none; }
-.report-person-row { display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:6px 1px;border-bottom:1px dashed #e8e0ef;color:#3c465a;font-size:11.7px;line-height:1.45; }
+.report-assignee-expanded { display:none;flex-direction:column;gap:3px;margin-top:6px;padding:7px;border:1px solid #e4d7f3;border-radius:9px;background:#fdfbff; }
+.report-assignee-box.is-expanded .report-assignee-expanded { display:flex; }
+.report-person-row { display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;padding:6px 4px;border-bottom:1px dashed #e9e1f1;color:#334155; }
 .report-person-row:last-child { border-bottom:0; }
-.report-person-name { min-width:0;overflow-wrap:anywhere; }
-.report-person-hours { flex:0 0 auto;color:#7043a1;font-size:11px;font-weight:800;white-space:nowrap; }
+.report-person-identity { display:flex;align-items:center;gap:9px;min-width:0;flex:1 1 auto; }
+.report-person-avatar { width:32px;height:32px;flex:0 0 32px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #d7c6eb;border-radius:50%;background:#f1e9fc;color:#592e8f;font-size:11px;font-weight:850; }
+.report-person-avatar img { display:block;width:100%;height:100%;object-fit:cover; }
+.report-person-avatar .report-avatar-fallback { display:none;width:100%;height:100%;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800; }
+.report-person-avatar.is-fallback { background:var(--report-avatar-bg,#7c3aed);border-color:transparent;color:#fff; }
+.report-person-avatar.is-fallback .report-avatar-fallback { display:flex; }
+.report-person-copy { display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto; }
+.report-person-name { display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#35415a;font-size:11.8px;font-weight:750;line-height:1.3; }
+.report-person-email { display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8992a4;font-size:10.5px;font-weight:500;line-height:1.25; }
+.report-person-hours { flex:0 0 auto;color:#7043a1;font-size:10.8px;font-weight:800;white-space:nowrap; }
 .report-task-hours { display:none;margin-left:7px;color:#735391;font-size:11.5px;font-weight:750;white-space:nowrap; }
 .report-row-expanded .report-task-hours { display:inline; }
-.report-assignee-tooltip { position:fixed;z-index:99990;box-sizing:border-box;width:290px;max-width:calc(100vw - 20px);padding:12px 14px;border:1px solid #d5c1ec;border-radius:12px;background:#fff;color:#342641;box-shadow:0 14px 35px rgba(43,22,76,.19);pointer-events:none; }
-.report-assignee-tooltip-title { margin:0 0 7px;color:#54218d;font-size:12.5px;font-weight:800; }
-.report-assignee-tooltip-person { padding:5px 0;border-bottom:1px dashed #e9e2f0;font-size:12px;line-height:1.45;overflow-wrap:anywhere; }
-.report-assignee-tooltip-note { margin-top:9px;color:#80579c;font-size:11.4px;font-weight:750;line-height:1.4; }
+/* Tooltip được đưa ra body nên không bị bảng/cuộn nội bộ cắt mất. */
+.report-assignee-tooltip { position:fixed;z-index:99990;box-sizing:border-box;width:320px;max-width:calc(100vw - 20px);max-height:min(420px,calc(100vh - 24px));overflow-y:auto;padding:12px 13px;border:1px solid #dbc7ee;border-radius:12px;background:#fff;color:#342641;box-shadow:0 14px 35px rgba(43,22,76,.18);pointer-events:none;scrollbar-width:thin; }
+.report-assignee-tooltip-title { display:flex;align-items:center;gap:7px;margin:0 0 7px;padding-bottom:8px;border-bottom:1px solid #eee7f6;color:#54218d;font-size:12.5px;font-weight:800; }
+.report-assignee-tooltip .report-person-row { padding:7px 1px; }
+.report-assignee-tooltip .report-person-avatar {width:35px;height:35px;flex-basis:35px;}
+.report-assignee-tooltip .report-person-name {font-size:12px;}
+.report-assignee-tooltip .report-person-email {font-size:11px;}
+.report-assignee-tooltip-note { margin-top:9px;padding-top:8px;border-top:1px dashed #ebe2f4;color:#80579c;font-size:11.2px;font-weight:700;line-height:1.4; }
+/* Bố cục báo cáo: ưu tiên nhân sự, hai mốc thời gian và trạng thái gọn. */
+#doingTasksTable td.report-assignee-cell,#todoTasksTable td.report-assignee-cell { padding:11px 10px; }
+#doingTasksTable td:last-child,#todoTasksTable td:last-child { padding-left:7px;padding-right:7px; }
+#doingTasksTable .report-badge,#todoTasksTable .report-badge { max-width:100%;font-size:11.5px;padding:5px 8px; }
+.report-task-hours { display:inline-flex !important;align-items:center;gap:5px;margin:5px 0 0 3px;padding:3px 7px;border:1px solid #e4d5f6;border-radius:6px;background:#faf7fe;color:#63328e;font-size:11px;font-weight:750;line-height:1.35;white-space:nowrap;vertical-align:middle; }
+.report-task-hours i { font-size:10px;color:#8654bc; }
+.report-period-cell { padding:10px !important; }
+.report-planned-period { display:flex;flex-direction:column;gap:5px;max-width:100%;min-width:0; }
+.report-period-line { display:flex;align-items:baseline;justify-content:space-between;gap:5px;min-width:0; }
+.report-period-label { color:#8490a3;font-size:10px;font-weight:700;white-space:nowrap; }
+.report-period-date { font-size:11.7px;font-weight:700;color:#334155;white-space:nowrap;font-variant-numeric:tabular-nums; }
+.report-period-line.is-deadline { padding-top:5px;border-top:1px dashed #e3e8f0; }
+.report-period-line.is-deadline .report-period-label {color:#677487;}
+.report-period-line.is-deadline .report-period-date {font-weight:850;}
+.report-period-date.text-danger {color:#dc2626;}
+.report-period-date.text-warning {color:#b45309;}
+.report-period-date.text-dark {color:#334155;}
+.report-assignee-compact { gap:5px; }
+.report-assignee-compact .report-person-chip { flex:0 1 auto;max-width:calc(50% - 23px); }
+.report-assignee-expanded { border-color:#ddd0ef;background:#fcfaff; }
+.report-person-row { gap:10px; }
+.report-person-hours { align-self:center;padding:4px 7px;border:1px solid #e7d9f4;border-radius:7px;background:#f7f1fc;color:#663493;font-size:10.5px;font-weight:800;white-space:nowrap; }
+.report-assignee-tooltip {width:430px;max-width:calc(100vw - 20px);max-height:min(500px,calc(100vh - 24px));padding:15px 16px;border-color:#d4bbea;box-shadow:0 20px 48px rgba(56,30,86,.22);}
+.report-assignee-tooltip-title {font-size:13.5px;margin-bottom:9px;padding-bottom:10px;}
+.report-assignee-tooltip .report-person-row {padding:9px 2px;}
+.report-assignee-tooltip .report-person-avatar {width:40px;height:40px;flex-basis:40px;}
+.report-assignee-tooltip .report-person-name {font-size:13px;white-space:normal;overflow:visible;overflow-wrap:anywhere;}
+.report-assignee-tooltip .report-person-email {font-size:11.5px;white-space:normal;overflow:visible;overflow-wrap:anywhere;}
+.report-assignee-tooltip .report-person-hours {font-size:11px;}
+/* Thu gọn (>=3 nhân sự): avatar + tên + email, hai thẻ luôn chung hàng với nút +N. */
+.report-assignee-box:not(.is-expanded) .report-assignee-compact {display:flex;flex-wrap:nowrap;gap:6px;align-items:center;overflow:hidden;}
+.report-assignee-box:not(.is-expanded) .report-assignee-compact .report-person-chip {display:flex;align-items:center;flex:1 1 0;width:0;max-width:none;min-width:0;min-height:39px;padding:4px 5px;border:1px solid #e0e4ed;border-radius:8px;background:#fafaff;overflow:hidden;}
+.report-assignee-compact .report-person-identity {display:flex;align-items:center;gap:5px;width:100%;min-width:0;flex:1 1 0;}
+.report-assignee-compact .report-person-avatar {width:24px;height:24px;flex:0 0 24px;border-radius:50%;}
+.report-assignee-compact .report-person-avatar .report-avatar-fallback {font-size:9px;}
+.report-assignee-compact .report-person-copy {display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 0;}
+.report-assignee-compact .report-person-name {font-size:10.5px;line-height:1.15;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.report-assignee-compact .report-person-email {font-size:9px;line-height:1.15;color:#8390a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.report-assignee-box:not(.is-expanded) .report-assignee-more {flex:0 0 30px;width:30px;height:30px;margin-left:0;cursor:pointer;}
+@media(max-width:760px) {
+  .report-assignee-box:not(.is-expanded) .report-assignee-compact {gap:4px;}
+  .report-assignee-box:not(.is-expanded) .report-assignee-compact .report-person-chip {padding:3px 4px;min-height:35px;}
+  .report-assignee-compact .report-person-avatar {width:21px;height:21px;flex-basis:21px;}
+  .report-assignee-compact .report-person-name {font-size:10px;}
+  .report-assignee-compact .report-person-email {font-size:8.5px;}
+  .report-assignee-box:not(.is-expanded) .report-assignee-more {flex-basis:27px;width:27px;height:28px;}
+}
+/* Nhân sự ít người: mở cố định, không hiện nút và không tạo hover giả tương tác. */
+.report-assignee-box.is-static {cursor:default;}
+.report-assignee-box.is-static .report-assignee-expanded {display:flex;margin-top:0;}
+.report-assignee-box.is-static .report-assignee-compact,.report-assignee-box.is-static .report-assignee-more {display:none !important;}
+.report-assignee-box.is-static .report-person-name,.report-assignee-box.is-static .report-person-email {text-overflow:ellipsis;}
+#doingTasksTable td.report-assignee-cell.report-assignee-static,
+#todoTasksTable td.report-assignee-cell.report-assignee-static {cursor:default;}
+#doingTasksTable td.report-assignee-cell.report-assignee-static:hover,
+#todoTasksTable td.report-assignee-cell.report-assignee-static:hover {background:transparent;}
+@media (max-width:620px) { .report-person-chip {padding:4px 5px;font-size:10.5px;} .report-assignee-more {flex-basis:28px;width:28px;height:28px;} .report-person-avatar {width:29px;height:29px;flex-basis:29px;} }
 @media (max-width:1199.98px) { .report-toc { margin-bottom:8px; } }
 @media (prefers-reduced-motion:reduce) { .report-toc-list,.report-toc-toggle .report-toc-arrow,.report-assignee-more { transition:none; } }
     </style>
@@ -220,10 +298,10 @@
                                             <table id="doingTasksTable" class="table table-bordered table-hover w-100">
                                                 <thead class="text-center">
                                                     <tr>
-                                                        <th width="45%" class="text-start ps-3">CÔNG VIỆC</th>
-                                                        <th width="20%" class="text-start"><span id="reportDoingAssigneeHeader">Người thực hiện</span></th>
-                                                        <th width="17%"><%= GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
-                                                        <th width="18%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                                        <th width="32%" class="text-start ps-3">CÔNG VIỆC</th>
+                                                        <th width="33%" class="text-start"><span id="reportDoingAssigneeHeader">Người thực hiện</span></th>
+                                                        <th width="22%">THỜI GIAN DỰ KIẾN</th>
+                                                        <th width="13%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -231,10 +309,10 @@
                                                         <ItemTemplate>
                                                             <tr class="report-doing-row" data-deadline-state='<%# GetDeadlineState(Eval("NgayKetThuc")) %>'>
                                                                 <td class="text-start ps-3">
-                                                                    <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span><span class="report-task-hours">(0 giờ công)</span></div>
+                                                                    <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span><span class="report-task-hours"><%# GetTaskWorkHoursHtml(Eval("IdCongViec")) %></span></div>
                                                                 </td>
-                                                                <td class="text-start"><%# RenderReportAssignees(Eval("NhanVienThucHien"), true) %></td>
-                                                                <td class="text-center fw-bold <%# GetDeadlineClass(Eval("NgayKetThuc")) %>"><%# Eval("NgayKetThuc", "{0:dd/MM/yyyy}") %></td>
+                                                                <td class="text-start report-assignee-cell"><%# RenderReportAssignees(Eval("IdCongViec"), Eval("NhanVienThucHien"), true) %></td>
+                                                                <td class="report-period-cell"><%# RenderReportPlannedPeriod(Eval("NgayBatDau"), Eval("NgayKetThuc")) %></td>
                                                                 <td class="text-center" style="vertical-align: middle;">
                                                                     <div class="report-badge badge-doing" style="margin-bottom: 4px;">Đang làm</div>
                                                                     <%# GetTaskWarningHtml(Eval("NgayKetThuc")) %>
@@ -255,10 +333,10 @@
                                             <table id="todoTasksTable" class="table table-bordered table-hover w-100">
                                                 <thead class="text-center">
                                                     <tr>
-                                                        <th width="45%" class="text-start ps-3">CÔNG VIỆC</th>
-                                                        <th width="20%" class="text-start"><%= GetResourceText(BackEndResourceKeys.ASSIGNEE) %></th>
-                                                        <th width="17%">Ngày Kết Thúc Dự Kiến</th>
-                                                        <th width="18%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
+                                                        <th width="32%" class="text-start ps-3">CÔNG VIỆC</th>
+                                                        <th width="33%" class="text-start"><%= GetResourceText(BackEndResourceKeys.ASSIGNEE) %></th>
+                                                        <th width="22%">THỜI GIAN DỰ KIẾN</th>
+                                                        <th width="13%"><%= GetResourceText(BackEndResourceKeys.STATUS) %></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -266,10 +344,10 @@
                                                         <ItemTemplate>
                                                             <tr data-deadline-state='<%# GetDeadlineState(Eval("NgayKetThuc")) %>'>
                                                                 <td class="text-start ps-3">
-                                                                    <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span></div>
+                                                                    <div class="task-code-name"><span class="task-code-chip"><%# Eval("MaCongViec") %></span><span class="task-name-text"><%# Eval("TenCongViec") %></span><span class="report-task-hours"><%# GetTaskWorkHoursHtml(Eval("IdCongViec")) %></span></div>
                                                                 </td>
-                                                                <td class="text-start"><%# RenderReportAssignees(Eval("NhanVienThucHien"), false) %></td>
-                                                                <td class="text-center fw-bold <%# GetDeadlineClass(Eval("NgayKetThuc")) %>"><%# Eval("NgayKetThuc", "{0:dd/MM/yyyy}") %></td>
+                                                                <td class="text-start report-assignee-cell"><%# RenderReportAssignees(Eval("IdCongViec"), Eval("NhanVienThucHien"), false) %></td>
+                                                                <td class="report-period-cell"><%# RenderReportPlannedPeriod(Eval("NgayBatDau"), Eval("NgayKetThuc")) %></td>
                                                                 <td class="text-center">
                                                                     <div class="report-badge badge-todo" style="margin-bottom: 4px;">Chưa bắt đầu</div>
                                                                     <%# GetTaskWarningHtml(Eval("NgayKetThuc")) %>
@@ -368,25 +446,68 @@
             }
             function refreshAssigneeHeader() {
                 var head = document.getElementById('reportDoingAssigneeHeader');
-                if (head) head.textContent = document.querySelector('#doingTasksTable .report-assignee-box.is-expanded') ? 'Người thực hiện (số giờ công)' : 'Người thực hiện';
+                if (head) head.textContent = 'Người thực hiện';
             }
             function closeTooltip() { if (activeTip) { activeTip.remove(); activeTip = null; } }
             function showTooltip(box) {
-                if (!box || box.classList.contains('is-expanded')) return;
-                var names = box.querySelectorAll('.report-person-name');
-                if (!names.length) return;
+                if (!box || box.classList.contains('is-expanded') || box.classList.contains('is-static')) return;
+                var people = box.querySelectorAll('.report-assignee-expanded .report-person-row');
+                if (!people.length) return;
                 closeTooltip();
-                var tip = document.createElement('div'); tip.className = 'report-assignee-tooltip'; tip.setAttribute('role', 'tooltip');
-                var title = document.createElement('div'); title.className = 'report-assignee-tooltip-title'; title.textContent = 'Danh sách người thực hiện'; tip.appendChild(title);
-                names.forEach(function (item) { var line = document.createElement('div'); line.className = 'report-assignee-tooltip-person'; line.textContent = item.textContent; tip.appendChild(line); });
-                var note = document.createElement('div'); note.className = 'report-assignee-tooltip-note'; note.textContent = box.getAttribute('data-report-hours') === '1' ? 'Ấn để xem chi tiết giờ công' : 'Ấn để xem chi tiết nhân sự'; tip.appendChild(note);
+                var tip = document.createElement('div');
+                tip.className = 'report-assignee-tooltip';
+                tip.setAttribute('role', 'tooltip');
+                var title = document.createElement('div');
+                title.className = 'report-assignee-tooltip-title';
+                var titleIcon = document.createElement('i');
+                titleIcon.className = 'fas fa-users';
+                titleIcon.setAttribute('aria-hidden', 'true');
+                title.appendChild(titleIcon);
+                title.appendChild(document.createTextNode('Danh sách người thực hiện (' + people.length + ')'));
+                tip.appendChild(title);
+                people.forEach(function (person) {
+                    var row = document.createElement('div');
+                    row.className = 'report-person-row';
+                    var identity = person.querySelector('.report-person-identity');
+                    if (identity) row.appendChild(identity.cloneNode(true));
+                    var hours = person.querySelector('.report-person-hours');
+                    if (hours) row.appendChild(hours.cloneNode(true));
+                    tip.appendChild(row);
+                });
+                var note = document.createElement('div');
+                note.className = 'report-assignee-tooltip-note';
+                note.textContent = 'Nhấp vào ô để mở hoặc thu gọn danh sách và giờ công';
+                tip.appendChild(note);
                 document.body.appendChild(tip);
-                var rect = box.getBoundingClientRect(), width = tip.offsetWidth, height = tip.offsetHeight;
-                var x = rect.right + 12;
-                if (x + width > window.innerWidth - 10) x = Math.max(10, rect.left - width - 12);
-                tip.style.left = Math.max(10, x) + 'px';
-                tip.style.top = Math.max(10, Math.min(rect.top, window.innerHeight - height - 10)) + 'px';
+                var rect = box.closest('.report-assignee-cell').getBoundingClientRect();
+                var width = tip.offsetWidth, height = tip.offsetHeight;
+                var x = rect.right + 10;
+                if (x + width > window.innerWidth - 12) x = rect.left - width - 10;
+                if (x < 10) x = Math.max(10, Math.min(rect.left + (rect.width - width) / 2, window.innerWidth - width - 10));
+                // Canh giữa chiều cao tooltip theo hàng đang hover.
+                // Nếu chạm mép trên/dưới khung nhìn, đẩy xuống/lên vừa đủ.
+                var margin = 10;
+                var preferredY = rect.top + rect.height / 2 - height / 2;
+                var maxY = Math.max(margin, window.innerHeight - height - margin);
+                var y = Math.min(Math.max(preferredY, margin), maxY);
+                tip.style.left = x + 'px';
+                tip.style.top = y + 'px';
                 activeTip = tip;
+            }
+            function setAssigneeExpanded(box, expanded) {
+                if (!box || box.classList.contains('is-static')) return;
+                box.classList.toggle('is-expanded', expanded);
+                box.setAttribute('aria-expanded', String(expanded));
+                box.setAttribute('aria-label', expanded ? 'Thu gọn danh sách người thực hiện' : 'Xem danh sách người thực hiện');
+                var more = box.querySelector('.report-assignee-more');
+                if (more) {
+                    more.textContent = expanded ? '−' : (more.getAttribute('data-collapsed-label') || '⌄');
+                    more.setAttribute('aria-hidden', 'true');
+                }
+                var row = box.closest('.report-doing-row');
+                if (row) row.classList.toggle('report-row-expanded', expanded);
+                refreshAssigneeHeader();
+                closeTooltip();
             }
             if (!window.__projectReportDelegatesAttached) {
                 window.__projectReportDelegatesAttached = true;
@@ -395,17 +516,38 @@
                     if (tocBtn) { var toc = tocBtn.closest('.report-toc'); toc.classList.toggle('is-collapsed'); var open = !toc.classList.contains('is-collapsed'); tocBtn.setAttribute('aria-expanded', String(open)); tocBtn.setAttribute('aria-label', open ? 'Thu gọn mục lục' : 'Mở mục lục'); return; }
                     var jump = event.target.closest('.report-toc-link');
                     if (jump) { ui.scrollTo(jump.getAttribute('data-report-target')); return; }
-                    var more = event.target.closest('.report-assignee-more');
-                    if (more) { var box = more.closest('.report-assignee-box'); if (!box) return; var expanded = !box.classList.contains('is-expanded'); box.classList.toggle('is-expanded', expanded); more.setAttribute('aria-expanded', String(expanded)); more.setAttribute('aria-label', expanded ? 'Thu gọn danh sách người thực hiện' : 'Xem chi tiết người thực hiện'); more.textContent = expanded ? '−' : (more.getAttribute('data-collapsed-label') || '⌄'); var row = box.closest('.report-doing-row'); if (row) row.classList.toggle('report-row-expanded', expanded); refreshAssigneeHeader(); closeTooltip(); }
+                    // Mở/đóng khi nhấp BẤT KỲ vị trí nào trong ô người thực hiện.
+                    var cell = event.target.closest('td.report-assignee-cell');
+                    if (cell) { var box = cell.querySelector('.report-assignee-box'); if (box && !box.classList.contains('is-static')) { setAssigneeExpanded(box, !box.classList.contains('is-expanded')); return; } }
                 });
-                document.addEventListener('mouseover', function (event) { var box = event.target.closest('.report-assignee-box'); if (box && (!event.relatedTarget || !box.contains(event.relatedTarget))) showTooltip(box); });
-                document.addEventListener('mouseout', function (event) { var box = event.target.closest('.report-assignee-box'); if (box && (!event.relatedTarget || !box.contains(event.relatedTarget))) closeTooltip(); });
-                document.addEventListener('focusin', function (event) { if (event.target.matches('.report-assignee-more')) showTooltip(event.target.closest('.report-assignee-box')); });
-                document.addEventListener('focusout', function (event) { if (event.target.matches('.report-assignee-more')) closeTooltip(); });
+                document.addEventListener('keydown', function (event) {
+                    if (event.target.matches('.report-assignee-box') && (event.key === 'Enter' || event.key === ' ')) {
+                        event.preventDefault();
+                        setAssigneeExpanded(event.target, !event.target.classList.contains('is-expanded'));
+                    }
+                });
+                // Tooltip CHỈ xuất hiện khi con trỏ ở nút +N (không hiện khi rê trên ô/chip).
+                // Vẫn giữ nguyên hành vi bấm toàn bộ ô để mở/thu gọn.
+                document.addEventListener('mouseover', function (event) {
+                    var more = event.target.closest('.report-assignee-more');
+                    if (!more || (event.relatedTarget && more.contains(event.relatedTarget))) return;
+                    var box = more.closest('.report-assignee-box');
+                    if (box && !box.classList.contains('is-expanded')) showTooltip(box);
+                });
+                document.addEventListener('mouseout', function (event) {
+                    var more = event.target.closest('.report-assignee-more');
+                    if (more && (!event.relatedTarget || !more.contains(event.relatedTarget))) closeTooltip();
+                });
                 document.addEventListener('scroll', closeTooltip, true);
                 window.addEventListener('resize', function () { closeTooltip(); fitViewport(); });
             }
-            ui.initialize = function () { fitViewport(); refreshAssigneeHeader(); closeTooltip(); };
+            ui.initialize = function () {
+                fitViewport(); refreshAssigneeHeader(); closeTooltip();
+                document.querySelectorAll('.report-assignee-box.is-static').forEach(function (box) {
+                    var cell = box.closest('td.report-assignee-cell');
+                    if (cell) cell.classList.add('report-assignee-static');
+                });
+            };
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ui.initialize);
             else ui.initialize();
             if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(ui.initialize);

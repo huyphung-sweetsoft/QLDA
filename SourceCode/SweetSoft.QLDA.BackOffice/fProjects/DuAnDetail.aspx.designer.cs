@@ -123,6 +123,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.LinkButton lbtEditProject;
 
         /// <summary>
+        /// phTeamHoursTab control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phTeamHoursTab;
+
+        /// <summary>
+        /// ddlInlineKhachHang control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlInlineKhachHang;
+
+        /// <summary>
         /// lblKhachHang control.
         /// </summary>
         /// <remarks>
@@ -130,6 +148,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblKhachHang;
+
+        /// <summary>
+        /// txtInlineGiaTriHopDong control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtInlineGiaTriHopDong;
 
         /// <summary>
         /// lblGiaTriHopDong control.
@@ -141,6 +168,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblGiaTriHopDong;
 
         /// <summary>
+        /// txtInlineNgayKy control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtInlineNgayKy;
+
+        /// <summary>
         /// lblNgayKy control.
         /// </summary>
         /// <remarks>
@@ -150,6 +186,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Label lblNgayKy;
 
         /// <summary>
+        /// ddlInlineLoaiDuAn control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraDropdown ddlInlineLoaiDuAn;
+
+        /// <summary>
         /// lblLoaiDuAn control.
         /// </summary>
         /// <remarks>
@@ -157,6 +202,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblLoaiDuAn;
+
+        /// <summary>
+        /// txtInlineNgayBatDau control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtInlineNgayBatDau;
 
         /// <summary>
         /// lblNgayBatDau control.
@@ -202,6 +256,24 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTrangThai;
+
+        /// <summary>
+        /// pnlProjectInlineActions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlProjectInlineActions;
+
+        /// <summary>
+        /// btnInlineSaveProject control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnInlineSaveProject;
 
         /// <summary>
         /// lblTienDoThoiGian control.
@@ -393,6 +465,51 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Panel pnlEmptyRecentHistory;
 
         /// <summary>
+        /// phTeamHoursPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phTeamHoursPanel;
+
+        /// <summary>
+        /// litProjectTeamMembers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litProjectTeamMembers;
+
+        /// <summary>
+        /// hfTeamHoursMember control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfTeamHoursMember;
+
+        /// <summary>
+        /// lbtLoadTeamHours control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton lbtLoadTeamHours;
+
+        /// <summary>
+        /// litProjectTeamHours control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litProjectTeamHours;
+
+        /// <summary>
         /// litProjectPersonal control.
         /// </summary>
         /// <remarks>
@@ -402,13 +519,22 @@ namespace SweetSoft.QLDA.BackOffice.fProjects
         protected global::System.Web.UI.WebControls.Literal litProjectPersonal;
 
         /// <summary>
-        /// mdlPersonalDetail control.
+        /// CtrlChiTietCong1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlPersonalDetail;
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChiTietCong CtrlChiTietCong1;
+
+        /// <summary>
+        /// CtrlChiTietCongCuocHop1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlChiTietCongCuocHop CtrlChiTietCongCuocHop1;
 
         /// <summary>
         /// mdlStatusChange control.

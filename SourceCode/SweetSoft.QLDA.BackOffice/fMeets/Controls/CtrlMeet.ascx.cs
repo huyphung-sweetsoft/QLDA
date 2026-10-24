@@ -58,7 +58,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             }
         }
         protected bool CanSwitchMeetingView => IsProjectPM || CURRENT_PAGE.IsAdministrator || (CURRENT_PAGE.IsAdd && CURRENT_PAGE.IsEdit);
-        protected bool CanReadMeetings => CURRENT_PAGE.IsView || CURRENT_PAGE.IsAdd || CURRENT_PAGE.IsEdit || CURRENT_PAGE.IsDelete || IsProjectPM;
+        protected bool CanReadMeetings => CURRENT_PAGE.IsView || CURRENT_PAGE.IsAdd || CURRENT_PAGE.IsEdit || CURRENT_PAGE.IsDelete || IsProjectPM || CURRENT_PAGE.IsAdministrator;
         protected bool IsView => this.CURRENT_PAGE.IsView;
         protected bool IsEdit => this.CURRENT_PAGE.IsEdit;
         protected bool IsDelete => this.CURRENT_PAGE.IsDelete;
@@ -70,7 +70,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlMeetGioCongTab tab = CalendarFindControl(this, "CtrlMeetGioCongTab1") as CtrlMeetGioCongTab;
-            if (tab != null) { tab.ProjectId = ProjectId; tab.CanViewLabor = CanReadMeetings && CanSwitchMeetingView; }
+            if (tab != null) { tab.ProjectId = ProjectId; tab.CanViewLabor = CanReadMeetings; }
             RegisterAsyncButton();
         }
 
@@ -132,13 +132,14 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (shell != null)
             {
                 shell.Attributes["data-can-list"] = CanSwitchMeetingView ? "1" : "0";
+                shell.Attributes["data-can-labor"] = CanReadMeetings ? "1" : "0";
                 shell.Attributes["data-project"] = ProjectId.ToString("N");
                 if (!CanSwitchMeetingView) shell.Attributes["class"] = "meet-view-shell meet-mode-calendar";
             }
             // Thanh công cụ duy nhất phục vụ cả Danh sách và Calendar.
             var actionHost = upMain.ContentTemplateContainer.FindControl("tagOther") as HtmlGenericControl;
             var switcher = actionHost != null ? actionHost.FindControl("meetViewSwitcher") as HtmlGenericControl : null;
-            if (switcher != null) switcher.Visible = CanSwitchMeetingView;
+            if (switcher != null) switcher.Visible = CanReadMeetings;
             PlaceHolder host = upMain.ContentTemplateContainer.FindControl("phMeetingCalendar") as PlaceHolder;
             if (host != null)
             {
@@ -295,6 +296,44 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             if (IsDelete)
                 html.Append("<button type='button' class='meet-cal-flip-action is-delete' title='Xóa cuộc họp' aria-label='Xóa " + CalendarAttr(meeting.TenCuocHop) + "' onclick='return SweetMeetCalendar.openAction(&quot;delete&quot;," + jsId + ");'><i class='fas fa-trash' aria-hidden='true'></i></button>");
             html.Append("</div></div>");
+            html.Append("</div>");
+            // Chế độ không lật: tooltip cũ hiện thông tin ngắn gọn tại ô lịch.
+            string statusLabel = statusCode == 0 ? "Đã lên lịch" : statusCode == 1 ? "Sắp diễn ra" : statusCode == 2 ? "Đang diễn ra" : "Đã kết thúc";
+            string chairName;
+            if (!chairs.TryGetValue(meeting.IdNguoiTao, out chairName) || string.IsNullOrWhiteSpace(chairName)) chairName = "Chưa có thông tin";
+            CalendarAttendees attendeeInfo;
+            int count = attendees.TryGetValue(meeting.IdLichHop, out attendeeInfo) ? attendeeInfo.Count : 0;
+            html.Append("<div class='meet-cal-popover' aria-hidden='true'>");
+            html.Append("<span class='meet-cal-tooltip-head'><strong class='meet-cal-tooltip-title'>" + title + "</strong><span class='meet-cal-tooltip-status is-status-" + statusCode + "'><span class='meet-cal-tooltip-status-dot'></span>" + statusLabel + "</span></span>");
+            html.Append("<span><i class='far fa-calendar-alt'></i> " + meeting.ThoiGianBatDau.ToString("dd/MM/yyyy") + "</span>");
+            html.Append("<span><i class='far fa-clock'></i> " + meeting.ThoiGianBatDau.ToString("HH:mm") + " – " + meeting.ThoiGianKetThuc.ToString("HH:mm") + "</span>");
+            html.Append("<span><i class='fas fa-user-tie'></i> Chủ trì: " + CalendarEsc(chairName) + "</span>");
+            html.Append("<span><i class='fas fa-users'></i> " + count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " nhân viên tham gia</span>");
+            html.Append("<small><i class='fas fa-map-marker-alt'></i> " + CalendarEsc(string.IsNullOrWhiteSpace(meeting.DiaDiemHop) ? "Chưa cập nhật địa điểm" : meeting.DiaDiemHop) + "</small>");
+            html.Append("</div></div>");
+            return html.ToString();
+        }
+        // Thẻ cố định cho popup ngày: không lật, thao tác trực tiếp như cột Action ở tab Danh sách.
+        private string BuildCalendarDayEvent(TblLichHop meeting, DateTime day)
+        {
+            string id = meeting.IdLichHop.ToString("D");
+            string jsId = "&quot;" + id + "&quot;";
+            string title = CalendarEsc(meeting.TenCuocHop);
+            string titleAttr = CalendarAttr(meeting.TenCuocHop);
+            byte status = CalendarStatusAt(meeting, DateTime.Now);
+            var html = new StringBuilder(460);
+            html.Append("<div class='meet-cal-day-entry is-status-" + status + "' data-meet-id='" + id + "'>");
+            html.Append("<button type='button' class='meet-day-entry-main' title='Xem chi tiết " + titleAttr + "' onclick='return SweetMeetCalendar.openAction(&quot;view&quot;," + jsId + ");'>");
+            if (meeting.IdNguoiTao == SweetContext.Current.UserId)
+                html.Append("<i class='fas fa-crown meet-cal-host-icon' aria-hidden='true'></i>");
+            html.Append("<span class='meet-day-entry-time'>" + CalendarEsc(CalendarDisplayTime(meeting.ThoiGianBatDau, meeting.ThoiGianKetThuc, day).Split('–')[0]) + "</span><span class='meet-day-entry-title'>" + title + "</span></button>");
+            html.Append("<div class='meet-day-entry-actions'>");
+            if (CanReadMeetings)
+                html.Append("<button type='button' class='meet-day-entry-action' title='Xem chi tiết' aria-label='Xem " + titleAttr + "' onclick='return SweetMeetCalendar.openAction(&quot;view&quot;," + jsId + ");'><i class='far fa-eye' aria-hidden='true'></i></button>");
+            if (IsEdit)
+                html.Append("<button type='button' class='meet-day-entry-action' title='Chỉnh sửa' aria-label='Sửa " + titleAttr + "' onclick='return SweetMeetCalendar.openAction(&quot;edit&quot;," + jsId + ");'><i class='fas fa-pencil-alt' aria-hidden='true'></i></button>");
+            if (IsDelete)
+                html.Append("<button type='button' class='meet-day-entry-action is-delete' title='Xóa cuộc họp' aria-label='Xóa " + titleAttr + "' onclick='return SweetMeetCalendar.openAction(&quot;delete&quot;," + jsId + ");'><i class='fas fa-trash' aria-hidden='true'></i></button>");
             html.Append("</div></div>");
             return html.ToString();
         }
@@ -317,7 +356,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             // Nội dung nguồn để sử dụng trong ExtraModal; ẩn hoàn toàn khỏi ô ngày.
             html.Append("<div class='meet-cal-day-all' hidden>");
             foreach (TblLichHop meeting in ordered)
-                html.Append(BuildCalendarEventButton(meeting, date, attendees, chairs));
+                html.Append(BuildCalendarDayEvent(meeting, date));
             html.Append("</div>");
         }
         private string BuildMeetingCalendarHtml()

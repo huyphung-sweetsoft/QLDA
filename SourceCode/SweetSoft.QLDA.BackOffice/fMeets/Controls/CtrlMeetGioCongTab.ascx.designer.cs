@@ -96,6 +96,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.LinkButton btnFilterEnded;
 
         /// <summary>
+        /// btnFilterHosted control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnFilterHosted;
+
+        /// <summary>
         /// rptMeetings control.
         /// </summary>
         /// <remarks>
@@ -231,6 +240,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.PlaceHolder phNoPeople;
 
         /// <summary>
+        /// litNoLaborPeople control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litNoLaborPeople;
+
+        /// <summary>
         /// lblLaborError control.
         /// </summary>
         /// <remarks>
@@ -256,6 +274,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litTheoryTotal;
+
+        /// <summary>
+        /// litLaborPager control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litLaborPager;
 
         /// <summary>
         /// btnSaveLabor control.

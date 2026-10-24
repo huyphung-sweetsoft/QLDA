@@ -97,6 +97,24 @@
     #divRollUpNotice .badge { display: inline-flex; align-items: center; padding: 6px 9px !important; background: #fff7ed !important; border: 1px solid #fed7aa; border-radius: 7px; color: #9a3412 !important; font-size: 11px !important; font-weight: 700; }
     #divRollUpNotice .badge i { color: #ea580c !important; }
 
+    .task-lock-notice {padding:10px 14px;background:#fff7ed;border:1px dashed #fdba74;border-radius:9px;display:flex;align-items:center;gap:8px;}
+    .task-lock-notice i {font-size:16px;color:#f59e0b;}
+    .task-lock-notice span {color:#9a3412;font-size:13px;font-weight:600;}
+
+    .task-lockable {position:relative;}
+    .task-lockable.is-locked {cursor:help;}
+    .ql-local-cal-mode-wrap {flex:1 1 145px;min-width:0;position:relative;}
+    .ql-local-cal-mode-wrap .ql-local-cal-mode {width:100%;height:100%;}
+    .ql-local-cal-mode-wrap.is-locked {cursor:help;}
+    .ql-local-cal-mode-wrap.is-locked > .ql-local-cal-mode {pointer-events:none;}
+    .ql-task-lock-tip {position:fixed;z-index:2147483000;box-sizing:border-box;width:max-content;max-width:min(310px,calc(100vw - 24px));padding:11px 13px;
+        background:#fff7ed;border:1px dashed #fdba74;border-radius:10px;box-shadow:0 12px 32px rgba(104,51,9,.19);
+        color:#9a3412;pointer-events:none;opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .15s ease,transform .15s ease;}
+    .ql-task-lock-tip.is-visible {opacity:1;visibility:visible;transform:translateY(0);}
+    .ql-task-lock-tip-head {display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:12px;font-weight:800;color:#b45309;}
+    .ql-task-lock-tip-head i {font-size:12px;color:#f59e0b;}
+    .ql-task-lock-tip-text {font-size:12px;font-weight:650;line-height:1.5;overflow-wrap:anywhere;}
+
     /* TOOLTIP THÔNG MINH */
     .st-tooltip { position: relative; cursor: help; transition: all 0.2s; }
     .st-tooltip.phase-tooltip::after, .st-tooltip.parent-tooltip::after {
@@ -117,17 +135,55 @@
     .st-tooltip.phase-tooltip:hover::before, .st-tooltip.parent-tooltip:hover::before { opacity: 1; visibility: visible; transform: translateY(-2px); }
     .st-tooltip.parent-tooltip:hover { background: #f5f3ff !important; border-color: #d8b4fe !important; }
 
-    /* Hiệu ứng chỉ mở rộng ngang: form cố định chiều rộng, lịch được lộ dần theo popup. */
-    .task-edit-wrapper { --ql-task-cal-width:clamp(418px,calc(100vw - 782px),530px);display:flex;align-items:stretch;width:100%;min-width:0;position:relative;overflow:hidden;box-sizing:border-box; }
-    .task-form-panel { flex:0 0 750px;width:750px;min-width:0;max-width:100%;transition:none; }
-    .task-schedule-panel { box-sizing:border-box;flex:0 0 0;width:0;min-width:0;height:0;max-height:0;align-self:flex-start;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;transform:translateX(18px);background:#f8fafc;border-left:0 solid #e2e8f0;transition:flex-basis .46s cubic-bezier(.22,1,.36,1),width .46s cubic-bezier(.22,1,.36,1),opacity .24s ease,transform .46s cubic-bezier(.22,1,.36,1),visibility 0s linear .46s,border-width .46s ease; }
-    .task-schedule-panel > .p-3 { box-sizing:border-box;width:var(--ql-task-cal-width);min-width:var(--ql-task-cal-width); }
-    .task-edit-wrapper.is-split .task-form-panel { flex:0 0 750px;width:750px;min-width:0;max-width:none; }
-    .task-edit-wrapper.is-split .task-schedule-panel { flex:0 0 var(--ql-task-cal-width);width:var(--ql-task-cal-width);height:var(--ql-task-form-height,auto);max-height:var(--ql-task-form-height,none);align-self:flex-start;overflow-x:hidden;overflow-y:auto;opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0);border-left-width:1px;transition: flex-basis .46s cubic-bezier(.22,1,.36,1),width .46s cubic-bezier(.22,1,.36,1),opacity .3s ease .1s,transform .46s cubic-bezier(.22,1,.36,1),visibility 0s,border-width .46s ease; }
-    #<%= mdlEditTask.ClientID %> .modal-dialog { width:750px!important;max-width:calc(100vw - 32px)!important;transition:width .46s cubic-bezier(.22,1,.36,1),max-width .46s cubic-bezier(.22,1,.36,1),transform .3s ease!important; }
-    #<%= mdlEditTask.ClientID %> .modal-dialog.ql-task-schedule-expanded { width:min(1280px,calc(100vw - 32px))!important;max-width:calc(100vw - 32px)!important; }
-    @media(max-width:1199.98px) { .task-edit-wrapper { --ql-task-cal-width:100%; } .task-form-panel,.task-edit-wrapper.is-split .task-form-panel { flex:0 0 100%;width:100%;max-width:100%; } .task-edit-wrapper.is-split { flex-direction:column; } .task-schedule-panel { flex:0 0 0;width:100%;max-height:0;transform:translateY(12px);border-left:0;border-top:0 solid #e2e8f0; } .task-schedule-panel > .p-3 { width:100%;min-width:0; } .task-edit-wrapper.is-split .task-schedule-panel { flex:0 0 auto;width:100%;height:auto;max-height:500px;align-self:stretch;border-left:0;border-top-width:1px;transform:translateY(0); } #<%= mdlEditTask.ClientID %> .modal-dialog.ql-task-schedule-expanded { width:calc(100vw - 32px)!important; } }
-    @media(prefers-reduced-motion:reduce) { #<%= mdlEditTask.ClientID %> .modal-dialog,.task-schedule-panel,.task-edit-wrapper.is-split .task-schedule-panel { transition:none!important; } }
+    /* Lịch dự kiến luôn mở. Thu form ~100px, lịch giữ bề ngang cũ. */
+    .task-edit-wrapper {
+        display:grid;grid-template-columns:minmax(0,650fr) minmax(0,530fr);
+        width:100%;min-width:0;align-items:stretch;overflow:hidden;box-sizing:border-box;
+    }
+    .task-form-panel {min-width:0;width:auto;max-width:none;}
+    .task-schedule-panel {min-width:0;width:auto;min-height:0;max-height:none;overflow:visible;background:#f8fafc;border-left:1px solid #e2e8f0;}
+    .task-schedule-panel > .p-3 {width:100%;min-width:0;box-sizing:border-box;}
+    #<%= mdlEditTask.ClientID %> .modal-dialog {
+        width:min(1180px,calc(100vw - 32px))!important;
+        max-width:calc(100vw - 32px)!important;
+        /* Không tăng chiều cao popup theo nội dung vượt quá màn hình. */
+        max-height:calc(100vh - 24px)!important;
+        margin:12px auto!important;
+        transition:transform .3s ease!important;
+    }
+    #<%= mdlEditTask.ClientID %> .modal-content {
+        display:flex;
+        flex-direction:column;
+        max-height:calc(100vh - 24px);
+        overflow:hidden;
+    }
+    #<%= mdlEditTask.ClientID %> .modal-body {
+        min-height:0;
+        overflow-y:auto;
+        overscroll-behavior:contain;
+    }
+    #pnlTaskForm .row > [class*="col-"] {min-width:0;}
+    .task-edit-wrapper .task-context-card {padding:14px;}
+    .task-edit-wrapper .task-code-prefix {flex-basis:92px;width:92px;min-width:92px;}
+    .task-edit-wrapper .task-meta-controls {grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;}
+    .task-edit-wrapper .task-meta-controls .priority-box {min-width:0;}
+    .task-edit-wrapper .task-meta-controls .d-flex {min-width:0;}
+    .task-edit-wrapper .task-meta-controls #prioritySelector {flex-wrap:nowrap;min-width:0;}
+    .task-edit-wrapper .task-meta-controls #prioritySelector > * {min-width:0;}
+    .task-edit-wrapper .task-dates-row > [class*="col-"] {min-width:0;}
+    .task-edit-wrapper .task-date-readonly {cursor:pointer!important;background:#f8fafc!important;border:1px dashed #cbd5e1!important;color:#475569!important;}
+    .task-edit-wrapper .task-date-readonly:focus {box-shadow:none!important;}
+    .task-edit-wrapper .task-date-readonly:disabled {cursor:not-allowed!important;}
+    .task-edit-wrapper #pnlTaskSchedule .apt-detail-header {min-height:40px;}
+    @media(max-width:1199.98px) {
+        .task-edit-wrapper {grid-template-columns:minmax(0,1fr);}
+        .task-schedule-panel {border-left:0;border-top:1px solid #e2e8f0;}
+        #<%= mdlEditTask.ClientID %> .modal-dialog {width:min(750px,calc(100vw - 32px))!important;}
+    }
+    @media(max-width:575.98px) {
+        .task-edit-wrapper .task-meta-controls {grid-template-columns:1fr;}
+        .task-edit-wrapper .task-code-prefix {flex-basis:68px;width:68px;min-width:68px;}
+    }
 
     /* ===================================================================
        GLOBAL LOADING OVERLAY (MỜ ẢO ĐỈNH CAO)
@@ -139,26 +195,60 @@
     @keyframes stSpinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes stPulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-    /* Lịch dự kiến độc lập: không phụ thuộc CMSMasterJs.DrawTaskCalendarGrid. */
-    #local-task-timeline-container .ql-local-cal-toolbar { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px; }
-    #local-task-timeline-container .ql-local-cal-title { color:#4b1e82;font-size:14px;font-weight:800;text-align:center; }
-    #local-task-timeline-container .ql-local-cal-nav { display:inline-grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border:1px solid #ddd2ec;border-radius:7px;background:#fff;color:#54218d;cursor:pointer; }
-    #local-task-timeline-container .ql-local-cal-nav:hover { background:#efe6fc;border-color:#bd9be2; }
-    #local-task-timeline-container .ql-local-cal-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px; }
-    #local-task-timeline-container .ql-local-cal-dow { padding:5px 0;text-align:center;color:#725586;font-size:10.5px;font-weight:750; }
-    #local-task-timeline-container .ql-local-cal-day { display:flex;flex-direction:column;justify-content:space-between;gap:4px;min-height:47px;min-width:0;padding:5px 3px;border:1px solid #eeeaf4;border-radius:7px;background:#fff;color:#4d4661;text-align:left; }
-    #local-task-timeline-container .ql-local-cal-day.is-outside { background:#faf9fc;color:#a5a0ae; }
-    #local-task-timeline-container .ql-local-cal-day.is-free { background:#f1fbf5;border-color:#ccedda;color:#176a45; }
-    #local-task-timeline-container .ql-local-cal-day.is-busy { background:#eee7fa;border-color:#ceb5e9;color:#54218d; }
-    #local-task-timeline-container .ql-local-cal-day.is-holiday { background:#fff4e7;border-color:#f2d4aa;color:#956014; }
-    #local-task-timeline-container .ql-local-cal-day.is-weekend { background:#f6f2f9;border-color:#e2d8e9;color:#82658d; }
-    #local-task-timeline-container .ql-local-cal-day.is-in-range { cursor:help; }
-    #local-task-timeline-container .ql-local-cal-day.is-in-range:hover { outline:2px solid #ad82d7;outline-offset:0; }
-    #local-task-timeline-container .ql-local-cal-number { font-size:11px;font-weight:800; }
-    #local-task-timeline-container .ql-local-cal-caption { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px;font-weight:650; }
-    #local-task-timeline-container .ql-local-cal-legend { display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;color:#6f6480;font-size:11px; }
-    #local-task-timeline-container .ql-local-cal-legend b { display:inline-block;width:9px;height:9px;margin-right:4px;border-radius:3px;vertical-align:baseline; }
-    #local-task-timeline-container .ql-local-cal-empty { padding:18px 9px;text-align:center;color:#857c91;font-size:12px; }
+    /* Lịch tương tác. Tím = công việc, vàng cam = lễ/nghỉ, mốc ngày = viền. */
+    #local-task-timeline-container {min-width:0;}
+    #local-task-timeline-container .ql-local-cal-toolbar {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+    #local-task-timeline-container .ql-local-cal-title {color:#4b1e82;font-size:14px;font-weight:800;text-align:center;}
+    #local-task-timeline-container .ql-local-cal-nav {display:inline-grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border:1px solid #ddd2ec;border-radius:8px;background:#fff;color:#54218d;cursor:pointer;}
+    #local-task-timeline-container .ql-local-cal-nav:hover {background:#efe6fc;border-color:#bd9be2;}
+    #local-task-timeline-container .ql-local-cal-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
+    #local-task-timeline-container .ql-local-cal-dow {padding:6px 0;text-align:center;color:#725586;font-size:10.5px;font-weight:750;}
+    #local-task-timeline-container .ql-local-cal-day {position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:3px;min-height:57px;min-width:0;padding:5px 4px;border:1px solid #eeeaf4;border-radius:8px;background:#fff;color:#4d4661;text-align:left;font:inherit;transition:background .15s,border-color .15s,box-shadow .15s;overflow:hidden;}
+    #local-task-timeline-container button.ql-local-cal-day {cursor:pointer;}
+    #local-task-timeline-container .ql-local-cal-day:disabled {cursor:default;opacity:1;}
+    #local-task-timeline-container .ql-local-cal-day.is-locked {color:#7b7b8b !important;border-color:#d7d7df !important;background:repeating-linear-gradient(-45deg,#f1f1f5 0 10px,#e5e5ec 10px 20px) !important;box-shadow:none !important;pointer-events:none;}
+    #local-task-timeline-container .ql-local-cal-day.is-locked .ql-local-cal-number,
+    #local-task-timeline-container .ql-local-cal-day.is-locked .ql-local-cal-caption {color:#767686 !important;}
+    #local-task-timeline-container .ql-local-cal-day.is-locked .ql-local-cal-off-badge {border-color:#d3d3da !important;background:#efeff3 !important;color:#6f6f7d !important;}
+    #local-task-timeline-container .ql-local-cal-day.is-outside {background:#faf9fc;color:#a5a0ae;}
+    /* Chỉ làm mờ ngày THÁNG TRƯỚC nằm ở đầu lưới; ngày THÁNG SAU ở cuối lưới vẫn rõ màu. */
+    #local-task-timeline-container .ql-local-cal-day.is-previous-month {opacity:.58;}
+    #local-task-timeline-container .ql-local-cal-day.is-free {background:#fff;border-color:#e7e4ec;color:#3b2e4e;}
+    #local-task-timeline-container .ql-local-cal-day.is-free .ql-local-cal-caption {color:#a49aaf;font-weight:600;}
+    #local-task-timeline-container .ql-local-cal-day.is-busy {background:#eee7fa;border-color:#ceb5e9;color:#54218d;}
+    #local-task-timeline-container .ql-local-cal-day.is-holiday {background:#fff7e7;border-color:#f6d9a9;color:#9c5112;}
+    #local-task-timeline-container .ql-local-cal-day.is-weekend {background:#f1f6fd;border-color:#d9e5f5;color:#496886;}
+    #local-task-timeline-container .ql-local-cal-day.is-weekend .ql-local-cal-number {color:#496886;}
+    #local-task-timeline-container .ql-local-cal-day.is-start {box-shadow:inset 0 0 0 2px #7c3aed;}
+    #local-task-timeline-container .ql-local-cal-day.is-end {box-shadow:inset 0 0 0 2px #2563eb;}
+    #local-task-timeline-container .ql-local-cal-day.is-start.is-end {box-shadow:inset 0 0 0 2px #7c3aed,0 0 0 1px #2563eb;}
+    #local-task-timeline-container button.ql-local-cal-day:not([aria-disabled="true"]):hover {z-index:1;border-color:#9b72ca;box-shadow:inset 0 0 0 1px #8b5cc6;}
+    #local-task-timeline-container .ql-local-cal-day:focus-visible {outline:2px solid #6d28d9;outline-offset:1px;z-index:2;}
+    #local-task-timeline-container .ql-local-cal-number {font-size:11.5px;font-weight:850;line-height:1.35;}
+    #local-task-timeline-container .ql-local-cal-caption {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px;font-weight:700;line-height:1.3;}
+    #local-task-timeline-container .ql-local-cal-off-badge {display:inline-flex;gap:3px;align-items:center;justify-content:center;width:max-content;max-width:100%;padding:2px 4px;border:1px solid #f5d6a3;border-radius:5px;background:#ffedcf;color:#a6500b;font-size:9px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #local-task-timeline-container .ql-local-cal-off-badge.is-weekend {background:#e5eef9;border-color:#cfddf0;color:#526d8d;}
+    .ql-local-holiday-tooltip {position:fixed;z-index:20000;max-width:min(280px,calc(100vw - 24px));padding:11px 13px;border:1px solid #ead2ad;border-radius:10px;background:#fffefa;box-shadow:0 10px 28px rgba(48,34,64,.18);color:#51405a;pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .12s ease,transform .12s ease;}
+    .ql-local-holiday-tooltip.is-visible {opacity:1;transform:translateY(0);}
+    .ql-local-holiday-tooltip-head {display:flex;align-items:center;gap:7px;margin-bottom:5px;color:#a8560b;font-size:11px;font-weight:850;}
+    .ql-local-holiday-tooltip-head i {color:#c86a11;}
+    .ql-local-holiday-tooltip-name {font-size:12px;font-weight:650;line-height:1.5;overflow-wrap:anywhere;}
+    .ql-local-holiday-tooltip-date {margin-top:4px;color:#8f8096;font-size:10.5px;}
+    .ql-local-holiday-tooltip::before {content:'';position:absolute;top:calc(50% - 6px);left:-7px;width:11px;height:11px;background:#fffefa;border-left:1px solid #ead2ad;border-bottom:1px solid #ead2ad;transform:rotate(45deg);}
+    .ql-local-holiday-tooltip.is-left::before {left:auto;right:-7px;transform:rotate(225deg);}
+    #local-task-timeline-container .ql-local-cal-legend {display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;color:#6f6480;font-size:10.5px;}
+    #local-task-timeline-container .ql-local-cal-legend span {display:inline-flex;align-items:center;gap:5px;}
+    #local-task-timeline-container .ql-local-cal-legend b {display:inline-block;width:9px;height:9px;border-radius:3px;vertical-align:middle;flex:0 0 9px;}
+    #local-task-timeline-container .ql-local-cal-legend b.is-locked {background:repeating-linear-gradient(-45deg,#e6e6ed 0 4px,#cfcfd9 4px 8px);border:1px solid #cfcfd9;box-sizing:border-box;}
+    #local-task-timeline-container .ql-local-cal-legend b.is-free {background:#fff;border:1px solid #d8d3df;box-sizing:border-box;}
+    #local-task-timeline-container .ql-local-cal-empty {padding:18px 9px;text-align:center;color:#857c91;font-size:12px;}
+    .ql-local-cal-actions {display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 6px;}
+    .ql-local-cal-mode {min-width:0;flex:1 1 145px;border:1px solid #d9cbe9;background:#fff;color:#5a397d;border-radius:8px;padding:7px 8px;font-size:12px;font-weight:750;cursor:pointer;}
+    .ql-local-cal-mode.is-active {background:#f1e8fc;border-color:#a880d5;color:#57218e;box-shadow:inset 0 0 0 1px #d4b8f3;}
+    .ql-local-cal-mode:disabled {opacity:.54;cursor:not-allowed;}
+    .ql-local-cal-hint {min-height:33px;display:flex;align-items:center;gap:6px;margin:7px 0 0;color:#675979;font-size:11.5px;line-height:1.35;}
+    .ql-local-cal-hint.is-error {color:#b45309;font-weight:650;}
+    #qlLocalCalMessage:empty {display:none;}
 </style>
 </asp:Content>
 
@@ -259,21 +349,33 @@
                                 </div>
 
                                 <div id="divRollUpNotice" runat="server" class="mb-3" visible="false">
-                                    <div style="padding: 10px 14px; background: #fff7ed; border: 1px dashed #fdba74; border-radius: 9px; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-lock text-warning" style="font-size: 16px;"></i>
-                                        <span style="color: #9a3412; font-size: 13px; font-weight: 600;">Ngày tháng và Trạng thái bị khóa do tổng hợp tự động từ task con.</span>
+                                    <div class="task-lock-notice">
+                                        <i class="fas fa-lock"></i>
+                                        <span>Ngày tháng và Trạng thái bị khóa do tổng hợp tự động từ task con.</span>
+                                    </div>
+                                </div>
+                                <div id="divChildCompletedNotice" class="mb-3" style="display:none;">
+                                    <div class="task-lock-notice">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Ngày tháng đã bị khóa vì công việc đã hoàn thành, không thể chỉnh sửa thêm.</span>
+                                    </div>
+                                </div>
+                                <div id="divChildInProgressNotice" class="mb-3" style="display:none;">
+                                    <div class="task-lock-notice">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Ngày bắt đầu đã bị khóa vì công việc đang thực hiện. Thời hạn và ngày kết thúc chỉ được điều chỉnh nếu quy tắc tiến độ cho phép.</span>
                                     </div>
                                 </div>
                                 
-                                <div class="row g-3 mb-3 align-items-end">
-                                    <div class="col-md-3">
-                                        <div class="smart-field">
+                                <div class="row g-3 mb-3 align-items-end task-dates-row">
+                                    <div class="col-md-4">
+                                        <div class="smart-field task-lockable" id="wrapNgayBatDau">
                                             <label><i class="far fa-calendar-alt"></i><%= GetResourceText(BackEndResourceKeys.START_DATE) %> <span class="text-danger ms-1">*</span></label>
-                                            <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control px-2" TextMode="Date"></asp:TextBox>
+                                            <asp:TextBox ID="txtEditNgayBatDau" runat="server" CssClass="form-control px-2 task-date-readonly" TextMode="Date"></asp:TextBox>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="smart-field">
+                                    <div class="col-md-4">
+                                        <div class="smart-field task-lockable" id="wrapThoiHan">
                                             <label><i class="fas fa-hourglass-half"></i><%= GetResourceText(BackEndResourceKeys.DURATION) %> <span class="text-danger ms-1">*</span></label>
                                             <div class="input-group">
                                                 <asp:TextBox ID="txtEditThoiHan" runat="server" CssClass="form-control px-2" TextMode="Number" min="1"></asp:TextBox>
@@ -281,7 +383,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="smart-field">
                                             <label style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="far fa-calendar-check me-1 text-success"></i><%= GetResourceText(BackEndResourceKeys.EXPECTED_COMPLETION_DATE) %></label>
                                             <div class="form-control d-flex align-items-center readonly-success px-2">
@@ -290,11 +392,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <asp:LinkButton ID="btnViewScheduleInEdit" runat="server" CssClass="btn w-100 btn-view-schedule" OnClick="btnViewScheduleInEdit_Click" OnClientClick="return toggleLocalTaskSchedule();" ToolTip="Bật hoặc tắt bảng lịch dự kiến">
-                                            <i class="fas fa-calendar-alt me-1"></i> Lịch dự kiến
-                                        </asp:LinkButton>
-                                    </div>
+
                                 </div>
                                 
                                 <div class="row g-3">
@@ -313,9 +411,18 @@
                             <div class="p-3">
                                 <div class="apt-detail-header mb-3" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
                                     <h6 class="m-0" style="color: #1e40af; font-weight: 700; font-size: 16px;"><i class="fas fa-calendar-alt me-2"></i>Lịch biểu dự kiến</h6>
-                                    <button type="button" class="btn btn-sm btn-light border" onclick="closeLocalTaskSchedule(); return false;" style="color: #475569; font-weight: 600;"><i class="fas fa-chevron-right me-1"></i>Đóng lịch</button>
+
                                 </div>
                                 <asp:HiddenField ID="hdfLocalScheduleJson" runat="server" />
+                                <div class="ql-local-cal-actions" id="qlLocalCalActions">
+                                    <div class="ql-local-cal-mode-wrap" id="qlWrapCalStart">
+                                        <button type="button" class="ql-local-cal-mode is-active" data-select-boundary="start"><i class="far fa-calendar-alt me-1"></i> Chọn ngày bắt đầu</button>
+                                    </div>
+                                    <div class="ql-local-cal-mode-wrap" id="qlWrapCalEnd">
+                                        <button type="button" class="ql-local-cal-mode" data-select-boundary="end"><i class="far fa-calendar-check me-1"></i> Chọn ngày kết thúc</button>
+                                    </div>
+                                </div>
+                                <div class="ql-local-cal-hint" id="qlLocalCalMessage" role="status" aria-live="polite"></div>
                                 <div class="row-schedule-inner" style="padding: 10px 0;">
                                     <div class="mini-cal-wrap">
                                         <div class="mini-cal" id="local-task-timeline-container"></div>
@@ -434,121 +541,283 @@
 <script type="text/javascript">
 
     // =========================================================
-    // LỊCH DỰ KIẾN: CHỈ CHUYỂN ĐỘNG THEO CHIỀU NGANG
+    // LỊCH DỰ KIẾN: luôn mở, điều chỉnh hai đầu mốc ngay trên lịch.
+    // Lịch & ngày kết thúc nhận trực tiếp từ CalculateTaskEndDate trên server.
     // =========================================================
-    function getLocalTaskScheduleElements() {
-        var wrapper = document.getElementById('taskEditWrapper');
-        var modal = document.getElementById('<%= mdlEditTask.ClientID %>');
-        var dialog = modal ? modal.querySelector('.modal-dialog') : null;
-        var form = document.getElementById('pnlTaskForm');
-        return { wrapper: wrapper, modal: modal, dialog: dialog, form: form };
-    }
-
-    function setLocalTaskScheduleVisible(visible) {
-        var el = getLocalTaskScheduleElements();
-        if (!el.wrapper || !el.dialog || !el.form) return false;
-        if (el.wrapper.classList.contains('is-split') === visible) return true;
-        if (visible) {
-            // Vẽ trước khi animation bắt đầu; panel đang ẩn hoàn toàn nên không làm popup dài xuống.
-            renderLocalSchedule();
-            var formHeight = Math.ceil(el.form.getBoundingClientRect().height);
-            if (formHeight > 0) el.wrapper.style.setProperty('--ql-task-form-height', formHeight + 'px');
+    var qlTaskScheduleState = { mode: 'start', data: null, days: {}, tasks: [], year: 0, month: 0, requestId: 0, timer: null, initialized: false };
+    var qlTaskScheduleApi = '<%= ResolveUrl("~/fTasks/TaskList.aspx/LayLichDuKienCongViec") %>';
+    var qlTaskStartId = '<%= txtEditNgayBatDau.ClientID %>';
+    var qlTaskDurationId = '<%= txtEditThoiHan.ClientID %>';
+    var qlTaskEndId = '<%= txtEditNgayKetThuc.ClientID %>';
+    var qlTaskEndLabelId = '<%= lblNgayKetThuc.ClientID %>';
+    function qlGet(id) {return document.getElementById(id);}
+    function qlDate(s) {var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');if(!m)return null;var d=new Date(+m[1],+m[2]-1,+m[3]);return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?d:null;}
+    function qlKey(d) {return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+    function qlTextDate(s) {var d=qlDate(s);return d?('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear():'--/--/----';}
+    function qlEscape(s) {return $('<div/>').text(s == null ? '' : String(s)).html().replace(/"/g,'&quot;');}
+    function qlMessage(s,error) {$('#qlLocalCalMessage').toggleClass('is-error',!!error).text(s||'');}
+    function qlCanStart() {var el=qlGet(qlTaskStartId);return !!el&&!el.disabled;}
+    function qlCanEnd() {var el=qlGet(qlTaskDurationId);return !!el&&!el.disabled;}
+    // Đọc metadata từ server (không dùng trạng thái vừa click nhưng chưa lưu).
+    function qlGetTaskLockState() {
+        var startEl=qlGet(qlTaskStartId);
+        var phase=!!startEl && startEl.getAttribute('data-ql-task-phase')==='1';
+        var hasChildren=!!startEl && startEl.getAttribute('data-ql-task-children')==='1';
+        var originalStatus=startEl ? startEl.getAttribute('data-ql-task-original-status') : '';
+        var completed=(originalStatus==='2'||originalStatus==='3');
+        var doing=originalStatus==='1';
+        var rollup=phase&&hasChildren;
+        var state={rollup:rollup,completed:completed,inProgress:doing,
+            startLocked:false,durationLocked:false,startReason:'',durationReason:''};
+        if(phase&&hasChildren) {
+            state.startReason='Ngày bắt đầu của giai đoạn đang chịu quy tắc tổng hợp tự động từ các công việc con.';
+            state.durationReason='Thời hạn và ngày kết thúc được tổng hợp từ các công việc con, không thể sửa trực tiếp.';
+        } else if(completed) {
+            state.startReason='Công việc đã hoàn thành nên không thể chỉnh sửa ngày bắt đầu.';
+            state.durationReason='Công việc đã hoàn thành nên không thể chỉnh sửa thời hạn hoặc ngày kết thúc.';
+        } else if(doing) {
+            state.startReason='Công việc đang thực hiện nên ngày bắt đầu đã bị khóa.';
+            if(hasChildren) state.durationReason='Thời hạn được tổng hợp từ các công việc con, không thể sửa trực tiếp.';
+        } else if(hasChildren) {
+            state.durationReason='Thời hạn được tổng hợp từ các công việc con, nhưng ngày bắt đầu vẫn có thể thay đổi khi chưa thực hiện.';
         }
-        // Modal và panel bắt đầu/hoàn tất cùng một nhịp. Không để browser tái căn giữa theo chiều cao.
-        el.wrapper.classList.toggle('is-split', visible);
-        el.dialog.classList.toggle('ql-task-schedule-expanded', visible);
-        return true;
+        return state;
     }
-
-    function toggleLocalTaskSchedule() {
-        var el = getLocalTaskScheduleElements();
-        if (!el.wrapper) return false;
-        if (el.wrapper.classList.contains('is-split')) { setLocalTaskScheduleVisible(false); return false; }
-        var hiddenField = document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');
-        if(hiddenField && hiddenField.value && hiddenField.value.trim()) { setLocalTaskScheduleVisible(true);return false; }
-        // Trường hợp dữ liệu chưa được nạp (ngày không hợp lệ/lỗi truy vấn): dùng fallback server cũ.
-        return true;
+    // Không dùng các bộ nhớ disabled của nút lịch: chế độ start/end thay đổi động.
+    function qlRememberBaseDisabled($el){
+        if($el.length && typeof $el.data('ql-base-disabled')==='undefined') $el.data('ql-base-disabled',$el.prop('disabled'));
     }
-
-    function openLocalTaskSchedule() { setLocalTaskScheduleVisible(true); }
-    function closeLocalTaskSchedule() { setLocalTaskScheduleVisible(false); }
-
-    function resetLocalTaskScheduleState(clearJson) {
-        var el=getLocalTaskScheduleElements();
-        if(el.wrapper) {el.wrapper.classList.remove('is-split');el.wrapper.style.removeProperty('--ql-task-form-height');}
-        if(el.dialog) el.dialog.classList.remove('ql-task-schedule-expanded');
-        var cal=$('#local-task-timeline-container');
-        if(cal.length) cal.empty().removeData('mc');
-        if(clearJson) { var hiddenField=document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');if(hiddenField) hiddenField.value=''; }
+    function qlApplyLockable($wrap, locked, reason){
+        if(!$wrap.length)return;
+        $wrap.toggleClass('is-locked',!!locked);
+        if(locked) $wrap.attr('data-lock-reason',reason||'Tính năng này hiện bị khóa.');
+        else $wrap.removeAttr('data-lock-reason');
     }
-
-    (function bindTaskEditModalCloseBehavior() {
-        var modalSelector='#<%= mdlEditTask.ClientID %>';
-        $(document).off('hide.bs.modal.taskEditScheduleClose',modalSelector).on('hide.bs.modal.taskEditScheduleClose',modalSelector,function () {
-            var dialog=this.querySelector('.modal-dialog');
-            if(!dialog)return;
-            var currentWidth=dialog.getBoundingClientRect().width;
-            if(currentWidth>0) {dialog.style.setProperty('width',currentWidth+'px','important');dialog.style.setProperty('max-width',currentWidth+'px','important');}
-            dialog.style.setProperty('transition','transform .3s ease-out','important');
-        }).off('hidden.bs.modal.taskEditScheduleClose',modalSelector).on('hidden.bs.modal.taskEditScheduleClose',modalSelector,function () {
-            var dialog=this.querySelector('.modal-dialog');
-            resetLocalTaskScheduleState(true);
-            if(dialog){dialog.style.removeProperty('width');dialog.style.removeProperty('max-width');dialog.style.removeProperty('transition');}
+    function qlApplyTaskLockUI(){
+        var state=qlGetTaskLockState();
+        var $start=$('#'+qlTaskStartId),$duration=$('#'+qlTaskDurationId);
+        qlRememberBaseDisabled($start);qlRememberBaseDisabled($duration);
+        // C# đặt quyền gốc khi mở task; JS chỉ có thể siết chặt, không được mở khóa trái quyền server.
+        state.startLocked=!!($start.data('ql-base-disabled') || state.rollup || state.completed || state.inProgress);
+        state.durationLocked=!!($duration.data('ql-base-disabled') || state.completed || state.rollup);
+        // Trạng thái đang thực hiện trên client chỉ dùng để diễn giải lock đã áp ở server.
+        if(state.inProgress)state.startLocked=true;
+        if(state.completed) {state.startLocked=true;state.durationLocked=true;}
+        $start.prop('disabled',state.startLocked);
+        $duration.prop('disabled',state.durationLocked);
+        qlApplyLockable($('#wrapNgayBatDau'),state.startLocked,
+            state.startReason || 'Ngày bắt đầu đang bị khóa theo quy tắc tiến độ hoặc quyền chỉnh sửa.');
+        qlApplyLockable($('#wrapThoiHan'),state.durationLocked,
+            state.durationReason || 'Thời hạn hiện không được phép chỉnh sửa.');
+        var $startButton=$('#qlLocalCalActions [data-select-boundary="start"]');
+        var $endButton=$('#qlLocalCalActions [data-select-boundary="end"]');
+        $startButton.prop('disabled',state.startLocked);
+        $endButton.prop('disabled',state.durationLocked);
+        qlApplyLockable($('#qlWrapCalStart'),state.startLocked,
+            state.startReason || 'Không thể chọn lại ngày bắt đầu vì ngày này đã bị khóa.');
+        qlApplyLockable($('#qlWrapCalEnd'),state.durationLocked,
+            state.durationReason || 'Không thể chọn ngày kết thúc vì thời hạn đang bị khóa.');
+        // Mỗi lần chỉ hiện MỘT lý do khóa, giữ đúng quy tắc ưu tiên ban đầu.
+        // Phase có con: tổng hợp tự động (kể cả khi đã hoàn thành).
+        // Các trường hợp còn lại: hoàn thành > đang thực hiện.
+        var showRollupNotice=state.rollup;
+        var showCompletedNotice=!showRollupNotice&&state.completed;
+        var showInProgressNotice=!showRollupNotice&&!showCompletedNotice&&state.inProgress;
+        $('#divChildCompletedNotice').toggle(showCompletedNotice);
+        $('#divChildInProgressNotice').toggle(showInProgressNotice);
+        return state;
+    }
+    // Tooltip tông cam, nổi bên ngoài modal và nằm ở đúng vùng được hover.
+    function qlShowLockTooltip(target){
+        var reason=target.getAttribute('data-lock-reason');if(!reason)return;
+        var $tip=$('#qlTaskLockTooltip');
+        if(!$tip.length)$tip=$('<div id="qlTaskLockTooltip" class="ql-task-lock-tip" role="tooltip"/>').appendTo('body');
+        $tip.removeClass('is-visible').empty()
+            .append($('<div class="ql-task-lock-tip-head"/>').append('<i class="fas fa-lock" aria-hidden="true"></i>').append($('<span/>').text('Thông tin ràng buộc')))
+            .append($('<div class="ql-task-lock-tip-text"/>').text(reason)).css({left:'0px',top:'0px'}).show();
+        var rect=target.getBoundingClientRect(),w=$tip.outerWidth(),h=$tip.outerHeight();
+        var modal=document.getElementById('<%= mdlEditTask.ClientID %>');
+        var modalTop=modal?modal.getBoundingClientRect().top:0;
+        // Nếu phía trên đụng header popup, hạ tooltip xuống dưới control.
+        var top=rect.top-h-10;
+        if(top<Math.max(12,modalTop+65))top=rect.bottom+10;
+        if(top+h>window.innerHeight-12)top=Math.max(12,rect.top-h-10);
+        top=Math.max(12,Math.min(top,window.innerHeight-h-12));
+        var left=rect.left+(rect.width-w)/2;
+        left=Math.max(12,Math.min(left,window.innerWidth-w-12));
+        $tip.css({left:left+'px',top:top+'px'}).addClass('is-visible');
+    }
+    function qlHideLockTooltip(){$('#qlTaskLockTooltip').removeClass('is-visible').hide();}
+    $(document).off('mouseenter.qlTaskLock focusin.qlTaskLock','[data-lock-reason]')
+        .on('mouseenter.qlTaskLock focusin.qlTaskLock','[data-lock-reason]',function(){qlShowLockTooltip(this);});
+    $(document).off('mouseleave.qlTaskLock focusout.qlTaskLock','[data-lock-reason]')
+        .on('mouseleave.qlTaskLock focusout.qlTaskLock','[data-lock-reason]',qlHideLockTooltip);
+    $(window).off('scroll.qlTaskLock resize.qlTaskLock').on('scroll.qlTaskLock resize.qlTaskLock',qlHideLockTooltip);
+    function qlSetMode(m) {
+        var lockState=qlApplyTaskLockUI();
+        if(m==='start'&&!qlCanStart()&&qlCanEnd())m='end';
+        if(m==='end'&&!qlCanEnd()&&qlCanStart())m='start';
+        qlTaskScheduleState.mode=m;
+        $('#qlLocalCalActions [data-select-boundary]').each(function(){
+            var isStart=this.getAttribute('data-select-boundary')==='start';
+            $(this).toggleClass('is-active',isStart?(m==='start'):(m==='end'))
+                .prop('disabled',isStart?!qlCanStart():!qlCanEnd());
         });
-    })();
-
-    // Renderer nội bộ: nếu Master không có DrawTaskCalendarGrid vẫn vẽ lịch được.
-    function renderLocalSchedule() {
-        var cal = $('#local-task-timeline-container');
-        if (!cal.length) return;
-        var hiddenField = document.getElementById('<%= hdfLocalScheduleJson.ClientID %>');
-        if (!hiddenField || !hiddenField.value) { cal.html('<div class="ql-local-cal-empty">Chưa có dữ liệu lịch dự kiến.</div>'); return; }
-        var data;
-        try { data = JSON.parse(hiddenField.value); } catch (e) { cal.html('<div class="ql-local-cal-empty">Dữ liệu lịch không hợp lệ.</div>'); return; }
-        var keys = Object.keys(data || {}).sort();
-        if (!keys.length) { cal.html('<div class="ql-local-cal-empty">Không có ngày trong lịch.</div>'); return; }
-        var parts = keys[0].split('-');
-        var baseDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-        var oldState = cal.data('mc');
-        // Sau UpdatePanel, task mới sẽ trở về tháng bắt đầu; task cũ giữ tháng đang xem.
-        var cacheId = keys[0] + '|' + keys[keys.length - 1];
-        var current = oldState && oldState.cacheId === cacheId ? oldState : {year:baseDate.getFullYear(),month:baseDate.getMonth()};
-        current.data = data;current.cacheId = cacheId;current.minKey = keys[0];current.maxKey = keys[keys.length-1];
-        cal.data('mc', current);
-        drawLocalScheduleMonth();
+        if(!qlCanStart()&&!qlCanEnd()) {
+            qlMessage(lockState.rollup?'Lịch giai đoạn được tổng hợp từ các công việc con.':
+                lockState.completed?'Công việc đã hoàn thành nên không thể chỉnh lại ngày trên lịch.':
+                'Không thể chỉnh ngày do quyền hạn hoặc ràng buộc tiến độ.',false);
+        } else if(m==='end') qlMessage('Chọn ngày kết thúc (ngày làm việc); thời hạn sẽ tự tính lại.',false);
+        else qlMessage('Chọn ngày bắt đầu; hạn kết thúc sẽ tính lại theo lịch làm việc.',false);
     }
+    function qlInitialSchedule() {
+        var hidden=qlGet('<%= hdfLocalScheduleJson.ClientID %>');var model=null;
+        try {model=JSON.parse(hidden&&hidden.value||'null');}catch(ex){}
+        qlTaskScheduleState.data=model||{};
+        qlTaskScheduleState.days=(model&&model.days)||{};
+        qlTaskScheduleState.tasks=(model&&model.tasks)||[];
+        qlTaskScheduleState.requestId++;
+        var d=qlDate(qlGet(qlTaskStartId)&&qlGet(qlTaskStartId).value)||new Date();
+        qlTaskScheduleState.year=d.getFullYear();qlTaskScheduleState.month=d.getMonth();
+        qlSetMode(qlCanStart()?'start':'end');
+        qlDrawScheduleMonth();
+        qlRefreshSchedule(false);
+    }
+    function qlRefreshSchedule(chosenEnd) {
+        if(qlTaskScheduleState.timer)clearTimeout(qlTaskScheduleState.timer);
+        var start=qlGet(qlTaskStartId),duration=qlGet(qlTaskDurationId);
+        if(!start||!duration||!qlDate(start.value)||!/^\d+$/.test(duration.value||'')||parseInt(duration.value,10)<1){qlMessage('Ngày bắt đầu hoặc thời hạn không hợp lệ.',true);return;}
+        var st=qlTaskScheduleState,req=++st.requestId;
+        qlMessage('Đang đồng bộ với lịch làm việc của dự án…',false);
+        $.ajax({type:'POST',url:qlTaskScheduleApi,contentType:'application/json; charset=utf-8',dataType:'json',
+            data:JSON.stringify({ngayBatDau:start.value,thoiHan:parseInt(duration.value,10),ngayKetThucChon:chosenEnd||'',nam:st.year,thang:st.month+1})
+        }).done(function(response){
+            if(req!==st.requestId)return;
+            var r=response&&response.d?response.d:response;
+            if(!r||!r.success){qlMessage(r&&r.message?r.message:'Không tính được ngày theo lịch làm việc.',true);return;}
+            if(r.days) $.extend(st.days,r.days);
+            if(r.duration!=null) duration.value=String(r.duration);
+            if(r.endDate) {qlGet(qlTaskEndId).value=r.endDate;$(qlGet(qlTaskEndLabelId)).text(qlTextDate(r.endDate));}
+            qlDrawScheduleMonth();
+            qlSetMode(st.mode);
+        }).fail(function(xhr){if(req!==st.requestId)return;qlMessage('Không kết nối được bộ tính lịch. Chưa thay đổi dữ liệu lưu; vui lòng thử lại.',true);});
+    }
+    // Chỉ gạch chéo do RÀNG BUỘC NGHIỆP VỤ cha/phụ thuộc, không theo
+    // quyền sửa/trạng thái hoàn thành và không theo mốc bắt đầu đã chọn.
+    // GetMinStartDate (server) lấy max(ngày cha bắt đầu, ngày phụ thuộc kết thúc + 1).
+    function qlGetLockedDateReason(key, row) {
+        var startEl=qlGet(qlTaskStartId);
+        var minStart=(startEl&&startEl.getAttribute('min'))||'';
+        // Ngày nào TRƯỚC mốc tiến độ đều bị sọc (kể cả lễ/nghỉ),
+        // nhưng lễ/nghỉ SAU mốc vẫn giữ màu của chính nó.
+        if(minStart&&key<minStart)
+            return 'Ngoài giới hạn tiến độ: chỉ được bắt đầu từ '+qlTextDate(minStart)+'.';
+        return '';
+    }
+    function qlHideHolidayTooltip() {
+        $('.ql-local-holiday-tooltip').removeClass('is-visible').hide();
+    }
+    function qlPositionHolidayTooltip(target) {
+        var $tip=$('.ql-local-holiday-tooltip'),$cell=$(target);
+        if(!$tip.length||!$cell.length)return;
+        var r=target.getBoundingClientRect(),w=$tip.outerWidth(),h=$tip.outerHeight();
+        var left=r.right+10,isLeft=left+w>window.innerWidth-12;
+        if(isLeft)left=r.left-w-10;
+        left=Math.max(12,Math.min(left,window.innerWidth-w-12));
+        var top=Math.max(12,Math.min(r.top+(r.height-h)/2,window.innerHeight-h-12));
+        $tip.toggleClass('is-left',isLeft).css({left:left+'px',top:top+'px'});
+    }
+    // Tooltip nằm ngoài popup và ô lịch, tránh bị overflow:hidden cắt nội dung.
+    $(document).off('mouseenter.qlHolidayTip focusin.qlHolidayTip','#local-task-timeline-container .ql-local-cal-day.is-holiday')
+      .on('mouseenter.qlHolidayTip focusin.qlHolidayTip','#local-task-timeline-container .ql-local-cal-day.is-holiday',function(){
+        var name=this.getAttribute('data-ql-holiday')||'';
+        if(!name)return;
+        var $tip=$('.ql-local-holiday-tooltip');
+        if(!$tip.length)$tip=$('<div class="ql-local-holiday-tooltip" role="tooltip"/>').appendTo('body');
+        $tip.removeClass('is-visible is-left').empty()
+            .append($('<div class="ql-local-holiday-tooltip-head"><i class="fas fa-calendar-day"></i><span>Nghỉ lễ</span></div>'))
+            .append($('<div class="ql-local-holiday-tooltip-name"/>').text(name))
+            .append($('<div class="ql-local-holiday-tooltip-date"/>').text('Ngày '+qlTextDate(this.getAttribute('data-cal-date'))))
+            .show();
+        qlPositionHolidayTooltip(this);
+        $tip.addClass('is-visible');
+      });
+    $(document).off('mouseleave.qlHolidayTip focusout.qlHolidayTip','#local-task-timeline-container .ql-local-cal-day.is-holiday')
+      .on('mouseleave.qlHolidayTip focusout.qlHolidayTip','#local-task-timeline-container .ql-local-cal-day.is-holiday',qlHideHolidayTooltip);
+    $(window).off('scroll.qlHolidayTip resize.qlHolidayTip').on('scroll.qlHolidayTip resize.qlHolidayTip',qlHideHolidayTooltip);
 
-    function drawLocalScheduleMonth() {
-        var cal = $('#local-task-timeline-container'), mc = cal.data('mc');
-        if (!mc || !mc.data) return;
-        var year = mc.year, month = mc.month;
-        var first = new Date(year, month, 1);
-        var offset = (first.getDay() + 6) % 7;
-        var days = new Date(year, month + 1, 0).getDate();
-        var totalCells = Math.ceil((offset + days) / 7) * 7;
-        var weekdayNames = ['T2','T3','T4','T5','T6','T7','CN'];
-        var html = '<div class="ql-local-cal-toolbar"><button type="button" class="ql-local-cal-nav" data-cal-step="-1" aria-label="Tháng trước"><i class="fas fa-chevron-left"></i></button><span class="ql-local-cal-title">Tháng '+(month+1)+'/'+year+'</span><button type="button" class="ql-local-cal-nav" data-cal-step="1" aria-label="Tháng sau"><i class="fas fa-chevron-right"></i></button></div><div class="ql-local-cal-grid">';
-        weekdayNames.forEach(function (n) { html += '<div class="ql-local-cal-dow">'+n+'</div>'; });
-        function escapeHtml(v) { return $('<div/>').text(v == null ? '' : String(v)).html(); }
-        function dateKey(d) { return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2); }
-        for (var n = 0; n < totalCells; n++) {
-            var date = new Date(year, month, n-offset+1), key=dateKey(date), row=mc.data[key];
-            var status = row && /^(busy|free|holiday|weekend)$/.test(row.status) ? row.status : '';
-            var caption = row && row.text ? String(row.text) : '';
-            var summary = row && Array.isArray(row.tasks) ? row.tasks.map(function(t){return '[' + (t.code||'') + '] ' + (t.name||'');}).join('\n') : '';
-            var tip = escapeHtml((caption ? caption : 'Không có lịch') + (summary ? '\n' + summary : ''));
-            html += '<div class="ql-local-cal-day '+(row?'is-in-range is-'+status:'is-outside')+'" title="'+tip+'"><span class="ql-local-cal-number">'+date.getDate()+'</span>'+(row ? '<span class="ql-local-cal-caption">'+escapeHtml(caption || (status==='free'?'Trống':''))+'</span>' : '')+'</div>';
+    function qlDrawScheduleMonth() {
+        var container=$('#local-task-timeline-container'),st=qlTaskScheduleState;
+        if(!container.length||!st.year)return;
+        var year=st.year,month=st.month,first=new Date(year,month,1);
+        var offset=(first.getDay()+6)%7,totalCells=Math.max(35,Math.ceil((offset+new Date(year,month+1,0).getDate())/7)*7);
+        var start=(qlGet(qlTaskStartId)||{}).value||'',end=(qlGet(qlTaskEndId)||{}).value||'';
+        var canSelect=st.mode==='start'?qlCanStart():qlCanEnd();
+        var html='<div class="ql-local-cal-toolbar"><button type="button" class="ql-local-cal-nav" data-cal-step="-1" aria-label="Tháng trước"><i class="fas fa-chevron-left"></i></button><span class="ql-local-cal-title">Tháng '+(month+1)+'/'+year+'</span><button type="button" class="ql-local-cal-nav" data-cal-step="1" aria-label="Tháng sau"><i class="fas fa-chevron-right"></i></button></div><div class="ql-local-cal-grid">';
+        ['T2','T3','T4','T5','T6','T7','CN'].forEach(function(n){html+='<div class="ql-local-cal-dow">'+n+'</div>';});
+        for(var n=0;n<totalCells;n++) {
+            var d=new Date(year,month,n-offset+1),key=qlKey(d),row=st.days[key];
+            var selected=!!start&&!!end&&key>=start&&key<=end,isPreviousMonth=d<first;
+            var working=row&&row.working===true,isHoliday=row&&row.status==='holiday',isWeekend=row&&row.status==='weekend';
+            var tasks=st.tasks.filter(function(t){return t.start&&t.end&&key>=t.start&&key<=t.end;});
+            var isBusy=working&&(selected||tasks.length>0);
+            var status=!row?'is-outside':isHoliday?'is-holiday':isWeekend?'is-weekend':isBusy?'is-busy':'is-free';
+            var caption=isHoliday?(row.text||'Ngày lễ'):isWeekend?'Cuối tuần':isBusy?(tasks.length?(tasks.length===1?'['+tasks[0].code+']':tasks.length+' CV'):'Có công việc'):row&&!working?'Ngày nghỉ':row?'Trống':'';
+            var lockedReason=qlGetLockedDateReason(key,row);
+            var locked=!!lockedReason;
+            // Không thể click khác với bị sọc: lễ/cuối tuần trong vùng hợp lệ giữ màu riêng.
+            var disabled=!canSelect||locked||(st.mode==='end'&&(!row||row.working!==true));
+            var holidayName=isHoliday?(row.text||'Ngày nghỉ lễ'):'';
+            var tip=(lockedReason||(isHoliday?'Nghỉ lễ':(row&&row.text?row.text:caption)))+(tasks.length?'\n'+tasks.map(function(t){return '['+t.code+'] '+t.name;}).join('\n'):'');
+            // aria-disabled cho ngày không thể chọn: vẫn bắt được hover để hiện tooltip lễ.
+            // Sự kiện click kiểm tra aria-disabled bên dưới, không dùng native disabled.
+            html+='<button type="button" class="ql-local-cal-day '+status+(isPreviousMonth?' is-previous-month':'')+(key===start?' is-start':'')+(key===end?' is-end':'')+(locked?' is-locked':'')+'" data-cal-date="'+key+'"'+(isHoliday?' data-ql-holiday="'+qlEscape(holidayName)+'"':'')+((locked||isHoliday)?'':' title="'+qlEscape(tip||key)+'"')+' aria-label="Ngày '+qlTextDate(key)+(isHoliday?' - Nghỉ lễ: '+qlEscape(holidayName):'')+(locked?(' - '+lockedReason):'')+'" aria-disabled="'+(disabled?'true':'false')+'"'+(disabled?' tabindex="-1"':'')+'>';
+            html+='<span class="ql-local-cal-number">'+d.getDate()+'</span>';
+            if(isHoliday) html+='<span class="ql-local-cal-off-badge"><i class="fas fa-mug-hot"></i> Nghỉ lễ</span>';
+            else if(isWeekend) html+='<span class="ql-local-cal-off-badge is-weekend">Cuối tuần</span>';
+            else html+='<span class="ql-local-cal-caption">'+qlEscape(caption)+'</span>';
+            html+='</button>';
         }
-        html += '</div><div class="ql-local-cal-legend"><span><b style="background:#a17bd2"></b>Có công việc</span><span><b style="background:#66b38a"></b>Trống</span><span><b style="background:#e6b476"></b>Nghỉ lễ</span><span><b style="background:#b3a4c2"></b>Cuối tuần</span></div>';
-        cal.html(html);
+        html+='</div><div class="ql-local-cal-legend"><span><b style="background:#a17bd2"></b>Có công việc</span><span><b class="is-free"></b>Trống</span><span><b style="background:#f0bd68"></b>Nghỉ lễ</span><span><b style="background:#aac5e7"></b>Cuối tuần</span><span><b style="background:#7c3aed"></b>Ngày bắt đầu</span><span><b style="background:#2563eb"></b>Ngày kết thúc</span><span><b class="is-locked"></b>Ngoài giới hạn tiến độ</span></div>';
+        qlHideHolidayTooltip();
+        container.html(html);
     }
-    $(document).off('click.qlLocalCalendar').on('click.qlLocalCalendar', '#local-task-timeline-container [data-cal-step]', function () {
-        var cal=$('#local-task-timeline-container'), mc=cal.data('mc');
-        if (!mc) return;
-        var date=new Date(mc.year,mc.month+parseInt(this.getAttribute('data-cal-step'),10),1);
-        mc.year=date.getFullYear();mc.month=date.getMonth();drawLocalScheduleMonth();
+    $(document).off('click.qlScheduleSelect').on('click.qlScheduleSelect','#qlLocalCalActions [data-select-boundary]',function(){qlSetMode(this.getAttribute('data-select-boundary'));qlDrawScheduleMonth();});
+    $(document).off('click.qlScheduleDate').on('click.qlScheduleDate','#local-task-timeline-container [data-cal-date]',function(){
+        if(this.getAttribute('aria-disabled')==='true')return;
+        var key=this.getAttribute('data-cal-date'),st=qlTaskScheduleState;
+        if(st.mode==='start') {
+            if(!qlCanStart())return;
+            var min=(qlGet(qlTaskStartId)||{}).min;
+            if(min&&key<min){qlMessage('Ngày bắt đầu không được trước '+qlTextDate(min)+' do ràng buộc công việc.',true);return;}
+            qlGet(qlTaskStartId).value=key;
+            qlDrawScheduleMonth();qlRefreshSchedule(false);
+        }else{
+            if(!qlCanEnd())return;
+            if(key<(qlGet(qlTaskStartId)||{}).value){qlMessage('Ngày kết thúc không được trước ngày bắt đầu.',true);return;}
+            if(!st.days[key]){qlMessage('Đang tải thông tin ngày làm việc. Vui lòng chọn lại sau.',true);qlRefreshSchedule(false);return;}
+            if(st.days[key].working!==true){qlMessage('Ngày kết thúc phải là ngày làm việc theo lịch biểu chung.',true);return;}
+            qlRefreshSchedule(key);
+        }
     });
-
+    $(document).off('click.qlScheduleNavigate').on('click.qlScheduleNavigate','#local-task-timeline-container [data-cal-step]',function(){
+        var st=qlTaskScheduleState,d=new Date(st.year,st.month+parseInt(this.getAttribute('data-cal-step'),10),1);
+        st.year=d.getFullYear();st.month=d.getMonth();qlDrawScheduleMonth();qlRefreshSchedule(false);
+    });
+    $(document).off('input.qlScheduleDuration').on('input.qlScheduleDuration','#'+qlTaskDurationId,function(){
+        var st=qlTaskScheduleState;
+        if(st.timer)clearTimeout(st.timer);
+        st.timer=setTimeout(function(){qlRefreshSchedule(false);},260);
+    });
+    // HTML readonly vẫn gửi ngày qua WebForms postback; server quyết định quyền sửa.
+    $(document).off('shown.bs.modal.qlScheduleAuto','[id="<%= mdlEditTask.ClientID %>"]')
+      .on('shown.bs.modal.qlScheduleAuto','[id="<%= mdlEditTask.ClientID %>"]',function(){qlInitialSchedule();});
+    $(document).off('hidden.bs.modal.qlScheduleAuto','[id="<%= mdlEditTask.ClientID %>"]')
+      .on('hidden.bs.modal.qlScheduleAuto','[id="<%= mdlEditTask.ClientID %>"]',function(){qlTaskScheduleState.requestId++;if(qlTaskScheduleState.timer)clearTimeout(qlTaskScheduleState.timer);qlHideHolidayTooltip();$('#local-task-timeline-container').empty();});
+    function qlTryInitVisible() {
+        var modal=qlGet('<%= mdlEditTask.ClientID %>');
+        if(modal&&($(modal).hasClass('show')||$(modal).is(':visible'))) qlInitialSchedule();
+    }
     // =========================================================
     // TỰ ĐỘNG ĐÓNG NGOẶC VUÔNG CHO MÃ CÔNG VIỆC
     // =========================================================
@@ -746,6 +1015,7 @@
                 $undo.hide();
             }
         }
+        qlApplyTaskLockUI();
     }
 
     function toggleSmartStatus() {
@@ -799,6 +1069,8 @@
         processMaCvUI();
         processPhaseUI();
         processParentUI();
+        qlApplyTaskLockUI();
+        qlTryInitVisible();
     });
 
     if (window.Sys && Sys.Application) {
@@ -808,6 +1080,8 @@
             processMaCvUI();
             processPhaseUI();
             processParentUI();
+            qlApplyTaskLockUI();
+            setTimeout(qlTryInitVisible, 80);
         });
         
         // Tự động tắt Loading Overlay khi Server xử lý xong Data
@@ -815,23 +1089,6 @@
             hideGlobalLoading();
         });
     }
-
-    $(document).on('change keyup', '#<%= txtEditNgayBatDau.ClientID %>, #<%= txtEditThoiHan.ClientID %>', function () {
-        var startDateStr = $('#<%= txtEditNgayBatDau.ClientID %>').val();
-        var durationStr = $('#<%= txtEditThoiHan.ClientID %>').val();
-        if (startDateStr && durationStr) {
-            var days = parseInt(durationStr);
-            if (!isNaN(days) && days > 0) {
-                var date = new Date(startDateStr);
-                date.setDate(date.getDate() + (days - 1));
-                var d = ("0" + date.getDate()).slice(-2);
-                var m = ("0" + (date.getMonth() + 1)).slice(-2);
-                var y = date.getFullYear();
-                $('#<%= txtEditNgayKetThuc.ClientID %>').val(y + '-' + m + '-' + d);
-                $('#<%= lblNgayKetThuc.ClientID %>').text(d + '/' + m + '/' + y);
-            }
-        }
-    });
 
     function toggleReminderSelection(chk) {
         var hidden = document.getElementById('<%= hdfSelectedReminderIds.ClientID %>');
