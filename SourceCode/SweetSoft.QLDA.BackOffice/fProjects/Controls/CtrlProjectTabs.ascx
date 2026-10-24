@@ -18,12 +18,13 @@
     .project-feature-tabs .nav-link:not(.active):hover > i { color: #54218d !important; opacity: 1 !important; }
     .project-feature-tabs .nav-pills .nav-link.active, .project-feature-tabs .nav-pills .show > .nav-link { color: #ffffff !important; background: #54218d !important; border-color: #54218d !important; box-shadow: none !important; font-weight: 650; }
     .project-feature-tabs .nav-pills .nav-link.active:hover { color: #ffffff !important; background: #481879 !important; border-color: #481879 !important; transform: none; box-shadow: none !important; }
-    /* Luon dat san cho nut X: chi thay opacity/transform, khong thay doi width khi hover. */
+    /* Giu nguyen width tab cu: san 15px + 10px cho nut bo ghim.
+       Khi chua hover chi an dau X, khong thu chieu rong cua tab. */
     .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .unpin-btn {
         display:inline-flex !important;
         flex:0 0 15px;
         width:15px;height:15px;
-        margin-left:10px !important; /* Chua du cho label dich 7px ma khong cham nut X. */
+        margin-left:10px !important;
         align-items:center;justify-content:center;
         border-radius:50%;
         color:#65469d !important;
@@ -101,7 +102,7 @@
     .project-feature-tabs .project-tab-customize-count { flex: 0 0 auto; width: 0; min-width: 0; max-width: 0; height: 18px; margin-left: 0; padding: 0; border-width: 0; overflow: hidden; opacity: 0; transition: max-width 1.15s cubic-bezier(.2, .7, .25, 1), width 1.15s cubic-bezier(.2, .7, .25, 1), opacity .62s ease .10s, margin-left 1.15s cubic-bezier(.2, .7, .25, 1), padding 1.15s cubic-bezier(.2, .7, .25, 1), border-width 1.15s ease; }
     .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:hover .project-tab-customize-label, .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:focus-visible .project-tab-customize-label { max-width: 60px; margin-left: 6px; opacity: 1; }
     .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:hover .project-tab-customize-count, .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:focus-visible .project-tab-customize-count { width: auto; min-width: 18px; max-width: 28px; margin-left: 6px; padding: 0 4px; border-width: 1px; opacity: 1; }
-    /* Nut bo ghim luon duoc giu cho 15px + 5px gap, khong co display:none/block luc hover. */
+    /* Nut bo ghim chi chiem cho khi hover/focus vao tung tab, khong co khoang trong du. */
     /* Mở rộng đồng loạt cả hàng tab khi rê chuột vào vùng thanh điều hướng. Không yêu cầu rê đúng từng icon; focus bàn phím cũng mở rộng toàn hàng. */
     .project-feature-tabs:hover .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .project-tab-label, .project-feature-tabs:focus-within .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .project-tab-label { max-width: 190px; margin-left: 6px; opacity: 1; }
     .project-feature-tabs:hover .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-label, .project-feature-tabs:focus-within .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-label { max-width: 60px; margin-left: 6px; opacity: 1; }
@@ -109,8 +110,8 @@
     /* Khi hover cả thanh, mở rộng tên theo nhịp chậm và mềm hơn để tránh cảm giác bật đột ngột. */
     .project-feature-tabs:hover .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .project-tab-label, .project-feature-tabs:focus-within .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) > .project-tab-label, .project-feature-tabs:hover .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-label, .project-feature-tabs:focus-within .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-label { transition: max-width 1.15s cubic-bezier(.2, .7, .25, 1), opacity .62s ease .10s, margin-left 1.15s cubic-bezier(.2, .7, .25, 1); }
     .project-feature-tabs:hover .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-count, .project-feature-tabs:focus-within .nav-pills .nav-link.project-tab-customize-link .project-tab-customize-count { transition: max-width 1.15s cubic-bezier(.2, .7, .25, 1), width 1.15s cubic-bezier(.2, .7, .25, 1), opacity .62s ease .10s, margin-left 1.15s cubic-bezier(.2, .7, .25, 1), padding 1.15s cubic-bezier(.2, .7, .25, 1), border-width 1.15s ease; }
-    /* Tab chua duoc chon co nen/ vien nhe; hover dam hon ro rang, khong trung trang thai. */
-    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) { color:#536174!important;background:#faf8ff!important;border-color:#e5dcf3!important;box-shadow:0 1px 2px rgba(84,33,141,.035)!important; }
+    /* Trang thai thuong khong vien, nen trong suot de trung voi nen cua trang; hover giu nguyen. */
+    .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) { color:#536174!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important; }
     .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link):hover,.project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link):focus-visible { color:#3f176f!important;background:#e9defb!important;border-color:#c9b2ef!important;box-shadow:0 2px 7px rgba(84,33,141,.12)!important; }
     /* Thanh chức năng trượt xuống khi mở và trượt lên khi thu gọn. */
     .project-feature-tabs { max-height:0!important;max-width:100%;padding:0!important;margin:0!important;opacity:0;transform:translateY(-8px);visibility:hidden;pointer-events:none;overflow-x:auto!important;overflow-y:hidden!important;transition:max-height .38s ease,opacity .22s ease,transform .38s ease,margin .38s ease,padding .38s ease,visibility 0s linear .38s; }
@@ -129,8 +130,8 @@
         .project-feature-tabs .nav-pills .nav-link:not(.active):not(.project-tab-customize-link) { padding:6px 8px!important; }
         .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link { gap:5px!important;padding:5px 7px!important; }
     }
-    /* Dong bo nut Them voi cac tab chua chon: co vien ngoai, nen nhe va chu cung co chu. */
-    .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link { min-height:32px!important;gap:7px!important;padding:5px 9px!important;color:#54218d!important;background:#faf8ff!important;border:1px solid #e5dcf3!important;border-radius:8px!important;box-shadow:0 1px 2px rgba(84,33,141,.035)!important;font-size:12.5px!important;font-weight:650!important;line-height:1.1!important; }
+    /* Nut Them cung trong suot, khong vien khi chua hover; giu nguyen CSS hover. */
+    .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link { min-height:32px!important;gap:7px!important;padding:5px 9px!important;color:#54218d!important;background:transparent!important;border:1px solid transparent!important;border-radius:8px!important;box-shadow:none!important;font-size:12.5px!important;font-weight:650!important;line-height:1.1!important; }
     .project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:hover,.project-feature-tabs .nav-pills .nav-link.project-tab-customize-link:focus-visible { color:#3f176f!important;background:#e9defb!important;border-color:#c9b2ef!important;box-shadow:0 2px 7px rgba(84,33,141,.12)!important; }
     .project-feature-tabs .project-tab-customize-label { font-size:12.5px!important;font-weight:650!important;line-height:1.1!important; }
     .project-feature-tabs .project-tab-customize-count { min-width:21px!important;height:20px!important;padding:0 5px!important;border:1px solid #e6daf8!important;border-radius:6px!important;font-size:12.5px!important;font-weight:750!important;line-height:1!important; }

@@ -123,11 +123,21 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             bool isCompleted = (task.TrangThai == 2 || task.TrangThai == 3);
             bool isDoing = (task.TrangThai == 1);
 
+            // Client chỉ dùng để chọn đúng thông báo/tooltip, không tự suy diễn từ trạng thái
+            // dropdown có thể đã thay đổi nhưng chưa được lưu.
+            txtEditNgayBatDau.Attributes["data-ql-task-phase"] = isPhase ? "1" : "0";
+            txtEditNgayBatDau.Attributes["data-ql-task-children"] = hasChildren ? "1" : "0";
+            txtEditNgayBatDau.Attributes["data-ql-task-original-status"] = task.TrangThai.ToString();
+
             if (isPhase || hasChildren)
             {
-                divRollUpNotice.Visible = true;
+                // Không hiện cảnh báo tổng hợp cho công việc cha không phải giai đoạn:
+                // task này có thể còn được đổi ngày bắt đầu khi chưa bắt đầu.
+                // Chỉ giai đoạn có con mới lấy lịch tổng hợp từ các công việc con.
+                // Giai đoạn chưa có con được sửa thời hạn, trừ khi đã hoàn thành.
+                divRollUpNotice.Visible = isPhase && hasChildren;
 
-                txtEditThoiHan.Enabled = false;
+                txtEditThoiHan.Enabled = isPhase && !hasChildren && !isCompleted && this.IsEdit;
                 ddlEditDoUuTien.Enabled = false;
                 ddlEditTrangThai.Enabled = false;
 
@@ -183,8 +193,10 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
 
             ddlEditCongViecCha.Enabled = false;
             UpdateMinStartDate();
+            // Chỉ cho chọn ngày trên lịch. HTML readonly vẫn post được giá trị người dùng chọn.
+            txtEditNgayBatDau.Attributes["readonly"] = "readonly";
             // Chuẩn bị dữ liệu lịch trước khi mở popup: nút Lịch chỉ chạy client, không postback gây giật chiều cao.
-            if (task.NgayBatDau.HasValue && task.NgayKetThuc.HasValue)
+            if (task.NgayBatDau.HasValue)
             {
                 try { hdfLocalScheduleJson.Value = BuildLocalTaskScheduleJson(task); }
                 catch (Exception ex) { hdfLocalScheduleJson.Value = string.Empty; System.Diagnostics.Trace.TraceError("Lịch dự kiến: " + ex); }
@@ -193,64 +205,119 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             mdlEditTask.OpenModal(true, IsPostBack ? 0 : 1000);
         }
         #endregion
-        protected void btnViewScheduleInEdit_Click(object sender, EventArgs e)
-        {
-            // Fallback cho công việc chưa được pre-load lịch (ví dụ dữ liệu vừa thay đổi).
-            if (!Guid.TryParse(hfEditTaskId.Value, out Guid taskId)) return;
-            TblCongViec taskSched = TaskManager.Instance.FetchById(taskId);
-            if (taskSched == null || taskSched.IdDuAn != CurrentProjectId || taskSched.DaXoa == true) return;
-            if (!taskSched.NgayBatDau.HasValue || !taskSched.NgayKetThuc.HasValue)
-            {
-                ShowNotify("Công việc chưa có Ngày bắt đầu và Ngày kết thúc để vẽ lịch dự kiến!", MSGType.Warning);
-                return;
-            }
-            try { hdfLocalScheduleJson.Value = BuildLocalTaskScheduleJson(taskSched); }
-            catch (Exception ex) { ShowNotify("Không tải được lịch dự kiến: " + ex.Message, MSGType.Error); return; }
-            upModal.Update();
-            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "OpenSliderJS", "setTimeout(function(){openLocalTaskSchedule();},70);", true);
-        }
-
+        // Lịch ban đầu: tải sẵn ngày làm việc trong tháng đang mở, kể cả ngày kề tháng.
+        // Danh sách leaf task phục vụ highlight, không cần truy vấn lại khi chọn ngày.
         private string BuildLocalTaskScheduleJson(TblCongViec taskSched)
         {
-            List<TblCongViec> leafTasks = TaskManager.Instance.GetLeafTasksForSchedule(taskSched.IdCongViec);
-            var dict = new Dictionary<string, object>();
-            DateTime current = taskSched.NgayBatDau.Value.Date;
-            DateTime end = taskSched.NgayKetThuc.Value.Date;
-            string txtTask = GetResourceText(BackEndResourceKeys.TASK).ToLower();
-            string txtFree = GetResourceText(BackEndResourceKeys.FREE);
-            string txtWeekend = GetResourceText(BackEndResourceKeys.WEEKEND);
-            while (current <= end)
+            if (!taskSched.NgayBatDau.HasValue) return "{}";
+            DateTime start = taskSched.NgayBatDau.Value.Date;
+            DateTime end = taskSched.NgayKetThuc.HasValue ? taskSched.NgayKetThuc.Value.Date : start;
+            DateTime first = new DateTime(start.Year, start.Month, 1);
+            int offset = ((int)first.DayOfWeek + 6) % 7;
+            DateTime begin = first.AddDays(-offset);
+            var days = new Dictionary<string, object>();
+            for (int i = 0; i < 42; i++)
             {
-                string status = "";
-                var activeTasks = new List<object>();
-                string displayText = "";
-                TblLichNgoaiLe exceptionDay = LichBieuChungManager.Instance.GetExceptionByDate(current);
-                bool isWeekend = current.DayOfWeek == DayOfWeek.Sunday || current.DayOfWeek == DayOfWeek.Saturday;
-                if (exceptionDay != null)
-                {
-                    status = "holiday";
-                    displayText = exceptionDay.TenNgoaiLe;
-                }
-                else if (isWeekend)
-                {
-                    status = "weekend";
-                    displayText = txtWeekend;
-                }
-                else
-                {
-                    var tasksToday = leafTasks.Where(t => t.NgayBatDau.HasValue && t.NgayKetThuc.HasValue && t.NgayBatDau.Value.Date <= current.Date && t.NgayKetThuc.Value.Date >= current.Date).ToList();
-                    if (tasksToday.Count > 0)
-                    {
-                        status = "busy";
-                        foreach (var t in tasksToday) activeTasks.Add(new { code = t.MaCongViec, name = t.TenCongViec });
-                        displayText = tasksToday.Count == 1 ? $"[{tasksToday[0].MaCongViec}]" : $"{tasksToday.Count} {txtTask}";
-                    }
-                    else { status = "free"; displayText = txtFree; }
-                }
-                dict.Add(current.ToString("yyyy-MM-dd"), new { status = status, text = displayText, tasks = activeTasks });
-                current = current.AddDays(1);
+                DateTime day = begin.AddDays(i);
+                days[day.ToString("yyyy-MM-dd")] = BuildLocalCalendarDay(day);
             }
-            return Newtonsoft.Json.JsonConvert.SerializeObject(dict);
+            var children = TaskManager.Instance.GetLeafTasksForSchedule(taskSched.IdCongViec);
+            var tasks = children.Where(t => t.NgayBatDau.HasValue && t.NgayKetThuc.HasValue)
+                .Select(t => new {
+                    code = t.MaCongViec,
+                    name = t.TenCongViec,
+                    start = t.NgayBatDau.Value.ToString("yyyy-MM-dd"),
+                    end = t.NgayKetThuc.Value.ToString("yyyy-MM-dd")
+                }).ToList();
+            return Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                start = start.ToString("yyyy-MM-dd"),
+                end = end.ToString("yyyy-MM-dd"),
+                days,
+                tasks
+            });
+        }
+
+        private static object BuildLocalCalendarDay(DateTime day)
+        {
+            var manager = LichBieuChungManager.Instance;
+            bool working = manager.CheckIsWorkingDay(day);
+            TblLichNgoaiLe ex = manager.GetExceptionByDate(day);
+            bool weekend = day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday;
+            string name = ex != null ? (ex.TenNgoaiLe ?? "") : "";
+            bool namedWeekend = name.IndexOf("cuối tuần", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("chủ nhật", StringComparison.OrdinalIgnoreCase) >= 0
+                || name.IndexOf("thứ bảy", StringComparison.OrdinalIgnoreCase) >= 0;
+            string status = working ? "free"
+                : (weekend && (ex == null || namedWeekend) ? "weekend" : "holiday");
+            return new
+            {
+                working,
+                status,
+                text = working ? "Trống" : (status == "weekend" ? "Cuối tuần" :
+                    (string.IsNullOrWhiteSpace(name) ? "Ngày nghỉ" : name))
+            };
+        }
+
+        // AJAX chỉ trả về lịch làm việc và kết quả tính ngày, không trả dữ liệu dự án/task.
+        // Không sao chép logic trừ cuối tuần trên JS: tính duy nhất từ LichBieuChungManager.
+        [System.Web.Services.WebMethod]
+        public static object LayLichDuKienCongViec(string ngayBatDau, int thoiHan,
+            string ngayKetThucChon, int nam, int thang)
+        {
+            var ctx = System.Web.HttpContext.Current;
+            if (ctx == null || ctx.User == null || ctx.User.Identity == null ||
+                !ctx.User.Identity.IsAuthenticated || SweetContext.Current == null ||
+                SweetContext.Current.UserId == Guid.Empty)
+                return new { success = false, message = "Phiên đăng nhập đã hết hạn." };
+            if (!DateTime.TryParseExact(ngayBatDau, "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out DateTime start)
+                || start.Year < 2000 || start.Year > 2100 || thoiHan < 1 || thoiHan > 3500
+                || nam < 2000 || nam > 2100 || thang < 1 || thang > 12)
+                return new { success = false, message = "Ngày hoặc thời hạn không hợp lệ." };
+            try
+            {
+                var manager = LichBieuChungManager.Instance;
+                int duration = thoiHan;
+                if (!string.IsNullOrWhiteSpace(ngayKetThucChon))
+                {
+                    if (!DateTime.TryParseExact(ngayKetThucChon, "yyyy-MM-dd",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out DateTime chosen)
+                        || chosen.Date < start.Date || chosen.Date > start.AddDays(3650)
+                        || !manager.CheckIsWorkingDay(chosen))
+                        return new { success = false, message = "Ngày kết thúc phải là ngày làm việc và không trước ngày bắt đầu." };
+                    duration = 0;
+                    for (DateTime d = start; d <= chosen; d = d.AddDays(1))
+                        if (manager.CheckIsWorkingDay(d)) duration++;
+                    if (duration < 1 || duration > 3500)
+                        return new { success = false, message = "Khoảng thời gian không hợp lệ." };
+                }
+                // Cùng một hàm được dùng tại btnSaveTask_Click.
+                DateTime calculatedEnd = manager.CalculateTaskEndDate(start, duration);
+                DateTime first = new DateTime(nam, thang, 1);
+                int offset = ((int)first.DayOfWeek + 6) % 7;
+                DateTime begin = first.AddDays(-offset);
+                var days = new Dictionary<string, object>();
+                for (int i = 0; i < 42; i++)
+                {
+                    DateTime day = begin.AddDays(i);
+                    days[day.ToString("yyyy-MM-dd")] = BuildLocalCalendarDay(day);
+                }
+                return new
+                {
+                    success = true,
+                    duration,
+                    endDate = calculatedEnd.ToString("yyyy-MM-dd"),
+                    days
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("Xem truoc lich cong viec: " + ex);
+                return new { success = false, message = "Không thể tính lịch theo cấu hình ngày làm việc." };
+            }
         }
 
         private void Reminder_Callback(object sender, Guid taskId)
@@ -408,38 +475,52 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 return;
             }
 
-            if (isPhase)
+            // Dropdown có lựa chọn "-- Không phụ thuộc --" (Value rỗng).
+            // Đọc giá trị mới TRƯỚC các kiểm tra ngày và trạng thái, tránh dùng phụ thuộc cũ.
+            Guid? selectedDependencyId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid depId)
+                ? (Guid?)depId
+                : null;
+
+            if (isPhase && selectedDependencyId.HasValue)
             {
+                // Chỉ kiểm tra thứ tự khi THỰC SỰ chọn một giai đoạn phụ thuộc.
+                // Chọn "Không phụ thuộc" là hợp lệ kể cả với giai đoạn thứ 2 trở đi.
                 DataTable phaseTable = TaskManager.Instance.FetchPhasesByProjectId(CurrentProjectId);
                 List<TblCongViec> phases = GetOrderedProjectPhases(phaseTable);
                 int currentPhaseIndex = phases.FindIndex(x => x.IdCongViec == task.IdCongViec);
 
-                if (currentPhaseIndex <= 0)
+                if (currentPhaseIndex <= 0 ||
+                    !phases.Take(currentPhaseIndex).Any(x => x.IdCongViec == selectedDependencyId.Value))
                 {
-                    task.IdCongViecPhuThuoc = null;
-                }
-                else
-                {
-                    Guid? selectedDependencyId = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid phaseDepId)
-                        ? (Guid?)phaseDepId
-                        : null;
-
-                    if (!selectedDependencyId.HasValue ||
-                        !phases.Take(currentPhaseIndex).Any(x => x.IdCongViec == selectedDependencyId.Value))
-                    {
-                        ShowNotify("Phụ thuộc của Giai đoạn phải là một Giai đoạn đứng trước nó.", MSGType.Warning);
-                        return;
-                    }
-
-                    task.IdCongViecPhuThuoc = selectedDependencyId;
+                    ShowNotify("Phụ thuộc của Giai đoạn phải là một Giai đoạn đứng trước nó.", MSGType.Warning);
+                    return;
                 }
             }
+
+            // Dùng phụ thuộc vừa chọn cho mọi kiểm tra và cho task.Save() về sau.
+            // Với "Không phụ thuộc", giá trị sẽ là NULL trong CSDL.
+            task.IdCongViecPhuThuoc = selectedDependencyId;
 
             var (minStartAllowed, limitReason) = TaskManager.Instance.GetMinStartDate(task.IdCongViecCha, task.IdCongViecPhuThuoc);
             if (minStartAllowed.HasValue && ngayBd.Date < minStartAllowed.Value.Date)
             {
                 ShowNotify(string.Format(GetResourceText(BackEndResourceKeys.INVALID_START_DATE_LIMIT), minStartAllowed.Value.ToString("dd/MM/yyyy"), limitReason), MSGType.Error);
                 return;
+            }
+
+            // Giai đoạn chưa có công việc con được sửa thời hạn như một công việc lá.
+            // Không cho phép PostBack tùy ý sửa thời hạn của giai đoạn có con hoặc đã hoàn thành.
+            if (isPhase && !isFatherTask && oldStatus != 2 && oldStatus != 3)
+            {
+                if (!int.TryParse(txtEditThoiHan.Text.Trim(), out int phaseDuration)
+                    || phaseDuration < 1 || phaseDuration > 3500)
+                {
+                    ShowNotify("Thời hạn giai đoạn phải từ 1 đến 3500 ngày làm việc.", MSGType.Error);
+                    return;
+                }
+
+                task.ThoiHanNgay = phaseDuration;
+                task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, phaseDuration);
             }
 
             task.NgayBatDau = ngayBd;
@@ -519,7 +600,6 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 else
                     task.NgayHoanThanhThucTe = null;
 
-                task.IdCongViecPhuThuoc = Guid.TryParse(ddlEditPhuThuoc.SelectedValue, out Guid ptId) ? (Guid?)ptId : null;
             }
 
             task.TenCongViec = tenCv;

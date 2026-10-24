@@ -552,6 +552,36 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         /* Shared GridView sizing: keep tall scrollable grids above the fixed footer and reserve space for their paging controls. */
         body.qlda-grid-fit-page .qlda-grid-fit-viewport { min-height: 0 !important; box-sizing: border-box !important; overflow: auto !important; }
+
+        /* QLDA Modal Loading: doc lap cpModalMain, chi hien voi thao tac mo popup do nguoi dung yeu cau. */
+        #qldaModalOpenFeedback[hidden] { display:none!important; }
+        #qldaModalOpenFeedback { position:fixed;inset:0;z-index:1054;display:grid;place-items:center;padding:20px;background:rgba(27,17,47,.18);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility .18s ease; }
+        #qldaModalOpenFeedback.is-visible { opacity:1;visibility:visible;pointer-events:auto; }
+        #qldaModalOpenFeedback .qlda-modal-load-card { display:flex;align-items:center;gap:14px;width:min(370px,calc(100vw - 36px));padding:17px 19px;border:1px solid #e2d1f5;border-radius:16px;background:#fff;box-shadow:0 15px 42px rgba(56,29,100,.19);color:#3f2759; }
+        #qldaModalOpenFeedback .qlda-modal-load-icon { display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:13px;background:#f1e7ff;color:#6e31ab; }
+        #qldaModalOpenFeedback .qlda-modal-load-spinner { width:25px;height:25px;border:3px solid #d9c0f4;border-top-color:#6e31ab;border-radius:50%;animation:qlda-modal-opening-spin .75s linear infinite; }
+        #qldaModalOpenFeedback .qlda-modal-load-copy { display:flex;flex-direction:column;gap:3px;min-width:0; }
+        #qldaModalOpenFeedback .qlda-modal-load-copy strong { font-size:14px;font-weight:800;line-height:1.35;color:#55258e; }
+        #qldaModalOpenFeedback .qlda-modal-load-copy span { font-size:12px;line-height:1.45;color:#86748f; }
+        @keyframes qlda-modal-opening-spin { to { transform:rotate(360deg); } }
+        @media(prefers-reduced-motion:reduce) { #qldaModalOpenFeedback,#qldaModalOpenFeedback .qlda-modal-load-spinner { animation:none!important;transition:none!important; } }
+
+        /* Chuyen trang: chi hien khi browser thuc su dang dieu huong/tai lai trang, KHONG bat AJAX nen hay popup. */
+        #qldaPageNavigateFeedback[hidden] { display:none!important; }
+        #qldaPageNavigateFeedback { position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:rgba(37,25,56,.28);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility .2s ease; }
+        #qldaPageNavigateFeedback.is-visible { opacity:1;visibility:visible;pointer-events:auto; }
+        #qldaPageNavigateFeedback .qlda-page-nav-card { position:relative;display:flex;flex-direction:column;align-items:center;gap:13px;width:min(380px,calc(100vw - 32px));padding:27px 27px 24px;border:1px solid #dec9f2;border-radius:19px;background:linear-gradient(145deg,#fff,#fcf8ff);box-shadow:0 24px 65px rgba(39,18,72,.24);color:#4d2a75;text-align:center;animation:qlda-page-nav-in .25s cubic-bezier(.2,.7,.3,1) both; }
+        #qldaPageNavigateFeedback .qlda-page-nav-spinner { display:grid;place-items:center;width:64px;height:64px;border:3px solid #e9daf9;border-top-color:#6d2fac;border-right-color:#a875da;border-radius:50%;animation:qlda-page-nav-spin .9s linear infinite; }
+        #qldaPageNavigateFeedback .qlda-page-nav-spinner i { display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#f4ebfe;color:#692ba7;font-size:19px;animation:qlda-page-nav-spin-reverse .9s linear infinite; }
+        #qldaPageNavigateFeedback .qlda-page-nav-title { display:block;color:#54218d;font-size:17px;font-weight:850;line-height:1.35; }
+        #qldaPageNavigateFeedback .qlda-page-nav-description { display:block;color:#8b7a9c;font-size:12.5px;line-height:1.55; }
+        #qldaPageNavigateFeedback .qlda-page-nav-progress { width:100%;height:4px;margin-top:2px;border-radius:99px;overflow:hidden;background:#f0e5fa; }
+        #qldaPageNavigateFeedback .qlda-page-nav-progress span { display:block;width:34%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#a571dc,#5b2499);animation:qlda-page-nav-progress 1.35s ease-in-out infinite; }
+        @keyframes qlda-page-nav-spin { to { transform:rotate(360deg); } }
+        @keyframes qlda-page-nav-spin-reverse { to { transform:rotate(-360deg); } }
+        @keyframes qlda-page-nav-progress { 0% { transform:translateX(-110%); } 100% { transform:translateX(305%); } }
+        @keyframes qlda-page-nav-in { from { opacity:0;transform:translateY(9px) scale(.98); } to { opacity:1;transform:translateY(0) scale(1); } }
+        @media(prefers-reduced-motion:reduce) { #qldaPageNavigateFeedback,#qldaPageNavigateFeedback .qlda-page-nav-card,#qldaPageNavigateFeedback .qlda-page-nav-spinner,#qldaPageNavigateFeedback .qlda-page-nav-spinner i,#qldaPageNavigateFeedback .qlda-page-nav-progress span { animation:none!important;transition:none!important; } }
     </style>
     <asp:ContentPlaceHolder ID="cpHeadVendor" runat="server"></asp:ContentPlaceHolder>
     <asp:ContentPlaceHolder ID="cpHead" runat="server"></asp:ContentPlaceHolder>
@@ -886,6 +916,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </div>
             </div>
         </div>
+        <%-- Master navigation feedback: chi dung cho chuyen trang/toan trang, khong phai UpdatePanel hay ExtraModal. --%>
+        <div id="qldaPageNavigateFeedback" hidden role="status" aria-live="polite" aria-atomic="true">
+            <div class="qlda-page-nav-card">
+                <span class="qlda-page-nav-spinner" aria-hidden="true"><i class="bx bx-layer"></i></span>
+                <strong class="qlda-page-nav-title">Đang chuyển trang...</strong>
+                <span class="qlda-page-nav-description">Hệ thống đang tải nội dung trang tiếp theo.</span>
+                <span class="qlda-page-nav-progress" aria-hidden="true"><span></span></span>
+            </div>
+        </div>
         <!-- Right bar overlay-->
         <div class="rightbar-overlay"></div>
         <div id="modal-notify" class="modal fade" tabindex="-1" data-bs-scroll="true">
@@ -938,6 +977,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a runat="server" id="btnRefreshPermission" data-selector="btnRefreshPermission" onserverclick="btnRefreshPermission_ServerClick"></a>
         <asp:ContentPlaceHolder ID="cpModalMain" runat="server">
         </asp:ContentPlaceHolder>
+        <%-- Loading mo ExtraModal dung chung: ngoai cpModalMain/UpdatePanel de khong bi thay DOM khi postback. --%>
+        <div id="qldaModalOpenFeedback" hidden role="status" aria-live="polite" aria-atomic="true">
+            <div class="qlda-modal-load-card">
+                <div class="qlda-modal-load-icon" aria-hidden="true"><span class="qlda-modal-load-spinner"></span></div>
+                <div class="qlda-modal-load-copy"><strong>Đang mở cửa sổ</strong><span>Đang chuẩn bị dữ liệu, vui lòng chờ...</span></div>
+            </div>
+        </div>
         <%-- Đồng hồ nổi dùng chung, độc lập cpMain và các UpdatePanel --%>
         <SweetSoft:CtrlFloatingWorkTimer ID="CtrlFloatingWorkTimer1" runat="server" />
         <%-- Lịch trình hôm nay: ExtraModal độc lập, mở bằng Q hoặc menu Hồ sơ. --%>
@@ -1574,7 +1620,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     var link = safeLink(rawLink || (n && n.duongDanLienKet));
                     hidePreview();
                     function navigate() {
-                        if (link !== '#') window.location.assign(link);
+                        if (link !== '#') { if (window.QLDAPageNavigation) window.QLDAPageNavigation.start(false); window.location.assign(link); }
                         else if (openBellWhenNoLink && window.NotificationBell && window.NotificationBell.openPanel)
                             window.NotificationBell.openPanel();
                     }
@@ -2531,6 +2577,283 @@ scratch. This page gets rid of all links and provides the needed markup only.
             })();
         </script>
 
+        <%-- QLDA: delayed modal-open feedback. Chi xac nhan mo modal do nguoi dung chu dong, khong xu ly AJAX ngam. --%>
+        <script type="text/javascript">
+            (function () {
+                'use strict';
+                if (window.QLDAModalLoading) return;
+
+                var overlay = document.getElementById('qldaModalOpenFeedback');
+                if (!overlay) return;
+
+                var state = { active: false, requestStarted: false, opener: null, modalWasOpen: [], showTimer: null, idleTimer: null, finishTimer: null, hideTimer: null, guardTimer: null, observer: null, checkQueued: false };
+
+                function clearTimer(key) {
+                    if (state[key]) window.clearTimeout(state[key]);
+                    state[key] = null;
+                }
+
+                function visibleModal(el) {
+                    if (!el || !el.getClientRects || !el.getClientRects().length) return false;
+                    if (el.getAttribute('aria-hidden') === 'true') return false;
+                    var style = window.getComputedStyle ? window.getComputedStyle(el) : null;
+                    return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+                }
+
+                function collectVisibleModals() {
+                    var all = document.querySelectorAll('.modal');
+                    var visible = [];
+                    for (var i = 0; i < all.length; i++) if (visibleModal(all[i])) visible.push(all[i]);
+                    return visible;
+                }
+
+                function anyNewModalVisible() {
+                    var list = collectVisibleModals();
+                    for (var i = 0; i < list.length; i++) {
+                        if (state.modalWasOpen.indexOf(list[i]) === -1) return true;
+                    }
+                    return false;
+                }
+
+                function showOverlay() {
+                    if (!state.active || !state.requestStarted || anyNewModalVisible()) return;
+                    clearTimer('hideTimer');
+                    overlay.hidden = false;
+                    window.requestAnimationFrame(function () {
+                        if (state.active && state.requestStarted) overlay.classList.add('is-visible');
+                    });
+                }
+
+                function finish() {
+                    state.active = false;
+                    state.requestStarted = false;
+                    state.opener = null;
+                    clearTimer('showTimer');
+                    clearTimer('idleTimer');
+                    clearTimer('finishTimer');
+                    clearTimer('guardTimer');
+                    if (state.observer) { state.observer.disconnect(); state.observer = null; }
+                    overlay.classList.remove('is-visible');
+                    clearTimer('hideTimer');
+                    state.hideTimer = window.setTimeout(function () {
+                        if (!state.active) overlay.hidden = true;
+                        state.hideTimer = null;
+                    }, 200);
+                }
+
+                function checkOpened() {
+                    state.checkQueued = false;
+                    if (state.active && anyNewModalVisible()) finish();
+                }
+
+                function scheduleCheck() {
+                    if (!state.active || state.checkQueued) return;
+                    state.checkQueued = true;
+                    window.requestAnimationFrame(checkOpened);
+                }
+
+                function observeModalOpening() {
+                    if (!window.MutationObserver || state.observer) return;
+                    state.observer = new MutationObserver(scheduleCheck);
+                    state.observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'aria-hidden'] });
+                }
+
+                function arm(trigger) {
+                    if (state.active) return;
+                    clearTimer('hideTimer');
+                    state.active = true;
+                    state.requestStarted = false;
+                    state.opener = trigger || null;
+                    state.modalWasOpen = collectVisibleModals();
+                    observeModalOpening();
+                    state.showTimer = window.setTimeout(function () { state.showTimer = null; showOverlay(); }, 180);
+                    // Neu khong co postback/AJAX (VD link bi validation chan), khong hien loader treo.
+                    state.idleTimer = window.setTimeout(function () {
+                        if (state.active && !state.requestStarted) finish();
+                    }, 850);
+                    // Guard can thiet khi server mat ket noi hoac request khong hoan tat.
+                    state.guardTimer = window.setTimeout(finish, 20000);
+                }
+
+                function markRequest() {
+                    if (!state.active) return;
+                    state.requestStarted = true;
+                    clearTimer('idleTimer');
+                    if (anyNewModalVisible()) finish();
+                    else if (!state.showTimer) showOverlay();
+                }
+
+                function normalize(text) {
+                    return String(text || '').replace(/\s+/g, ' ').toLowerCase().trim();
+                }
+
+                function isModalOpenTrigger(el) {
+                    if (!el || !el.getAttribute || !el.closest) return false;
+                    if (el.closest('#bellDropdownWrapper, .qna-widget, #qldaModalOpenFeedback, [data-qlda-modal-ignore]')) return false;
+                    if (el.hasAttribute('data-qlda-modal-open')) return el.getAttribute('data-qlda-modal-open') !== 'false';
+                    if (el.getAttribute('data-bs-toggle') === 'modal' || el.getAttribute('data-toggle') === 'modal') return true;
+                    // Nut da nam trong modal khac: chi nhan neu chu dich duoc danh dau ro rang.
+                    if (el.closest('.modal')) return false;
+                    var id = normalize(el.id || '').split(/[_$:]/).pop();
+                    if (/^(?:lbt|btn|link|cmd)(?:add|new|create|open|show|edit|detail|view|assign|applytemplate|swapphase|starttask|viewtask|viewcost|viewmeet|viewissue|addchild|choose|chon|xem|sua|them|tao|duyet)/i.test(id)) return true;
+                    if (/^(?:lbttaskname|lbtassign|lbtviewschedule|lbtstatusstart|lbtstatusfastcomplete|lbtstatusfastreview)$/i.test(id)) return true;
+                    var label = normalize([el.title, el.getAttribute('aria-label'), el.getAttribute('data-original-title'), el.getAttribute('data-bs-original-title')].join(' '));
+                    if (/\b(?:xem chi tiết|chi tiết công việc|thêm mới|tạo mới|chỉnh sửa|áp dụng mẫu|bắt đầu thực hiện|phân công nhân sự|xem lịch dự kiến|mở popup|mở cửa sổ|xem hồ sơ|xem cuộc họp)\b/i.test(label)) return true;
+                    var text = normalize(el.textContent || el.value);
+                    if (/^(?:thêm mới|tạo mới|áp dụng mẫu|xem chi tiết|chỉnh sửa|thêm công việc|thêm cuộc họp|mở chi tiết)(?:\s|$)/i.test(text)) return true;
+                    return false;
+                }
+
+                // Theo doi click trong capture phase de bat kip truoc __doPostBack cua WebForms.
+                document.addEventListener('click', function (event) {
+                    if (!event.target || !event.target.closest || event.defaultPrevented) return;
+                    var trigger = event.target.closest('a, button, input[type="submit"], input[type="button"]');
+                    if (!trigger || trigger.disabled || trigger.getAttribute('aria-disabled') === 'true') return;
+                    if (isModalOpenTrigger(trigger)) arm(trigger);
+                }, true);
+
+                // Native form submit: cho animation chay khi browser dang cho page load.
+                document.addEventListener('submit', function (event) {
+                    if (!state.active) return;
+                    markRequest();
+                }, true);
+
+                // Modal cua Bootstrap: dong overlay ngay khi modal bat dau xuat hien.
+                document.addEventListener('show.bs.modal', function () { if (state.active) finish(); }, true);
+                document.addEventListener('shown.bs.modal', function () { if (state.active) finish(); }, true);
+                if (window.jQuery) {
+                    window.jQuery(document).on('show.bs.modal.qldaModalLoad shown.bs.modal.qldaModalLoad', '.modal', function () {
+                        if (state.active) finish();
+                    });
+                }
+
+                // WebForms UpdatePanel: chi theo doi request co nut opener khop, bo qua timer thong bao/realtime.
+                function attachPageRequestManager() {
+                    if (!window.Sys || !Sys.WebForms || !Sys.WebForms.PageRequestManager) return;
+                    var prm = Sys.WebForms.PageRequestManager.getInstance();
+                    if (!prm || prm.__qldaModalLoadingHooked) return;
+                    prm.__qldaModalLoadingHooked = true;
+                    prm.add_beginRequest(function (sender, args) {
+                        var source = args && args.get_postBackElement ? args.get_postBackElement() : null;
+                        if (!state.active && isModalOpenTrigger(source)) arm(source);
+                        // AJAX nen cua chuong/dong ho khong duoc nham voi yeu cau dang mo popup.
+                        if (state.active && (!state.opener || source === state.opener || (source && state.opener && state.opener.contains && state.opener.contains(source)))) markRequest();
+                    });
+                    prm.add_endRequest(function (sender, args) {
+                        if (!state.active || !state.requestStarted) return;
+                        if (args && args.get_error && args.get_error()) { finish(); return; }
+                        scheduleCheck();
+                        // EndRequest den sau server, startup script mo popup co the chay ngay sau do.
+                        clearTimer('finishTimer');
+                        state.finishTimer = window.setTimeout(finish, 280);
+                    });
+                }
+
+                attachPageRequestManager();
+                if (window.Sys && Sys.Application) Sys.Application.add_load(attachPageRequestManager);
+                window.addEventListener('pagehide', finish);
+                window.addEventListener('beforeunload', finish);
+
+                // API cho popup dung fetch/AJAX rieng: goi begin() luc bat dau va end() khi hoan tat.
+                // Co the danh dau nut bat ky bang data-qlda-modal-open="true" neu ten nut khong ro.
+                window.QLDAModalLoading = {
+                    begin: function () { arm(); markRequest(); },
+                    end: finish,
+                    expect: arm,
+                    active: function () { return state.active; }
+                };
+            })();
+        </script>
+        <%-- QLDA: navigation feedback. Noi bo cung trang, AJAX, popup, downloads khong duoc kich hoat. --%>
+        <script type="text/javascript">
+            (function () {
+                'use strict';
+                if (window.QLDAPageNavigation) return;
+                var overlay = document.getElementById('qldaPageNavigateFeedback');
+                if (!overlay) return;
+                var state = { active: false, unloading: false, reason: '', showTimer: null, guardTimer: null };
+                var SHOW_DELAY = 180;
+
+                function clearTimer(name) { if (state[name]) window.clearTimeout(state[name]); state[name] = null; }
+                function show() {
+                    if (!state.active || !document.body) return;
+                    overlay.hidden = false;
+                    // Forced layout makes the CSS fade transition deterministic across browsers.
+                    void overlay.offsetWidth;
+                    overlay.classList.add('is-visible');
+                }
+                function stop() {
+                    state.active = false;
+                    state.unloading = false;
+                    state.reason = '';
+                    clearTimer('showTimer');
+                    clearTimer('guardTimer');
+                    overlay.classList.remove('is-visible');
+                    overlay.hidden = true;
+                }
+                function start(immediate, reason) {
+                    if (state.active) { if (immediate) { clearTimer('showTimer'); show(); } return; }
+                    state.active = true;
+                    state.reason = reason || 'manual';
+                    clearTimer('showTimer');
+                    if (immediate) { show(); }
+                    else { state.showTimer = window.setTimeout(function () { state.showTimer = null; show(); }, SHOW_DELAY); }
+                    // Aborted navigation / prevented form submit must never leave an uncloseable overlay.
+                    state.guardTimer = window.setTimeout(stop, 45000);
+                }
+                function isActualPageLink(link) {
+                    if (!link || link.closest('[data-qlda-page-nav-ignore], [data-qlda-modal-open], #qldaModalOpenFeedback')) return false;
+                    if (link.hasAttribute('download') || (link.target && link.target.toLowerCase() !== '_self')) return false;
+                    if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-toggle') || link.hasAttribute('data-bs-dismiss') || link.hasAttribute('data-dismiss')) return false;
+                    var href = (link.getAttribute('href') || '').trim();
+                    if (!href || href.charAt(0) === '#' || /^(javascript:|mailto:|tel:|data:|blob:)/i.test(href)) return false;
+                    var uri;
+                    try { uri = new URL(href, window.location.href); } catch (error) { return false; }
+                    if (!/^https?:$/.test(uri.protocol) || uri.origin !== window.location.origin) return false;
+                    if (/\.(pdf|zip|rar|7z|xlsx?|docx?|pptx?|csv|jpe?g|png|gif|webp|mp4|mp3)$/i.test(uri.pathname)) return false;
+                    var current = new URL(window.location.href);
+                    return uri.pathname !== current.pathname || uri.search !== current.search;
+                }
+                document.addEventListener('click', function (event) {
+                    if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                    var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+                    if (!isActualPageLink(link)) return;
+                    start(false, 'link');
+                    // Bubbling handlers can prevent navigation (tabs, confirmation, menus).
+                    window.setTimeout(function () { if (event.defaultPrevented && !state.unloading) stop(); }, 0);
+                }, true);
+
+                document.addEventListener('submit', function (event) {
+                    if (event.defaultPrevented) return;
+                    var form = event.target;
+                    if (!form || !form.tagName || form.tagName.toLowerCase() !== 'form') return;
+                    start(false, 'submit');
+                    window.setTimeout(function () { if (event.defaultPrevented && !state.unloading) stop(); }, 0);
+                }, true);
+
+                function attachAjaxManager() {
+                    if (!window.Sys || !Sys.WebForms || !Sys.WebForms.PageRequestManager) return;
+                    var prm = Sys.WebForms.PageRequestManager.getInstance();
+                    if (!prm || prm.__qldaPageNavigationHooked) return;
+                    prm.__qldaPageNavigationHooked = true;
+                    // Partial postbacks are NOT page changes; also covers buttons that submit via WebForms.
+                    prm.add_initializeRequest(function () { if (state.reason === 'submit' && !state.unloading) stop(); });
+                    prm.add_beginRequest(function () { if (state.reason === 'submit' && !state.unloading) stop(); });
+                }
+                attachAjaxManager();
+                if (window.Sys && Sys.Application) Sys.Application.add_load(attachAjaxManager);
+
+                window.addEventListener('beforeunload', function () {
+                    // Direct window.location changes and browser reload/back may have no clicked anchor.
+                    state.unloading = true;
+                    start(true);
+                });
+                window.addEventListener('pageshow', stop);
+                // Restored back-forward cache pages must not retain a loading mask.
+                window.addEventListener('pagehide', function () { state.unloading = true; });
+                window.QLDAPageNavigation = { start: start, stop: stop, isActive: function () { return state.active; } };
+            })();
+        </script>
     </form>
 </body>
 </html>

@@ -77,8 +77,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
             else if (e.CommandName == "APPLY_TEMPLATE")
             {
-                Guid templateId = Guid.Parse(e.CommandArgument.ToString());
-                ApplyTemplateToProject(templateId);
+                Guid templateId;
+                if (!Guid.TryParse(Convert.ToString(e.CommandArgument), out templateId))
+                {
+                    ShowInvalidDataError();
+                    return;
+                }
+                RequestApplyConfirmation(templateId);
             }
         }
 
@@ -149,7 +154,71 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 return;
             }
 
-            ApplyTemplateToProject(SelectedTemplateId);
+            RequestApplyConfirmation(SelectedTemplateId);
+        }
+
+        // Buoc 1: chi yeu cau xac nhan tren server. KHONG xoa/tao cong viec o buoc nay.
+        private void RequestApplyConfirmation(Guid templateId)
+        {
+            if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+            if (ProjectId == Guid.Empty || templateId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            TblDuAn duAn = TblDuAn.FetchByID(ProjectId);
+            if (duAn == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            TblMauDuAn mau = TblMauDuAn.FetchByID(templateId);
+            if (mau == null || mau.TrangThai != 1)
+            {
+                ShowNotify("Mẫu công việc không tồn tại hoặc chưa được phát hành.", MSGType.Warning);
+                return;
+            }
+
+            ConfirmResult result = new ConfirmResult();
+            result.CommandName = "TASK_TEMPLATE_APPLY";
+            result.Value = templateId;
+            this.CURRENT_PAGE.CurrentConfirmResult = result;
+
+            string message = "CẢNH BÁO: Hệ thống sẽ XÓA VĨNH VIỄN toàn bộ công việc và giai đoạn hiện tại " +
+                "của dự án, sau đó tạo lại theo mẫu '" +
+                Server.HtmlEncode(mau.TenMau ?? "") +
+                "'. Hành động này không thể hoàn tác. Bạn có chắc chắn muốn tiếp tục?";
+            MessageBox box = new MessageBox("Xác nhận áp dụng mẫu công việc", message,
+                MSGButton.AcceptCancel, MSGIcon.Error);
+            OpenMessageBox(box, result, false, false);
+        }
+
+        // Buoc 2: chi thuc thi sau khi nguoi dung chap nhan MessageBox.
+        // CtrlTask.ConfirmRequest phai chuyen TASK_TEMPLATE_APPLY vao day.
+        public override void ConfirmRequest(ConfirmResult e)
+        {
+            if (e == null || !e.Submit || e.CommandName != "TASK_TEMPLATE_APPLY")
+                return;
+
+            if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
+
+            Guid templateId;
+            if (!Guid.TryParse(Convert.ToString(e.Value), out templateId) || templateId == Guid.Empty)
+            {
+                ShowInvalidDataError();
+                return;
+            }
+            ApplyTemplateToProject(templateId);
         }
 
         protected void lbtCloseDetail_Click(object sender, EventArgs e)
@@ -161,6 +230,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         private void ApplyTemplateToProject(Guid templateId)
         {
+            // Bao ve phia server: khong tin vao viec an/hien nut tren giao dien.
+            if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)
+            {
+                ShowAccessDeniedNotify();
+                return;
+            }
             if (this.ProjectId == Guid.Empty)
             {
                 ShowInvalidDataError();

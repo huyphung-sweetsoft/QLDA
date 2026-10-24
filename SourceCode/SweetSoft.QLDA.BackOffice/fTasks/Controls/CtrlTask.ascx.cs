@@ -1059,6 +1059,16 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 case "CONFIRM_OVERLOAD_ASSIGN_TASK": // ten lenh cu, giu tuong thich
                     CtrlChonNhanVienTask1.ConfirmRequest(e);
                     return;
+                case "TASK_TEMPLATE_APPLY":
+                    // Chuyen xac nhan MessageBox ve dung control ap dung mau.
+                    if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)
+                    {
+                        ShowAccessDeniedNotify();
+                        return;
+                    }
+                    if (CtrlApplyTemplate1 != null)
+                        CtrlApplyTemplate1.ConfirmRequest(e);
+                    return;
                 case "TASK_DELETE":
                     break;
                 default:

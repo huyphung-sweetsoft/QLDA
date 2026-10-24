@@ -44,6 +44,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             txtTenCongViec.Text = string.Empty;
             txtMoTa.Text = string.Empty;
             txtThoiHan.Text = "1";
+            hfScheduleEndSelected.Value = string.Empty;
+            txtNgayBatDau.Text = string.Empty;
+            txtNgayKetThuc.Text = string.Empty;
 
             ControlHelpers helpers = new ControlHelpers();
             helpers.BindDependentTasks(ddlPhuThuoc, projectId, currentOrNewCode: newCode);
@@ -118,6 +121,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         }
         protected void ddlPhuThuoc_SelectedIndexChanged(object sender, EventArgs e)
         {
+            hfScheduleEndSelected.Value = string.Empty;
             UpdateMinStartDate();
 
             if (DateTime.TryParse(txtNgayBatDau.Text.Trim(), out DateTime startDt) && int.TryParse(txtThoiHan.Text.Trim(), out int duration))
@@ -173,7 +177,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {
                 TblCongViec parentTask = TblCongViec.FetchByID(parentId);
                 DateTime defaultStart = parentTask != null && parentTask.NgayBatDau.HasValue ? parentTask.NgayBatDau.Value : DateTime.Today;
-                txtNgayBatDau.Text = defaultStart.ToString("yyyy-MM-dd");
+                if (!DateTime.TryParse(txtNgayBatDau.Text.Trim(), out DateTime existingStart))
+                    txtNgayBatDau.Text = defaultStart.ToString("yyyy-MM-dd");
             }
 
             if (DateTime.TryParse(txtNgayBatDau.Text.Trim(), out DateTime startDt) && int.TryParse(txtThoiHan.Text.Trim(), out int duration))
@@ -192,7 +197,11 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
                 if (!Guid.TryParse(hfParentId.Value, out Guid parentId)) return;
                 TblCongViec parentTask = TaskManager.Instance.FetchById(parentId);
-                if (parentTask == null) return;
+                if (parentTask == null || parentTask.DaXoa == true || parentTask.IdDuAn != this.ProjectId)
+                {
+                    ShowNotify("Công việc cha không hợp lệ hoặc không thuộc dự án.", MSGType.Error);
+                    return;
+                }
 
                 string tenCv = txtTenCongViec.Text.Trim();
                 if (string.IsNullOrEmpty(tenCv))
@@ -210,6 +219,45 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 if (!int.TryParse(txtThoiHan.Text.Trim(), out int thoiHan) || thoiHan <= 0)
                 {
                     ShowNotify("Thời hạn phải lớn hơn 0!", MSGType.Error);
+                    return;
+                }
+
+
+                if (thoiHan > 3500)
+                {
+                    ShowNotify("Thời hạn không thể vượt quá 3500 ngày làm việc.", MSGType.Error);
+                    return;
+                }
+                // Nếu chọn mốc kết thúc trên lịch: tính số ngày theo cấu hình lịch chung.
+                // Không dùng phép cộng ngày dương lịch ở JavaScript.
+                DateTime selectedEnd = DateTime.MinValue;
+                if (!string.IsNullOrWhiteSpace(hfScheduleEndSelected.Value))
+                {
+                    if (!DateTime.TryParseExact(hfScheduleEndSelected.Value.Trim(), "yyyy-MM-dd",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out selectedEnd)
+                        || selectedEnd.Date < ngayBd.Date
+                        || selectedEnd.Date > ngayBd.Date.AddDays(3650)
+                        || !LichBieuChungManager.Instance.CheckIsWorkingDay(selectedEnd.Date))
+                    {
+                        ShowNotify("Ngày kết thúc được chọn không hợp lệ hoặc không phải ngày làm việc.", MSGType.Error);
+                        return;
+                    }
+                    int counted = 0;
+                    for (DateTime day = ngayBd.Date; day <= selectedEnd.Date; day = day.AddDays(1))
+                        if (LichBieuChungManager.Instance.CheckIsWorkingDay(day)) counted++;
+                    if (counted < 1 || counted > 3500)
+                    {
+                        ShowNotify("Khoảng lịch làm việc không hợp lệ.", MSGType.Error);
+                        return;
+                    }
+                    thoiHan = counted;
+                }
+                DateTime computedEnd = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd.Date, thoiHan);
+                if (!string.IsNullOrWhiteSpace(hfScheduleEndSelected.Value)
+                    && computedEnd.Date != selectedEnd.Date)
+                {
+                    ShowNotify("Mốc kết thúc không khớp với cấu hình ngày làm việc. Vui lòng chọn lại.", MSGType.Error);
                     return;
                 }
 
@@ -241,7 +289,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 task.NgayBatDau = ngayBd;
                 task.ThoiHanNgay = thoiHan;
                 task.IdDoUuTien = Guid.TryParse(ddlDoUuTien.SelectedValue, out Guid utId) ? (Guid?)utId : null;
-                task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);
+                task.NgayKetThuc = computedEnd;
 
                 task.Save();
                 parentTask.VaiTroNhanVien = (int)VaiTroNhanVien.DieuPhoi;
@@ -252,9 +300,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 TaskManager.Instance.AutoSetParentStatus(this.ProjectId, parentId);
 
                 mdlAddSubTask.CloseModal();
-
-                string successMsg = Newtonsoft.Json.JsonConvert.SerializeObject("Thêm công việc con thành công!");
-                ScriptManager.RegisterStartupScript(upAddSubTask, upAddSubTask.GetType(), "SuccessMsg", $"alert({successMsg});", true);
+                ShowNotify("Thêm công việc con thành công!", MSGType.Success);
 
                 if (SavedSuccess != null) SavedSuccess(this, EventArgs.Empty);
             }
