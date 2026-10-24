@@ -1,10 +1,11 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Transactions;
 using System.Web.UI.WebControls;
 
 namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
@@ -21,7 +22,13 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             hfParentId.Value = parentId.ToString();
 
             TblCongViec parentTask = TaskManager.Instance.FetchById(parentId);
-            if (parentTask == null) return;
+            if (parentTask == null || parentTask.IdDuAn != projectId) return;
+            try { TaskManager.Instance.DamBaoDuocThemCongViecCon(projectId, parentId); }
+            catch (InvalidOperationException ex)
+            {
+                ShowNotify(ex.Message, MSGType.Warning);
+                return;
+            }
 
             bool isClickOnPhase = !parentTask.IdCongViecCha.HasValue;
 
@@ -291,18 +298,42 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 task.IdDoUuTien = Guid.TryParse(ddlDoUuTien.SelectedValue, out Guid utId) ? (Guid?)utId : null;
                 task.NgayKetThuc = computedEnd;
 
-                task.Save();
-                parentTask.VaiTroNhanVien = (int)VaiTroNhanVien.DieuPhoi;
-                parentTask.Save();
-                Dictionary<Guid, TblDoUuTien> dictPriorities = TaskManager.Instance.GetDictPriorities();
-                TaskManager.Instance.AutoSetParentPriority(this.ProjectId, parentId, dictPriorities);
-                TaskManager.Instance.AutoSetParentTime(this.ProjectId, parentId);
-                TaskManager.Instance.AutoSetParentStatus(this.ProjectId, parentId);
+                // Cung khoa du an voi FastComplete/KhaiBaoGio: khong duoc them con
+                // vao Task dang duoc gui/duyet hoan thanh boi request khac.
+                using (var scope = new TransactionScope())
+                {
+                    IDisposable khoa = null;
+                    try
+                    {
+                        if (KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
+                            khoa = new KhaiBaoGio20Manager().MoKhoaDuAnTrongTransactionScope(this.ProjectId);
+                        TaskManager.Instance.DamBaoDuocThemCongViecCon(this.ProjectId, parentId);
+                        parentTask = TaskManager.Instance.FetchById(parentId);
+                        if (parentTask == null || parentTask.IdDuAn != this.ProjectId)
+                            throw new InvalidOperationException("Công việc cha vừa thay đổi, vui lòng thử lại.");
+
+                        // Cap nhat ma ngay trong transaction, vi co the them con tu tab khac.
+                        task.MaCongViec = TaskManager.Instance.GenerateNewTaskCode(this.ProjectId, parentId);
+                        task.Save();
+                        parentTask.VaiTroNhanVien = (int)VaiTroNhanVien.DieuPhoi;
+                        parentTask.Save();
+                        Dictionary<Guid, TblDoUuTien> dictPriorities = TaskManager.Instance.GetDictPriorities();
+                        TaskManager.Instance.AutoSetParentPriority(this.ProjectId, parentId, dictPriorities);
+                        TaskManager.Instance.AutoSetParentTime(this.ProjectId, parentId);
+                        TaskManager.Instance.AutoSetParentStatus(this.ProjectId, parentId);
+                    }
+                    finally { if (khoa != null) khoa.Dispose(); }
+                    scope.Complete();
+                }
 
                 mdlAddSubTask.CloseModal();
                 ShowNotify("Thêm công việc con thành công!", MSGType.Success);
 
                 if (SavedSuccess != null) SavedSuccess(this, EventArgs.Empty);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ShowNotify(ex.Message, MSGType.Warning);
             }
             catch (Exception ex)
             {

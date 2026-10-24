@@ -766,6 +766,259 @@
 .task-member-picker-root .tmp-board-section.is-collapsed{height:var(--tmp-group-height)!important}
 .task-member-picker-root .tmp-board-section.is-collapsed .tmp-board-section-names,.task-member-picker-root .tmp-board-section.is-collapsed .tmp-board-section-dates{display:none}
 .task-member-picker-root .tmp-board-section .tmp-board-no-results{padding:13px 12px;font-size:11px}
+
+/* ===============================================================
+   UX V1 (2026-10-21): khong doi palette, badge hoac logic phan cong.
+   Tach rieng nang cap de co the rollback dung pham vi.
+   =============================================================== */
+.task-member-picker-root{--tmp-ux-purple:#64259b;--tmp-ux-purple-border:#d8c3f1;--tmp-ux-muted:#64748b}
+.task-member-picker-root .tmp-tabs{gap:10px;min-height:42px;height:auto;padding-bottom:5px}
+.task-member-picker-root .tmp-assignment-notice{padding:7px 10px;min-width:0;line-height:1.35}
+.task-member-picker-root .tmp-assignment-notice span{display:block;min-width:0}
+.task-member-picker-root .tmp-view-switch{flex:0 0 auto!important;border-color:#cbb6e5;border-radius:8px;box-shadow:0 1px 3px rgba(60,25,108,.055)}
+.task-member-picker-root .tmp-view-switch .tmp-tab{width:auto!important;min-width:103px;height:33px;min-height:33px;padding:0 12px!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:700;color:#675b78;transition:color .18s ease,background-color .18s ease,box-shadow .18s ease}
+.task-member-picker-root .tmp-view-switch .tmp-tab i{font-size:12px}
+.task-member-picker-root .tmp-view-switch .tmp-tab.is-active{background:#f0e8fc!important;color:#64259b!important;box-shadow:inset 0 -2px #7c3aed!important}
+.task-member-picker-root .tmp-view-switch .tmp-tab:hover:not(.is-active){background:#f8f4fe;color:#64259b}
+.task-member-picker-root .tmp-view-switch .tmp-tab:focus-visible{outline:2px solid #7c3aed;outline-offset:-2px}
+.task-member-picker-root .tmp-v3-columns{gap:12px!important}
+.task-member-picker-root .tmp-v3-columns>.member-list-panel{border-color:#e3e6ed;border-radius:9px;box-shadow:0 1px 4px rgba(25,40,70,.035)}
+.task-member-picker-root .tmp-v3-columns .panel-header{min-height:42px;gap:8px}
+.task-member-picker-root .tmp-v3-columns .panel-header>span:first-child{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+.task-member-picker-root .tmp-ux-panel-hint{display:inline-block;color:#8691a5;font-size:10px;font-weight:500;margin-left:5px;white-space:nowrap}
+.task-member-picker-root .tmp-v3-list{padding:9px!important}
+.task-member-picker-root .tmp-v3-list .member-item-row{margin-bottom:7px;border-radius:8px;transition:border-color .17s ease,box-shadow .17s ease,background-color .17s ease,transform .17s ease}
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-ux-clickable{cursor:pointer}
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-ux-clickable:hover{border-color:#d0b9ea;box-shadow:0 4px 12px rgba(68,33,120,.075);transform:translateY(-1px)}
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-ux-clickable.is-selected:hover{background:#f3ebff!important;border-color:#bfa3e4!important}
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-ux-clickable:focus-within{outline:2px solid #b79bdc;outline-offset:0}
+.task-member-picker-root .tmp-v3-list .btn-calendar-only{color:#64259b;border-color:#ded1ed;background:#fff;transition:background .17s ease,border-color .17s ease,color .17s ease,transform .17s ease}
+.task-member-picker-root .tmp-v3-list .btn-calendar-only:hover{background:#f4edfd;border-color:#a982d3;color:#54218d;transform:translateY(-1px)}
+.task-member-picker-root .tmp-v3-list .btn-calendar-only:focus-visible{outline:2px solid #7c3aed;outline-offset:2px}
+.task-member-picker-root .tmp-v3-list .member-name-block .fw-bold{font-weight:700!important;color:#263247!important}
+.task-member-picker-root .tmp-v3-empty{padding:28px 16px;line-height:1.6;border:1px dashed #e1d9ee;background:#fcfbff;border-radius:8px;margin:3px;color:#758397}
+.task-member-picker-root .tmp-board-dayhead.is-today{position:relative;background:#ede0ff!important;color:#58248a!important;box-shadow:inset 0 2px #7c3aed,inset 1px 0 #d8c3ef}
+.task-member-picker-root .tmp-board-dayhead.is-today b{color:#58248a;font-size:12px}
+.task-member-picker-root .tmp-board-dayhead.is-today:after{content:'';position:absolute;bottom:1px;width:4px;height:4px;border-radius:50%;background:#7c3aed}
+.task-member-picker-root .tmp-board-dayhead.is-weekend:not(.is-today) span{color:#8693a5}
+.task-member-picker-root .tmp-board-person-row:hover,.task-member-picker-root .tmp-board-dayrow:hover{background:#fbf8ff}
+.task-member-picker-root .tmp-board-person-row.is-selected:hover,.task-member-picker-root .tmp-board-dayrow.is-selected:hover{background:#f5edff}
+.task-member-picker-root .tmp-board-daycell .tmp-day:hover{filter:brightness(.965);outline:1px solid rgba(100,37,155,.25);outline-offset:-1px}
+.task-assignment-footer-row .tmp-ux-pending{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;background:#f8fafc;color:#64748b;font-size:11px;font-weight:650;white-space:nowrap}
+.task-assignment-footer-row .tmp-ux-pending[hidden]{display:none!important}
+.task-assignment-footer-row .tmp-ux-pending:before{content:'';width:6px;height:6px;border-radius:50%;background:#a8b4c2}
+.task-assignment-footer-row .tmp-ux-pending.has-changes{background:#fff8ed;border-color:#f7ddb3;color:#9a5a11}
+.task-assignment-footer-row .tmp-ux-pending.has-changes:before{background:#ea9a27}
+.task-assignment-footer-row .task-assignment-summary{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:1050px){.task-member-picker-root .tmp-ux-panel-hint{display:none}}
+@media(max-width:750px){.task-member-picker-root .tmp-tabs{align-items:flex-start;flex-wrap:wrap}.task-member-picker-root .tmp-assignment-notice{flex:1 1 100%;order:2}.task-member-picker-root .tmp-view-switch{order:1;margin-left:auto!important}.task-member-picker-root .tmp-v3-columns{gap:8px!important}.task-member-picker-root .tmp-v3-list{padding:6px!important}.task-member-picker-root .tmp-view-switch .tmp-tab{min-width:85px;padding:0 8px!important}}
+@media(max-width:600px){.task-assignment-footer-row{flex-wrap:wrap}.task-assignment-footer-row .task-assignment-summary{flex:1 1 140px}.task-member-picker-root .tmp-v3-columns .panel-header{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.task-member-picker-root .tmp-v3-list .member-item-row,.task-member-picker-root .tmp-view-switch .tmp-tab,.task-member-picker-root .tmp-v3-list .btn-calendar-only{transition:none!important;transform:none!important}}
+
+/* UX V2: original employee stays visible until Save, even when unchecked.
+   Keep the existing purple/green badges; amber is reserved for pending removals. */
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-pending-removal {
+    background:#fff8ef!important;
+    border:1px solid #f5ccaa!important;
+    box-shadow:inset 3px 0 #e69a44!important;
+}
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-pending-removal:hover {
+    background:#fff2e3!important;
+    border-color:#e9b477!important;
+    box-shadow:inset 3px 0 #dd8a2d,0 4px 12px rgba(138,75,20,.07)!important;
+}
+.task-member-picker-root .tmp-v3-list .member-item-row.tmp-pending-removal .row-default-view {
+    opacity:1;
+}
+.task-member-picker-root .tmp-pending-removal-badge {
+    display:inline-flex;align-items:center;gap:4px;
+    color:#974c17!important;background:#fff0dc!important;
+    border:1px solid #f1c391!important;
+    font-weight:700!important;
+}
+.task-member-picker-root .tmp-v3-columns .tmp-pending-removal-total {
+    display:inline-flex;align-items:center;gap:4px;
+    background:#fff0dc;border:1px solid #f1c391;color:#974c17;
+    font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;
+    white-space:nowrap;margin-left:auto;
+}
+.task-member-picker-root .tmp-v3-columns .tmp-pending-removal-total[hidden]{display:none!important}
+.task-member-picker-root .tmp-board-person-row.tmp-will-remove {
+    background:#fff7ed!important;
+    box-shadow:inset 3px 0 #e69a44!important;
+}
+.task-member-picker-root .tmp-board-person-row.tmp-will-remove:hover {background:#fff0dc!important}
+.task-member-picker-root .tmp-board-dayrow.tmp-will-remove {background:#fffaf4!important}
+.task-member-picker-root .tmp-board-dayrow.tmp-will-remove:hover {background:#fff4e9!important}
+/* UX V3: hành động khôi phục, giữ màu tím của control hiện tại. */
+.task-assignment-footer-row .task-assignment-restore {
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    flex:0 0 auto;min-height:32px;padding:6px 12px;
+    border:1px solid #d9c7ed;border-radius:7px;background:#fff;
+    color:#632c93;font-size:12px;font-weight:700;line-height:1.3;
+    cursor:pointer;white-space:nowrap;
+    transition:background-color .16s,border-color .16s,color .16s;
+}
+.task-assignment-footer-row .task-assignment-restore:not(:disabled):hover {
+    background:#f5effc;border-color:#ae8cd5;color:#4b1d7a;
+}
+.task-assignment-footer-row .task-assignment-restore:focus-visible {
+    outline:2px solid #8756bf;outline-offset:2px;
+}
+.task-assignment-footer-row .task-assignment-restore:disabled {
+    background:#f8f9fc;border-color:#e2e6ed;color:#a0a8b7;cursor:not-allowed;
+}
+@media(max-width:650px) {
+    .task-assignment-footer-row .task-assignment-restore {padding:6px 8px;font-size:11px}
+}
+
+/* UX V4 - Lịch phân bổ: thu hồi không gian dọc, KHÔNG đổi bảng màu/logic. */
+.task-member-picker-root .task-modal-header-info{margin-bottom:4px!important}
+.task-member-picker-root .task-modal-header-info .info-row-custom{margin-bottom:3px!important}
+.task-member-picker-root .tmp-v3-toolbar{
+    height:43px!important;min-height:43px!important;margin:1px 0 5px!important;
+    gap:9px!important;padding:4px 7px!important;flex:0 0 auto;justify-content:flex-start!important;
+}
+.task-member-picker-root .tmp-v3-toolbar .tmp-v3-filter-controls{
+    flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
+}
+.task-member-picker-root .tmp-v3-toolbar .tmp-native-search{
+    flex:0 1 335px!important;width:335px!important;min-width:160px!important;max-width:335px!important;
+}
+.task-member-picker-root .tmp-v3-toolbar .tmp-view-switch{
+    display:inline-flex;flex:0 0 auto!important;margin:0 0 0 auto!important;
+    align-items:center;height:33px;min-height:33px;border:1px solid #d4bdec;border-radius:6px;
+    background:#fff;
+}
+.task-member-picker-root .tmp-v3-toolbar .tmp-view-switch .tmp-tab{
+    min-height:31px;height:31px;padding:0 10px!important;min-width:93px;
+}
+.task-member-picker-root .tmp-parked-tags{display:none!important}
+.task-member-picker-root .tmp-timeline-window-nav{top:3px;right:8px}
+.task-member-picker-root .tmp-board{--tmp-row-height:74px!important;--tmp-group-height:31px!important;--tmp-header-height:53px!important}
+.task-member-picker-root .tmp-board-person-head{height:53px!important}
+.task-member-picker-root .tmp-board-months,.task-member-picker-root .tmp-board-month{height:22px!important}
+.task-member-picker-root .tmp-board-dayheads,.task-member-picker-root .tmp-board-dayhead{height:31px!important}
+.task-member-picker-root .tmp-board-section > .tmp-board-group,
+.task-member-picker-root .tmp-board-section > .tmp-board-group-days{height:31px!important}
+.task-member-picker-root .tmp-board-group{display:flex;align-items:stretch;gap:3px}
+.task-member-picker-root .tmp-board-group .tmp-toggle-group{
+    flex:1 1 auto;min-width:0!important;width:auto!important;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.task-member-picker-root .tmp-board-group.tmp-focused{
+    box-shadow:inset 3px 0 #7c3aed;
+}
+.task-member-picker-root .tmp-board-group.tmp-focused .tmp-toggle-group{font-weight:800!important}
+.task-member-picker-root .tmp-board-group .tmp-split-mode{
+    flex:0 0 auto!important;width:auto!important;height:24px!important;
+    align-self:center;border:1px solid #d8c9ec;border-radius:5px;
+    margin-right:6px;padding:0 6px!important;
+    font-size:10px!important;font-weight:700!important;color:#66339a;background:#fff;
+}
+.task-member-picker-root .tmp-board-group .tmp-split-mode:hover,
+.task-member-picker-root .tmp-board-group .tmp-split-mode[aria-pressed="true"]{background:#e8dcfb;color:#5b2490;border-color:#ad8ed9}
+.task-member-picker-root .tmp-board-person-row,.task-member-picker-root .tmp-board-dayrow,
+.task-member-picker-root .tmp-board-daycell{height:74px!important;min-height:74px!important}
+.task-member-picker-root .tmp-board-person-row .tmp-person-cell{padding:6px 8px!important;gap:7px!important;min-height:0!important;overflow:hidden}
+.task-member-picker-root .tmp-board-person-row .tmp-person-avatar{flex-basis:29px!important;width:29px!important;height:29px!important}
+.task-member-picker-root .tmp-board-person-row .tmp-person-avatar .single-avatar-circle{width:29px!important;height:29px!important}
+.task-member-picker-root .tmp-board-person-row .tmp-person-text{
+    display:flex!important;flex:1 1 0;min-width:0;flex-direction:column;
+    justify-content:center!important;gap:4px!important;overflow:hidden!important;
+}
+.task-member-picker-root .tmp-person-headline{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:4px!important;min-width:0;min-height:19px}
+.task-member-picker-root .tmp-person-headline .tmp-person-name{
+    min-width:0;flex:0 1 auto;max-width:100%;display:block!important;overflow:hidden!important;
+    white-space:nowrap!important;text-overflow:ellipsis!important;font-size:11.5px!important;
+}
+.task-member-picker-root .tmp-person-headline .tmp-person-source{flex:0 0 auto}
+.task-member-picker-root .tmp-person-headline .tmp-person-pm{flex:0 0 auto}
+.task-member-picker-root .tmp-person-headline .tmp-person-badges{
+    flex:0 0 auto;display:inline-flex!important;align-items:center;min-height:0!important;overflow:visible!important;
+    margin-left:auto;white-space:nowrap;
+}
+.task-member-picker-root .tmp-person-headline .tmp-person-badges .badge{
+    font-size:9.2px!important;max-width:122px!important;padding:3px 5px!important;
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.task-member-picker-root .tmp-person-subline{display:flex;align-items:center;min-width:0;gap:4px;line-height:1.25}
+.task-member-picker-root .tmp-person-subline .tmp-person-position,
+.task-member-picker-root .tmp-person-subline .tmp-person-email{
+    flex:0 1 auto;min-width:0;display:block;white-space:nowrap!important;
+    text-overflow:ellipsis;overflow:hidden!important;font-size:10.5px!important;
+}
+.task-member-picker-root .tmp-person-subline .tmp-person-position{max-width:49%;color:#64748b}
+.task-member-picker-root .tmp-person-subline .tmp-person-email{flex:1 1 0;color:#71809a}
+.task-member-picker-root .tmp-board-daycell{padding:5px 2px!important}
+.task-member-picker-root .tmp-board-daycell .tmp-day{
+    height:60px!important;max-height:60px!important;margin:0!important;
+    font-size:10px!important;line-height:1.22!important;
+    white-space:normal!important;text-align:center;overflow-wrap:normal;
+}
+.task-assignment-footer-row{gap:8px!important}
+.task-assignment-footer-row .tmp-footer-notice{
+    display:inline-flex;align-items:center;gap:5px;min-width:0;flex:0 1 315px;
+    color:#9a5b14;font-size:10.5px;line-height:1.2;white-space:nowrap;
+}
+.task-assignment-footer-row .tmp-footer-notice .tmp-v3-dot{display:inline-block!important;flex:0 0 8px;width:8px;height:8px;border-radius:50%;margin:0!important;background:#94a3b8!important}
+.task-assignment-footer-row .tmp-footer-notice span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-assignment-footer-row .task-assignment-summary{font-size:11px!important;flex:1 1 175px}
+@media(max-width:1150px){
+    .task-member-picker-root .tmp-v3-toolbar .tmp-native-search{min-width:125px!important;width:205px!important;flex-basis:205px!important}
+    .task-member-picker-root .tmp-v3-toolbar .tmp-view-switch .tmp-tab{min-width:82px!important;padding:0 7px!important}
+    .task-assignment-footer-row .tmp-footer-notice{flex-basis:195px}
+}
+@media(max-width:800px){
+    .task-member-picker-root .tmp-v3-toolbar .tmp-v3-filter-label{display:none}
+    .task-member-picker-root .tmp-v3-toolbar .tmp-view-switch .tmp-tab{min-width:34px!important;padding:0 7px!important}
+    .task-member-picker-root .tmp-v3-toolbar .tmp-view-switch .tmp-tab span{display:none}
+    .task-assignment-footer-row .tmp-footer-notice{flex-basis:24px;overflow:hidden}
+    .task-assignment-footer-row .tmp-footer-notice span{display:none}
+}
+
+
+/* UX V4.1: khôi phục lưu ý nguyên văn, không cắt chữ bằng ellipsis. */
+.task-assignment-footer-row{flex-wrap:wrap;align-items:center;row-gap:6px!important}
+.task-assignment-footer-row .tmp-footer-notice{
+    flex:1 1 410px!important;min-width:min(100%,340px)!important;max-width:none!important;
+    align-items:flex-start!important;white-space:normal!important;
+    line-height:1.35!important;font-size:10.8px!important;
+}
+.task-assignment-footer-row .tmp-footer-notice span{
+    overflow:visible!important;text-overflow:clip!important;
+    white-space:normal!important;line-height:1.35!important;
+}
+.task-assignment-footer-row .tmp-footer-notice .tmp-v3-dot{margin-top:3px!important}
+@media(max-width:800px){
+    .task-assignment-footer-row .tmp-footer-notice{flex:1 1 100%!important;min-width:0!important;overflow:visible!important}
+    .task-assignment-footer-row .tmp-footer-notice span{display:inline!important}
+}
+/* Nhấn header thu/mở, không hiển thị nút chia 2+2 gây khó hiểu. */
+.task-member-picker-root .tmp-board-group .tmp-split-mode{display:none!important}
+.task-member-picker-root .tmp-board-group .tmp-toggle-group{
+    text-align:left;cursor:pointer;transition:background-color .14s,color .14s;
+}
+.task-member-picker-root .tmp-board-group .tmp-toggle-group:hover{filter:brightness(.97)}
+.task-member-picker-root .tmp-board-group .tmp-toggle-group:focus-visible{outline:2px solid #8c56c0;outline-offset:-2px}
+/* Tooltip lịch ngắn cao đúng theo nội dung; trường hợp rất dài JS mới bật scrollbar. */
+.global-task-tooltip{overflow:visible;max-height:none}
+/* Tooltip nhân viên thay thế title mặc định. Nổi khỏi grid để không bị cắt. */
+.tmp-member-tooltip{
+    position:fixed;z-index:10000030;left:0;top:0;pointer-events:none;
+    max-width:min(375px,calc(100vw - 20px));min-width:230px;
+    padding:11px 13px;border:1px solid #dacbea;border-top:3px solid #7136b0;
+    border-radius:9px;background:#fff;color:#334155;
+    box-shadow:0 10px 28px rgba(37,22,62,.16);opacity:0;visibility:hidden;
+    transition:opacity .12s ease,visibility .12s ease;
+    font-size:11.5px;line-height:1.5;overflow-wrap:anywhere;
+}
+.tmp-member-tooltip.is-visible{opacity:1;visibility:visible}
+.tmp-member-tip-name{font-weight:750;color:#3c2656;font-size:12.4px;border-bottom:1px solid #ece7f4;padding-bottom:5px;margin-bottom:5px}
+.tmp-member-tip-role,.tmp-member-tip-email{padding:2px 0;color:#58677b}
+.tmp-member-tip-role i,.tmp-member-tip-email i{width:17px;color:#834cbb}
+@media(prefers-reduced-motion:reduce){.tmp-member-tooltip{transition:none}}
+
 </style>
 
 <SweetSoft:ExtraModal runat="server" ID="mdlTaskMemberPicker" Type="Primary" Size="ExtraLarge">
@@ -782,13 +1035,6 @@
                     <div class="task-modal-header-info">
                         <div class="info-row-custom" style="background: #eff6ff; padding: 8px 12px; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 8px;">
                             <asp:Literal runat="server" ID="ltrTaskInfoNote"></asp:Literal>
-                        </div>
-                        <div class="tmp-tabs" role="group" aria-label="Cách hiển thị nhân viên">
-                            <div class="tmp-assignment-notice" title="Khi chọn nhân viên thuộc nhóm Nhân sự khác, hệ thống sẽ tự động cấp quyền tham gia dự án sau khi lưu."><i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span>Lưu ý: Nếu chọn nhân sự thuộc danh sách Khác, hệ thống sẽ tự động cấp quyền tham gia Dự án cho nhân sự đó.</span></div>
-                            <div class="tmp-view-switch" role="tablist" aria-label="Chuyển cách hiển thị">
-                                <button type="button" id="tmpTabList" class="tmp-tab is-active" role="tab" aria-selected="true" aria-controls="tmpPaneList" title="Hiển thị dưới dạng danh sách" aria-label="Hiển thị dưới dạng danh sách"><i class="fas fa-list-ul" aria-hidden="true"></i></button>
-                                <button type="button" id="tmpTabTimeline" class="tmp-tab" role="tab" aria-selected="false" aria-controls="tmpPaneTimeline" title="Hiển thị dưới dạng lịch trình" aria-label="Hiển thị dưới dạng lịch trình"><i class="fas fa-stream" aria-hidden="true"></i></button>
-                            </div>
                         </div>
                     </div>
 
@@ -808,6 +1054,13 @@
                                     <SweetSoft:ExtraButton runat="server" ID="lbtSearchTimeline" CssClass="btn-outline-primary btn-search-filter" IsCustomClass="false" ButtonIcon="Search" OnClick="btnSearchTimeline_ServerClick"></SweetSoft:ExtraButton>
                                 </div>
                             </div>
+                            <div class="tmp-view-switch" role="tablist" aria-label="Chuyển cách hiển thị">
+                                <button type="button" id="tmpTabList" class="tmp-tab is-active" role="tab" aria-selected="true" aria-controls="tmpPaneList" tabindex="0" title="Hiển thị dưới dạng danh sách" aria-label="Hiển thị dưới dạng danh sách"><i class="fas fa-list-ul" aria-hidden="true"></i><span>Danh sách</span></button>
+                                <button type="button" id="tmpTabTimeline" class="tmp-tab" role="tab" aria-selected="false" aria-controls="tmpPaneTimeline" tabindex="-1" title="Hiển thị dưới dạng lịch trình" aria-label="Hiển thị dưới dạng lịch trình"><i class="fas fa-stream" aria-hidden="true"></i><span>Lịch phân bổ</span></button>
+                            </div>
+                    </div>
+                    <!-- Các server control tag được giữ trong cây điều khiển nhưng không chiếm diện tích UI. -->
+                    <div class="tmp-parked-tags" aria-hidden="true">
                         <div class="tmp-timeline-tags listSearchTagBox" id="tmpTimelineTags">
                             <asp:UpdatePanel ID="upnlTimelineTags" runat="server" UpdateMode="Conditional" RenderMode="Inline">
                                 <ContentTemplate>
@@ -1007,11 +1260,11 @@
                     </div> <!-- End hidden ASP.NET Repeater sources -->
                     <div id="tmpPaneList" class="task-member-columns tmp-v3-columns" role="tabpanel">
                         <section class="member-list-panel" id="panelProject" aria-label="Nhân sự được chọn">
-                            <div class="panel-header tmp-v3-picked-header"><span><i class="fas fa-user-check me-1"></i> Nhân sự được chọn</span><span class="badge bg-primary rounded-pill" id="tmpSelectedCount">0</span></div>
+                            <div class="panel-header tmp-v3-picked-header"><span><i class="fas fa-user-check me-1"></i> Nhân sự được chọn <small class="tmp-ux-panel-hint">Bỏ tích để gỡ sau khi lưu</small></span><span class="tmp-pending-removal-total" id="tmpPendingRemovalCount" title="Nhân viên bỏ chọn nhưng vẫn được phân công cho đến khi Lưu" hidden></span><span class="badge bg-primary rounded-pill" id="tmpSelectedCount" title="Số nhân viên sẽ được phân công sau khi lưu">0</span></div>
                             <div class="panel-list tmp-v3-list" id="tmpSelectedList"></div>
                         </section>
                         <section class="member-list-panel" id="panelCompany" aria-label="Nhân sự có thể phân công">
-                            <div class="panel-header tmp-v3-available-header"><span><i class="fas fa-users me-1"></i> Nhân sự có thể phân công</span><span class="badge bg-primary rounded-pill" id="tmpAvailableCount">0</span></div>
+                            <div class="panel-header tmp-v3-available-header"><span><i class="fas fa-users me-1"></i> Nhân sự có thể phân công <small class="tmp-ux-panel-hint">Ưu tiên ngày trống</small></span><span class="badge bg-primary rounded-pill" id="tmpAvailableCount">0</span></div>
                             <div class="tmp-v3-legend"><span><i class="tmp-v3-dot project"></i>Thuộc dự án</span><span><i class="tmp-v3-dot other"></i>Ngoài dự án</span></div>
                             <div class="panel-list tmp-v3-list" id="tmpAvailableList"></div>
                         </section>
@@ -1042,12 +1295,31 @@
             <ContentTemplate>
 
                 <div class="task-assignment-footer-row">
-
+                    <span class="tmp-footer-notice" title="Nhân sự ngoài dự án được ký hiệu bằng chấm xám. Khi phân công, hệ thống sẽ tự thêm nhân viên vào dự án sau khi lưu.">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                        <i class="tmp-v3-dot other" aria-hidden="true"></i>
+                        <span>Lưu ý: Khi phân công nhân sự chưa thuộc dự án (ký hiệu xám), hệ thống sẽ tự cấp quyền tham gia dự án sau khi lưu.</span>
+                    </span>
                     <!-- Tóm tắt lựa chọn, nằm bên trái -->
+                    <span id="tmpPendingChanges" class="tmp-ux-pending" role="status" aria-live="polite">Chưa có thay đổi</span>
                     <asp:Label
                         ID="lblAssignmentSummary"
                         runat="server"
                         CssClass="task-assignment-summary" />
+
+                    <!-- Chỉ khôi phục lựa chọn trên giao diện, không ghi cơ sở dữ liệu. -->
+                    <button type="button" id="tmpRestoreOriginal"
+                        class="task-assignment-restore" disabled
+                        title="Khôi phục danh sách phân công như lúc mở cửa sổ"
+                        aria-label="Khôi phục ban đầu">
+                        <i class="fas fa-undo-alt" aria-hidden="true"></i>
+                        Khôi phục ban đầu
+                    </button>
+                    <!-- Nút hậu kiểm gọi MessageBox hệ thống nếu người dùng đóng khi chưa lưu. -->
+                    <asp:LinkButton ID="lbtRequestDiscardTaskAssign" runat="server"
+                        CssClass="tmp-discard-server-trigger" Style="display:none"
+                        CausesValidation="false"
+                        OnClick="lbtRequestDiscardTaskAssign_Click">Yêu cầu xác nhận đóng</asp:LinkButton>
 
                     <!-- Giữ nguyên nút Lưu hiện tại -->
                     <SweetSoft:ExtraButton
@@ -1295,7 +1567,14 @@
             var $day = $(dayEl), raw = $day.attr('data-tooltip-content');
             if (!raw) return;
             try { $globalTooltip.html(decodeURIComponent(raw)); } catch(e) { return; }
-            $globalTooltip.addClass('show');
+            $globalTooltip.css({maxHeight: 'none', overflowY: 'visible'}).addClass('show');
+            // Tooltip 1-2 nội dung tự cao theo nội dung, TUYỆT ĐỐI không tạo thanh cuộn giả.
+            // Chỉ tooltip thật sự vượt quá giới hạn màn hình mới cuộn bên trong.
+            var maxTooltipHeight = Math.max(120, Math.min(410, window.innerHeight - 24));
+            var naturalHeight = $globalTooltip[0].offsetHeight;
+            if (naturalHeight > maxTooltipHeight) {
+                $globalTooltip.css({maxHeight: maxTooltipHeight + 'px', overflowY: 'auto'});
+            }
             var rect = dayEl.getBoundingClientRect();
             var ttWidth = $globalTooltip.outerWidth(), ttHeight = $globalTooltip.outerHeight();
             var left = Math.max(10, Math.min(window.innerWidth - ttWidth - 10, rect.left + rect.width / 2 - ttWidth / 2));
@@ -1540,7 +1819,7 @@
     (function (window, document, $) {
         'use strict';
         if (!$ || (window.TaskMemberPlanner && window.TaskMemberPlanner.__v4)) return;
-        var state = { taskId: '', data: null, json: '', tab: 'list', onlyPicked: false, filters: { project: { keyword: '', role: '' }, other: { keyword: '', role: '' } }, collapsed: {}, filterRevision: null, dayStart: 0, calendarButton: null, calendarData: null };
+        var state = { taskId: '', data: null, json: '', tab: 'list', onlyPicked: false, filters: { project: { keyword: '', role: '' }, other: { keyword: '', role: '' } }, collapsed: { selected: false, available: true }, filterRevision: null, dayStart: 0, calendarButton: null, calendarData: null };
         var DAY_MS = 86400000;
         function root() { return document.querySelector('.task-member-picker-root'); }
         function get(id) { var r = root(); return r ? r.querySelector('#' + id) : null; }
@@ -1569,16 +1848,47 @@
                 row.classList.toggle('tmp-will-add', active && !old);
                 row.classList.toggle('tmp-will-remove', old && !active);
                 var calendarRow = r.querySelector('.tmp-board-dayrow[data-id="' + id + '"]');
-                if (calendarRow) calendarRow.classList.toggle('is-selected', active);
+                if (calendarRow) { calendarRow.classList.toggle('is-selected', active); calendarRow.classList.toggle('tmp-will-remove', old && !active); }
                 var box = row.querySelector('input[type="checkbox"]');
                 if (box) box.checked = active;
             });
+            // Có thay đổi thật mới cho phép khôi phục; hỗ trợ cả khi footer được UpdatePanel thay mới.
+            var restoreButton = document.getElementById('tmpRestoreOriginal');
+            if (restoreButton) {
+                var same = chosen.length === initial.length &&
+                    chosen.every(function (id) { return initial.indexOf(id) >= 0; });
+                restoreButton.disabled = isReadonly() || same;
+                restoreButton.title = restoreButton.disabled ?
+                    'Danh sách hiện tại trùng với phân công ban đầu' :
+                    'Hoàn tác mọi thay đổi phân công chưa lưu';
+            }
+            var pending = document.getElementById('tmpPendingChanges');
+            if (pending) {
+                pending.hidden = isReadonly();
+                var nAdded = chosen.filter(function (id) { return initial.indexOf(id) < 0; }).length;
+                var nRemoved = initial.filter(function (id) { return chosen.indexOf(id) < 0; }).length;
+                var changed = nAdded + nRemoved > 0;
+                pending.classList.toggle('has-changes', changed);
+                pending.textContent = changed ? 'Chưa lưu · +' + nAdded + ' / −' + nRemoved : 'Chưa có thay đổi';
+                pending.title = changed ? ('Thêm ' + nAdded + ' · Gỡ ' + nRemoved + ' nhân viên') : 'Lựa chọn trùng với phân công hiện tại';
+            }
             var label = document.querySelector('[id$="lblAssignmentSummary"]');
             if (label) {
                 var kept = chosen.filter(function (id) { return initial.indexOf(id) >= 0; }).length;
                 var outsideAdded = chosen.filter(function (id) { var m = findPerson(id); return initial.indexOf(id) < 0 && m && m.group === 'other'; }).length;
                 label.textContent = chosen.length + ' nhân viên sau lưu · Giữ ' + kept + ' · Thêm ' + (chosen.length - kept) + ' · Gỡ ' + (initial.length - kept) + (outsideAdded ? ' · Thêm ' + outsideAdded + ' vào dự án' : '');
             }
+        }
+        function restoreOriginal() {
+            if (isReadonly()) return;
+            var field = f('hdfPickedIdsClient');
+            if (!field) return;
+            // Bảo toàn tập người phân công khi mở popup: không đụng DB, bộ lọc hay tab.
+            field.value = originals().join(',');
+            closePopover();
+            syncSelection(); // Cập nhật luôn Repeater ẩn: postback sau đó không phục hồi lựa chọn cũ.
+            renderNewList(true);
+            if (state.tab === 'timeline') renderTimeline(true);
         }
         function setPicked(id, on) {
             if (isReadonly()) return;
@@ -1592,7 +1902,7 @@
             var el = f('hdfTimelineJson'), idField = f('hdfTaskPickerId'), id = idField ? idField.value : '';
             if (!el || !el.value) return;
             if (id !== state.taskId) {
-                state.tab = 'list'; state.onlyPicked = false; state.filters = { project: { keyword: '', role: '' }, other: { keyword: '', role: '' } }; state.collapsed = {}; state.filterRevision = null; state.dayStart = 0;
+                state.tab = 'list'; state.onlyPicked = false; state.filters = { project: { keyword: '', role: '' }, other: { keyword: '', role: '' } }; state.collapsed = { selected: false, available: true }; state.filterRevision = null; state.dayStart = 0;
                 closePopover(); state.taskId = id;
             }
             if (el.value !== state.json) {
@@ -1630,8 +1940,8 @@
             state.tab = mode === 'timeline' ? 'timeline' : 'list'; closePopover();
             list.hidden = state.tab !== 'list'; timeline.hidden = state.tab !== 'timeline';
             if (state.tab === 'list') renderNewList(true);
-            if (b1) { b1.classList.toggle('is-active', state.tab === 'list'); b1.setAttribute('aria-selected', state.tab === 'list'); }
-            if (b2) { b2.classList.toggle('is-active', state.tab === 'timeline'); b2.setAttribute('aria-selected', state.tab === 'timeline'); }
+            if (b1) { b1.classList.toggle('is-active', state.tab === 'list'); b1.setAttribute('aria-selected', state.tab === 'list' ? 'true' : 'false'); b1.tabIndex = state.tab === 'list' ? 0 : -1; }
+            if (b2) { b2.classList.toggle('is-active', state.tab === 'timeline'); b2.setAttribute('aria-selected', state.tab === 'timeline' ? 'true' : 'false'); b2.tabIndex = state.tab === 'timeline' ? 0 : -1; }
             if (state.tab === 'timeline') renderTimeline(avoidReload);
         }
         function calendarPosition() {
@@ -1733,14 +2043,21 @@
                 return;
             }
             var members = (state.data.members || []).filter(function (m) {
-                return chosen.indexOf(String(m.id).toLowerCase()) >= 0 || filterCandidate(m);
+                return chosen.indexOf(String(m.id).toLowerCase()) >= 0 || initial.indexOf(String(m.id).toLowerCase()) >= 0 || filterCandidate(m);
             });
             members.sort(function (a, b) {
-                var sa = chosen.indexOf(String(a.id).toLowerCase()) >= 0, sb = chosen.indexOf(String(b.id).toLowerCase()) >= 0;
-                if (sa !== sb) return sa ? -1 : 1;
-                if (!sa) return freeCount(b) - freeCount(a) || Number(b.group === 'project') - Number(a.group === 'project') || (a.name || '').localeCompare(b.name || '');
-                return Number(!!b.original) - Number(!!a.original) || (a.name || '').localeCompare(b.name || '');
+                var ai = String(a.id).toLowerCase(), bi = String(b.id).toLowerCase();
+                var sa = chosen.indexOf(ai) >= 0, sb = chosen.indexOf(bi) >= 0;
+                var ao = initial.indexOf(ai) >= 0, bo = initial.indexOf(bi) >= 0;
+                // Original staff keep their position when unchecked, avoiding a jump out of view.
+                var ga = ao ? 0 : (sa ? 1 : 2);
+                var gb = bo ? 0 : (sb ? 1 : 2);
+                if (ga !== gb) return ga - gb;
+                if (ga === 2) return freeCount(b) - freeCount(a) || Number(b.group === 'project') - Number(a.group === 'project') || (a.name || '').localeCompare(b.name || '');
+                return (a.name || '').localeCompare(b.name || '');
             });
+            var nowLocal = new Date();
+            var todayKey = nowLocal.getFullYear() + '-' + ('0' + (nowLocal.getMonth() + 1)).slice(-2) + '-' + ('0' + nowLocal.getDate()).slice(-2);
             var dateHeadHtml = '<div class="tmp-board-months" role="row">';
             for (var k = 0; k < days.length;) {
                 var mon = days[k].slice(0, 7), j = k;
@@ -1752,75 +2069,92 @@
             days.forEach(function (day) {
                 var d = dateUtc(day), weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
                 var inside = day >= state.data.start && day <= state.data.end, boundary = day === state.data.start || day === state.data.end;
-                dateHeadHtml += '<div class="tmp-board-dayhead ' + (inside ? 'inside-task' : 'outside-task') + (boundary ? ' task-boundary' : '') + '"><b>' + d.getUTCDate() + '</b><span>' + weekdays[d.getUTCDay()] + '</span></div>';
+                dateHeadHtml += '<div class="tmp-board-dayhead ' + (inside ? 'inside-task' : 'outside-task') + (boundary ? ' task-boundary' : '') + (day === todayKey ? ' is-today' : '') + (d.getUTCDay() === 0 || d.getUTCDay() === 6 ? ' is-weekend' : '') + '" title="' + esc(fmtDate(day) + (day === todayKey ? ' · Hôm nay' : '')) + '"><b>' + d.getUTCDate() + '</b><span>' + weekdays[d.getUTCDay()] + '</span></div>';
             });
             dateHeadHtml += '</div>';
             var groups = ['selected', 'available'].map(function (group) {
                 var people = members.filter(function (m) {
                     var checked = chosen.indexOf(String(m.id).toLowerCase()) >= 0;
-                    return group === 'selected' ? checked : !checked;
+                    var existed = initial.indexOf(String(m.id).toLowerCase()) >= 0;
+                    return group === 'selected' ? (checked || existed) : (!checked && !existed);
                 });
                 var nameHtml = '', dateHtml = '';
                 if (!people.length) nameHtml = '<div class="tmp-board-no-results">' + (group === 'selected' ? 'Chưa chọn nhân viên.' : 'Không có ứng viên phù hợp bộ lọc.') + '</div>';
                 people.forEach(function (m) {
                     var id = String(m.id).toLowerCase(), active = chosen.indexOf(id) >= 0, old = initial.indexOf(id) >= 0;
                     var status = badgeFor(m, active, old);
-                    nameHtml += '<div class="tmp-board-person-row tmp-employee ' + (active ? 'is-selected ' : '') + '" data-id="' + esc(id) + '">' +
-                        '<div class="tmp-person-cell"><input type="checkbox" data-tmp-pick="' + esc(id) + '" ' + (active ? 'checked ' : '') + (isReadonly() ? 'disabled ' : '') + 'aria-label="Phân công ' + esc(m.name) + '"/>' +
+                    nameHtml += '<div class="tmp-board-person-row tmp-employee ' + (active ? 'is-selected ' : '') + (old && !active ? 'tmp-will-remove ' : '') + '" data-id="' + esc(id) + '">' +
+                        '<div class="tmp-person-cell"><input type="checkbox" data-tmp-pick="' + esc(id) + '" ' + (active ? 'checked ' : '') + (isReadonly() ? 'disabled ' : '') + 'aria-label="' + (old && !active ? 'Tích lại để giữ phân công ' : active ? 'Bỏ phân công ' : 'Phân công ') + esc(m.name) + '"/>' +
                         '<span class="tmp-person-avatar">' + (m.avatarHtml || '') + '</span>' +
-                        '<span class="tmp-person-text"><span class="tmp-person-headline"><strong>' + esc(m.name) + '</strong><span class="tmp-person-source" title="' + (m.group === 'project' ? 'Đã tham gia dự án' : 'Chưa tham gia dự án') + '"><i class="tmp-v3-dot ' + (m.group === 'project' ? 'project' : 'other') + '"></i></span>' +
-                        (m.role ? '<span class="tmp-person-position"> · ' + esc(m.role) + '</span>' : '') +
-                        (m.isPM ? ' <span class="badge bg-danger tmp-person-pm">PM</span>' : '') + '</span>' +
-                        '<span class="tmp-person-email">' + esc(m.email || '') + '</span><span class="tmp-person-badges">' + status + '</span></span></div></div>';
-                    dateHtml += '<div class="tmp-board-dayrow ' + (active ? 'is-selected' : '') + '" data-id="' + esc(id) + '">';
+                        '<span class="tmp-person-text tmp-person-hover" data-tip-name="' + esc(m.name) + '" data-tip-role="' + esc(m.role || '') + '" data-tip-email="' + esc(m.email || '') + '"><span class="tmp-person-headline"><strong class="tmp-person-name">' + esc(m.name) + '</strong><span class="tmp-person-source" title="' + (m.group === 'project' ? 'Đã tham gia dự án' : 'Chưa tham gia dự án') + '"><i class="tmp-v3-dot ' + (m.group === 'project' ? 'project' : 'other') + '"></i></span>' +
+                        (m.isPM ? ' <span class="badge bg-danger tmp-person-pm">PM</span>' : '') +
+                        '<span class="tmp-person-badges">' + status + '</span></span>' +
+                        '<span class="tmp-person-subline">' +
+                        (m.role ? '<span class="tmp-person-position">' + esc(m.role) + '</span>' : '') +
+                        (m.role && m.email ? '<span aria-hidden="true">·</span>' : '') +
+                        '<span class="tmp-person-email">' + esc(m.email || '') + '</span></span></span></div></div>';
+                    dateHtml += '<div class="tmp-board-dayrow ' + (active ? 'is-selected ' : '') + (old && !active ? 'tmp-will-remove' : '') + '" data-id="' + esc(id) + '">';
                     days.forEach(function (day) {
                         var entry = m.schedule && m.schedule[day] || null, inside = day >= state.data.start && day <= state.data.end;
                         var st = entry && entry.status || 'weekend', taskCount = entry && entry.tasks ? entry.tasks.length : 0, current = !!(entry && entry.current);
-                        var label = inside ? (st === 'busy' ? (taskCount + ' CV') : st === 'holiday' ? 'Nghỉ lễ' : st === 'weekend' ? 'Nghỉ' : current ? 'Task này' : 'Trống') : (st === 'busy' ? '<span class="tmp-v3-context-dot"></span>' : '');
+                        var label = inside ? (st === 'busy' ? (taskCount + ' công việc') : st === 'holiday' ? 'Nghỉ lễ' : st === 'weekend' ? 'Nghỉ' : current ? 'Công việc' : 'Trống') : (st === 'busy' ? '<span class="tmp-v3-context-dot"></span>' : '');
                         var tooltip = entry && window.TaskMemberCalendarEngine ? window.TaskMemberCalendarEngine.tooltipHtml(entry, day, m.name, !inside) : '';
                         dateHtml += '<div class="tmp-board-daycell ' + (inside ? 'inside-task' : 'outside-task') + (day === state.data.start ? ' task-boundary-start' : '') + (day === state.data.end ? ' task-boundary-end' : '') + '"><button type="button" class="tmp-day st-' + esc(st) + (inside ? '' : ' outside-task') + (current ? ' has-current' : '') + (inside && current && st === 'free' ? ' st-current-only' : '') + (entry ? ' has-tooltip' : '') + '" data-id="' + esc(id) + '" data-day="' + esc(day) + '"' + (tooltip ? ' data-tooltip-content="' + encodeURIComponent(tooltip) + '"' : '') + ' aria-label="' + esc(m.name + ' · ' + fmtDate(day) + ' · ' + (entry ? entry.text : 'Không có dữ liệu')) + '">' + label + '</button></div>';
                     });
                     dateHtml += '</div>';
                 });
                 return {
-                    key: group, people: people, folded: !!state.collapsed[group], names: nameHtml, dates: dateHtml,
-                    desired: state.collapsed[group] ? 0 : (people.length ? Math.min(3, people.length) * 83 : 43)
+                    key: group, people: people, names: nameHtml, dates: dateHtml
                 };
             });
-            // Ưu tiên nhóm Đã chọn: chỉ hiện các hàng TRỌN VẸN, tối đa 3 hàng.
-            // Nhóm Ứng viên dùng phần còn lại; hai header luôn nhìn thấy.
-            // Không chia tỷ lệ 50/50 khiến hàng cuối bị cắt ở 1,5 dòng.
-            var available = Math.max(0, (board.clientHeight || 390) - 56 - 64);
-            var selectedGroup = groups[0], candidateGroup = groups[1], rowHeight = 83;
-            selectedGroup.bodyHeight = 0;
-            candidateGroup.bodyHeight = 0;
-            if (!selectedGroup.folded) {
-                var selectedRows = Math.min(3, selectedGroup.people.length, Math.floor(available / rowHeight));
-                selectedGroup.bodyHeight = selectedRows * rowHeight;
-                // Khi không đủ một dòng nhưng vẫn có dữ liệu, không bao giờ mở lửng một hàng.
-                if (!selectedRows && selectedGroup.people.length && available > 0)
-                    selectedGroup.bodyHeight = Math.min(available, rowHeight);
-                if (!selectedGroup.people.length)
-                    selectedGroup.bodyHeight = Math.min(43, available);
+            // UX V4.1: tiêu đề hai nhóm luôn nằm trong khung.
+            // Bấm header để ĐÓNG/MỞ thực sự, không còn ép chế độ ưu tiên hoặc nút 2+2.
+            var rowHeight = 74, headerHeight = 53, groupHeight = 31;
+            var available = Math.max(0, (board.clientHeight || 390) - headerHeight - 2 * groupHeight);
+            var slots = Math.max(0, Math.floor(available / rowHeight));
+            var selectedGroup = groups[0], candidateGroup = groups[1];
+            var selectedOpen = !state.collapsed.selected, candidateOpen = !state.collapsed.available;
+            var selectedCount = selectedGroup.people.length, candidateCount = candidateGroup.people.length;
+            var selectedRows = 0, candidateRows = 0;
+            // Một nhóm đang đóng thì nhóm mở được hưởng trọn tối đa 4 dòng.
+            if (selectedOpen && !candidateOpen) {
+                selectedRows = Math.min(4, selectedCount, slots);
+            } else if (!selectedOpen && candidateOpen) {
+                candidateRows = Math.min(4, candidateCount, slots);
+            } else if (selectedOpen && candidateOpen) {
+                // Khi cả hai mở, chia số dòng theo số người đang có; không tạo nút/chế độ riêng.
+                // Dành ít nhất một dòng cho mỗi nhóm có dữ liệu nếu màn hình đủ chỗ.
+                var remainder = slots;
+                if (selectedCount && remainder > 0) { selectedRows++; remainder--; }
+                if (candidateCount && remainder > 0) { candidateRows++; remainder--; }
+                while (remainder > 0 && (selectedRows < Math.min(4, selectedCount) || candidateRows < Math.min(4, candidateCount))) {
+                    var canSelected = selectedRows < Math.min(4, selectedCount);
+                    var canCandidate = candidateRows < Math.min(4, candidateCount);
+                    if (canSelected && (!canCandidate || selectedRows <= candidateRows)) selectedRows++;
+                    else if (canCandidate) candidateRows++;
+                    remainder--;
+                }
             }
-            var leftHeight = Math.max(0, available - selectedGroup.bodyHeight);
-            if (!candidateGroup.folded) {
-                var candidateRows = Math.min(3, candidateGroup.people.length, Math.floor(leftHeight / rowHeight));
-                candidateGroup.bodyHeight = candidateRows * rowHeight;
-                // Hai nhóm cùng mở mà không đủ một hàng ứng viên: chỉ giữ header,
-                // click header đó sẽ chuyển trọng tâm sang ứng viên (thu nhóm trên).
-                if (!candidateRows && candidateGroup.people.length && leftHeight > 0 && selectedGroup.bodyHeight === 0)
-                    candidateGroup.bodyHeight = Math.min(leftHeight, rowHeight);
-                if (!candidateGroup.people.length)
-                    candidateGroup.bodyHeight = Math.min(43, leftHeight);
+            selectedGroup.bodyHeight = selectedRows * rowHeight;
+            candidateGroup.bodyHeight = candidateRows * rowHeight;
+            // Với nhóm mở nhưng không có nhân sự, dùng khoảng trống nhỏ cho dòng thông báo.
+            var sparePixels = Math.max(0, available - selectedGroup.bodyHeight - candidateGroup.bodyHeight);
+            if (selectedOpen && !selectedCount && sparePixels >= 34) {
+                selectedGroup.bodyHeight = 34; sparePixels -= 34;
+            }
+            if (candidateOpen && !candidateCount && sparePixels >= 34) {
+                candidateGroup.bodyHeight = 34;
             }
             var width = days.length * 56, groupsHtml = '';
             groups.forEach(function (g) {
                 var selected = g.key === 'selected', title = selected ? 'Nhân sự được chọn' : 'Nhân sự có thể phân công';
-                var className = selected ? ' tmp-selected' : '';
-                var folded = g.folded ? ' is-collapsed' : '';
-                groupsHtml += '<section class="tmp-board-section' + folded + '" data-group="' + g.key + '" style="height:' + (32 + Math.floor(g.bodyHeight || 0)) + 'px">' +
-                    '<div class="tmp-board-group' + className + '"><button type="button" class="tmp-toggle-group" data-group="' + g.key + '" aria-expanded="' + (!g.folded) + '">' + (g.folded ? '▸' : '▾') + ' ' + title + ' (' + g.people.length + ')' + (selected && g.people.length ? ' · Đã chọn ' + g.people.length : '') + '</button></div>' +
+                var keptChecked = g.people.filter(function (m) { return chosen.indexOf(String(m.id).toLowerCase()) >= 0; }).length;
+                var pendingRemoval = g.people.length - keptChecked;
+                var className = selected ? ' tmp-selected' : ' tmp-other';
+                var folded = !!state.collapsed[g.key];
+                var label = title + ' (' + (selected ? keptChecked : g.people.length) + ')' + (selected && pendingRemoval ? ' · Sẽ gỡ ' + pendingRemoval : '');
+                groupsHtml += '<section class="tmp-board-section' + (folded ? ' is-collapsed' : '') + '" data-group="' + g.key + '" style="height:' + (groupHeight + Math.floor(g.bodyHeight || 0)) + 'px">' +
+                    '<div class="tmp-board-group' + className + '"><button type="button" class="tmp-toggle-group" data-group="' + g.key + '" aria-expanded="' + (!folded) + '" title="' + (folded ? 'Mở' : 'Thu gọn') + ' ' + title.toLowerCase() + '">' + (folded ? '▸' : '▾') + ' ' + label + '</button></div>' +
                     '<div class="tmp-board-group-days' + className + '"></div>' +
                     '<div class="tmp-board-section-names" data-group="' + g.key + '">' + g.names + '</div>' +
                     '<div class="tmp-board-section-dates" data-group="' + g.key + '"><div class="tmp-board-track" style="width:' + width + 'px">' + g.dates + '</div></div></section>';
@@ -1863,6 +2197,7 @@
         }
         function freeCount(m) { return Math.max(0, Number(state.data.workingDays || 0) - Number(m.busy || 0)); }
         function badgeFor(m, selected, old) {
+            if (old && !selected) return '<span class="badge tmp-pending-removal-badge" title="Chưa gỡ thực tế. Tích lại để giữ nhân viên."><i class="fas fa-user-minus me-1"></i>Sẽ gỡ phân công</span>';
             if (selected) return old ? '<span class="badge" style="color:#0284c7;background:#e0f2fe;border:1px solid #bae6fd"><i class="fas fa-user-check me-1"></i>Đã phân công</span>' : '<span class="badge" style="color:#64259b;background:#f0e8fc;border:1px solid #ddcdf3">Sẽ phân công</span>';
             var total = Number(state.data.workingDays || 0), free = freeCount(m);
             if (!total) return '<span class="badge bg-secondary">Không có ngày làm việc</span>';
@@ -1879,16 +2214,24 @@
                 var check = card.querySelector('input[type="checkbox"]');
                 if (check) { check.removeAttribute('onclick'); check.removeAttribute('onchange'); check.setAttribute('data-tmp-pick', id); check.checked = selected; check.disabled = isReadonly(); }
                 var button = card.querySelector('.btn-calendar-only');
-                if (button) { button.removeAttribute('onclick'); button.setAttribute('data-tmp-calendar', id); }
+                if (button) { button.removeAttribute('onclick'); button.setAttribute('data-tmp-calendar', id); button.setAttribute('aria-label', 'Xem lịch của ' + (m.name || 'nhân viên')); button.setAttribute('title', 'Xem lịch của ' + (m.name || 'nhân viên')); button.innerHTML = '<i class="far fa-calendar-alt" aria-hidden="true"></i>'; }
                 var actions = button && button.parentElement;
                 if (actions) { Array.prototype.slice.call(actions.children).forEach(function (n) { if (n !== button) n.remove(); }); actions.insertAdjacentHTML('afterbegin', badgeFor(m, selected, old)); }
             } else {
                 // Fallback if an unusual historical user was not rendered by its Repeater.
                 card = document.createElement('div'); card.className = 'member-item-row';
-                card.innerHTML = '<div class="row-default-view"><div class="member-info-group flex-grow-1"><input type="checkbox" data-tmp-pick="' + esc(id) + '" ' + (selected ? 'checked ' : '') + (isReadonly() ? 'disabled ' : '') + '/>' + (m.avatarHtml || '') + '<div class="member-name-block"><div class="d-flex align-items-center flex-wrap gap-1 mb-1"><span class="fw-bold text-dark me-1">' + esc(m.name) + '</span><span class="member-position">' + esc(m.role || '') + '</span>' + (m.isPM ? '<span class="badge bg-danger" style="font-size:9.5px;padding:2px 5px">PM</span>' : '') + '</div><span class="member-email">' + esc(m.email || '') + '</span></div></div><div class="d-flex align-items-center gap-2 flex-shrink-0">' + badgeFor(m, selected, old) + '<button type="button" class="btn-calendar-only" data-tmp-calendar="' + esc(id) + '" title="Xem lịch">📅</button></div></div>';
+                card.innerHTML = '<div class="row-default-view"><div class="member-info-group flex-grow-1"><input type="checkbox" data-tmp-pick="' + esc(id) + '" ' + (selected ? 'checked ' : '') + (isReadonly() ? 'disabled ' : '') + '/>' + (m.avatarHtml || '') + '<div class="member-name-block"><div class="d-flex align-items-center flex-wrap gap-1 mb-1"><span class="fw-bold text-dark me-1">' + esc(m.name) + '</span><span class="member-position">' + esc(m.role || '') + '</span>' + (m.isPM ? '<span class="badge bg-danger" style="font-size:9.5px;padding:2px 5px">PM</span>' : '') + '</div><span class="member-email">' + esc(m.email || '') + '</span></div></div><div class="d-flex align-items-center gap-2 flex-shrink-0">' + badgeFor(m, selected, old) + '<button type="button" class="btn-calendar-only" data-tmp-calendar="' + esc(id) + '" title="Xem lịch" aria-label="Xem lịch của ' + esc(m.name) + '"><i class="far fa-calendar-alt" aria-hidden="true"></i></button></div></div>';
             }
-            card.classList.toggle('is-selected', selected); card.classList.remove('original-member'); card.setAttribute('data-tmp-id', id);
+            card.classList.toggle('is-selected', selected); card.classList.toggle('tmp-pending-removal', old && !selected); card.classList.remove('original-member'); card.setAttribute('data-tmp-id', id);
+            card.classList.add('tmp-ux-clickable');
+            var cb = card.querySelector('input[data-tmp-pick]');
+            if (cb) cb.setAttribute('aria-label', (old && !selected ? 'Tích lại để giữ phân công ' : selected ? 'Bỏ phân công ' : 'Phân công ') + (m.name || 'nhân viên'));
             var name = card.querySelector('.fw-bold.text-dark');
+            if (name) name.removeAttribute('title');
+            var email = card.querySelector('.member-email');
+            if (email) email.removeAttribute('title');
+            var meta = card.querySelector('.member-name-block');
+            if (meta) { meta.classList.add('tmp-person-hover'); meta.setAttribute('data-tip-name', m.name || 'Nhân viên'); meta.setAttribute('data-tip-role', m.role || ''); meta.setAttribute('data-tip-email', m.email || ''); }
             if (name) { var dot = document.createElement('i'); dot.className = 'tmp-v3-dot ' + (m.group === 'project' ? 'project' : 'other'); dot.title = m.group === 'project' ? 'Đã tham gia dự án' : 'Chưa tham gia dự án'; dot.setAttribute('aria-label', dot.title); name.insertAdjacentElement('afterend', dot); }
             return card;
         }
@@ -1897,18 +2240,30 @@
             if (!state.data || !list || !available) return;
             var oldL = list.scrollTop, oldR = available.scrollTop, chosen = picked(), original = originals();
             var members = (state.data.members || []), selected = [], candidates = [];
-            members.forEach(function (m) { (chosen.indexOf(String(m.id).toLowerCase()) >= 0 ? selected : candidates).push(m); });
-            selected.sort(function (a, b) { return Number(!!b.original) - Number(!!a.original) || (a.name || '').localeCompare(b.name || '') || String(a.id).localeCompare(String(b.id)); });
+            members.forEach(function (m) { var id = String(m.id).toLowerCase(); (chosen.indexOf(id) >= 0 || original.indexOf(id) >= 0 ? selected : candidates).push(m); });
+            // Keep the relative order of previously assigned employees when they are unchecked.
+            // Otherwise the unchecked row would jump to the bottom and look as if it vanished.
+            selected.sort(function (a, b) {
+                function rank(m) { return original.indexOf(String(m.id).toLowerCase()) >= 0 ? 0 : 1; }
+                return rank(a) - rank(b) || (a.name || '').localeCompare(b.name || '') || String(a.id).localeCompare(String(b.id));
+            });
             candidates = candidates.filter(filterCandidate);
             candidates.sort(function (a, b) { return freeCount(b) - freeCount(a) || Number(b.group === 'project') - Number(a.group === 'project') || (a.name || '').localeCompare(b.name || '') || String(a.id).localeCompare(String(b.id)); });
             list.textContent = ''; available.textContent = '';
             var frag1 = document.createDocumentFragment(), frag2 = document.createDocumentFragment();
-            selected.forEach(function (m) { frag1.appendChild(cardFromServer(m, true, original.indexOf(String(m.id).toLowerCase()) >= 0)); });
+            selected.forEach(function (m) { var id = String(m.id).toLowerCase(); frag1.appendChild(cardFromServer(m, chosen.indexOf(id) >= 0, original.indexOf(id) >= 0)); });
             candidates.forEach(function (m) { frag2.appendChild(cardFromServer(m, false, false)); });
             list.appendChild(frag1); available.appendChild(frag2);
             if (!selected.length) list.innerHTML = '<div class="tmp-v3-empty"><i class="far fa-user fa-lg"></i><div style="margin-top:10px">Chưa chọn nhân viên cho công việc.<br/>Chọn từ danh sách bên phải.</div></div>';
             if (!candidates.length) available.innerHTML = '<div class="tmp-v3-empty">Không có ứng viên phù hợp bộ lọc.</div>';
-            var a = get('tmpSelectedCount'), b = get('tmpAvailableCount'); if (a) a.textContent = selected.length; if (b) b.textContent = candidates.length;
+            var a = get('tmpSelectedCount'), b = get('tmpAvailableCount'), warn = get('tmpPendingRemovalCount');
+            if (a) a.textContent = chosen.length;
+            if (b) b.textContent = candidates.length;
+            if (warn) {
+                var removedCount = original.filter(function (id) { return chosen.indexOf(id) < 0; }).length;
+                warn.hidden = removedCount === 0;
+                warn.textContent = removedCount ? removedCount + ' sẽ gỡ' : '';
+            }
             if (preserve) { list.scrollTop = oldL; available.scrollTop = oldR; }
         }
         function setupWorkingDays() {
@@ -1948,19 +2303,64 @@
                 });
             }
         }, true);
+        $(document).on('keydown.taskPlanner', '#tmpTabList,#tmpTabTimeline', function (e) {
+            if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) < 0) return;
+            e.preventDefault();
+            var next = e.key === 'Home' ? 'list' : e.key === 'End' ? 'timeline' : this.id === 'tmpTabList' ? 'timeline' : 'list';
+            showTab(next);
+            var target = get(next === 'list' ? 'tmpTabList' : 'tmpTabTimeline');
+            if (target) target.focus();
+        });
+        // Tooltip nhân viên sáng, thay tooltip đen native của browser.
+        // Dùng data-* nên chạy ổn cả khi renderTimeline/renderNewList thay lại các row.
+        var memberTip = document.createElement('div');
+        memberTip.className = 'tmp-member-tooltip';
+        memberTip.setAttribute('role', 'tooltip');
+        memberTip.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(memberTip);
+        function hideMemberTip() {
+            memberTip.classList.remove('is-visible');
+            memberTip.setAttribute('aria-hidden', 'true');
+        }
+        function showMemberTip(host) {
+            if (!host || !document.body.contains(host)) return;
+            var nm = host.getAttribute('data-tip-name') || '';
+            var role = host.getAttribute('data-tip-role') || '';
+            var email = host.getAttribute('data-tip-email') || '';
+            if (!nm && !role && !email) return;
+            memberTip.innerHTML = '<div class="tmp-member-tip-name">' + esc(nm) + '</div>' +
+                (role ? '<div class="tmp-member-tip-role"><i class="far fa-id-badge"></i> ' + esc(role) + '</div>' : '') +
+                (email ? '<div class="tmp-member-tip-email"><i class="far fa-envelope"></i> ' + esc(email) + '</div>' : '');
+            memberTip.style.left = '0px'; memberTip.style.top = '0px';
+            memberTip.classList.add('is-visible'); memberTip.setAttribute('aria-hidden', 'false');
+            var rect = host.getBoundingClientRect(), w = memberTip.offsetWidth, h = memberTip.offsetHeight;
+            var x = Math.max(10, Math.min(window.innerWidth - w - 10, rect.left));
+            var y = rect.top - h - 9;
+            if (y < 10) y = Math.min(window.innerHeight - h - 10, rect.bottom + 9);
+            memberTip.style.left = Math.round(x) + 'px'; memberTip.style.top = Math.round(Math.max(10, y)) + 'px';
+        }
+        $(document).on('mouseenter.taskMemberTip focusin.taskMemberTip', '.tmp-person-hover', function () { showMemberTip(this); })
+            .on('mouseleave.taskMemberTip focusout.taskMemberTip', '.tmp-person-hover', hideMemberTip);
+        $(document).on('mouseenter.taskMemberTip', '.tmp-person-hover .tmp-person-source, .tmp-person-hover .tmp-v3-dot', hideMemberTip);
+        $(document).on('scroll.taskMemberTip', '.tmp-board-section-names,.tmp-v3-list', hideMemberTip);
+        // Click the unobstructed space on a staff card to select/deselect it.
+        // Ignore the checkbox itself and calendar button so neither action runs twice.
+        $(document).on('click.taskPlanner', '#tmpPaneList .tmp-ux-clickable .row-default-view', function (e) {
+            if ($(e.target).closest('input,button,a,label,[role=button]').length) return;
+            var box = this.querySelector('input[data-tmp-pick]');
+            if (!box || box.disabled) return;
+            box.checked = !box.checked;
+            $(box).trigger('change');
+        });
+        $(document).on('click.taskPlanner', '#tmpRestoreOriginal', restoreOriginal);
         $(document).on('click.taskPlanner', '#tmpTabList', function () { showTab('list'); });
         $(document).on('click.taskPlanner', '#tmpTabTimeline', function () { showTab('timeline'); });
         $(document).on('change.taskPlanner', '#tmpOnlyPicked', function () { state.onlyPicked = this.checked; renderTimeline(true); });
         $(document).on('click.taskPlanner', '#tmpWindowPrev,#tmpWindowNext', function () { state.dayStart = Math.max(0, state.dayStart + (this.id === 'tmpWindowNext' ? 90 : -90)); renderTimeline(false); });
         $(document).on('click.taskPlanner', '.tmp-toggle-group', function () {
             var g = this.getAttribute('data-group');
-            if (g === 'available' && !state.collapsed.selected && !state.collapsed.available) {
-                // Cả hai đang mở: chuyển trọng tâm sang ứng viên để xem trọn hàng.
-                state.collapsed.selected = true;
-                state.collapsed.available = false;
-            } else {
-                state.collapsed[g] = !state.collapsed[g];
-            }
+            if (g !== 'selected' && g !== 'available') return;
+            state.collapsed[g] = !state.collapsed[g];
             renderTimeline(true);
         });
         $(document).on('change.taskPlanner', '[data-tmp-pick]', function () { setPicked(this.getAttribute('data-tmp-pick'), this.checked); });
@@ -1974,10 +2374,110 @@
         document.addEventListener('scroll', function (e) {
             if (state.calendarButton && e.target.classList && e.target.classList.contains('panel-list') && e.target.contains(state.calendarButton)) closePopover();
         }, true);
-        window.addEventListener('resize', function () { if (state.calendarButton) calendarPosition(); });
+        window.addEventListener('resize', function () { if (state.calendarButton) calendarPosition(); if (state.tab === 'timeline') renderTimeline(true); });
         function afterRequest() { readData(); setupWorkingDays(); renderNewList(true); if (state.tab === 'timeline') renderTimeline(true); }
         if (window.Sys && window.Sys.WebForms && window.Sys.WebForms.PageRequestManager) { window.Sys.WebForms.PageRequestManager.getInstance().add_endRequest(afterRequest); }
         $(function () { afterRequest(); });
         window.TaskMemberPlanner = { __v4: true, openCalendar: openCalendar, refresh: afterRequest, close: closePopover };
     })(window, document, window.jQuery);
+</script>
+
+<script type="text/javascript">
+/* UX V3: chặn thao tác người dùng đóng popup khi có thay đổi chưa lưu.
+ * Không chặn lệnh đóng từ server (Lưu thành công / ConfirmRequest).
+ * Xác nhận sử dụng MessageBox sẵn có, không dùng window.confirm hoặc toast.
+ */
+(function (window, document) {
+    'use strict';
+    if (window.TaskMemberDiscardGuard && window.TaskMemberDiscardGuard.__v3) return;
+    var asking = false;
+    var closeTriggerId = '<%= lbtRequestDiscardTaskAssign.ClientID %>';
+        function getRoot() { return document.querySelector('.task-member-picker-root'); }
+        function getModal() {
+            var r = getRoot();
+            return r && r.closest ? r.closest('.modal') : null;
+        }
+        function parseIds(raw) {
+            var result = {};
+            (raw || '').split(',').forEach(function (entry) {
+                var id = entry.trim().toLowerCase();
+                if (id) result[id] = true;
+            });
+            return result;
+        }
+        function changed() {
+            var root = getRoot();
+            if (!root) return false;
+            var original = root.parentElement.querySelector('input[id$="hdfOriginalAssignedIdsClient"]');
+            var picked = root.parentElement.querySelector('input[id$="hdfPickedIdsClient"]');
+            if (!original || !picked) return false;
+            var first = parseIds(original.value), second = parseIds(picked.value);
+            var x = Object.keys(first), y = Object.keys(second);
+            return x.length !== y.length || x.some(function (id) { return !second[id]; });
+        }
+        function visible(el) {
+            if (!el) return false;
+            var style = window.getComputedStyle(el);
+            return style.display !== 'none' && style.visibility !== 'hidden' &&
+                !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+        }
+        function pickerIsTopModal() {
+            var modal = getModal();
+            if (!visible(modal)) return false;
+            // Nếu MessageBox khác đang hiển thị, phím ESC phải thuộc về MessageBox đó.
+            var modals = Array.prototype.filter.call(document.querySelectorAll('.modal'), visible);
+            if (!modals.length) return true;
+            var max = modals.map(function (el, i) {
+                var z = parseInt(window.getComputedStyle(el).zIndex, 10);
+                return { el: el, z: isNaN(z) ? 0 : z, index: i };
+            }).sort(function (a, b) { return b.z - a.z || b.index - a.index; })[0];
+            return max.el === modal;
+        }
+        function askDiscard() {
+            if (asking || !changed()) return;
+            var trigger = document.getElementById(closeTriggerId);
+            if (!trigger) return;
+            asking = true;
+            trigger.click(); // ASP.NET async postback -> OpenMessageBox(Warning, AcceptCancel).
+        }
+        function catchClose(e) {
+            var modal = getModal();
+            if (!modal || !pickerIsTopModal() || !changed()) return;
+            var target = e.target;
+            if (!target || !target.closest) return;
+            var dismiss = target.closest('[data-bs-dismiss="modal"], [data-dismiss="modal"], ' +
+                '.modal-header .close, .modal-header .btn-close, ' +
+                '.modal-header button, .modal-header a');
+            var backdropClick = target === modal;
+            if (!backdropClick && (!dismiss || !modal.contains(dismiss))) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            askDiscard();
+        }
+        function catchEscape(e) {
+            if ((e.key !== 'Escape' && e.keyCode !== 27) || !pickerIsTopModal() || !changed()) return;
+            var pop = document.querySelector('#tmpCalendarPop');
+            if (pop && !pop.hidden) return; // Escape trước tiên đóng mini calendar.
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            askDiscard();
+        }
+        // Bắt ở capture phase trước các sự kiện đóng do Bootstrap / ExtraModal đăng ký.
+        document.addEventListener('click', catchClose, true);
+        document.addEventListener('keydown', catchEscape, true);
+        // Trong hệ thống, người dùng hủy MessageBox có thể chỉ đóng client-side.
+        // Sau khi MessageBox đóng, cho phép thử đóng popup một lần nữa.
+        document.addEventListener('hidden.bs.modal', function (event) {
+            if (event.target !== getModal()) asking = false;
+        }, true);
+        if (window.jQuery) {
+            window.jQuery(document).on('hidden.bs.modal.taskMemberDiscard', function (event) {
+                if (event.target !== getModal()) asking = false;
+            });
+        }
+        window.TaskMemberDiscardGuard = {
+            __v3: true,
+            cancelClose: function () { asking = false; }
+        };
+    })(window, document);
 </script>

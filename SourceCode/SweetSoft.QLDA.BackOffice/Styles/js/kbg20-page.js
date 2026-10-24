@@ -6,6 +6,8 @@
     var url = root.getAttribute('data-api-url');
     var token = root.getAttribute('data-request-token');
     var state = null, loading = false, acting = false, offset = 0;
+    // Dot 7A: khong bo mat yeu cau lam moi sau workflow neu dang co request GET.
+    var refreshPending = false;
     var fixedProjectId = root.getAttribute('data-project-id') || '';
     var projectName = document.getElementById('kbg20ProjectName');
     var tasksEl = document.getElementById('kbg20Tasks');
@@ -24,14 +26,6 @@
     var lastFetch = 0;
     var viewMode = 'work', historyData = null, historyRequest = 0, historyLoading = false;
     var todayTaskTimes = Object.create(null), todayDataDay = '', todayRequest = 0;
-    // SignalR chi bao database da doi. Dung rendering tai cho task dang dong bo,
-    // sau do GET API de lay thoi gian va trang thai chinh thuc.
-    var realtimeSyncingTasks = Object.create(null);
-    var realtimeRefreshPending = false, realtimeRetry = null, realtimeRetryCount = 0;
-    var seenRealtimeIds = Object.create(null), seenRealtimeCount = 0;
-    // Bo phan hoi GET bat dau truoc khi SignalR bao du lieu da doi.
-    var realtimeEpoch = 0;
-
 
     function node(tag, className, value) {
         var x = document.createElement(tag);
@@ -94,9 +88,7 @@
         var count = (state.timers || []).length;
         var summary = row(summaryEl, node('div', 'kbg20-open-hint'));
         row(summary, node('i', 'fas fa-stopwatch'));
-        var pendingCount = Object.keys(realtimeSyncingTasks).length;
-        var link = row(summary, node('button', 'kbg20-summary-link', pendingCount ?
-            'Đang đồng bộ phiên giờ…' : count + ' phiên đang bật'));
+        var link = row(summary, node('button', 'kbg20-summary-link', count + ' phiên đang bật'));
         link.type = 'button';
         link.title = 'Xem các công việc có đồng hồ chưa Dừng trong dự án này';
         link.addEventListener('click', function () { setTaskFilter('open'); });
@@ -107,21 +99,21 @@
         if (!cal || !cal.shifts || !cal.shifts.length) return 'Ngày nghỉ';
         var segs = cal.shifts.slice().sort(function(a,b){return a.startMs-b.startMs;});
         var now = serverNow();
-        if (now < Number(segs[0].startMs)) return 'Chưa đến ca';
+        if (now < Number(segs[0].startMs)) return 'Chưa đến giờ làm';
         for (var i = 0; i < segs.length; i++) {
             if (now >= Number(segs[i].startMs) && now < Number(segs[i].endMs)) return 'Trong giờ làm việc';
             if (i + 1 < segs.length && now >= Number(segs[i].endMs) && now < Number(segs[i+1].startMs))
                 return 'Đang nghỉ trưa';
         }
-        return 'Đã hết ca hôm nay';
+        return 'Đã hết giờ làm hôm nay';
     }
     function idleClockStatus(type) {
-        if (type === 2) return 'Không cộng tăng ca';
+        if (type === 2) return 'Chưa tính giờ tăng ca';
         var status = scheduleState();
-        if (status === 'Đang nghỉ trưa') return 'Nghỉ giữa ca';
-        if (status === 'Chưa đến ca') return 'Chờ đến ca';
+        if (status === 'Đang nghỉ trưa') return 'Đang nghỉ giữa buổi';
+        if (status === 'Chưa đến giờ làm') return 'Chờ đến giờ làm';
         if (status === 'Ngày nghỉ') return 'Ngày nghỉ';
-        if (status === 'Đã hết ca hôm nay') return 'Ngoài ca';
+        if (status === 'Đã hết giờ làm hôm nay') return 'Ngoài giờ làm theo lịch';
         return 'Tạm ngừng cộng giờ';
     }
     function setScheduleStatus(el) {
@@ -161,7 +153,7 @@
             row(info,node('strong','',label));row(info,node('small','',value));
             return item;
         }
-        slot('fas fa-sun','Ca sáng',times(morning),morning,'');
+        slot('fas fa-sun','Buổi sáng',times(morning),morning,'');
         var breakText='Không áp dụng',isBreak=false;
         if(morning.length && afternoon.length){
             var a=morning[morning.length-1],b=afternoon[0];
@@ -170,8 +162,8 @@
                 isBreak=serverNow()>=Number(a.endMs)&&serverNow()<Number(b.startMs);
             }
         }
-        slot('fas fa-coffee','Nghỉ trưa',breakText,[],isBreak?' is-rest':'');
-        slot('fas fa-cloud-sun','Ca chiều',times(afternoon),afternoon,'');
+        slot('fas fa-coffee','Nghỉ giữa buổi',breakText,[],isBreak?' is-rest':'');
+        slot('fas fa-cloud-sun','Buổi chiều',times(afternoon),afternoon,'');
         if(!shifts.length)row(intro,node('small','kbg20-v41-dayoff',cal.dayOffReason||'Ngày nghỉ'));
         // Keep a status node for the existing live ticker, but avoid the redundant status badge.
         var status=row(scheduleEl,node('span','kbg20-v41-status-sr',scheduleState()));
@@ -197,18 +189,27 @@
         var today = state && state.workCalendar && state.workCalendar.day;
         var hasOpen = (state.timers || []).some(function(t){return t.taskId === task.id;});
         if (mode === 'open') return hasOpen;
-        var accessible = (task.assigned || hasOpen) && !task.missing && !isFinished(task);
+        if (mode === 'reported') return task.personalStatus===1 || task.personalStatus===3;
+        if (mode === 'all') return (task.assigned || hasOpen) && !task.missing;
+        var accessible = (task.assigned || hasOpen) && !task.missing;
         if (!accessible) return false;
         if (mode === 'pending') return isPending(task);
         if (!today) return false;
+        if (mode === 'today') {
+            // Gio thuc hom nay / phien dang chay phai xuat hien, du ngoai ngay KE HOACH.
+            var entry=todayTaskTimes[task.id];
+            // Co phien hoat dong 0 giay van nam trong hom nay; khong thay doi nghia vu Start som.
+            var hasWorked=todayDataDay===today && !!entry;
+            return hasWorked || hasOpen || (!isFinished(task) && !!task.startDay &&
+                !!task.endDay && task.startDay<=today && task.endDay>=today);
+        }
+        if (isFinished(task)) return false;
         if (mode === 'overdue') return !!task.endDay && task.endDay < today;
-        if (mode === 'upcoming') return !!task.startDay && task.startDay > today;
-        if (mode === 'today') return !!task.startDay && !!task.endDay &&
-            task.startDay <= today && task.endDay >= today;
+        if (mode === 'upcoming') return !!task.startDay && task.startDay > today && !hasOpen;
         return false;
     }
     function setTaskFilter(mode) {
-        if (['today','overdue','upcoming','open','pending'].indexOf(mode) < 0) return;
+        if (['today','overdue','upcoming','open','pending','all','reported'].indexOf(mode) < 0) return;
         if(taskFilter !== mode) visibleCount = pageSize;
         taskFilter = mode;
         if (state) renderTasks();
@@ -231,7 +232,8 @@
         return task.status === 1 ? 'Đang thực hiện' : 'Chưa bắt đầu';
     }
     function taskMayStart(task) {
-        return !task.missing && task.assigned && (task.status===0 || task.status===1) && !isPending(task);
+        return !task.missing && task.assigned && (task.status===0 || task.status===1) && !isPending(task)
+            && task.personalStatus!==1 && task.personalStatus!==3 && task.personalStatus!==4;
     }
     // V4.2 soft table: same DOM row for idle/running/pending; actions remain bound
     // to the existing V2 endpoint and partner workflow postback.
@@ -271,19 +273,22 @@
         return Math.max(0,committed+(open?Math.max(0,liveSeconds(open)-Number(open.seconds||0)):0));
     }
     function updateTodayLabel(el,taskId,type){
-        el.textContent='Hôm nay: '+(realtimeSyncingTasks[String(taskId || '').toLowerCase()] ?
-            'đang đồng bộ…' : (todayDataDay?clock(todaySeconds(taskId,type)):'đang tải…'));
+        el.textContent='Hôm nay: '+(todayDataDay?clock(todaySeconds(taskId,type)):'đang tải…');
     }
     function refreshToday(){
         if(!state||!state.workCalendar||!fixedProjectId)return;
         var day=state.workCalendar.day,request=++todayRequest;
         var q='?view=history&projectId='+encodeURIComponent(fixedProjectId)+'&day='+encodeURIComponent(day);
         window.fetch(url+q,{credentials:'same-origin',cache:'no-store'}).then(getJson).then(function(d){
-            if(request!==todayRequest || d.day!==day)return;
+            if(request!==todayRequest || d.day!==day ||
+                String(d.projectId||'').toLowerCase()!==fixedProjectId.toLowerCase())return;
             var next=Object.create(null);
             (d.tasks||[]).forEach(function(t){next[t.id]={regular:Number(t.regular)||0,overtime:Number(t.overtime)||0};});
             todayTaskTimes=next;todayDataDay=day;
-            tasksEl.querySelectorAll('[data-today-task]').forEach(function(el){updateTodayLabel(el,el.getAttribute('data-today-task'),Number(el.getAttribute('data-today-type')));});
+            // Dem va danh sach Today dung CUNG du lieu ngay thuc te.
+            // Khong load lai server va khong can thiep tab hien tai.
+            if(state && (taskFilter==='today' || taskFilter==='all'))renderTasks();
+            else tasksEl.querySelectorAll('[data-today-task]').forEach(function(el){updateTodayLabel(el,el.getAttribute('data-today-task'),Number(el.getAttribute('data-today-type')));});
         }).catch(function(){
             if(request!==todayRequest)return;
             todayDataDay='';
@@ -298,41 +303,51 @@
         return lastEnd>0 && serverNow()>=lastEnd;
     }
     function taskClockCell(parent,task,type,isUpcoming){
+        // Tinh theo ke hoach THUC cua Task, khong theo tab dang xem (All/Upcoming/Today).
+        // Khong cho luon nut Start khi doi bo loc.
+        isUpcoming=!!(state && state.workCalendar && task.startDay &&
+            task.startDay>state.workCalendar.day);
         var timer=timerOf(task.id,type),regular=type===1;
-        var cell=taskCell(parent,'kbg20-v41-clock-cell'+(regular?' is-regular':' is-overtime'),regular?'Giờ trong ca':'Tăng ca');
+        var cell=taskCell(parent,'kbg20-v41-clock-cell'+(regular?' is-regular':' is-overtime'),regular?'Giờ làm theo lịch':'Giờ tăng ca');
         var stats=row(cell,node('div','kbg20-v41-clock-main'));
         var digits=clockValue(stats,task,type,regular);
         digits.className='kbg20-v41-clock';
         var sub=row(stats,node('small','kbg20-v41-clock-sub'));
-        if (realtimeSyncingTasks[task.id]) sub.textContent='Đã chốt · đang đồng bộ với máy chủ';
-        else if(isPending(task))sub.textContent=timer?'Phiên còn mở · cần chốt':'Đã tạm dừng';
+        if(isPending(task))sub.textContent=timer?'Phiên còn mở · cần chốt':'Đã tạm dừng';
         else if(timer){
-            sub.textContent=timer.counting?(regular?'Đang cộng giờ trong ca':'Đang cộng tăng ca'):'Đang mở · '+idleClockStatus(type);
+            sub.textContent=timer.counting?(regular?'Đang tính giờ làm theo lịch':'Đang tính giờ tăng ca'):'Đang mở · '+idleClockStatus(type);
             sub.setAttribute('data-timer-status',timer.id);
         } else sub.textContent=(regular?task.startedRegular:task.startedOvertime)||Number(regular?task.regular:task.overtime)>0
-            ?'Giờ tích lũy':'Chưa ghi '+(regular?'giờ trong ca':'tăng ca');
+            ?'Tổng thời gian đã ghi':'Chưa ghi '+(regular?'giờ làm theo lịch':'giờ tăng ca');
+        if (!timer && isUpcoming && regular) {
+            var canEarly=!!(state.earlyStart && state.earlyStart.allowed);
+            sub.textContent=canEarly?'Có thể bắt đầu sớm · không đổi ngày kế hoạch':
+                'Chưa thể Start sớm · còn phần việc đến hạn';
+            if(!canEarly && state.earlyStart && state.earlyStart.blockingTasks)
+                sub.title=state.earlyStart.blockingTasks.join('; ');
+        }
         var todaySub=row(stats,node('small','kbg20-v43-today'));todaySub.setAttribute('data-today-task',task.id);
         todaySub.setAttribute('data-today-type',String(type));
         updateTodayLabel(todaySub,task.id,type);
-        if(realtimeSyncingTasks[task.id]){
-            var pending=iconAction('Đã chốt giờ · đang cập nhật từ máy chủ','fas fa-stop','stop',
-                timer?timer.id:task.id,'is-disabled',!regular);
-            pending.disabled=true;cell.insertBefore(pending,stats);
-        } else if(timer){
-            var title=regular?'Dừng giờ trong ca':'Dừng tăng ca';
+        if(timer){
+            var title=regular?'Dừng giờ làm theo lịch':'Dừng giờ tăng ca';
             cell.insertBefore(iconAction(title,'fas fa-stop','stop',timer.id,'is-stop',!regular),stats);
-        } else if(!isUpcoming && taskMayStart(task) && (regular || overtimeAllowedBySchedule())){
+        } else if(taskMayStart(task) && (regular || (!isUpcoming && overtimeAllowedBySchedule())) &&
+                (!isUpcoming || (regular && state.earlyStart && state.earlyStart.allowed))){
             var resume=regular && (task.startedRegular || Number(task.regular)>0) ||
                 !regular && (task.startedOvertime || Number(task.overtime)>0);
             var action=regular?'start':'overtime';
-            var label=(resume?'Tiếp tục':'Bắt đầu')+(regular?' giờ trong ca':' tăng ca');
+            var label=isUpcoming?'Bắt đầu sớm · Giờ làm theo lịch':
+                (resume?'Tiếp tục':'Bắt đầu')+(regular?' giờ làm theo lịch':' giờ tăng ca');
             if(task.status===0 && state.workflowEnabled)label+=' · Chuyển công việc sang Đang thực hiện trước khi bấm giờ';
             cell.insertBefore(iconAction(label,resume?'fas fa-redo-alt':'fas fa-play',action,task.id,
                 resume?'is-resume':'is-start',!regular),stats);
         }else{
-            var reason=isPending(task)?'Đang chờ PM duyệt':isFinished(task)?'Công việc đã hoàn thành':
-                isUpcoming?'Chưa tới ngày bắt đầu':(!regular && !overtimeAllowedBySchedule()
-                ?'Chỉ có thể bắt đầu tăng ca sau ca làm việc cuối cùng theo lịch hiện tại':
+            var reason=task.personalStatus===1||task.personalStatus===3?'Phần việc này đã được báo hoàn thành':isPending(task)?'Công việc đang chờ duyệt':isFinished(task)?'Công việc đã hoàn thành':
+                isUpcoming?(regular && state.earlyStart && !state.earlyStart.allowed?
+                    'Chưa thể Start sớm: còn '+state.earlyStart.remainingCount+' phần việc đến hạn chưa báo hoàn thành':
+                    'Chưa tới ngày bắt đầu; tăng ca không được Start sớm'):(!regular && !overtimeAllowedBySchedule()
+                ?'Chỉ có thể bắt đầu tính giờ tăng ca sau khi kết thúc buổi làm việc cuối cùng theo lịch':
                 (!task.assigned?'Bạn chưa được phân công':'Chưa đủ điều kiện bắt đầu'));
             var disabled=iconAction(regular?reason:'Tăng ca · '+reason,'fas fa-play',regular?'start':'overtime',task.id,'is-disabled',!regular);
             disabled.disabled=true;cell.insertBefore(disabled,stats);
@@ -340,23 +355,17 @@
         return cell;
     }
     function taskStatusCell(rowEl,task){
-        var cell=taskCell(rowEl,'kbg20-v41-status-cell','Trạng thái');
-        if (realtimeSyncingTasks[String(task.id || '').toLowerCase()]) {
-            row(cell,node('span','kbg20-v41-state is-waiting','Đang đồng bộ…'));
-            row(cell,node('small','kbg20-v41-substate','Đã nhận sự kiện từ máy chủ; chờ giờ và trạng thái chính thức'));
-            return;
-        }
+        var cell=taskCell(rowEl,'kbg20-v41-status-cell','Trạng thái công việc');
         var stateCls=isPending(task)?' is-waiting':task.status===1?' is-active':isFinished(task)?' is-done':' is-idle';
         row(cell,node('span','kbg20-v41-state'+stateCls,taskStatus(task)));
-        var t=timerOf(task.id,1),ot=timerOf(task.id,2);
-        var sub='';
-        if(isPending(task))sub=t||ot?'Cảnh báo: phiên còn mở':'Đồng hồ đã tạm dừng';
-        else if(t||ot)sub='Có phiên đang mở';
-        else if(task.status===0)sub='Task chưa thực hiện';
-        else if(task.endDay && state.workCalendar && task.endDay<state.workCalendar.day)
-            sub='Đã quá hạn dự kiến';
-        else sub='Chưa mở phiên giờ';
-        row(cell,node('small','kbg20-v41-substate'+((t||ot)&&!isPending(task)?' is-running':''),sub));
+    }
+    function personalReportCell(rowEl,task){
+        var cell=taskCell(rowEl,'kbg20-v41-personal-cell','Báo cáo phần việc');
+        var status=Number(task.personalStatus)||0;
+        if(status===1||status===3)row(cell,node('span','kbg20-dot2-personal is-reported','Đã báo hoàn thành'));
+        else if(status===2)row(cell,node('span','kbg20-dot2-personal is-withdrawn','Đã rút báo hoàn thành'));
+        else if(status===4){row(cell,node('span','kbg20-dot2-personal is-reported','Đã báo hoàn thành'));row(cell,node('small','kbg20-v41-personal-hint','Giờ công đã được quản lý chốt'));}
+        else row(cell,node('span','kbg20-dot2-personal is-not-reported','Chưa báo hoàn thành'));
     }
     function renderTaskRow(task,isUpcoming){
         var t=timerOf(task.id,1),ot=timerOf(task.id,2);
@@ -378,21 +387,21 @@
         taskCell(item,'kbg20-v41-duration','Thời hạn',duration);
         taskCell(item,'kbg20-v41-date','Kết thúc dự kiến',task.end||'—');
         taskStatusCell(item,task);
+        personalReportCell(item,task);
         taskClockCell(item,task,1,isUpcoming);
         taskClockCell(item,task,2,isUpcoming);
         var actions=taskCell(item,'kbg20-v41-actions','Hành động');
-        if(realtimeSyncingTasks[String(task.id || '').toLowerCase()]) {
-            row(actions,node('span','kbg20-v41-wait-label','Đang đồng bộ…'));
-        }else if(isPending(task)){
-            if(state.isPm && state.workflowEnabled){
-                var rev=button('Duyệt / Từ chối','review',task.id);
-                rev.className+=' kbg20-v41-approval';row(actions,rev);
-            } else row(actions,node('span','kbg20-v41-wait-label','Chờ PM duyệt'));
-        }else if(task.status===1 && state.workflowEnabled && (task.assigned||state.isPm)){
-            var done=button(state.isPm?'Xác nhận hoàn thành':'Gửi duyệt hoàn thành','complete',task.id);
-            done.title=state.isPm?'PM xác nhận hoàn thành công việc':'Gửi PM duyệt hoàn thành · chốt giờ cả nhóm';
-            done.className+=' kbg20-v41-approval';row(actions,done);
-        }else if(isUpcoming)row(actions,node('span','kbg20-v41-wait-label','Sắp tới'));
+        // Tuyet doi KHONG goi CtrlFastCompleteTask: ham cu chot dong ho ca nhom.
+        if(task.personalStatus===1 || task.personalStatus===3){
+            var withdrawn=button('Rút báo hoàn thành','withdrawPersonal',task.id);
+            withdrawn.className+=' kbg20-dot2-row-btn is-danger';row(actions,withdrawn);
+        }else if(task.status===1 && task.assigned && state.workflowEnabled && !isPending(task)
+            && task.personalStatus!==4){
+            var done=button(task.personalStatus===2?'Báo hoàn thành phần việc':'Báo hoàn thành phần việc','reportPersonal',task.id);
+            done.title='Thông báo đã hoàn thành phần việc được giao; chỉ dừng đồng hồ trên công việc này của bạn, không ảnh hưởng đồng nghiệp.';
+            done.className+=' kbg20-dot2-row-btn';row(actions,done);
+        }else if(isUpcoming)row(actions,node('span','kbg20-v41-wait-label',
+            state.earlyStart && state.earlyStart.allowed?'Có thể bắt đầu sớm':'Sắp tới'));
         else row(actions,node('span','kbg20-v41-wait-label','—'));
         return item;
     }
@@ -409,7 +418,8 @@
             tabs[i].setAttribute('aria-pressed',mode===taskFilter?'true':'false');
         }
         var names={today:'Công việc hôm nay',overdue:'Công việc quá hạn',
-            upcoming:'Công việc sắp tới',open:'Công việc có đồng hồ đang bật',pending:'Công việc chờ PM duyệt'};
+            upcoming:'Công việc sắp tới',open:'Công việc có đồng hồ đang bật',pending:'Công việc chờ PM duyệt',
+            all:'Tất cả công việc',reported:'Phần việc đã báo hoàn thành'};
         document.getElementById('kbg20ListTitle').textContent=names[taskFilter];
         var matches=tasks.filter(function(task){return taskBelongs(task,taskFilter) && (!filter ||
             ((task.code||'')+' '+(task.name||'')).toLocaleLowerCase('vi').indexOf(filter)>=0);});
@@ -437,6 +447,7 @@
         });
     }
     function setMode(mode) {
+        if(mode!=='history' && viewMode==='history')++historyRequest;
         viewMode=(mode==='history'||mode==='manual')?mode:'work';
         document.getElementById('kbg20WorkView').hidden=viewMode!=='work';
         document.getElementById('kbg20HistoryView').hidden=viewMode!=='history';
@@ -463,30 +474,66 @@
             historyNextEl.setAttribute('aria-disabled',String(historyNextEl.disabled));
         }
     }
+    // Nhan trang thai nhat ky chi la su kien cua NGAY dang xem; khong thay
+    // nhan Task chung bang nhan bao hoan thanh phan viec ca nhan.
+    function historyBadgeItems(h){
+        var items=[];
+        if(h.isEarly)items.push({text:'Làm sớm',type:'early'});
+        if(h.isOverdue)items.push({text:'Quá hạn',type:'overdue'});
+        var ps=Number(h.personalStatus)||0;
+        if(ps===1||ps===3)items.push({text:'Đã báo hoàn thành',type:'reported'});
+        else if(ps===2)items.push({text:'Đã rút báo hoàn thành',type:'withdrawn'});
+        else if(ps===4)items.push({text:'Giờ công đã được quản lý chốt',type:'locked'});
+        if(h.isOpen)items.push({text:'Phiên đang mở',type:'open'});
+        if(h.hadActivity && Number(h.total)===0)
+            items.push({text:'Chưa phát sinh giờ tính công',type:'zero'});
+        return items;
+    }
+    function historyShare(total,dayTotal){
+        var n=Number(total)||0,d=Number(dayTotal)||0;
+        if(d<=0)return null;
+        return Math.max(0,Math.min(100,100*n/d));
+    }
     function renderHistory() {
         historyEl.textContent='';historyTotalsEl.textContent='';
         if(!historyData)return;
         var d=historyData;
         var summary=row(historyTotalsEl,node('div','kbg20-v41-history-summary'));
         [
-          {label:'Trong ca · Ngày đang xem',value:d.regular},
-          {label:'Tăng ca · Ngày đang xem',value:d.overtime},
-          {label:'Tổng giờ ghi nhận trong ngày',value:d.total}
+          {label:'Giờ làm theo lịch · Ngày đang xem',value:d.regular},
+          {label:'Giờ tăng ca · Ngày đang xem',value:d.overtime},
+          {label:'Tổng giờ công đã ghi',value:d.total}
         ].forEach(function(c){var x=row(summary,node('div','kbg20-v41-history-stat'));
           row(x,node('small','',c.label));row(x,node('strong','',clock(c.value)));});
-        if(!d.tasks||!d.tasks.length){row(historyEl,node('p','kbg20-empty','Không có giờ đã ghi trong ngày được chọn.'));return;}
+        if(!d.tasks||!d.tasks.length){row(historyEl,node('p','kbg20-empty','Không có hoạt động công việc trong ngày được chọn.'));return;}
         var hdr=row(historyEl,node('div','kbg20-v41-hist-head kbg20-v41-hist-grid'));
-        ['Công việc','Giờ trong ca','Tăng ca','Tổng giờ'].forEach(function(t){row(hdr,node('span','',t));});
+        ['Công việc','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Tỷ trọng ngày'].forEach(function(t){row(hdr,node('span','',t));});
         d.tasks.forEach(function(h){
             var line=row(historyEl,node('article','kbg20-v41-hist-row kbg20-v41-hist-grid'));
             var name=taskCell(line,'kbg20-v41-hist-name','Công việc');
             row(name,node('strong','',h.code||'CV'));
             row(name,node('span','',h.name||'Chưa có tên công việc'));
             if(h.deleted)row(name,node('em','kbg20-v41-deleted','Đã xóa'));
+            var badges=historyBadgeItems(h);
+            if(badges.length){
+                var wraps=row(name,node('span','kbg20-d6-badges'));
+                badges.forEach(function(flag){row(wraps,node('span','kbg20-d6-badge is-'+flag.type,flag.text));});
+            }
             ['regular','overtime','total'].forEach(function(k){
-                var cell=taskCell(line,'kbg20-v41-hist-value',k==='regular'?'Trong ca':k==='overtime'?'Tăng ca':'Tổng');
+                var cell=taskCell(line,'kbg20-v41-hist-value',k==='regular'?'Giờ làm theo lịch':k==='overtime'?'Giờ tăng ca':'Tổng giờ công');
                 row(cell,node('strong',k==='total'?'is-total':'',clock(h[k])));
             });
+            var share=historyShare(h.total,d.total);
+            var shareCell=taskCell(line,'kbg20-v45-hist-share','Tỷ trọng ngày');
+            if(share==null){
+                var noShare=row(shareCell,node('strong','','—'));
+                noShare.title='Ngày này chưa phát sinh giờ tính công để tính tỷ trọng.';
+            } else {
+                row(shareCell,node('strong','',share.toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'));
+                var track=row(shareCell,node('span','kbg20-v45-share-track'));
+                var fill=row(track,node('span','kbg20-v45-share-fill'));
+                fill.style.width=share.toFixed(4)+'%';
+            }
         });
     }
     function refreshHistory() {
@@ -494,34 +541,43 @@
         if (viewMode !== 'history' || !fixedProjectId || !state) return;
         var day = historyDateEl.value;
         if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+            ++historyRequest;historyLoading=false;historyData=null;
+            historyTotalsEl.textContent='';historyEl.textContent='';
             historyStatusEl.textContent = 'Hãy chọn ngày cần xem.';
             return;
         }
         var maxDay = state.workCalendar && state.workCalendar.day;
         if (maxDay && day > maxDay) {
+            ++historyRequest;historyLoading=false;historyData=null;
+            historyTotalsEl.textContent='';historyEl.textContent='';
             historyStatusEl.textContent='Không thể xem một ngày trong tương lai.';
             historyDateEl.value = maxDay;
             updateHistoryNavigation();
             return;
         }
+        var sameDay=historyData && historyData.day===day;
         var request = ++historyRequest;
         historyLoading = true;
-        historyStatusEl.textContent = 'Đang tải lịch sử ngày đã chọn...';
-        historyTotalsEl.textContent = '';
-        historyEl.textContent = '';
+        // Poll cung ngay giu lai noi dung cu, khong nhay bang moi 30 giay.
+        // Doi ngay thi xoa du lieu cu de khong gay nham ngay/dự án.
+        if(!sameDay){
+            historyData=null;
+            historyTotalsEl.textContent='';historyEl.textContent='';
+        }
+        historyStatusEl.textContent = (sameDay?'Đang cập nhật nhật ký ngày ':'Đang tải nhật ký ngày ')+day.split('-').reverse().join('/')+'...';
         var query = '?view=history&projectId=' + encodeURIComponent(fixedProjectId) + '&day=' + encodeURIComponent(day);
         window.fetch(url + query,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}})
             .then(getJson).then(function(data){
                 if(request!==historyRequest) return;
                 if(String(data.projectId||'').toLowerCase()!==fixedProjectId.toLowerCase() || data.day!==day)
-                    throw new Error('Lịch sử trả về không khớp dự án/ngày đã chọn.');
+                    throw new Error('Nhật ký trả về không khớp dự án/ngày đã chọn.');
                 historyData=data;
                 historyStatusEl.textContent='Ngày ' + day.split('-').reverse().join('/') + ' · trong dự án hiện tại';
                 renderHistory();
             }).catch(function(err){
                 if(request!==historyRequest) return;
-                historyData=null;
-                historyStatusEl.textContent=err.message || 'Không tải được lịch sử.';
+                if(!sameDay){historyData=null;historyTotalsEl.textContent='';historyEl.textContent='';}
+                historyStatusEl.textContent=(err.message || 'Không tải được nhật ký.')+(sameDay?' · Đang hiển thị lần tải trước.':'');
             }).then(function(){if(request===historyRequest)historyLoading=false;});
     }
     function refreshUi() {
@@ -533,191 +589,44 @@
         if (!state) return;
         renderProjectContext();renderSchedule();renderSummary();renderTasks();
     }
-    // ================================================================
-    // DOT 2 - Real-time cho cac phien bi dong do gui PM duyet / PM hoan thanh.
-    // Backend la nguon su that; khong luu gio vao DB tu SignalR.
-    // ================================================================
-    function freezeAfterServerCommit(taskId) {
-        taskId = String(taskId || '').toLowerCase();
-        if (!taskId) return;
-        // Một event mới tăng epoch để GET cũ không ghi đè dữ liệu sau tín hiệu commit.
-        realtimeEpoch++;
-        if (realtimeSyncingTasks[taskId]) return;
-        realtimeSyncingTasks[taskId] = true;
-        if (!state) return;
-
-        (state.timers || []).forEach(function(timer) {
-            if (String(timer.taskId || '').toLowerCase() !== taskId) return;
-            var elapsed = Math.max(0, liveSeconds(timer) - (Number(timer.seconds) || 0));
-            var task = (state.tasks || []).find(function(x) { return String(x.id || '').toLowerCase() === taskId; });
-            if (task) {
-                if (Number(timer.type) === 1) task.regular = (Number(task.regular) || 0) + elapsed;
-                if (Number(timer.type) === 2) task.overtime = (Number(task.overtime) || 0) + elapsed;
-            }
-            var today = todayTaskTimes[taskId];
-            if (today) {
-                if (Number(timer.type) === 1) today.regular = (Number(today.regular) || 0) + elapsed;
-                if (Number(timer.type) === 2) today.overtime = (Number(today.overtime) || 0) + elapsed;
-            }
-            timer.seconds = liveSeconds(timer);
-            timer.counting = false;
-        });
-        // Giữ filter, search và tab hiện tại. Không hiện đồng hồ tiếp tục nhảy.
-        refreshUi();
-    }
-    // Đồng bộ Đợt 2: một snapshot cho tất cả cột trên UI.
-    // Hai GET chạy nối tiếp; chỉ cập nhật state sau khi CẢ HAI đã thành công.
-    // Không báo đã đồng bộ rồi mở nút khi lịch sử hôm nay còn ở phiên bản cũ.
-    function refreshRealtimeSnapshot() {
-        if (loading || acting) return Promise.resolve(false);
-        if (!fixedProjectId) return Promise.resolve(false);
-        loading = true;
-        var epoch = realtimeEpoch;
-        var affected = Object.keys(realtimeSyncingTasks);
-        var query = '?projectId=' + encodeURIComponent(fixedProjectId);
-        return window.fetch(url + query, {
-            credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}
-        }).then(getJson).then(function(data) {
-            if (String(data.projectId || '').toLowerCase() !== fixedProjectId.toLowerCase())
-                throw new Error('Dữ liệu task không thuộc dự án hiện tại.');
-            if (!data.workCalendar || !data.workCalendar.day)
-                throw new Error('API không trả về ngày làm việc.');
-            // Nếu task liên quan vẫn còn phiên mở, dữ liệu nhận được chưa phản ánh
-            // sự kiện chốt giờ. Tiếp tục chờ/retry, không mở thao tác từ state cũ.
-            var openTimers = data.timers || [];
-            var hasStaleOpen = affected.some(function(taskId) {
-                return openTimers.some(function(timer) {
-                    return String(timer.taskId || '').toLowerCase() === taskId;
-                });
-            });
-            if (hasStaleOpen) throw new Error('Máy chủ vẫn trả phiên đang mở của task vừa chốt.');
-            var day = data.workCalendar.day;
-            var historyUrl = url + '?view=history&projectId=' + encodeURIComponent(fixedProjectId) +
-                '&day=' + encodeURIComponent(day);
-            return window.fetch(historyUrl, {
-                credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}
-            }).then(getJson).then(function(history) {
-                if (String(history.projectId || '').toLowerCase() !== fixedProjectId.toLowerCase() ||
-                    history.day !== day || history.ok !== true)
-                    throw new Error('Lịch sử hôm nay chưa đúng dự án hoặc ngày đã chọn.');
-                return { data: data, history: history, day: day };
-            });
-        }).then(function(snapshot) {
-            if (epoch !== realtimeEpoch) return false; // event mới đến khi đang tải
-            var next = Object.create(null);
-            (snapshot.history.tasks || []).forEach(function(task) {
-                next[task.id] = {
-                    regular: Number(task.regular) || 0,
-                    overtime: Number(task.overtime) || 0
-                };
-            });
-            // Vô hiệu hóa GET lịch sử hôm nay cũ, không để ghi đè snapshot mới.
-            todayRequest++;
-            offset = Number(snapshot.data.serverNow) - Date.now();
-            state = snapshot.data;
-            todayTaskTimes = next;
-            todayDataDay = snapshot.day;
-            lastFetch = Date.now();
-            realtimeSyncingTasks = Object.create(null);
-            if (!historyDateEl.value) historyDateEl.value = snapshot.day;
-            historyDateEl.max = snapshot.day;
-            updateHistoryNavigation();
-            refreshUi(); // trạng thái, 2 tổng giờ, giờ hôm nay, hành động và bộ lọc cùng lúc
-            if (viewMode === 'history' && !historyLoading) refreshHistory();
-            if (viewMode === 'manual' && window.Kbg20DoiSoatUI &&
-                typeof window.Kbg20DoiSoatUI.renderTab === 'function')
-                window.Kbg20DoiSoatUI.renderTab();
-            notify('', '');
-            return true;
-        }).catch(function(err) {
-            notify('Đang đồng bộ trạng thái mới. Sẽ tự thử lại nếu máy chủ chưa phản hồi: ' +
-                (err.message || 'Lỗi kết nối.'), '');
-            return false;
-        }).then(function(ok) {
-            loading = false;
-            return ok;
-        });
-    }
-    function queueRealtimeRefresh() {
-        realtimeRefreshPending = true;
-        if (realtimeRetry != null) return;
-        function run() {
-            realtimeRetry = null;
-            if (!realtimeRefreshPending) return;
-            if (loading || acting) {
-                realtimeRetry = window.setTimeout(run, 180);
-                return;
-            }
-            realtimeRefreshPending = false;
-            refreshRealtimeSnapshot().then(function(ok) {
-                if (!ok) {
-                    realtimeRefreshPending = true;
-                    realtimeRetryCount++;
-                    realtimeRetry = window.setTimeout(run, Math.min(30000, 1500 * realtimeRetryCount));
-                    return;
-                }
-                realtimeRetryCount = 0;
-                // Nếu có event mới khi fetch, lấy thêm snapshot mới thay vì sử dụng kết quả cũ.
-                if (realtimeRefreshPending) queueRealtimeRefresh();
-            });
+    function refresh(force) {
+        if (loading || acting) {
+            if (force === true) refreshPending = true;
+            return Promise.resolve();
         }
-        realtimeRetry = window.setTimeout(run, 90);
-    }
-    function onRealtimeChange(evt) {
-        if (!evt || !evt.kind) return;
-        if (evt.kind === 'connection-restored') {
-            // Reconnect co the bo lo su kien; tai lai toan bo trang thai tu SQL.
-            queueRealtimeRefresh();
-            return;
-        }
-        if (evt.kind !== 'task-timers-stopped') return;
-        if (String(evt.projectId || '').toLowerCase() !== fixedProjectId.toLowerCase()) return;
-        if (evt.eventId && seenRealtimeIds[evt.eventId]) return;
-        if (evt.eventId) {
-            seenRealtimeIds[evt.eventId] = true;
-            if (++seenRealtimeCount >= 200) {seenRealtimeCount=0;seenRealtimeIds=Object.create(null);}
-        }
-        freezeAfterServerCommit(evt.taskId);
-        queueRealtimeRefresh();
-    }
-    function initializeRealtime() {
-        // Neu Hub tat/khong duoc nap, KBG20 van hoat dong theo polling 30 giay.
-        if (!window.QldaRealtime || typeof window.QldaRealtime.on !== 'function') return;
-        window.QldaRealtime.on(onRealtimeChange);
-        var hubUrl = root.getAttribute('data-realtime-url') || '/qlda-realtime';
-        var connecting = window.QldaRealtime.start(hubUrl);
-        if (connecting && typeof connecting.fail === 'function')
-            connecting.fail(function(err) {if(window.console)console.warn('KBG20 realtime offline; polling van hoat dong.',err);});
-    }
-    function refresh() {
-        if (loading || acting) return Promise.resolve(false);
+        refreshPending = false;
         if (!fixedProjectId) { notify('Không xác định được dự án đang mở.', 'error'); return Promise.resolve(); }
         loading = true;
-        var epoch = realtimeEpoch;
         var query = '?projectId=' + encodeURIComponent(fixedProjectId);
         return window.fetch(url + query, { credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'} })
             .then(getJson).then(function (data) {
-                // Đã có event sau khi bắt đầu GET: không ghi đè bằng response cũ.
-                if (epoch !== realtimeEpoch) return false;
                 if (String(data.projectId || '').toLowerCase() !== fixedProjectId.toLowerCase())
                     throw new Error('Dữ liệu phản hồi không thuộc dự án hiện tại.');
                 offset = Number(data.serverNow) - Date.now();
+                // Khong mang tong gio ngay hom qua sang nhan 'Hom nay' khi qua 00:00.
+                if (todayDataDay && data.workCalendar && todayDataDay !== data.workCalendar.day) {
+                    todayDataDay = '';
+                    todayTaskTimes = Object.create(null);
+                    ++todayRequest;
+                }
                 state = data;
                 lastFetch = Date.now();
                 refreshUi();
+                // Polling 30s: Tab 3 doc lai trang thai ca nhan, KHONG dong/mo lai ExtraModal.
+                if(viewMode==='manual' && window.Kbg20DoiSoatUI && window.Kbg20DoiSoatUI.renderTab)
+                    window.Kbg20DoiSoatUI.renderTab();
                 refreshToday();
                 if (!historyDateEl.value && state.workCalendar) historyDateEl.value = state.workCalendar.day;
                 if (state.workCalendar) historyDateEl.max = state.workCalendar.day;
                 updateHistoryNavigation();
                 if (viewMode === 'history' && !historyLoading) refreshHistory();
                 notify('', '');
-                return true;
-            }).catch(function (err) {notify(err.message || 'Lỗi kết nối.', 'error');return false;})
-            .then(function(ok){
-                // BẮT BUỘC trả lại trạng thái cho queueRealtimeRefresh.
-                // Nếu bỏ `return ok`, SignalR luôn hiểu là GET thất bại và lặp retry vô hạn.
-                loading=false;
-                return ok;
+            }).catch(function (err) {notify(err.message || 'Lỗi kết nối.', 'error');})
+            .then(function(){
+                loading = false;
+                // Khi nhan workflow/thao tac xong trong luc polling, thuc hien refresh tiep.
+                // Chi cho 1 request tai mot thoi diem, khong bo yeu cau va khong spin retry.
+                if (refreshPending && !acting) refresh(true);
             });
     }
     // Called only after partner Ctrl Start/Complete/Review has saved successfully,
@@ -726,9 +635,8 @@
     window.Kbg20RefreshAfterWorkflow = function () {
         if (window.KbgFloatingTimer && typeof window.KbgFloatingTimer.notifyChanged==='function')
             window.KbgFloatingTimer.notifyChanged();
-        // Không mất refresh sau 4 giây nếu đang có AJAX khác.
-        // Đồng bộ lại cả khi event từ tài khoản vừa gửi duyệt đã tới trước popup đóng.
-        queueRealtimeRefresh();
+        // Luu co doi lam moi thay vi thu toi da 25 lan roi tu bo.
+        refresh(true);
     };
     function guid() {
         if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
@@ -741,16 +649,7 @@
         throw new Error('Trình duyệt không hỗ trợ sinh mã thao tác an toàn.');
     }
     function sendAction(action,id) {
-        // Trước đây nhấn trong lúc GET/POST đang chạy sẽ return im lặng,
-        // tạo cảm giác nút Start/Stop bị hỏng.
-        if (acting || loading) {
-            notify('Trang đang đồng bộ dữ liệu. Vui lòng chờ thao tác hiện tại hoàn tất rồi thử lại.', '');
-            return;
-        }
-        if (!state) {
-            notify('Dữ liệu công việc chưa tải xong. Vui lòng đợi một chút.', '');
-            return;
-        }
+        if (acting || loading || !state) return;
         acting=true; refreshUi();
         var requestId;
         try {requestId=guid();} catch(err) {acting=false; notify(err.message,'error');refreshUi();return;}
@@ -787,8 +686,11 @@
         }
         perform().then(function(ok){
             acting=false;
-            if (ok === true) refresh(); else refreshUi();
-        }).catch(function(err){acting=false;notify(err.message || 'Thao tác thất bại.','error');refreshUi();});
+            if (ok === true || refreshPending) refresh(true); else refreshUi();
+        }).catch(function(err){
+            acting=false;notify(err.message || 'Thao tác thất bại.','error');
+            if(refreshPending)refresh(true);else refreshUi();
+        });
     }
     // Wire the existing tab controller to the two visible tab buttons.
     // Switching views must not post back or interfere with running timers.
@@ -812,7 +714,16 @@
     workTab.addEventListener('keydown',onViewTabKeydown);
     historyTab.addEventListener('keydown',onViewTabKeydown);
     manualTab.addEventListener('keydown',onViewTabKeydown);
-    window.Kbg20PageUI={openManual:function(){setMode('manual');},refreshToday:refreshToday};
+    window.Kbg20PageUI={
+        openManual:function(){setMode('manual');},refreshToday:refreshToday,refresh:refresh,
+        getTask:function(taskId){return state&&(state.tasks||[]).find(function(t){return t.id===taskId;});},
+        getLiveMinutes:function(taskId){
+            var task=state&&(state.tasks||[]).find(function(t){return t.id===taskId;});if(!task)return null;
+            function seconds(kind){var timer=timerOf(taskId,kind),base=Number(kind===1?task.regular:task.overtime)||0;
+                return base+(timer?Math.max(0,liveSeconds(timer)-Number(timer.seconds||0)):0);}
+            return {regular:Math.floor((seconds(1)+30)/60),overtime:Math.floor((seconds(2)+30)/60)};
+        }
+    };
     setMode('work');
 
     document.getElementById('kbg20TaskFilters').addEventListener('click',function(e){
@@ -820,7 +731,7 @@
         if(chip && this.contains(chip))setTaskFilter(chip.getAttribute('data-task-filter'));
     });
     searchEl.addEventListener('input',function(){filter=(searchEl.value||'').trim().toLocaleLowerCase('vi');visibleCount=pageSize;if(state)renderTasks();});
-    document.getElementById('kbg20Reload').addEventListener('click',function(){refresh();});
+    document.getElementById('kbg20Reload').addEventListener('click',function(){refresh(true);});
     document.getElementById('kbg20LoadMore').addEventListener('click',function(){visibleCount+=pageSize;if(state)renderTasks();});
     historyDateEl.addEventListener('change',refreshHistory);
     document.getElementById('kbg20HistoryPrev').addEventListener('click',function(){
@@ -848,28 +759,33 @@
         var b=e.target.closest('[data-action]');if (!b || !root.contains(b))return;
         if(b.disabled)return;
         var action=b.getAttribute('data-action'),id=b.getAttribute('data-id');
-        var taskIdForAction=id;
-        if(action==='stop') {
-            var stopTimer=state && (state.timers||[]).find(function(t){return t.id===id;});
-            if(stopTimer)taskIdForAction=stopTimer.taskId;
-        }
-        if (realtimeSyncingTasks[String(taskIdForAction || '').toLowerCase()]) {
-            notify('Công việc vừa được gửi duyệt hoặc hoàn thành. Đang tải trạng thái mới.','');
+        var task=state && (state.tasks||[]).find(function(x){return x.id===id;});
+        if(action==='reportPersonal'||action==='withdrawPersonal'){
+            if(!window.Kbg20DoiSoatUI){notify('Popup bao xong chua duoc tai. Hay tai lai trang.','error');return;}
+            if(action==='reportPersonal')window.Kbg20DoiSoatUI.openReport(id);
+            else window.Kbg20DoiSoatUI.openWithdraw(id);
             return;
         }
-        var task=state && (state.tasks||[]).find(function(x){return x.id===id;});
+        // Bao xong ca nhan chi su dung 2 action rieng o tren.
+        // Khong cho action Task chung 'complete/review' di qua bridge cua Tab 1.
+        if(action==='complete' || action==='review') {
+            notify('Hãy thực hiện duyệt hoặc hoàn thành công việc trong TaskList.', 'error');
+            return;
+        }
+        if(['start','overtime','stop'].indexOf(action)<0) {
+            notify('Thao tác không hợp lệ. Hãy tải lại trang.', 'error');
+            return;
+        }
         var isWorkflow=state && state.workflowEnabled &&
-           (action==='complete' || action==='review' ||
-             ((action==='start'||action==='overtime') && task && task.status===0));
+            (action==='start'||action==='overtime') && task && task.status===0;
         if(isWorkflow) {
-            if (acting) {
-                notify('Đang xử lý một thao tác tính giờ khác. Vui lòng đợi hoàn tất.', '');
-                return;
-            }
             if(!task || !window.kbg20WorkflowPostback){notify('Không mở được xử lý công việc. Hãy tải lại trang.','error');return;}
             if((action==='start'||action==='overtime') && task.startDay &&
                 state.workCalendar && task.startDay>state.workCalendar.day) {
-                notify('Chưa đến ngày bắt đầu công việc.','error');return;
+                if(action==='overtime') {notify('Chưa đến ngày bắt đầu; không được Start tăng ca sớm.','error');return;}
+                if(!state.earlyStart || !state.earlyStart.allowed){
+                    notify('Chưa thể Start sớm: còn công việc đến hạn chưa báo hoàn thành.','error');return;
+                }
             }
             var late=(action==='start'||action==='overtime') && task.endDay &&
                 state.workCalendar && task.endDay<state.workCalendar.day;
@@ -914,7 +830,7 @@
             if(!timer)continue;
             var counting=timer.counting && (timer.boundary==null || serverNow()<Number(timer.boundary));
             var thisTask=(state.tasks||[]).find(function(t){return t.id===timer.taskId;});
-            statuses[k].textContent=thisTask && isPending(thisTask)?'Phiên còn mở — kiểm tra chốt giờ':(counting?(Number(timer.type)===2?'Đang cộng tăng ca':'Đang cộng giờ trong ca'):idleClockStatus(Number(timer.type)));
+            statuses[k].textContent=thisTask && isPending(thisTask)?'Phiên còn mở — kiểm tra chốt giờ':(counting?(Number(timer.type)===2?'Đang tính giờ tăng ca':'Đang tính giờ làm theo lịch'):idleClockStatus(Number(timer.type)));
             statuses[k].classList.toggle('kbg20-active',counting);
             statuses[k].classList.toggle('kbg20-paused',!counting);
         }
@@ -929,9 +845,7 @@
              x.classList.toggle('is-current',active);
            });
         }
-        if(!loading && !acting && !realtimeRefreshPending &&
-           Object.keys(realtimeSyncingTasks).length===0 && Date.now()-lastFetch>30000)refresh();
+        if(!loading && !acting && Date.now()-lastFetch>30000)refresh();
     },1000);
     refresh();
-    initializeRealtime();
 })(window,document);

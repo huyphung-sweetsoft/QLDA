@@ -753,8 +753,6 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
         private void CaiDatKbg20TaskHooks(Guid uid)
         {
             var start=TimControl<CtrlStartTask>(Page,"KbgCtrlStartTask");
-            var complete=TimControl<CtrlFastCompleteTask>(Page,"KbgCtrlFastCompleteTask");
-            var review=TimControl<CtrlFastReviewTask>(Page,"KbgCtrlFastReviewTask");
             if(start!=null)
             {
                 start.IdDuAnNguonKbg20=CurrentProjectId;
@@ -767,18 +765,6 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
                         overdue,true,overtime,luuTask);
                 };
                 start.ActionStarted+=(sender,args)=>DangKyRefeshKbg20();
-            }
-            if(complete!=null)
-            {
-                complete.IdDuAnNguonKbg20=CurrentProjectId;
-                complete.LaPmNguonKbg20=LaPmDuAn(uid);
-                // Ban than CtrlFastCompleteTask goi Kbg20TichHopTask.LuuHoanThanh neu co flag.
-                complete.ActionCompleted+=(sender,args)=>DangKyRefeshKbg20();
-            }
-            if(review!=null)
-            {
-                review.IsPM=LaPmDuAn(uid);
-                review.ActionCompleted+=(sender,args)=>DangKyRefeshKbg20();
             }
         }
         private void DangKyRefeshKbg20()
@@ -825,23 +811,42 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
             }
             return list;
         }
+        // Gia tri goc tu CtrlChonNhanVienTask: ExtraModal.OpenModal(true).
+        // Khong dung CMSMasterJs.OpenDialog hoac tu dung modal shell bang JavaScript.
+        protected void btnKbg20OpenManual_Click(object sender, EventArgs e)
+        {
+            if (!LaGiaoDienKbg20 || pnlNotEmployee.Visible)
+                return;
+
+            // Tim qua ID de khong yeu cau cap nhat .designer.cs khi doi code-behind.
+            var modal = TimControl<SweetSoft.QLDA.Controls.ExtraModal>(Page, "mdlKbg20Manual");
+            var host = TimControl<UpdatePanel>(Page, "upnlKbg20ManualHost");
+            if (modal == null || host == null)
+                throw new InvalidOperationException("Khong tim thay ExtraModal gio cong hoac panel chua modal.");
+            modal.OpenModal(true);
+            host.Update();
+        }
+
         protected void btnKbg20Workflow_Click(object sender,EventArgs e)
         {
             try
             {
+                // Dot 2: TUYET DOI khong cho POSTBACK cu truy cap CtrlFastCompleteTask
+                // hoac CtrlFastReviewTask tren trang KhaiBaoGio. Cac control nay
+                // thay doi TrangThai Task va co the dung dong ho cua CA NHOM.
+                // Ban ghi ca nhan chi qua API reportPersonal/withdrawPersonal/editPersonal.
+                string action=Request.Form["kbg20FlowAction"];
+                if(action!="start")
+                    throw new InvalidOperationException("Thao tac Task chung khong duoc ho tro tai KhaiBaoGio. Hay dung Bao da xong phan viec.");
                 var uid=NhanVienDangNhap();
                 Guid id;
                 if(!Guid.TryParse(Request.Form["kbg20FlowTask"],out id))throw new InvalidOperationException("Ma cong viec khong hop le.");
-                string action=Request.Form["kbg20FlowAction"];
-                bool pm=LaPmDuAn(uid);
-                // PM duoc xac nhan hoan thanh truc tiep du khong duoc phan cong.
-                // Hanh dong start va gui duyet cua nhan vien van doi hoi phan cong.
-                var task=XacThucKbg20Workflow(id,uid,pm && (action=="review" || action=="complete"));
+                var task=XacThucKbg20Workflow(id,uid,false);
                 if(action=="start")
                 {
                     if(task.TrangThai!=0)throw new InvalidOperationException("Task khong con o trang thai Chua bat dau.");
-                    if(task.NgayBatDau.HasValue && task.NgayBatDau.Value.Date>DateTime.Today)
-                        throw new InvalidOperationException("Task chua den ngay bat dau.");
+                    // Dot 5: Ngay bat dau tuong lai KHONG chan mo popup Start cua partner.
+                    // API/Core se kiem tra Start som khi luu trong giao dich chung.
                     if(TaskManager.Instance.CheckHasChildTasks(CurrentProjectId,task))
                         throw new InvalidOperationException("Task cha co con, nut Start tu TaskList khong ap dung truc tiep.");
                     var ctrl=TimControl<CtrlStartTask>(Page,"KbgCtrlStartTask");
@@ -849,22 +854,6 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
                     ViewState["Kbg20FlowType"]=Request.Form["kbg20FlowType"];
                     ViewState["Kbg20FlowOverdue"]=string.Equals(Request.Form["kbg20FlowOverdue"],"1",StringComparison.Ordinal);
                     ctrl.OpenModal(id,task.MaCongViec,task.TenCongViec,CanhBaoPhuThuocTuTaskList(task));
-                    CapNhatPanelPopupPartner();
-                }
-                else if(action=="complete")
-                {
-                    if(task.TrangThai!=1)throw new InvalidOperationException("Chi gui hoan thanh task dang thuc hien.");
-                    var ctrl=TimControl<CtrlFastCompleteTask>(Page,"KbgCtrlFastCompleteTask");
-                    if(ctrl==null)throw new InvalidOperationException("Khong tim thay CtrlFastCompleteTask.");
-                    ctrl.OpenModal(id,task.MaCongViec,task.TenCongViec);
-                    CapNhatPanelPopupPartner();
-                }
-                else if(action=="review")
-                {
-                    if(!pm)throw new UnauthorizedAccessException("Chi PM cua du an moi co quyen duyet.");
-                    var ctrl=TimControl<CtrlFastReviewTask>(Page,"KbgCtrlFastReviewTask");
-                    if(ctrl==null)throw new InvalidOperationException("Khong tim thay CtrlFastReviewTask.");
-                    ctrl.OpenModal(CurrentProjectId,id,task.MaCongViec,task.TenCongViec);
                     CapNhatPanelPopupPartner();
                 }
                 else throw new InvalidOperationException("Thao tac chua duoc ho tro.");
@@ -879,7 +868,7 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
                     "(function(){var m=" + new JavaScriptSerializer().Serialize(ex.Message).Replace("<", @"\u003c") +
                     ";var el=document.getElementById('kbg20Message');" +
                     "if(el){el.textContent=m;el.style.display='block';}" +
-                    "else{window.alert(m);}})();", true);
+                    "else{var host=document.querySelector('#kbg20Page');if(host){var msg=document.createElement('div');msg.className='kbg20-error';msg.textContent=m;host.insertBefore(msg,host.firstChild);}}})();", true);
             }
         }
 

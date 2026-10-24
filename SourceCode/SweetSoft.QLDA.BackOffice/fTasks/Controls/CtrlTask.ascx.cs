@@ -282,18 +282,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if (!TryGetNotificationTask(taskId, out TblCongViec task))
                 return;
 
-            // Giữ điều kiện hiện tại của nút FAST_COMPLETE: chỉ công việc con.
-            if (task.IdCongViecCha.HasValue)
-            {
-                CtrlFastCompleteTask1.OpenModal(
-                    task.IdCongViec,
-                    task.MaCongViec,
-                    task.TenCongViec);
-            }
-            else
-            {
-                ShowNotify("Chỉ có thể hoàn thành nhanh công việc con!", MSGType.Warning);
-            }
+            // DOT 4B: ca Task la, Task trung gian va Task goc deu duoc mo
+            // quy trinh hoan thanh hien co. Dieu kien 100% duoc kiem tra trong popup va server.
+            CtrlFastCompleteTask1.OpenModal(
+                task.IdCongViec,
+                task.MaCongViec,
+                task.TenCongViec);
         }
 
         private void OpenStartTaskFromNotification(Guid taskId)
@@ -704,7 +698,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         ShowAccessDeniedNotify();
                         return;
                     }
-                    CtrlAddSubTask1.OpenModal(this.ProjectId, parentTaskId);
+                    try
+                    {
+                        TaskManager.Instance.DamBaoDuocThemCongViecCon(this.ProjectId, parentTaskId);
+                        CtrlAddSubTask1.OpenModal(this.ProjectId, parentTaskId);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        ShowNotify(ex.Message, MSGType.Warning);
+                    }
                     break;
 
                 case "ITEM_VIEW":
@@ -769,7 +771,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     if (Guid.TryParse(grvData.DataKeys[rowIndexComplete].Value.ToString(), out Guid taskIdComplete))
                     {
                         TblCongViec taskToComplete = TaskManager.Instance.FetchById(taskIdComplete);
-                        if (taskToComplete != null && taskToComplete.IdCongViecCha.HasValue)
+                        if (taskToComplete != null && taskToComplete.IdDuAn == this.ProjectId)
                             CtrlFastCompleteTask1.OpenModal(taskIdComplete, taskToComplete.MaCongViec, taskToComplete.TenCongViec);
                     }
                     break;
@@ -1044,60 +1046,108 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
         }
 
+
         public override void ConfirmRequest(ConfirmResult e)
         {
-            if (e == null || !e.Submit) return;
+            if (e == null || !e.Submit)
+                return;
 
-            // Dieu phoi CHINH XAC theo CommandName, khong duoc roi xuong nhanh xoa task.
-            switch (e.CommandName)
+            string commandName = (e.CommandName ?? string.Empty).Trim();
+
+            // Dieu phoi xac nhan theo dung chuc nang.
+            // Khong duoc chuyen tiep tat ca xac nhan vao moi control.
+            switch (commandName)
             {
+                // 1. Xac nhan hoan doi / sap xep giai doan
                 case "CONFIRM_SWAP_PHASES":
                 case "CONFIRM_REORDER_PHASES":
                     CtrlSwapPhase1.ConfirmRequest(e);
                     return;
+
+                // 2. Xac nhan thay doi phan cong nhan su
                 case "CONFIRM_TASK_ASSIGNMENT_CHANGES":
-                case "CONFIRM_OVERLOAD_ASSIGN_TASK": // ten lenh cu, giu tuong thich
+                case "CONFIRM_OVERLOAD_ASSIGN_TASK":
                     CtrlChonNhanVienTask1.ConfirmRequest(e);
                     return;
+
+                // 3. Xac nhan ap dung mau cong viec
                 case "TASK_TEMPLATE_APPLY":
-                    // Chuyen xac nhan MessageBox ve dung control ap dung mau.
-                    if (!this.CURRENT_PAGE.IsEdit && !this.CURRENT_PAGE.IsAdd)
+                    if (!this.CURRENT_PAGE.IsEdit &&
+                        !this.CURRENT_PAGE.IsAdd)
                     {
                         ShowAccessDeniedNotify();
                         return;
                     }
+
                     if (CtrlApplyTemplate1 != null)
                         CtrlApplyTemplate1.ConfirmRequest(e);
+
                     return;
+
+                // 4. Xac nhan xoa cong viec
                 case "TASK_DELETE":
                     break;
+
+                // Tuong thich voi co che xoa cu
+                // neu MessageBox chua truyen CommandName.
+                case "":
+                    if (string.IsNullOrWhiteSpace(hfDeletingTaskId.Value))
+                        return;
+                    break;
+
+                // Khong xu ly cac lenh khong thuoc trang nay.
                 default:
                     return;
             }
+
+            // 5. Xu ly xoa cong viec
             Guid taskId;
             if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
             {
                 ShowInvalidDataError();
                 return;
             }
+
             TblCongViec task = TaskManager.Instance.FetchById(taskId);
             if (task == null)
             {
                 ShowInvalidNotFoundData();
                 return;
             }
+
             try
             {
                 TaskManager.Instance.DeleteTask(task);
+
+                // Cap nhat lai thong tin cong viec cha neu co.
                 if (task.IdCongViecCha.HasValue)
                 {
-                    if (_dictPriorities == null || _dictPriorities.Count == 0)
-                        _dictPriorities = TaskManager.Instance.GetDictPriorities();
-                    TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                    TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
-                    TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
+                    if (_dictPriorities == null ||
+                        _dictPriorities.Count == 0)
+                    {
+                        _dictPriorities =
+                            TaskManager.Instance.GetDictPriorities();
+                    }
+
+                    TaskManager.Instance.AutoSetParentPriority(
+                        this.ProjectId,
+                        task.IdCongViecCha.Value,
+                        _dictPriorities
+                    );
+
+                    TaskManager.Instance.AutoSetParentTime(
+                        this.ProjectId,
+                        task.IdCongViecCha.Value
+                    );
+
+                    TaskManager.Instance.AutoSetParentStatus(
+                        this.ProjectId,
+                        task.IdCongViecCha.Value
+                    );
                 }
+
                 hfDeletingTaskId.Value = string.Empty;
+
                 ShowSuccessDeleteData();
                 grvData.CurrentPageIndex = 1;
                 Rebind();
@@ -1107,6 +1157,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
         #endregion
 
         #region Buttons

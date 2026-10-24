@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using SweetSoft.QLDA.Core.SysManager;
 using SweetSoft.QLDA.Core.Utils;
 using SweetSoft.QLDA.DataAccess;
@@ -361,23 +361,65 @@ namespace SweetSoft.QLDA.Core.Respositories
         }
         #endregion
         #region 3. Xoa cong viec
+        /// <summary>
+        /// 4C.2: Lay day du Task trong nhanh can xoa, ke ca DaXoa=NULL (du lieu cu).
+        /// SQL xoa mem goc cung dung (DaXoa=0 OR IS NULL), nen danh sach nay phai trung.
+        /// Gioi han de phat hien nhanh loi vong lap thay vi lap vo han.
+        /// </summary>
+        public List<TblCongViec> GetActiveDeleteBranch(Guid projectId, Guid rootTaskId)
+        {
+            const string sql = @"WITH TaskHierarchy AS (
+                SELECT IdCongViec, IdCongViecCha FROM dbo.TblCongViec
+                WHERE IdCongViec=@Root AND IdDuAn=@Project AND (DaXoa=0 OR DaXoa IS NULL)
+                UNION ALL
+                SELECT t.IdCongViec,t.IdCongViecCha FROM dbo.TblCongViec t
+                INNER JOIN TaskHierarchy p ON t.IdCongViecCha=p.IdCongViec
+                WHERE t.IdDuAn=@Project AND (t.DaXoa=0 OR t.DaXoa IS NULL)
+            ) SELECT IdCongViec FROM TaskHierarchy OPTION(MAXRECURSION 1000)";
+            var cmd = new QueryCommand(sql, DataService.Provider.Name);
+            cmd.AddParameter("@Root", rootTaskId, DbType.Guid);
+            cmd.AddParameter("@Project", projectId, DbType.Guid);
+            var ids = new List<Guid>();
+            IDataReader reader = DataService.GetReader(cmd);
+            if (reader == null)
+                throw new InvalidOperationException("Không đọc được danh sách công việc cần xóa.");
+            using (reader)
+            {
+                while (reader.Read()) ids.Add(reader.GetGuid(0));
+            }
+            if (ids.Count == 0)
+                throw new InvalidOperationException("Không tìm thấy nhánh công việc còn hiệu lực để xóa.");
+            if (new HashSet<Guid>(ids).Count != ids.Count)
+                throw new InvalidOperationException("Cấu trúc công việc bị trùng hoặc có vòng lặp; không thể xóa an toàn.");
+            var result = new List<TblCongViec>();
+            foreach (Guid id in ids)
+            {
+                TblCongViec task = TblCongViec.FetchByID(id);
+                if (task == null || task.IdDuAn != projectId || task.DaXoa == true)
+                    throw new InvalidOperationException("Nhánh công việc đã thay đổi; vui lòng tải lại.");
+                result.Add(task);
+            }
+            return result;
+        }
+
         public void DeleteTask(TblCongViec task)
         {
             if (task == null) return;
             string sqlDelete = $@"
                 WITH TaskHierarchy AS (
-                    SELECT IdCongViec FROM TblCongViec WHERE IdCongViec = '{task.IdCongViec}'
+                    SELECT IdCongViec FROM TblCongViec WHERE IdCongViec = '{task.IdCongViec}' AND IdDuAn = '{task.IdDuAn}'
             
                     UNION ALL
             
                     SELECT t.IdCongViec FROM TblCongViec t
                     INNER JOIN TaskHierarchy th ON t.IdCongViecCha = th.IdCongViec
-                    WHERE t.DaXoa = 0 OR t.DaXoa IS NULL
+                    WHERE (t.DaXoa = 0 OR t.DaXoa IS NULL) AND t.IdDuAn = '{task.IdDuAn}'
                 )
                 UPDATE TblCongViec 
                 SET DaXoa = 1, 
                     NgayCapNhat = GETDATE()
-                WHERE IdCongViec IN (SELECT IdCongViec FROM TaskHierarchy);";
+                WHERE IdCongViec IN (SELECT IdCongViec FROM TaskHierarchy)
+                OPTION (MAXRECURSION 1000);";
             new SubSonic.InlineQuery().Execute(sqlDelete);
         }
         #endregion
