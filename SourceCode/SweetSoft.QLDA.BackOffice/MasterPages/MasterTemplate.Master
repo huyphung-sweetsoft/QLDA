@@ -143,7 +143,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link href="/Styles/css/icon.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/Boxicon.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/toastr.css" rel="stylesheet" type="text/css" />
-<link href="~/Styles/css/floating-work-timer.css" rel="stylesheet" type="text/css" runat="server" />
+<link href="~/Styles/css/floating-work-timer.css?v=20261023dot7c1" rel="stylesheet" type="text/css" runat="server" />
     <link href="/Styles/css/app.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/custom-style.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/plugins/validationEngine/validationEngine.jquery.css" rel="stylesheet" type="text/css" />
@@ -974,7 +974,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <span class="server-message"><%= GetResourceText(BackEndResourceKeys.SYSTEM_IS_PROCESSING_YOUR_REQUEST) %></span>
         </div>
         <%-- Floating timer: chỉ đọc trạng thái, không tạo postback --%>
-        <script src="<%= ResolveUrl("~/Styles/js/floating-work-timer.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Styles/js/floating-work-timer.js") %>?v=20261023dot7c1"></script>
         <%-- SignalR Dot 3: mot client tren moi trang Master, khong can cho Task. --%>
         <% if (SweetSoft.QLDA.BackOffice.Realtime.QldaRealtimeSettings.NotificationsEnabled) { %>
         <script src="<%= ResolveUrl("~/Scripts/jquery.signalR-2.4.3.min.js") %>"></script>

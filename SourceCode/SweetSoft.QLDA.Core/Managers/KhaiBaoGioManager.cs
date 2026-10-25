@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.Core.EnumHelper.Defines;
+using SweetSoft.QLDA.Core.EnumHelper.Defines;
 using TrangThaiTask = SweetSoft.QLDA.Core.EnumHelper.TrangThaiCongViec;
 using SweetSoft.QLDA.Core.Infrastructure;
 using SweetSoft.QLDA.Core.Infrastructure.Interfaces;
@@ -1249,6 +1249,120 @@ namespace SweetSoft.QLDA.Core.Managers
             try { _repo.KhoaTheoDuAn(con,null,duAn); return con; }
             catch { con.Dispose(); throw; }
         }
+        // DOT 8 STABILIZATION: phien duoc phep Stop tu chon doi Task: chi Start THU CONG
+        // tren TASK LA. Khong dong cha, auto-start, phien cua task se Start, hay nguoi khac.
+        // Chi doc cho popup; khi ghi phai tinh lai DANH SACH trong cung transaction.
+        private List<Kbg20Phien> PhienDuocChuyen(SqlConnection con, SqlTransaction tx,
+            Guid nhanVien, Guid targetTask)
+        {
+            var result = new List<Kbg20Phien>();
+            using(var cmd = new SqlCommand(@"SELECT p.IdPhien,p.IdNhanVien,p.IdCongViec,p.IdDuAn,p.LoaiGio,
+                    p.BatDauLuc,p.KetThucLuc,p.DaTinhDenLuc,p.LaTiepTucQuaHan,p.NguonBatDau
+                FROM dbo.TblKhaiBaoGioPhien p
+                WHERE p.IdNhanVien=@U AND p.KetThucLuc IS NULL AND p.IdCongViec<>@T
+                  AND p.NguonBatDau=1 AND NOT EXISTS (
+                      SELECT 1 FROM dbo.TblCongViec child
+                      WHERE child.IdCongViecCha=p.IdCongViec AND ISNULL(child.DaXoa,0)=0)
+                ORDER BY p.IdDuAn,p.IdCongViec,p.IdPhien",con,tx))
+            {
+                cmd.Parameters.Add("@U",SqlDbType.UniqueIdentifier).Value=nhanVien;
+                cmd.Parameters.Add("@T",SqlDbType.UniqueIdentifier).Value=targetTask;
+                using(var rd=cmd.ExecuteReader())while(rd.Read())
+                    result.Add(new Kbg20Phien {
+                        IdPhien=rd.GetGuid(0),IdNhanVien=rd.GetGuid(1),
+                        IdCongViec=rd.GetGuid(2),IdDuAn=rd.GetGuid(3),
+                        LoaiGio=(Kbg20LoaiGio)Convert.ToByte(rd.GetValue(4)),
+                        BatDauLucUtc=DateTime.SpecifyKind(rd.GetDateTime(5),DateTimeKind.Utc),
+                        KetThucLucUtc=rd.IsDBNull(6)?(DateTime?)null:DateTime.SpecifyKind(rd.GetDateTime(6),DateTimeKind.Utc),
+                        DaTinhDenLucUtc=rd.IsDBNull(7)?(DateTime?)null:DateTime.SpecifyKind(rd.GetDateTime(7),DateTimeKind.Utc),
+                        LaTiepTucQuaHan=rd.GetBoolean(8),NguonBatDau=Convert.ToByte(rd.GetValue(9))
+                    });
+            }
+            return result;
+        }
+
+        public List<Guid> LayPhienThuCongTaskLaCoTheDung(Guid nhanVien,Guid taskBatDau)
+        {
+            if(nhanVien==Guid.Empty||taskBatDau==Guid.Empty)
+                throw new ArgumentException("Thiếu nhân viên hoặc công việc.");
+            using(var con=_repo.MoKetNoi())
+                return PhienDuocChuyen(con,null,nhanVien,taskBatDau).Select(x=>x.IdPhien).ToList();
+        }
+
+        // Stop + Start tren 1 SqlConnection/SqlTransaction. Neu 1 stop / Start loi,
+        // transaction rollback TAT CA. Project locks sap thu tu de tranh dao thu tu.
+        // Task dang status=0 can qua CtrlStartTask partner (workflow chung); KHONG
+        // cho dung phien cu tren UI do khong the ghep POST voi TaskList tai day.
+        public Kbg20KetQua DungPhienThuCongVaBatDau(Guid nv,Guid duAn,Guid task,Guid thaoTac,
+            IEnumerable<Guid> danhSachPhien,bool laTangCa,bool quaHan,bool phuThuoc)
+        {
+            if(nv==Guid.Empty||duAn==Guid.Empty||task==Guid.Empty||thaoTac==Guid.Empty||danhSachPhien==null)
+                return Kbg20KetQua.Loi("Thiếu thông tin chuyển đồng hồ.");
+            var requested=danhSachPhien.ToList();
+            if(requested.Count==0||requested.Count>100||requested.Any(x=>x==Guid.Empty)
+                ||requested.Distinct().Count()!=requested.Count)
+                return Kbg20KetQua.Loi("Danh sách phiên cần dừng không hợp lệ.");
+            DateTime now=ChuanGiay(DateTime.UtcNow),local=GioDiaPhuong(now);
+            if(!laTangCa && !TrongCa(local))return Kbg20KetQua.Loi("Chưa trong ca làm việc hợp lệ.");
+            if(laTangCa){var ca=LayCa(local.Date);
+                if(ca.Count==0||local<ca.Max(x=>x.KetThuc))
+                    return Kbg20KetQua.Loi("Chưa đến thời gian được tính tăng ca.");}
+            try
+            {
+                using(var con=_repo.MoKetNoi())
+                using(var tx=con.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
+                {
+                    // Retry sau khi POST da commit: cung RequestId khong the dung lai phien moi.
+                    var prior=_repo.LayPhienTheoThaoTac(con,tx,thaoTac,nv,task,
+                        laTangCa?Kbg20LoaiGio.TangCa:Kbg20LoaiGio.Thuong);
+                    if(prior!=null){var previous=Kbg20KetQua.Ok("Lần chuyển đồng hồ trước đã được ghi nhận.");
+                        previous.IdPhien=prior.IdPhien;tx.Commit();return previous;}
+                    // Doc so bo project IDs; sau khi app-lock phai doc lai duoi khoa.
+                    var preview=PhienDuocChuyen(con,tx,nv,task);
+                    var projects=preview.Select(x=>x.IdDuAn).Concat(new[]{duAn}).Distinct()
+                        .OrderBy(x=>x.ToString("N"),StringComparer.Ordinal).ToList();
+                    foreach(var project in projects)_repo.KhoaTheoDuAn(con,tx,project);
+                    var eligible=PhienDuocChuyen(con,tx,nv,task);
+                    if(!eligible.Select(x=>x.IdPhien).OrderBy(x=>x).SequenceEqual(requested.OrderBy(x=>x)))
+                        return Kbg20KetQua.Loi("Danh sách đồng hồ đã thay đổi; mở lại popup để kiểm tra trước khi dừng.");
+                    // Scope nay CHI ho tro Task 1: Task 0 qua CtrlStartTask rieng cua partner.
+                    var target=_repo.LayCongViec(con,tx,task);
+                    if(target==null||target.IdDuAn!=duAn||target.TrangThai!=1)
+                        return Kbg20KetQua.Loi("Chỉ chuyển đồng hồ sang Task đang thực hiện. Task chưa bắt đầu phải qua popup Start Task.");
+                    // Mot timestamp cho ca nhom, giu gio chot ledger nhu Stop thuong.
+                    foreach(var item in eligible.OrderBy(x=>x.IdDuAn.ToString("N"))
+                               .ThenBy(x=>x.IdPhien))
+                    {
+                        var phien=_repo.LayPhienMoTheoId(con,tx,item.IdPhien,nv);
+                        if(phien==null || phien.IdCongViec==task || phien.NguonBatDau!=(byte)Kbg20NguonBatDau.ThuCong)
+                            return Kbg20KetQua.Loi("Phien bi thay doi hoac khong duoc phep dung.");
+                        // Bat ky node cha nao deu khong duoc dung bang nut nay,
+                        // ke ca da hoan thanh het cac task con.
+                        using(var child=new SqlCommand(@"SELECT TOP 1 1 FROM dbo.TblCongViec
+                                WHERE IdCongViecCha=@T AND ISNULL(DaXoa,0)=0",con,tx))
+                        {child.Parameters.Add("@T",SqlDbType.UniqueIdentifier).Value=phien.IdCongViec;
+                         if(child.ExecuteScalar()!=null)return Kbg20KetQua.Loi("Không thể dừng đồng hồ Task cha từ lựa chọn này.");}
+                        DateTime ended=KetToanTrongGiaoDich(con,tx,phien,now,false);
+                        var lyDo=ended<now?(phien.LoaiGio==Kbg20LoaiGio.TangCa
+                            ?Kbg20LyDoKetThuc.TuNgatTangCa:Kbg20LyDoKetThuc.HetHanCongViec)
+                            :Kbg20LyDoKetThuc.TuDung;
+                        _repo.DongPhien(con,tx,phien.IdPhien,ended,lyDo);
+                    }
+                    var started=laTangCa
+                        ?BatDauTangCaChung(con,tx,nv,duAn,task,thaoTac,now,local,null)
+                        :BatDauGioThuongChung(con,tx,nv,duAn,task,thaoTac,quaHan,phuThuoc,now,local,null);
+                    if(!started.ThanhCong)return started;
+                    tx.Commit();return started;
+                }
+            }
+            catch(Exception ex)
+            {
+                try{SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,"KBG20 DungPhienThuCongVaBatDau");}
+                catch{System.Diagnostics.Trace.TraceError("KBG20 switch timer: "+ex);}
+                return Kbg20KetQua.Loi("Không chuyển được đồng hồ; mọi thay đổi của lần chuyển này đã được rollback.");
+            }
+        }
+
         public Kbg20KetQua DungPhien(Guid idNhanVien, Guid idPhien)
         {
             if (idNhanVien == Guid.Empty || idPhien == Guid.Empty) return Kbg20KetQua.Loi("Thong tin khong hop le.");
@@ -1643,7 +1757,10 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             if (idNhanVien == Guid.Empty || idDuAn == Guid.Empty)
                 throw new UnauthorizedAccessException("Khong xac dinh nhan vien hoac du an.");
-            if (!_repo.LayDuAnNhanVien(idNhanVien).Any(x => x.IdDuAn == idDuAn))
+            // PM cua du an co quyen xem trang du an, ke ca chua duoc phan cong Task.
+            // Du lieu gio ben duoi van loc theo idNhanVien: khong mo quyen xem gio nguoi khac.
+            if (!_repo.LayDuAnNhanVien(idNhanVien).Any(x => x.IdDuAn == idDuAn)
+                && DuAnManager.Instance.LayIdNhanVienQuanLy(idDuAn) != idNhanVien)
                 throw new UnauthorizedAccessException("Ban khong co quyen xem gio trong du an nay.");
             DateTime nowUtc = ChuanGiay(DateTime.UtcNow);
             DateTime today = GioDiaPhuong(nowUtc).Date;
@@ -1739,6 +1856,20 @@ namespace SweetSoft.QLDA.Core.Managers
             return kq;
         }
 
+        // Same authorization and day-boundary policy as the per-day history API.
+        public List<Kbg20PhienChiTietNgay> LayPhienChiTietTheoNgay(Guid idNhanVien,
+            Guid idDuAn, Guid idCongViec, DateTime ngay)
+        {
+            if(idCongViec==Guid.Empty) throw new ArgumentException("Thieu ma cong viec.");
+            // Gate permission, input day and project: existing method owns these policies.
+            var permitted = LayLichSuTheoNgay(idNhanVien,idDuAn,ngay);
+            DateTime local = permitted.NgayLam.Date;
+            DateTime startUtc = TimeZoneInfo.ConvertTimeToUtc(local,_muiGio);
+            DateTime endUtc = TimeZoneInfo.ConvertTimeToUtc(local.AddDays(1),_muiGio);
+            return _repo.LayPhienChiTietTheoNgay(idNhanVien,idDuAn,idCongViec,
+                local,startUtc,endUtc);
+        }
+
         // ===== READ API V2: khong ghi DB va khong thay doi API 1.x =====
         public List<Kbg20DuAn> LayDanhSachDuAn(Guid idNhanVien)
         {
@@ -1749,6 +1880,17 @@ namespace SweetSoft.QLDA.Core.Managers
             if (idNhanVien == Guid.Empty) throw new UnauthorizedAccessException("Chua xac dinh nhan vien.");
             var ketQua = new Kbg20TrangDuAn { ServerNowUtc = ChuanGiay(DateTime.UtcNow) };
             ketQua.DuAn = _repo.LayDuAnNhanVien(idNhanVien);
+            // Khac biet quyen: PM co the quan ly du an ma chua duoc phan cong
+            // vao bat ky Task nao va chua tung bat dau dong ho.
+            // LayDuAnNhanVien() chi dua tren phan cong/phien gio, nen bo sot PM.
+            // Chi bo sung CHINH du an dang yeu cau khi PM ID duoc xac thuc server-side.
+            if (idDuAn != Guid.Empty && !ketQua.DuAn.Any(d => d.IdDuAn == idDuAn)
+                && (DuAnManager.Instance.LayIdNhanVienQuanLy(idDuAn) == idNhanVien
+                    || DuAnManager.Instance.GetMemberIds(idDuAn).Contains(idNhanVien)))
+            {
+                Kbg20DuAn duAnPm = _repo.LayThongTinDuAnChoPm(idDuAn);
+                if (duAnPm != null) ketQua.DuAn.Add(duAnPm);
+            }
             if (ketQua.DuAn.Count == 0) return ketQua;
             if (idDuAn == Guid.Empty) idDuAn = ketQua.DuAn[0].IdDuAn;
             if (!ketQua.DuAn.Any(d => d.IdDuAn == idDuAn))
@@ -1840,6 +1982,15 @@ namespace SweetSoft.QLDA.Core.Managers
     /// NULL = chua co ket qua chot chinh thuc; 0 = PM thuc su chot 0 phut.
     /// SoNhanVienCanChot gom nguoi phan cong truc tiep va nguoi co lich su gio/doi soat tren Task.
     /// </summary>
+    public sealed class Kbg20PhienChiTietNgay
+    {
+        public Guid IdPhien { get; set; }
+        public int LoaiGio { get; set; }
+        public DateTime BatDauLucUtc { get; set; }
+        public DateTime? KetThucLucUtc { get; set; }
+        public long SoGiayDaKetToanTrongNgay { get; set; }
+    }
+
     public sealed class Kbg20TongPhutPmChotTask
     {
         public Guid IdDuAn { get; set; }
@@ -1875,7 +2026,7 @@ namespace SweetSoft.QLDA.Core.Managers
     -- Nguoi co doi soat cu/ca nhan; khong cho su kien PM chot tu tao thanh vien ao.
     SELECT s.IdNhanVien
     FROM dbo.TblKhaiBaoGioDoiSoat s
-    WHERE s.IdDuAn=@D AND s.IdCongViec=@T AND s.LoaiSuKien IN (0,1,2,3)
+    WHERE s.IdDuAn=@D AND s.IdCongViec=@T AND s.LoaiSuKien IN (0,1,2,3,5)
 ),
 SuKienMoiNhat AS
 (

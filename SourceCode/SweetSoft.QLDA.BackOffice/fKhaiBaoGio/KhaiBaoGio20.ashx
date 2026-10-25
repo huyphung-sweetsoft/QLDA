@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="KhaiBaoGio20Handler" %>
+<%@ WebHandler Language="C#" Class="KhaiBaoGio20Handler" %>
 
 using System;
 using System.Collections.Generic;
@@ -78,6 +78,13 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 string raw=context.Request.QueryString["projectId"];
                 if(!string.IsNullOrEmpty(raw) && !Guid.TryParse(raw,out project)) {Error(context,400,"Ma du an khong hop le.");return;}
                 var man=new KhaiBaoGio20Manager();
+                if(string.Equals(context.Request.QueryString["view"],"switch-preview",StringComparison.OrdinalIgnoreCase)) {
+                    Guid target;
+                    if(!Guid.TryParse(context.Request.QueryString["taskId"],out target)||target==Guid.Empty)
+                        {Error(context,400,"Thiếu công việc chuẩn bị Start.");return;}
+                    var eligible=man.LayPhienThuCongTaskLaCoTheDung(user.UserId,target);
+                    Write(context,new {ok=true,eligibleIds=eligible.ConvertAll(x=>x.ToString("D"))});return;
+                }
                 if(string.Equals(context.Request.QueryString["view"],"reconcile-list",StringComparison.OrdinalIgnoreCase)) {
                     if(project==Guid.Empty) {Error(context,400,"Thieu du an.");return;}
                     var items=new Kbg20DoiSoatManager().LayDanhSachDoiSoat(user.UserId,project);
@@ -116,15 +123,38 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 // Ca nhan: Doc trang thai bao/rut, khong dua tren Task.TrangThai=2/3.
                 if(string.Equals(context.Request.QueryString["view"],"personal-list",StringComparison.OrdinalIgnoreCase)) {
                     if(project==Guid.Empty){Error(context,400,"Thieu du an.");return;}
-                    var statuses=new Kbg20BaoXongManager().LayTomTat(user.UserId,project);
-                    Write(context,new {ok=true,items=new List<Kbg20BaoXongBanGhi>(statuses.Values).ConvertAll(x=>new {
-                        taskId=x.IdCongViec.ToString("D"),code=x.MaCongViec,name=x.TenCongViec,
-                        status=x.LoaiSuKien,round=x.Lan,version=x.PhienBan,
-                        regular=x.GiayThuong,overtime=x.GiayTangCa,
-                        systemRegularMinutes=PhutHeThongDaLamTron(x.GiayThuong),
-                        systemOvertimeMinutes=PhutHeThongDaLamTron(x.GiayTangCa),
-                        declaredRegular=x.PhutTuKhaiThuong,declaredOvertime=x.PhutTuKhaiTangCa,
-                        pmLocked=x.DaPmChot,createdUtc=Ms(x.NgayTaoUtc)})});return;
+                    var personalManager=new Kbg20BaoXongManager();
+                    var statuses=personalManager.LayTomTat(user.UserId,project);
+                    var pending=personalManager.LayViecCanXacNhan(user.UserId,project);
+                    var taskStates=new Dictionary<Guid,Kbg20ViecChoXacNhanGio>();
+                    foreach(var candidate in pending)taskStates[candidate.IdCongViec]=candidate;
+                    // Task hoan thanh/cho duyet ma chua BAO lan nao van phai co trong Tab 3.
+                    var results=new List<object>();
+                    foreach(var x in statuses.Values) {
+                        Kbg20ViecChoXacNhanGio taskState;
+                        bool known=taskStates.TryGetValue(x.IdCongViec,out taskState);
+                        results.Add(new {
+                            taskId=x.IdCongViec.ToString("D"),code=x.MaCongViec,name=x.TenCongViec,
+                            status=x.CoGocXacNhanSauTask?5:x.LoaiSuKien,round=x.Lan,version=x.PhienBan,
+                            taskStatus=known?taskState.TrangThai:-1,
+                            systemRegularMinutes=known?PhutHeThongDaLamTron(taskState.GiayHanhChinh):PhutHeThongDaLamTron(x.GiayThuong),
+                            systemOvertimeMinutes=known?PhutHeThongDaLamTron(taskState.GiayTangCa):PhutHeThongDaLamTron(x.GiayTangCa),
+                            declaredRegular=(x.DangBaoXong||x.LoaiSuKien==4)?x.PhutTuKhaiThuong:(int?)null,
+                            declaredOvertime=(x.DangBaoXong||x.LoaiSuKien==4)?x.PhutTuKhaiTangCa:(int?)null,
+                            pmLocked=x.DaPmChot,createdUtc=Ms(x.NgayTaoUtc)
+                        });
+                    }
+                    foreach(var x in pending)if(!statuses.ContainsKey(x.IdCongViec)) {
+                        results.Add(new {
+                            taskId=x.IdCongViec.ToString("D"),code=x.MaCongViec,name=x.TenCongViec,
+                            status=0,round=0,version=0,taskStatus=x.TrangThai,
+                            systemRegularMinutes=PhutHeThongDaLamTron(x.GiayHanhChinh),
+                            systemOvertimeMinutes=PhutHeThongDaLamTron(x.GiayTangCa),
+                            declaredRegular=(int?)null,declaredOvertime=(int?)null,
+                            pmLocked=false,createdUtc=(long?)null
+                        });
+                    }
+                    Write(context,new {ok=true,items=results});return;
                 }
                 if(string.Equals(context.Request.QueryString["view"],"personal",StringComparison.OrdinalIgnoreCase)) {
                     Guid task;
@@ -133,19 +163,69 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                     var detail=new Kbg20BaoXongManager().LayChiTiet(user.UserId,project,task);
                     var v=detail.HienTai;
                     Write(context,new {ok=true,taskId=task.ToString("D"),
-                        status=v==null?0:v.LoaiSuKien,round=v==null?0:v.Lan,version=v==null?0:v.PhienBan,
+                        status=v==null?0:(v.CoGocXacNhanSauTask?5:v.LoaiSuKien),round=v==null?0:v.Lan,version=v==null?0:v.PhienBan,
                         canEdit=!detail.KhoaPm && v!=null && v.DangBaoXong,
+                        canWithdraw=!detail.KhoaPm && detail.TrangThaiTask==1 && v!=null &&
+                            (v.LoaiSuKien==1 || v.LoaiSuKien==3),
+                        canConfirm=!detail.KhoaPm && (detail.TrangThaiTask==4 ||
+                            detail.TrangThaiTask==2 || detail.TrangThaiTask==3) &&
+                            (v==null || v.LoaiSuKien==2),
+                        taskStatus=detail.TrangThaiTask,
                         assigned=detail.ConPhanCong,pmLocked=detail.KhoaPm,
                         regular=detail.GiayThuongHeThong,overtime=detail.GiayTangCaHeThong,
                         systemRegularMinutes=PhutHeThongDaLamTron(detail.GiayThuongHeThong),
                         systemOvertimeMinutes=PhutHeThongDaLamTron(detail.GiayTangCaHeThong),
-                        declaredRegular=v==null?null:v.PhutTuKhaiThuong,
-                        declaredOvertime=v==null?null:v.PhutTuKhaiTangCa,
-                        history=detail.LichSu.ConvertAll(x=>new {kind=x.LoaiSuKien,round=x.Lan,version=x.PhienBan,
+                        declaredRegular=v==null||v.LoaiSuKien==2?null:v.PhutTuKhaiThuong,
+                        declaredOvertime=v==null||v.LoaiSuKien==2?null:v.PhutTuKhaiTangCa,
+                        history=detail.LichSu.ConvertAll(x=>new {kind=x.CoGocXacNhanSauTask?5:x.LoaiSuKien,
+                            editedAfterConfirm=x.LoaiSuKien==3 && x.CoGocXacNhanSauTask,
+                            round=x.Lan,version=x.PhienBan,
                             regular=x.PhutTuKhaiThuong,overtime=x.PhutTuKhaiTangCa,
                             systemRegular=x.GiayThuong,systemOvertime=x.GiayTangCa,
                             reason=x.LyDo,createdUtc=Ms(x.NgayTaoUtc)})});return;
                 }
+                if(string.Equals(context.Request.QueryString["view"],"pm-personal",StringComparison.OrdinalIgnoreCase)) {
+                    Guid task,employee;
+                    if(project==Guid.Empty || !Guid.TryParse(context.Request.QueryString["taskId"],out task) ||
+                        !Guid.TryParse(context.Request.QueryString["employeeId"],out employee))
+                        {Error(context,400,"Thiếu dự án, công việc hoặc nhân viên.");return;}
+                    // KHONG cho phep doc nhan vien khac bang query-string neu khong phai PM cua du an.
+                    var pmQuanLyId=DuAnManager.Instance.LayIdNhanVienQuanLy(project);
+                    if(!pmQuanLyId.HasValue || pmQuanLyId.Value!=user.UserId)
+                        {Error(context,403,"Chi PM du an duoc xem noi dung bao/rut cua nhan vien.");return;}
+                    var detail=new Kbg20BaoXongManager().LayChiTiet(employee,project,task);
+                    var v=detail.HienTai;
+                    var staff=AspnetUser.FetchByID(employee);
+                    string staffName=staff!=null && !string.IsNullOrWhiteSpace(staff.DisplayName)?staff.DisplayName:"Nhân viên";
+                    Write(context,new {ok=true,employeeName=staffName,@readonly=true,taskId=task.ToString("D"),employeeId=employee.ToString("D"),
+                        status=v==null?0:(v.CoGocXacNhanSauTask?5:v.LoaiSuKien),round=v==null?0:v.Lan,version=v==null?0:v.PhienBan,
+                        taskStatus=detail.TrangThaiTask,pmLocked=detail.KhoaPm,
+                        systemRegularMinutes=PhutHeThongDaLamTron(detail.GiayThuongHeThong),
+                        systemOvertimeMinutes=PhutHeThongDaLamTron(detail.GiayTangCaHeThong),
+                        declaredRegular=v==null||v.LoaiSuKien==2?null:v.PhutTuKhaiThuong,
+                        declaredOvertime=v==null||v.LoaiSuKien==2?null:v.PhutTuKhaiTangCa,
+                        history=detail.LichSu.ConvertAll(x=>new {kind=x.CoGocXacNhanSauTask?5:x.LoaiSuKien,
+                            editedAfterConfirm=x.LoaiSuKien==3 && x.CoGocXacNhanSauTask,
+                            round=x.Lan,version=x.PhienBan,
+                            regular=x.PhutTuKhaiThuong,overtime=x.PhutTuKhaiTangCa,
+                            systemRegular=x.GiayThuong,systemOvertime=x.GiayTangCa,
+                            reason=x.LyDo,createdUtc=Ms(x.NgayTaoUtc)})});return;
+                }
+                 // Read-only per-task session timeline for Tab 2. Never expose another employee's hours.
+                 if(string.Equals(context.Request.QueryString["view"],"history-sessions",StringComparison.OrdinalIgnoreCase)) {
+                     Guid chiTietTaskGuid;
+                     DateTime chiTietNgay;
+                     if(project==Guid.Empty || !Guid.TryParse(context.Request.QueryString["taskId"],out chiTietTaskGuid)
+                       || !DateTime.TryParseExact(context.Request.QueryString["day"],"yyyy-MM-dd",
+                           CultureInfo.InvariantCulture,DateTimeStyles.None,out chiTietNgay))
+                       {Error(context,400,"Ngày hoặc công việc không hợp lệ.");return;}
+                     var chiTietPhien=man.LayPhienChiTietTheoNgay(user.UserId,project,chiTietTaskGuid,chiTietNgay);
+                     Write(context,new {ok=true,projectId=project.ToString("D"),taskId=chiTietTaskGuid.ToString("D"),
+                         day=chiTietNgay.ToString("yyyy-MM-dd"),items=chiTietPhien.ConvertAll(p=>new {
+                         id=p.IdPhien.ToString("D"),type=p.LoaiGio,
+                         started=Ms(p.BatDauLucUtc),ended=MsNullable(p.KetThucLucUtc),
+                         committedSeconds=p.SoGiayDaKetToanTrongNgay})});return;
+                 }
                 if(string.Equals(context.Request.QueryString["view"],"history",StringComparison.OrdinalIgnoreCase)) {
                     // Lich su chi duoc doc cho CHINH NHAN VIEN va DU AN hien tai.
                     DateTime day;
@@ -201,7 +281,8 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         endDay=x.NgayKetThuc.HasValue?x.NgayKetThuc.Value.ToString("yyyy-MM-dd"):null,
                         durationDays=x.ThoiHanNgay,
                         status=x.TrangThai,pending=x.ChoDuyet,assigned=x.LaPhanCongTrucTiep,
-                        personalStatus=personalStates.ContainsKey(x.IdCongViec)?personalStates[x.IdCongViec].LoaiSuKien:0,
+                        personalStatus=personalStates.ContainsKey(x.IdCongViec)
+                             ?(personalStates[x.IdCongViec].CoGocXacNhanSauTask?5:personalStates[x.IdCongViec].LoaiSuKien):0,
                         personalVersion=personalStates.ContainsKey(x.IdCongViec)?personalStates[x.IdCongViec].PhienBan:0,
                         regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,
                         startedRegular=x.DaTungBatDauThuong,startedOvertime=x.DaTungBatDauTangCa}),
@@ -229,18 +310,19 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
             Guid.TryParse(context.Request.Form["sessionId"],out sessionId);
             var manager=new KhaiBaoGio20Manager();
             // DOT2: Bao/rut/sua CHINH CA NHAN, khong thay doi trang thai Task chung.
-            if(action=="reportPersonal" || action=="withdrawPersonal" || action=="editPersonal") {
+            if(action=="reportPersonal" || action=="withdrawPersonal" || action=="editPersonal" || action=="confirmPersonalHours") {
                 if(!Kbg20TichHopTask.DuocKichHoat){Error(context,403,"Chuc nang bao xong ca nhan chua duoc kich hoat.");return;}
                 if(projectId==Guid.Empty || taskId==Guid.Empty || requestId==Guid.Empty)
                     {Error(context,400,"Thieu du an, cong viec hoac ma thao tac.");return;}
                 var personal=new Kbg20BaoXongManager();
                 Kbg20BaoXongBanGhi saved;
                 int r,o,v,round;
-                if(action=="reportPersonal" || action=="editPersonal") {
+                if(action=="reportPersonal" || action=="editPersonal" || action=="confirmPersonalHours") {
                     if(!int.TryParse(context.Request.Form["regularMinutes"],NumberStyles.None,CultureInfo.InvariantCulture,out r) ||
                        !int.TryParse(context.Request.Form["overtimeMinutes"],NumberStyles.None,CultureInfo.InvariantCulture,out o))
                         {Error(context,400,"So phut tu khai khong hop le.");return;}
                     if(action=="reportPersonal")saved=personal.BaoXong(user.UserId,projectId,taskId,requestId,r,o,context.Request.Form["reason"]);
+                    else if(action=="confirmPersonalHours")saved=personal.XacNhanGioSauTask(user.UserId,projectId,taskId,requestId,r,o,context.Request.Form["reason"]);
                     else {
                         if(!int.TryParse(context.Request.Form["expectedVersion"],out v) ||
                            !int.TryParse(context.Request.Form["expectedRound"],out round) || round<=0)
@@ -256,7 +338,8 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 Write(context,new {ok=true,status=saved==null?0:saved.LoaiSuKien,
                     version=saved==null?0:saved.PhienBan,
                     message=action=="withdrawPersonal"?"Đã rút báo hoàn thành phần việc. Giờ công vẫn được giữ nguyên.":
-                        action=="reportPersonal"?"Đã gửi báo hoàn thành phần việc. Số giờ bạn báo đã được ghi nhận.":"Đã cập nhật số giờ đã báo."});
+                        action=="reportPersonal"?"Đã gửi báo hoàn thành phần việc. Số giờ bạn báo đã được ghi nhận.":
+                        action=="confirmPersonalHours"?"Đã xác nhận giờ công sau khi Task chung chờ duyệt/hoàn thành. Không thay đổi trạng thái Task.":"Đã cập nhật số giờ đã báo."});
                 return;
             }
             // Endpoint cu khong duoc tiep tuc chinh gio ngoai luong bao ca nhan.
@@ -264,7 +347,21 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 Error(context,409,"Quy trinh tu khai da thay doi. Vui long vao Tab 3 va su dung ban bao xong ca nhan.");return;
             }
             Kbg20KetQua result;
-            if(action=="start") {
+            if(action=="switchStart") {
+                if(projectId==Guid.Empty||taskId==Guid.Empty||requestId==Guid.Empty)
+                    {Error(context,400,"Thiếu dự án, Task hoặc mã thao tác.");return;}
+                var rawList=context.Request.Form["stopSessionIds"]??"";
+                var rawIds=rawList.Split(new[]{','},StringSplitOptions.RemoveEmptyEntries);
+                if(rawIds.Length==0 || rawIds.Length>100){Error(context,400,"Danh sách phiên cần dừng không hợp lệ.");return;}
+                var stops=new List<Guid>();
+                foreach(var rawId in rawIds){Guid parsed;
+                    if(!Guid.TryParse(rawId,out parsed)){Error(context,400,"ID phiên cần dừng không hợp lệ.");return;}
+                    stops.Add(parsed);
+                }
+                result=manager.DungPhienThuCongVaBatDau(user.UserId,projectId,taskId,requestId,stops,
+                    context.Request.Form["hourType"]=="2",context.Request.Form["confirmOverdue"]=="true",
+                    context.Request.Form["confirmDependency"]=="true");
+            } else if(action=="start") {
                 result=manager.BatDauGioThuong(user.UserId,projectId,taskId,requestId,
                     context.Request.Form["confirmOverdue"]=="true", context.Request.Form["confirmDependency"]=="true");
             } else if(action=="overtime") {
@@ -272,7 +369,8 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
             } else if(action=="stop") {
                 result=manager.DungPhien(user.UserId,sessionId);
             } else {Error(context,400,"Thao tac khong hop le.");return;}
-            Write(context,new {ok=result.ThanhCong,message=result.ThongBao,
+            Write(context,new {ok=result.ThanhCong||result.CanXacNhanQuaHan||result.CanXacNhanPhuThuoc,
+                success=result.ThanhCong,message=result.ThongBao,
                 sessionId=result.IdPhien.HasValue?result.IdPhien.Value.ToString("D"):null,
                 confirmOverdue=result.CanXacNhanQuaHan,confirmDependency=result.CanXacNhanPhuThuoc,
                 warnings=result.CanhBao,autoStarted=result.SoPhienTuDong});

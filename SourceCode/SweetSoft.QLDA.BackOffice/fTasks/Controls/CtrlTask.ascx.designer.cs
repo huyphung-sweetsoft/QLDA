@@ -13,7 +13,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
     public partial class CtrlTask
     {
-
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlDuyetGioCongTask CtrlDuyetGioCongTask1;
         /// <summary>
         /// upMain control.
         /// </summary>

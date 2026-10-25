@@ -347,7 +347,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
 
             if (approved && Kbg20TichHopTask.DuocKichHoat)
-                body += "\r\nBạn có thể vào trang Tính giờ công việc > Khai báo giờ thủ công để nhập hoặc sửa số giờ tự khai của mình.";
+                body += "\r\nNếu chưa báo hoàn thành phần việc của mình, bạn sẽ nhận nhắc nhở mở thẳng biểu mẫu Báo hoàn thành phần việc.";
 
             foreach (Guid recipientId in recipientIds.Where(x => x != Guid.Empty).Distinct())
             {
@@ -360,10 +360,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                         loaiThongBao: ThongBaoTypes.CongViec,
                         idCongViec: task.IdCongViec,
                         idDuAn: task.IdDuAn,
-                        duongDanLienKet: (approved && Kbg20TichHopTask.DuocKichHoat)
-                            ? "/fKhaiBaoGio/KhaiBaoGio.aspx?projectId=" + Convert.ToString(task.IdDuAn)
-                              + "&reconcile=1&taskId=" + task.IdCongViec.ToString("D")
-                            : "CtrlTaskCompletionResult");
+                        // Cả duyệt và từ chối đều mở popup kết quả TaskList của partner.
+                        duongDanLienKet: "CtrlTaskCompletionResult");
                 }
                 catch (Exception ex)
                 {
@@ -494,10 +492,15 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 task.NgayHoanThanhThucTe = null;
                 task.LyDoTre = null;
                 task.NgayCapNhat = DateTime.Now;
-                task.Save();
-
+                // Chuyển Task 4->1 và tăng LanThucHien trong CÙNG giao dịch.
+                // Không tạo sự kiện Rút báo giả cho bất kỳ nhân viên nào.
+                Kbg20TichHopTask.TuChoiHoanThanh(ProjectId, task.IdCongViec, () =>
+                {
+                    task.Save();
+                    // Giữ nguyên cập nhật Task cha của partner.
+                    UpdateParentTask(task.IdCongViecCha);
+                });
                 // Giữ nguyên NgayKetThuc vì đây là hạn dự kiến.
-                UpdateParentTask(task.IdCongViecCha);
                 NotifyAssignedEmployeesOfDecision(task, approved: false, isLate: false, rejectionReason: rejectionReason);
 
                 ShowNotify(

@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Tính giờ công việc" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="KhaiBaoGio.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fKhaiBaoGio.KhaiBaoGio" %>
+<%@ Page Title="Tính giờ công việc" Language="C#" MasterPageFile="~/MasterPages/MasterTemplate.Master" AutoEventWireup="true" CodeBehind="KhaiBaoGio.aspx.cs" Inherits="SweetSoft.QLDA.BackOffice.fKhaiBaoGio.KhaiBaoGio" %>
 <%@ Import Namespace="SweetSoft.QLDA.Core.Managers" %>
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <%@ Register Src="~/fTasks/Controls/CtrlStartTask.ascx" TagPrefix="SweetSoft" TagName="CtrlStartTask" %>
@@ -320,6 +320,8 @@
         </script>
         <section id="kbg20Page" class="kbg20-page"
                  data-api-url="<%= ResolveUrl("~/fKhaiBaoGio/KhaiBaoGio20.ashx") %>"
+                 data-kbg20-floating-url="<%= ResolveUrl("~/fKhaiBaoGio/FloatingWorkTimer.ashx") %>"
+                 data-kbg20-access-error-url="<%= ResolveUrl("~/fKhaiBaoGio/Kbg20AccessDenied.aspx") %>"
                  data-project-id="<%= CurrentProjectId.ToString("D") %>"
                  data-request-token="<%= Kbg20RequestToken() %>">
             <%-- KBG20 V4.1: soft-table layout; preserve V1 branch and Task partner controls. --%>
@@ -608,6 +610,48 @@
     </div>
     <% } %>
     <% if (LaGiaoDienKbg20) { %>
+        <%-- Tab 2: chi tiet Start/Stop read-only, theo dung Task/ngay dang xem. --%>
+        <SweetSoft:ExtraModal runat="server" ID="mdlKbg20HistoryDetails" ClientIDMode="Static"
+            Type="Primary" Size="ExtraLarge" Title="Chi tiết các lần tính giờ">
+          <ContentTemplate>
+            <div class="kbg20-ux-modal-content">
+              <div id="kbg20HistoryDetailTitle" class="kbg20-ux-modal-title"></div>
+              <div id="kbg20HistoryDetailBody" aria-live="polite"></div>
+              <p class="kbg20-ux-muted">Thời gian được tính theo các khoảng đã kết toán trong ngày.
+                 Phiên đang mở có thể còn thời gian chưa được job kết toán.</p>
+            </div>
+          </ContentTemplate>
+        </SweetSoft:ExtraModal>
+        <%-- ExtraModal chung cho canh bao qua han / phu thuoc, khong dung window.confirm. --%>
+        <SweetSoft:ExtraModal runat="server" ID="mdlKbg20StartWarning" ClientIDMode="Static"
+            Type="Primary" Title="Xác nhận bắt đầu công việc">
+          <ContentTemplate>
+            <div class="kbg20-ux-modal-content">
+              <p id="kbg20StartWarningText" aria-live="polite"></p>
+              <div class="kbg20-ux-modal-actions">
+                <button type="button" id="kbg20StartWarningNo" class="kbg20-btn kbg20-outline">Hủy</button>
+                <button type="button" id="kbg20StartWarningYes" class="kbg20-btn">Tiếp tục</button>
+              </div>
+            </div>
+          </ContentTemplate>
+        </SweetSoft:ExtraModal>
+        <%-- Xac nhan khi Start Task khac: hai lua chon thuc su + Huy. --%>
+        <SweetSoft:ExtraModal runat="server" ID="mdlKbg20Parallel" ClientIDMode="Static"
+            Type="Primary" Title="Đang có đồng hồ khác">
+          <ContentTemplate>
+            <div class="kbg20-ux-modal-content">
+              <p>Những công việc dưới đây đang có đồng hồ mở của bạn. Bạn muốn xử lý thế nào?</p>
+              <div id="kbg20ParallelTasks" class="kbg20-ux-parallel-list"></div>
+              <p class="kbg20-ux-muted">Chạy song song sẽ cộng thời gian riêng từng Task.
+                 Dừng đồng hồ cũ không đồng nghĩa hoàn thành Task cũ.</p>
+              <div class="kbg20-ux-modal-actions">
+                <button type="button" class="kbg20-btn kbg20-outline" id="kbg20ParallelCancel">Hủy</button>
+                <button type="button" class="kbg20-btn kbg20-outline" id="kbg20ParallelKeep">Chạy song song</button>
+                <button type="button" class="kbg20-btn" id="kbg20ParallelStop">Dừng đồng hồ cũ rồi Start</button>
+              </div>
+            </div>
+          </ContentTemplate>
+        </SweetSoft:ExtraModal>
         <%-- Dùng ExtraModal CHÍNH THỨC giống CtrlFastCompleteTask/Review của partner.
              Dữ liệu đối soát vẫn nạp bằng API V2; không có form WebForms thứ hai. --%>
         <%-- Giong CtrlChonNhanVienTask: mo ExtraModal bang OpenModal(true) tu server;
@@ -650,8 +694,11 @@
 
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <% if (LaGiaoDienKbg20) { %>
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261023dot7a"></script>
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261021dot3fix1"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-hour-split.css") %>?v=20261024p1" />
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-hour-input.js") %>?v=20261024p1"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261024p2" />
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261024p2"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261024p2"></script>
     <% } else { %>
     <script type="text/javascript">
         var KhaiBaoGioJs = (function ($) {

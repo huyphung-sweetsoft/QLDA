@@ -1,4 +1,4 @@
-﻿/* KhaiBaoGio 2.0: only active on #kbg20Page. Does not modify V1 handlers. */
+/* KhaiBaoGio 2.0: only active on #kbg20Page. Does not modify V1 handlers. */
 (function (window, document) {
     'use strict';
     var root = document.getElementById('kbg20Page');
@@ -46,17 +46,72 @@
             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
         }).format(new Date(Number(ms))); } catch (_) { return '—'; }
     }
-    function notify(text, type) {
-        messageEl.textContent = text || '';
-        messageEl.className = type ? 'kbg20-' + type : '';
+    // Errors and action results go through the SAME ShowNotify as the rest of BackOffice.
+    // Authentication failures on the initial page load use a dedicated error page.
+    var accessRedirecting=false,lastNotifyText='',lastNotifyAt=0;
+    function notify(text,type) {
+        if(!text)return;
+        var severity=type==='ok'?'success':type==='error'?'error':(type||'info');
+        var stamp=Date.now();
+        if(lastNotifyText===text && stamp-lastNotifyAt<4500)return;
+        lastNotifyText=text;lastNotifyAt=stamp;
+        if(window.CMSMasterJs && typeof window.CMSMasterJs.ShowNotify==='function')
+            window.CMSMasterJs.ShowNotify(text,severity);
+        else if(window.toastr && typeof window.toastr[severity]==='function')
+            window.toastr[severity](text);
+        else if(window.console)window.console.warn('KBG20:',text);
     }
+    function apiFailure(message,status) {var e=new Error(message||'Lỗi API.');e.status=status||0;return e;}
     function getJson(response) {
-        var contentType = response.headers.get('content-type') || '';
-        if (contentType.toLowerCase().indexOf('application/json') < 0)
-            throw new Error('Máy chủ trả về nội dung không phải JSON. Kiểm tra đăng nhập và cấu hình URL.');
-        return response.json().then(function (obj) {
-            if (!response.ok) throw new Error(obj.error || ('HTTP ' + response.status));
+        var contentType=response.headers.get('content-type')||'';
+        if(contentType.toLowerCase().indexOf('application/json')<0)
+            return Promise.reject(apiFailure('Máy chủ trả về trang lỗi thay vì JSON (HTTP '+response.status+').',response.status));
+        return response.json().then(function(obj){
+            if(!response.ok||obj.ok===false)throw apiFailure(obj.error||obj.message||('HTTP '+response.status),response.status);
             return obj;
+        });
+    }
+    function redirectAccessFailure(error){
+        if(!error || (error.status!==401 && error.status!==403) || accessRedirecting)return false;
+        accessRedirecting=true;
+        var dest=(root.getAttribute('data-kbg20-access-error-url') || '/fKhaiBaoGio/Kbg20AccessDenied.aspx');
+        window.location.replace(dest+(dest.indexOf('?')>=0?'&':'?')+'code='+error.status);
+        return true;
+    }
+    function openExtraModal(id,title){
+        if(window.CMSMasterJs&&typeof window.CMSMasterJs.OpenDialog==='function'){
+            window.CMSMasterJs.OpenDialog('#'+id,title);return;
+        }
+        var element=document.getElementById(id),jq=window.jQuery||window.$;
+        if(element&&window.bootstrap&&window.bootstrap.Modal){window.bootstrap.Modal.getOrCreateInstance(element).show();return;}
+        if(jq&&jq.fn&&jq.fn.modal){jq('#'+id).modal('show');return;}
+        throw new Error('Không mở được ExtraModal. Hãy tải lại trang.');
+    }
+    function closeExtraModal(id){
+        var el=document.getElementById(id),jq=window.jQuery||window.$;
+        if(el&&window.bootstrap&&window.bootstrap.Modal){var m=window.bootstrap.Modal.getInstance(el);if(m){m.hide();return;}}
+        if(jq&&jq.fn&&jq.fn.modal)jq('#'+id).modal('hide');
+    }
+    // Mot ExtraModal dung chung canh bao quyet dinh: khong dung window.confirm.
+    var warningBusy=false;
+    function confirmAction(title, message){
+        return new Promise(function(resolve){
+            if(warningBusy){resolve(false);return;}
+            warningBusy=true;
+            var content=document.getElementById('kbg20StartWarningText');
+            var yes=document.getElementById('kbg20StartWarningYes');
+            var no=document.getElementById('kbg20StartWarningNo');
+            if(!content||!yes||!no){warningBusy=false;notify('Thiếu ExtraModal xác nhận. Đã hủy thao tác.','error');resolve(false);return;}
+            content.textContent=message||'Bạn có chắc chắn muốn thực hiện?';
+            var decided=false;
+            function finish(value){if(decided)return;decided=true;warningBusy=false;
+                closeExtraModal('mdlKbg20StartWarning');resolve(value);}
+            yes.onclick=function(){finish(true);};no.onclick=function(){finish(false);};
+            var m=document.getElementById('mdlKbg20StartWarning'),jq=window.jQuery||window.$;
+            if(jq&&m&&jq.fn&&jq.fn.modal)
+                jq(m).off('hidden.bs.modal.kbg20StartWarning').one('hidden.bs.modal.kbg20StartWarning',function(){finish(false);});
+            try{openExtraModal('mdlKbg20StartWarning',title);}
+            catch(e){warningBusy=false;notify(e.message,'error');resolve(false);}
         });
     }
     function serverNow() { return Date.now() + offset; }
@@ -189,7 +244,7 @@
         var today = state && state.workCalendar && state.workCalendar.day;
         var hasOpen = (state.timers || []).some(function(t){return t.taskId === task.id;});
         if (mode === 'open') return hasOpen;
-        if (mode === 'reported') return task.personalStatus===1 || task.personalStatus===3;
+        if (mode === 'reported') return task.personalStatus===1 || task.personalStatus===3 || task.personalStatus===5;
         if (mode === 'all') return (task.assigned || hasOpen) && !task.missing;
         var accessible = (task.assigned || hasOpen) && !task.missing;
         if (!accessible) return false;
@@ -362,9 +417,12 @@
     function personalReportCell(rowEl,task){
         var cell=taskCell(rowEl,'kbg20-v41-personal-cell','Báo cáo phần việc');
         var status=Number(task.personalStatus)||0;
-        if(status===1||status===3)row(cell,node('span','kbg20-dot2-personal is-reported','Đã báo hoàn thành'));
+        var finished=isPending(task)||isFinished(task);
+        if(status===4){row(cell,node('span','kbg20-dot2-personal is-reported','Đã chốt giờ công'));}
+        else if(status===5){row(cell,node('span','kbg20-dot2-personal is-reported','Đã báo hoàn thành'));}
+        else if(status===1||status===3)row(cell,node('span','kbg20-dot2-personal is-reported','Đã báo hoàn thành'));
+        else if(finished){row(cell,node('span','kbg20-dot2-personal is-not-reported',status===2?'Đã rút báo hoàn thành':'Chưa báo hoàn thành'));}
         else if(status===2)row(cell,node('span','kbg20-dot2-personal is-withdrawn','Đã rút báo hoàn thành'));
-        else if(status===4){row(cell,node('span','kbg20-dot2-personal is-reported','Đã báo hoàn thành'));row(cell,node('small','kbg20-v41-personal-hint','Giờ công đã được quản lý chốt'));}
         else row(cell,node('span','kbg20-dot2-personal is-not-reported','Chưa báo hoàn thành'));
     }
     function renderTaskRow(task,isUpcoming){
@@ -391,10 +449,19 @@
         taskClockCell(item,task,1,isUpcoming);
         taskClockCell(item,task,2,isUpcoming);
         var actions=taskCell(item,'kbg20-v41-actions','Hành động');
-        // Tuyet doi KHONG goi CtrlFastCompleteTask: ham cu chot dong ho ca nhom.
-        if(task.personalStatus===1 || task.personalStatus===3){
-            var withdrawn=button('Rút báo hoàn thành','withdrawPersonal',task.id);
-            withdrawn.className+=' kbg20-dot2-row-btn is-danger';row(actions,withdrawn);
+        // Event5: xac nhan gio sau khi Task cho duyet, KHONG dong nghia da bao xong phan viec.
+        // Neu PM tu choi va Task quay ve 1, nhan vien van duoc bao hoan thanh ca nhan.
+        if(task.personalStatus===1 || task.personalStatus===3 || task.personalStatus===5){
+            if(task.status===1 && !isPending(task) && task.personalStatus!==4){
+                var withdrawn=button('Rút báo hoàn thành','withdrawPersonal',task.id);
+                withdrawn.className+=' kbg20-dot2-row-btn is-danger';row(actions,withdrawn);
+            }else{
+                var review=button('Xem / sửa giờ ở Tab 3','openPersonalHours',task.id);
+                review.className+=' kbg20-dot2-row-btn';row(actions,review);
+            }
+        }else if((isPending(task)||isFinished(task)) && state.workflowEnabled && task.personalStatus!==4){
+            var confirm=button('Báo hoàn thành phần việc','reportPersonal',task.id);
+            confirm.className+=' kbg20-dot2-row-btn';row(actions,confirm);
         }else if(task.status===1 && task.assigned && state.workflowEnabled && !isPending(task)
             && task.personalStatus!==4){
             var done=button(task.personalStatus===2?'Báo hoàn thành phần việc':'Báo hoàn thành phần việc','reportPersonal',task.id);
@@ -481,18 +548,13 @@
         if(h.isEarly)items.push({text:'Làm sớm',type:'early'});
         if(h.isOverdue)items.push({text:'Quá hạn',type:'overdue'});
         var ps=Number(h.personalStatus)||0;
-        if(ps===1||ps===3)items.push({text:'Đã báo hoàn thành',type:'reported'});
+        if(ps===1||ps===3||ps===5)items.push({text:'Đã báo hoàn thành',type:'reported'});
         else if(ps===2)items.push({text:'Đã rút báo hoàn thành',type:'withdrawn'});
         else if(ps===4)items.push({text:'Giờ công đã được quản lý chốt',type:'locked'});
         if(h.isOpen)items.push({text:'Phiên đang mở',type:'open'});
         if(h.hadActivity && Number(h.total)===0)
             items.push({text:'Chưa phát sinh giờ tính công',type:'zero'});
         return items;
-    }
-    function historyShare(total,dayTotal){
-        var n=Number(total)||0,d=Number(dayTotal)||0;
-        if(d<=0)return null;
-        return Math.max(0,Math.min(100,100*n/d));
     }
     function renderHistory() {
         historyEl.textContent='';historyTotalsEl.textContent='';
@@ -507,7 +569,7 @@
           row(x,node('small','',c.label));row(x,node('strong','',clock(c.value)));});
         if(!d.tasks||!d.tasks.length){row(historyEl,node('p','kbg20-empty','Không có hoạt động công việc trong ngày được chọn.'));return;}
         var hdr=row(historyEl,node('div','kbg20-v41-hist-head kbg20-v41-hist-grid'));
-        ['Công việc','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Tỷ trọng ngày'].forEach(function(t){row(hdr,node('span','',t));});
+        ['Công việc','Giờ làm theo lịch','Giờ tăng ca','Tổng giờ công','Chi tiết'].forEach(function(t){row(hdr,node('span','',t));});
         d.tasks.forEach(function(h){
             var line=row(historyEl,node('article','kbg20-v41-hist-row kbg20-v41-hist-grid'));
             var name=taskCell(line,'kbg20-v41-hist-name','Công việc');
@@ -523,17 +585,49 @@
                 var cell=taskCell(line,'kbg20-v41-hist-value',k==='regular'?'Giờ làm theo lịch':k==='overtime'?'Giờ tăng ca':'Tổng giờ công');
                 row(cell,node('strong',k==='total'?'is-total':'',clock(h[k])));
             });
-            var share=historyShare(h.total,d.total);
-            var shareCell=taskCell(line,'kbg20-v45-hist-share','Tỷ trọng ngày');
-            if(share==null){
-                var noShare=row(shareCell,node('strong','','—'));
-                noShare.title='Ngày này chưa phát sinh giờ tính công để tính tỷ trọng.';
-            } else {
-                row(shareCell,node('strong','',share.toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'));
-                var track=row(shareCell,node('span','kbg20-v45-share-track'));
-                var fill=row(track,node('span','kbg20-v45-share-fill'));
-                fill.style.width=share.toFixed(4)+'%';
-            }
+            var detail=taskCell(line,'kbg20-ux-history-actions','Chi tiết');
+            var see=row(detail,node('button','kbg20-btn kbg20-outline kbg20-ux-detail-btn','Xem chi tiết'));
+            see.type='button';see.setAttribute('aria-label','Xem chi tiết các lần Start/Stop của '+(h.code||'công việc'));
+            see.addEventListener('click',function(){openHistoryDetail(h);});
+        });
+    }
+    // Full start/end ledger for the SELECTED day and task, server-scoped to logged-in user.
+    var sessionDetailSeq=0;
+    function openHistoryDetail(task){
+        var selectedDay=historyDateEl.value,seq=++sessionDetailSeq;
+        var heading=document.getElementById('kbg20HistoryDetailTitle');
+        var panel=document.getElementById('kbg20HistoryDetailBody');
+        if(!panel||!heading)return;
+        heading.textContent='['+(task.code||'CV')+'] '+(task.name||'')+' · '+selectedDay.split('-').reverse().join('/');
+        panel.textContent='Đang tải lịch sử Start/Stop...';
+        try{openExtraModal('mdlKbg20HistoryDetails','Chi tiết các lần tính giờ');}
+        catch(e){notify(e.message,'error');return;}
+        var q='?view=history-sessions&projectId='+encodeURIComponent(fixedProjectId)+
+            '&taskId='+encodeURIComponent(task.id)+'&day='+encodeURIComponent(selectedDay);
+        window.fetch(url+q,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}})
+          .then(getJson).then(function(data){
+            if(seq!==sessionDetailSeq)return;
+            if(data.taskId!==task.id || data.day!==selectedDay ||
+               String(data.projectId).toLowerCase()!==fixedProjectId.toLowerCase())
+               throw new Error('Chi tiết trả về không khớp công việc/ngày.');
+            panel.textContent='';
+            if(!(data.items||[]).length){row(panel,node('p','kbg20-ux-muted','Không có lần Start/Stop nào trong ngày này.'));return;}
+            var table=row(panel,node('div','kbg20-ux-session-list'));
+            data.items.forEach(function(x,i){
+                var item=row(table,node('section','kbg20-ux-session-item'));
+                var head=row(item,node('div','kbg20-ux-session-head'));
+                row(head,node('strong','',String(i+1)+'. '+(Number(x.type)===2?'Giờ tăng ca':'Giờ hành chính')));
+                row(head,node('span','',x.ended==null?'Phiên đang mở':'Đã kết thúc'));
+                var grid=row(item,node('div','kbg20-ux-session-grid'));
+                function field(name,value){var f=row(grid,node('div',''));row(f,node('small','',name));row(f,node('strong','',value));}
+                field('Bắt đầu',localTime(x.started));
+                field('Kết thúc',x.ended==null?'Chưa kết thúc':localTime(x.ended));
+                field('Đã kết toán trong ngày',clock(x.committedSeconds));
+            });
+        }).catch(function(e){if(seq!==sessionDetailSeq)return;
+            if(redirectAccessFailure(e))return;
+            panel.textContent='';row(panel,node('p','kbg20-ux-muted','Không tải được chi tiết phiên.'));
+            notify(e.message||'Không tải được chi tiết.','error');
         });
     }
     function refreshHistory() {
@@ -575,9 +669,11 @@
                 historyStatusEl.textContent='Ngày ' + day.split('-').reverse().join('/') + ' · trong dự án hiện tại';
                 renderHistory();
             }).catch(function(err){
-                if(request!==historyRequest) return;
+                if(request!==historyRequest)return;
+                if(redirectAccessFailure(err))return;
                 if(!sameDay){historyData=null;historyTotalsEl.textContent='';historyEl.textContent='';}
-                historyStatusEl.textContent=(err.message || 'Không tải được nhật ký.')+(sameDay?' · Đang hiển thị lần tải trước.':'');
+                historyStatusEl.textContent=sameDay?'Đang hiển thị dữ liệu lần tải trước.':'Không có dữ liệu để hiển thị.';
+                notify(err.message||'Không tải được nhật ký.','error');
             }).then(function(){if(request===historyRequest)historyLoading=false;});
     }
     function refreshUi() {
@@ -590,7 +686,8 @@
         renderProjectContext();renderSchedule();renderSummary();renderTasks();
     }
     function refresh(force) {
-        if (loading || acting) {
+        // Don't let 30-second polling silently race a pending parallel-timer choice.
+        if (loading || acting || parallelChoiceBusy) {
             if (force === true) refreshPending = true;
             return Promise.resolve();
         }
@@ -621,7 +718,9 @@
                 updateHistoryNavigation();
                 if (viewMode === 'history' && !historyLoading) refreshHistory();
                 notify('', '');
-            }).catch(function (err) {notify(err.message || 'Lỗi kết nối.', 'error');})
+            }).catch(function (err) {
+                if(!redirectAccessFailure(err))notify(err.message || 'Lỗi kết nối.', 'error');
+            })
             .then(function(){
                 loading = false;
                 // Khi nhan workflow/thao tac xong trong luc polling, thuc hien refresh tiep.
@@ -667,14 +766,12 @@
                          'X-KBG20-Token':token,'Accept':'application/json'},body:params.toString()})
                 .then(getJson).then(function(res) {
                     if (res.confirmOverdue && !flags.confirmOverdue) {
-                        if (window.confirm(res.message || 'Công việc đã quá hạn. Tiếp tục?'))
-                        {flags.confirmOverdue=true;return perform();}
-                        notify('Đã hủy thao tác.','');return;
+                        return confirmAction('Xác nhận tiếp tục quá hạn',res.message||'Công việc đã quá hạn. Tiếp tục?')
+                            .then(function(yes){if(!yes)return false;flags.confirmOverdue=true;return perform();});
                     }
                     if (res.confirmDependency && !flags.confirmDependency) {
-                        if(window.confirm(res.message || 'Công việc phụ thuộc chưa hoàn thành. Tiếp tục?'))
-                        {flags.confirmDependency=true;return perform();}
-                        notify('Đã hủy thao tác.','');return;
+                        return confirmAction('Cảnh báo công việc phụ thuộc',res.message||'Công việc phụ thuộc chưa hoàn thành. Tiếp tục?')
+                            .then(function(yes){if(!yes)return false;flags.confirmDependency=true;return perform();});
                     }
                     notify((res.message || 'Đã xử lý.') + (res.warnings && res.warnings.length ?
                         ' ' + res.warnings.join(' ') : ''),res.ok?'ok':'error');
@@ -690,6 +787,88 @@
         }).catch(function(err){
             acting=false;notify(err.message || 'Thao tác thất bại.','error');
             if(refreshPending)refresh(true);else refreshUi();
+        });
+    }
+    // Dot 8: preview tai server + Stop/Start CUNG 1 transaction. KHONG STOP voi fetch rieng.
+    var parallelChoiceBusy=false;
+    function checkOtherTimersAndStart(taskId,onProceed,action){
+        if(parallelChoiceBusy||acting||loading){notify('Đang đồng bộ đồng hồ. Vui lòng thử lại sau.','warning');return;}
+        parallelChoiceBusy=true;
+        var rootUrl=root.getAttribute('data-kbg20-floating-url')||'/fKhaiBaoGio/FloatingWorkTimer.ashx';
+        Promise.all([
+           window.fetch(rootUrl+'?check='+Date.now(),{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}}).then(getJson),
+           window.fetch(url+'?view=switch-preview&projectId='+encodeURIComponent(fixedProjectId)+'&taskId='+encodeURIComponent(taskId),
+             {credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}}).then(getJson)
+        ]).then(function(pair){
+            var info=pair[0],eligibleIds=pair[1].eligibleIds||[];
+            var allow=new Set(eligibleIds.map(function(x){return String(x).toLowerCase();}));
+            var others=(info.timers||[]).filter(function(x){return x.taskId!==taskId;});
+            if(!others.length){parallelChoiceBusy=false;onProceed();return;}
+            var allowed=others.filter(function(x){return allow.has(String(x.id).toLowerCase());});
+            var protectedTimers=others.filter(function(x){return !allow.has(String(x.id).toLowerCase());});
+            var place=document.getElementById('kbg20ParallelTasks');
+            if(!place)throw new Error('Thiếu ExtraModal đồng hồ song song.');
+            place.textContent='';
+            function renderGroup(title,timers,cls){
+                var header=row(place,node('strong','kbg20-ux-parallel-heading '+cls,title));
+                if(!timers.length)row(place,node('div','kbg20-ux-muted','Không có phiên.'));
+                timers.forEach(function(t){var cell=row(place,node('div','kbg20-ux-parallel-item '+cls));
+                    row(cell,node('strong','', '['+(t.code||'CV')+'] '+(t.name||'Công việc')));
+                    row(cell,node('small','',(t.projectName||'Dự án')+' · '+(Number(t.type)===2?'Tăng ca':'Giờ hành chính')+
+                      ' · '+(t.counting?'Đang cộng giờ':'Phiên đang mở')));
+                });
+            }
+            renderGroup('Sẽ dừng (chỉ phiên thủ công của Task lá)',allowed,'can-stop');
+            renderGroup('Luôn giữ nguyên (Task cha/phiên tự động hoặc không phù hợp)',protectedTimers,'keep');
+            var keep=document.getElementById('kbg20ParallelKeep');
+            var stop=document.getElementById('kbg20ParallelStop');
+            var cancel=document.getElementById('kbg20ParallelCancel');
+            var task=(state.tasks||[]).find(function(x){return x.id===taskId;});
+            var canAtomic=task&&Number(task.status)===1 && allowed.length>0 && allowed.length===eligibleIds.length;
+            stop.disabled=!canAtomic;
+            stop.title=canAtomic?'Dừng đúng phiên được liệt kê và Start trong một giao dịch':'Chỉ có thể Dừng cũ + Start khi Task mới đang thực hiện và có phiên Task lá thủ công.';
+            function close(){parallelChoiceBusy=false;closeExtraModal('mdlKbg20Parallel');}
+            cancel.onclick=close;
+            keep.onclick=function(){close();onProceed();};
+            stop.onclick=function(){
+                if(!canAtomic)return;
+                keep.disabled=true;stop.disabled=true;cancel.disabled=true;
+                var requestId;
+                try{requestId=guid();}catch(e){close();notify(e.message,'error');return;}
+                var flags={overdue:false,dependency:false};
+                function perform(){
+                    var body=new URLSearchParams();body.set('action','switchStart');
+                    body.set('projectId',fixedProjectId);body.set('taskId',taskId);
+                    body.set('requestId',requestId);body.set('hourType',action==='overtime'?'2':'1');
+                    body.set('stopSessionIds',eligibleIds.join(','));
+                    body.set('confirmOverdue',String(flags.overdue));
+                    body.set('confirmDependency',String(flags.dependency));
+                    return window.fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',
+                        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+                         'X-KBG20-Token':token,'Accept':'application/json'},body:body.toString()})
+                    .then(getJson).then(function(result){
+                        if(result.confirmOverdue&&!flags.overdue)return confirmAction('Xác nhận quá hạn',result.message)
+                            .then(function(ok){if(!ok)return false;flags.overdue=true;return perform();});
+                        if(result.confirmDependency&&!flags.dependency)return confirmAction('Cảnh báo phụ thuộc',result.message)
+                            .then(function(ok){if(!ok)return false;flags.dependency=true;return perform();});
+                        if(!result.success)throw new Error(result.message||'Không chuyển được đồng hồ.');
+                        return true;
+                    });
+                }
+                // Phải đóng modal trước khi mở modal cảnh báo phụ thuộc/quá hạn.
+                closeExtraModal('mdlKbg20Parallel');
+                perform().then(function(ok){parallelChoiceBusy=false;
+                    if(ok){notify('Đã dừng các phiên thủ công được chọn và Start Task mới.','ok');
+                        if(window.KbgFloatingTimer)window.KbgFloatingTimer.notifyChanged();refresh(true);}
+                    else notify('Đã hủy chuyển đồng hồ; không thay đổi dữ liệu.','info');
+                }).catch(function(e){parallelChoiceBusy=false;
+                    if(!redirectAccessFailure(e))notify('Không chuyển được đồng hồ: '+e.message,'error');refresh(true);
+                }).then(function(){keep.disabled=false;stop.disabled=false;cancel.disabled=false;});
+            };
+            try{openExtraModal('mdlKbg20Parallel','Xác nhận khi chạy nhiều công việc');}
+            catch(e){parallelChoiceBusy=false;notify(e.message,'error');}
+        }).catch(function(e){parallelChoiceBusy=false;
+            if(!redirectAccessFailure(e))notify('Không kiểm tra được đồng hồ khác; chưa Start: '+e.message,'error');
         });
     }
     // Wire the existing tab controller to the two visible tab buttons.
@@ -760,6 +939,13 @@
         if(b.disabled)return;
         var action=b.getAttribute('data-action'),id=b.getAttribute('data-id');
         var task=state && (state.tasks||[]).find(function(x){return x.id===id;});
+        if(action==='confirmPersonalHours'||action==='openPersonalHours'){
+            if(!window.Kbg20DoiSoatUI){notify('Giao diện báo hoàn thành chưa được tải.','error');return;}
+            setMode('manual');
+            if(action==='confirmPersonalHours')window.Kbg20DoiSoatUI.openConfirm(id);
+            else window.Kbg20DoiSoatUI.openTask(id);
+            return;
+        }
         if(action==='reportPersonal'||action==='withdrawPersonal'){
             if(!window.Kbg20DoiSoatUI){notify('Popup bao xong chua duoc tai. Hay tai lai trang.','error');return;}
             if(action==='reportPersonal')window.Kbg20DoiSoatUI.openReport(id);
@@ -789,12 +975,22 @@
             }
             var late=(action==='start'||action==='overtime') && task.endDay &&
                 state.workCalendar && task.endDay<state.workCalendar.day;
-            if(late && !window.confirm('Công việc đã quá hạn. Bạn muốn xác nhận tiếp tục tính giờ sau khi chuyển trạng thái?'))return;
-            window.kbg20WorkflowPostback((action==='start'||action==='overtime')?'start':action,
-                id,late,action==='overtime');
+            if(late){
+                confirmAction('Công việc quá hạn','Công việc đã quá hạn. Tiếp tục tính giờ trên Task mới?')
+                .then(function(yes){if(yes)checkOtherTimersAndStart(id,function(){
+                    window.kbg20WorkflowPostback((action==='start'||action==='overtime')?'start':action,
+                        id,true,action==='overtime');
+                },action);});
+                return;
+            }
+            checkOtherTimersAndStart(id,function(){
+                window.kbg20WorkflowPostback((action==='start'||action==='overtime')?'start':action,
+                    id,late,action==='overtime');
+            },action);
             return;
         }
-        sendAction(action,id);
+        if(action==='start'||action==='overtime')checkOtherTimersAndStart(id,function(){sendAction(action,id);},action);
+        else sendAction(action,id);
     });
     window.setInterval(function(){
         if (!state) return;
