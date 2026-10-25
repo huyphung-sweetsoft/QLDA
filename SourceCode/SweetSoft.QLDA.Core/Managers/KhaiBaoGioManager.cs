@@ -851,6 +851,16 @@ namespace SweetSoft.QLDA.Core.Managers
     /// Loi 2.0: DOC/GHI bang moi, KHONG tu dong chuyen traffic cua web forms cu.
     /// Moi thoi diem SQL la UTC (datetime2(0)); lich lam viec tinh theo gio Viet Nam.
     /// </summary>
+    // Cùng một nguồn dữ liệu Start sớm cho Tab 1 và Tab 2.
+    public sealed class Kbg20StartSomInfo
+    {
+        public Guid IdCongViec { get; set; }
+        public DateTime BatDauUtc { get; set; }
+        public DateTime NgayBatDauKeHoach { get; set; }
+        public byte LoaiGio { get; set; }
+        public byte NguonBatDau { get; set; }
+    }
+
     public sealed class KhaiBaoGio20Manager
     {
         private readonly KhaiBaoGio20Repository _repo;
@@ -880,7 +890,9 @@ namespace SweetSoft.QLDA.Core.Managers
         }
         private bool TrongCa(DateTime local)
         {
-            return LayCa(local.Date).Any(c => local >= c.BatDau && local < c.KetThuc);
+            // Ca dem co the bat dau tu NGAY HOM TRUOC va ket thuc hom nay.
+            return LayCa(local.Date).Concat(LayCa(local.Date.AddDays(-1)))
+                .Any(c => local >= c.BatDau && local < c.KetThuc);
         }
         private DateTime? MocHetHanUtc(KhaiBaoGio20Repository.CongViec task)
         {
@@ -899,12 +911,13 @@ namespace SweetSoft.QLDA.Core.Managers
         private DateTime MocNgatTangCaUtc(DateTime batDauUtc)
         {
             DateTime batDau = GioDiaPhuong(batDauUtc);
-            // Gio bat dau ca SOM NHAT cua ngay lam viec tiep theo.
-            // Truong hop cuoi tuan/le -> tiep tuc toi ca dau tien sau ngay nghi.
-            for (int i = 1; i <= 730; i++)
+            // Mốc gần nhất SAU thời điểm Start, kể cả ca chiều cùng ngày.
+            // Không tự ngắt lúc 00:00; ngày nghỉ vẫn được đi qua liên tục.
+            for (int i = 0; i <= 730; i++)
             {
                 var ca = LayCa(batDau.Date.AddDays(i));
-                if (ca.Count > 0) return GioUtc(ca.Min(s => s.BatDau));
+                var next = ca.Where(s => s.BatDau > batDau).OrderBy(s => s.BatDau).FirstOrDefault();
+                if (next != null) return GioUtc(next.BatDau);
             }
             throw new InvalidOperationException("Khong tim thay ca lam viec tiep theo de tu ngat tang ca.");
         }
@@ -955,6 +968,12 @@ namespace SweetSoft.QLDA.Core.Managers
             }
             return result;
         }
+        public Dictionary<Guid,Kbg20StartSomInfo> LayDauMocStartSom(Guid nv,Guid duAn)
+        {
+            if(nv==Guid.Empty || duAn==Guid.Empty) return new Dictionary<Guid,Kbg20StartSomInfo>();
+            return _repo.LayDauMocStartSom(nv,duAn);
+        }
+
         // Dot 5: thong tin bo tro Tab 1. UI chi hien goi y; Start luon kiem tra lai trong AppLock.
         public List<string> LayViecCanXuLyTruocStartSom(Guid nv, Guid duAn, DateTime ngay)
         {
@@ -1175,17 +1194,15 @@ namespace SweetSoft.QLDA.Core.Managers
             }
         }
 
-        public Kbg20KetQua BatDauTangCa(Guid idNhanVien, Guid idDuAn, Guid idCongViec, Guid idThaoTac)
+        public Kbg20KetQua BatDauTangCa(Guid idNhanVien, Guid idDuAn, Guid idCongViec, Guid idThaoTac, bool chapNhanQuaHan = false, bool chapNhanPhuThuoc = false)
         {
             if (idNhanVien==Guid.Empty || idDuAn==Guid.Empty || idCongViec==Guid.Empty || idThaoTac==Guid.Empty)
                 return Kbg20KetQua.Loi("Thong tin khong hop le.");
             DateTime now=ChuanGiay(DateTime.UtcNow), local=GioDiaPhuong(now);
-            var ca=LayCa(local.Date);
-            if(ca.Count==0) return Kbg20KetQua.Loi("Chua cau hinh tang ca tren ngay nghi/le.");
-            if(local<ca.Max(c=>c.KetThuc)) return Kbg20KetQua.Loi("Chi duoc bat tang ca sau khi ket thuc ca cuoi cung.");
+            if(TrongCa(local)) return Kbg20KetQua.Loi("Đang trong ca làm theo lịch; chỉ được Start tăng ca ngoài ca.");
             try {
                 using(var con=_repo.MoKetNoi()) using(var tx=con.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
-                    return BatDauTangCaChung(con,tx,idNhanVien,idDuAn,idCongViec,idThaoTac,now,local,()=>tx.Commit());
+                    return BatDauTangCaChung(con,tx,idNhanVien,idDuAn,idCongViec,idThaoTac,now,local,chapNhanQuaHan,chapNhanPhuThuoc,()=>tx.Commit());
             } catch(Exception ex) {
                 SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,"KBG20 BatDauTangCa");
                 return Kbg20KetQua.Loi("Khong bat dau duoc tang ca do loi he thong.");
@@ -1198,18 +1215,18 @@ namespace SweetSoft.QLDA.Core.Managers
             if(idNhanVien==Guid.Empty || idDuAn==Guid.Empty || idCongViec==Guid.Empty || idThaoTac==Guid.Empty)
                 throw new InvalidOperationException("Thieu thong tin tang ca.");
             DateTime now=ChuanGiay(DateTime.UtcNow),local=GioDiaPhuong(now);
-            var ca=LayCa(local.Date);
-            if(ca.Count==0 || local<ca.Max(c=>c.KetThuc))
-                throw new InvalidOperationException("Chua den khung bat dau tang ca hop le.");
+            if(TrongCa(local))
+                throw new InvalidOperationException("Đang trong ca làm theo lịch; chỉ được Start tăng ca ngoài ca.");
             using(var con=MoKetNoiTrongTransactionScope()) {
-                var result=BatDauTangCaChung(con,null,idNhanVien,idDuAn,idCongViec,idThaoTac,now,local,null);
+                var result=BatDauTangCaChung(con,null,idNhanVien,idDuAn,idCongViec,idThaoTac,now,local,false,true,null);
                 if(!result.ThanhCong) throw new InvalidOperationException(result.ThongBao);
                 return result;
             }
         }
 
         private Kbg20KetQua BatDauTangCaChung(SqlConnection con,SqlTransaction tx,
-            Guid idNhanVien,Guid idDuAn,Guid idCongViec,Guid idThaoTac,DateTime nowUtc,DateTime local,Action commit)
+            Guid idNhanVien,Guid idDuAn,Guid idCongViec,Guid idThaoTac,DateTime nowUtc,DateTime local,
+            bool chapNhanQuaHan, bool chapNhanPhuThuoc, Action commit)
         {
                     _repo.KhoaTheoDuAn(con, tx, idDuAn);
                     KiemTraDuAn(con, tx, idDuAn);
@@ -1229,16 +1246,69 @@ namespace SweetSoft.QLDA.Core.Managers
                         return Kbg20KetQua.Loi("Ban khong duoc phan cong truc tiep vao cong viec nay.");
                     if (_repo.CaNhanDaBaoXong(con,tx,idNhanVien,idCongViec))
                         return Kbg20KetQua.Loi("Ban da bao xong phan viec. Hay rut bao truoc khi tang ca.");
+                    // Start sớm tăng ca: cùng danh sách công việc cản trở như Start theo lịch.
                     if (task.NgayBatDau.HasValue && local.Date < task.NgayBatDau.Value.Date)
-                        return Kbg20KetQua.Loi("Chua toi ngay bat dau cong viec.");
+                    {
+                        var blockers = _repo.LayViecCanXuLyTruocStartSom(con,tx,idNhanVien,idDuAn,local.Date);
+                        if (blockers.Count > 0)
+                            return Kbg20KetQua.Loi("Chưa thể bắt đầu sớm: còn " + blockers.Count +
+                                " phần việc đến hạn/chưa báo hoàn thành. " +
+                                string.Join("; ",blockers.Take(3).ToArray()) + ".");
+                    }
                     var open = _repo.LayPhienMo(con, tx, idNhanVien, idCongViec, Kbg20LoaiGio.TangCa);
                     if (open != null) { if(commit!=null)commit(); var already = Kbg20KetQua.Ok("Dong ho tang ca da chay."); already.IdPhien = open.IdPhien; return already; }
                     bool overdue = task.NgayKetThuc.HasValue && local.Date > task.NgayKetThuc.Value.Date;
-                    if (overdue) return Kbg20KetQua.Loi("Tang ca cho task qua han can duoc xac nhan theo quy trinh rieng.");
-                    var result = Kbg20KetQua.Ok("Da bat dau tang ca.");
+                    if (overdue && !chapNhanQuaHan)
+                        return new Kbg20KetQua { CanXacNhanQuaHan = true,
+                            ThongBao = "Công việc đã quá hạn. Xác nhận bắt đầu tăng ca?" };
+                    if (task.IdCongViecPhuThuoc.HasValue)
+                    {
+                        var dep = _repo.LayCongViec(con,tx,task.IdCongViecPhuThuoc.Value);
+                        if (dep != null && dep.TrangThai != (int)TrangThaiTask.HoanThanh &&
+                            dep.TrangThai != (int)TrangThaiTask.HoanThanhTre && !chapNhanPhuThuoc)
+                            return new Kbg20KetQua { CanXacNhanPhuThuoc = true,
+                                ThongBao = "Công việc phụ thuộc chưa hoàn thành. Xác nhận thực hiện song song?" };
+                    }
+                    // Xác nhận có mốc ca tương lai TRƯỚC khi tạo phiên, tránh phiên lỗi không thể kết toán.
+                    MocNgatTangCaUtc(nowUtc);
+                    var ancestors = LayToTien(con,tx,task);
+                    var result = Kbg20KetQua.Ok("Đã bắt đầu tăng ca.");
                     result.IdPhien = _repo.TaoPhien(con, tx, idNhanVien, task, Kbg20LoaiGio.TangCa,
                         nowUtc, Kbg20NguonBatDau.ThuCong, null, null, idThaoTac, false);
-                    // Tang ca KHONG kich hoat cac dong ho cha.
+                    // Tăng ca Task con vẫn kích hoạt tiến độ Task 0 -> 1.
+                    // Giờ tăng ca của các Task cha tuyệt đối KHÔNG tự được tạo.
+                    _repo.ChuyenTrangThaiDangLam(con,tx,task.IdCongViec,local);
+                    foreach (var cha in ancestors)
+                    {
+                        if (!HopLe(cha))
+                        {
+                            result.CanhBao.Add("Bỏ qua cha " + cha.MaCongViec + " (đã khóa/chờ duyệt/hoàn thành).");
+                            continue;
+                        }
+                        _repo.ChuyenTrangThaiDangLam(con,tx,cha.IdCongViec,local);
+                        if (cha.NgayBatDau.HasValue && local.Date < cha.NgayBatDau.Value.Date)
+                        {
+                            result.CanhBao.Add("Đã kích hoạt tiến độ cha " + cha.MaCongViec +
+                                ", chưa tạo đồng hồ theo lịch vì chưa đến ngày kế hoạch.");
+                            continue;
+                        }
+                        DateTime? moc = MocHetHanUtc(cha);
+                        if (moc.HasValue && nowUtc >= moc.Value)
+                        {
+                            result.CanhBao.Add("Bỏ qua đồng hồ cha " + cha.MaCongViec + " do hết hạn.");
+                            continue;
+                        }
+                        foreach (Guid nv in _repo.LayNguoiPhanCong(con,tx,cha.IdCongViec))
+                        {
+                            if (_repo.DaTungBatDau(con,tx,nv,cha.IdCongViec) ||
+                                _repo.CaNhanDaBaoXong(con,tx,nv,cha.IdCongViec)) continue;
+                            _repo.TaoPhien(con,tx,nv,cha,Kbg20LoaiGio.Thuong,nowUtc,
+                                Kbg20NguonBatDau.TuDongTuCongViecCon,task.IdCongViec,
+                                idNhanVien,idThaoTac,false);
+                            _repo.TaoThongBaoWeb(con,tx,nv,cha,task,local);
+                            result.SoPhienTuDong++;
+                        }
+                    }
                     if(commit!=null)commit(); return result;
         }
 
@@ -1304,9 +1374,8 @@ namespace SweetSoft.QLDA.Core.Managers
                 return Kbg20KetQua.Loi("Danh sách phiên cần dừng không hợp lệ.");
             DateTime now=ChuanGiay(DateTime.UtcNow),local=GioDiaPhuong(now);
             if(!laTangCa && !TrongCa(local))return Kbg20KetQua.Loi("Chưa trong ca làm việc hợp lệ.");
-            if(laTangCa){var ca=LayCa(local.Date);
-                if(ca.Count==0||local<ca.Max(x=>x.KetThuc))
-                    return Kbg20KetQua.Loi("Chưa đến thời gian được tính tăng ca.");}
+            if(laTangCa && TrongCa(local))
+                return Kbg20KetQua.Loi("Đang trong ca làm theo lịch; không được Start tăng ca.");
             try
             {
                 using(var con=_repo.MoKetNoi())
@@ -1349,7 +1418,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         _repo.DongPhien(con,tx,phien.IdPhien,ended,lyDo);
                     }
                     var started=laTangCa
-                        ?BatDauTangCaChung(con,tx,nv,duAn,task,thaoTac,now,local,null)
+                        ?BatDauTangCaChung(con,tx,nv,duAn,task,thaoTac,now,local,quaHan,phuThuoc,null)
                         :BatDauGioThuongChung(con,tx,nv,duAn,task,thaoTac,quaHan,phuThuoc,now,local,null);
                     if(!started.ThanhCong)return started;
                     tx.Commit();return started;

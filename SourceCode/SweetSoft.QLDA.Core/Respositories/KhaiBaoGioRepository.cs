@@ -903,7 +903,7 @@ namespace SweetSoft.QLDA.Core.Respositories
         internal bool DaTungBatDau(SqlConnection con, SqlTransaction tx, Guid idNv, Guid idTask)
         {
             using (var cmd = Lenh(con, tx, @"SELECT TOP 1 1 FROM dbo.TblKhaiBaoGioPhien WITH (UPDLOCK,HOLDLOCK)
-                                       WHERE IdNhanVien=@U AND IdCongViec=@T AND LoaiGio=1"))
+                                       WHERE IdNhanVien=@U AND IdCongViec=@T"))
             {
                 P(cmd, "@U", SqlDbType.UniqueIdentifier, idNv);
                 P(cmd, "@T", SqlDbType.UniqueIdentifier, idTask);
@@ -968,8 +968,9 @@ namespace SweetSoft.QLDA.Core.Respositories
             Guid phien = Guid.NewGuid();
             using (var cmd = Lenh(con, tx, @"INSERT INTO dbo.TblKhaiBaoGioPhien
               (IdPhien,IdNhanVien,IdCongViec,IdDuAn,LoaiGio,BatDauLuc,DaTinhDenLuc,
-               NguonBatDau,IdCongViecKichHoat,IdNguoiKichHoat,IdThaoTac,LaTiepTucQuaHan,NguoiTao)
-              VALUES (@I,@U,@T,@D,@L,@B,@B,@N,@K,@G,@O,@Q,N'KhaiBaoGio20')"))
+               NguonBatDau,IdCongViecKichHoat,IdNguoiKichHoat,IdThaoTac,LaTiepTucQuaHan,NguoiTao,
+               NgayBatDauKeHoachKhiStart)
+              VALUES (@I,@U,@T,@D,@L,@B,@B,@N,@K,@G,@O,@Q,N'KhaiBaoGio20',@NgayKeHoach)"))
             {
                 P(cmd, "@I", SqlDbType.UniqueIdentifier, phien);
                 P(cmd, "@U", SqlDbType.UniqueIdentifier, nv);
@@ -982,6 +983,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                 P(cmd, "@G", SqlDbType.UniqueIdentifier, nguoiKichHoat.HasValue ? (object)nguoiKichHoat.Value : DBNull.Value);
                 P(cmd, "@O", SqlDbType.UniqueIdentifier, idThaoTac);
                 P(cmd, "@Q", SqlDbType.Bit, quaHan);
+                P(cmd, "@NgayKeHoach", SqlDbType.Date,
+                    task.NgayBatDau.HasValue ? (object)task.NgayBatDau.Value.Date : DBNull.Value);
                 cmd.ExecuteNonQuery();
             }
             return phien;
@@ -1326,6 +1329,35 @@ namespace SweetSoft.QLDA.Core.Respositories
                         TenCongViec = r.IsDBNull(1) ? "" : Convert.ToString(r.GetValue(1))
                     } : new Kbg20GioTheoNgay { IdCongViec = idCongViec, MaCongViec = "Công việc", TenCongViec = "Không tìm thấy thông tin" };
             }
+        }
+
+        // Dấu mốc Start sớm theo phiên gốc, không phụ thuộc ngày đang xem nhật ký.
+        // Phiên cũ không có snapshot không được tự suy diễn bằng NgayBatDau hiện tại.
+        internal Dictionary<Guid,Kbg20StartSomInfo> LayDauMocStartSom(Guid nv, Guid duAn)
+        {
+            var result=new Dictionary<Guid,Kbg20StartSomInfo>();
+            using(var con=MoKetNoi())
+            using(var cmd=Lenh(con,null,@";WITH E AS (
+                SELECT p.IdCongViec,p.BatDauLuc,p.NgayBatDauKeHoachKhiStart,
+                       p.LoaiGio,p.NguonBatDau,
+                       ROW_NUMBER() OVER (PARTITION BY p.IdCongViec ORDER BY p.BatDauLuc,p.IdPhien) AS rn
+                FROM dbo.TblKhaiBaoGioPhien p
+                WHERE p.IdNhanVien=@U AND p.IdDuAn=@D
+            )
+            SELECT IdCongViec,BatDauLuc,NgayBatDauKeHoachKhiStart,LoaiGio,NguonBatDau
+            FROM E WHERE rn=1 AND NgayBatDauKeHoachKhiStart IS NOT NULL
+                AND CONVERT(date,DATEADD(hour,7,BatDauLuc)) < NgayBatDauKeHoachKhiStart"))
+            {
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
+                P(cmd,"@D",SqlDbType.UniqueIdentifier,duAn);
+                using(var rd=cmd.ExecuteReader()) while(rd.Read())
+                    result[rd.GetGuid(0)]=new Kbg20StartSomInfo {
+                        IdCongViec=rd.GetGuid(0),BatDauUtc=Utc(rd.GetDateTime(1)),
+                        NgayBatDauKeHoach=rd.GetDateTime(2),LoaiGio=Convert.ToByte(rd.GetValue(3)),
+                        NguonBatDau=Convert.ToByte(rd.GetValue(4))
+                    };
+            }
+            return result;
         }
 
         // DOT 6: Hien thi HOAT DONG thuc te, doc rieng voi so giay duoc ket toan.

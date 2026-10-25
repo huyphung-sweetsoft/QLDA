@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdPhien,Guid IdNhanVien,Guid IdCongViec,Guid IdDuAn,byte LoaiGio,DateTime BatDauLuc,DateTime? KetThucLuc,DateTime? DaTinhDenLuc,byte NguonBatDau,Guid? IdCongViecKichHoat,Guid? IdNguoiKichHoat,Guid? IdThaoTac,bool LaTiepTucQuaHan,byte? LyDoKetThuc,string GhiChu,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Insert(Guid IdPhien,Guid IdNhanVien,Guid IdCongViec,Guid IdDuAn,byte LoaiGio,DateTime BatDauLuc,DateTime? KetThucLuc,DateTime? DaTinhDenLuc,byte NguonBatDau,Guid? IdCongViecKichHoat,Guid? IdNguoiKichHoat,Guid? IdThaoTac,bool LaTiepTucQuaHan,byte? LyDoKetThuc,string GhiChu,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,string NgayBatDauKeHoachKhiStart)
 	    {
 		    TblKhaiBaoGioPhien item = new TblKhaiBaoGioPhien();
 		    
@@ -122,6 +122,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.NgayCapNhat = NgayCapNhat;
             
+            item.NgayBatDauKeHoachKhiStart = NgayBatDauKeHoachKhiStart;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -130,7 +132,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdPhien,Guid IdNhanVien,Guid IdCongViec,Guid IdDuAn,byte LoaiGio,DateTime BatDauLuc,DateTime? KetThucLuc,DateTime? DaTinhDenLuc,byte NguonBatDau,Guid? IdCongViecKichHoat,Guid? IdNguoiKichHoat,Guid? IdThaoTac,bool LaTiepTucQuaHan,byte? LyDoKetThuc,string GhiChu,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat)
+	    public void Update(Guid IdPhien,Guid IdNhanVien,Guid IdCongViec,Guid IdDuAn,byte LoaiGio,DateTime BatDauLuc,DateTime? KetThucLuc,DateTime? DaTinhDenLuc,byte NguonBatDau,Guid? IdCongViecKichHoat,Guid? IdNguoiKichHoat,Guid? IdThaoTac,bool LaTiepTucQuaHan,byte? LyDoKetThuc,string GhiChu,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,string NgayBatDauKeHoachKhiStart)
 	    {
 		    TblKhaiBaoGioPhien item = new TblKhaiBaoGioPhien();
 	        item.MarkOld();
@@ -173,6 +175,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.NguoiCapNhat = NguoiCapNhat;
 				
 			item.NgayCapNhat = NgayCapNhat;
+				
+			item.NgayBatDauKeHoachKhiStart = NgayBatDauKeHoachKhiStart;
 				
 	        item.Save(UserName);
 	    }
