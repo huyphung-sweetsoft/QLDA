@@ -31,8 +31,8 @@
     .meeting-room-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .meeting-status-badge { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 110px; padding: 6px 11px; border: 1px solid transparent; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 1.2; white-space: nowrap; transition: all 0.2s ease; }
     .meeting-status-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: 0 0 7px; }
-    .meeting-status-0 { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
-    .meeting-status-1 { color: #d97706; background: #fffbeb; border-color: #fde68a; }
+    .meeting-status-0 { color: #6431a0; background: #f2ecfa; border-color: #d6c2ed; }
+    .meeting-status-1 { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
     .meeting-status-2 { color: #16a34a; background: #f0fdf4; border-color: #bbf7d0; }
     .meeting-status-3 { color: #64748b; background: #f8fafc; border-color: #cbd5e1; }
     .meeting-action-group { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
@@ -56,10 +56,14 @@
     .meet-view-shell .meet-view-button:hover:not(.is-active) { background:#ede4f9;color:#4a187c; }
     .meet-view-shell .meet-view-button.is-active { border-color:#54218d;background:#54218d;color:#fff;cursor:default; }
     .meet-view-shell .meet-view-button:focus-visible { outline:2px solid #9f74cb;outline-offset:2px; }
+    /* Nhân viên chỉ có quyền xem lịch và Giờ công; tab Danh sách được ẩn như trước. */
+    .meet-view-shell[data-can-list="0"] [data-meet-view="list"] { display:none!important; }
      .meet-view-shell.meet-mode-calendar .meet-panel-list,.meet-view-shell.meet-mode-labor .meet-panel-list { display:none; }
     .meet-view-shell.meet-mode-list .meet-panel-calendar,.meet-view-shell.meet-mode-labor .meet-panel-calendar { display:none; }
     .meet-view-shell.meet-mode-list .meet-panel-labor,.meet-view-shell.meet-mode-calendar .meet-panel-labor { display:none; }
     .meet-panel-labor { min-width:0;width:100%; }
+    /* Tab Danh sach: phuc hoi layout tu file CtrlMeet cu cua nguoi dung.
+       GridViewExtension + Paging tu quan ly kich thuoc va phan trang; khong ep flex/max-height. */
     .meet-display-stage { position:relative;min-height:180px; }
     .meet-view-panel { width:100%; }
     /* Tab Gio cong khong duoc day rong container chung cua Danh sach/Lich. */
@@ -167,28 +171,28 @@
     .meet-cal-event .meet-cal-host-icon { color:#d69a19;font-size:11px;flex:0 0 auto;filter:none; }
     /* 0: Đã lên lịch — tím SweetSoft. */
     .meet-cal-event.is-status-0 { border-color:#d6c2ed;border-left-color:#6431a0;background:#f2ecfa;color:#52227e; }
-    /* 1: Sắp diễn ra — vẫn tím, có chấm nhịp nhẹ. */
-    .meet-cal-event.is-status-1 { border-color:#c6a6ed;border-left-color:#8247c3;background:#efe5ff;color:#542083; }
+    /* 1: Sắp diễn ra — xanh dương, có chấm nhịp nhẹ. */
+    .meet-cal-event.is-status-1 { border-color:#bfdbfe;border-left-color:#2563eb;background:#eff6ff;color:#1d4ed8; }
     /* 2: Đang diễn ra — xanh lá, chấm nhịp nhẹ để dễ nhận biết. */
     .meet-cal-event.is-status-2 { border-color:#a6e8c3;border-left-color:#16a465;background:#eafaf0;color:#167746; }
     /* 3: Đã kết thúc — xám trung tính. */
-    .meet-cal-event.is-status-3 { border-color:#d8dfe8;border-left-color:#94a3b8;background:#f3f5f8;color:#637287; }
-    .meet-cal-event.is-status-3:hover,.meet-cal-event.is-status-3:focus-visible { background:#eaeef4;border-color:#bfcbd8; }
+    .meet-cal-event.is-status-3 { border-color:#cbd5e1;border-left-color:#8794a6;background:#e8ebef;color:#475569; }
+    .meet-cal-event.is-status-3:hover,.meet-cal-event.is-status-3:focus-visible { background:#dfe5eb;border-color:#aebbc9; }
     .meet-cal-event.is-status-0:hover,.meet-cal-event.is-status-0:focus-visible { background:#eae0f7; }
-    .meet-cal-event.is-status-1:hover,.meet-cal-event.is-status-1:focus-visible { background:#e7dafc; }
+    .meet-cal-event.is-status-1:hover,.meet-cal-event.is-status-1:focus-visible { background:#e0efff; }
     .meet-cal-event.is-status-2:hover,.meet-cal-event.is-status-2:focus-visible { background:#dcf6e8; }
     .meet-cal-legend-status { display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px;vertical-align:middle; }
     .meet-cal-legend-status.scheduled { background:#7440ae; }
-    .meet-cal-legend-status.soon { background:#7440ae;box-shadow:0 0 0 3px rgba(133,77,198,.17); }
+    .meet-cal-legend-status.soon { background:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15); }
     .meet-cal-legend-status.live { background:#1ca86d;box-shadow:0 0 0 3px rgba(28,168,109,.14); }
-    .meet-cal-legend-status.done { background:#94a3b8; }
-    .meet-cal-status-dot { position:absolute;right:8px;bottom:7px;display:inline-block;width:12px;height:12px;min-width:12px;border-radius:50%;box-shadow:0 0 0 0 rgba(135,74,200,0); }
+    .meet-cal-legend-status.done { background:#8794a6; }
+    .meet-cal-status-dot { position:absolute;right:8px;bottom:7px;display:inline-block;width:12px;height:12px;min-width:12px;border-radius:50%;box-shadow:0 0 0 0 rgba(37,99,235,0); }
     .meet-day-modal-events .meet-cal-status-dot { right:10px;bottom:10px;width:13px;height:13px;min-width:13px; }
-    .meet-cal-event.is-status-1 .meet-cal-status-dot { background:#874ac8;animation:meetCalSoonPulse 2s ease-in-out infinite; }
+    .meet-cal-event.is-status-1 .meet-cal-status-dot { background:#2563eb;animation:meetCalSoonPulse 2s ease-in-out infinite; }
     .meet-cal-event.is-status-2 .meet-cal-status-dot { background:#14a266;animation:meetCalLivePulse 1.7s ease-in-out infinite; }
     @keyframes meetCalSoonPulse {
-        0%,100% { opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(135,74,200,.34); }
-        55% { opacity:.88;transform:scale(1.06);box-shadow:0 0 0 7px rgba(135,74,200,0); }
+        0%,100% { opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(37,99,235,.34); }
+        55% { opacity:.88;transform:scale(1.06);box-shadow:0 0 0 7px rgba(37,99,235,0); }
     }
     @keyframes meetCalLivePulse {
         0%,100% { opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(20,162,102,.34); }
@@ -207,9 +211,9 @@
     .meet-cal-float-tip strong.meet-cal-tooltip-title { flex:1 1 auto;min-width:0;overflow-wrap:anywhere;color:#4b187a;font-size:15.5px;font-weight:800;line-height:1.4; }
     .meet-cal-float-tip span.meet-cal-tooltip-status { display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;margin:0;padding:6px 10px;border:1px solid transparent;border-radius:999px;font-size:11.5px;font-weight:800;line-height:1.2;white-space:nowrap; }
     .meet-cal-float-tip span.meet-cal-tooltip-status.is-status-0 { background:#f2ecfa;border-color:#d6c2ed;color:#6431a0; }
-    .meet-cal-float-tip span.meet-cal-tooltip-status.is-status-1 { background:#efe5ff;border-color:#c6a6ed;color:#8247c3; }
+    .meet-cal-float-tip span.meet-cal-tooltip-status.is-status-1 { background:#eff6ff;border-color:#bfdbfe;color:#2563eb; }
     .meet-cal-float-tip span.meet-cal-tooltip-status.is-status-2 { background:#eafaf0;border-color:#a6e8c3;color:#12834f; }
-    .meet-cal-float-tip span.meet-cal-tooltip-status.is-status-3 { background:#f3f5f8;border-color:#d8dfe8;color:#637287; }
+    .meet-cal-float-tip span.meet-cal-tooltip-status.is-status-3 { background:#e8ebef;border-color:#cbd5e1;color:#64748b; }
     .meet-cal-float-tip .meet-cal-tooltip-status-dot { display:block;flex:0 0 10px;width:10px;height:10px;margin:0;border-radius:50%;background:currentColor; }
     .meet-cal-float-tip .meet-cal-tooltip-status.is-status-1 .meet-cal-tooltip-status-dot { animation:meetCalSoonPulse 2s ease-in-out infinite; }
     .meet-cal-float-tip .meet-cal-tooltip-status.is-status-2 .meet-cal-tooltip-status-dot { animation:meetCalLivePulse 1.7s ease-in-out infinite; }
@@ -293,10 +297,32 @@
         cursor:default;box-sizing:border-box;filter:none;
     }
     .meet-calendar-area .meet-cal-day-items .meet-cal-flip-card { padding:0; }
+    /* Vỏ thẻ chỉ định vị 3D, không được vẽ nền/viền đứng yên khi hai mặt đang lật.
+       Quy tắc đặt sau toàn bộ màu trạng thái để override cả :hover của chúng. */
+    .meet-calendar-area .meet-cal-event.meet-cal-flip-card,
+    .meet-day-modal-events .meet-cal-event.meet-cal-flip-card {
+        background:transparent;
+        background-image:none;
+        border:0;
+        border-left:0;
+        box-shadow:none;
+        outline:0;
+        filter:none;
+    }
+    .meet-calendar-area .meet-cal-event.meet-cal-flip-card:hover,
+    .meet-calendar-area .meet-cal-event.meet-cal-flip-card:focus-visible,
+    .meet-day-modal-events .meet-cal-event.meet-cal-flip-card:hover,
+    .meet-day-modal-events .meet-cal-event.meet-cal-flip-card:focus-visible {
+        background:transparent;
+        border:0;
+        outline:0;
+        box-shadow:none;
+        filter:none;
+    }
     .meet-cal-flip-card.is-status-0 { --meet-flip-bg:#f2ecfa; --meet-flip-text:#52227e; }
-    .meet-cal-flip-card.is-status-1 { --meet-flip-bg:#efe5ff; --meet-flip-text:#542083; }
+    .meet-cal-flip-card.is-status-1 { --meet-flip-bg:#eff6ff; --meet-flip-text:#1d4ed8; }
     .meet-cal-flip-card.is-status-2 { --meet-flip-bg:#eafaf0; --meet-flip-text:#167746; }
-    .meet-cal-flip-card.is-status-3 { --meet-flip-bg:#f3f5f8; --meet-flip-text:#637287; }
+    .meet-cal-flip-card.is-status-3 { --meet-flip-bg:#e8ebef; --meet-flip-text:#475569; }
     .meet-cal-flip-inner {
         position:relative;display:block;width:100%;height:100%;border-radius:5px;
         transform:rotateY(0deg);transform-style:preserve-3d;
@@ -339,17 +365,16 @@
     .meet-cal-flip-back .meet-cal-flip-title {
         display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;
         white-space:nowrap;text-align:center;color:var(--meet-flip-text,#52227e);
-        font-size:10.5px;font-weight:750;line-height:1.25;
+        font-size:12px;font-weight:750;line-height:1.25;
     }
     /* Các nút nổi (lớp trên) xuất hiện dần trong nửa sau vòng lật.
        Không xoay chữ/nút riêng nên không bị hiệu ứng phản chiếu ngược. */
     .meet-cal-flip-actions {
-        position:absolute;z-index:2;left:50%;top:2px;
-        display:flex;align-items:center;justify-content:center;gap:7px;
-        width:max-content;max-width:calc(100% - 8px);min-width:0;
-        padding:2px 6px;border:1px solid rgba(135,98,184,.23);
-        border-radius:8px;background:rgba(255,255,255,.98);
-        box-shadow:0 7px 16px rgba(52,27,94,.23);line-height:1;
+        position:absolute;z-index:2;left:50%;top:4px;
+        display:flex;align-items:center;justify-content:center;gap:12px;
+        width:max-content;max-width:calc(100% - 10px);min-width:0;
+        padding:0;border:0;border-radius:0;background:transparent;
+        box-shadow:none;line-height:1;
         opacity:0;pointer-events:none;
         transform:translateX(-50%) translateY(7px) translateZ(30px) scale(.88);
         transition:opacity .18s ease,transform .30s cubic-bezier(.22,.8,.24,1);
@@ -362,15 +387,15 @@
     }
     .meet-cal-flip-action {
         display:inline-flex;align-items:center;justify-content:center;
-        flex:0 0 24px;width:24px;height:21px;padding:0;
-        border:1px solid rgba(106,55,157,.24);border-radius:5px;
-        background:#fff;color:#5c2a94;font-size:11px;line-height:1;cursor:pointer;
-        box-shadow:0 2px 6px rgba(63,28,111,.08);
-        transition:background-color .15s,border-color .15s,transform .15s,box-shadow .15s;
+        flex:0 0 24px;width:24px;height:22px;padding:0;
+        border:1px solid rgba(106,55,157,.24);border-radius:5px;background:#fff;
+        color:#6a34a5;font-size:12px;line-height:1;cursor:pointer;
+        box-shadow:0 2px 6px rgba(63,28,111,.10);
+        transition:background-color .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s;
     }
-    .meet-cal-flip-action:hover { background:#fff;border-color:#9b73c8;transform:translateY(-1px);box-shadow:0 5px 12px rgba(63,28,111,.18); }
-    .meet-cal-flip-action.is-delete { color:#cb3750;border-color:#f0c6ce; }
-    .meet-cal-flip-action.is-delete:hover { background:#fff0f2;border-color:#e892a2; }
+    .meet-cal-flip-action:hover { background:#fff;border-color:#9b73c8;color:#4e2480;transform:translateY(-1px);box-shadow:0 5px 12px rgba(63,28,111,.18); }
+    .meet-cal-flip-action.is-delete { color:#cf4158;border-color:#f0c6ce; }
+    .meet-cal-flip-action.is-delete:hover { background:#fff0f2;border-color:#e892a2;color:#b92f48; }
     .meet-cal-flip-action:focus-visible,.meet-cal-flip-front:focus-visible { outline:2px solid #7842b5;outline-offset:1px; }
     .meet-calendar-grid.is-month .meet-cal-day { min-height:161px; }
     /* Cùng hiệu ứng trong popup danh sách cuộc họp của một ngày. */
@@ -379,9 +404,9 @@
         padding:0;margin:0;overflow:visible;perspective:960px;
     }
     .meet-day-modal-events .meet-cal-flip-backplate { padding-top:22px; }
-    .meet-day-modal-events .meet-cal-flip-actions { top:5px;gap:10px; }
-    .meet-day-modal-events .meet-cal-flip-action { width:28px;height:26px;flex-basis:28px;font-size:12px; }
-    .meet-day-modal-events .meet-cal-flip-title { font-size:12px; }
+    .meet-day-modal-events .meet-cal-flip-actions { top:7px;gap:14px; }
+    .meet-day-modal-events .meet-cal-flip-action { width:28px;height:26px;flex-basis:28px;font-size:13px; }
+    .meet-day-modal-events .meet-cal-flip-title { font-size:13.5px; }
     @media(hover:none) {
         .meet-cal-flip-card:focus-within .meet-cal-flip-inner { transform:rotateY(180deg); }
     }
@@ -389,6 +414,152 @@
         .meet-cal-flip-inner { transition:none!important;will-change:auto; }
         .meet-cal-flip-actions { transition:none!important;transition-delay:0s!important; }
     }
+
+    /* ===============================================================
+       LICH HOP — PALETTE PHAN CAP / ONLY calendar day + meeting tiles
+       CSS cua ExtraModal, he thong toolbar, popup va logic flip GIU NGUYEN.
+       Cell: nen trung tinh | Meeting: the co sac do, vien trai, do noi.
+       =============================================================== */
+    .meet-calendar-area .meet-calendar-grid { background:#e5e4ee;border-color:#e5e4ee; }
+    .meet-calendar-area .meet-cal-dow {
+        background:#f2edf9;color:#562689;font-weight:800;
+        border-bottom:1px solid #e1d5ef;
+    }
+    /* Ngay binh thuong: nen cool-white, khong tranh mau voi the hop. */
+    .meet-calendar-area .meet-cal-day {
+        background:linear-gradient(155deg,#fff 0%,#fafbfd 100%);
+        transition:background-color .18s ease,box-shadow .18s ease;
+    }
+    .meet-calendar-area .meet-cal-day.has-meetings {
+        background:linear-gradient(155deg,#fff 0%,#fcfbff 100%);
+    }
+    .meet-calendar-area .meet-cal-day.is-outside,
+    .meet-calendar-area .meet-cal-day.is-outside.has-meetings {
+        background:#f5f5f9;
+    }
+    .meet-calendar-area .meet-cal-day.is-off,
+    .meet-calendar-area .meet-cal-day.is-off.has-meetings {
+        background:linear-gradient(150deg,#fffdf9 0%,#fff8f1 100%);
+    }
+    .meet-calendar-area .meet-cal-day.is-morning-only {
+        background:linear-gradient(to bottom,#fcfdff 0%,#fcfdff 49%,#fff8f0 49%,#fff8f0 100%);
+    }
+    .meet-calendar-area .meet-cal-day.is-afternoon-only {
+        background:linear-gradient(to bottom,#fff8f0 0%,#fff8f0 49%,#fcfdff 49%,#fcfdff 100%);
+    }
+    .meet-calendar-area .meet-cal-day.is-today,
+    .meet-calendar-area .meet-cal-day.is-today.has-meetings {
+        background:linear-gradient(145deg,#fbf7ff 0%,#f9f4ff 100%);
+        box-shadow:inset 0 0 0 2px #ae88df;
+        z-index:1;
+    }
+    .meet-calendar-area .meet-cal-day.is-today.is-morning-only,
+    .meet-calendar-area .meet-cal-day.is-today.is-afternoon-only {
+        box-shadow:inset 0 0 0 2px #ae88df;
+    }
+    .meet-calendar-area .meet-cal-day:hover:not(.is-today) {
+        box-shadow:inset 0 0 0 1px #c9b4e3;
+    }
+    .meet-calendar-area .meet-cal-day.is-today:hover {
+        box-shadow:inset 0 0 0 2px #7842b5;
+    }
+    .meet-calendar-area .meet-cal-day.is-off:hover:not(.is-today) {
+        background:linear-gradient(150deg,#fffaf4,#fff3e7);
+    }
+    .meet-calendar-area .meet-cal-day-number {
+        color:#42304f;
+    }
+    .meet-calendar-area .meet-cal-day.is-today .meet-cal-day-number {
+        background:#58228f;color:#fff;
+        box-shadow:0 2px 7px rgba(88,34,143,.19);
+    }
+    .meet-calendar-area .meet-cal-day.is-outside .meet-cal-day-number { color:#a7a6b6; }
+    .meet-calendar-area .meet-cal-no-meetings { color:#9b95a7;font-weight:500; }
+    .meet-calendar-area .meet-cal-no-meetings i { color:#a39aad; }
+    .meet-calendar-area .meet-cal-day-badge {
+        border:1px solid #f3dfc7;
+        background:#fff1e0;color:#a75c1b;
+    }
+    /* 4 trang thai, nhung tat ca the hop de nhan ra tren nen ngay. */
+    .meet-cal-flip-card.is-status-0 {
+        --meet-flip-bg:#efe5fc;--meet-flip-text:#542486;
+        --meet-flip-border:#d5b9ee;--meet-flip-accent:#7137aa;
+    }
+    .meet-cal-flip-card.is-status-1 {
+        --meet-flip-bg:#eff6ff;--meet-flip-text:#1d4ed8;
+        --meet-flip-border:#bfdbfe;--meet-flip-accent:#2563eb;
+    }
+    .meet-cal-flip-card.is-status-2 {
+        --meet-flip-bg:#dcf5e9;--meet-flip-text:#136d48;
+        --meet-flip-border:#abe2c9;--meet-flip-accent:#159a65;
+    }
+    .meet-cal-flip-card.is-status-3 {
+        --meet-flip-bg:#e8ebef;--meet-flip-text:#475569;
+        --meet-flip-border:#cbd5e1;--meet-flip-accent:#8794a6;
+    }
+    /* Vien 4px xoay CUNG thẻ: khong tao them nen co dinh o ben duoi. */
+    .meet-calendar-area .meet-cal-flip-front,
+    .meet-day-modal-events .meet-cal-flip-front {
+        background:var(--meet-flip-bg,#efe5fc);
+        color:var(--meet-flip-text,#542486);
+        border:1px solid var(--meet-flip-border,#d5b9ee);
+        border-left:4px solid var(--meet-flip-accent,#7137aa);
+        border-radius:7px;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.58),
+                   0 3px 9px rgba(52,57,90,.11),
+                   0 1px 2px rgba(52,57,90,.06);
+        transition:box-shadow .2s ease,background-color .2s ease;
+    }
+    .meet-calendar-area .meet-cal-flip-card:hover .meet-cal-flip-front,
+    .meet-day-modal-events .meet-cal-flip-card:hover .meet-cal-flip-front {
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.65),
+                   0 7px 15px rgba(52,57,90,.15);
+    }
+    /* Mat sau cung palette, nut va chu duoc giu tren 2 lop nhu da duyet. */
+    .meet-calendar-area .meet-cal-flip-backplate,
+    .meet-day-modal-events .meet-cal-flip-backplate {
+        border:1px solid var(--meet-flip-border,#d5b9ee);
+        background:linear-gradient(150deg,#fff 0%,var(--meet-flip-bg,#efe5fc) 100%);
+        box-shadow:inset 0 1px rgba(255,255,255,.92),
+                   0 5px 12px rgba(45,43,74,.12);
+    }
+    .meet-cal-flip-back .meet-cal-flip-title { color:var(--meet-flip-text,#542486); }
+    .meet-cal-flip-front .meet-cal-event-time { font-weight:850; }
+    /* Chi doi mau legend da ket thuc; khong anh huong badge cac trang khac. */
+    .meet-calendar-area .meet-cal-legend-status.done { background:#8794a6; }
+    @media(prefers-reduced-motion:reduce) {
+        .meet-calendar-area .meet-cal-day,
+        .meet-calendar-area .meet-cal-flip-front { transition:none!important; }
+    }
+
+
+    /* Chỉ áp dụng cho phần thẻ lịch, không thay đổi khung ExtraModal. */
+    .meet-cal-navigation .meet-cal-flip-toggle { gap:7px;transition:background .18s,border-color .18s,color .18s; }
+    .meet-cal-navigation .meet-cal-flip-toggle.is-active { background:#54218d;border-color:#54218d;color:#fff; }
+    .meet-cal-navigation .meet-cal-flip-toggle:not(.is-active) { background:#fff;color:#705e85;border-color:#dfd4ed; }
+    .meet-cal-navigation .meet-cal-flip-toggle:not(.is-active):hover { background:#f7f2ff;color:#54218d; }
+    .meet-view-shell.meet-no-flip .meet-cal-day-items .meet-cal-flip-inner,
+    .meet-view-shell.meet-no-flip .meet-cal-day-items .meet-cal-flip-card:hover .meet-cal-flip-inner,
+    .meet-view-shell.meet-no-flip .meet-cal-day-items .meet-cal-flip-card:focus-within .meet-cal-flip-inner { transform:none!important;transition:none!important; }
+    .meet-view-shell.meet-no-flip .meet-cal-day-items .meet-cal-flip-back { display:none!important; }
+    .meet-view-shell.meet-no-flip .meet-cal-day-items .meet-cal-flip-front { backface-visibility:visible; -webkit-backface-visibility:visible; }
+    /* Thẻ trong popup ngày là thẻ thường, không sử dụng lật 3D. */
+    .meet-day-modal-events .meet-cal-day-entry { display:flex;align-items:center;gap:10px;min-height:64px;width:100%;padding:10px 12px;margin:0;border:1px solid var(--meet-day-border,#ddd7e7);border-left:4px solid var(--meet-day-accent,#6f39ac);border-radius:9px;background:var(--meet-day-bg,#f7f3fc);box-shadow:0 2px 7px rgba(37,22,63,.07);box-sizing:border-box; }
+    .meet-day-modal-events .meet-cal-day-entry.is-status-0 { --meet-day-border:#d6c2ed;--meet-day-accent:#7137aa;--meet-day-bg:#f5effc;--meet-day-color:#542486; }
+    .meet-day-modal-events .meet-cal-day-entry.is-status-1 { --meet-day-border:#bfdbfe;--meet-day-accent:#2563eb;--meet-day-bg:#eff6ff;--meet-day-color:#1d4ed8; }
+    .meet-day-modal-events .meet-cal-day-entry.is-status-2 { --meet-day-border:#abe2c9;--meet-day-accent:#159a65;--meet-day-bg:#edf9f2;--meet-day-color:#136d48; }
+    .meet-day-modal-events .meet-cal-day-entry.is-status-3 { --meet-day-border:#cbd5e1;--meet-day-accent:#8794a6;--meet-day-bg:#f3f5f7;--meet-day-color:#475569; }
+    .meet-day-modal-events .meet-day-entry-main { display:flex;align-items:center;gap:6px;flex:1 1 auto;min-width:0;border:0;background:transparent;text-align:left;padding:0;color:var(--meet-day-color,#542486);font-size:13px;font-weight:650;cursor:pointer; }
+    .meet-day-modal-events .meet-day-entry-main:hover .meet-day-entry-title { text-decoration:underline; }
+    .meet-day-modal-events .meet-day-entry-time { flex:0 0 auto;font-size:12px;font-weight:800; }
+    .meet-day-modal-events .meet-day-entry-title { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0; }
+    .meet-day-modal-events .meet-day-entry-actions { display:flex;align-items:center;gap:6px;flex:0 0 auto; }
+    .meet-day-modal-events .meet-day-entry-action { display:inline-flex;align-items:center;justify-content:center;width:31px;height:31px;padding:0;border:1px solid #d8c7ed;border-radius:7px;background:#fff;color:#5a2c90;cursor:pointer;transition:background .16s,transform .16s; }
+    .meet-day-modal-events .meet-day-entry-action:hover { background:#eee4fa;transform:translateY(-1px); }
+    .meet-day-modal-events .meet-day-entry-action.is-delete { color:#c72c48;border-color:#efc2cb; }
+    .meet-day-modal-events .meet-day-entry-action.is-delete:hover { background:#fff0f2; }
+    .meet-day-modal-events .meet-day-entry-main:focus-visible,.meet-day-modal-events .meet-day-entry-action:focus-visible { outline:2px solid #7e4db9;outline-offset:2px; }
+    @media (max-width:480px) { .meet-day-modal-events .meet-cal-day-entry { gap:5px;padding:8px; } .meet-day-modal-events .meet-day-entry-action { width:28px;height:29px; } .meet-day-modal-events .meet-day-entry-time { font-size:11px; } }
 
 </style>
 
@@ -425,6 +596,7 @@
                         <asp:LinkButton runat="server" ID="btnCalendarNext" CssClass="meet-cal-nav" OnClick="btnCalendarNavigate_Click" CommandArgument="next" CausesValidation="false" ToolTip="Kỳ sau"><i class="fas fa-chevron-right"></i></asp:LinkButton>
                         <asp:LinkButton runat="server" ID="btnCalendarMonth" CssClass="meet-cal-period-btn" OnClick="btnCalendarMode_Click" CommandArgument="month" CausesValidation="false"><i class="far fa-calendar"></i> Tháng</asp:LinkButton>
                         <asp:LinkButton runat="server" ID="btnCalendarWeek" CssClass="meet-cal-period-btn" OnClick="btnCalendarMode_Click" CommandArgument="week" CausesValidation="false"><i class="fas fa-calendar-week"></i> Tuần</asp:LinkButton>
+                        <button type="button" id="meetCalFlipToggle" class="meet-cal-period-btn meet-cal-flip-toggle is-active" onclick="return SweetMeetCalendar.toggleFlip();" aria-pressed="true" title="Bật/tắt lật 3D; khi tắt sẽ hiện tooltip thông tin cuộc họp"><i class="fas fa-cube" aria-hidden="true"></i> Lật 3D</button>
                     </div>
 
 <div runat="server" id="tagOther" class="meet-common-actions">
@@ -628,6 +800,21 @@
     window.SweetMeetCalendar = window.SweetMeetCalendar || (function () {
         function shell() { return document.querySelector('.meet-view-shell'); }
         function storageKey() { var node = shell(); return 'SweetSoft_MeetView_' + (node ? node.getAttribute('data-project') || 'default' : 'default'); }
+        function flipKey() { var node = shell(); return 'SweetSoft_MeetFlip_' + (node ? node.getAttribute('data-project') || 'default' : 'default'); }
+        function setFlip(enabled, persist) {
+            var node = shell(); if (!node) return;
+            node.classList.toggle('meet-no-flip', !enabled);
+            var button = node.querySelector('#meetCalFlipToggle');
+            if (button) { button.classList.toggle('is-active',enabled); button.setAttribute('aria-pressed',enabled ? 'true' : 'false'); button.title = enabled ? 'Đang bật lật 3D – bấm để chuyển sang tooltip' : 'Đang dùng tooltip – bấm để bật lật 3D'; }
+            // Đóng tooltip cũ khi thay chế độ.
+            document.querySelectorAll('.meet-cal-float-tip').forEach(function (el) { if (el.parentNode) el.parentNode.removeChild(el); });
+            if (persist) { try { sessionStorage.setItem(flipKey(),enabled ? '1' : '0'); } catch (e) { } }
+        }
+        function toggleFlip() {
+            var node = shell(); if (!node) return false;
+            setFlip(node.classList.contains('meet-no-flip'),true);
+            return false;
+        }
         function updateLabels(node, view) {
             var buttons = node.querySelectorAll('[data-meet-view]');
             for (var i = 0; i < buttons.length; i++) {
@@ -640,13 +827,16 @@
         function changeView(view, skipLoad) {
             var node = shell(); if (!node) return false;
             var canList = node.getAttribute('data-can-list') === '1';
+            var canLabor = node.getAttribute('data-can-labor') === '1';
             if (view !== 'list' && view !== 'calendar' && view !== 'labor') return false;
-            if (!canList) view = 'calendar';
+            if ((view === 'list' && !canList) || (view === 'labor' && !canLabor)) view = 'calendar';
             node.classList.toggle('meet-mode-list', view === 'list');
             node.classList.toggle('meet-mode-calendar', view === 'calendar');
             node.classList.toggle('meet-mode-labor', view === 'labor');
             updateLabels(node, view);
-            if (canList) { try { sessionStorage.setItem(storageKey(), view); } catch (e) { } }
+            if (view === 'labor' && window.MeetLaborFit && typeof window.MeetLaborFit.fit === 'function')
+                window.requestAnimationFrame(window.MeetLaborFit.fit);
+            if (canList || canLabor) { try { sessionStorage.setItem(storageKey(), view); } catch (e) { } }
             if (view === 'labor' && (!skipLoad || !node.querySelector('.meet-panel-labor .mlt-layout[data-loaded="1"]'))) { var load = document.getElementById('<%= LaborLoadButtonId %>'); if (load) load.click(); }
             return false;
         }
@@ -667,8 +857,13 @@
                 buttons[j].classList.toggle('is-active', id.indexOf('btnCalendarWeek') !== -1 ? week : !week);
             }
             var view = node.getAttribute('data-can-list') === '1' ? 'list' : 'calendar';
-            if (view === 'list') { try { view = sessionStorage.getItem(storageKey()) || 'list'; } catch (e) { } }
+            if (node.getAttribute('data-can-labor') === '1') {
+                try { view = sessionStorage.getItem(storageKey()) || view; } catch (e) { }
+            }
             changeView(view, true);
+            var flipValue = '1';
+            try { flipValue = sessionStorage.getItem(flipKey()) || '1'; } catch (e) { }
+            setFlip(flipValue !== '0',false);
         }
         function createMeeting(dateText) {
             var chosen = document.getElementById('<%= CalendarCreateHidden.ClientID %>');
@@ -709,7 +904,7 @@
         function closeDay() { $('#<%= mdlCalendarDayMeetings.ClientID %>').modal('hide'); return false; }
         if (window.Sys && Sys.Application) Sys.Application.add_load(initialize);
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize); else initialize();
-        return { changeView: changeView, toggleView: toggleView, openDetail: openDetail, openAction: openAction, openDay: openDay, closeDay: closeDay, createMeeting: createMeeting };
+        return { changeView: changeView, toggleView: toggleView, toggleFlip: toggleFlip, openDetail: openDetail, openAction: openAction, openDay: openDay, closeDay: closeDay, createMeeting: createMeeting };
     })();
 </script>
 <script type="text/javascript">
@@ -727,6 +922,7 @@
             el.style.left = Math.round(x) + 'px'; el.style.top = Math.round(y) + 'px'; el.classList.toggle('is-left', x < rect.left);
         }
         function showTip(button) {
+            if (!button.closest('.meet-view-shell.meet-no-flip') || !button.closest('.meet-cal-day-items')) { removeTip(); return; }
             var content = button.querySelector('.meet-cal-popover'); if (!content) return;
             removeTip(); floatTip = document.createElement('div'); floatTip.className = 'meet-cal-float-tip'; floatTip.setAttribute('role', 'tooltip');
             floatTip.innerHTML = content.innerHTML; document.body.appendChild(floatTip); placeTip(floatTip, button);
@@ -769,5 +965,44 @@
             var refreshButton = document.getElementById('<%= btnRefreshMeetingStatuses.ClientID %>');
             if (refreshButton) refreshButton.click();
         }, 60000);
+    })();
+</script>
+<script type="text/javascript">
+    /* Chi tab Gio cong can co dinh chieu cao bang theo phan man hinh con lai.
+       Tab Danh sach su dung nguyen layout cu cua GridView; tab Lich khong bi gioi han. */
+    (function () {
+        if (window.MeetLaborFit) return;
+        function fit() {
+            var shell = document.querySelector('.meet-view-shell.meet-mode-labor');
+            if (!shell) return;
+            var stage = shell.querySelector('.meet-display-stage');
+            if (!stage) return;
+            var stageTop = stage.getBoundingClientRect().top;
+            if (!isFinite(stageTop) || stageTop < 0) return;
+            var viewport = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+            // Reserve room for fixed site footer, card padding and a comfortable gap.
+            var bottom = viewport - 50;
+            var footers = document.querySelectorAll('footer, .footer, .footer-wrapper, .footer-bottom, .page-footer');
+            Array.prototype.forEach.call(footers, function (el) {
+                if (el.closest && el.closest('.meet-view-shell')) return;
+                var style = window.getComputedStyle(el);
+                if (style.position !== 'fixed' && style.position !== 'sticky') return;
+                var rect = el.getBoundingClientRect();
+                if (rect.height && rect.top > stageTop && rect.top < viewport) {
+                    bottom = Math.min(bottom, rect.top - 20);
+                }
+            });
+            // .mlt-layout has 10px top and 14px bottom padding.
+            // Never add height to the document, only reduce the inner cards when necessary.
+            var height = Math.min(630, Math.max(220, Math.floor(bottom - stageTop - 24)));
+            shell.style.setProperty('--meet-labor-card-height', height + 'px');
+        }
+        function afterLayout() { window.requestAnimationFrame(fit); }
+        window.MeetLaborFit = { fit: fit };
+        window.addEventListener('resize', afterLayout, { passive: true });
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', afterLayout, { passive: true });
+        if (window.Sys && Sys.Application) Sys.Application.add_load(afterLayout);
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', afterLayout);
+        else afterLayout();
     })();
 </script>

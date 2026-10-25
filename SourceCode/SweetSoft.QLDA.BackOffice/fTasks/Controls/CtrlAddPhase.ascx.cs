@@ -26,6 +26,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             txtTenGiaiDoan.Text = string.Empty;
             txtMoTa.Text = string.Empty;
             txtThoiHan.Text = "1";
+            txtNgayBatDau.Text = string.Empty;
+            txtNgayKetThuc.Text = string.Empty;
+            hfScheduleEndSelected.Value = string.Empty;
 
             ControlHelpers helpers = new ControlHelpers();
             helpers.BindDependentTasks(ddlPhuThuoc, projectId, currentOrNewCode: newCode, chiLayGiaiDoan: true);
@@ -38,6 +41,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         protected void ddlPhuThuoc_SelectedIndexChanged(object sender, EventArgs e)
         {
+            hfScheduleEndSelected.Value = string.Empty;
             UpdateMinStartDate();
             upAddPhase.Update();
             mdlAddPhase.OpenModal(true);
@@ -114,6 +118,45 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     return;
                 }
 
+
+                if (thoiHan > 3500)
+                {
+                    ShowNotify("Thời hạn không thể vượt quá 3500 ngày làm việc.", MSGType.Error);
+                    return;
+                }
+                // Nếu chọn mốc kết thúc trên lịch: tính số ngày theo cấu hình lịch chung.
+                // Không dùng phép cộng ngày dương lịch ở JavaScript.
+                DateTime selectedEnd = DateTime.MinValue;
+                if (!string.IsNullOrWhiteSpace(hfScheduleEndSelected.Value))
+                {
+                    if (!DateTime.TryParseExact(hfScheduleEndSelected.Value.Trim(), "yyyy-MM-dd",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out selectedEnd)
+                        || selectedEnd.Date < ngayBd.Date
+                        || selectedEnd.Date > ngayBd.Date.AddDays(3650)
+                        || !LichBieuChungManager.Instance.CheckIsWorkingDay(selectedEnd.Date))
+                    {
+                        ShowNotify("Ngày kết thúc được chọn không hợp lệ hoặc không phải ngày làm việc.", MSGType.Error);
+                        return;
+                    }
+                    int counted = 0;
+                    for (DateTime day = ngayBd.Date; day <= selectedEnd.Date; day = day.AddDays(1))
+                        if (LichBieuChungManager.Instance.CheckIsWorkingDay(day)) counted++;
+                    if (counted < 1 || counted > 3500)
+                    {
+                        ShowNotify("Khoảng lịch làm việc không hợp lệ.", MSGType.Error);
+                        return;
+                    }
+                    thoiHan = counted;
+                }
+                DateTime computedEnd = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd.Date, thoiHan);
+                if (!string.IsNullOrWhiteSpace(hfScheduleEndSelected.Value)
+                    && computedEnd.Date != selectedEnd.Date)
+                {
+                    ShowNotify("Mốc kết thúc không khớp với cấu hình ngày làm việc. Vui lòng chọn lại.", MSGType.Error);
+                    return;
+                }
+
                 Guid? idPhuThuoc = Guid.TryParse(ddlPhuThuoc.SelectedValue, out Guid ptId) ? (Guid?)ptId : null;
 
                 var (minStartAllowed, limitReason) = TaskManager.Instance.GetMinStartDate(null, idPhuThuoc);
@@ -142,7 +185,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 task.MoTa = txtMoTa.Text.Trim();
                 phase.NgayBatDau = task.NgayBatDau = ngayBd;
                 task.ThoiHanNgay = thoiHan;
-                phase.NgayDuKienHoanThanh = task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);
+                phase.NgayDuKienHoanThanh = task.NgayKetThuc = computedEnd;
                 task.TrangThai = 0;
                 task.VaiTroNhanVien = (int)VaiTroNhanVien.ThucHien;
                 task.DaXoa = false;
@@ -151,9 +194,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 task.Save();
 
                 mdlAddPhase.CloseModal();
-
-                string successMsg = Newtonsoft.Json.JsonConvert.SerializeObject("Thêm giai đoạn thành công!");
-                ScriptManager.RegisterStartupScript(upAddPhase, upAddPhase.GetType(), "SuccessMsg", $"alert({successMsg});", true);
+                ShowNotify("Thêm giai đoạn thành công!", MSGType.Success);
 
                 if (SavedSuccess != null) SavedSuccess(this, EventArgs.Empty);
             }

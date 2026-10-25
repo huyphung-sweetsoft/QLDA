@@ -4,6 +4,7 @@
 <%@ Register Src="~/fIssues/Controls/CtrlViewIssueDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewIssueDetail" %>
 <%@ Register Src="~/fTasks/Controls/CtrlViewTaskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewTaskDetail" %>
 <%@ Register Src="~/fGanttCharts/Controls/CtrlShareProgress.ascx" TagPrefix="SweetSoft" TagName="CtrlShareProgress" %>
+<%@ Register Src="~/fGanttCharts/Controls/CtrlProgressReportHistory.ascx" TagPrefix="SweetSoft" TagName="CtrlProgressReportHistory" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server"></asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -316,6 +317,7 @@
 
     <SweetSoft:CtrlViewTaskDetail runat="server" ID="CtrlViewTaskDetail1" />
     <SweetSoft:CtrlShareProgress runat="server" ID="CtrlShareProgress1" />
+    <SweetSoft:CtrlProgressReportHistory runat="server" ID="CtrlProgressReportHistory1" />
 </asp:Content>
 
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>

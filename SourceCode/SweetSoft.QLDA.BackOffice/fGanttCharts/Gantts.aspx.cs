@@ -19,14 +19,14 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.GanttChart;
 
         // MasterTemplate sends ConfirmResult to the PAGE. Forward Gantt confirmations
-        // to CtrlShareProgress; other modules remain handled by the page's base implementation.
+        // to CtrlProgressReportHistory; other modules remain handled by the page's base implementation.
         public override void ConfirmRequest(ConfirmResult result)
         {
             if (result != null && result.CommandName != null &&
                 (result.CommandName.StartsWith("GANTT_REPORT_RESET_OTP:", StringComparison.Ordinal) ||
                  result.CommandName.StartsWith("GANTT_REPORT_DELETE:", StringComparison.Ordinal)))
             {
-                var progress = FindControlRecursive(this, "CtrlShareProgress1") as SweetSoft.QLDA.BackOffice.fGanttCharts.Controls.CtrlShareProgress;
+                var progress = FindControlRecursive(this, "CtrlProgressReportHistory1") as SweetSoft.QLDA.BackOffice.fGanttCharts.Controls.CtrlProgressReportHistory;
                 if (progress != null) progress.ConfirmRequest(result);
                 return;
             }
@@ -43,6 +43,13 @@ namespace SweetSoft.QLDA.BackOffice.fGanttCharts
                 var projectIdProperty = shareProgressControl.GetType().GetProperty("ProjectId");
                 if (projectIdProperty != null && projectIdProperty.CanWrite)
                     projectIdProperty.SetValue(shareProgressControl, CurrentProjectId, null);
+            }
+            Control historyControl = FindControlRecursive(this, "CtrlProgressReportHistory1");
+            if (historyControl != null)
+            {
+                var historyProjectIdProperty = historyControl.GetType().GetProperty("ProjectId");
+                if (historyProjectIdProperty != null && historyProjectIdProperty.CanWrite)
+                    historyProjectIdProperty.SetValue(historyControl, CurrentProjectId, null);
             }
             if (!IsPostBack)
             {

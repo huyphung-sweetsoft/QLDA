@@ -1178,49 +1178,118 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             }
         }
 
+
         public override void ConfirmRequest(ConfirmResult e)
         {
-            CtrlSwapPhase1.ConfirmRequest(e);
-            CtrlChonNhanVienTask1.ConfirmRequest(e);
-            if (e != null && e.Submit &&
-                e.CommandName != "CONFIRM_SWAP_PHASES" &&
-                e.CommandName != "CONFIRM_REORDER_PHASES" &&
-                e.CommandName != "CONFIRM_OVERLOAD_ASSIGN_TASK")
+            if (e == null || !e.Submit)
+                return;
+
+            string commandName = (e.CommandName ?? string.Empty).Trim();
+
+            // Dieu phoi xac nhan theo dung chuc nang.
+            // Khong duoc chuyen tiep tat ca xac nhan vao moi control.
+            switch (commandName)
             {
-                Guid taskId = Guid.Empty;
-                if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
-                {
-                    ShowInvalidDataError();
+                // 1. Xac nhan hoan doi / sap xep giai doan
+                case "CONFIRM_SWAP_PHASES":
+                case "CONFIRM_REORDER_PHASES":
+                    CtrlSwapPhase1.ConfirmRequest(e);
                     return;
-                }
-                TblCongViec task = TaskManager.Instance.FetchById(taskId);
-                if (task == null)
-                {
-                    ShowInvalidNotFoundData();
+
+                // 2. Xac nhan thay doi phan cong nhan su
+                case "CONFIRM_TASK_ASSIGNMENT_CHANGES":
+                case "CONFIRM_OVERLOAD_ASSIGN_TASK":
+                    CtrlChonNhanVienTask1.ConfirmRequest(e);
                     return;
-                }
-                try
-                {
-                    TaskManager.Instance.DeleteTask(task);
-                    if (task.IdCongViecCha.HasValue)
+
+                // 3. Xac nhan ap dung mau cong viec
+                case "TASK_TEMPLATE_APPLY":
+                    if (!this.CURRENT_PAGE.IsEdit &&
+                        !this.CURRENT_PAGE.IsAdd)
                     {
-                        if (_dictPriorities == null || _dictPriorities.Count == 0)
-                            _dictPriorities = TaskManager.Instance.GetDictPriorities();
-                        TaskManager.Instance.AutoSetParentPriority(this.ProjectId, task.IdCongViecCha.Value, _dictPriorities);
-                        TaskManager.Instance.AutoSetParentTime(this.ProjectId, task.IdCongViecCha.Value);
-                        TaskManager.Instance.AutoSetParentStatus(this.ProjectId, task.IdCongViecCha.Value);
+                        ShowAccessDeniedNotify();
+                        return;
                     }
-                    hfDeletingTaskId.Value = string.Empty;
-                    ShowSuccessDeleteData();
-                    grvData.CurrentPageIndex = 1;
-                    Rebind();
-                }
-                catch (Exception exc)
+
+                    if (CtrlApplyTemplate1 != null)
+                        CtrlApplyTemplate1.ConfirmRequest(e);
+
+                    return;
+
+                // 4. Xac nhan xoa cong viec
+                case "TASK_DELETE":
+                    break;
+
+                // Tuong thich voi co che xoa cu
+                // neu MessageBox chua truyen CommandName.
+                case "":
+                    if (string.IsNullOrWhiteSpace(hfDeletingTaskId.Value))
+                        return;
+                    break;
+
+                // Khong xu ly cac lenh khong thuoc trang nay.
+                default:
+                    return;
+            }
+
+            // 5. Xu ly xoa cong viec
+            Guid taskId;
+            if (!Guid.TryParse(hfDeletingTaskId.Value, out taskId))
+            {
+                ShowInvalidDataError();
+                return;
+            }
+
+            TblCongViec task = TaskManager.Instance.FetchById(taskId);
+            if (task == null)
+            {
+                ShowInvalidNotFoundData();
+                return;
+            }
+
+            try
+            {
+                TaskManager.Instance.DeleteTask(task);
+
+                // Cap nhat lai thong tin cong viec cha neu co.
+                if (task.IdCongViecCha.HasValue)
                 {
-                    ShowNotify(exc.Message, MSGType.Error);
+                    if (_dictPriorities == null ||
+                        _dictPriorities.Count == 0)
+                    {
+                        _dictPriorities =
+                            TaskManager.Instance.GetDictPriorities();
+                    }
+
+                    TaskManager.Instance.AutoSetParentPriority(
+                        this.ProjectId,
+                        task.IdCongViecCha.Value,
+                        _dictPriorities
+                    );
+
+                    TaskManager.Instance.AutoSetParentTime(
+                        this.ProjectId,
+                        task.IdCongViecCha.Value
+                    );
+
+                    TaskManager.Instance.AutoSetParentStatus(
+                        this.ProjectId,
+                        task.IdCongViecCha.Value
+                    );
                 }
+
+                hfDeletingTaskId.Value = string.Empty;
+
+                ShowSuccessDeleteData();
+                grvData.CurrentPageIndex = 1;
+                Rebind();
+            }
+            catch (Exception exc)
+            {
+                ShowNotify(exc.Message, MSGType.Error);
             }
         }
+
         #endregion
 
         #region Buttons

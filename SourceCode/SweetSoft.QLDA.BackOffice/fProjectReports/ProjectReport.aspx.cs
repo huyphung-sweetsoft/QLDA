@@ -12,11 +12,33 @@ using System.Web.UI.WebControls;
 using System.IO;
 using System.Text;
 using System.Globalization;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Data.SqlClient;
+using System.Configuration;
+using SweetSoft.QLDA.DataAccess;
 namespace SweetSoft.QLDA.BackOffice.fProjectReports
 {
     public partial class ProjectReport : BaseAdminPage
     {
         public override ModuleKeys PAGE_FUNCTION_CODE => ModuleKeys.ProjectReport;
+        private sealed class ReportPersonInfo
+        {
+            public string Name { get; set; }
+            public string Email { get; set; }
+            public string Avatar { get; set; }
+            public string Initials { get; set; }
+            public string Color { get; set; }
+            public Guid UserId { get; set; }
+        }
+        // Dữ liệu nhân sự theo từng request, không dùng static cache chung giữa các dự án.
+        private Dictionary<string, ReportPersonInfo> _assigneeProfiles =
+            new Dictionary<string, ReportPersonInfo>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, long> _workSecondsByTaskUser = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<Guid, long> _workSecondsByTask = new Dictionary<Guid, long>();
+        private bool _reportHoursLoaded;
+
         protected void Page_Load(object sender, EventArgs e)
         {
             CtrlProjectTabs1.ProjectId = CurrentProjectId;
@@ -129,9 +151,18 @@ body { word-wrap: break-word; }
 .w-100 { width: 100%; }
 .report-assignee-compact { display: none !important; }
 .report-assignee-expanded { display: block !important; border: 0; padding: 0; }
-.report-person-row { display: block; margin: 3px 0; font-size: 12px; line-height: 1.4; }
+.report-person-row { display: block; margin: 3px 0 6px; font-size: 12px; line-height: 1.4; }
+.report-person-identity { display: block; }
+.report-person-avatar { display: none; }
+.report-person-copy { display: inline; }
+.report-person-name { display: inline; font-weight: 700; }
+.report-person-email { display: none; }
 .report-person-hours { display: inline; margin-left: 8px; color: #64748b; font-weight: 600; }
 .report-task-hours { display: inline; margin-left: 6px; font-size: 11px; color: #64748b; }
+.report-planned-period { display:block;line-height:1.5; }
+.report-period-line {display:block;}
+.report-period-label {color:#64748b;font-size:10px;margin-right:5px;}
+.report-period-date {font-size:11px;font-weight:bold;}
 .report-assignee-more,.report-assignee-tooltip { display: none !important; }
 @page { size: A4; margin: 0; }
 </style>";
@@ -530,6 +561,8 @@ body { word-wrap: break-word; }
             ViewState["ReportCountDeadlineNormal"] = countDeadlineNormal;
             ViewState["ReportCountDeadlineWarning"] = countDeadlineWarning;
             ViewState["ReportCountDeadlineOverdue"] = countDeadlineOverdue;
+            BindReportAssigneeProfiles(dtDoing, dtTodo);
+            LoadReportWorkHours(projectId, fromDate, toDate);
             rptDoingTasks.DataSource = dtDoing;
             rptDoingTasks.DataBind();
             rptTodoTasks.DataSource = dtTodo;
@@ -678,33 +711,318 @@ body { word-wrap: break-word; }
             return value.ToString("0.###", CultureInfo.InvariantCulture);
         }
 
-        // Danh sách nhân viên gốc giữ nguyên; thời lượng tạm là 0, chưa đọc DB giờ công.
-        // Giao diện hiển thị hai tên đầu, mở chi tiết bằng nút +n; PDF hiện toàn bộ.
-        protected string RenderReportAssignees(object namesValue, bool showWorkHours)
+        // Tên trong GetGanttTasks là chuỗi; tra cứu thông tin nhân sự dự án một lần
+        // cho toàn bộ báo cáo. Không tự gán email/avatar nếu hai tài khoản trùng tên.
+        private void BindReportAssigneeProfiles(DataTable doing, DataTable todo)
         {
-            string raw = namesValue == null || namesValue == DBNull.Value ? string.Empty : Convert.ToString(namesValue);
-            if (string.IsNullOrWhiteSpace(raw)) return "—";
-            string[] parts = raw.Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            var names = new List<string>();
-            foreach (string part in parts) if (!string.IsNullOrWhiteSpace(part)) names.Add(part.Trim());
+            _assigneeProfiles = new Dictionary<string, ReportPersonInfo>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> requestedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (DataTable dt in new[] { doing, todo })
+            {
+                if (dt == null || !dt.Columns.Contains("NhanVienThucHien")) continue;
+                foreach (DataRow row in dt.Rows)
+                {
+                    foreach (string name in SplitAssigneeNames(row["NhanVienThucHien"]))
+                        requestedNames.Add(name);
+                }
+            }
+            if (requestedNames.Count == 0) return;
+            try
+            {
+                // Cùng nguồn thành viên/Avatar/Email với ControlHelpers.BindNhanVienDuAnKemAvatar (CostList).
+                DataTable members = RiskManager.Instance.GetAllNhanVienDuAnById(CurrentProjectId);
+                if (members == null || !members.Columns.Contains("IdNhanVien")) return;
+                HashSet<string> ambiguousNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var seenIds = new HashSet<Guid>();
+                int idx = 0;
+                foreach (DataRow member in members.Rows)
+                {
+                    Guid userId;
+                    if (member["IdNhanVien"] == DBNull.Value ||
+                        !Guid.TryParse(Convert.ToString(member["IdNhanVien"]), out userId) ||
+                        userId == Guid.Empty || !seenIds.Add(userId)) continue;
+                    string displayName = RowText(member, "TenNhanVien");
+                    string email = RowText(member, "Email");
+                    string avatar = RowText(member, "Avatar");
+                    AspnetUser user = null;
+                    // Nếu có sẵn tên khớp thì đọc thông tin thiếu; nếu tên không khớp
+                    // vẫn kiểm tra UserName (một số báo cáo liệt kê username).
+                    try { user = UserManager.Instance.GetUserById(userId); }
+                    catch (Exception ex) { System.Diagnostics.Trace.TraceWarning("ProjectReport user: " + ex.Message); }
+                    string userName = user != null ? (user.UserName ?? "") : "";
+                    if (string.IsNullOrWhiteSpace(displayName) && user != null)
+                        displayName = string.IsNullOrWhiteSpace(user.DisplayName) ? userName : user.DisplayName;
+                    if (!requestedNames.Contains(displayName) && !requestedNames.Contains(userName)) continue;
+                    if (string.IsNullOrWhiteSpace(avatar) && user != null) avatar = user.Avatar;
+                    if (string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(userName))
+                    {
+                        try { var membership = Membership.GetUser(userName); if (membership != null) email = membership.Email; }
+                        catch (Exception ex) { System.Diagnostics.Trace.TraceWarning("ProjectReport membership: " + ex.Message); }
+                    }
+                    string[] colors = { "#7c3aed", "#2563eb", "#059669", "#d97706", "#db2777" };
+                    var info = new ReportPersonInfo
+                    {
+                        Name = displayName,
+                        UserId = userId,
+                        Email = string.IsNullOrWhiteSpace(email) ? "Chưa cập nhật email" : email,
+                        Avatar = ReportAvatarUrl(avatar),
+                        Initials = ReportInitials(displayName),
+                        Color = colors[(idx++) % colors.Length]
+                    };
+                    // Cả tên hiển thị và username đều có thể là khóa của chuỗi báo cáo.
+                    foreach (string key in new[] { displayName, userName })
+                    {
+                        if (string.IsNullOrWhiteSpace(key) || !requestedNames.Contains(key)) continue;
+                        if (ambiguousNames.Contains(key)) continue;
+                        if (_assigneeProfiles.ContainsKey(key)) { _assigneeProfiles.Remove(key); ambiguousNames.Add(key); }
+                        else _assigneeProfiles[key] = info;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceError("ProjectReport loading assignees: " + ex);
+                _assigneeProfiles.Clear();
+            }
+        }
+        private static string RowText(DataRow row, string name)
+        {
+            return row.Table.Columns.Contains(name) && row[name] != DBNull.Value ? Convert.ToString(row[name]).Trim() : "";
+        }
+        private static List<string> SplitAssigneeNames(object value)
+        {
+            string raw = value == null || value == DBNull.Value ? "" : Convert.ToString(value);
+            return raw.Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
+        }
+        private string ReportAvatarUrl(string avatar)
+        {
+            if (string.IsNullOrWhiteSpace(avatar) || avatar.EndsWith("user-icon.png", StringComparison.OrdinalIgnoreCase)) return "";
+            if (avatar.StartsWith("~", StringComparison.Ordinal)) return ResolveUrl(avatar);
+            Uri uri;
+            if (Uri.TryCreate(avatar, UriKind.Absolute, out uri))
+                return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps ? avatar : "";
+            if (avatar.StartsWith("//", StringComparison.Ordinal)) return "";
+            return avatar;
+        }
+        private static string ReportInitials(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "?";
+            var parts = name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpperInvariant();
+            return (parts[parts.Length - 2].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpperInvariant();
+        }
+        private static string ReportEncode(string s) { return HttpUtility.HtmlEncode(s ?? ""); }
+        private static string ReportAttr(string s) { return HttpUtility.HtmlAttributeEncode(s ?? ""); }
+        private ReportPersonInfo ResolveReportPerson(string rawName)
+        {
+            ReportPersonInfo existing;
+            if (_assigneeProfiles.TryGetValue(rawName, out existing)) return existing;
+            return new ReportPersonInfo
+            {
+                Name = rawName,
+                Email = "Chưa cập nhật email",
+                Avatar = "",
+                Initials = ReportInitials(rawName),
+                Color = "#7c3aed"
+            };
+        }
+        private static string RenderPersonIdentity(ReportPersonInfo person)
+        {
+            var html = new StringBuilder(220);
+            bool withImage = !string.IsNullOrWhiteSpace(person.Avatar);
+            html.Append("<div class='report-person-identity'>");
+            html.Append("<span class='report-person-avatar").Append(withImage ? "" : " is-fallback")
+                .Append("' style='--report-avatar-bg:").Append(person.Color).Append("'>");
+            if (withImage)
+                html.Append("<img src='").Append(ReportAttr(person.Avatar))
+                    .Append("' alt='' loading='lazy' onerror=\"this.style.display='none';this.parentNode.classList.add('is-fallback');\" />");
+            html.Append("<span class='report-avatar-fallback'>").Append(ReportEncode(person.Initials)).Append("</span></span>");
+            html.Append("<span class='report-person-copy'><span class='report-person-name'>")
+                .Append(ReportEncode(person.Name)).Append("</span><span class='report-person-email'>")
+                .Append(ReportEncode(person.Email)).Append("</span></span></div>");
+            return html.ToString();
+        }
+        // Một hoặc hai người: luôn hiển thị hồ sơ đầy đủ, không có nút đóng/mở.
+        // Từ ba người: giữ danh sách thu gọn +N và bấm được cả ô.
+        // PDF vẫn dùng report-assignee-expanded để in đầy đủ dữ liệu nhân sự.
+        protected string RenderReportAssignees(object taskIdValue, object namesValue, bool showWorkHours)
+        {
+            List<string> names = SplitAssigneeNames(namesValue);
             if (names.Count == 0) return "—";
-            var html = new StringBuilder(400);
-            html.Append("<div class='report-assignee-box' data-report-hours='").Append(showWorkHours ? "1" : "0").Append("'>");
-            html.Append("<div class='report-assignee-compact'>");
-            for (int i = 0; i < names.Count && i < 2; i++)
-                html.Append("<span class='report-person-chip'>").Append(System.Web.HttpUtility.HtmlEncode(names[i])).Append("</span>");
-            int remaining = names.Count - 2;
-            string caption = remaining > 0 ? "+" + remaining.ToString(CultureInfo.InvariantCulture) : "⌄";
-            html.Append("<button type='button' class='report-assignee-more' aria-label='Xem chi tiết người thực hiện' aria-expanded='false' data-collapsed-label='").Append(caption).Append("'>").Append(caption).Append("</button>");
-            html.Append("</div><div class='report-assignee-expanded'>");
+            Guid taskId = ParseReportTaskId(taskIdValue);
+            bool alwaysExpanded = names.Count <= 2;
+            var html = new StringBuilder(450);
+            if (alwaysExpanded)
+            {
+                html.Append("<div class='report-assignee-box is-static is-expanded' aria-label='Danh sách người thực hiện' data-report-hours='")
+                    .Append(showWorkHours ? "1" : "0").Append("'>");
+            }
+            else
+            {
+                html.Append("<div class='report-assignee-box' role='button' tabindex='0' aria-expanded='false' aria-label='Xem danh sách người thực hiện' data-report-hours='")
+                    .Append(showWorkHours ? "1" : "0").Append("'>");
+                html.Append("<div class='report-assignee-compact'>");
+                // Avatar + tên + email được dùng chung nguồn RenderPersonIdentity với bản mở rộng.
+                // Bọc bằng chip nhỏ giúp luôn vừa hàng với nút +N.
+                for (int i = 0; i < 2; i++)
+                {
+                    var person = ResolveReportPerson(names[i]);
+                    html.Append("<span class='report-person-chip'>")
+                        .Append(RenderPersonIdentity(person))
+                        .Append("</span>");
+                }
+                string caption = "+" + (names.Count - 2).ToString(CultureInfo.InvariantCulture);
+                html.Append("<span class='report-assignee-expanded-title'>")
+                    .Append(names.Count.ToString(CultureInfo.InvariantCulture)).Append(" người thực hiện</span>");
+                html.Append("<span class='report-assignee-more' aria-hidden='true' data-collapsed-label='")
+                    .Append(ReportAttr(caption)).Append("'>").Append(ReportEncode(caption)).Append("</span>");
+                html.Append("</div>");
+            }
+            html.Append("<div class='report-assignee-expanded'>");
             foreach (string name in names)
             {
-                html.Append("<div class='report-person-row'><span class='report-person-name'>").Append(System.Web.HttpUtility.HtmlEncode(name)).Append("</span>");
-                if (showWorkHours) html.Append("<span class='report-person-hours'>0 giờ</span>");
+                var person = ResolveReportPerson(name);
+                html.Append("<div class='report-person-row'>").Append(RenderPersonIdentity(person));
+                html.Append("<span class='report-person-hours'>")
+                    .Append(ReportEncode(GetPersonWorkHours(taskId, person.UserId)))
+                    .Append("</span>");
                 html.Append("</div>");
             }
             html.Append("</div></div>");
             return html.ToString();
+        }
+
+        protected string RenderReportPlannedPeriod(object startValue, object endValue)
+        {
+            string start = FormatReportDate(startValue);
+            string end = FormatReportDate(endValue);
+            return "<div class='report-planned-period'>" +
+                "<div class='report-period-line'><span class='report-period-label'>Bắt đầu</span><strong class='report-period-date'>" + ReportEncode(start) + "</strong></div>" +
+                "<div class='report-period-line is-deadline'><span class='report-period-label'>Dự kiến</span><strong class='report-period-date " + GetDeadlineClass(endValue) + "'>" + ReportEncode(end) + "</strong></div>" +
+                "</div>";
+        }
+        private static string FormatReportDate(object value)
+        {
+            return value == null || value == DBNull.Value ? "—" : Convert.ToDateTime(value).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+        }
+        private static Guid ParseReportTaskId(object value)
+        {
+            Guid id;
+            return value != null && value != DBNull.Value && Guid.TryParse(Convert.ToString(value), out id) ? id : Guid.Empty;
+        }
+        private static string FormatReportWorkSeconds(long seconds)
+        {
+            if (seconds <= 0) return "Chưa có công";
+            double hour = Math.Round(seconds / 3600d, 2, MidpointRounding.AwayFromZero);
+            return hour <= 0 ? "<0,01 giờ công" : hour.ToString("0.##", new CultureInfo("vi-VN")) + " giờ công";
+        }
+        protected string GetTaskWorkHoursHtml(object taskIdValue)
+        {
+            Guid task = ParseReportTaskId(taskIdValue);
+            long seconds;
+            string label = !_reportHoursLoaded ? "— giờ công" : FormatReportWorkSeconds(_workSecondsByTask.TryGetValue(task, out seconds) ? seconds : 0);
+            return "<i class='far fa-clock' aria-hidden='true'></i>" + ReportEncode(label);
+        }
+        private string GetPersonWorkHours(Guid task, Guid user)
+        {
+            long seconds;
+            if (!_reportHoursLoaded || task == Guid.Empty || user == Guid.Empty) return "— giờ công";
+            string key = task.ToString("N") + ":" + user.ToString("N");
+            return FormatReportWorkSeconds(_workSecondsByTaskUser.TryGetValue(key, out seconds) ? seconds : 0);
+        }
+
+        // Chỉ đọc các khoảng đã kết toán, một lần mỗi báo cáo; nhóm theo task và nhân sự.
+        // Nếu hệ thống chưa triển khai KhaiBaoGio20, tự dùng bảng khai báo giờ cũ.
+        private void LoadReportWorkHours(Guid projectId, DateTime? fromDate, DateTime? toDate)
+        {
+            _reportHoursLoaded = false;
+            _workSecondsByTaskUser.Clear();
+            _workSecondsByTask.Clear();
+            if (projectId == Guid.Empty) return;
+            try
+            {
+                string connectionName = ConfigurationManager.AppSettings["KhaiBaoGio20.TenKetNoi"];
+                if (string.IsNullOrWhiteSpace(connectionName)) return;
+                ConnectionStringSettings config = ConfigurationManager.ConnectionStrings[connectionName];
+                if (config == null || string.IsNullOrWhiteSpace(config.ConnectionString)) return;
+                using (SqlConnection connection = new SqlConnection(config.ConnectionString))
+                {
+                    connection.Open();
+                    bool hasNew;
+                    bool hasLegacy;
+                    using (var check = new SqlCommand(@"SELECT
+                        CASE WHEN OBJECT_ID(N'dbo.TblKhaiBaoGioPhien',N'U') IS NOT NULL
+                                  AND OBJECT_ID(N'dbo.TblKhaiBaoGioKhoangTinh',N'U') IS NOT NULL THEN 1 ELSE 0 END,
+                        CASE WHEN OBJECT_ID(N'dbo.TblKhaiBaoGioCa',N'U') IS NOT NULL
+                                  AND OBJECT_ID(N'dbo.TblKhaiBaoGioChiTiet',N'U') IS NOT NULL THEN 1 ELSE 0 END", connection))
+                    using (SqlDataReader reader = check.ExecuteReader())
+                    {
+                        if (!reader.Read()) return;
+                        hasNew = Convert.ToInt32(reader.GetValue(0)) == 1;
+                        hasLegacy = Convert.ToInt32(reader.GetValue(1)) == 1;
+                    }
+                    if (!hasNew && !hasLegacy) return;
+                    // Khi mới triển khai schema 2.0 nhưng chưa có phiên của dự án,
+                    // vẫn đọc nhật ký bảng cũ; không đánh tráo 'chưa ghi nhận' thành 0.
+                    if (hasNew && hasLegacy)
+                    {
+                        using (var probe = new SqlCommand("SELECT CASE WHEN EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien WHERE IdDuAn=@DuAn) THEN 1 ELSE 0 END", connection))
+                        {
+                            probe.Parameters.Add("@DuAn", SqlDbType.UniqueIdentifier).Value = projectId;
+                            hasNew = Convert.ToInt32(probe.ExecuteScalar()) == 1;
+                        }
+                    }
+                    string sql = hasNew
+                        ? @"SELECT p.IdCongViec,p.IdNhanVien,
+                                  ISNULL(SUM(CONVERT(bigint,k.SoGiay)),0) AS TongGiay
+                            FROM dbo.TblKhaiBaoGioPhien p
+                            INNER JOIN dbo.TblKhaiBaoGioKhoangTinh k ON k.IdPhien=p.IdPhien
+                            WHERE p.IdDuAn=@DuAn
+                              AND (@TuNgay IS NULL OR k.NgayLam>=@TuNgay)
+                              AND (@DenNgay IS NULL OR k.NgayLam<=@DenNgay)
+                            GROUP BY p.IdCongViec,p.IdNhanVien"
+                        : @"SELECT ct.IdCongViec,ca.UserId,
+                                  ISNULL(SUM(CONVERT(bigint,ct.SoPhut)),0)*60 AS TongGiay
+                            FROM dbo.TblKhaiBaoGioChiTiet ct
+                            INNER JOIN dbo.TblKhaiBaoGioCa ca ON ca.IdKhaiBaoCa=ct.IdKhaiBaoCa
+                            WHERE ct.IdDuAn=@DuAn AND ISNULL(ct.DaXoa,0)=0 AND ISNULL(ca.DaXoa,0)=0
+                              AND (@TuNgay IS NULL OR ca.NgayLam>=@TuNgay)
+                              AND (@DenNgay IS NULL OR ca.NgayLam<=@DenNgay)
+                            GROUP BY ct.IdCongViec,ca.UserId";
+                    using (var command = new SqlCommand(sql, connection))
+                    {
+                        command.CommandTimeout = 30;
+                        command.Parameters.Add("@DuAn", SqlDbType.UniqueIdentifier).Value = projectId;
+                        command.Parameters.Add("@TuNgay", SqlDbType.Date).Value = fromDate.HasValue ? (object)fromDate.Value.Date : DBNull.Value;
+                        command.Parameters.Add("@DenNgay", SqlDbType.Date).Value = toDate.HasValue ? (object)toDate.Value.Date : DBNull.Value;
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader.IsDBNull(0) || reader.IsDBNull(1)) continue;
+                                Guid taskId = reader.GetGuid(0);
+                                Guid personId = reader.GetGuid(1);
+                                long seconds = reader.IsDBNull(2) ? 0L : Math.Max(0L, Convert.ToInt64(reader.GetValue(2)));
+                                string key = taskId.ToString("N") + ":" + personId.ToString("N");
+                                long previous;
+                                _workSecondsByTaskUser.TryGetValue(key, out previous);
+                                _workSecondsByTaskUser[key] = previous + seconds;
+                                _workSecondsByTask.TryGetValue(taskId, out previous);
+                                _workSecondsByTask[taskId] = previous + seconds;
+                            }
+                        }
+                    }
+                    _reportHoursLoaded = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _reportHoursLoaded = false;
+                _workSecondsByTask.Clear();
+                _workSecondsByTaskUser.Clear();
+                System.Diagnostics.Trace.TraceWarning("ProjectReport giờ công: " + ex.Message);
+            }
         }
 
         #region Helpers dùng cho file ASPX

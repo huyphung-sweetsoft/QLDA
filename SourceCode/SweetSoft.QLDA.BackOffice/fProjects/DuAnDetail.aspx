@@ -6,6 +6,8 @@
 <%@ Register Src="~/fProjects/Controls/CtrlProjectTabs.ascx" TagPrefix="SweetSoft" TagName="CtrlProjectTabs" %>
 <%@ Register Src="~/fProjects/Controls/CtrlDuAnForm.ascx" TagPrefix="SweetSoft" TagName="CtrlDuAnForm" %>
 <%@ Register Src="~/fProjects/Controls/CtrlChonNhanVien.ascx" TagPrefix="SweetSoft" TagName="CtrlChonNhanVien" %>
+<%@ Register Src="~/fProjects/Controls/CtrlChiTietCong.ascx" TagPrefix="SweetSoft" TagName="CtrlChiTietCong" %>
+<%@ Register Src="~/fProjects/Controls/CtrlChiTietCongCuocHop.ascx" TagPrefix="SweetSoft" TagName="CtrlChiTietCongCuocHop" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="cpHeadVendor" runat="server">
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
@@ -197,9 +199,10 @@
         .pd-personal-grid > .pd-personal-card { width:auto; min-width:0; max-width:none; height:var(--pd-available-card-height,600px); transition:box-shadow .22s ease; }
         .pd-collapsed-rail > .pd-personal-card.pd-unpinned { display:block; width:100%; height:52px!important; min-height:52px!important; max-height:52px!important; overflow:hidden; box-shadow:0 2px 7px rgba(83,33,142,.035); }
         .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-personal-card-head { display:flex; align-items:center; justify-content:space-between; gap:5px; height:50px; min-height:50px; padding:7px 7px 7px 9px; border-bottom:0; }
-        .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main { flex:1 1 auto; min-width:0; white-space:nowrap; }
-        .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main i { display:none; }
-        .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:1.3; }
+        .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main { flex:1 1 auto; min-width:0; gap:7px; white-space:nowrap; }
+        /* Khay thu gon luon giu icon dai dien cua tung bang. */
+        .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main > i { display:inline-flex; flex:0 0 15px; width:15px; align-items:center; justify-content:center; color:#6b34ac; font-size:13px; }
+        .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main strong { display:block; min-width:0; flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:1.3; }
         .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-actions { display:none!important; }
         .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-card-body,.pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-personal-card-footer { display:none!important; }
         .pd-pin-toggle { appearance:none; flex:0 0 28px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; margin-left:auto; padding:0; border:1px solid #d9c3f3; border-radius:8px; background:#f6efff; color:#6731a0; cursor:pointer; transition:background .18s,border-color .18s,color .18s,transform .26s,box-shadow .18s; }
@@ -211,14 +214,530 @@
         .pd-pin-toggle:focus-visible { outline:2px solid #9163d1; outline-offset:2px; }
         .pd-pin-toggle.pd-pin-bounce { animation:pdPinBounce .38s ease; }
         @keyframes pdPinBounce { 0% { transform:scale(1); } 35% { transform:scale(1.15) rotate(-8deg); } 70% { transform:scale(.95) rotate(4deg); } 100% { transform:scale(1); } }
-        .pd-pin-flying-head { position:fixed!important; z-index:2100; margin:0!important; pointer-events:none!important; box-sizing:border-box; background:#faf8fd; border:1px solid #e6dbee; border-radius:10px; box-shadow:0 8px 22px rgba(73,35,117,.17); overflow:hidden; }
+        /* Ban sao header khi ghim/bo ghim CHI gom icon + ten, khong keo theo badge/filter/nut. */
+        .pd-pin-flying-head { position:fixed!important; display:flex!important; align-items:center!important; justify-content:flex-start!important; z-index:2100; margin:0!important; padding:8px 12px!important; pointer-events:none!important; box-sizing:border-box; background:#faf8fd; border:1px solid #e6dbee; border-radius:10px; box-shadow:0 8px 22px rgba(73,35,117,.12); overflow:hidden; }
+        .pd-pin-flying-head .pd-head-main { display:flex; flex:1 1 auto; min-width:0; align-items:center; gap:7px; white-space:nowrap; }
+        .pd-pin-flying-head .pd-head-main > i { display:inline-flex!important; flex:0 0 15px; width:15px; align-items:center; justify-content:center; color:#6b34ac; font-size:13px; }
+        .pd-pin-flying-head .pd-head-main strong { min-width:0; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; line-height:1.3; }
+        .pd-pin-flying-head .pd-head-actions,.pd-pin-flying-head .pd-pin-toggle { display:none!important; }
         .pd-personal-layout.has-collapsed .pd-personal-grid { min-width:0; }
         @media(max-width:1450px) { .pd-personal-grid { grid-template-columns:repeat(var(--pd-open-columns,2),minmax(0,1fr)); } }
         @media(max-width:780px) { .pd-personal-layout.has-collapsed { grid-template-columns:minmax(142px,var(--pd-rail-width,175px)) minmax(0,1fr); gap:8px; } .pd-personal-grid { grid-template-columns:1fr; } .pd-collapsed-rail .pd-personal-card.pd-unpinned .pd-head-main strong { font-size:11px; } }
         @media(max-width:550px) { .pd-personal-layout.has-collapsed { grid-template-columns:minmax(0,1fr); gap:10px; } .pd-collapsed-rail { flex-direction:column; } .pd-collapsed-rail > .pd-personal-card.pd-unpinned { max-width:240px; } }
         @media(prefers-reduced-motion:reduce) { .pd-pin-toggle,.pd-pin-toggle svg,.pd-personal-grid > .pd-personal-card { transition:none!important; animation:none!important; } }
 
+
+        /* Quan ly cong thanh vien: 2 cot, khong lam gian danh sach khi mo chi tiet. */
+        .pd-team-layout{display:grid;grid-template-columns:minmax(255px,31%) minmax(0,1fr);gap:14px;min-height:480px;align-items:stretch}
+        .pd-team-side,.pd-team-detail{min-width:0;border:1px solid #e4deed;border-radius:13px;background:#fff;overflow:hidden;box-shadow:0 3px 14px rgba(47,31,72,.035)}
+        .pd-team-side{display:flex;flex-direction:column;min-height:0}
+        .pd-team-side-head,.pd-team-detail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:12px 14px;border-bottom:1px solid #ece7f4;background:#faf8fd}
+        .pd-team-side-head strong,.pd-team-detail-head strong{font-size:13.5px;color:#382b4c}
+        .pd-team-side-head small,.pd-team-detail-head small{flex:none;border-radius:999px;background:#f0e7fb;color:#6330a1;font-size:10.5px;font-weight:800;padding:4px 8px}
+        .pd-team-search{position:relative;margin:12px 12px 9px}
+        .pd-team-search>i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#907ca7;font-size:12px;pointer-events:none}
+        .pd-team-search input{width:100%;height:36px;padding:6px 12px 6px 33px;border:1px solid #e3dbea;border-radius:8px;outline:0;background:#fff;color:#372d47;font-size:12px}
+        .pd-team-search input:focus{border-color:#a67ad1;box-shadow:0 0 0 3px rgba(113,52,169,.08)}
+        .pd-team-people{min-height:0;max-height:580px;overflow:auto;padding:0 9px 10px;scrollbar-width:thin;scrollbar-color:#d7c5e8 transparent}
+        .pd-team-person{appearance:none;display:flex;align-items:center;gap:10px;width:100%;padding:10px;border:1px solid transparent;border-radius:10px;background:transparent;text-align:left;color:#41354f;cursor:pointer;transition:background .17s,border-color .17s;}
+        .pd-team-person[hidden],.pd-team-no-match[hidden]{display:none!important}
+        .pd-team-person + .pd-team-person{margin-top:4px}
+        .pd-team-person:hover{background:#f7f1ff;border-color:#e6d5f7}
+        .pd-team-person.is-active{background:#f1e9fc;border-color:#ceb7ed;box-shadow:inset 3px 0 #6c32a8}
+        .pd-team-person:focus-visible{outline:2px solid #a06bce;outline-offset:1px}
+        .pd-team-avatar{position:relative;display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid #d9caeb}
+        .pd-team-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+        .pd-team-avatar-fallback{display:grid;place-items:center;position:absolute;inset:0;color:#fff;font-size:11px;font-weight:800}
+        .pd-team-avatar-fallback[hidden]{display:none!important}
+        .pd-team-person-info{flex:1;min-width:0}
+        .pd-team-person-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;font-weight:750;color:#342748}
+        .pd-team-person-email{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px;font-size:10.5px;color:#8b809a}
+        .pd-team-pm{flex:none;padding:3px 5px;border-radius:5px;background:#efe3fb;color:#6a32a1;font-size:10px;font-weight:850}
+        .pd-team-no-match{padding:13px;text-align:center;color:#9888a5;font-size:12px}
+        .pd-team-detail{display:flex;flex-direction:column}
+        .pd-team-detail-person{display:flex;align-items:center;gap:10px;min-width:0}
+        .pd-team-detail-person>i{color:#6b34ac}
+        .pd-team-detail-name{display:block;font-size:13.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#382b4c}
+        .pd-team-detail-email{display:block;font-size:11px;color:#8b809a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .pd-team-detail-head small{white-space:nowrap}
+        .pd-team-detail-body{flex:1;min-height:0;padding:13px;max-height:650px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d7c5e8 transparent}
+        .pd-team-hours-banner{display:flex;align-items:center;gap:7px;margin-bottom:10px;padding:9px 11px;border:1px solid #ede2f5;border-radius:9px;background:#fbf8ff;color:#79658a;font-size:11px;line-height:1.5}
+        .pd-team-hours-banner i{color:#7138a8}
+        .pd-team-accordion{margin-bottom:9px;border:1px solid #e8dfef;border-radius:10px;overflow:hidden;background:#fdfcff}
+        .pd-team-accordion.is-total{border-color:#d8bdf9;background:#f5effc}
+        .pd-team-accordion-header{appearance:none;display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:10px 12px;border:0;background:transparent;text-align:left;cursor:pointer;color:#3e3150}
+        .pd-team-accordion-header:hover{background:#f5f0fc}
+        .pd-team-accordion-header:focus-visible{outline:2px solid #a57adb;outline-offset:-2px}
+        .pd-team-accordion-title{flex:1;min-width:0;font-size:12.5px;font-weight:750}
+        .pd-team-hours-value{flex:none;white-space:nowrap;font-size:13px;font-weight:850;color:#6630a1}
+        .pd-team-accordion-header>i{flex:none;font-size:11px;color:#987ead;transition:transform .2s}
+        .pd-team-accordion.is-expanded .pd-team-accordion-header>i{transform:rotate(180deg)}
+        .pd-team-accordion-content{border-top:1px solid #eee8f5;background:#fff;padding:6px 10px 10px}
+        .pd-team-accordion-content[hidden]{display:none!important}
+        .pd-team-record{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid #f0ebf6}
+        .pd-team-record:last-child{border-bottom:0}
+        .pd-team-record-main{flex:1;min-width:0}
+        .pd-team-record-title{font-size:12px;font-weight:750;color:#3a3049;line-height:1.4;overflow-wrap:anywhere}
+        .pd-team-record-code{margin-right:5px;padding:2px 5px;border:1px solid #decdf5;border-radius:5px;background:#f5effe;color:#6634a2;font-size:10px}
+        .pd-team-record-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px;color:#94899f;font-size:10.5px}
+        .pd-team-record-state{flex:none;max-width:122px;padding:3px 6px;border-radius:6px;background:#f3eff8;color:#775b91;font-size:10px;font-weight:700;text-align:center;line-height:1.3}
+        .pd-team-record.is-extra{display:none}
+        .pd-team-accordion.show-all .pd-team-record.is-extra{display:flex}
+        .pd-team-show-all{appearance:none;margin-top:8px;border:0;background:transparent;color:#6c35a2;font-size:11px;font-weight:800;cursor:pointer}
+        .pd-team-record-empty{padding:13px 5px;text-align:center;color:#978aa3;font-size:11.5px}
+        .pd-team-hours-footnote{font-size:11px;color:#80758f;line-height:1.55;padding:7px 3px 2px}
+        @media(max-width:900px){.pd-team-layout{grid-template-columns:minmax(215px,34%) minmax(0,1fr);gap:10px}}
+        @media(max-width:680px){.pd-team-layout{grid-template-columns:1fr}.pd-team-people{max-height:230px}.pd-team-detail-body{max-height:75vh}.pd-team-side-head,.pd-team-detail-head{min-height:50px}.pd-view-switcher{max-width:100%;flex-wrap:wrap}.pd-view-button{flex:1 1 auto;white-space:nowrap}}
+        @media(prefers-reduced-motion:reduce){.pd-team-accordion-header>i,.pd-team-person{transition:none}}
+
+
+        /* Chi tiet tu khai: chi hien khi cot du rong, khong day danh sach cao them luc hep. */
+        .pd-personal-card{container-type:inline-size}
+        .pd-personal-ds-breakdown{display:none;margin-top:5px;font-size:11px;line-height:1.35;color:#8a779a}
+        @container (min-width: 430px){.pd-personal-ds-breakdown{display:block}}
+        /* Doi soat: nut mo rong va bang doc theo chieu ngang, dung mau team view. */
+        .pd-team-top-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+        .pd-team-accordion{position:relative}
+        .pd-team-accordion:not(.is-total) .pd-team-accordion-header{padding-right:12px}
+        .pd-team-accordion:not(.is-total) .pd-team-hours-value{margin-right:37px}
+        .pd-ds-expand{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:none;border:1px solid #d9c3f3;border-radius:8px;background:#fff;color:#6d32a0;cursor:pointer;transition:background .16s,color .16s,transform .16s}
+        .pd-ds-expand:hover{background:#f0e7fb;color:#512084;transform:scale(1.055)}
+        .pd-ds-expand:focus-visible{outline:2px solid #9461c4;outline-offset:2px}
+        .pd-ds-expand-section{position:absolute;right:33px;top:12px;width:29px;height:29px}
+        .pd-ds-expand i{font-size:13px}
+        .pd-ds-hidden-sources[hidden]{display:none!important}
+        .pd-ds-table-scroller{max-width:100%;overflow:auto;margin:12px 0 15px;border:1px solid #eadff4;border-radius:11px}
+        .pd-ds-table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;color:#392e4e;font-size:12.5px}
+        .pd-ds-table th{position:sticky;top:0;background:#f6f1fc;color:#5c298b;text-align:left;font-weight:750;white-space:nowrap;z-index:1}
+        .pd-ds-table th,.pd-ds-table td{padding:11px 12px;border-bottom:1px solid #efe9f5;vertical-align:middle}
+        .pd-ds-table tbody tr:hover{background:#fcfaff}
+        .pd-ds-table tbody tr:last-child td{border-bottom:0}
+        .pd-ds-name{min-width:215px;font-weight:650}
+        .pd-ds-table td:not(.pd-ds-name){white-space:nowrap;font-variant-numeric:tabular-nums}
+        .pd-ds-table td strong{font-weight:800;color:#603095}
+        .pd-ds-status{display:inline-block;border-radius:6px;background:#f5eefc;color:#69329b;padding:4px 7px;font-size:11px;font-weight:700}
+        .pd-ds-link-note{display:block;margin-top:5px;color:#937a9d;font-weight:400;max-width:350px;white-space:normal}
+        .pd-ds-subtitle{margin:17px 0 7px;color:#4d237b;font-size:15px;font-weight:800}
+        .pd-ds-footnote{margin-top:10px;color:#877997;font-size:12px;line-height:1.6}
+        .pd-detail-modal-wrap .pd-ds-table-scroller{max-height:57vh}
+
+        /* V10 - Popup chi tiet bang cong: rong tren desktop, chi scroll doc ben trong modal. */
+        .modal.pd-work-detail-modal { overflow-y:hidden!important; padding-right:0!important; }
+        .modal.pd-work-detail-modal .modal-dialog {
+            width:min(1340px,calc(100vw - 40px))!important;
+            max-width:calc(100vw - 40px)!important;
+            margin:26px auto!important;
+            min-height:0!important;
+            max-height:calc(100vh - 52px)!important;
+            max-height:calc(100dvh - 52px)!important;
+        }
+        .modal.pd-work-detail-modal .modal-content {
+            display:flex!important;flex-direction:column!important;
+            min-width:0;min-height:0;
+            max-height:calc(100vh - 52px)!important;
+            max-height:calc(100dvh - 52px)!important;
+            overflow:visible!important; /* Nut X goc cua ExtraModal nam nhô ra ngoai */
+        }
+        .modal.pd-work-detail-modal .modal-header,
+        .modal.pd-work-detail-modal .modal-footer {flex:0 0 auto;}
+        .modal.pd-work-detail-modal .modal-body {
+            flex:1 1 auto;min-width:0;min-height:0;
+            overflow-y:auto!important;overflow-x:hidden!important;
+            overscroll-behavior:contain;
+            scrollbar-width:thin;scrollbar-color:#d6c1ed transparent;
+        }
+        /* Khong cuon doc long trong bang; cuon ngang neu man hinh qua hep. */
+        .modal.pd-work-detail-modal .pd-detail-modal-wrap,
+        .modal.pd-work-detail-modal #pdPersonalDetailModalBody {min-width:0;}
+        .modal.pd-work-detail-modal .pd-detail-list {max-height:none!important;overflow:visible!important;}
+        .modal.pd-work-detail-modal .pd-ds-table-scroller {
+            max-width:100%;max-height:none!important;
+            overflow-x:auto!important;overflow-y:hidden!important;
+            overscroll-behavior-x:contain;
+        }
+        .modal.pd-work-detail-modal .pd-ds-table {min-width:990px;}
+        body:has(.modal.pd-work-detail-modal.show) {overflow:hidden!important;}
+        @media(max-width:700px) {
+            .modal.pd-work-detail-modal .modal-dialog {
+                width:calc(100vw - 20px)!important;max-width:calc(100vw - 20px)!important;
+                margin:24px auto!important;
+                max-height:calc(100dvh - 48px)!important;
+            }
+            .modal.pd-work-detail-modal .modal-content {max-height:calc(100dvh - 48px)!important;}
+        }
+        /* V11 - Bang cong gon: click tong gio nhay den bang, hover ma/ten mo preview */
+        .pd-personal-ds-breakdown {display:none!important}
+        .pd-ds-overview {display:flex;align-items:center;flex-wrap:wrap;gap:8px 15px;margin:5px 0 13px;color:#4d237b;font-size:14px}
+        .pd-ds-overview>strong {font-size:14px;font-weight:800}
+        .pd-ds-equation {display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12.5px}
+        .pd-ds-jump {appearance:none;display:inline-flex;align-items:center;max-width:100%;padding:5px 9px;border:1px solid #e2d1f5;border-radius:7px;background:#faf7ff;color:#602797;font-weight:750;cursor:pointer;transition:background .15s,border-color .15s}
+        .pd-ds-jump:hover,.pd-ds-jump:focus-visible {background:#ede1fb;border-color:#bb98e7;outline:none}
+        .pd-ds-equation-sign {color:#9683a8;font-weight:800}
+        .pd-ds-equation-total {color:#52218d;font-size:13px;font-weight:850;white-space:nowrap}
+        .pd-ds-section-title {scroll-margin-top:88px}
+        .pd-ds-hover-trigger {display:inline;cursor:help;border-radius:4px;border-bottom:1px dashed transparent;transition:border-color .15s,color .15s}
+        .pd-ds-hover-trigger:hover,.pd-ds-hover-trigger:focus-visible {color:#672d9e;border-bottom-color:#af8ad5;outline:none}
+        .pd-ds-hover-template[hidden] {display:none!important}
+        .pd-ds-floating-preview {position:fixed;z-index:2147483000;box-sizing:border-box;width:min(465px,calc(100vw - 24px));padding:0;pointer-events:none;filter:drop-shadow(0 10px 22px rgba(52,27,87,.16))}
+        .pd-ds-floating-preview .pd-detail-item {margin:0;border:1px solid #dac7f0;border-radius:12px;background:#fff;box-shadow:none}
+        .pd-ds-floating-preview .pd-personal-progress {margin-top:10px}
+        .modal.pd-work-detail-modal .modal-body {padding:0!important}
+        .modal.pd-work-detail-modal .pd-detail-modal-wrap {padding:12px 14px 18px}
+        .modal.pd-work-detail-modal .pd-detail-modal-heading {position:sticky;top:0;z-index:5;padding:12px 14px 10px;margin:-12px -14px 12px;background:#fff;border-bottom:1px solid #eee6f5}
+        .modal.pd-work-detail-modal .pd-detail-modal-heading .pd-detail-modal-sub {margin-bottom:4px}
+        .modal.pd-work-detail-modal .modal-header {overflow:visible!important}
+        .modal.pd-work-detail-modal .modal-dialog {overflow:visible!important}
+        .modal.pd-work-detail-modal .modal-content {overflow:visible!important}
+
+        #projectTeamHoursView .pd-team-record-aside{min-width:120px}
+
+        /* Team hours v2: hai cột có chiều cao bằng nhau, cuộn riêng, không kéo dài trang. */
+        #projectTeamHoursView { min-width:0; }
+        #projectTeamHoursView .pd-team-layout {
+            height:var(--pd-team-available-height, 520px);
+            min-height:0;max-height:none;overflow:hidden;align-items:stretch;
+            box-sizing:border-box;
+        }
+        #projectTeamHoursView .pd-team-side,
+        #projectTeamHoursView .pd-team-detail { height:100%;min-height:0;max-height:100%; }
+        /* Không để card cha kéo cao toàn trang ngoài chiều cao đo theo viewport. */
+        #projectTeamHoursView { min-height:0; }
+        #pdDetailPageCard:has(#projectTeamHoursView:not([hidden])) { min-height:0!important; }
+        #projectTeamHoursView .pd-team-side { display:flex;flex-direction:column; }
+        #projectTeamHoursView .pd-team-people {
+            flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;
+            overscroll-behavior:contain;
+        }
+        #projectTeamHoursView .pd-team-detail { display:flex;flex-direction:column; }
+        #projectTeamHoursView .pd-team-detail-body {
+            flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;
+            overscroll-behavior:contain;
+        }
+        /* Tăng 1 nấc chữ tại cả hai vùng. */
+        #projectTeamHoursView .pd-team-side-head strong,
+        #projectTeamHoursView .pd-team-detail-head strong { font-size:14.5px; }
+        #projectTeamHoursView .pd-team-side-head small,
+        #projectTeamHoursView .pd-team-detail-head small { font-size:11.5px; }
+        #projectTeamHoursView .pd-team-search input { font-size:13px; }
+        #projectTeamHoursView .pd-team-person-name { font-size:13.5px; }
+        #projectTeamHoursView .pd-team-person-email { font-size:11.5px; }
+        #projectTeamHoursView .pd-team-pm { font-size:11px; }
+        #projectTeamHoursView .pd-team-detail-name { font-size:14.5px; }
+        #projectTeamHoursView .pd-team-detail-email { font-size:12px; }
+        #projectTeamHoursView .pd-team-hours-banner,
+        #projectTeamHoursView .pd-team-hours-footnote { font-size:12px; }
+        #projectTeamHoursView .pd-team-accordion-title { font-size:13.5px; }
+        #projectTeamHoursView .pd-team-accordion-count {
+            font-size:inherit;font-weight:750;color:#79658e;
+        }
+        #projectTeamHoursView .pd-team-hours-value { font-size:14px; }
+        #projectTeamHoursView .pd-team-record-title { font-size:13px; }
+        #projectTeamHoursView .pd-team-record-meta { font-size:11.5px; }
+        #projectTeamHoursView .pd-team-record-code { font-size:11px; }
+        #projectTeamHoursView .pd-team-record-state { font-size:11px;max-width:138px; }
+        #projectTeamHoursView .pd-team-show-all,
+        #projectTeamHoursView .pd-team-record-empty { font-size:12px; }
+        /* Giờ nằm TRÊN, trạng thái nằm DƯỚI (cùng mép phải) như khung mẫu.
+           Không dùng width của hai cột cạnh nhau, tiết kiệm ngang cho tên công việc. */
+        #projectTeamHoursView .pd-team-record { align-items:center;gap:12px; }
+        #projectTeamHoursView .pd-team-record-aside {
+            flex:0 0 138px;display:flex;flex-direction:column;
+            align-items:flex-end;justify-content:center;
+            gap:5px;min-width:0;margin-left:auto;padding:0 5px 0 0;
+            text-align:right;
+        }
+        #projectTeamHoursView .pd-team-record-hours {
+            order:0;display:block;flex:none;white-space:nowrap;
+            color:#6733a0;font-size:12.5px;font-weight:400;line-height:1.25;
+            font-variant-numeric:tabular-nums;
+        }
+        #projectTeamHoursView .pd-team-record-state {
+            order:1;display:inline-flex;align-items:center;justify-content:center;
+            max-width:138px;padding:3px 8px;border:1px solid transparent;
+            border-radius:6px;white-space:nowrap;
+            font-size:11px;font-weight:650;line-height:1.25;
+        }
+        /* Màu nhất quán theo loại trạng thái, không để tất cả cùng tím. */
+        #projectTeamHoursView .pd-team-state-done {
+            color:#18734d;background:#e6f7ed;border-color:#bfe8cf;
+        }
+        #projectTeamHoursView .pd-team-state-active {
+            color:#186baf;background:#e7f3ff;border-color:#c1ddfa;
+        }
+        #projectTeamHoursView .pd-team-state-live {
+            color:#11764e;background:#dff7e9;border-color:#ade5c8;
+        }
+        #projectTeamHoursView .pd-team-state-upcoming {
+            color:#6d36aa;background:#f1e9fd;border-color:#deccf5;
+        }
+        #projectTeamHoursView .pd-team-state-pending {
+            color:#a76912;background:#fff4df;border-color:#f6dfb2;
+        }
+        #projectTeamHoursView .pd-team-state-ended {
+            color:#677487;background:#f1f3f7;border-color:#e0e5ec;
+        }
+        #projectTeamHoursView .pd-team-state-neutral {
+            color:#667085;background:#f5f6f9;border-color:#e7e9ef;
+        }
+        /* Xac nhan tham gia hop: xanh la neu co, hong do neu khong.
+           Khong nham voi trang thai "Da ket thuc" (vi tat ca cuoc hop deu da ket thuc). */
+        #projectTeamHoursView .pd-team-state-joined {
+            color:#16764c;background:#e7f8ee;border-color:#b9e8cc;
+        }
+        #projectTeamHoursView .pd-team-state-not-joined {
+            color:#aa4858;background:#fff0f2;border-color:#f3cad1;
+        }
+        @media(max-width:680px) {
+            #projectTeamHoursView .pd-team-layout { height:auto;min-height:0;max-height:none;overflow:visible; }
+            #projectTeamHoursView .pd-team-side { height:230px;max-height:230px; }
+            #projectTeamHoursView .pd-team-detail { height:var(--pd-team-mobile-detail-height, 420px);max-height:none; }
+            #projectTeamHoursView .pd-team-people { max-height:none; }
+            #projectTeamHoursView .pd-team-detail-body { max-height:none; }
+            #projectTeamHoursView .pd-team-record-aside { flex:0 0 118px;min-width:0;gap:5px;padding-right:0; }
+            #projectTeamHoursView .pd-team-record-hours { flex:none; }
+        }
+        /* Trạng thái dự án theo enum, thống nhất ở tiêu đề và vùng thông tin. */
+        .pd-project-status-badge {
+            display:inline-flex;align-items:center;justify-content:center;
+            flex-shrink:0;min-height:28px;padding:5px 13px;
+            border:1px solid transparent;border-radius:999px;
+            font-size:11.5px;font-weight:750;line-height:1.2;white-space:nowrap;
+        }
+        .pd-status-not-started { background:#fff7e7;border-color:#f5dbad;color:#a76811; }
+        .pd-status-in-progress { background:#eaf3ff;border-color:#bcd7ff;color:#2368bb; }
+        .pd-status-paused { background:#fff3e0;border-color:#f2d3a1;color:#ac6813; }
+        .pd-status-completed { background:#e7f8ef;border-color:#b7e7cd;color:#137649; }
+        .pd-status-ended { background:#f1f2f5;border-color:#d5d8de;color:#505768; }
+        @media(prefers-reduced-motion:reduce) { #projectTeamHoursView * { scroll-behavior:auto!important; } }
+
+        /* Giữ trạng thái tab ngay cả trong khoảnh khắc UpdatePanel thay HTML.
+           Màu tab/khung view dựa trên trạng thái ở <html>, không dựa vào class mặc định từ server. */
+        html[data-pd-project-detail-view] #projectDetailViewSwitcher .pd-view-button {
+            background:transparent !important;
+            color:#6e6180 !important;
+        }
+        html[data-pd-project-detail-view] #projectDetailViewSwitcher .pd-view-button:hover {
+            background:#eee7f8 !important;
+            color:#52218d !important;
+        }
+        html[data-pd-project-detail-view="team"] #projectDetailViewSwitcher [data-project-view="team"],
+        html[data-pd-project-detail-view="mine"] #projectDetailViewSwitcher [data-project-view="mine"],
+        html[data-pd-project-detail-view="project"] #projectDetailViewSwitcher [data-project-view="project"] {
+            background:#5b2499 !important;
+            color:#fff !important;
+        }
+        html[data-pd-project-detail-view="team"] #projectDetailViewSwitcher [data-project-view="team"]:hover,
+        html[data-pd-project-detail-view="mine"] #projectDetailViewSwitcher [data-project-view="mine"]:hover,
+        html[data-pd-project-detail-view="project"] #projectDetailViewSwitcher [data-project-view="project"]:hover {
+            background:#5b2499 !important;
+            color:#fff !important;
+        }
+        html[data-pd-project-detail-view] #projectInfoView,
+        html[data-pd-project-detail-view] #projectPersonalView,
+        html[data-pd-project-detail-view] #projectTeamHoursView { display:none !important; }
+        html[data-pd-project-detail-view="team"] #projectTeamHoursView,
+        html[data-pd-project-detail-view="mine"] #projectPersonalView,
+        html[data-pd-project-detail-view="project"] #projectInfoView { display:block !important; }
+
+        /* CtrlMeet-compatible 4-stage meeting status, including upcoming 15-minute window. */
+        .pd-meet-state { border:1px solid transparent;white-space:nowrap; }
+        .pd-meet-state-0 { color:#6431a0!important;background:#f2ecfa!important;border-color:#d6c2ed!important; }
+        .pd-meet-state-1 { color:#6431a0!important;background:#f2ecfa!important;border-color:#d6c2ed!important;animation:pdMeetSoonPulse 2s ease-in-out infinite; }
+        .pd-meet-state-2 { color:#15803d!important;background:#dcfce7!important;border-color:#bbf7d0!important;animation:pdMeetLivePulse 1.6s ease-in-out infinite; }
+        .pd-meet-state-3 { color:#64748b!important;background:#f1f5f9!important;border-color:#cbd5e1!important; }
+        @keyframes pdMeetSoonPulse { 50% { box-shadow:0 0 0 3px rgba(100,49,160,.1); } }
+        @keyframes pdMeetLivePulse { 50% { box-shadow:0 0 0 3px rgba(22,163,74,.14); } }
+        /* Thanh tiến độ theo trạng thái từ CtrlTask, không còn mặc định màu tím cho mọi task. */
+        .pd-personal-progress { position:relative;height:7px;overflow:hidden;background:#edf0f6;border-radius:100px;margin-top:9px;cursor:help; }
+        .pd-personal-progress > span { display:block;height:100%;border-radius:inherit;background:#94a3b8;transition:width .35s ease; }
+        .pd-task-bar-0 > span { background:#94a3b8; }
+        .pd-task-bar-1 > span { background:#0ea5e9; }
+        .pd-task-bar-2 > span { background:#22c55e; }
+        .pd-task-bar-3 > span { background:#ef4444; }
+        .pd-task-bar-4 > span { background:#f59e0b; }
+        .pd-task-bar-soon > span { background:#f59e0b; }
+        .pd-task-bar-late > span { background:#ef4444; }
+        .pd-personal-tag.pd-task-state-0 { color:#475569;background:#f1f5f9;border:1px solid #cbd5e1; }
+        .pd-personal-tag.pd-task-state-1 { color:#0369a1;background:#e0f2fe;border:1px solid #bae6fd; }
+        .pd-personal-tag.pd-task-state-2,.pd-personal-tag.pd-task-state-3 { color:#15803d;background:#dcfce7;border:1px solid #bbf7d0; }
+        .pd-personal-tag.pd-task-state-4 { color:#92400e;background:#fef3c7;border:1px solid #fcd34d; }
+        .pd-personal-tag.pd-task-severity-soon { color:#92400e;background:#fffbeb;border-color:#fcd34d; }
+        .pd-personal-tag.pd-task-severity-late { color:#b91c1c;background:#fef2f2;border-color:#fecaca; }
+        .pd-task-late-note { display:inline-flex;color:#dc2626;font-size:10.5px;font-weight:700;white-space:nowrap; }
+        .pd-task-percent { cursor:help;font-variant-numeric:tabular-nums; }
+        /* Unified progress tooltip. HTML title is intentionally avoided to prevent native black tooltips. */
+        .pd-task-percent:focus-visible,.pd-personal-progress:focus-visible { outline:2px solid #9972c2;outline-offset:3px; }
+        .pd-task-progress-hint {
+            --pd-hint-bg:#f1f5f9;--pd-hint-line:#cbd5e1;--pd-hint-ink:#475569;--pd-hint-accent:#94a3b8;
+            position:fixed;z-index:1095;max-width:min(340px,calc(100vw - 24px));width:max-content;
+            padding:10px 13px 10px 15px;box-sizing:border-box;pointer-events:none;
+            border:1px solid var(--pd-hint-line);border-left:3px solid var(--pd-hint-accent);
+            border-radius:10px;background:var(--pd-hint-bg);color:var(--pd-hint-ink);
+            font-size:12.5px;font-weight:650;line-height:1.5;letter-spacing:0;
+            text-align:left;white-space:normal;overflow-wrap:break-word;
+            box-shadow:0 9px 24px rgba(35,25,60,.13);
+            opacity:0;visibility:hidden;transform:translateX(6px);
+            transition:opacity .17s ease,transform .17s ease,visibility .17s ease;
+        }
+        .pd-task-progress-hint.is-left { transform:translateX(-6px); }
+        .pd-task-progress-hint.is-visible { opacity:1;visibility:visible;transform:translateX(0); }
+        /* Mũi tên hướng về thanh tiến độ: ưu tiên bên phải, đảo sang trái ở sát mép màn hình. */
+        .pd-task-progress-hint::after { content:'';position:absolute;left:-7px;top:var(--pd-hint-arrow-y,50%);width:12px;height:12px;
+            background:var(--pd-hint-bg);border-left:2px solid var(--pd-hint-accent);border-bottom:2px solid var(--pd-hint-accent);
+            transform:translateY(-50%) rotate(45deg); }
+        .pd-task-progress-hint.is-left::after { left:auto;right:-7px;border:0;border-top:2px solid var(--pd-hint-accent);border-right:2px solid var(--pd-hint-accent); }
+        .pd-task-progress-hint[data-pd-tone="pd-task-bar-1"] { --pd-hint-bg:#eaf7ff;--pd-hint-line:#aedffc;--pd-hint-ink:#075985;--pd-hint-accent:#0ea5e9; }
+        .pd-task-progress-hint[data-pd-tone="pd-task-bar-2"] { --pd-hint-bg:#ecfdf3;--pd-hint-line:#bbf7d0;--pd-hint-ink:#166534;--pd-hint-accent:#22c55e; }
+        .pd-task-progress-hint[data-pd-tone="pd-task-bar-3"],.pd-task-progress-hint[data-pd-tone="pd-task-bar-late"] { --pd-hint-bg:#fff1f2;--pd-hint-line:#fecdd3;--pd-hint-ink:#9f1239;--pd-hint-accent:#ef4444; }
+        .pd-task-progress-hint[data-pd-tone="pd-task-bar-4"],.pd-task-progress-hint[data-pd-tone="pd-task-bar-soon"] { --pd-hint-bg:#fffbeb;--pd-hint-line:#fde68a;--pd-hint-ink:#92400e;--pd-hint-accent:#f59e0b; }
+        @media(prefers-reduced-motion:reduce) { .pd-task-progress-hint { transition:none!important; } }
+        @media(prefers-reduced-motion:reduce) { .pd-meet-state,.pd-personal-progress>span { animation:none!important;transition:none!important; } }
+
+        /* Inline edit thông tin dự án: giữ bố cục hai cột và chiều cao gọn. */
+        .pd-project-inline-fields { row-gap:14px!important; }
+        .pd-project-inline-field { min-width:0; }
+        .pd-project-inline-label { display:block; margin:0 0 6px; color:#38294c; font-size:13px; font-weight:750; line-height:1.3; }
+        .pd-project-inline-control { width:100%; min-width:0; min-height:38px; border:1px solid #d6c8e8; border-radius:8px; background:#fff; padding:7px 11px; color:#34263e; font-size:13px; line-height:1.35; box-sizing:border-box; transition:border-color .15s,box-shadow .15s; }
+        .pd-project-inline-control:focus { outline:none; border-color:#854ac5; box-shadow:0 0 0 3px rgba(111,44,171,.10); }
+        .pd-project-inline-control:disabled,.pd-project-inline-control[readonly] { background:#f5f5f9; border-color:#e3dfea; color:#786e83; opacity:1; cursor:default; }
+        .pd-project-inline-control ~ .select2-container { width:100%!important; }
+        .pd-project-inline-fields .pd-project-inline-static { min-height:38px; display:flex; align-items:center; padding:6px 0; }
+        .pd-project-inline-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-top:14px; }
+        .pd-project-inline-note { color:#8c8098; font-size:11px; line-height:1.4; margin-right:auto; }
+        .pd-project-inline-save { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid #54218d; border-radius:8px; padding:8px 15px; background:#54218d; color:#fff!important; font-size:12.5px; font-weight:750; text-decoration:none!important; white-space:nowrap; }
+        .pd-project-inline-save:hover { background:#421574; border-color:#421574; }
+        .pd-project-inline-contract-note { display:block; margin:5px 0 0; color:#8a7f96; font-size:10.5px; }
+        @media(max-width:700px) { .pd-project-inline-fields { row-gap:12px!important; } }
     </style>
+    <script type="text/javascript">
+        // Delegated handlers survive WebForms UpdatePanel re-rendering.
+        (function () {
+            if (window.__pdTaskProgressHintInstalled) return;
+            window.__pdTaskProgressHintInstalled = true;
+            var pending = null, target = null, hint = null;
+            var delay = 0;
+            var selector = '[data-pd-progress-tooltip]';
+
+            function findTarget(node) { return node && node.closest ? node.closest(selector) : null; }
+            function getHint() {
+                if (hint && document.body.contains(hint)) return hint;
+                hint = document.createElement('div');
+                hint.id = 'pdTaskProgressHint';
+                hint.className = 'pd-task-progress-hint';
+                hint.setAttribute('role', 'tooltip');
+                document.body.appendChild(hint);
+                return hint;
+            }
+            function stop() {
+                if (pending !== null) { clearTimeout(pending); pending = null; }
+                if (target && target.getAttribute('aria-describedby') === 'pdTaskProgressHint') target.removeAttribute('aria-describedby');
+                target = null;
+                if (hint) hint.classList.remove('is-visible');
+            }
+            function place(el) {
+                var anchor = el.getBoundingClientRect(), popup = hint.getBoundingClientRect();
+                var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+                var gap = 14, edge = 10;
+                var rightX = anchor.right + gap;
+                var leftX = anchor.left - popup.width - gap;
+                // Hiện bên phải; nếu chạm cạnh màn hình thì tự đảo sang bên trái.
+                var rightFits = rightX + popup.width <= vw - edge;
+                var leftFits = leftX >= edge;
+                var useLeft = !rightFits && (leftFits || anchor.left > vw - anchor.right);
+                var x = useLeft ? leftX : rightX;
+                x = Math.max(edge, Math.min(vw - popup.width - edge, x));
+                var centerY = anchor.top + anchor.height / 2;
+                var y = Math.max(edge, Math.min(vh - popup.height - edge, centerY - popup.height / 2));
+                hint.classList.toggle('is-left', useLeft);
+                hint.style.setProperty('--pd-hint-arrow-y', Math.max(16, Math.min(popup.height - 16, centerY - y)) + 'px');
+                hint.style.left = x + 'px';
+                hint.style.top = y + 'px';
+            }
+            function show(el) {
+                if (target !== el || !document.body.contains(el)) return;
+                var message = el.getAttribute('data-pd-progress-tooltip');
+                if (!message) return;
+                var box = getHint();
+                box.textContent = message;
+                var tone = el.getAttribute('data-pd-progress-tone') || 'pd-task-bar-0';
+                if (!/^(pd-task-bar-(?:[0-4]|late|soon))$/.test(tone)) tone = 'pd-task-bar-0';
+                box.setAttribute('data-pd-tone', tone);
+                box.classList.remove('is-visible');
+                box.style.top = '-9999px';
+                box.style.left = '0px';
+                // Temporarily make the tooltip measurable but visually hidden.
+                box.style.visibility = 'hidden';
+                box.classList.add('is-visible');
+                place(el);
+                box.style.visibility = '';
+                el.setAttribute('aria-describedby', box.id);
+            }
+            function prepare(el) {
+                if (!el || target === el) return;
+                stop();
+                target = el;
+                if (delay === 0) show(el);
+                else pending = setTimeout(function () { pending = null; show(el); }, delay);
+            }
+            document.addEventListener('pointerover', function (event) {
+                var el = findTarget(event.target);
+                if (el) prepare(el);
+            });
+            document.addEventListener('pointerout', function (event) {
+                if (target && target.contains(event.target) && !target.contains(event.relatedTarget)) stop();
+            });
+            document.addEventListener('focusin', function (event) { var el = findTarget(event.target); if (el) prepare(el); });
+            document.addEventListener('focusout', function (event) { if (target && target.contains(event.target)) stop(); });
+            // If the list scrolls, don't leave a floating tooltip detached from its row.
+            document.addEventListener('scroll', stop, true);
+            window.addEventListener('resize', stop);
+            document.addEventListener('pointerdown', stop);
+        })();
+    </script>
+    <script type="text/javascript">
+        (function () {
+            if (window.__pdMeetingStatusHeartbeatInstalled) return;
+            window.__pdMeetingStatusHeartbeatInstalled = true;
+            var captions = ['Đã lên lịch', 'Sắp diễn ra', 'Đang diễn ra', 'Đã kết thúc'];
+            function refreshStatuses() {
+                var spans = document.querySelectorAll('[data-pd-meeting-status="1"]');
+                var now = new Date();
+                for (var i = 0; i < spans.length; i++) {
+                    var badge = spans[i], from = badge.getAttribute('data-pd-meet-start'), to = badge.getAttribute('data-pd-meet-end');
+                    var start = from ? new Date(from) : null, end = to ? new Date(to) : null;
+                    var status = end && now >= end ? 3 : !start || isNaN(start.getTime()) ? 0
+                        : now >= start ? 2 : start.getTime() <= now.getTime() + 15 * 60000 ? 1 : 0;
+                    for (var j = 0; j < 4; j++) badge.classList.remove('pd-meet-state-' + j);
+                    badge.classList.add('pd-meet-state-' + status);
+                    if (badge.textContent !== captions[status]) badge.textContent = captions[status];
+                    var card = badge.closest('.pd-personal-meetings .pd-personal-item');
+                    if (card) card.classList.toggle('pd-meeting-ended', status === 3);
+                }
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshStatuses);
+            else refreshStatuses();
+            setInterval(refreshStatuses, 60000);
+            if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(refreshStatuses);
+            }
+        })();
+    </script>
+
+    <script type="text/javascript">
+        (function () {
+            // Lưu theo dự án và duy trì qua những lần đóng/mở trình duyệt.
+            var params = new URLSearchParams(window.location.search);
+            var projectId = params.get('ProjectId') || window.location.search;
+            var key = 'SweetSoftQLDA.ProjectDetail.LastView.v2:' + window.location.pathname + ':' + projectId;
+            window.QLDAProjectDetailViewStorageKey = key;
+            var chosen = 'mine'; // Lần truy cập đầu tiên.
+            try {
+                var saved = window.localStorage.getItem(key);
+                if (saved === 'mine' || saved === 'team' || saved === 'project') chosen = saved;
+            } catch (ignored) { }
+            document.documentElement.setAttribute('data-pd-project-detail-view', chosen);
+        })();
+    </script>
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
     <div class="row">
@@ -238,7 +757,7 @@
                                 <div class="pd-project-main-left">
                                     <div class="pd-project-identity">
                                         <h4 class="fw-semibold text-primary"><asp:Label runat="server" ID="lblTenDuAn"></asp:Label></h4>
-                                        <span class="badge rounded-pill bg-light text-secondary border px-3 py-2"><asp:Label runat="server" ID="lblTrangThaiHead"></asp:Label></span>
+                                        <asp:Label runat="server" ID="lblTrangThaiHead" CssClass="pd-project-status-badge"></asp:Label>
                                     </div>
                                 </div>
                                 <div class="pd-project-actions">
@@ -256,11 +775,12 @@
                                 </div>
                             </div>
                             <div id="projectDetailViewSwitcher" class="pd-view-switcher" role="tablist" aria-label="Chế độ xem dự án">
-                                <button type="button" id="btnProjectMyView" class="pd-view-button" data-project-view="mine" role="tab" aria-selected="false" aria-controls="projectPersonalView" title="Công việc, cuộc họp và vấn đề được giao cho bạn trong dự án này"><i class="fas fa-user-check"></i><span>Phần việc của tôi</span></button>
-                                <button type="button" id="btnProjectInfoView" class="pd-view-button is-active" data-project-view="project" role="tab" aria-selected="true" aria-controls="projectInfoView" title="Xem thông tin, tiến độ và thành viên dự án"><i class="fas fa-info-circle"></i><span>Thông tin dự án</span></button>
+                                <asp:PlaceHolder runat="server" ID="phTeamHoursTab"><button type="button" id="btnProjectTeamHours" class="pd-view-button" data-project-view="team" role="tab" aria-selected="false" aria-controls="projectTeamHoursView" title="Quản lý giờ công các thành viên trong dự án - chỉ PM và Admin"><i class="far fa-clock"></i><span>Công của thành viên</span></button></asp:PlaceHolder>
+                                <button type="button" id="btnProjectMyView" class="pd-view-button is-active" data-project-view="mine" role="tab" aria-selected="true" aria-controls="projectPersonalView" title="Công việc, cuộc họp và vấn đề được giao cho bạn trong dự án này"><i class="fas fa-user-check"></i><span>Phần việc của tôi</span></button>
+                                <button type="button" id="btnProjectInfoView" class="pd-view-button" data-project-view="project" role="tab" aria-selected="false" aria-controls="projectInfoView" title="Xem thông tin, tiến độ và thành viên dự án"><i class="fas fa-info-circle"></i><span>Thông tin dự án</span></button>
                             </div>
                         </div>
-                        <div id="projectInfoView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectInfoView">
+                        <div id="projectInfoView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectInfoView" hidden>
                         <div class="row g-4 align-items-start">
 
                             <%-- Cột trái --%>
@@ -270,63 +790,49 @@
                                 <section class="mb-3">
 
                          
-                                    <div class="row g-4">
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <%= GetResourceText(BackEndResourceKeys.CUSTOMER) %>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblKhachHang"></asp:Label>
+                                    <div class="row g-3 pd-project-inline-fields">
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <label class="pd-project-inline-label"><%= GetResourceText(BackEndResourceKeys.CUSTOMER) %></label>
+                                            <SweetSoft:ExtraDropdown runat="server" ID="ddlInlineKhachHang" SimpleInit="true" CssClass="pd-project-inline-control" PlaceHolder="Chọn khách hàng" />
+                                            <asp:Label runat="server" ID="lblKhachHang" Visible="false" />
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblGiaTriHopDong"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <label class="pd-project-inline-label"><%= GetResourceText(BackEndResourceKeys.CONTRACT_VALUE) %></label>
+                                            <asp:TextBox runat="server" ID="txtInlineGiaTriHopDong" CssClass="pd-project-inline-control" MaxLength="20" placeholder="Chưa có" inputmode="decimal" />
+                                            <asp:Label runat="server" ID="lblGiaTriHopDong" Visible="false" />
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblNgayKy"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <label class="pd-project-inline-label"><%= GetResourceText(BackEndResourceKeys.SIGN_DATE) %></label>
+                                            <asp:TextBox runat="server" ID="txtInlineNgayKy" type="date" CssClass="pd-project-inline-control" />
+                                            <asp:Label runat="server" ID="lblNgayKy" Visible="false" />
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <%= GetResourceText(BackEndResourceKeys.PROJECT_TYPE) %>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblLoaiDuAn"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <label class="pd-project-inline-label"><%= GetResourceText(BackEndResourceKeys.PROJECT_TYPE) %></label>
+                                            <SweetSoft:ExtraDropdown runat="server" ID="ddlInlineLoaiDuAn" SimpleInit="true" CssClass="pd-project-inline-control" PlaceHolder="Chọn loại dự án" />
+                                            <asp:Label runat="server" ID="lblLoaiDuAn" Visible="false" />
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <%= GetResourceText(BackEndResourceKeys.START_DATE) %>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblNgayBatDau"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <label class="pd-project-inline-label"><%= GetResourceText(BackEndResourceKeys.START_DATE) %></label>
+                                            <asp:TextBox runat="server" ID="txtInlineNgayBatDau" type="date" CssClass="pd-project-inline-control" />
+                                            <asp:Label runat="server" ID="lblNgayBatDau" Visible="false" />
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                Ngày hoàn thành dự kiến
-                                            </div>
-                                            <asp:Label runat="server" ID="lblNgayHoanThanhDuKien"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <span class="pd-project-inline-label">Ngày hoàn thành dự kiến</span>
+                                            <div class="pd-project-inline-static"><asp:Label runat="server" ID="lblNgayHoanThanhDuKien" /></div>
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <asp:Label runat="server" ID="lblNgayKetThucThucTeTitle" Text="Ngày hoàn thành thực tế"></asp:Label>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblNgayKetThucThucTe"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <span class="pd-project-inline-label"><asp:Label runat="server" ID="lblNgayKetThucThucTeTitle" Text="Ngày hoàn thành thực tế" /></span>
+                                            <div class="pd-project-inline-static"><asp:Label runat="server" ID="lblNgayKetThucThucTe" /></div>
                                         </div>
-
-                                        <div class="col-md-6">
-                                            <div class="font-size-8 fw-bold mb-1">
-                                                <%= GetResourceText(BackEndResourceKeys.STATUS) %>
-                                            </div>
-                                            <asp:Label runat="server" ID="lblTrangThai"></asp:Label>
+                                        <div class="col-md-6 pd-project-inline-field">
+                                            <span class="pd-project-inline-label"><%= GetResourceText(BackEndResourceKeys.STATUS) %></span>
+                                            <div class="pd-project-inline-static"><asp:Label runat="server" ID="lblTrangThai" /></div>
                                         </div>
                                     </div>
+                                    <asp:Panel ID="pnlProjectInlineActions" runat="server" CssClass="pd-project-inline-actions">
+                                        <span class="pd-project-inline-note">Những thông tin đã khóa được giữ nguyên.</span>
+                                        <asp:LinkButton ID="btnInlineSaveProject" runat="server" CausesValidation="false" CssClass="pd-project-inline-save" OnClick="btnInlineSaveProject_Click"><i class="fas fa-save"></i>Cập nhật</asp:LinkButton>
+                                    </asp:Panel>
                                 </section>
 
                                 <%-- Tiến độ --%>
@@ -538,7 +1044,25 @@
                             </div>
                         </div> <%-- /row g-4 --%>
                         </div> <%-- /projectInfoView --%>
-                        <div id="projectPersonalView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectMyView" hidden>
+                        <%-- Chỉ render cho PM/Admin: cả tab và nội dung đều được ẩn phía server. --%>
+                        <asp:PlaceHolder runat="server" ID="phTeamHoursPanel">
+                            <div id="projectTeamHoursView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectTeamHours" hidden>
+                                <div class="pd-team-layout">
+                                    <section class="pd-team-side" aria-label="Danh sách nhân viên dự án">
+                                        <div class="pd-team-side-head"><strong><i class="fas fa-users me-2" style="color:#6b34ac"></i>Nhân sự dự án</strong><small id="pdTeamMemberCount">Thành viên</small></div>
+                                        <label class="pd-team-search"><i class="fas fa-search" aria-hidden="true"></i><input type="search" id="pdTeamSearch" placeholder="Tìm theo tên hoặc email..." autocomplete="off" aria-label="Tìm nhân viên" /></label>
+                                        <div class="pd-team-people" id="pdTeamPeople"><asp:Literal ID="litProjectTeamMembers" runat="server" EnableViewState="false" /></div>
+                                        <div class="pd-team-no-match" id="pdTeamNoMatch" hidden>Không tìm thấy nhân viên phù hợp.</div>
+                                    </section>
+                                    <section class="pd-team-detail" aria-label="Bảng công nhân viên được chọn">
+                                        <asp:HiddenField runat="server" ID="hfTeamHoursMember" />
+                                        <asp:LinkButton runat="server" ID="lbtLoadTeamHours" OnClick="lbtLoadTeamHours_Click" CausesValidation="false" Style="display:none;" />
+                                        <asp:Literal ID="litProjectTeamHours" runat="server" EnableViewState="false" />
+                                    </section>
+                                </div>
+                            </div>
+                        </asp:PlaceHolder>
+                        <div id="projectPersonalView" class="pd-view-panel" role="tabpanel" aria-labelledby="btnProjectMyView">
                             <%-- Dynamic UI only - no new designer.cs field needed. --%>
                             <asp:Literal runat="server" ID="litProjectPersonal" EnableViewState="false" />
                         </div>
@@ -549,15 +1073,9 @@
 </div>
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="cpModalMain" runat="server">
-    <SweetSoft:ExtraModal runat="server" ID="mdlPersonalDetail" Type="Primary" Title="Chi tiết phần việc" Width="92%">
-        <ContentTemplate>
-            <div class="pd-detail-modal-wrap">
-                <h4 id="pdPersonalDetailTitle" class="pd-detail-modal-title">Chi tiết</h4>
-                <p id="pdPersonalDetailSub" class="pd-detail-modal-sub">Xem thêm thông tin trong phạm vi dự án hiện tại.</p>
-                <div id="pdPersonalDetailModalBody"></div>
-            </div>
-        </ContentTemplate>
-    </SweetSoft:ExtraModal>
+    <%-- V14: Popup chi tiet ca nhan / bang cong PM duoc quan ly boi control rieng. --%>
+    <SweetSoft:CtrlChiTietCong runat="server" ID="CtrlChiTietCong1" />
+    <SweetSoft:CtrlChiTietCongCuocHop runat="server" ID="CtrlChiTietCongCuocHop1" />
     <SweetSoft:ExtraModal runat="server" ID="mdlStatusChange" Type="Primary">
         <ContentTemplate>
             <asp:UpdatePanel ID="upStatusChange" runat="server" UpdateMode="Conditional">
@@ -733,41 +1251,88 @@
         (function () {
             if (window.ProjectDetailViewSwitchBound) return;
             window.ProjectDetailViewSwitchBound = true;
-            var storageKey = 'qlda-project-detail-view:' + window.location.pathname + window.location.search;
-            function getRemembered() { try { return window.sessionStorage.getItem(storageKey) === 'mine' ? 'mine' : 'project'; } catch (ex) { return 'project'; } }
+            // Dùng chung key với đoạn script ở <head>; localStorage nhớ qua lần truy cập sau.
+            var storageKey = window.QLDAProjectDetailViewStorageKey ||
+                ('SweetSoftQLDA.ProjectDetail.LastView.v2:' + window.location.pathname + ':' + (new URLSearchParams(window.location.search).get('ProjectId') || window.location.search));
+            var currentView = document.documentElement.getAttribute('data-pd-project-detail-view') || 'mine';
+            function getRemembered() {
+                try {
+                    var value = window.localStorage.getItem(storageKey);
+                    if (value === 'mine' || value === 'team' || value === 'project') return value;
+                } catch (ignored) { }
+                return currentView;
+            }
             var pdHeightRaf = 0;
+            // Cùng một cách tính height cho tab Công của thành viên và Phần việc của tôi.
+            // Lấy tọa độ trên viewport hiện tại, dự phòng footer + padding card + khoảng thở;
+            // không lấy topInDocument (dễ cao hơn vùng nhìn khi trang đã bị scroll).
+            function getDetailContentHeight(node) {
+                if (!node) return 520;
+                var bounds = node.getBoundingClientRect();
+                var footer = document.querySelector('footer, #footer, .footer, .footer-page');
+                var footerHeight = footer ? Math.min(70, Math.max(24, footer.getBoundingClientRect().height)) : 30;
+                var pageCard = document.getElementById('pdDetailPageCard');
+                var cardPadding = pageCard ? (parseFloat(window.getComputedStyle(pageCard).paddingBottom) || 0) : 16;
+                // Dự trữ 18px ngoài footer/padding để không bật scrollbar toàn trang.
+                var free = Math.floor(window.innerHeight - bounds.top - footerHeight - cardPadding - 18);
+                var maxHeight = window.innerWidth > 1450 ? 780 : 550;
+                return Math.max(210, Math.min(maxHeight, free));
+            }
             function fitPersonalCardsToViewport() {
                 var view = document.getElementById('projectPersonalView');
                 var grid = view && view.querySelector('.pd-personal-grid');
                 if (!grid || view.hidden) return;
-                if (!window.matchMedia || !window.matchMedia('(min-width:1451px)').matches) {
+                if (window.matchMedia && window.matchMedia('(max-width:780px)').matches) {
                     grid.style.removeProperty('--pd-available-card-height');
                     return;
                 }
-                // Phần còn lại đến footer hệ thống; không tính lại theo vị trí cuộn hiện tại.
-                var topInDocument = grid.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0);
-                var footer = document.querySelector('footer, #footer, .footer, .footer-page');
-                var footerHeight = footer ? Math.min(55, Math.max(24, footer.getBoundingClientRect().height)) : 28;
-                var safeGap = footerHeight + 18;
-                var available = Math.floor(window.innerHeight - topInDocument - safeGap);
-                // Màn hình thấp vẫn dùng được; màn hình cao không tạo bảng quá dài.
-                var height = Math.max(350, Math.min(780, available));
-                grid.style.setProperty('--pd-available-card-height', height + 'px');
+                grid.style.setProperty('--pd-available-card-height', getDetailContentHeight(grid) + 'px');
             }
             function schedulePersonalHeightFit() {
                 if (pdHeightRaf) window.cancelAnimationFrame(pdHeightRaf);
-                pdHeightRaf = window.requestAnimationFrame(function () { pdHeightRaf = 0; fitPersonalCardsToViewport(); });
+                pdHeightRaf = window.requestAnimationFrame(function () {
+                    pdHeightRaf = 0;
+                    fitPersonalCardsToViewport();
+                });
+            }
+            var pdTeamHeightRaf = 0;
+            function fitTeamHoursToViewport() {
+                var view = document.getElementById('projectTeamHoursView');
+                var layout = view && view.querySelector('.pd-team-layout');
+                if (!layout || view.hidden) return;
+                if (window.matchMedia && window.matchMedia('(max-width:680px)').matches) {
+                    layout.style.removeProperty('--pd-team-available-height');
+                    var detail = layout.querySelector('.pd-team-detail');
+                    if (detail) detail.style.setProperty('--pd-team-mobile-detail-height', Math.max(330, Math.floor(window.innerHeight * 0.52)) + 'px');
+                    return;
+                }
+                layout.style.setProperty('--pd-team-available-height', getDetailContentHeight(layout) + 'px');
+            }
+            function scheduleTeamHoursHeightFit() {
+                if (pdTeamHeightRaf) window.cancelAnimationFrame(pdTeamHeightRaf);
+                pdTeamHeightRaf = window.requestAnimationFrame(function () {
+                    pdTeamHeightRaf = 0;
+                    fitTeamHoursToViewport();
+                });
             }
             function showView(value, remember) {
                 var root = document.getElementById('projectDetailViewSwitcher');
                 var mine = document.getElementById('projectPersonalView');
                 var project = document.getElementById('projectInfoView');
+                var team = document.getElementById('projectTeamHoursView');
                 if (!root || !mine || !project) return;
-                var isMine = value === 'mine';
+                // Người không phải PM/Admin không có DOM tab team; tuyệt đối không khôi phục team.
+                var selected = value === 'project' ? 'project' : (value === 'team' && team && root.querySelector('[data-project-view="team"]') ? 'team' : 'mine');
+                currentView = selected;
+                // Cập nhật trạng thái ở ngoài UpdatePanel TRƯỚC khi đổi DOM.
+                // Khi AJAX render lại, CSS vẫn giữ đúng tab trong suốt lần thay HTML.
+                document.documentElement.setAttribute('data-pd-project-detail-view', selected);
+                var isMine = selected === 'mine';
                 mine.hidden = !isMine;
-                project.hidden = isMine;
+                project.hidden = selected !== 'project';
+                if (team) team.hidden = selected !== 'team';
                 Array.prototype.forEach.call(root.querySelectorAll('[data-project-view]'), function (button) {
-                    var active = button.getAttribute('data-project-view') === (isMine ? 'mine' : 'project');
+                    var active = button.getAttribute('data-project-view') === selected;
                     button.classList.toggle('is-active', active);
                     button.setAttribute('aria-selected', active ? 'true' : 'false');
                     button.setAttribute('tabindex', active ? '0' : '-1');
@@ -775,24 +1340,10 @@
                 // min-vh-100 bắt toàn bộ thẻ cao ít nhất 100vh, kể cả đã có header trên trang.
                 // Chỉ bỏ giới hạn này trong view cá nhân, giữ nguyên cho Thông tin dự án.
                 var pageCard = document.getElementById('pdDetailPageCard');
-                if (pageCard) pageCard.classList.toggle('min-vh-100', !isMine);
+                if (pageCard) pageCard.classList.toggle('min-vh-100', selected === 'project');
                 if (isMine) schedulePersonalHeightFit();
-                if (remember) { try { window.sessionStorage.setItem(storageKey, isMine ? 'mine' : 'project'); } catch (ex) {} }
-            }
-            function findModalByClientId(clientId) {
-                var direct = document.getElementById(clientId);
-                var modal = direct && direct.classList && direct.classList.contains('modal') ? direct : (direct ? direct.querySelector('.modal') : null);
-                return modal;
-            }
-            function openBootstrapModal(clientId) {
-                var modal = findModalByClientId(clientId);
-                if (!modal) return false;
-                if (window.bootstrap && window.bootstrap.Modal) {
-                    (window.bootstrap.Modal.getInstance && window.bootstrap.Modal.getInstance(modal) || new window.bootstrap.Modal(modal)).show();
-                } else if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
-                    window.jQuery(modal).modal('show');
-                }
-                return false;
+                if (selected === 'team') scheduleTeamHoursHeightFit();
+                if (remember) { try { window.localStorage.setItem(storageKey, selected); } catch (ignored) { } }
             }
             var pdFilters = { task: 'all', meeting: 'all', issue: 'all' };
             var pdFilterSettings = {
@@ -823,19 +1374,46 @@
                 var empty = card.querySelector('.pd-filter-empty');
                 if (empty) empty.hidden = !onlyOpen || records.length === 0 || visibleCount !== 0;
             }
-            function openPersonalDetail(button) {
-                var sourceId = button.getAttribute('data-pd-detail-source');
-                var source = sourceId ? document.getElementById(sourceId) : null;
-                var body = document.getElementById('pdPersonalDetailModalBody');
-                var title = document.getElementById('pdPersonalDetailTitle');
-                var sub = document.getElementById('pdPersonalDetailSub');
-                if (!source || !body) return false;
-                if (title) title.textContent = button.getAttribute('data-pd-detail-title') || 'Chi tiết';
-                if (sub) sub.textContent = button.getAttribute('data-pd-detail-sub') || 'Xem thêm thông tin trong phạm vi dự án hiện tại.';
-                body.innerHTML = source.innerHTML;
-                return openBootstrapModal('<%= mdlPersonalDetail.ClientID %>');
-            }
             document.addEventListener('click', function (event) {
+                var teamMember = event.target.closest ? event.target.closest('#projectTeamHoursView [data-pd-team-member]') : null;
+                if (teamMember) {
+                    event.preventDefault();
+                    if (teamMember.classList.contains('is-active')) return;
+                    var selectedInput = document.getElementById('<%= hfTeamHoursMember.ClientID %>');
+                    var loadButton = document.getElementById('<%= lbtLoadTeamHours.ClientID %>');
+                    if (selectedInput && loadButton) {
+                        selectedInput.value = teamMember.getAttribute('data-pd-team-member') || '';
+                        Array.prototype.forEach.call(document.querySelectorAll('#pdTeamPeople [data-pd-team-member]'), function (el) {
+                            var active = el === teamMember;
+                            el.classList.toggle('is-active', active);
+                            el.setAttribute('aria-pressed', active ? 'true' : 'false');
+                        });
+                        loadButton.click();
+                    }
+                    return;
+                }
+                var accordion = event.target.closest ? event.target.closest('#projectTeamHoursView [data-pd-team-toggle]') : null;
+                if (accordion) {
+                    event.preventDefault();
+                    var section = accordion.closest('.pd-team-accordion');
+                    if (!section) return;
+                    var content = section.querySelector('.pd-team-accordion-content');
+                    var opening = !section.classList.contains('is-expanded');
+                    section.classList.toggle('is-expanded', opening);
+                    accordion.setAttribute('aria-expanded', opening ? 'true' : 'false');
+                    if (content) content.hidden = !opening;
+                    return;
+                }
+                var showAll = event.target.closest ? event.target.closest('#projectTeamHoursView [data-pd-team-show-all]') : null;
+                if (showAll) {
+                    event.preventDefault();
+                    var section = showAll.closest('.pd-team-accordion');
+                    if (!section) return;
+                    var expanded = !section.classList.contains('show-all');
+                    section.classList.toggle('show-all', expanded);
+                    showAll.textContent = expanded ? 'Thu gọn danh sách' : (showAll.getAttribute('data-collapse-label') || 'Xem tất cả');
+                    return;
+                }
                 var viewButton = event.target.closest ? event.target.closest('#projectDetailViewSwitcher [data-project-view]') : null;
                 if (viewButton) { event.preventDefault(); showView(viewButton.getAttribute('data-project-view'), true); return; }
                 var filterButton = event.target.closest ? event.target.closest('[data-pd-toggle-filter]') : null;
@@ -857,7 +1435,16 @@
                         var movingCard = document.querySelector('#projectPersonalView ' + pdPinSelectors[pinName]);
                         var movingHead = movingCard && movingCard.querySelector('.pd-personal-card-head');
                         var before = movingHead ? movingHead.getBoundingClientRect() : null;
-                        var ghost = movingHead && before && before.width > 0 ? movingHead.cloneNode(true) : null;
+                        // Animation chi mang icon + ten bang, tranh badge/filter/nut X bi co ep khi thu.
+                        var ghost = null;
+                        if (movingHead && before && before.width > 0) {
+                            var main = movingHead.querySelector('.pd-head-main');
+                            if (main) {
+                                ghost = document.createElement('div');
+                                ghost.className = 'pd-pin-flying-head';
+                                ghost.appendChild(main.cloneNode(true));
+                            }
+                        }
                         var oldRects = snapshotOpenCards();
                         pdPins[pinName] = !pdPins[pinName];
                         savePinnedCards();
@@ -869,7 +1456,26 @@
                     return;
                 }
                 var detailButton = event.target.closest ? event.target.closest('[data-pd-detail-source]') : null;
-                if (detailButton) { event.preventDefault(); openPersonalDetail(detailButton); return; }
+                if (detailButton) {
+                    event.preventDefault();
+                    var detailSource = detailButton.getAttribute('data-pd-detail-source');
+                    if (detailSource === 'pdPersonalMeetingDetail' || detailSource === 'pdTeamDetail-meeting') {
+                        if (window.QLDAProjectMeetingPopup) window.QLDAProjectMeetingPopup.open(detailButton);
+                    } else if (window.QLDAProjectDetailPopup) window.QLDAProjectDetailPopup.open(detailButton);
+                    return;
+                }
+            });
+            document.addEventListener('input', function (event) {
+                if (!event.target || event.target.id !== 'pdTeamSearch') return;
+                var text = String(event.target.value || '').trim().toLocaleLowerCase('vi-VN');
+                var visible = 0;
+                Array.prototype.forEach.call(document.querySelectorAll('#pdTeamPeople [data-pd-team-member]'), function (person) {
+                    var match = (person.getAttribute('data-pd-search') || '').indexOf(text) >= 0;
+                    person.hidden = !match;
+                    if (match) visible++;
+                });
+                var empty = document.getElementById('pdTeamNoMatch');
+                if (empty) empty.hidden = visible !== 0;
             });
             // Ghim/bỏ ghim: control cá nhân được render lại sau UpdatePanel, nên lắp nút idempotent.
             var pdPinStorageKey = 'qlda-project-pins:' + window.location.pathname + window.location.search;
@@ -1031,6 +1637,9 @@
                 layoutPersonalPins();
             }
             function restore() {
+                var total = document.querySelector('#pdTeamPeople .pd-team-actual-count');
+                var count = document.getElementById('pdTeamMemberCount');
+                if (total && count) count.textContent = (total.getAttribute('data-pd-total') || '0') + ' người';
                 showView(getRemembered(), false);
                 Object.keys(pdFilters).forEach(syncPersonalFilter);
                 restorePersonalPins();
@@ -1038,7 +1647,9 @@
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restore);
             else restore();
             if (window.Sys && Sys.Application) Sys.Application.add_load(restore);
-            window.addEventListener('resize', function () { layoutPersonalPins(); schedulePersonalHeightFit(); });
+            window.addEventListener('resize', function () {
+                layoutPersonalPins(); schedulePersonalHeightFit(); scheduleTeamHoursHeightFit();
+            });
         })();
     </script>
 </asp:Content>

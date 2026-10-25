@@ -49,8 +49,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
         private Literal JoinLocationLiteral => UI<Literal>("litMeetJoinLocation");
         private Literal JoinTypeLiteral => UI<Literal>("litMeetJoinType");
         private Literal JoinWarningLiteral => UI<Literal>("litMeetJoinWarning");
-        private LinkButton JoinConfirmationButton => UI<LinkButton>("btnConfirmMeetJoin");
-        protected LinkButton JoinConfirmationClientButton => JoinConfirmationButton;
 
         private Guid MeetId
         {
@@ -617,6 +615,119 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
             return empty;
         }
 
+        // Xác nhận bằng AJAX: không postback toàn trang, tránh ExtraModal render lại và hiện popup rỗng.
+        // Không tin tưởng Id dự án/cuộc họp từ trình duyệt: kiểm tra lại quyền và khoảng thời gian tại SQL Server.
+        public sealed class ConfirmJoinReminderResult
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public string JoinUrl { get; set; }
+        }
+
+        [WebMethod(EnableSession = true)]
+        public static ConfirmJoinReminderResult ConfirmUpcomingJoinReminder(string projectId, string meetingId)
+        {
+            var response = new ConfirmJoinReminderResult
+            {
+                Success = false,
+                Message = "Không thể xác nhận. Vui lòng thử lại.",
+                JoinUrl = string.Empty
+            };
+
+            // Quan trọng: PageMethod AJAX không đi qua Page_Load của WebForms.
+            // Mọi xử lý phụ thuộc SweetContext/Session phải nằm trong try, nếu không
+            // exception có thể thành HTTP 500 và trình duyệt chỉ thấy 'HTTP 500'.
+            try
+            {
+                HttpContext context = HttpContext.Current;
+                if (context == null || context.User == null ||
+                    context.User.Identity == null || !context.User.Identity.IsAuthenticated)
+                {
+                    response.Message = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
+                    return response;
+                }
+
+                Guid project, meeting;
+                if (!Guid.TryParse(projectId, out project) || project == Guid.Empty ||
+                    !Guid.TryParse(meetingId, out meeting) || meeting == Guid.Empty)
+                {
+                    response.Message = "Mã dự án hoặc cuộc họp không hợp lệ.";
+                    return response;
+                }
+
+                Guid userId = SweetContext.Current.UserId;
+                if (userId == Guid.Empty)
+                {
+                    response.Message = "Không tìm được người đăng nhập trong phiên hiện tại.";
+                    return response;
+                }
+
+                // Server xác thực lại dự án, người tham gia/chủ trì, thời gian họp.
+                // Không tin tưởng các giá trị ID được gửi từ JavaScript.
+                string sql = "SELECT TOP 1 m.LaHopOnline,m.DiaDiemHop," +
+                    " CASE WHEN m.IdNguoiTao='" + SqlGuid(userId) + "' THEN 1 ELSE 0 END AS LaChuTri," +
+                    " CASE WHEN EXISTS (SELECT 1 FROM dbo.TblLichHop_NhanVien p WHERE p.IdLichHop=m.IdLichHop" +
+                    " AND p.IdNhanVien='" + SqlGuid(userId) + "') THEN 1 ELSE 0 END AS LaThanhVien " +
+                    "FROM dbo.TblLichHop m WHERE m.IdLichHop='" + SqlGuid(meeting) + "'" +
+                    " AND m.IdDuAn='" + SqlGuid(project) + "' AND ISNULL(m.DaXoa,0)=0" +
+                    " AND m.ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) AND m.ThoiGianKetThuc>GETDATE()";
+
+                bool isHost, isMember, isOnline;
+                string place;
+                using (IDataReader reader = new InlineQuery().ExecuteReader(sql))
+                {
+                    if (!reader.Read())
+                    {
+                        response.Message = "Cuộc họp chưa mở hoặc đã kết thúc.";
+                        return response;
+                    }
+                    isHost = Convert.ToInt32(reader["LaChuTri"]) == 1;
+                    isMember = Convert.ToInt32(reader["LaThanhVien"]) == 1;
+                    isOnline = reader["LaHopOnline"] != DBNull.Value && Convert.ToBoolean(reader["LaHopOnline"]);
+                    place = Convert.ToString(reader["DiaDiemHop"]);
+                }
+
+                if (!isHost && !isMember)
+                {
+                    response.Message = "Bạn không thuộc danh sách tham gia cuộc họp.";
+                    return response;
+                }
+
+                if (isMember)
+                {
+                    // Idempotent: đã xác nhận trước đó thì không cập nhật lại.
+                    string updateSql = "UPDATE p SET XacNhanThamGia=1 FROM dbo.TblLichHop_NhanVien p " +
+                        "INNER JOIN dbo.TblLichHop m ON m.IdLichHop=p.IdLichHop " +
+                        "WHERE p.IdLichHop='" + SqlGuid(meeting) + "' AND p.IdNhanVien='" + SqlGuid(userId) + "' " +
+                        "AND m.IdDuAn='" + SqlGuid(project) + "' AND ISNULL(m.DaXoa,0)=0 " +
+                        "AND m.ThoiGianBatDau<=DATEADD(MINUTE,5,GETDATE()) AND m.ThoiGianKetThuc>GETDATE() " +
+                        "AND ISNULL(p.XacNhanThamGia,0)=0";
+                    string changedSql = updateSql + "; SELECT @@ROWCOUNT AS ChangedRows;";
+                    using (IDataReader reader = new InlineQuery().ExecuteReader(changedSql))
+                    {
+                        if (reader.Read()) { /* Cập nhật idempotent, 0 dòng cũng có thể là đã xác nhận. */ }
+                    }
+                }
+
+                // Người chủ trì không bắt buộc có bản ghi trong TblLichHop_NhanVien.
+                // Bản ghi của nhân viên vẫn được lưu bền vững trong SQL như trên.
+                if (context.Session != null)
+                    context.Session["MeetJoinAcknowledged_" + userId.ToString("N") + "_" + meeting.ToString("N")] = true;
+
+                string joinUrl;
+                response.JoinUrl = isOnline && TryMeetingUrl(place, out joinUrl) ? joinUrl : string.Empty;
+                response.Success = true;
+                response.Message = "Đã xác nhận tham gia cuộc họp.";
+            }
+            catch (Exception ex)
+            {
+                // Ghi chi tiết ở server, KHÔNG trả stack trace/SQL cho browser.
+                System.Diagnostics.Trace.TraceError("MeetList.ConfirmUpcomingJoinReminder failed: " + ex);
+                response.Message = "Máy chủ không thể lưu xác nhận. Kiểm tra log ứng dụng/IIS.";
+            }
+            return response;
+        }
+
         protected void btnConfirmMeetJoin_Click(object sender, EventArgs e)
         {
             try
@@ -645,7 +756,8 @@ namespace SweetSoft.QLDA.BackOffice.fMeets
                     else
                         ShowNotify("Cuộc họp đã kết thúc, bạn đã xác nhận hoặc không còn là thành viên tham gia.", MSGType.Error);
                 }
-                // Sau postback, modal tự đóng. Không gọi CMSMasterJs.OpenDialog/CloseDialog.
+                // Đường dự phòng nếu client không chạy AJAX: đóng đúng ExtraModal bằng API server.
+                if (JoinReminderModal != null) JoinReminderModal.CloseModal();
             }
             catch (Exception exc) { ShowNotify("Không thể xác nhận tham gia: " + exc.Message, MSGType.Error); }
         }

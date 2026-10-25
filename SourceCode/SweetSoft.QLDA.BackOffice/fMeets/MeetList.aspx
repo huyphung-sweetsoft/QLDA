@@ -372,7 +372,8 @@
             </div>
         </ContentTemplate>
         <FooterTemplate>
-            <asp:LinkButton runat="server" ID="btnConfirmMeetJoin" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnConfirmMeetJoin_Click" OnClientClick="MeetJoinReminder.openBeforeConfirm(this);"><i class="fas fa-check-circle me-1" aria-hidden="true"></i> Xác nhận tham gia</asp:LinkButton>
+            <%-- Nút thuần HTML: luôn dùng AJAX; tuyệt đối không phát sinh __doPostBack làm ExtraModal render lại rỗng. --%>
+            <button type="button" id="btnConfirmMeetJoin" class="btn btn-primary" onclick="return MeetJoinReminder.confirm(this, event);"><i class="fas fa-check-circle me-1" aria-hidden="true"></i> Xác nhận tham gia</button>
         </FooterTemplate>
     </SweetSoft:ExtraModal>
     <div id="meetJoinPreparingOverlay" class="meet-join-preparing" role="status" aria-live="polite" aria-label="Đang tải thông tin cuộc họp" hidden>
@@ -393,20 +394,134 @@
             if (window.MeetJoinReminder && window.MeetJoinReminder.initialized) return;
             var modalId = '<%= JoinReminderModal.ClientID %>';
             var meetingIdFieldId = '<%= JoinMeetingIdClientField.ClientID %>';
-            var confirmButtonId = '<%= JoinConfirmationClientButton.ClientID %>';
+            var confirmButtonId = 'btnConfirmMeetJoin';
             var endpoint = '<%= ResolveUrl("~/fMeets/MeetList.aspx") %>/GetUpcomingJoinReminder';
             var projectId = '<%= CurrentProjectId.ToString("D") %>';
-            var polling = false, lastShownId = '', startAtMs = 0, activeReminder = null;
+            var polling = false, confirming = false, restoringAfterError = false, lastShownId = '', startAtMs = 0, activeReminder = null;
             var dismissed = Object.create(null);
-            var api = window.MeetJoinReminder = {
-                initialized: true,
-                openBeforeConfirm: function (button) {
-                    var raw = button.getAttribute('data-join-url');
-                    if (!raw) return true;
-                    try { var url = new URL(raw, window.location.origin); if (url.protocol === 'https:' || url.protocol === 'http:') window.open(url.href, '_blank', 'noopener,noreferrer'); } catch (e) { }
-                    return true;
+            var confirmEndpoint = '<%= ResolveUrl("~/fMeets/MeetList.aspx") %>/ConfirmUpcomingJoinReminder';
+            var api = window.MeetJoinReminder = { initialized: true, confirm: confirmMeeting };
+            function validMeetingUrl(raw) {
+                if (!raw) return '';
+                try { var u = new URL(raw); return (u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password ? u.href : ''; } catch (e) { return ''; }
+            }
+            function hideReminderModal() {
+                var el = modalElement(); if (!el) return;
+                try {
+                    if (window.bootstrap && window.bootstrap.Modal) {
+                        var instance = window.bootstrap.Modal.getInstance ? window.bootstrap.Modal.getInstance(el) : null;
+                        if (instance) { instance.hide(); return; }
+                    }
+                    if (window.jQuery && window.jQuery.fn && typeof window.jQuery.fn.modal === 'function') { window.jQuery(el).modal('hide'); return; }
+                } catch (e) { if (window.console) console.warn('Không đóng được modal theo Bootstrap:',e); }
+                // Fallback khi phiên bản ExtraModal/Bootstrap không expose API hide.
+                el.classList.remove('show','in'); el.style.display = 'none'; el.setAttribute('aria-hidden','true');
+                var others = document.querySelector('.modal.show, .modal.in');
+                if (!others) { document.body.classList.remove('modal-open'); document.querySelectorAll('.modal-backdrop').forEach(function (b) { b.parentNode.removeChild(b); }); }
+            }
+            function setConfirmBusy(button,busy,originalText) {
+                if (!button) return;
+                if (busy) { button.classList.add('disabled'); button.setAttribute('aria-disabled','true'); button.style.pointerEvents = 'none'; button.innerHTML = '<i class="fas fa-spinner fa-spin me-1" aria-hidden="true"></i> Đang xác nhận...'; }
+                else { button.classList.remove('disabled'); button.removeAttribute('aria-disabled'); button.style.pointerEvents = ''; if (originalText) button.innerHTML = originalText; }
+            }
+            function showConfirmError(message) {
+                var warning = document.getElementById('meetJoinWarningText');
+                if (warning) { warning.textContent = message || 'Xác nhận chưa thành công. Vui lòng thử lại.'; warning.style.color = '#b91c1c'; warning.setAttribute('role','alert'); }
+            }
+            function notifyConfirmSuccess() {
+                var message = 'Đã xác nhận tham gia cuộc họp thành công.';
+                // Đây là AJAX WebMethod: không thể gọi BaseAdminPage.ShowNotify trực tiếp từ request này.
+                // Sử dụng toast đang được website cung cấp nếu có.
+                if (window.toastr && typeof window.toastr.success === 'function') { window.toastr.success(message); return; }
+                var existing = document.getElementById('meetJoinSuccessToast');
+                if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+                var toast = document.createElement('div');
+                toast.id = 'meetJoinSuccessToast'; toast.setAttribute('role','status'); toast.setAttribute('aria-live','polite');
+                toast.style.cssText = 'position:fixed;right:20px;top:20px;z-index:2147480000;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 40px);padding:13px 17px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:13px;font-weight:700;';
+                var icon = document.createElement('i'); icon.className = 'fas fa-check-circle'; icon.setAttribute('aria-hidden','true');
+                var label = document.createElement('span'); label.textContent = message;
+                toast.appendChild(icon); toast.appendChild(label); document.body.appendChild(toast);
+                window.setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 3500);
+            }
+            function confirmMeeting(button, event) {
+                if (event && event.preventDefault) event.preventDefault();
+                // Đây là button type="button": hoàn toàn không postback, kể cả khi JavaScript gọi lại.
+                if (confirming || !activeReminder || !activeReminder.MeetingId) return false;
+                var info = activeReminder;
+                var id = info.MeetingId;
+                var url = validMeetingUrl(info.JoinUrl);
+                var joinTab = null;
+                // Trang họp online chỉ được điều hướng sau khi server xác nhận thành công.
+                if (url) {
+                    try { joinTab = window.open('about:blank', '_blank'); if (joinTab) joinTab.opener = null; }
+                    catch (e) { joinTab = null; }
                 }
-            };
+
+                confirming = true;
+                restoringAfterError = false;
+                dismissed[id] = true;
+                lastShownId = id;
+                // Ẩn ngay khi nhấn, không đợi fetch/SQL. Giữ snapshot dữ liệu để khôi phục nếu gặp lỗi.
+                activeReminder = null;
+                hideReminderModal();
+
+                fetch(confirmEndpoint, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                    body: JSON.stringify({ projectId: projectId, meetingId: id }),
+                    cache: 'no-store'
+                }).then(function (response) {
+                    if (!response.ok) {
+                        // PageMethod của WebForms trả HTTP 500 cả khi thiếu method ở code-behind.
+                        // Chỉ phân loại lỗi; không đưa stack trace/SQL từ server vào giao diện.
+                        return response.text().then(function (raw) {
+                            var detail = '';
+                            try {
+                                var errorObj = JSON.parse(raw);
+                                detail = String(errorObj.Message || errorObj.message || '');
+                            } catch (e) { detail = String(raw || ''); }
+                            var message = response.status === 500
+                                ? 'Máy chủ lỗi HTTP 500 khi xác nhận. Kiểm tra MeetList.aspx.cs đã được Rebuild và IIS đã cập nhật DLL.'
+                                : 'Máy chủ từ chối xác nhận (HTTP ' + response.status + ').';
+                            if (/unknown web method|method.*not found|invalid web service call|could not load type/i.test(detail))
+                                message = 'API xác nhận chưa được triển khai đúng trên máy chủ. Cần Rebuild MeetList.aspx.cs và cập nhật DLL.';
+                            throw new Error(message);
+                        });
+                    }
+                    return response.json();
+                }).then(function (data) {
+                    var result = data && data.d ? data.d : data;
+                    if (!result || !result.Success)
+                        throw new Error(result && result.Message ? result.Message : 'Không thể ghi nhận tham gia.');
+                    // Đã lưu trên server: giữ popup đóng và thông báo thành công.
+                    notifyConfirmSuccess();
+                    var finalUrl = validMeetingUrl(result.JoinUrl);
+                    if (finalUrl) {
+                        try {
+                            if (joinTab && !joinTab.closed) joinTab.location.replace(finalUrl);
+                            else window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                        } catch (e) { if (joinTab && !joinTab.closed) joinTab.close(); }
+                    } else if (joinTab && !joinTab.closed) joinTab.close();
+                }).catch(function (error) {
+                    if (joinTab && !joinTab.closed) joinTab.close();
+                    // Không xác nhận thành công: khôi phục đầy đủ dữ liệu, tuyệt đối không mở popup trống.
+                    restoringAfterError = true;
+                    delete dismissed[id];
+                    if (lastShownId === id) lastShownId = '';
+                    var message = error && error.message ? error.message : 'Lỗi mạng khi xác nhận. Vui lòng thử lại.';
+                    window.setTimeout(function () {
+                        // Đợi Bootstrap hoàn tất animation đóng trước khi mở lại cùng modal.
+                        setReminderData(info);
+                        showConfirmError(message);
+                        showBootstrapModal(0);
+                        restoringAfterError = false;
+                    }, 430);
+                    if (window.console) console.warn('Xác nhận tham gia cuộc họp thất bại:', error);
+                }).then(function () {
+                    confirming = false;
+                });
+                return false;
+            }
             function modalElement() { return document.getElementById(modalId); }
             function titleForTime() { return Date.now() < startAtMs ? 'Cuộc họp đã mở' : 'Cuộc họp đã bắt đầu'; }
             function syncTitle() {
@@ -458,18 +573,18 @@
                     if (overlay) overlay.classList.add('is-done');
                     window.setTimeout(function () {
                         if (overlay) { overlay.hidden = true; overlay.classList.remove('is-running', 'is-done'); }
-                        syncTitle(); showBootstrapModal(0);
+                        if (activeReminder && activeReminder.MeetingId === info.MeetingId && !dismissed[info.MeetingId] && !confirming) { syncTitle(); showBootstrapModal(0); }
                     }, 180);
                 }, 3000);
             }
             function check(initial) {
-                if (polling || document.hidden) return;
+                if (polling || confirming || document.hidden) return;
                 polling = true;
                 fetch(endpoint, { method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({projectId:projectId,ignoredIds:Object.keys(dismissed)}),cache:'no-store' })
                     .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.json(); })
                     .then(function (response) {
                         var info = response && response.d ? response.d : response;
-                        if (!info || !info.Available || !info.MeetingId || dismissed[info.MeetingId]) return;
+                        if (!info || !info.Available || !info.MeetingId || dismissed[info.MeetingId] || confirming) return;
                         var modal = modalElement();
                         if (modal && (modal.classList.contains('show') || modal.classList.contains('in'))) return;
                         if (lastShownId === info.MeetingId) return;
@@ -480,7 +595,7 @@
             }
             function init() {
                 var modal = modalElement();
-                if (modal) { var hideHandler = function () { if (lastShownId) dismissed[lastShownId] = true; activeReminder = null; }; modal.addEventListener('hidden.bs.modal', hideHandler); if (window.jQuery) window.jQuery(modal).on('hidden.bs.modal.meetreminder', hideHandler); }
+                if (modal) { var hideHandler = function () { if (restoringAfterError) return; if (lastShownId) dismissed[lastShownId] = true; activeReminder = null; }; modal.addEventListener('hidden.bs.modal', hideHandler); if (window.jQuery) window.jQuery(modal).on('hidden.bs.modal.meetreminder', hideHandler); }
                 check(true); window.setInterval(function () { check(false); }, 20000);
                 window.setInterval(syncTitle, 1000);
                 document.addEventListener('visibilitychange', function () { if (!document.hidden) check(false); });
@@ -508,7 +623,7 @@
                 $('#meetingLocationHint').text(online ? 'Dán URL Google Meet (https://meet.google.com/...) hoặc link họp HTTPS.' : 'Nhập phòng hoặc địa điểm họp.');
                 $('#<%= txtDiaDiemHop.ClientID %>').attr('placeholder', online ? 'https://meet.google.com/...' : 'Phòng họp / địa chỉ...');
             }
-            $meetingType.off('change.meettype').on('change.meettype',syncMeetingMethod);
+            $meetingType.off('change.meettype').on('change.meettype', syncMeetingMethod);
             syncMeetingMethod();
 
             if (!$startInput.length || !$dateInput.length || !$durationInput.length) return;
