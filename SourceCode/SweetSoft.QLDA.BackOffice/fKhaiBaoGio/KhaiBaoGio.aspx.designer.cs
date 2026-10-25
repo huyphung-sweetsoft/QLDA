@@ -15,6 +15,24 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
     {
 
         /// <summary>
+        /// NavigationKbg control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.Controls.Breadcrumb.CtrlBreadcrumb NavigationKbg;
+
+        /// <summary>
+        /// ProjectTabsKbg control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fProjects.Controls.CtrlProjectTabs ProjectTabsKbg;
+
+        /// <summary>
         /// ltrInitial control.
         /// </summary>
         /// <remarks>
@@ -58,6 +76,24 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlNotEmployee;
+
+        /// <summary>
+        /// upnlKbg20WorkflowBridge control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlKbg20WorkflowBridge;
+
+        /// <summary>
+        /// btnKbg20Workflow control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnKbg20Workflow;
 
         /// <summary>
         /// upnlMain control.
@@ -202,5 +238,95 @@ namespace SweetSoft.QLDA.BackOffice.fKhaiBaoGio
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnRefresh;
+
+        /// <summary>
+        /// upnlKbg20PartnerModals control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlKbg20PartnerModals;
+
+        /// <summary>
+        /// KbgCtrlStartTask control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlStartTask KbgCtrlStartTask;
+
+        /// <summary>
+        /// mdlKbg20HistoryDetails control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlKbg20HistoryDetails;
+
+        /// <summary>
+        /// mdlKbg20StartWarning control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlKbg20StartWarning;
+
+        /// <summary>
+        /// mdlKbg20Parallel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlKbg20Parallel;
+
+        /// <summary>
+        /// upnlKbg20ManualHost control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlKbg20ManualHost;
+
+        /// <summary>
+        /// btnKbg20OpenManual control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinkButton btnKbg20OpenManual;
+
+        /// <summary>
+        /// mdlKbg20Manual control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::SweetSoft.QLDA.Controls.ExtraModal mdlKbg20Manual;
+
+        /// <summary>
+        /// upnlKbg20ManualContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlKbg20ManualContent;
+
+        /// <summary>
+        /// upnlKbg20ManualFooter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upnlKbg20ManualFooter;
     }
 }

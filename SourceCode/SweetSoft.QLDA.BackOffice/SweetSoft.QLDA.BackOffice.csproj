@@ -536,12 +536,22 @@
     <Compile Include="fFiles\FileListing.aspx.designer.cs">
       <DependentUpon>FileListing.aspx</DependentUpon>
     </Compile>
+    <Compile Include="fGanttCharts\Controls\CtrlProgressReportHistory.ascx.cs">
+      <DependentUpon>CtrlProgressReportHistory.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fGanttCharts\Controls\CtrlProgressReportHistory.ascx.designer.cs">
+      <DependentUpon>CtrlProgressReportHistory.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fGanttCharts\Controls\CtrlShareProgress.ascx.cs">
       <DependentUpon>CtrlShareProgress.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fGanttCharts\Controls\CtrlShareProgress.ascx.designer.cs">
       <DependentUpon>CtrlShareProgress.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fGanttCharts\Controls\ProgressReportControlBase.cs">
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="fGanttCharts\Gantts.aspx.cs">
       <DependentUpon>Gantts.aspx</DependentUpon>
@@ -661,6 +671,20 @@
     </Compile>
     <Compile Include="fProjectReports\ProjectReport.aspx.designer.cs">
       <DependentUpon>ProjectReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChiTietCong.ascx.cs">
+      <DependentUpon>CtrlChiTietCong.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChiTietCong.ascx.designer.cs">
+      <DependentUpon>CtrlChiTietCong.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChiTietCongCuocHop.ascx.cs">
+      <DependentUpon>CtrlChiTietCongCuocHop.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fProjects\Controls\CtrlChiTietCongCuocHop.ascx.designer.cs">
+      <DependentUpon>CtrlChiTietCongCuocHop.ascx</DependentUpon>
     </Compile>
     <Compile Include="fProjects\Controls\CtrlChonNhanVien.ascx.cs">
       <DependentUpon>CtrlChonNhanVien.ascx</DependentUpon>
@@ -1041,7 +1065,10 @@
     <Content Include="favicon-16x16.png" />
     <Content Include="favicon-32x32.png" />
     <Content Include="favicon.ico" />
+    <Content Include="fGanttCharts\Controls\CtrlProgressReportHistory.ascx" />
     <Content Include="fGanttCharts\Controls\CtrlShareProgress.ascx" />
+    <Content Include="fGanttCharts\Controls\progress-report-shared.css" />
+    <Content Include="fGanttCharts\Controls\progress-report-shared.js" />
     <Content Include="fGanttCharts\Gantts.aspx" />
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
@@ -1060,6 +1087,8 @@
     <Content Include="fNhanVien\ListNhanVien.aspx" />
     <Content Include="fNhanVien\NhanVienDetail.aspx" />
     <Content Include="fNhanVien\Controls\CtrlNhanVienPopup.ascx" />
+    <Content Include="fProjects\Controls\CtrlChiTietCong.ascx" />
+    <Content Include="fProjects\Controls\CtrlChiTietCongCuocHop.ascx" />
     <Content Include="fProjects\Controls\CtrlChonNhanVien.ascx" />
     <Content Include="fProjects\Controls\CtrlDuAnForm.ascx" />
     <Content Include="fProjects\Controls\CtrlLichSuDuAn.ascx" />

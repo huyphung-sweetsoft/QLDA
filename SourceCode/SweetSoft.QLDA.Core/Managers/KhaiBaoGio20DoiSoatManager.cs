@@ -1,4 +1,4 @@
-﻿// KhaiBaoGio 2.0 - doi soat gio TU KHAI sau khi PM duyet.
+// KhaiBaoGio 2.0 - doi soat gio TU KHAI sau khi PM duyet.
 // File moi. KHONG thay doi cac bang/timer V1, khong cap nhat gio he thong.
 using System;
 using System.Collections.Generic;
@@ -562,12 +562,8 @@ namespace SweetSoft.QLDA.Core.Managers
                     var current=TaskManager.Instance.FetchById(task);
                     if(current==null || current.IdDuAn!=duAn || current.DaXoa==true || current.TrangThai!=0)
                         throw new InvalidOperationException("Task da thay doi trang thai trong khi mo popup. Vui long tai lai.");
-                    // Dot 5: Cho phep mo popup Start som gio thuong; Manager kiem tra lai
-                    // ngay VN + phan viec den han trong transaction SAU khi luuTask().
-                    // Tang ca som khong nam trong nghiep vu dot 5.
-                    if(laTangCa && current.NgayBatDau.HasValue &&
-                        current.NgayBatDau.Value.Date>DateTime.Today)
-                        throw new InvalidOperationException("Chưa đến ngày bắt đầu; không được Start tăng ca sớm.");
+                    // Cả giờ theo lịch và tăng ca đều xét Start sớm tại Manager trong
+                    // cùng transaction; không chặn tăng ca theo DateTime.Today của IIS.
                     if(!TaskManager.Instance.GetAssignedNhanVienIds(task).Contains(nhanVien))
                         throw new UnauthorizedAccessException("Ban khong con duoc phan cong truc tiep vao task.");
                     luuTask(); // Partner CtrlStartTask: 0->1, update cha nhu TaskList.
