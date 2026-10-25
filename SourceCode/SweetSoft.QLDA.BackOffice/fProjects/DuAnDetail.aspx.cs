@@ -864,8 +864,8 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
                 .Append(EncodePersonal(member.Email))
                 .Append("</span></span></div><div class='pd-team-top-actions'>")
                 .Append("<button type='button' class='pd-ds-expand' data-pd-detail-source='pdTeamFullDetail' data-pd-detail-title='Bảng công đầy đủ' data-pd-detail-sub='Chi tiết tự khai, PM chốt và kết quả của thành viên này' aria-label='Mở rộng toàn bộ bảng công' title='Mở rộng bảng công'><i class='fas fa-expand-arrows-alt'></i></button>")
-                .Append("<small>Tạm tính</small></div></div><div class='pd-team-detail-body'>")
-                .Append("<div class='pd-team-hours-banner'><i class='fas fa-info-circle'></i><span>Công việc lấy phút thường + tăng ca PM chốt ở bản đối soát hiện tại; chưa chốt: 0. Vấn đề tham chiếu công việc bị ảnh hưởng, không phải bảng giờ riêng; tổng cuối loại trừ công việc trùng. Giờ họp giữ quy tắc xác nhận tham gia.</span></div>");
+                .Append("</div></div><div class='pd-team-detail-body'>");
+
             AppendTeamHoursSection(sb, "task", "Công việc", TeamLaborHourText(taskHours), taskRows.Count, taskRows, now);
             AppendTeamHoursSection(sb, "meeting", "Cuộc họp", TeamLaborHourText(meetingHours), meetingRows.Count, meetingRows, now);
             AppendTeamHoursSection(sb, "issue", "Vấn đề", TeamLaborHourText(issueHours), issueRows.Count, issueRows, now);
@@ -1030,7 +1030,7 @@ ORDER BY m.ThoiGianBatDau DESC, m.IdLichHop DESC;";
             builder.Append("</div></div><div class='pd-personal-card-footer'><button type='button' class='pd-detail-btn' data-pd-detail-source='pdPersonalIssueDetail' data-pd-detail-title='Chi tiết vấn đề được giao' data-pd-detail-sub='Danh sách vấn đề bạn đang phụ trách trong dự án này.'><i class='fas fa-expand-alt'></i>Xem chi tiết</button></div></section>");
 
             // Giờ công
-            builder.Append("<section class='pd-personal-card pd-personal-time'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-clock'></i><strong>Giờ công của bạn</strong></div><div class='pd-head-actions'><small>Tạm tính</small></div></div><div class='pd-card-body'><div class='pd-personal-list'><div class='pd-personal-summary'>");
+            builder.Append("<section class='pd-personal-card pd-personal-time'><div class='pd-personal-card-head'><div class='pd-head-main'><i class='far fa-clock'></i><strong>Giờ công của bạn</strong></div></div><div class='pd-card-body'><div class='pd-personal-list'><div class='pd-personal-summary'>");
             AppendSummaryRow(builder, "Tổng giờ làm công việc", taskHours, false);
             AppendSummaryRow(builder, "Tổng giờ công cuộc họp", meetingHours, false);
             AppendSummaryRow(builder, "Tổng giờ công xử lý vấn đề", issueHours, false);

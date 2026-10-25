@@ -23,7 +23,7 @@
     .member-email { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
     .member-email:empty { display: none; }
     .record-attachments .file-actions { display: none !important; }
-    #<%= dlDetail.ClientID %> .modal-dialog { max-width: 1180px; width: calc(100vw - 32px); margin: 1rem auto; }
+    #<%= dlDetail.ClientID %> .modal-dialog { max-width: 1180px; width: calc(100vw - 32px); }
     #<%= dlDetail.ClientID %> .modal-body { padding: 18px 20px 14px; background: #f8fafc; }
     #<%= dlDetail.ClientID %> .modal-footer { padding: 12px 20px 16px; border-top: 1px solid #e2e8f0; background: #fff; }
     .meeting-detail-layout { align-items: stretch; }
@@ -101,7 +101,7 @@
         to { opacity: 1; transform: translateY(0) scale(1); }
     }
     @media (max-width: 991.98px) {
-        #<%= dlDetail.ClientID %> .modal-dialog { width: calc(100vw - 20px); margin: .6rem auto; }
+        #<%= dlDetail.ClientID %> .modal-dialog { width: calc(100vw - 20px); }
         #<%= dlDetail.ClientID %> .modal-body { padding: 14px; }
         .meeting-description-editor { min-height: 0; }
         .meeting-description-editor .cke_contents { min-height: 220px !important; }
@@ -115,7 +115,8 @@
         .meeting-picker-popover { width: min(360px, calc(100vw - 28px)); }
     }
     .meeting-method-box { display:flex;align-items:center;gap:10px;min-height:38px; }
-    .meeting-method-box .form-select { height:38px;min-width:0;border:1px solid #d9c9ec;background-color:#fcfaff;color:#48247d;font-size:12px;font-weight:700;border-radius:8px; }
+    .meeting-method-box .form-select { width:100%;height:40px;min-width:0;padding:6px 36px 6px 10px;border:1px solid #929cab;border-radius:5px;background-color:#fff;color:#212529;font-size:16px;font-weight:400;line-height:1.4;box-shadow:none;transition:border-color .15s ease,box-shadow .15s ease; }
+    .meeting-method-box .form-select:focus { border-color:#8254b4;outline:0;box-shadow:0 0 0 2px rgba(84,33,141,.12); }
     .meeting-method-note { display:block;margin-top:4px;color:#84768f;font-size:10.5px;line-height:1.35; }
     .meet-join-reminder { padding:15px 16px 20px; }
     .meet-join-symbol { display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:15px;background:#efe6fa;color:#6b32a2;font-size:24px;margin-bottom:10px; }
@@ -257,8 +258,8 @@
                                 <div class="meeting-form-field">
                                     <label class="form-label">Hình thức họp</label>
                                     <div class="meeting-method-box"><asp:DropDownList runat="server" ID="ddlHinhThucHop" CssClass="form-select" aria-label="Hình thức họp">
-                                        <asp:ListItem Value="0" Text="Offline · Trực tiếp" Selected="True" />
-                                        <asp:ListItem Value="1" Text="Online · Trực tuyến" />
+                                        <asp:ListItem Value="0" Text="Offline" Selected="True" />
+                                        <asp:ListItem Value="1" Text="Online" />
                                     </asp:DropDownList></div>
                                 </div>
                             </div>

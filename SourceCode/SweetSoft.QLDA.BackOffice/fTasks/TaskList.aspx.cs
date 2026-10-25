@@ -128,6 +128,8 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
             txtEditNgayBatDau.Attributes["data-ql-task-phase"] = isPhase ? "1" : "0";
             txtEditNgayBatDau.Attributes["data-ql-task-children"] = hasChildren ? "1" : "0";
             txtEditNgayBatDau.Attributes["data-ql-task-original-status"] = task.TrangThai.ToString();
+            txtEditNgayBatDau.Attributes["data-ql-task-actual-date"] = task.NgayHoanThanhThucTe.HasValue
+                ? task.NgayHoanThanhThucTe.Value.ToString("yyyy-MM-dd") : string.Empty;
 
             if (isPhase || hasChildren)
             {
@@ -587,15 +589,51 @@ namespace SweetSoft.QLDA.BackOffice.fTasks
                 task.ThoiHanNgay = thoiHan;
                 task.NgayKetThuc = LichBieuChungManager.Instance.CalculateTaskEndDate(ngayBd, thoiHan);
 
-                if (newStatus == 2 || newStatus == 3)
+                // Chỉ khi trạng thái ĐÃ LƯU là Đang thực hiện mới được chọn ngày hoàn thành.
+                // Server không tin vào việc ẩn/hiện input trên client.
+                bool yeuCauHoanThanhMoi = newStatus == 2 || newStatus == 3;
+                if (yeuCauHoanThanhMoi && oldStatus != 1 && oldStatus != 2 && oldStatus != 3)
                 {
-                    if ((oldStatus != 2 && oldStatus != 3) || !task.NgayHoanThanhThucTe.HasValue)
-                        task.NgayHoanThanhThucTe = DateTime.Now;
-                    if (task.NgayKetThuc.HasValue && task.NgayHoanThanhThucTe.HasValue)
+                    ShowNotify("Công việc phải ở trạng thái Đang thực hiện trước khi xác nhận hoàn thành.", MSGType.Warning);
+                    return;
+                }
+                if (yeuCauHoanThanhMoi && oldStatus == 1)
+                {
+                    DateTime ngayThucTe;
+                    string ngayNhap = Request.Form["qlTaskActualCompleteDate"];
+                    if (!DateTime.TryParseExact(ngayNhap, "yyyy-MM-dd",
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.None, out ngayThucTe))
                     {
-                        if (task.NgayHoanThanhThucTe.Value.Date > task.NgayKetThuc.Value.Date) task.TrangThai = 3;
-                        else task.TrangThai = 2;
+                        ShowNotify("Vui lòng chọn ngày hoàn thành thực tế hợp lệ.", MSGType.Warning);
+                        return;
                     }
+                    ngayThucTe = ngayThucTe.Date;
+                    if (!task.NgayBatDau.HasValue || ngayThucTe < task.NgayBatDau.Value.Date || ngayThucTe > DateTime.Today)
+                    {
+                        ShowNotify("Ngày hoàn thành thực tế phải từ ngày bắt đầu đến hôm nay.", MSGType.Warning);
+                        return;
+                    }
+                    if (!task.NgayKetThuc.HasValue)
+                    {
+                        ShowNotify("Công việc chưa có hạn kết thúc dự kiến hợp lệ.", MSGType.Warning);
+                        return;
+                    }
+                    bool hoanThanhTre = ngayThucTe > task.NgayKetThuc.Value.Date;
+                    string lyDoTre = (Request.Form["qlTaskLateReason"] ?? string.Empty).Trim();
+                    if (hoanThanhTre && string.IsNullOrWhiteSpace(lyDoTre))
+                    {
+                        ShowNotify("Công việc hoàn thành trễ hạn. Vui lòng nhập lý do trễ hạn.", MSGType.Warning);
+                        return;
+                    }
+                    task.NgayHoanThanhThucTe = ngayThucTe;
+                    task.LyDoTre = hoanThanhTre ? lyDoTre : null;
+                    task.TrangThai = hoanThanhTre ? (byte)3 : (byte)2;
+                }
+                else if (yeuCauHoanThanhMoi)
+                {
+                    // Công việc đã hoàn thành: giữ nguyên ngày thực tế và lý do đã lưu.
+                    // Không nhận giá trị ngày/lý do giả mạo từ form.
                 }
                 else
                     task.NgayHoanThanhThucTe = null;

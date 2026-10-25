@@ -218,6 +218,130 @@
 @media(max-width:850px){ .mlt-staff-tools { flex-wrap:wrap; }.mlt-staff-tools .mlt-search { max-width:none; }.mlt-main-foot { grid-template-columns:1fr auto; }.mlt-main-foot .mlt-labor-page-footer { grid-column:1/-1;grid-row:2; } }
 @media(max-width:430px){ .mlt-side-tools { grid-template-columns:minmax(0,1fr) 126px; }.mlt-range-launch { font-size:10px; }.mlt-staff-choice button { padding:7px 6px; } }
 
+/* V25 | Dong bo he mau MeetList cho tab Gio cong, khong thay doi kich thuoc, JS hoac nghiep vu. */
+/* Nen va cau truc: trang - xam xanh nhat - tim dam; trang thai tham gia/chu tri giu mau y nghia. */
+.meet-panel-labor .mlt-layout { --mlt-theme-primary:#54218d;--mlt-theme-strong:#43176f;--mlt-theme-ink:#334155;--mlt-theme-muted:#718198;--mlt-theme-border:#d7dfe9;--mlt-theme-line:#e7ecf2;--mlt-theme-soft:#f7f9fc;--mlt-theme-hover:#f7f3fc;background:#f6f8fb; }
+.meet-panel-labor .mlt-side,.meet-panel-labor .mlt-main { background:#fff;border:1px solid var(--mlt-theme-border);border-radius:12px;box-shadow:0 2px 10px rgba(29,40,65,.035); }
+.meet-panel-labor .mlt-side-head { background:var(--mlt-theme-soft);border-bottom:1px solid var(--mlt-theme-border); }
+.meet-panel-labor .mlt-side-title { color:var(--mlt-theme-primary);font-size:14.5px;letter-spacing:0;font-weight:800; }
+.meet-panel-labor .mlt-side-title > i { color:var(--mlt-theme-primary);font-size:14px; }
+.meet-panel-labor .mlt-meeting-count { border-color:#d7c8e9;background:#fff;color:var(--mlt-theme-primary);font-size:11px; }
+.meet-panel-labor .mlt-head-range { color:var(--mlt-theme-muted); }
+.meet-panel-labor .mlt-search > i { color:#7f8fa3;font-size:13px; }
+.meet-panel-labor .mlt-search input { border-color:var(--mlt-theme-border);background:#fff;color:var(--mlt-theme-ink);font-size:12.5px;font-weight:550; }
+.meet-panel-labor .mlt-search input::placeholder { color:#93a0b1;opacity:1;font-weight:450; }
+.meet-panel-labor .mlt-search input:focus { border-color:#9d78c5;box-shadow:0 0 0 3px rgba(84,33,141,.105); }
+.meet-panel-labor .mlt-filter-select { border-color:var(--mlt-theme-border);background:#fff;color:var(--mlt-theme-ink);font-size:12px;font-weight:700; }
+.meet-panel-labor .mlt-filter-select:hover { border-color:#bfa8d7; }
+.meet-panel-labor .mlt-filter-select:focus-visible { outline:2px solid rgba(84,33,141,.30);outline-offset:1px; }
+.meet-panel-labor .mlt-range-launch { border-color:#d8c8e9;background:#fff;color:var(--mlt-theme-primary);font-size:11.5px;font-weight:750; }
+.meet-panel-labor .mlt-range-launch:hover { border-color:#b79bd5;background:#f3ecfa; }
+.meet-panel-labor .mlt-range-launch.is-active { border-color:#b69ad4;background:#efe7f9;color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-range-launch:focus-visible { outline:2px solid rgba(84,33,141,.30);outline-offset:2px; }
+/* Danh sach: dong de doc, nen xen ke rat nhe va the dang chon co diem nhan tim. */
+.meet-panel-labor .mlt-meeting-list { background:#fff;scrollbar-color:#c7d1df transparent; }
+.meet-panel-labor .mlt-meeting-link { border-left-color:transparent;border-bottom-color:var(--mlt-theme-line);background:#fff;color:var(--mlt-theme-ink); }
+.meet-panel-labor .mlt-meeting-link:nth-child(even):not(.is-active) { background:#fbfcfe; }
+.meet-panel-labor .mlt-meeting-link:hover:not(.is-active) { background:var(--mlt-theme-hover);color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-meeting-link.is-active { background:#f0eafb;border-left-color:var(--mlt-theme-primary);color:var(--mlt-theme-primary);box-shadow:inset 0 0 0 1px rgba(84,33,141,.025); }
+.meet-panel-labor .mlt-meeting-link strong { color:var(--mlt-theme-ink);font-size:13.5px;font-weight:750; }
+.meet-panel-labor .mlt-meeting-link:hover strong,.meet-panel-labor .mlt-meeting-link.is-active strong { color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-meeting-link small { color:#73839a;font-size:11.75px; }
+.meet-panel-labor .mlt-meeting-link small i { color:#8798ac; }
+.meet-panel-labor .mlt-meeting-time-divider { color:#9aa6b6; }
+.meet-panel-labor .mlt-meeting-title-badges .mlt-done { border:1px solid #dbe3ed;border-radius:6px;background:#f0f3f7;color:#697a91;font-size:10px;font-weight:700; }
+/* Mau chu tri vang am, khong bien toan bo avatar thanh tim va khong thay doi tooltip JS. */
+.meet-panel-labor .mlt-meeting-title-badges .mlt-meeting-host { background:#fff6e4;border-color:#f3d493;color:#ad730d; }
+.meet-panel-labor .mlt-meeting-title-badges .mlt-meeting-host i,.meet-panel-labor .mlt-person-host-icon { color:#d39511!important; }
+.mlt-host-hover-tip { border-color:#edcd87;background:#fff8e9;color:#99640d;box-shadow:0 9px 22px rgba(118,79,14,.14); }
+/* Phan trang: mot he nut cho ca hai bang. */
+.meet-panel-labor .mlt-page-footer,.meet-panel-labor .mlt-main-foot { background:var(--mlt-theme-soft);border-top-color:var(--mlt-theme-border); }
+.meet-panel-labor .mlt-page-info { color:var(--mlt-theme-muted);font-size:11.5px;font-weight:700; }
+.meet-panel-labor .mlt-page-button { border-color:#d7dfe9;background:#fff;color:var(--mlt-theme-primary);box-shadow:none; }
+.meet-panel-labor .mlt-page-button:hover:not([disabled]):not(.is-active) { border-color:#bba3d7;background:#f3ecfa;color:var(--mlt-theme-strong); }
+.meet-panel-labor .mlt-page-button.is-active { background:var(--mlt-theme-primary);border-color:var(--mlt-theme-primary);color:#fff;box-shadow:0 2px 5px rgba(84,33,141,.13); }
+.meet-panel-labor .mlt-page-button:focus-visible { outline:2px solid rgba(84,33,141,.35);outline-offset:2px; }
+.meet-panel-labor .mlt-page-ellipsis { color:#8190a2; }
+/* Khu chi tiet: header trung tinh, tieu de tim va bang nhan vien co vach chia ro. */
+.meet-panel-labor .mlt-main-head { background:var(--mlt-theme-soft);border-bottom-color:var(--mlt-theme-border); }
+.meet-panel-labor .mlt-main-title { color:var(--mlt-theme-primary);font-size:19px;font-weight:800; }
+.meet-panel-labor .mlt-main-time,.meet-panel-labor .mlt-main-meta { color:var(--mlt-theme-muted); }
+.meet-panel-labor .mlt-main-time i,.meet-panel-labor .mlt-main-meta i { color:#8797ad; }
+.meet-panel-labor .mlt-duration { border-color:#d8c7e9;background:#fff;color:var(--mlt-theme-primary);font-size:11.5px; }
+.meet-panel-labor .mlt-staff-choice { border-color:#d7dfe9;background:#fff; }
+.meet-panel-labor .mlt-staff-choice button { color:#697c94;font-weight:750; }
+.meet-panel-labor .mlt-staff-choice button:hover:not(.is-active):not([aria-pressed='true']) { background:#f3ecfa;color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-staff-choice button.is-active,.meet-panel-labor .mlt-staff-choice button[aria-pressed='true'] { background:var(--mlt-theme-primary)!important;color:#fff!important;box-shadow:0 2px 6px rgba(84,33,141,.13); }
+.meet-panel-labor .mlt-table-scroll { background:#fff;scrollbar-color:#c7d1df transparent; }
+.meet-panel-labor .mlt-table th { background:#f2f5f9;border-bottom:1px solid var(--mlt-theme-border);border-right:1px solid #e6ecf3;color:var(--mlt-theme-primary);font-size:12.5px;letter-spacing:.05px; }
+.meet-panel-labor .mlt-table th:last-child { border-right:0; }
+.meet-panel-labor .mlt-table td { border-bottom-color:var(--mlt-theme-line);color:var(--mlt-theme-ink);font-size:13px; }
+.meet-panel-labor .mlt-table tbody tr:nth-child(even) > td { background:#fbfcfe; }
+.meet-panel-labor .mlt-table tbody tr:hover > td { background:#f9f5fd; }
+.meet-panel-labor .mlt-user .mlt-person-avatar { border-color:#d3dce7;box-shadow:0 1px 3px rgba(25,33,50,.06); }
+.meet-panel-labor .mlt-person-name { color:var(--mlt-theme-ink);font-size:13.5px;font-weight:750; }
+.meet-panel-labor .mlt-user.is-host .mlt-person-name { color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-person-email { color:#8290a4;font-size:11.6px; }
+.meet-panel-labor .mlt-theory { color:var(--mlt-theme-primary);font-size:13px;font-weight:800; }
+/* Chon tham gia: chi doi palette; radio/checked/disabled van do ASP.NET va JS quan ly. */
+.meet-panel-labor .mlt-join { border-color:#d6c7e8;border-radius:8px;background:#fff; }
+.meet-panel-labor .mlt-join td { border-right-color:#d6c7e8!important; }
+.meet-panel-labor .mlt-join label { color:#74618a;font-size:11.5px;font-weight:750; }
+.meet-panel-labor .mlt-join[data-edit='1'] td:not(:has(input:checked)) label:hover { background:#f4effa;color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-join td:has(input:checked) label { background:var(--mlt-theme-primary);color:#fff;font-weight:800; }
+.meet-panel-labor .mlt-join td:has(input:focus-visible) { outline-color:#a075cd; }
+.meet-panel-labor .mlt-actual { border-color:#d2c2e5;background:#fff;color:var(--mlt-theme-primary);font-weight:750; }
+.meet-panel-labor .mlt-actual:hover:not([readonly]) { border-color:#ab86d0; }
+.meet-panel-labor .mlt-actual:focus { border-color:#9c72c5;outline:2px solid rgba(84,33,141,.21);outline-offset:1px; }
+.meet-panel-labor .mlt-actual[readonly] { border-color:#e0e5ec;background:#f1f3f6;color:#929aa7; }
+.meet-panel-labor .mlt-total { color:var(--mlt-theme-muted);font-size:12.5px;font-weight:700; }
+.meet-panel-labor .mlt-total b { color:var(--mlt-theme-primary);font-weight:850; }
+.meet-panel-labor .mlt-save { background:var(--mlt-theme-primary)!important;border:1px solid var(--mlt-theme-primary)!important;color:#fff!important;border-radius:7px;box-shadow:0 2px 6px rgba(84,33,141,.12);transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease; }
+.meet-panel-labor .mlt-save:hover { background:var(--mlt-theme-strong)!important;border-color:var(--mlt-theme-strong)!important;box-shadow:0 4px 12px rgba(84,33,141,.17); }
+.meet-panel-labor .mlt-save:focus-visible { outline:2px solid rgba(84,33,141,.32);outline-offset:2px; }
+/* Trang thai va modal he thong: giu do tuong phan, khong doi logic khoa hoac xac nhan. */
+.meet-panel-labor .mlt-empty { color:#77869b; }
+.meet-panel-labor .mlt-empty i { color:#ad8ecb; }
+.meet-panel-labor .mlt-locked-panel { background:linear-gradient(140deg,#f2f5f9,#fafbfd 60%,#eef2f6); }
+.meet-panel-labor .mlt-lock-card { border-color:#d9e0e9;background:#fff; }
+.meet-panel-labor .mlt-lock-heading { color:var(--mlt-theme-ink); }
+.meet-panel-labor .mlt-lock-meeting { color:var(--mlt-theme-primary); }
+.meet-panel-labor .mlt-lock-note { color:var(--mlt-theme-muted); }
+/* Lich noi va hop xac nhan nam ngoai UpdatePanel: chi dieu chinh mau, vi tri/behavior khong doi. */
+.mlt-range-pop { border-color:#d7dfe9;background:#fff;color:#334155;box-shadow:0 20px 46px rgba(31,37,55,.18); }
+.mlt-range-head { color:#54218d; }
+.mlt-range-close { color:#8492a6; }
+.mlt-range-close:hover { color:#54218d; }
+.mlt-range-field { border-color:#dce3ed;background:#f8fafc; }
+.mlt-range-field.is-active { border-color:#a47fca;background:#f2ebfa;box-shadow:inset 0 0 0 1px rgba(84,33,141,.10); }
+.mlt-range-field small { color:#7e8b9f; }
+.mlt-range-field strong,.mlt-range-month { color:#54218d; }
+.mlt-range-month button { border-color:#d7dfe9;color:#54218d;background:#fff; }
+.mlt-range-month button:hover { background:#f2ebfa;border-color:#bea4d8; }
+.mlt-range-weekday { color:#8090a4; }
+.mlt-range-day { color:#405066; }
+.mlt-range-day:hover:not(:disabled) { background:#f3edfa;border-color:#d6c6e8; }
+.mlt-range-day.is-between { background:#f2ecfa; }
+.mlt-range-day.is-picked { background:#54218d;color:#fff; }
+.mlt-range-foot button { border-color:#d7dfe9;color:#54218d;background:#fff; }
+.mlt-range-foot button:hover { background:#f3edfa; }
+.mlt-range-foot .mlt-range-apply { background:#54218d;border-color:#54218d;color:#fff; }
+.mlt-range-foot .mlt-range-apply:hover { background:#43176f;border-color:#43176f; }
+.mlt-confirm-box { border-color:#d7dfe9;box-shadow:0 22px 64px rgba(30,29,49,.22); }
+.mlt-confirm-title { color:#54218d; }
+.mlt-confirm-title i { background:#f2ecfa; }
+.mlt-confirm-text { color:#66758c; }
+.mlt-confirm-actions button { border-color:#d7dfe9; }
+.mlt-confirm-discard { background:#f7f9fc;color:#54218d; }
+.mlt-confirm-save { background:#54218d;border-color:#54218d!important;color:#fff; }
+.mlt-confirm-save:hover { background:#43176f; }
+@media(max-width:780px) {
+.meet-panel-labor .mlt-layout { background:#f6f8fb; }
+}
+@media(prefers-reduced-motion:reduce) {
+.meet-panel-labor .mlt-meeting-link,.meet-panel-labor .mlt-save,.meet-panel-labor .mlt-page-button { transition:none!important; }
+}
+
 </style>
 <asp:UpdatePanel runat="server" ID="upLaborTab" UpdateMode="Conditional" ChildrenAsTriggers="true">
 <ContentTemplate>

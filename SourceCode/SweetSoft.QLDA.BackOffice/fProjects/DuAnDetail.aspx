@@ -608,6 +608,146 @@
         .pd-project-inline-save:hover { background:#421574; border-color:#421574; }
         .pd-project-inline-contract-note { display:block; margin:5px 0 0; color:#8a7f96; font-size:10.5px; }
         @media(max-width:700px) { .pd-project-inline-fields { row-gap:12px!important; } }
+
+        /* ==========================================================
+           DU AN DETAIL — DONG BO MAU THEO MEETLIST
+           CHI AP DUNG CHO: Cong viec cua toi + Cong thanh vien
+           Khong doi layout, JS, AJAX, quy tac tinh gio, quyen hay trang thai
+           ========================================================== */
+        #projectPersonalView, #projectTeamHoursView { --pd-color-primary:#54218d;--pd-color-primary-hover:#451874;--pd-color-title:#3f255e;--pd-color-text:#334155;--pd-color-muted:#64748b;--pd-color-line:#d7dfe9;--pd-color-line-soft:#e7ecf2;--pd-color-heading:#f7f9fc;--pd-color-subtle:#fafbfe;--pd-color-hover:#f8f5fd;--pd-color-selected:#f1eafd;--pd-color-selected-line:#c6a8ea;color:var(--pd-color-text); }
+        /* Tab Cong viec cua toi — 4 bang: giam phu tim, tang do ro vien va hang. */
+        #projectPersonalView .pd-personal-card { border:1px solid var(--pd-color-line);border-radius:11px;background:#fff;box-shadow:0 2px 8px rgba(38,50,70,.035); }
+        #projectPersonalView .pd-personal-card-head { background:var(--pd-color-heading);border-bottom:1px solid var(--pd-color-line); }
+        #projectPersonalView .pd-head-main strong { color:var(--pd-color-primary);font-weight:800; }
+        #projectPersonalView .pd-head-main > i { color:var(--pd-color-primary); }
+        #projectPersonalView .pd-head-actions small { border:1px solid #e1d4ed;border-radius:7px;background:#fff;color:#6b398e;font-weight:750; }
+        #projectPersonalView .pd-compact-filter { border-color:#d9cbe7;border-radius:7px;background:#fff;color:var(--pd-color-primary); }
+        #projectPersonalView .pd-compact-filter:hover { border-color:#b99cda;background:#f3ecfc; }
+        #projectPersonalView .pd-compact-filter.is-filtered { background:var(--pd-color-primary);border-color:var(--pd-color-primary);color:#fff; }
+        #projectPersonalView .pd-personal-list { background:#fff; }
+        #projectPersonalView .pd-personal-item { background:#fff;border-bottom:1px solid var(--pd-color-line-soft);transition:background-color .16s ease; }
+        #projectPersonalView .pd-personal-item:nth-of-type(even) { background:var(--pd-color-subtle); }
+        #projectPersonalView .pd-personal-item:hover { background:var(--pd-color-hover); }
+        #projectPersonalView .pd-personal-item-title, #projectPersonalView .pd-personal-task-name { color:var(--pd-color-title); }
+        #projectPersonalView .pd-personal-task-code { border-color:#d6c0ef;border-radius:6px;background:#f5effd;color:var(--pd-color-primary); }
+        #projectPersonalView .pd-personal-due, #projectPersonalView .pd-personal-meta, #projectPersonalView .pd-personal-schedule-line { color:var(--pd-color-muted); }
+        #projectPersonalView .pd-personal-due i, #projectPersonalView .pd-personal-meta i, #projectPersonalView .pd-personal-schedule-line i { color:#78869a; }
+        #projectPersonalView .pd-personal-hours { background:#fff;border-color:#d7c6e9;color:var(--pd-color-primary); }
+        #projectPersonalView .pd-personal-card-footer { background:var(--pd-color-heading);border-top:1px solid var(--pd-color-line); }
+        #projectPersonalView .pd-detail-btn { border-color:#cbb3e8;border-radius:7px;background:#fff;color:var(--pd-color-primary); }
+        #projectPersonalView .pd-detail-btn:hover { border-color:#9767c9;background:#f2e9fc;color:var(--pd-color-primary-hover); }
+        #projectPersonalView .pd-personal-summary { background:#fff; }
+        #projectPersonalView .pd-summary-row { background:#fff;border:1px solid var(--pd-color-line);border-radius:8px;box-shadow:none; }
+        #projectPersonalView .pd-summary-row strong { color:var(--pd-color-text); }
+        #projectPersonalView .pd-summary-row span { color:var(--pd-color-primary); }
+        #projectPersonalView .pd-summary-row.is-total { background:#f6f1fc;border-color:#c7a9e9;box-shadow:inset 3px 0 var(--pd-color-primary); }
+        #projectPersonalView .pd-summary-row.is-total strong, #projectPersonalView .pd-summary-row.is-total span { color:var(--pd-color-primary); }
+        #projectPersonalView .pd-personal-empty { color:#7e8998; }
+        /* Trang thai task/meet/issue giu nguyen mau ngu nghia, chi dong bo vien/shape. */
+        #projectPersonalView .pd-personal-tag { border-radius:7px; }
+        /* Tab Cong thanh vien — dong bo 2 khung, header, nhan su, accordion, tong gio. */
+        #projectTeamHoursView .pd-team-side, #projectTeamHoursView .pd-team-detail { background:#fff;border:1px solid var(--pd-color-line);border-radius:11px;box-shadow:0 2px 8px rgba(38,50,70,.035); }
+        #projectTeamHoursView .pd-team-side-head, #projectTeamHoursView .pd-team-detail-head { background:var(--pd-color-heading);border-bottom:1px solid var(--pd-color-line); }
+        #projectTeamHoursView .pd-team-side-head strong, #projectTeamHoursView .pd-team-detail-head strong, #projectTeamHoursView .pd-team-detail-name { color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-side-head strong i, #projectTeamHoursView .pd-team-detail-person > i { color:var(--pd-color-primary)!important; }
+        #projectTeamHoursView .pd-team-side-head small, #projectTeamHoursView .pd-team-detail-head small { border:1px solid #e3d5f1;background:#fff;color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-detail-email, #projectTeamHoursView .pd-team-person-email { color:var(--pd-color-muted); }
+        #projectTeamHoursView .pd-team-search input { border-color:var(--pd-color-line);background:#fff;color:var(--pd-color-text); }
+        #projectTeamHoursView .pd-team-search input:focus { border-color:#9e76cd;box-shadow:0 0 0 3px rgba(84,33,141,.10); }
+        #projectTeamHoursView .pd-team-search > i { color:#8290a3; }
+        #projectTeamHoursView .pd-team-people { background:#fff; }
+        #projectTeamHoursView .pd-team-person { border-color:transparent;border-radius:8px;background:#fff; }
+        #projectTeamHoursView .pd-team-person:hover { background:var(--pd-color-hover);border-color:#e2d4ed; }
+        #projectTeamHoursView .pd-team-person.is-active { background:var(--pd-color-selected);border-color:var(--pd-color-selected-line);box-shadow:inset 3px 0 var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-person-name { color:var(--pd-color-text); }
+        #projectTeamHoursView .pd-team-person.is-active .pd-team-person-name { color:var(--pd-color-title); }
+        #projectTeamHoursView .pd-team-pm { background:#f5effc;border:1px solid #dfccef;color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-detail-body { background:#fff; }
+        #projectTeamHoursView .pd-team-hours-banner { background:#f7f9fc;border:1px solid #dde4ee;color:#66758a; }
+        #projectTeamHoursView .pd-team-hours-banner i { color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-accordion { background:#fff;border:1px solid var(--pd-color-line);border-radius:9px;box-shadow:none; }
+        #projectTeamHoursView .pd-team-accordion-header { background:#fff;color:var(--pd-color-text);transition:background-color .16s ease; }
+        #projectTeamHoursView .pd-team-accordion-header:hover { background:var(--pd-color-hover); }
+        #projectTeamHoursView .pd-team-accordion.is-expanded > .pd-team-accordion-header { background:#f7f4fc; }
+        #projectTeamHoursView .pd-team-accordion-title { color:#3f3055; }
+        #projectTeamHoursView .pd-team-accordion-count { color:#788394; }
+        #projectTeamHoursView .pd-team-hours-value { color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-accordion-header > i { color:#78869c; }
+        #projectTeamHoursView .pd-team-accordion-content { border-top:1px solid var(--pd-color-line);background:#fff; }
+        #projectTeamHoursView .pd-team-accordion.is-total { background:#f6f1fc;border-color:#c7a9e9;box-shadow:inset 3px 0 var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-accordion.is-total .pd-team-accordion-header { background:transparent; }
+        #projectTeamHoursView .pd-team-accordion.is-total .pd-team-accordion-title, #projectTeamHoursView .pd-team-accordion.is-total .pd-team-hours-value { color:var(--pd-color-primary);font-weight:850; }
+        #projectTeamHoursView .pd-team-record { border-bottom:1px solid var(--pd-color-line-soft); }
+        #projectTeamHoursView .pd-team-record:nth-child(even) { background:var(--pd-color-subtle); }
+        #projectTeamHoursView .pd-team-record-title { color:var(--pd-color-text); }
+        #projectTeamHoursView .pd-team-record-code { background:#f7f2ff;border-color:#dfd0f0;color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-record-meta, #projectTeamHoursView .pd-team-hours-footnote { color:var(--pd-color-muted); }
+        #projectTeamHoursView .pd-team-record-hours { color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-show-all { color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-team-show-all:hover { color:var(--pd-color-primary-hover);text-decoration:underline; }
+        #projectTeamHoursView .pd-ds-expand { border-color:#d0b8e8;background:#fff;color:var(--pd-color-primary); }
+        #projectTeamHoursView .pd-ds-expand:hover { background:#f2eafd;border-color:#a982d6; }
+        /* Bang chi tiet gio cong neu duoc mo trong panel Cong thanh vien. */
+        #projectTeamHoursView .pd-ds-table-scroller { border-color:var(--pd-color-line); }
+        #projectTeamHoursView .pd-ds-table th { background:var(--pd-color-heading);color:var(--pd-color-primary);border-bottom:1px solid var(--pd-color-line); }
+        #projectTeamHoursView .pd-ds-table th, #projectTeamHoursView .pd-ds-table td { border-right:1px solid var(--pd-color-line-soft);border-bottom-color:var(--pd-color-line-soft); }
+        #projectTeamHoursView .pd-ds-table th:last-child, #projectTeamHoursView .pd-ds-table td:last-child { border-right:0; }
+        #projectTeamHoursView .pd-ds-table tbody tr:hover { background:#faf7ff; }
+        /* Cai thien focus nhung khong doi event, click hay hotkey. */
+        #projectPersonalView button:focus-visible, #projectTeamHoursView button:focus-visible { outline:2px solid #9368c4;outline-offset:2px; }
+        @media(prefers-reduced-motion:reduce) { #projectPersonalView .pd-personal-item, #projectTeamHoursView .pd-team-accordion-header { transition:none!important; } }
+
+        /* V18 - Can bang hai header Cong thanh vien + xoa nhan/khung luu y (UI). */
+        #projectTeamHoursView .pd-team-side-head, #projectTeamHoursView .pd-team-detail-head { box-sizing:border-box;flex:0 0 72px;height:72px;min-height:72px;max-height:72px;padding:10px 14px;align-items:center; }
+        #projectTeamHoursView .pd-team-side-head > strong { display:inline-flex;align-items:center;gap:7px;min-width:0;line-height:1.3; }
+        #projectTeamHoursView .pd-team-detail-person { flex:1 1 auto;min-width:0;align-items:center; }
+        #projectTeamHoursView .pd-team-detail-person > span { display:block;flex:1 1 auto;min-width:0!important; }
+        #projectTeamHoursView .pd-team-detail-name { font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        #projectTeamHoursView .pd-team-detail-email { display:block;margin-top:2px;font-size:10.75px!important;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        #projectTeamHoursView .pd-team-top-actions { flex:0 0 auto;min-width:0;margin-left:auto; }
+        #projectTeamHoursView .pd-team-detail-head .pd-team-top-actions > small, #projectPersonalView .pd-personal-time .pd-head-actions > small, #projectTeamHoursView .pd-team-hours-banner { display:none!important; }
+        @media(max-width:680px) {
+        #projectTeamHoursView .pd-team-side-head, #projectTeamHoursView .pd-team-detail-head { flex-basis:64px;height:64px;min-height:64px;max-height:64px;padding:9px 12px; }
+        #projectTeamHoursView .pd-team-detail-name { font-size:13px; }
+        #projectTeamHoursView .pd-team-detail-email { font-size:10px!important; }
+        }
+
+        /* Dong bo popup Chi tiet phan viec theo he mau bang MeetList: trang, xam sang, tim dam. */
+        .modal:has(#pdPersonalDetailModalBody) .pd-detail-modal-heading { background:#fff;border-bottom:1px solid #d7dfe9; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-detail-modal-title { color:#54218d; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-detail-modal-sub { color:#718096; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-detail-item { border:1px solid #d7dfe9;border-radius:9px;background:#fff; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-personal-item-title { color:#334155; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-detail-subrow { color:#64748b; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-detail-subrow i { color:#748298; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-overview { color:#334155; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-overview > strong, .modal:has(#pdPersonalDetailModalBody) .pd-ds-subtitle { color:#54218d; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-jump { border-color:#d7dfe9;border-radius:7px;background:#fff;color:#54218d; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-jump:hover { border-color:#bfa1db;background:#f6f1fc; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-equation-sign, .modal:has(#pdPersonalDetailModalBody) .pd-ds-footnote { color:#64748b; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-equation-total { color:#54218d; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table-scroller { border:1px solid #d7dfe9;border-radius:9px;background:#fff; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table { color:#334155; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table th { background:#f7f9fc;color:#54218d;border-bottom:1px solid #d7dfe9; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table th, .modal:has(#pdPersonalDetailModalBody) .pd-ds-table td { border-right:1px solid #e7ecf2;border-bottom-color:#e7ecf2; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table th:last-child, .modal:has(#pdPersonalDetailModalBody) .pd-ds-table td:last-child { border-right:none; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table tbody tr:nth-child(even) { background:#fbfcfe; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table tbody tr:hover { background:#f8f5fd; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-table td strong { color:#54218d; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-ds-status { background:#f2f4f8;color:#64748b;border:1px solid #d7dfe9; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-team-record-code { border-color:#d9c8ec;background:#f5effd;color:#54218d; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-summary-row { border-color:#d7dfe9;border-radius:8px;background:#fff; }
+        .modal:has(#pdPersonalDetailModalBody) .pd-summary-row.is-total { border-color:#c7a9e9;background:#f6f1fc;box-shadow:inset 3px 0 #54218d; }
+        .pd-ds-floating-preview .pd-detail-item { border:1px solid #d7dfe9;background:#fff; }
+
+        /* Phần việc của tôi: giờ công phía trên, trạng thái phía dưới ở mép phải. Không thay đổi bảng công hay popup chi tiết. */
+        #projectPersonalView .pd-personal-tasks .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:8px; }
+        #projectPersonalView .pd-personal-tasks .pd-personal-task-title, #projectPersonalView .pd-personal-meetings .pd-personal-item-title { flex:1 1 0;min-width:0; }
+        #projectPersonalView .pd-personal-status-stack { display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:5px;min-width:0;margin-left:auto;white-space:nowrap; }
+        #projectPersonalView .pd-personal-status-stack > .pd-personal-hours { margin:0;flex:none; }
+        #projectPersonalView .pd-personal-status-stack > .pd-personal-tag { display:inline-flex;align-items:center;justify-content:center;margin:0;max-width:100%;font-size:10px;line-height:1.25; }
+        #projectPersonalView .pd-personal-meetings .pd-personal-meeting-flags:empty { display:none; }
+        @media(max-width:560px) { #projectPersonalView .pd-personal-status-stack { gap:4px; } #projectPersonalView .pd-personal-status-stack > .pd-personal-tag { font-size:9.5px; } }
     </style>
     <script type="text/javascript">
         // Delegated handlers survive WebForms UpdatePanel re-rendering.
@@ -719,6 +859,45 @@
             setInterval(refreshStatuses, 60000);
             if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
                 Sys.WebForms.PageRequestManager.getInstance().add_endRequest(refreshStatuses);
+            }
+        })();
+    </script>
+
+
+    <script type="text/javascript">
+        (function () {
+            // Chỉ sắp xếp nhãn trong 2 danh sách cá nhân; không thay nội dung hay trạng thái.
+            if (window.__pdPersonalStatusUnderHoursInstalled) return;
+            window.__pdPersonalStatusUnderHoursInstalled = true;
+            function arrangePersonalStatus() {
+                var view = document.getElementById('projectPersonalView');
+                if (!view) return;
+                var items = view.querySelectorAll('.pd-personal-tasks .pd-personal-item, .pd-personal-meetings .pd-personal-item');
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var isTask = !!item.closest('.pd-personal-tasks');
+                    var heading = item.querySelector(isTask ? '.pd-personal-task-header' : '.pd-personal-meeting-heading');
+                    if (!heading) continue;
+                    var status = isTask
+                        ? heading.querySelector('.pd-personal-task-heading > .pd-personal-tag')
+                        : heading.querySelector('[data-pd-meeting-status="1"], .pd-personal-meeting-flags > .pd-personal-tag, .pd-personal-task-heading > .pd-personal-tag');
+                    var hours = heading.querySelector('.pd-personal-hours') || item.querySelector('.pd-personal-hours');
+                    if (!status || !hours) continue;
+                    var stack = heading.querySelector('.pd-personal-status-stack');
+                    if (!stack) {
+                        stack = document.createElement('div');
+                        stack.className = 'pd-personal-status-stack';
+                        heading.appendChild(stack);
+                    }
+                    if (hours.parentNode !== stack) stack.appendChild(hours);
+                    if (status.parentNode !== stack) stack.appendChild(status);
+                }
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arrangePersonalStatus);
+            else arrangePersonalStatus();
+            if (window.Sys && Sys.Application) Sys.Application.add_load(arrangePersonalStatus);
+            if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(arrangePersonalStatus);
             }
         })();
     </script>

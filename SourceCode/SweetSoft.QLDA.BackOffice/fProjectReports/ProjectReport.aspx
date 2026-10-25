@@ -7,6 +7,8 @@
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="cpHead" runat="server">
     <style>
+/* Export PDF la tai tep, khong phai chuyen trang; chi an overlay chuyen trang trong luot export. */
+html.qlda-report-pdf-exporting #qldaPageNavigateFeedback { display:none!important; }
 .page-title h2 { font-size: 20px; color: #1e293b; font-weight: bold; margin: 10px 0 25px 0; text-transform: uppercase; }
 .report-layout { display: flex; flex-direction: column; gap: 25px; align-items: flex-start; }
 @media (min-width: 1200px) { .report-layout { flex-direction: row; } }
@@ -54,6 +56,8 @@
     border-radius: 2px; padding-top: 8px; padding-bottom: 8px;
     animation: reportChartHeadingPulse 1.15s ease-in-out 2;
 }
+/* Đi tới đầu báo cáo bằng mục lục: làm nổi bật tiêu đề báo cáo, không đổi kích thước layout. */
+.report-header.report-chart-section-highlight { background:#fff7cc;outline:2px solid #facc15;outline-offset:4px;border-radius:5px;animation:reportChartHeadingPulse 1.15s ease-in-out 2; }
 @keyframes reportChartHeadingPulse {
     0%, 100% { background-color: #fff7cc; }
     50% { background-color: #ffec99; }
@@ -233,7 +237,7 @@
                                 <asp:LinkButton ID="btnPreview" runat="server" CssClass="btn-filter" OnClick="btnPreview_Click">
                                     <i class="fas fa-search"></i> <%= GetResourceText(BackEndResourceKeys.GENERATE_REPORT) %>
                                 </asp:LinkButton>
-                                <asp:LinkButton ID="btnExportPDF" runat="server" CssClass="btn-export btn-export-pdf" OnClick="btnExportPDF_Click">
+                                <asp:LinkButton ID="btnExportPDF" runat="server" CssClass="btn-export btn-export-pdf" data-qlda-download-postback="true" OnClientClick="if(window.ProjectReportPdfExport){window.ProjectReportPdfExport.begin();}" OnClick="btnExportPDF_Click">
                                     <i class="fas fa-file-pdf"></i> <%= GetResourceText(BackEndResourceKeys.EXPORT_PDF) %>
                                 </asp:LinkButton>
                                 <nav class="report-toc" aria-label="Mục lục báo cáo">
@@ -246,7 +250,6 @@
                                         <button type="button" class="report-toc-link" data-report-target="doingTasksSection"><span class="report-toc-index">1.</span><span class="report-toc-link-label">Công việc đang thực hiện</span></button>
                                         <button type="button" class="report-toc-link" data-report-target="todoTasksSection"><span class="report-toc-index">2.</span><span class="report-toc-link-label">Công việc chưa bắt đầu</span></button>
                                         <button type="button" class="report-toc-link" data-report-target="issuesSection"><span class="report-toc-index">3.</span><span class="report-toc-link-label">Vấn đề</span></button>
-                                        <button type="button" class="report-toc-link" data-report-target="reportBottom"><span class="report-toc-index">4.</span><span class="report-toc-link-label">Cuối trang</span></button>
                                     </div>
                                 </nav>
                             </div>
@@ -397,7 +400,6 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div id="reportBottom" aria-hidden="true"></div>
                                     </div>
                                 </asp:PlaceHolder>
                             </div>
@@ -412,6 +414,51 @@
 <asp:Content ID="Content5" ContentPlaceHolderID="cpVendorScript" runat="server"></asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="cpBottomScript" runat="server">
     <script>
+        // PDF response (Content-Disposition: attachment) khong thay doi trang hien tai.
+        // Bao ve overlay MasterTemplate trong ca native WebForms postback va beforeunload.
+        (function () {
+            if (window.ProjectReportPdfExport) return;
+            var until = 0;
+            var releaseTimer = null;
+            var exportId = '<%= btnExportPDF.ClientID %>';
+            function active() { return until && Date.now() < until; }
+            function stopOverlay() {
+                if (window.QLDAPageNavigation && typeof window.QLDAPageNavigation.stop === 'function') window.QLDAPageNavigation.stop();
+                var mask = document.getElementById('qldaPageNavigateFeedback');
+                if (mask) { mask.classList.remove('is-visible'); mask.hidden = true; }
+            }
+            function release() {
+                until = 0;
+                if (releaseTimer) { clearTimeout(releaseTimer); releaseTimer = null; }
+                document.documentElement.classList.remove('qlda-report-pdf-exporting');
+                stopOverlay();
+            }
+            window.ProjectReportPdfExport = {
+                begin: function () {
+                    // Trinh duyet download file se khong phat pageshow sau khi response ve.
+                    // Khong dung onunload de doan download thanh cong hay that bai.
+                    until = Date.now() + 120000;
+                    document.documentElement.classList.add('qlda-report-pdf-exporting');
+                    stopOverlay();
+                    if (releaseTimer) clearTimeout(releaseTimer);
+                    releaseTimer = setTimeout(release, 120000);
+                },
+                end: release
+            };
+            // Master co the bat overlay o submit (capture) va beforeunload; tat cho export.
+            document.addEventListener('submit', function () { if (active()) stopOverlay(); }, true);
+            window.addEventListener('beforeunload', function () { if (active()) stopOverlay(); });
+            window.addEventListener('pageshow', function () { if (until) release(); });
+            // Khi nguoi dung thao tac nut khac, cho phep animation chuyen trang nhu cu.
+            document.addEventListener('click', function (event) {
+                if (!active() || !event.target || !event.target.closest) return;
+                var control = event.target.closest('a,button,input[type="submit"],input[type="button"]');
+                if (!control) return;
+                var pdfButton = document.getElementById(exportId);
+                if (pdfButton && (pdfButton === control || pdfButton.contains(control))) return;
+                release();
+            });
+        })();
 
         // Độc lập AJAX WebForms; tất cả thao tác mục lục/nhân sự thực hiện trên trình duyệt.
         (function () {
@@ -436,6 +483,17 @@
                     window.scrollTo({ top: Math.max(0, topPage), behavior: behavior });
                 }
                 markActive(targetId);
+            };
+            // Click mục lục, phím 0–3 và Tab cùng dùng hiệu ứng màu vàng như khi click biểu đồ.
+            // Giữ ui.scrollTo thuần cuộn để chức năng highlight nhiều mục từ biểu đồ không bị mất.
+            ui.navigateTo = function (targetId) {
+                if (!document.getElementById(targetId)) return;
+                clearReportChartHighlights();
+                var highlight = targetId === 'reportTop'
+                    ? document.querySelector('#reportTop .report-header')
+                    : document.getElementById(targetId);
+                if (highlight) highlight.classList.add('report-chart-section-highlight');
+                ui.scrollTo(targetId);
             };
             function fitViewport() {
                 var layout = document.querySelector('.report-layout');
@@ -515,7 +573,7 @@
                     var tocBtn = event.target.closest('.report-toc-toggle');
                     if (tocBtn) { var toc = tocBtn.closest('.report-toc'); toc.classList.toggle('is-collapsed'); var open = !toc.classList.contains('is-collapsed'); tocBtn.setAttribute('aria-expanded', String(open)); tocBtn.setAttribute('aria-label', open ? 'Thu gọn mục lục' : 'Mở mục lục'); return; }
                     var jump = event.target.closest('.report-toc-link');
-                    if (jump) { ui.scrollTo(jump.getAttribute('data-report-target')); return; }
+                    if (jump) { ui.navigateTo(jump.getAttribute('data-report-target')); return; }
                     // Mở/đóng khi nhấp BẤT KỲ vị trí nào trong ô người thực hiện.
                     var cell = event.target.closest('td.report-assignee-cell');
                     if (cell) { var box = cell.querySelector('.report-assignee-box'); if (box && !box.classList.contains('is-static')) { setAssigneeExpanded(box, !box.classList.contains('is-expanded')); return; } }
@@ -524,7 +582,40 @@
                     if (event.target.matches('.report-assignee-box') && (event.key === 'Enter' || event.key === ' ')) {
                         event.preventDefault();
                         setAssigneeExpanded(event.target, !event.target.classList.contains('is-expanded'));
+                        return;
                     }
+
+                    // 0–3: đến mục tương ứng. Tab: mục tiếp theo, Shift+Tab: mục trước.
+                    // Không chiếm phím trong ô nhập, popup hoặc các nút/link ngoài mục lục.
+                    var isTab = event.key === 'Tab';
+                    if (!isTab && !/^[0-3]$/.test(event.key)) return;
+                    if (event.defaultPrevented || event.ctrlKey || event.altKey || event.metaKey || event.repeat || event.isComposing) return;
+                    if (!isTab && event.shiftKey) return;
+                    var origin = event.target;
+                    if (origin && origin.nodeType === 1) {
+                        if (origin.isContentEditable || origin.closest('input, textarea, select, [contenteditable], [role="textbox"], [role="combobox"], [role="dialog"], .modal')) return;
+                        // Giữ phím Tab mặc định khi người dùng thao tác nút, link khác.
+                        if (isTab && origin.closest('a, button, [role="button"], [role="menuitem"], [tabindex]') && !origin.closest('.report-toc')) return;
+                    }
+                    if (document.querySelector('.modal.show, .modal.in, [role="dialog"][aria-modal="true"]')) return;
+
+                    var toc = document.querySelector('.report-layout .report-toc');
+                    if (!toc) return;
+                    var jumps = Array.prototype.slice.call(toc.querySelectorAll('.report-toc-link[data-report-target]'));
+                    if (!jumps.length) return;
+                    var jump;
+                    if (isTab) {
+                        var activeIndex = jumps.findIndex(function (item) { return item.classList.contains('is-active'); });
+                        if (activeIndex < 0) activeIndex = 0;
+                        var step = event.shiftKey ? -1 : 1;
+                        jump = jumps[(activeIndex + step + jumps.length) % jumps.length];
+                    } else {
+                        var targets = ['reportTop', 'doingTasksSection', 'todoTasksSection', 'issuesSection'];
+                        jump = toc.querySelector('.report-toc-link[data-report-target="' + targets[Number(event.key)] + '"]');
+                    }
+                    if (!jump) return;
+                    event.preventDefault();
+                    jump.click();
                 });
                 // Tooltip CHỈ xuất hiện khi con trỏ ở nút +N (không hiện khi rê trên ô/chip).
                 // Vẫn giữ nguyên hành vi bấm toàn bộ ô để mở/thu gọn.

@@ -600,6 +600,23 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
             }
         }
 
+        // Gộp ngày và giờ bắt đầu/kết thúc vào một cột; cuộc họp qua ngày vẫn hiện đủ cả hai ngày.
+        protected string FormatMeetingDateRange(object startValue, object endValue)
+        {
+            if (startValue == null || startValue == DBNull.Value || endValue == null || endValue == DBNull.Value) return "—";
+            DateTime start = Convert.ToDateTime(startValue);
+            DateTime end = Convert.ToDateTime(endValue);
+            return start.Date == end.Date ? start.ToString("dd/MM/yyyy") : start.ToString("dd/MM/yyyy") + " – " + end.ToString("dd/MM/yyyy");
+        }
+
+        protected string FormatMeetingTimeRange(object startValue, object endValue)
+        {
+            if (startValue == null || startValue == DBNull.Value || endValue == null || endValue == DBNull.Value) return "—";
+            DateTime start = Convert.ToDateTime(startValue);
+            DateTime end = Convert.ToDateTime(endValue);
+            return start.ToString("HH:mm") + " – " + end.ToString("HH:mm");
+        }
+
         private void ApplyControlsText()
         {
             txtSearchSingle.SearchTagItemText = GetResourceText(BackEndResourceKeys.KEYWORD);
@@ -611,8 +628,7 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
                 GetResourceText(BackEndResourceKeys.INDEX),
                 GetResourceText(BackEndResourceKeys.MEETING_NAME),
                 "Người tham gia",
-                GetResourceText(BackEndResourceKeys.START_TIME),
-                GetResourceText(BackEndResourceKeys.END_TIME),
+                "Thời gian họp",
                 GetResourceText(BackEndResourceKeys.MEETING_ROOM),
                 GetResourceText(BackEndResourceKeys.STATUS),
                 GetResourceText(BackEndResourceKeys.ACTION)

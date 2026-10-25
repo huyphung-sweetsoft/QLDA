@@ -123,8 +123,9 @@
 </asp:UpdatePanel>
 
 <style>
-    #<%= mdlTaskView.ClientID %> .modal-dialog { width: calc(100% - 24px) !important; max-width: 1180px !important; margin: 1rem auto; }
-    #<%= mdlTaskView.ClientID %> .modal-body { padding: 12px 22px 18px; background: #f8fafc; }
+    #<%= mdlTaskView.ClientID %> .modal-dialog { width: calc(100% - 24px) !important; max-width: 1180px !important; margin: 40px auto 16px !important; }
+    #<%= mdlTaskView.ClientID %> .modal-content { display: flex; flex-direction: column; max-height: calc(100vh - 64px); }
+    #<%= mdlTaskView.ClientID %> .modal-body { min-height: 0; overflow-y: auto; padding: 12px 22px 18px; background: #f8fafc; }
     
     .task-view-wrapper { padding: 0; }
     
@@ -177,7 +178,7 @@
         .task-view-meta-box { flex: 0 0 280px; }
     }
     @media (max-width: 767.98px) {
-        #<%= mdlTaskView.ClientID %> .modal-dialog { width: calc(100% - 10px) !important; margin: .5rem auto; }
+        #<%= mdlTaskView.ClientID %> .modal-dialog { width: calc(100% - 10px) !important; margin: 40px auto 10px !important; }
         .task-view-meta-box { flex: 1 1 auto; width: 100%; }
         .task-view-title { font-size: 18px; }
     }
