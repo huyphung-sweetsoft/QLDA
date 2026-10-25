@@ -192,6 +192,19 @@ namespace SweetSoft.QLDA.DataAccess
 				colvarNgayCapNhat.ForeignKeyTableName = "";
 				schema.Columns.Add(colvarNgayCapNhat);
 				
+				TableSchema.TableColumn colvarDaThamGiaOverride = new TableSchema.TableColumn(schema);
+				colvarDaThamGiaOverride.ColumnName = "DaThamGiaOverride";
+				colvarDaThamGiaOverride.DataType = DbType.Boolean;
+				colvarDaThamGiaOverride.MaxLength = 0;
+				colvarDaThamGiaOverride.AutoIncrement = false;
+				colvarDaThamGiaOverride.IsNullable = true;
+				colvarDaThamGiaOverride.IsPrimaryKey = false;
+				colvarDaThamGiaOverride.IsForeignKey = false;
+				colvarDaThamGiaOverride.IsReadOnly = false;
+				colvarDaThamGiaOverride.DefaultSetting = @"";
+				colvarDaThamGiaOverride.ForeignKeyTableName = "";
+				schema.Columns.Add(colvarDaThamGiaOverride);
+				
 				BaseSchema = schema;
 				//add this schema to the provider
 				//so we can query it later
@@ -241,6 +254,14 @@ namespace SweetSoft.QLDA.DataAccess
 			get { return GetColumnValue<DateTime>(Columns.NgayCapNhat); }
 			set { SetColumnValue(Columns.NgayCapNhat, value); }
 		}
+		  
+		[XmlAttribute("DaThamGiaOverride")]
+		[Bindable(true)]
+		public bool? DaThamGiaOverride 
+		{
+			get { return GetColumnValue<bool?>(Columns.DaThamGiaOverride); }
+			set { SetColumnValue(Columns.DaThamGiaOverride, value); }
+		}
 		
 		#endregion
 		
@@ -261,7 +282,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Inserts a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Insert(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat)
+		public static void Insert(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat,bool? varDaThamGiaOverride)
 		{
 			TblLichHopGioCong item = new TblLichHopGioCong();
 			
@@ -275,6 +296,8 @@ namespace SweetSoft.QLDA.DataAccess
 			
 			item.NgayCapNhat = varNgayCapNhat;
 			
+			item.DaThamGiaOverride = varDaThamGiaOverride;
+			
 		
 			if (System.Web.HttpContext.Current != null)
 				item.Save(System.Web.HttpContext.Current.User.Identity.Name);
@@ -285,7 +308,7 @@ namespace SweetSoft.QLDA.DataAccess
 		/// <summary>
 		/// Updates a record, can be used with the Object Data Source
 		/// </summary>
-		public static void Update(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat)
+		public static void Update(Guid varIdLichHop,Guid varIdNhanVien,decimal? varSoGioThucTe,Guid? varNguoiCapNhat,DateTime varNgayCapNhat,bool? varDaThamGiaOverride)
 		{
 			TblLichHopGioCong item = new TblLichHopGioCong();
 			
@@ -298,6 +321,8 @@ namespace SweetSoft.QLDA.DataAccess
 				item.NguoiCapNhat = varNguoiCapNhat;
 			
 				item.NgayCapNhat = varNgayCapNhat;
+			
+				item.DaThamGiaOverride = varDaThamGiaOverride;
 			
 			item.IsNew = false;
 			if (System.Web.HttpContext.Current != null)
@@ -347,6 +372,13 @@ namespace SweetSoft.QLDA.DataAccess
         
         
         
+        public static TableSchema.TableColumn DaThamGiaOverrideColumn
+        {
+            get { return Schema.Columns[5]; }
+        }
+        
+        
+        
         #endregion
 		#region Columns Struct
 		public struct Columns
@@ -356,6 +388,7 @@ namespace SweetSoft.QLDA.DataAccess
 			 public static string SoGioThucTe = @"SoGioThucTe";
 			 public static string NguoiCapNhat = @"NguoiCapNhat";
 			 public static string NgayCapNhat = @"NgayCapNhat";
+			 public static string DaThamGiaOverride = @"DaThamGiaOverride";
 						
 		}
 		#endregion

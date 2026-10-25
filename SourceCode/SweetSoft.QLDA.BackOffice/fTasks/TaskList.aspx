@@ -147,15 +147,14 @@
         width:min(1180px,calc(100vw - 32px))!important;
         max-width:calc(100vw - 32px)!important;
         /* Không tăng chiều cao popup theo nội dung vượt quá màn hình. */
-        max-height:calc(100vh - 24px)!important;
-        margin:12px auto!important;
+        max-height:calc(100vh - 64px)!important;
+        margin:40px auto 16px!important;
         transition:transform .3s ease!important;
     }
     #<%= mdlEditTask.ClientID %> .modal-content {
         display:flex;
         flex-direction:column;
-        max-height:calc(100vh - 24px);
-        overflow:hidden;
+        max-height:calc(100vh - 64px);
     }
     #<%= mdlEditTask.ClientID %> .modal-body {
         min-height:0;
@@ -166,6 +165,24 @@
     .task-edit-wrapper .task-context-card {padding:14px;}
     .task-edit-wrapper .task-code-prefix {flex-basis:92px;width:92px;min-width:92px;}
     .task-edit-wrapper .task-meta-controls {grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;}
+    /* Cột ngày thực tế luôn hiện; chỉ được chỉnh khi Đang thực hiện -> Hoàn thành. */
+    .task-edit-wrapper .task-meta-controls {grid-template-columns:minmax(0,1.28fr) minmax(0,1.06fr) minmax(0,.96fr);gap:8px;}
+    .task-edit-wrapper .task-meta-controls .priority-box {padding:5px 3px!important;font-size:12px!important;}
+    .task-edit-wrapper .task-meta-controls #btnSmartStatus {padding:6px!important;font-size:12px!important;white-space:nowrap;}
+    .task-edit-wrapper .ql-complete-date-shell .task-meta-label {white-space:nowrap;font-size:12px;}
+    .task-edit-wrapper .ql-complete-date-input {width:100%;height:44px;min-height:44px;padding:8px 9px;border:1px solid #c5b4df;border-radius:9px;background:#fff;color:#34204f;font-size:13px;font-weight:700;font-family:inherit;box-sizing:border-box;}
+    .task-edit-wrapper .ql-complete-date-input:focus {outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.12);}
+    .task-edit-wrapper .ql-complete-date-input:disabled {background:#f8fafc;color:#64748b;border-color:#d8dee9;opacity:1;cursor:default;box-shadow:none;}
+    .task-edit-wrapper .ql-complete-date-shell.is-locked {cursor:help;}
+    .task-edit-wrapper .ql-complete-date-shell.is-locked .ql-complete-date-input {pointer-events:none;}
+    .task-edit-wrapper .ql-complete-date-hint {display:block;margin-top:5px;font-size:11px;font-weight:650;line-height:1.35;color:#64748b;}
+    .task-edit-wrapper .ql-complete-date-hint.is-on-time {color:#15803d;}
+    .task-edit-wrapper .ql-complete-date-hint.is-late {color:#b91c1c;}
+    .task-edit-wrapper .ql-late-reason-field {margin-top:12px;padding:11px 12px;border:1px solid #fecaca;border-radius:9px;background:#fff8f7;}
+    .task-edit-wrapper .ql-late-reason-field label {display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12.5px;font-weight:750;color:#b91c1c;}
+    .task-edit-wrapper .ql-late-reason-field textarea {display:block;width:100%;min-height:65px;resize:vertical;border:1px solid #f0b7b7;border-radius:8px;padding:9px 10px;color:#334155;font-size:13px;line-height:1.45;box-sizing:border-box;}
+    .task-edit-wrapper .ql-late-reason-field textarea:focus {outline:none;border-color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.09);}
+    .task-edit-wrapper .ql-complete-error {display:none;margin-top:6px;color:#b91c1c;font-size:11.5px;font-weight:650;}
     .task-edit-wrapper .task-meta-controls .priority-box {min-width:0;}
     .task-edit-wrapper .task-meta-controls .d-flex {min-width:0;}
     .task-edit-wrapper .task-meta-controls #prioritySelector {flex-wrap:nowrap;min-width:0;}
@@ -325,6 +342,19 @@
                                                 </button>
                                             </div>
                                         </div>
+
+                                        <%-- HTML input thay vì server control: tránh yêu cầu chỉnh designer.cs; giá trị vẫn gửi qua Request.Form. --%>
+                                        <div class="task-meta-shell ql-complete-date-shell task-lockable" id="qlTaskCompleteDateWrap">
+                                            <div class="task-meta-label"><i class="far fa-calendar-check"></i> Hoàn thành thực tế</div>
+                                            <input type="date" id="qlTaskActualCompleteDate" name="qlTaskActualCompleteDate" class="ql-complete-date-input" disabled="disabled" aria-label="Ngày hoàn thành thực tế" />
+                                            <span id="qlTaskCompleteDateHint" class="ql-complete-date-hint" aria-live="polite"></span>
+                                            <span id="qlTaskCompleteDateError" class="ql-complete-error" role="alert"></span>
+                                        </div>
+                                    </div>
+                                    <div class="ql-late-reason-field" id="qlTaskLateReasonWrap" style="display:none;">
+                                        <label for="qlTaskLateReason"><i class="fas fa-exclamation-triangle"></i> Lý do hoàn thành trễ hạn <span class="text-danger">*</span></label>
+                                        <textarea id="qlTaskLateReason" name="qlTaskLateReason" rows="2" disabled="disabled" placeholder="Nhập lý do hoàn thành trễ hạn..."></textarea>
+                                        <span id="qlTaskLateReasonError" class="ql-complete-error" role="alert"></span>
                                     </div>
                                 </div>
 
@@ -438,7 +468,7 @@
         <FooterTemplate>
             <asp:UpdatePanel ID="upnlFooterEdit" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>
-                    <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveTask_Click" OnClientClick="showGlobalLoading();">
+                    <asp:LinkButton ID="btnSaveTask" runat="server" CssClass="btn btn-primary waves-effect waves-light" CausesValidation="false" OnClick="btnSaveTask_Click" OnClientClick="if (!qlValidateTaskCompletionBeforeSave()) return false; showGlobalLoading();">
                         <i class="fas fa-save me-1"></i> Cập nhật
                     </asp:LinkButton>
                 </ContentTemplate>
@@ -698,6 +728,7 @@
             if(r.days) $.extend(st.days,r.days);
             if(r.duration!=null) duration.value=String(r.duration);
             if(r.endDate) {qlGet(qlTaskEndId).value=r.endDate;$(qlGet(qlTaskEndLabelId)).text(qlTextDate(r.endDate));}
+            qlRefreshTaskCompletionLate();
             qlDrawScheduleMonth();
             qlSetMode(st.mode);
         }).fail(function(xhr){if(req!==st.requestId)return;qlMessage('Không kết nối được bộ tính lịch. Chưa thay đổi dữ liệu lưu; vui lòng thử lại.',true);});
@@ -833,12 +864,12 @@
 
     function processPhaseUI() {
         var $lblPhase = $('#<%= lblEditGiaiDoan.ClientID %>');
-        if ($lblPhase.length === 0) return; 
-        
+        if ($lblPhase.length === 0) return;
+
         var fullText = $lblPhase.text().trim();
         var $wrapper = $('#phaseTooltipWrapper');
         var $shortText = $('#phaseShortText');
-        
+
         if (!fullText || fullText === '-- --' || fullText === 'Giai đoạn gốc' || fullText.indexOf('---') > -1) {
             $wrapper.attr('data-title', 'Là giai đoạn gốc');
             $wrapper.css({ 'background': '#f8fafc', 'border': '1px dashed #cbd5e1', 'color': '#94a3b8' });
@@ -859,10 +890,10 @@
     function processParentUI() {
         var $ddlParent = $('#<%= ddlEditCongViecCha.ClientID %>');
         if ($ddlParent.length === 0) return;
-        
+
         var $wrapper = $('#parentTooltipWrapper');
         var $shortText = $('#parentShortText');
-        
+
         var fullText = $ddlParent.find('option:selected').text() || '';
         fullText = fullText.trim();
 
@@ -888,68 +919,167 @@
     function initSmartPriority() {
         var $ddl = $('.task-priority-select');
         if (!$ddl.length) return;
-        
+
         var isDisabled = $ddl.prop('disabled') || $ddl.attr('disabled') === 'disabled';
         var currentVal = $ddl.val();
         var $selector = $('#prioritySelector');
         var $locked = $('#priorityLocked');
         var $lockedBtn = $locked.find('button');
-        
+
         if (isDisabled) {
             $selector.hide();
             $locked.show();
-            
+
             var text = $ddl.find('option:selected').text();
             if (!text) text = 'Chưa thiết lập';
-            
+
             var color = '#64748b'; var bg = '#f8fafc'; var border = '#e2e8f0';
             if (text.toLowerCase().indexOf('cao') > -1) { color = '#b91c1c'; bg = '#fef2f2'; border = '#fecaca'; }
             else if (text.toLowerCase().indexOf('trung bình') > -1) { color = '#b45309'; bg = '#fffbeb'; border = '#fde68a'; }
             else if (text.toLowerCase().indexOf('thấp') > -1) { color = '#1d4ed8'; bg = '#eff6ff'; border = '#bfdbfe'; }
-            
+
             $lockedBtn.css({ 'background': bg, 'color': color, 'border': '1px dashed ' + border });
-            $lockedBtn.html('<span class="task-status-dot" style="background:'+color+'; box-shadow: 0 0 0 3px '+bg+';"></span> ' + text);
+            $lockedBtn.html('<span class="task-status-dot" style="background:' + color + '; box-shadow: 0 0 0 3px ' + bg + ';"></span> ' + text);
         } else {
             $locked.hide();
             $selector.show();
-            
+
             $selector.empty();
-            $ddl.find('option').each(function() {
+            $ddl.find('option').each(function () {
                 var val = $(this).val();
-                if (!val) return; 
+                if (!val) return;
                 var text = $(this).text();
                 var isSelected = (val === currentVal);
-                
+
                 var color = '#64748b'; var border = '#e2e8f0'; var hoverBg = '#f1f5f9';
                 var selectedBg = '#ffffff'; var selectedBorder = '#64748b';
-                
+
                 if (text.toLowerCase().indexOf('cao') > -1) { color = '#b91c1c'; border = '#fecaca'; hoverBg = '#fef2f2'; selectedBorder = '#ef4444'; selectedBg = '#fff5f5'; }
                 else if (text.toLowerCase().indexOf('trung bình') > -1) { color = '#b45309'; border = '#fde68a'; hoverBg = '#fffbeb'; selectedBorder = '#f59e0b'; selectedBg = '#fffbf0'; }
                 else if (text.toLowerCase().indexOf('thấp') > -1) { color = '#1d4ed8'; border = '#bfdbfe'; hoverBg = '#eff6ff'; selectedBorder = '#3b82f6'; selectedBg = '#f0f5ff'; }
-                
+
                 var $box = $('<button type="button" class="btn priority-box"></button>');
-                
+
                 if (isSelected) {
                     $box.css({ 'background': selectedBg, 'color': color, 'border': '2px solid ' + selectedBorder, 'box-shadow': '0 2px 4px rgba(0,0,0,0.03)' });
-                    $box.html('<span class="task-status-dot" style="background:'+color+'; box-shadow: 0 0 0 2px '+selectedBg+';"></span> ' + text);
+                    $box.html('<span class="task-status-dot" style="background:' + color + '; box-shadow: 0 0 0 2px ' + selectedBg + ';"></span> ' + text);
                 } else {
                     $box.css({ 'background': '#ffffff', 'color': '#64748b', 'border': '1px solid #e2e8f0' });
                     $box.html(text);
-                    $box.hover(function() {
+                    $box.hover(function () {
                         $(this).css({ 'background': hoverBg, 'color': color, 'border-color': border });
-                    }, function() {
+                    }, function () {
                         $(this).css({ 'background': '#ffffff', 'color': '#64748b', 'border-color': '#e2e8f0' });
                     });
                 }
-                
-                $box.on('click', function() {
+
+                $box.on('click', function () {
                     $ddl.val(val).trigger('change');
                 });
-                
+
                 $selector.append($box);
             });
         }
     }
+
+    // =========================================================
+    // NGÀY HOÀN THÀNH THỰC TẾ VÀ LÝ DO TRỄ (TASKLIST)
+    // =========================================================
+    // Chỉ đổi UI; quyền và tính đúng hạn/trễ hạn được kiểm tra lại trong btnSaveTask_Click.
+    function qlTaskCompletionOriginalStatus() {
+        var el = qlGet(qlTaskStartId);
+        return el ? (el.getAttribute('data-ql-task-original-status') || '') : '';
+    }
+    function qlTaskCompletionAllowed() {
+        var $ddl = $('.task-status-select');
+        return qlTaskCompletionOriginalStatus() === '1' && $ddl.length && !$ddl.prop('disabled') && ($ddl.val() === '2' || $ddl.val() === '3');
+    }
+    function qlUpdateTaskCompletionFields() {
+        var active = qlTaskCompletionAllowed();
+        var originalStatus = qlTaskCompletionOriginalStatus();
+        var $wrap = $('#qlTaskCompleteDateWrap');
+        var $date = $('#qlTaskActualCompleteDate'), $reasonWrap = $('#qlTaskLateReasonWrap'), $reason = $('#qlTaskLateReason');
+        if (!$date.length || !$wrap.length) return;
+        var wasActive = $wrap.attr('data-ql-active') === '1';
+        var startEl = qlGet(qlTaskStartId);
+        // Ngày của task đã hoàn thành phải lấy từ CSDL, không lấy từ input cũ hoặc ngày hiện tại.
+        var savedActualDate = startEl ? (startEl.getAttribute('data-ql-task-actual-date') || '') : '';
+        var isCompleted = originalStatus === '2' || originalStatus === '3';
+        var today = qlKey(new Date());
+        var startDate = startEl ? (startEl.value || '') : '';
+
+        $wrap.attr('data-ql-active', active ? '1' : '0');
+        $date.prop('disabled', !active).attr('max', today);
+        if (qlDate(startDate)) $date.attr('min', startDate); else $date.removeAttr('min');
+        $('.ql-complete-error').hide().text('');
+
+        if (!active) {
+            // Task hoàn thành: chỉ HIỂN THỊ ngày hoàn thành thực tế đã lưu. Các task khác: để trống.
+            $date.val(isCompleted && qlDate(savedActualDate) ? savedActualDate : '');
+            $reason.val('').prop('disabled', true);
+            $reasonWrap.hide();
+            var $hint = $('#qlTaskCompleteDateHint');
+            $hint.removeClass('is-late is-on-time').text('');
+            var plannedEl = qlGet(qlTaskEndId);
+            var planned = plannedEl ? plannedEl.value : '';
+            if (isCompleted && qlDate(savedActualDate) && qlDate(planned)) {
+                var late = savedActualDate > planned;
+                $hint.text(late ? 'Trễ hạn' : 'Đúng hạn')
+                    .toggleClass('is-late', late).toggleClass('is-on-time', !late);
+            }
+        } else {
+            if (!wasActive || !qlDate($date.val())) { $date.val(today); $reason.val(''); }
+            qlRefreshTaskCompletionLate();
+        }
+
+        // Dùng nguyên tooltip cam "Thông tin ràng buộc" đang có trên trang.
+        var lockReason = isCompleted
+            ? 'Công việc đã hoàn thành nên không thể chỉnh sửa ngày hoàn thành thực tế.'
+            : originalStatus === '0'
+                ? 'Công việc chưa bắt đầu. Chỉ được chọn ngày thực tế khi chuyển từ Đang thực hiện sang Hoàn thành.'
+                : 'Chỉ được chọn ngày thực tế khi chuyển công việc Đang thực hiện sang Hoàn thành.';
+        if (!active && !isCompleted && originalStatus !== '0' && originalStatus !== '1')
+            lockReason = 'Không thể chỉnh sửa ngày hoàn thành thực tế ở trạng thái hiện tại.';
+        qlApplyLockable($wrap, !active, lockReason);
+        if (active) qlHideLockTooltip();
+    }
+    function qlRefreshTaskCompletionLate() {
+        if (!qlTaskCompletionAllowed()) return;
+        var actual = $('#qlTaskActualCompleteDate').val();
+        var plannedField = qlGet(qlTaskEndId), expected = plannedField ? plannedField.value : '';
+        var isLate = !!qlDate(actual) && !!qlDate(expected) && actual > expected;
+        var $hint = $('#qlTaskCompleteDateHint');
+        if (!qlDate(actual)) $hint.text('Vui lòng chọn ngày hợp lệ.').removeClass('is-late is-on-time');
+        else if (!qlDate(expected)) $hint.text('Đang cập nhật ngày kết thúc dự kiến…').removeClass('is-late is-on-time');
+        else $hint.text(isLate ? ('Trễ hạn · Dự kiến ' + qlTextDate(expected)) : 'Đúng hạn')
+            .toggleClass('is-late', isLate).toggleClass('is-on-time', !isLate);
+        $('#qlTaskLateReasonWrap').toggle(isLate);
+        $('#qlTaskLateReason').prop('disabled', !isLate);
+        if (!isLate) { $('#qlTaskLateReason').val(''); $('#qlTaskLateReasonError').hide().text(''); }
+        $('#qlTaskCompleteDateError').hide().text('');
+    }
+    function qlValidateTaskCompletionBeforeSave() {
+        if (!qlTaskCompletionAllowed()) return true;
+        var value = $('#qlTaskActualCompleteDate').val();
+        var startEl = qlGet(qlTaskStartId), start = startEl ? startEl.value : '';
+        var today = qlKey(new Date());
+        if (!qlDate(value) || (qlDate(start) && value < start) || value > today) {
+            $('#qlTaskCompleteDateError').text('Ngày thực tế phải từ ngày bắt đầu đến hôm nay.').show();
+            $('#qlTaskActualCompleteDate').trigger('focus');
+            return false;
+        }
+        var plannedEl = qlGet(qlTaskEndId), planned = plannedEl ? plannedEl.value : '';
+        if (qlDate(planned) && value > planned && !$('#qlTaskLateReason').val().trim()) {
+            $('#qlTaskLateReasonError').text('Vui lòng nhập lý do hoàn thành trễ hạn.').show();
+            $('#qlTaskLateReason').trigger('focus');
+            return false;
+        }
+        return true;
+    }
+    $(document).off('change.qlTaskComplete input.qlTaskComplete', '#qlTaskActualCompleteDate')
+        .on('change.qlTaskComplete input.qlTaskComplete', '#qlTaskActualCompleteDate', qlRefreshTaskCompletionLate);
+    $(document).off('input.qlTaskComplete', '#qlTaskLateReason')
+        .on('input.qlTaskComplete', '#qlTaskLateReason', function () { $('#qlTaskLateReasonError').hide().text(''); });
 
     // =========================================================
     // LOGIC NÚT TRẠNG THÁI (SMART STATUS)
@@ -968,16 +1098,16 @@
         var $btn = $('#btnSmartStatus');
         var $undo = $('#btnUndoStatus');
         if (!$ddl.length) return;
-        
+
         var currentVal = $ddl.val();
         var originalVal = $ddl.data('original-value');
         var isDisabled = $ddl.prop('disabled') || $ddl.attr('disabled') === 'disabled';
-        
+
         $btn.removeClass('btn-status-start btn-status-complete btn-status-revert');
-        
+
         if (isDisabled) {
             $btn.css({ 'cursor': 'not-allowed', 'pointer-events': 'none' });
-            
+
             if (currentVal === '0') {
                 $btn.css({ 'background': '#f8fafc', 'color': '#64748b', 'border': '1px dashed #cbd5e1' });
                 $btn.html('<i class="fas fa-hourglass-start"></i> Chưa bắt đầu');
@@ -995,20 +1125,20 @@
                 $btn.html('<i class="fas fa-info-circle"></i> Không xác định');
             }
             $undo.hide();
-        } 
+        }
         else {
             $btn.css({ 'background': '', 'color': '', 'border': '', 'cursor': 'pointer', 'pointer-events': 'auto' });
-            
+
             if (currentVal === '0') {
                 $btn.addClass('btn-status-start').html('<i class="fas fa-play"></i> Bắt đầu thực hiện');
             } else if (currentVal === '1') {
                 $btn.addClass('btn-status-complete').html('<i class="fas fa-check"></i> Đánh dấu hoàn thành');
             } else if (currentVal === '2' || currentVal === '3') {
-                $btn.addClass('btn-status-start').html('<i class="fas fa-redo"></i> Tiếp tục thực hiện'); 
+                $btn.addClass('btn-status-start').html('<i class="fas fa-redo"></i> Tiếp tục thực hiện');
             } else {
                 $btn.addClass('btn-status-revert').html('<i class="fas fa-exchange-alt"></i> Thay đổi');
             }
-            
+
             if (currentVal !== originalVal && originalVal !== undefined) {
                 $undo.fadeIn(200);
             } else {
@@ -1016,19 +1146,25 @@
             }
         }
         qlApplyTaskLockUI();
+        qlUpdateTaskCompletionFields();
     }
 
     function toggleSmartStatus() {
         var $ddl = $('.task-status-select');
         if ($ddl.prop('disabled') || $ddl.attr('disabled') === 'disabled') return;
-        
+
         var currentVal = $ddl.val();
         if (currentVal === '0') {
-            $ddl.val('1'); 
+            $ddl.val('1');
         } else if (currentVal === '1') {
-            $ddl.val('2'); 
+            // Không chuyển 0 -> 1 -> 2 trong cùng lần sửa khi trạng thái gốc chưa bắt đầu.
+            if (qlTaskCompletionOriginalStatus() !== '1') {
+                qlMessage('Hãy lưu trạng thái Đang thực hiện trước khi xác nhận hoàn thành.', true);
+                return;
+            }
+            $ddl.val('2');
         } else if (currentVal === '2' || currentVal === '3') {
-            $ddl.val('1'); 
+            $ddl.val('1');
         }
         renderSmartStatus();
     }
@@ -1083,7 +1219,7 @@
             qlApplyTaskLockUI();
             setTimeout(qlTryInitVisible, 80);
         });
-        
+
         // Tự động tắt Loading Overlay khi Server xử lý xong Data
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
             hideGlobalLoading();

@@ -30,6 +30,26 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected string ModalClientId { get { return mdlMeetingDetail.ClientID; } }
         protected string ActionButtonId { get { return btnMeetingAction.ClientID; } }
 
+        // Chi dang ky nut lam async trigger; moi yeu cau tim tam chi update danh sach trai.
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            ScriptManager sm = ScriptManager.GetCurrent(Page);
+            if (sm != null) sm.RegisterAsyncPostBackControl(btnMeetingAction);
+        }
+
+        private System.Web.UI.UpdatePanel FindMeetingResultsPanel(Control parent)
+        {
+            if (parent == null) return null;
+            if (parent.ID == "upMeetingResults") return parent as System.Web.UI.UpdatePanel;
+            foreach (Control child in parent.Controls)
+            {
+                var found = FindMeetingResultsPanel(child);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
         private sealed class CuocHopRow
         {
             public Guid Id { get; set; }
@@ -177,6 +197,21 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
                     page = Math.Min(page, pages);
                     List<CuocHopRow> meetings = LoadMeetingPage(connection, member, term, filter, from, to, page);
 
+                    if (action == "search-preview")
+                    {
+                        // Chi thay danh sach va phan trang ben trai. Khong doi cuoc hop dang xem,
+                        // khong reload bang phai va khong thay textbox khi dang go.
+                        Guid currentSelection;
+                        if (!Guid.TryParse(hfMeetingId.Value, out currentSelection)) currentSelection = Guid.Empty;
+                        hfMeetingPage.Value = page.ToString(CultureInfo.InvariantCulture);
+                        RenderMeetingList(meetings, total, page, currentSelection);
+                        System.Web.UI.UpdatePanel results = FindMeetingResultsPanel(upMeeting);
+                        if (results != null) results.Update();
+                        else upMeeting.Update();
+                        RegisterCallback(false);
+                        return;
+                    }
+
                     Guid selected;
                     bool samePage = Guid.TryParse(hfMeetingId.Value, out selected) && meetings.Any(m => m.Id == selected);
                     if (!samePage || action == "open" || action == "filter" || action == "page")
@@ -211,7 +246,8 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
 
         private void RegisterCallback(bool isOpen)
         {
-            ScriptManager.RegisterStartupScript(upMeeting, upMeeting.GetType(), "pdMeetingLoaded", "if(window.QLDAProjectMeetingPopup){window.QLDAProjectMeetingPopup.received(" + (isOpen ? "true" : "false") + ");}", true);
+            // Page overload: callback van duoc gui khi chi UpdatePanel con (list) render.
+            ScriptManager.RegisterStartupScript(Page, Page.GetType(), "pdMeetingLoaded", "if(window.QLDAProjectMeetingPopup){window.QLDAProjectMeetingPopup.received(" + (isOpen ? "true" : "false") + ");}", true);
         }
 
         private const string MeetingWhere = @" FROM dbo.TblLichHop m

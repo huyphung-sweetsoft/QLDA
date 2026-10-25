@@ -42,15 +42,6 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.Literal lblMeetName;
 
         /// <summary>
-        /// lblMeetRoom control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblMeetRoom;
-
-        /// <summary>
         /// lblMeetStatus control.
         /// </summary>
         /// <remarks>
@@ -58,6 +49,15 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal lblMeetStatus;
+
+        /// <summary>
+        /// lblMeetRoom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal lblMeetRoom;
 
         /// <summary>
         /// lblMeetStart control.
@@ -69,67 +69,13 @@ namespace SweetSoft.QLDA.BackOffice.fMeets.Controls
         protected global::System.Web.UI.WebControls.Literal lblMeetStart;
 
         /// <summary>
-        /// lblMeetEnd control.
+        /// ltrMeetLabor control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblMeetEnd;
-
-        /// <summary>
-        /// ltrMeetCreatorAvatar control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal ltrMeetCreatorAvatar;
-
-        /// <summary>
-        /// lblMeetCreator control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblMeetCreator;
-
-        /// <summary>
-        /// lblMeetCreatorEmail control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblMeetCreatorEmail;
-
-        /// <summary>
-        /// lblMeetCreatedDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal lblMeetCreatedDate;
-
-        /// <summary>
-        /// rptMeetParticipants control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptMeetParticipants;
-
-        /// <summary>
-        /// pnlNoMeetParticipants control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoMeetParticipants;
+        protected global::System.Web.UI.WebControls.Literal ltrMeetLabor;
 
         /// <summary>
         /// ltrMeetContent control.

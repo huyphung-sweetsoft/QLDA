@@ -561,6 +561,13 @@
     .meet-day-modal-events .meet-day-entry-main:focus-visible,.meet-day-modal-events .meet-day-entry-action:focus-visible { outline:2px solid #7e4db9;outline-offset:2px; }
     @media (max-width:480px) { .meet-day-modal-events .meet-cal-day-entry { gap:5px;padding:8px; } .meet-day-modal-events .meet-day-entry-action { width:28px;height:29px; } .meet-day-modal-events .meet-day-entry-time { font-size:11px; } }
 
+    /* Chỉ chỉnh cột Thời gian họp: đồng hồ + ngày · giờ, gom nhóm giữa ô và không tăng chiều cao hàng thường. */
+    .meet-view-shell .meet-panel-list .meeting-datetime-range { display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px!important;width:100%;min-width:0;line-height:1.2; }
+    .meet-view-shell .meet-panel-list .meeting-datetime-range .meeting-date { display:inline-flex!important;align-items:center;justify-content:center;gap:6px;color:#334155;font-size:14px!important;font-weight:700;line-height:1.2;white-space:nowrap; }
+    .meet-view-shell .meet-panel-list .meeting-datetime-range .meeting-date i { color:#8392a9;font-size:12px; }
+    .meet-view-shell .meet-panel-list .meeting-datetime-range .meeting-datetime-separator { color:#a1a8b5;font-size:19px;font-weight:700;line-height:1; }
+    .meet-view-shell .meet-panel-list .meeting-datetime-range .meeting-time { display:inline-flex!important;align-items:center;justify-content:center;color:#5f7087;font-size:13.5px!important;font-weight:650;line-height:1.2;white-space:nowrap; }
+    .meet-view-shell .meet-panel-list .meeting-room-cell { max-width:100%;color:#475569;font-size:14px;line-height:1.4; }
 </style>
 
 <div id="meetViewShell" runat="server" class="meet-view-shell meet-mode-list">
@@ -662,20 +669,12 @@
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="StartTime" SortExpression="ThoiGianBatDau" HeaderStyle-Width="130px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center meeting-table-cell">
+                    <asp:TemplateField HeaderText="Thời gian họp" SortExpression="ThoiGianBatDau" HeaderStyle-Width="305px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="meeting-table-cell">
                         <ItemTemplate>
-                            <div class="meeting-datetime">
-                                <span class="meeting-date"><%# Eval("ThoiGianBatDau", "{0:dd/MM/yyyy}") %></span>
-                                <span class="meeting-time"><i class="far fa-clock me-1"></i><%# Eval("ThoiGianBatDau", "{0:HH:mm}") %></span>
-                            </div>
-                        </ItemTemplate>
-                    </asp:TemplateField>
-
-                    <asp:TemplateField HeaderText="EndTime" SortExpression="ThoiGianKetThuc" HeaderStyle-Width="130px" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center meeting-table-cell">
-                        <ItemTemplate>
-                            <div class="meeting-datetime">
-                                <span class="meeting-date"><%# Eval("ThoiGianKetThuc", "{0:dd/MM/yyyy}") %></span>
-                                <span class="meeting-time"><i class="far fa-clock me-1"></i><%# Eval("ThoiGianKetThuc", "{0:HH:mm}") %></span>
+                            <div class="meeting-datetime meeting-datetime-range">
+                                <span class="meeting-date"><i class="far fa-clock" aria-hidden="true"></i><%# FormatMeetingDateRange(Eval("ThoiGianBatDau"), Eval("ThoiGianKetThuc")) %></span>
+                                <span class="meeting-datetime-separator" aria-hidden="true">&middot;</span>
+                                <span class="meeting-time"><%# FormatMeetingTimeRange(Eval("ThoiGianBatDau"), Eval("ThoiGianKetThuc")) %></span>
                             </div>
                         </ItemTemplate>
                     </asp:TemplateField>
