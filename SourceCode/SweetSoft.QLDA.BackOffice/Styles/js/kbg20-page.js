@@ -352,10 +352,11 @@
     }
 
     function overtimeAllowedBySchedule(){
-        var cal=state && state.workCalendar,shifts=cal && cal.shifts||[];
-        if(!shifts.length)return false;
-        var lastEnd=Math.max.apply(null,shifts.map(function(sh){return Number(sh.endMs)||0;}));
-        return lastEnd>0 && serverNow()>=lastEnd;
+        // UI chỉ gợi ý: server kiểm tra lại lịch ngay trong transaction.
+        var cal=state && state.workCalendar;
+        if(!cal)return false;
+        var current=serverNow(),shifts=(cal.shifts||[]).concat(cal.previousShifts||[]);
+        return !shifts.some(function(sh){return current>=Number(sh.startMs) && current<Number(sh.endMs);});
     }
     function taskClockCell(parent,task,type,isUpcoming){
         // Tinh theo ke hoach THUC cua Task, khong theo tab dang xem (All/Upcoming/Today).
@@ -374,7 +375,7 @@
             sub.setAttribute('data-timer-status',timer.id);
         } else sub.textContent=(regular?task.startedRegular:task.startedOvertime)||Number(regular?task.regular:task.overtime)>0
             ?'Tổng thời gian đã ghi':'Chưa ghi '+(regular?'giờ làm theo lịch':'giờ tăng ca');
-        if (!timer && isUpcoming && regular) {
+        if (!timer && isUpcoming) {
             var canEarly=!!(state.earlyStart && state.earlyStart.allowed);
             sub.textContent=canEarly?'Có thể bắt đầu sớm · không đổi ngày kế hoạch':
                 'Chưa thể Start sớm · còn phần việc đến hạn';
@@ -387,22 +388,22 @@
         if(timer){
             var title=regular?'Dừng giờ làm theo lịch':'Dừng giờ tăng ca';
             cell.insertBefore(iconAction(title,'fas fa-stop','stop',timer.id,'is-stop',!regular),stats);
-        } else if(taskMayStart(task) && (regular || (!isUpcoming && overtimeAllowedBySchedule())) &&
-                (!isUpcoming || (regular && state.earlyStart && state.earlyStart.allowed))){
+        } else if(taskMayStart(task) && (regular || overtimeAllowedBySchedule()) &&
+                (!isUpcoming || (state.earlyStart && state.earlyStart.allowed))){
             var resume=regular && (task.startedRegular || Number(task.regular)>0) ||
                 !regular && (task.startedOvertime || Number(task.overtime)>0);
             var action=regular?'start':'overtime';
-            var label=isUpcoming?'Bắt đầu sớm · Giờ làm theo lịch':
+            var label=isUpcoming?'Bắt đầu sớm · '+(regular?'Giờ làm theo lịch':'Giờ tăng ca'):
                 (resume?'Tiếp tục':'Bắt đầu')+(regular?' giờ làm theo lịch':' giờ tăng ca');
             if(task.status===0 && state.workflowEnabled)label+=' · Chuyển công việc sang Đang thực hiện trước khi bấm giờ';
             cell.insertBefore(iconAction(label,resume?'fas fa-redo-alt':'fas fa-play',action,task.id,
                 resume?'is-resume':'is-start',!regular),stats);
         }else{
             var reason=task.personalStatus===1||task.personalStatus===3?'Phần việc này đã được báo hoàn thành':isPending(task)?'Công việc đang chờ duyệt':isFinished(task)?'Công việc đã hoàn thành':
-                isUpcoming?(regular && state.earlyStart && !state.earlyStart.allowed?
+                isUpcoming?(state.earlyStart && !state.earlyStart.allowed?
                     'Chưa thể Start sớm: còn '+state.earlyStart.remainingCount+' phần việc đến hạn chưa báo hoàn thành':
-                    'Chưa tới ngày bắt đầu; tăng ca không được Start sớm'):(!regular && !overtimeAllowedBySchedule()
-                ?'Chỉ có thể bắt đầu tính giờ tăng ca sau khi kết thúc buổi làm việc cuối cùng theo lịch':
+                    'Chưa đủ điều kiện bắt đầu sớm'):(!regular && !overtimeAllowedBySchedule()
+                ?'Chỉ được bắt đầu tăng ca ngoài những ca làm việc theo lịch':
                 (!task.assigned?'Bạn chưa được phân công':'Chưa đủ điều kiện bắt đầu'));
             var disabled=iconAction(regular?reason:'Tăng ca · '+reason,'fas fa-play',regular?'start':'overtime',task.id,'is-disabled',!regular);
             disabled.disabled=true;cell.insertBefore(disabled,stats);
@@ -434,6 +435,14 @@
         var name=row(identity,node('div','kbg20-v41-taskname'));
         row(name,node('strong','kbg20-v41-taskcode',task.code||'CV'));
         row(name,node('strong','kbg20-v41-tasktext',task.name||'Chưa đặt tên công việc'));
+        if(task.isEarly){
+            var early=row(name,node('span','kbg20-d6-badge is-early','Bắt đầu sớm'));
+            early.title=earlyStartTooltip(task);
+        } else if(state.earlyStart && state.earlyStart.allowed && task.startDay &&
+                  state.workCalendar && task.startDay>state.workCalendar.day &&
+                  task.status===0){
+            row(name,node('span','kbg20-d6-badge is-can-early','Có thể bắt đầu sớm'));
+        }
         var meta='';
         if(Number(task.regular)>0||Number(task.overtime)>0)meta='Giờ đã làm được bảo lưu';
         else if(isUpcoming)meta='Theo kế hoạch · chưa đến ngày bắt đầu';
@@ -543,9 +552,16 @@
     }
     // Nhan trang thai nhat ky chi la su kien cua NGAY dang xem; khong thay
     // nhan Task chung bang nhan bao hoan thanh phan viec ca nhan.
+    function earlyStartTooltip(item){
+        var when=item.earlyStarted?new Date(Number(item.earlyStarted)).toLocaleString('vi-VN',
+            {timeZone:'Asia/Ho_Chi_Minh',hour12:false}):'không xác định';
+        return 'Bắt đầu sớm lúc '+when+' · Kế hoạch tại thời điểm Start: '+
+            (item.earlyPlan||'không xác định')+' · '+
+            (Number(item.earlyType)===2?'Giờ tăng ca':'Giờ làm theo lịch');
+    }
     function historyBadgeItems(h){
         var items=[];
-        if(h.isEarly)items.push({text:'Làm sớm',type:'early'});
+        if(h.isEarly)items.push({text:'Bắt đầu sớm',type:'early',title:earlyStartTooltip(h)});
         if(h.isOverdue)items.push({text:'Quá hạn',type:'overdue'});
         var ps=Number(h.personalStatus)||0;
         if(ps===1||ps===3||ps===5)items.push({text:'Đã báo hoàn thành',type:'reported'});
@@ -579,7 +595,10 @@
             var badges=historyBadgeItems(h);
             if(badges.length){
                 var wraps=row(name,node('span','kbg20-d6-badges'));
-                badges.forEach(function(flag){row(wraps,node('span','kbg20-d6-badge is-'+flag.type,flag.text));});
+                badges.forEach(function(flag){
+                    var badge=row(wraps,node('span','kbg20-d6-badge is-'+flag.type,flag.text));
+                    if(flag.title)badge.title=flag.title;
+                });
             }
             ['regular','overtime','total'].forEach(function(k){
                 var cell=taskCell(line,'kbg20-v41-hist-value',k==='regular'?'Giờ làm theo lịch':k==='overtime'?'Giờ tăng ca':'Tổng giờ công');
@@ -814,7 +833,7 @@
                 if(!timers.length)row(place,node('div','kbg20-ux-muted','Không có phiên.'));
                 timers.forEach(function(t){var cell=row(place,node('div','kbg20-ux-parallel-item '+cls));
                     row(cell,node('strong','', '['+(t.code||'CV')+'] '+(t.name||'Công việc')));
-                    row(cell,node('small','',(t.projectName||'Dự án')+' · '+(Number(t.type)===2?'Tăng ca':'Giờ hành chính')+
+                    row(cell,node('small','',(t.projectName||'Dự án')+' · '+(Number(t.type)===2?'Tăng ca':'Giờ làm theo lịch')+
                       ' · '+(t.counting?'Đang cộng giờ':'Phiên đang mở')));
                 });
             }
@@ -968,7 +987,6 @@
             if(!task || !window.kbg20WorkflowPostback){notify('Không mở được xử lý công việc. Hãy tải lại trang.','error');return;}
             if((action==='start'||action==='overtime') && task.startDay &&
                 state.workCalendar && task.startDay>state.workCalendar.day) {
-                if(action==='overtime') {notify('Chưa đến ngày bắt đầu; không được Start tăng ca sớm.','error');return;}
                 if(!state.earlyStart || !state.earlyStart.allowed){
                     notify('Chưa thể Start sớm: còn công việc đến hạn chưa báo hoàn thành.','error');return;
                 }

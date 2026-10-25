@@ -658,8 +658,14 @@
              UpdatePanel chua modal de AJAX khong reload toan trang. --%>
         <asp:UpdatePanel ID="upnlKbg20ManualHost" runat="server" UpdateMode="Conditional">
           <ContentTemplate>
-            <asp:LinkButton ID="btnKbg20OpenManual" runat="server" CausesValidation="false"
-              OnClick="btnKbg20OpenManual_Click" style="display:none">Mở thông tin giờ công</asp:LinkButton>
+          
+<asp:LinkButton ID="btnKbg20OpenManual"
+    runat="server"
+    CausesValidation="false"
+    style="display:none">
+    Mở thông tin giờ công
+</asp:LinkButton>
+
         <SweetSoft:ExtraModal runat="server" ID="mdlKbg20Manual" ClientIDMode="Static"
             Type="Primary" Size="ExtraLarge" Title="Thông tin giờ công">
           <ContentTemplate>
@@ -696,8 +702,8 @@
     <% if (LaGiaoDienKbg20) { %>
     <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-hour-split.css") %>?v=20261024p1" />
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-hour-input.js") %>?v=20261024p1"></script>
-    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261024p2" />
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261024p2"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261025ot1" />
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261025ot1"></script>
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261024p2"></script>
     <% } else { %>
     <script type="text/javascript">

@@ -27,3 +27,7 @@
 #mdlKbg20Parallel .kbg20-ux-parallel-item.can-stop{background:#fbf9ff;border-color:#e6d7f4}
 #mdlKbg20Parallel button:disabled{opacity:.45;cursor:not-allowed}
 .kbg20-hour-legacy-warning{display:block;margin:5px 0;color:#b65328;font-size:11px;line-height:1.4}
+
+.kbg20-d6-badge.is-early{background:#e8f0ff;color:#2855a5;border:1px solid #b9ccf8;font-weight:700;}
+.kbg20-d6-badge.is-can-early{background:#eff6ff;color:#506f98;border:1px solid #dae5f6;font-weight:650;}
+.kbg20-v41-taskname{flex-wrap:wrap;align-items:center;}

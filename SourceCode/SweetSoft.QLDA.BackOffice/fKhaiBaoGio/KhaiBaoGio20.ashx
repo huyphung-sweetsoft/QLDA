@@ -235,6 +235,7 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         Error(context,400,"Ngay hoac du an khong hop le.");return;
                     }
                     var lichSu=man.LayLichSuTheoNgay(user.UserId,project,day);
+                    var dauMocSomNhatKy=man.LayDauMocStartSom(user.UserId,project);
                     Write(context,new {ok=true,projectId=project.ToString("D"),day=day.ToString("yyyy-MM-dd"),
                         serverNow=Ms(lichSu.ServerNowUtc),
                         regular=lichSu.SoGiayThuong,overtime=lichSu.SoGiayTangCa,total=lichSu.TongSoGiay,
@@ -242,8 +243,13 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                             code=x.MaCongViec,name=x.TenCongViec,
                             regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,total=x.TongSoGiay,
                             hadActivity=x.CoHoatDong,isOpen=x.DangCoPhienMo,deleted=x.DaXoa,
-                            isEarly=x.NgayBatDauDuKien.HasValue &&
-                                lichSu.NgayLam.Date<x.NgayBatDauDuKien.Value.Date,
+                            isEarly=dauMocSomNhatKy.ContainsKey(x.IdCongViec),
+                            earlyStarted=dauMocSomNhatKy.ContainsKey(x.IdCongViec)?
+                                Ms(dauMocSomNhatKy[x.IdCongViec].BatDauUtc):(long?)null,
+                            earlyPlan=dauMocSomNhatKy.ContainsKey(x.IdCongViec)?
+                                dauMocSomNhatKy[x.IdCongViec].NgayBatDauKeHoach.ToString("dd/MM/yyyy"):null,
+                            earlyType=dauMocSomNhatKy.ContainsKey(x.IdCongViec)?
+                                (byte?)dauMocSomNhatKy[x.IdCongViec].LoaiGio:null,
                             isOverdue=x.NgayKetThucDuKien.HasValue &&
                                 lichSu.NgayLam.Date>x.NgayKetThucDuKien.Value.Date,
                             personalStatus=x.LoaiSuKienCaNhan})});
@@ -254,10 +260,12 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 var zone=VietNamZone();
                 DateTime localDay=TimeZoneInfo.ConvertTimeFromUtc(now,zone).Date;
                 var shifts=man.LayLichCaTrongNgay(localDay);
+                var previousShifts=man.LayLichCaTrongNgay(localDay.AddDays(-1));
                 var exception=shifts.Count==0 ? LichBieuChungManager.Instance.GetExceptionByDate(localDay) : null;
                 Guid? pmId=DuAnManager.Instance.LayIdNhanVienQuanLy(view.IdDuAn);
                 var personalStates=new Kbg20BaoXongManager().LayTomTat(user.UserId,project);
                 var earlyBlockers=man.LayViecCanXuLyTruocStartSom(user.UserId,view.IdDuAn,localDay);
+                var dauMocSom=man.LayDauMocStartSom(user.UserId,view.IdDuAn);
                 Write(context,new {ok=true,serverNow=Ms(now),workflowEnabled=Kbg20TichHopTask.DuocKichHoat,
                     earlyStart=new {allowed=earlyBlockers.Count==0,remainingCount=earlyBlockers.Count,
                         blockingTasks=earlyBlockers.GetRange(0,Math.Min(4,earlyBlockers.Count)).ToArray()},
@@ -268,6 +276,8 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                         dayOffReason=exception!=null ? exception.TenNgoaiLe : "Ngày nghỉ theo lịch làm việc",
                         shifts=shifts.ConvertAll(x=>new {type=x.LoaiCa,
                             start=x.GioBatDau,end=x.GioKetThuc,
+                            startMs=LocalMs(x.BatDau,zone),endMs=LocalMs(x.KetThuc,zone)}),
+                        previousShifts=previousShifts.ConvertAll(x=>new {
                             startMs=LocalMs(x.BatDau,zone),endMs=LocalMs(x.KetThuc,zone)})
                     },
                     projects=view.DuAn.ConvertAll(x=>new {id=x.IdDuAn.ToString("D"),code=x.MaDuAn,name=x.TenDuAn}),
@@ -285,7 +295,14 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                              ?(personalStates[x.IdCongViec].CoGocXacNhanSauTask?5:personalStates[x.IdCongViec].LoaiSuKien):0,
                         personalVersion=personalStates.ContainsKey(x.IdCongViec)?personalStates[x.IdCongViec].PhienBan:0,
                         regular=x.SoGiayThuong,overtime=x.SoGiayTangCa,
-                        startedRegular=x.DaTungBatDauThuong,startedOvertime=x.DaTungBatDauTangCa}),
+                        startedRegular=x.DaTungBatDauThuong,startedOvertime=x.DaTungBatDauTangCa,
+                        isEarly=dauMocSom.ContainsKey(x.IdCongViec),
+                        earlyStarted=dauMocSom.ContainsKey(x.IdCongViec)?
+                            Ms(dauMocSom[x.IdCongViec].BatDauUtc):(long?)null,
+                        earlyPlan=dauMocSom.ContainsKey(x.IdCongViec)?
+                            dauMocSom[x.IdCongViec].NgayBatDauKeHoach.ToString("dd/MM/yyyy"):null,
+                        earlyType=dauMocSom.ContainsKey(x.IdCongViec)?
+                            (byte?)dauMocSom[x.IdCongViec].LoaiGio:null}),
                     timers=view.DongHo.ConvertAll(x=>new {
                         id=x.Phien.IdPhien.ToString("D"),taskId=x.Phien.IdCongViec.ToString("D"),
                         projectId=x.Phien.IdDuAn.ToString("D"),code=x.Phien.MaCongViec,name=x.Phien.TenCongViec,
@@ -365,7 +382,8 @@ public sealed class KhaiBaoGio20Handler : IHttpHandler, IReadOnlySessionState
                 result=manager.BatDauGioThuong(user.UserId,projectId,taskId,requestId,
                     context.Request.Form["confirmOverdue"]=="true", context.Request.Form["confirmDependency"]=="true");
             } else if(action=="overtime") {
-                result=manager.BatDauTangCa(user.UserId,projectId,taskId,requestId);
+                result=manager.BatDauTangCa(user.UserId,projectId,taskId,requestId,
+                    context.Request.Form["confirmOverdue"]=="true",context.Request.Form["confirmDependency"]=="true");
             } else if(action=="stop") {
                 result=manager.DungPhien(user.UserId,sessionId);
             } else {Error(context,400,"Thao tac khong hop le.");return;}
