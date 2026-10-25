@@ -1,0 +1,13 @@
+/* Split Giờ/Phút for personal declarations; scoped to KBG20 modal only. */
+#mdlKbg20Manual .kbg20-split-time{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+#mdlKbg20Manual .kbg20-split-heading{font-weight:700;font-size:11.5px;color:#5a3b77}
+#mdlKbg20Manual .kbg20-split-row{display:flex;align-items:stretch;gap:8px;max-width:350px}
+#mdlKbg20Manual .kbg20-split-part{display:flex;flex-direction:column-reverse;gap:4px;flex:1 1 0;min-width:0;font-weight:700;font-size:10.5px;color:#746782}
+#mdlKbg20Manual .kbg20-split-minutes{flex:0 0 100px}
+#mdlKbg20Manual .kbg20-split-input{box-sizing:border-box;width:100%;height:40px;padding:7px 10px;font-size:16px;font-weight:750;line-height:1.2;text-align:center;color:#51237f;background:#fff;border:1px solid #ceb7e9;border-radius:8px;font-variant-numeric:tabular-nums;outline-offset:2px}
+#mdlKbg20Manual .kbg20-split-input:focus{border-color:#8051b2;box-shadow:0 0 0 2px rgba(120,73,171,.12)}
+#mdlKbg20Manual .kbg20-split-input.is-invalid{border-color:#c92a43;background:#fff7f7}
+#mdlKbg20Manual .kbg20-split-preview{font-size:11px;color:#64748b;line-height:1.5}
+#mdlKbg20Manual .kbg20-split-preview.is-warning{font-weight:700;color:#b45309}
+#mdlKbg20Manual .kbg20-ui-input-pair{display:flex;align-items:flex-start;gap:12px}
+@media(max-width:700px){#mdlKbg20Manual .kbg20-ui-input-pair{flex-wrap:wrap}#mdlKbg20Manual .kbg20-split-minutes{flex-basis:84px}}

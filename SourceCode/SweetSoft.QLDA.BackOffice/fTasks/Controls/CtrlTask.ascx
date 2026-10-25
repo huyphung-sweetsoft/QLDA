@@ -8,9 +8,19 @@
 <%@ Register Src="~/fTasks/Controls/CtrlViewTaskDetail.ascx" TagPrefix="SweetSoft" TagName="CtrlViewTaskDetail" %>
 <%@ Register Src="~/fTasks/Controls/CtrlFastCompleteTask.ascx" TagPrefix="SweetSoft" TagName="CtrlFastCompleteTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlFastReviewTask.ascx" TagPrefix="SweetSoft" TagName="CtrlFastReviewTask" %>
+<%@ Register Src="~/fTasks/Controls/CtrlDuyetGioCongTask.ascx" TagPrefix="SweetSoft" TagName="CtrlDuyetGioCongTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlStartTask.ascx" TagPrefix="SweetSoft" TagName="CtrlStartTask" %>
 <%@ Register Src="~/fTasks/Controls/CtrlApplyTemplate.ascx" TagPrefix="SweetSoft" TagName="CtrlApplyTemplate" %>
 <style>
+    /* Dot 8 hotfix: dung SmartLinkButton nhu cac nut Action hien co. */
+    .qlpm-action-wrap{display:inline-flex;position:relative;align-items:center;justify-content:center;vertical-align:middle;margin-left:3px;}
+    .qlpm-action-wrap .btn-qlpm-review{display:inline-flex!important;align-items:center;justify-content:center;min-width:38px;height:27px;padding:2px 7px!important;color:#6635a5!important;border:1px solid #9973c7!important;border-radius:4px;line-height:1.1;text-decoration:none!important;background:#fff;transition:background .15s,border-color .15s,color .15s;}
+    .qlpm-action-wrap .btn-qlpm-review:hover{background:#f3ebff!important;color:#4b1a79!important;border-color:#7a4baa!important;}
+    .qlpm-action-wrap .btn-qlpm-review.is-final{color:#197a55!important;border-color:#86bea4!important;}
+    .qlpm-action-wrap .btn-qlpm-review.is-disabled,.qlpm-action-wrap .btn-qlpm-review.aspNetDisabled{color:#a1a8b3!important;border-color:#d8dce3!important;background:#f9fafb!important;cursor:not-allowed;opacity:.65;pointer-events:none;}
+    .qlpm-action-wrap .btn-qlpm-pending{position:absolute;right:-4px;top:-7px;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:#fff1df;color:#bd6414;border:1px solid #ffe0b5;border-radius:50%;font-weight:900;font-size:10px;line-height:1;box-shadow:0 0 0 1px #fff;pointer-events:none;}
+    .qlpm-action-wrap:has(.is-disabled) .btn-qlpm-pending{display:none!important;}
+
     .card-body { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
     .table-task-grid { table-layout: fixed !important; word-wrap: break-word; min-width: 1000px !important; }
     .table-task-grid th:first-child, .table-task-grid td:first-child { display: none !important; }
@@ -585,9 +595,9 @@
                         </ItemTemplate>
                     </asp:TemplateField>
 
-                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="130px">
-                        <HeaderStyle Width="130px"/>
-                        <ItemStyle Width="130px"/>
+                    <asp:TemplateField HeaderText="Action" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="text-center" HeaderStyle-Width="190px">
+                        <HeaderStyle Width="190px"/>
+                        <ItemStyle Width="190px"/>
                         <ItemTemplate>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView || this.IsEdit %>' ID="lbtDetail" CommandName='<%# this.IsEdit ? "ITEM_DETAIL" : "ITEM_VIEW" %>' CssClass="btn-grid-action text-decoration-underline me-1" ResourceKey='<%# this.IsEdit ? BackEndResourceKeys.EDIT : BackEndResourceKeys.VIEW %>' ButtonIcon='<%# this.IsEdit ? "fas fa-pencil-alt" : "fas fa-eye" %>'>
                              </SweetSoft:SmartLinkButton>
@@ -595,6 +605,11 @@
                             </SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' ID="lbtViewSchedule" CommandName="VIEW_SCHEDULE" CssClass="btn-grid-action text-decoration-none text-info" ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-calendar-alt">
                             </SweetSoft:SmartLinkButton>
+                            <span class="qlpm-action-wrap">
+                                <SweetSoft:SmartLinkButton runat="server" ID="lbtDuyetCong" CommandName="REVIEW_HOURS" CommandArgument='<%# Eval("IdCongViec") %>' VisibleConditionKey='<%# this.IsView || this.IsEdit || this.IsPM || this.IsAdministrator %>' ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-file-invoice" CssClass="btn-grid-action btn-qlpm-review text-decoration-none" CausesValidation="false" ToolTip="Duyệt giờ công">
+                                </SweetSoft:SmartLinkButton>
+                                <asp:Label ID="lblPmPending" runat="server" CssClass="btn-qlpm-pending" Text="!" Visible="false" />
+                            </span>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
@@ -617,6 +632,29 @@
     <SweetSoft:CtrlAddPhase ID="CtrlAddPhase1" runat="server" />
     <SweetSoft:CtrlAddSubTask ID="CtrlAddSubTask1" runat="server" />
     <SweetSoft:CtrlFastReviewTask ID="CtrlFastReviewTask1" runat="server" />
+    <SweetSoft:CtrlDuyetGioCongTask ID="CtrlDuyetGioCongTask1" runat="server" />
+
+    <%-- P0: Xac nhan co chu dich truoc khi dung dong ho CA NHOM.
+         Dung SweetSoft:ExtraModal, giu nguyen popup Task cua partner. --%>
+    <SweetSoft:ExtraModal ID="mdlKbg20Warning" runat="server" Type="Primary" Title="Cảnh báo khi hoàn thành công việc">
+        <ContentTemplate>
+            <div style="padding:18px 20px;max-width:730px">
+                <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid #efd7a0;border-radius:9px;background:#fffaf0;color:#82531a">
+                    <i class="fas fa-exclamation-triangle" style="margin-top:3px"></i>
+                    <div><strong>Vẫn còn nhân viên chưa báo hoàn thành phần việc</strong>
+                    <p style="margin:7px 0 0;white-space:pre-line;font-size:13px;line-height:1.6"><asp:Literal ID="ltrKbg20Warning" runat="server" /></p>
+                    </div>
+                </div>
+                <p style="margin-top:11px;font-size:12px;color:#64748b">Nếu tiếp tục gửi hoặc duyệt hoàn thành Task chung, hệ thống sẽ chốt đồng hồ trực tiếp trên Task của những người còn lại. Giờ đã ghi được giữ nguyên; nhân viên chưa báo phải vào Tab 3 xác nhận giờ. Quyết định này không tự chốt giờ công PM.</p>
+            </div>
+        </ContentTemplate>
+        <FooterTemplate>
+            <asp:LinkButton ID="btnKbg20WarningProceed" runat="server" CssClass="btn btn-warning"
+                CausesValidation="false" OnClick="btnKbg20WarningProceed_Click">
+                <i class="fas fa-check me-1"></i>Tôi đã hiểu, tiếp tục
+            </asp:LinkButton>
+        </FooterTemplate>
+    </SweetSoft:ExtraModal>
 
     <SweetSoft:ExtraModal DefaultButton="btnCloseTaskSchedule" ID="mdlTaskSchedule" Type="Primary" runat="server">
         <ContentTemplate>

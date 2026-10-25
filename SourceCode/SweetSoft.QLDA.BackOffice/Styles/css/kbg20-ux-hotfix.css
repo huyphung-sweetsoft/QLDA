@@ -1,0 +1,29 @@
+/* Scoped corrections for KBG20 V2 Tab 2 and ExtraModals. Never touch partner TaskList. */
+.kbg20-page .kbg20-v41-hist-grid{grid-template-columns:minmax(190px,2.7fr) repeat(3,minmax(88px,1fr)) minmax(104px,1fr)!important}
+.kbg20-ux-history-actions{display:flex;justify-content:center;align-items:center}
+.kbg20-ux-detail-btn{font-size:11.5px!important;white-space:nowrap;padding:7px 10px!important;min-height:31px}
+.kbg20-ux-modal-content{padding:14px 16px;color:#394157;font-size:13px}
+.kbg20-ux-modal-title{font-weight:750;color:#54258a;padding:0 0 12px;margin-bottom:12px;border-bottom:1px solid #e8e0ef;font-size:14px}
+.kbg20-ux-muted{color:#777c91;font-size:11.5px;line-height:1.55;margin:8px 0}
+.kbg20-ux-error{color:#b42318;padding:10px;border:1px solid #f9d6d6;border-radius:8px;background:#fff6f6}
+.kbg20-ux-session-list,.kbg20-ux-parallel-list{display:flex;flex-direction:column;gap:9px;max-height:min(55vh,510px);overflow:auto;scrollbar-width:thin}
+.kbg20-ux-session-item{padding:12px 14px;background:#fcfbff;border:1px solid #e8e0f1;border-radius:9px}
+.kbg20-ux-session-head{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin-bottom:9px}
+.kbg20-ux-session-head strong{color:#552582}.kbg20-ux-session-head span{color:#7f8390}
+.kbg20-ux-session-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kbg20-ux-session-grid>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.kbg20-ux-session-grid small{font-size:11px;color:#7a8092}
+.kbg20-ux-session-grid strong{font-size:12px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.kbg20-ux-parallel-item{display:flex;flex-direction:column;gap:4px;padding:11px 12px;border:1px solid #e2d8f0;background:#faf8fd;border-radius:9px}
+.kbg20-ux-parallel-item strong{color:#4a237d}.kbg20-ux-parallel-item small{color:#657083}
+.kbg20-ux-modal-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;margin-top:18px}
+.kbg20-ux-modal-actions button{min-height:34px;font-size:12px}
+@media(max-width:700px){.kbg20-page .kbg20-v41-hist-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.kbg20-ux-history-actions{justify-content:flex-start}.kbg20-ux-session-grid{grid-template-columns:1fr}.kbg20-ux-modal-actions button{flex:1 1 100%}}
+
+/* Dot 8 stabilization: two clearly separated groups in parallel-timer warning. */
+#mdlKbg20Parallel .kbg20-ux-parallel-heading{display:block;font-size:12px;font-weight:750;margin:10px 0 6px;color:#3b2a56}
+#mdlKbg20Parallel .kbg20-ux-parallel-heading.keep{margin-top:16px;color:#69758a}
+#mdlKbg20Parallel .kbg20-ux-parallel-item.keep{background:#f6f7fa;border-color:#e7ebf1;opacity:.85}
+#mdlKbg20Parallel .kbg20-ux-parallel-item.can-stop{background:#fbf9ff;border-color:#e6d7f4}
+#mdlKbg20Parallel button:disabled{opacity:.45;cursor:not-allowed}
+.kbg20-hour-legacy-warning{display:block;margin:5px 0;color:#b65328;font-size:11px;line-height:1.4}

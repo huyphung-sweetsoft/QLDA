@@ -80,7 +80,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Inserts a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Insert, true)]
-	    public void Insert(Guid IdCongViec,Guid IdDuAn,Guid? IdCongViecCha,Guid? IdCongViecPhuThuoc,Guid? IdDoUuTien,string MaCongViec,string TenCongViec,string MoTa,DateTime? NgayBatDau,int? ThoiHanNgay,DateTime? NgayKetThuc,DateTime? NgayHoanThanhThucTe,int PhanTramHoanThanh,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdGiaiDoanDuAn,bool? DaGuiNhacNho,string LyDoTre,byte? VaiTroNhanVien,bool? ChoDuyet)
+	    public void Insert(Guid IdCongViec,Guid IdDuAn,Guid? IdCongViecCha,Guid? IdCongViecPhuThuoc,Guid? IdDoUuTien,string MaCongViec,string TenCongViec,string MoTa,DateTime? NgayBatDau,int? ThoiHanNgay,DateTime? NgayKetThuc,DateTime? NgayHoanThanhThucTe,int PhanTramHoanThanh,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdGiaiDoanDuAn,bool? DaGuiNhacNho,string LyDoTre,byte? VaiTroNhanVien,bool? ChoDuyet,int LanThucHien)
 	    {
 		    TblCongViec item = new TblCongViec();
 		    
@@ -132,6 +132,8 @@ namespace SweetSoft.QLDA.DataAccess
             
             item.ChoDuyet = ChoDuyet;
             
+            item.LanThucHien = LanThucHien;
+            
 	    
 		    item.Save(UserName);
 	    }
@@ -140,7 +142,7 @@ namespace SweetSoft.QLDA.DataAccess
 	    /// Updates a record, can be used with the Object Data Source
 	    /// </summary>
         [DataObjectMethod(DataObjectMethodType.Update, true)]
-	    public void Update(Guid IdCongViec,Guid IdDuAn,Guid? IdCongViecCha,Guid? IdCongViecPhuThuoc,Guid? IdDoUuTien,string MaCongViec,string TenCongViec,string MoTa,DateTime? NgayBatDau,int? ThoiHanNgay,DateTime? NgayKetThuc,DateTime? NgayHoanThanhThucTe,int PhanTramHoanThanh,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdGiaiDoanDuAn,bool? DaGuiNhacNho,string LyDoTre,byte? VaiTroNhanVien,bool? ChoDuyet)
+	    public void Update(Guid IdCongViec,Guid IdDuAn,Guid? IdCongViecCha,Guid? IdCongViecPhuThuoc,Guid? IdDoUuTien,string MaCongViec,string TenCongViec,string MoTa,DateTime? NgayBatDau,int? ThoiHanNgay,DateTime? NgayKetThuc,DateTime? NgayHoanThanhThucTe,int PhanTramHoanThanh,byte TrangThai,bool DaXoa,string NguoiTao,DateTime NgayTao,string NguoiCapNhat,DateTime? NgayCapNhat,Guid? IdGiaiDoanDuAn,bool? DaGuiNhacNho,string LyDoTre,byte? VaiTroNhanVien,bool? ChoDuyet,int LanThucHien)
 	    {
 		    TblCongViec item = new TblCongViec();
 	        item.MarkOld();
@@ -193,6 +195,8 @@ namespace SweetSoft.QLDA.DataAccess
 			item.VaiTroNhanVien = VaiTroNhanVien;
 				
 			item.ChoDuyet = ChoDuyet;
+				
+			item.LanThucHien = LanThucHien;
 				
 	        item.Save(UserName);
 	    }

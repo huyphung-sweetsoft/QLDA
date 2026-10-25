@@ -1,4 +1,4 @@
-﻿using SubSonic;
+using SubSonic;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -835,17 +835,22 @@ namespace SweetSoft.QLDA.Core.Respositories
         // Chi xet SU KIEN CA NHAN (bo qua cac dot legacy sau PM duyet).
         internal bool CaNhanDaBaoXong(SqlConnection con, SqlTransaction tx, Guid nhanVien, Guid task)
         {
-            using (var cmd = Lenh(con, tx, @"SELECT TOP (1) LoaiSuKien
-                FROM dbo.TblKhaiBaoGioDoiSoat WITH (HOLDLOCK)
-                WHERE IdNhanVien=@U AND IdCongViec=@T AND LoaiSuKien IN (1,2,3,4)
-                ORDER BY LanDoiSoat DESC, PhienBan DESC, NgayTao DESC"))
+            using (var cmd = Lenh(con, tx, @"SELECT TOP (1)
+                  CASE WHEN s.LoaiSuKien IN(1,4) THEN 1
+                       WHEN s.LoaiSuKien=3 AND NOT EXISTS (
+                         SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat origin WITH(HOLDLOCK)
+                         WHERE origin.IdNhanVien=s.IdNhanVien AND origin.IdCongViec=s.IdCongViec
+                           AND origin.LanDoiSoat=s.LanDoiSoat AND origin.LoaiSuKien=5)
+                       THEN 1 ELSE 0 END
+                FROM dbo.TblKhaiBaoGioDoiSoat s WITH (HOLDLOCK)
+                WHERE s.IdNhanVien=@U AND s.IdCongViec=@T AND s.LoaiSuKien IN (1,2,3,4,5)
+                ORDER BY s.LanDoiSoat DESC, s.PhienBan DESC, s.NgayTao DESC, s.IdDoiSoat DESC"))
             {
                 P(cmd,"@U",SqlDbType.UniqueIdentifier,nhanVien);
                 P(cmd,"@T",SqlDbType.UniqueIdentifier,task);
                 var value=cmd.ExecuteScalar();
                 if(value==null || value==DBNull.Value) return false;
-                int status=Convert.ToInt32(value);
-                return status==1 || status==3 || status==4;
+                return Convert.ToInt32(value)==1;
             }
         }
 
@@ -861,11 +866,16 @@ namespace SweetSoft.QLDA.Core.Respositories
                 FROM dbo.TblCongViec t WITH (HOLDLOCK)
                 INNER JOIN dbo.TblCongViec_NhanVien cn WITH (HOLDLOCK)
                     ON cn.IdCongViec=t.IdCongViec AND cn.IdNhanVien=@U
-                OUTER APPLY (SELECT TOP (1) s.LoaiSuKien
+                OUTER APPLY (SELECT TOP (1) s.LoaiSuKien,
+                        CASE WHEN s.LoaiSuKien=3 AND EXISTS(
+                          SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat origin
+                          WHERE origin.IdNhanVien=s.IdNhanVien AND origin.IdCongViec=s.IdCongViec
+                            AND origin.LanDoiSoat=s.LanDoiSoat AND origin.LoaiSuKien=5)
+                        THEN 1 ELSE 0 END AS LaSuaSauXacNhan
                     FROM dbo.TblKhaiBaoGioDoiSoat s WITH (HOLDLOCK)
                     WHERE s.IdNhanVien=@U AND s.IdDuAn=@D
-                        AND s.IdCongViec=t.IdCongViec AND s.LoaiSuKien IN (1,2,3,4)
-                    ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC) lastEvent
+                        AND s.IdCongViec=t.IdCongViec AND s.LoaiSuKien IN (1,2,3,4,5)
+                    ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) lastEvent
                 WHERE t.IdDuAn=@D AND ISNULL(t.DaXoa,0)=0
                     AND t.TrangThai IN (0,1) AND ISNULL(t.ChoDuyet,0)=0
                     -- Khong lay node dieu phoi co con: chua the Bao xong cha khi con chua xong.
@@ -873,7 +883,8 @@ namespace SweetSoft.QLDA.Core.Respositories
                     AND NOT EXISTS (SELECT 1 FROM dbo.TblCongViec child
                         WHERE child.IdCongViecCha=t.IdCongViec AND ISNULL(child.DaXoa,0)=0)
                     AND (t.NgayBatDau IS NULL OR t.NgayBatDau < DATEADD(day,1,@Ngay))
-                    AND ISNULL(lastEvent.LoaiSuKien,0) NOT IN (1,3,4)
+                    AND (lastEvent.LoaiSuKien IS NULL OR lastEvent.LoaiSuKien NOT IN(1,3,4)
+                         OR (lastEvent.LoaiSuKien=3 AND lastEvent.LaSuaSauXacNhan=1))
                 ORDER BY t.NgayKetThuc,t.MaCongViec"))
             {
                 P(cmd, "@U", SqlDbType.UniqueIdentifier, idNhanVien);
@@ -1234,6 +1245,27 @@ namespace SweetSoft.QLDA.Core.Respositories
             }
             return list;
         }
+        // Chi doc metadata cua MOT du an. Caller bat buoc kiem tra
+        // DuAnManager.LayIdNhanVienQuanLy(project) == userId TRUOC khi goi.
+        internal Kbg20DuAn LayThongTinDuAnChoPm(Guid project)
+        {
+            using (var con = MoKetNoi())
+            using (var cmd = Lenh(con, null, @"SELECT IdDuAn,MaDuAn,TenDuAn
+                FROM dbo.TblDuAn WHERE IdDuAn=@D AND ISNULL(DaXoa,0)=0"))
+            {
+                P(cmd,"@D",SqlDbType.UniqueIdentifier,project);
+                using (var r=cmd.ExecuteReader())
+                {
+                    if (!r.Read()) return null;
+                    return new Kbg20DuAn {
+                        IdDuAn=r.GetGuid(0),
+                        MaDuAn=r.IsDBNull(1)?"":Convert.ToString(r.GetValue(1)),
+                        TenDuAn=r.IsDBNull(2)?"":Convert.ToString(r.GetValue(2))
+                    };
+                }
+            }
+        }
+
         internal List<Kbg20CongViec> LayCongViecCuaNhanVien(Guid nv, Guid idDuAn)
         {
             var list = new List<Kbg20CongViec>();
@@ -1382,12 +1414,17 @@ namespace SweetSoft.QLDA.Core.Respositories
             var result = new Dictionary<Guid,int>();
             using (var con = MoKetNoi())
             using (var cmd = Lenh(con,null,@";WITH X AS (
-                    SELECT s.IdCongViec,s.LoaiSuKien,
+                    SELECT s.IdCongViec,
+                        CASE WHEN s.LoaiSuKien=3 AND EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat original
+                             WHERE original.IdNhanVien=s.IdNhanVien AND original.IdDuAn=s.IdDuAn
+                               AND original.IdCongViec=s.IdCongViec AND original.LanDoiSoat=s.LanDoiSoat
+                               AND original.LoaiSuKien=5 AND original.NgayTao<@Den)
+                             THEN 5 ELSE s.LoaiSuKien END AS LoaiSuKien,
                         ROW_NUMBER() OVER (PARTITION BY s.IdCongViec
                             ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) AS rn
                     FROM dbo.TblKhaiBaoGioDoiSoat s
                     WHERE s.IdNhanVien=@U AND s.IdDuAn=@D
-                      AND s.LoaiSuKien IN (1,2,3,4) AND s.NgayTao < @Den
+                      AND s.LoaiSuKien IN (1,2,3,4,5) AND s.NgayTao < @Den
                 )
                 SELECT IdCongViec,LoaiSuKien FROM X WHERE rn=1"))
             {
@@ -1398,6 +1435,42 @@ namespace SweetSoft.QLDA.Core.Respositories
                     while(r.Read())result[r.GetGuid(0)]=Convert.ToInt32(r.GetValue(1));
             }
             return result;
+        }
+
+        // Read-only: full Start/Stop sequence of one employee/task in a Vietnam-local day.
+        // SoGiayTrongNgay is the *committed* ledger seconds, not elapsed wall-clock time.
+        internal List<Kbg20PhienChiTietNgay> LayPhienChiTietTheoNgay(Guid nv, Guid duAn,
+            Guid task, DateTime ngayDiaPhuong, DateTime dauNgayUtc, DateTime cuoiNgayUtc)
+        {
+            var ds = new List<Kbg20PhienChiTietNgay>();
+            using (var con = MoKetNoi())
+            using (var cmd = Lenh(con, null, @"SELECT p.IdPhien, p.LoaiGio, p.BatDauLuc, p.KetThucLuc,
+                       ISNULL(SUM(CAST(k.SoGiay AS bigint)),0) AS SoGiayDaKetToanTrongNgay
+                  FROM dbo.TblKhaiBaoGioPhien p
+                  LEFT JOIN dbo.TblKhaiBaoGioKhoangTinh k ON k.IdPhien=p.IdPhien
+                    AND k.NgayLam=@Day
+                  WHERE p.IdNhanVien=@U AND p.IdDuAn=@D AND p.IdCongViec=@T
+                    AND p.BatDauLuc<@End
+                    AND (p.KetThucLuc IS NULL OR p.KetThucLuc>=@Start)
+                  GROUP BY p.IdPhien,p.LoaiGio,p.BatDauLuc,p.KetThucLuc
+                  ORDER BY p.BatDauLuc ASC,p.IdPhien ASC"))
+            {
+                P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
+                P(cmd,"@D",SqlDbType.UniqueIdentifier,duAn);
+                P(cmd,"@T",SqlDbType.UniqueIdentifier,task);
+                P(cmd,"@Day",SqlDbType.Date,ngayDiaPhuong.Date);
+                P(cmd,"@Start",SqlDbType.DateTime2,dauNgayUtc);
+                P(cmd,"@End",SqlDbType.DateTime2,cuoiNgayUtc);
+                using(var rd=cmd.ExecuteReader())while(rd.Read())
+                    ds.Add(new Kbg20PhienChiTietNgay {
+                        IdPhien=rd.GetGuid(0), LoaiGio=Convert.ToInt32(rd.GetValue(1)),
+                        BatDauLucUtc=DateTime.SpecifyKind(rd.GetDateTime(2),DateTimeKind.Utc),
+                        KetThucLucUtc=rd.IsDBNull(3)?(DateTime?)null:
+                            DateTime.SpecifyKind(rd.GetDateTime(3),DateTimeKind.Utc),
+                        SoGiayDaKetToanTrongNgay=Convert.ToInt64(rd.GetValue(4))
+                    });
+            }
+            return ds;
         }
 
         internal List<Kbg20Phien> LayLichSuPhien(Guid nv, Guid duAn, int limit)

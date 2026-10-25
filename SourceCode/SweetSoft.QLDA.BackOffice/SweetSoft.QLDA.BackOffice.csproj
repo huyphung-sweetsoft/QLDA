@@ -767,6 +767,13 @@
     <Compile Include="fTasks\Controls\CtrlApplyTemplate.ascx.designer.cs">
       <DependentUpon>CtrlApplyTemplate.ascx</DependentUpon>
     </Compile>
+    <Compile Include="fTasks\Controls\CtrlDuyetGioCongTask.ascx.cs">
+      <DependentUpon>CtrlDuyetGioCongTask.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="fTasks\Controls\CtrlDuyetGioCongTask.ascx.designer.cs">
+      <DependentUpon>CtrlDuyetGioCongTask.ascx</DependentUpon>
+    </Compile>
     <Compile Include="fTasks\Controls\CtrlFastCompleteTask.ascx.cs">
       <DependentUpon>CtrlFastCompleteTask.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1039,6 +1046,7 @@
     <Content Include="fIssues\Controls\CtrlIssue.ascx" />
     <Content Include="fIssues\Controls\CtrlViewIssueDetail.ascx" />
     <Content Include="fIssues\IssueList.aspx" />
+    <Content Include="fKhaiBaoGio\Kbg20AccessDenied.aspx" />
     <Content Include="fKhaiBaoGio\KhaiBaoGio.aspx" />
     <Content Include="fLichBieu\Controls\CtrlLichNgoaiLe.ascx" />
     <Content Include="fLichBieu\LichBieu.aspx" />
@@ -1064,6 +1072,7 @@
     <Content Include="fTasks\Controls\CtrlAddSubTask.ascx" />
     <Content Include="fTasks\Controls\CtrlApplyTemplate.ascx" />
     <Content Include="fTasks\Controls\CtrlChonNhanVienTask.ascx" />
+    <Content Include="fTasks\Controls\CtrlDuyetGioCongTask.ascx" />
     <Content Include="fTasks\Controls\CtrlFastCompleteTask.ascx" />
     <Content Include="fTasks\Controls\CtrlFastReviewTask.ascx" />
     <Content Include="fTasks\Controls\CtrlStartTask.ascx" />

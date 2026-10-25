@@ -15,6 +15,7 @@
     var broadcastKey = 'kbg-timer-changed:' + userKey;
     var broadcastChannel = null;
     var timers = [], clockNodes = [], serverNow = 0, clockDelta = 0, snapshotAt = 0;
+    var renderedStructure = ''; // Danh sach khong can dung lai DOM khi polling khong doi phien.
     var expanded = false, offline = false, inFlight = false, refreshQueued = false;
     var activeController = null, activeTimeout = null, lastRequest = 0;
     var retryTimer = null, stopped = false, savedPosition = null, drag = null, suppressClickUntil = 0;
@@ -61,13 +62,16 @@
         text('kbgFloatCountPaused', (timers.length - activeCount) + (offline ? ' chưa đồng bộ' : ' tạm ngừng'));
         root.classList.toggle('is-no-active', activeCount === 0);
         root.classList.toggle('is-offline', offline);
-        if (timers.length === 1) {
-            text('kbgFloatSummary', formatTime(displayedSeconds(timers[0], now)));
-            text('kbgFloatSubtitle', (timers[0].code || 'Công việc') + ' · ' + (timers[0].type === 2 ? 'Tăng ca' : 'Giờ thường'));
-        } else {
-            text('kbgFloatSummary', timers.length + ' phiên · ' + countProjects() + ' dự án');
-            text('kbgFloatSubtitle', offline ? 'Chưa đồng bộ' : (activeCount + ' đang cộng giờ'));
-        }
+        // Pill chi co icon. Thong tin day du van co qua aria-label, tooltip va panel.
+        var compactLabel = timers.length === 1
+            ? ('Đồng hồ ' + (timers[0].code || 'công việc') + ', ' + (timers[0].type === 2 ? 'tăng ca' : 'giờ thường'))
+            : (timers.length + ' phiên giờ, ' + countProjects() + ' dự án');
+        pill.setAttribute('aria-label', compactLabel + '. ' + (offline ? 'Chưa đồng bộ.' : activeCount + ' phiên đang cộng giờ.') + ' Nhấn để xem chi tiết.');
+        text('kbgFloatTipBody', offline
+            ? 'Mất kết nối tạm thời. Thời gian đang được giữ tại lần cập nhật gần nhất.'
+            : (timers.length === 1
+                ? ((timers[0].code || 'Công việc') + ' · ' + (timers[0].type === 2 ? 'Tăng ca' : 'Giờ thường') + ' · ' + formatTime(displayedSeconds(timers[0], now)))
+                : (countProjects() + ' dự án · ' + activeCount + ' phiên đang cộng. Bấm để xem chi tiết.')));
     }
     function countProjects() {
         var ids = Object.create(null), count = 0;
@@ -78,7 +82,7 @@
     }
     function projectLink(url) {
         // URL duoc tao trong handler, chi cho phep duong dan noi bo.
-        return typeof url === 'string' && url.charAt(0) === '/' && url.charAt(1) !== '/' ? url : null;
+        return typeof url === 'string' && url.charAt(0) === '/' && url.charAt(1) !== '/' && url.charAt(1) !== '\\' && !/[\r\n]/.test(url) ? url : null;
     }
     function renderList() {
         clockNodes = [];
@@ -98,7 +102,9 @@
             var group = el('section', 'kbg-float-project');
             var heading = el('div', 'kbg-float-project-head');
             var nameWrap = el('div', 'kbg-float-project-title');
-            nameWrap.appendChild(el('span', 'kbg-float-folder', '▣'));
+            var folderIcon = el('span', 'kbg-float-folder');
+            folderIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3Z"/><path d="M3 10h18"/></svg>';
+            nameWrap.appendChild(folderIcon);
             var nameText = el('div', 'kbg-float-project-label');
             nameText.appendChild(el('strong', '', head.projectCode || 'Dự án'));
             if (head.projectName) nameText.appendChild(el('span', '', head.projectName));
@@ -140,6 +146,27 @@
             list.appendChild(group);
         });
     }
+    function structureSignature(rows) {
+        // Chi metadata thay doi moi can tao lai cards; seconds/counting duoc cap nhat tren node cu.
+        return JSON.stringify(rows.map(function (t) {
+            return [t.id, t.projectId, t.taskId, t.projectCode, t.projectName,
+                t.projectUrl, t.code, t.name, t.type, t.source, t.overdue];
+        }));
+    }
+    function syncRenderedList() {
+        var signature = structureSignature(timers);
+        if (signature !== renderedStructure) {
+            var scrollBox = $id('kbgFloatScroll');
+            var oldScroll = scrollBox ? scrollBox.scrollTop : 0;
+            renderList();
+            renderedStructure = signature;
+            if (scrollBox) scrollBox.scrollTop = oldScroll;
+        } else {
+            var byId = Object.create(null);
+            timers.forEach(function (t) { byId[t.id] = t; });
+            clockNodes.forEach(function (entry) { entry.data = byId[entry.data.id] || entry.data; });
+        }
+    }
     function showDetails(isOpen) {
         expanded = !!isOpen;
         root.classList.toggle('is-expanded', expanded);
@@ -149,12 +176,13 @@
     }
     function hide() {
         root.hidden = true;
-        timers = []; clockNodes = []; offline = false;
+        timers = []; clockNodes = []; offline = false; renderedStructure = '';
         showDetails(false);
     }
     function applySnapshot(data, sent, received) {
         if (!data || data.ok !== true || !Array.isArray(data.timers)) throw new Error('Invalid V2 snapshot');
-        if (!data.running || !data.timers.length) { hide(); return; }
+        if (!data.timers.length) { hide(); return; }
+        if (data.running === false) throw new Error('Inconsistent V2 snapshot');
         var unique = Object.create(null), next = [];
         data.timers.forEach(function (t) {
             if (!t || !t.id || !t.projectId || unique[t.id]) return;
@@ -181,7 +209,7 @@
         text('kbgFloatCount', timers.length + ' phiên · ' + countProjects() + ' dự án');
         text('kbgFloatTipTitle', timers.length + ' phiên giờ đang mở');
         text('kbgFloatTipBody', countProjects() + ' dự án. Bấm để xem từng công việc và giờ thường/tăng ca.');
-        renderList();
+        syncRenderedList();
         updateLive();
         if (wasHidden) restorePosition();
         placeOverlays();
