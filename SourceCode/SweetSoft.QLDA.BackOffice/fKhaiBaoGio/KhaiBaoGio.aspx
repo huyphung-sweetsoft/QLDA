@@ -241,6 +241,8 @@
         <input type="hidden" id="kbg20FlowAction" name="kbg20FlowAction" value="" />
         <input type="hidden" id="kbg20FlowOverdue" name="kbg20FlowOverdue" value="0" />
         <input type="hidden" id="kbg20FlowType" name="kbg20FlowType" value="regular" />
+        <input type="hidden" id="kbg20FlowStopIds" name="kbg20FlowStopIds" value="" />
+        <input type="hidden" id="kbg20FlowEligibleIds" name="kbg20FlowEligibleIds" value="" />
         <%-- Tách bridge của KBG20 thành một UpdatePanel, giống luồng postback
              của CtrlTask bên partner. Không thực hiện full-page postback khi mở popup. --%>
         <asp:UpdatePanel ID="upnlKbg20WorkflowBridge" runat="server" UpdateMode="Conditional">
@@ -276,7 +278,7 @@
                     });
                     hookedManager = manager;
                 }
-                window.kbg20WorkflowPostback = function (action,taskId,isOverdue,isOvertime) {
+                window.kbg20WorkflowPostback = function (action,taskId,isOverdue,isOvertime,selection) {
                     var manager = requestManager();
                     hookEndRequest(manager);
                     if (opening || (manager && manager.get_isInAsyncPostBack())) {
@@ -298,6 +300,8 @@
                         set('kbg20FlowTask', taskId);
                         set('kbg20FlowOverdue', isOverdue ? '1' : '0');
                         set('kbg20FlowType', isOvertime ? 'overtime' : 'regular');
+                        set('kbg20FlowStopIds', selection && selection.stopIds ? selection.stopIds.join(',') : '');
+                        set('kbg20FlowEligibleIds', selection && selection.eligibleIds ? selection.eligibleIds.join(',') : '');
                         opening = true;
                         showWorkflowMessage('Đang mở cửa sổ xử lý công việc…', false);
                         trigger.click();
@@ -628,29 +632,34 @@
           <ContentTemplate>
             <div class="kbg20-ux-modal-content">
               <p id="kbg20StartWarningText" aria-live="polite"></p>
-              <div class="kbg20-ux-modal-actions">
-                <button type="button" id="kbg20StartWarningNo" class="kbg20-btn kbg20-outline">Hủy</button>
-                <button type="button" id="kbg20StartWarningYes" class="kbg20-btn">Tiếp tục</button>
-              </div>
             </div>
           </ContentTemplate>
+          <FooterTemplate>
+            <div class="kbg20-ux-footer-actions">
+              <button type="button" id="kbg20StartWarningNo" class="kbg20-btn kbg20-outline">Hủy</button>
+              <button type="button" id="kbg20StartWarningYes" class="kbg20-btn">Tiếp tục</button>
+            </div>
+          </FooterTemplate>
         </SweetSoft:ExtraModal>
         <%-- Xac nhan khi Start Task khac: hai lua chon thuc su + Huy. --%>
         <SweetSoft:ExtraModal runat="server" ID="mdlKbg20Parallel" ClientIDMode="Static"
             Type="Primary" Title="Đang có đồng hồ khác">
           <ContentTemplate>
             <div class="kbg20-ux-modal-content">
-              <p>Những công việc dưới đây đang có đồng hồ mở của bạn. Bạn muốn xử lý thế nào?</p>
+              <p class="kbg20-parallel-intro">Bạn đang bắt đầu tính giờ một công việc mới trong khi vẫn có các đồng hồ khác đang mở.</p>
+              <div class="kbg20-parallel-legend"><strong>Tích chọn những đồng hồ muốn DỪNG.</strong> Đồng hồ không tích vẫn tiếp tục chạy song song với công việc mới.</div>
               <div id="kbg20ParallelTasks" class="kbg20-ux-parallel-list"></div>
-              <p class="kbg20-ux-muted">Chạy song song sẽ cộng thời gian riêng từng Task.
-                 Dừng đồng hồ cũ không đồng nghĩa hoàn thành Task cũ.</p>
-              <div class="kbg20-ux-modal-actions">
-                <button type="button" class="kbg20-btn kbg20-outline" id="kbg20ParallelCancel">Hủy</button>
-                <button type="button" class="kbg20-btn kbg20-outline" id="kbg20ParallelKeep">Chạy song song</button>
-                <button type="button" class="kbg20-btn" id="kbg20ParallelStop">Dừng đồng hồ cũ rồi Start</button>
-              </div>
+              <p id="kbg20ParallelGuide" class="kbg20-ux-muted" aria-live="polite"></p>
+              <div id="kbg20ParallelSummary" class="kbg20-parallel-summary" aria-live="polite"></div>
             </div>
           </ContentTemplate>
+          <FooterTemplate>
+            <%-- Thao tác của popup phải nằm trong FooterTemplate ExtraModal, không lẫn vào danh sách phiên. --%>
+            <div class="kbg20-ux-footer-actions kbg20-ux-parallel-footer-actions">
+              <button type="button" class="btn btn-default kbg20-parallel-action" id="kbg20ParallelKeep" title="Dừng những đồng hồ đã tích, giữ các đồng hồ còn lại và bắt đầu công việc mới">Chạy song song với đồng hồ còn lại</button>
+              <button type="button" class="btn btn-primary kbg20-parallel-action" id="kbg20ParallelStop" title="Dừng tất cả đồng hồ thủ công có thể dừng, sau đó bắt đầu công việc mới">Dừng tất cả có thể dừng và chạy mới</button>
+            </div>
+          </FooterTemplate>
         </SweetSoft:ExtraModal>
         <%-- Dùng ExtraModal CHÍNH THỨC giống CtrlFastCompleteTask/Review của partner.
              Dữ liệu đối soát vẫn nạp bằng API V2; không có form WebForms thứ hai. --%>
@@ -658,14 +667,8 @@
              UpdatePanel chua modal de AJAX khong reload toan trang. --%>
         <asp:UpdatePanel ID="upnlKbg20ManualHost" runat="server" UpdateMode="Conditional">
           <ContentTemplate>
-          
-<asp:LinkButton ID="btnKbg20OpenManual"
-    runat="server"
-    CausesValidation="false"
-    style="display:none">
-    Mở thông tin giờ công
-</asp:LinkButton>
-
+            <asp:LinkButton ID="btnKbg20OpenManual" runat="server" CausesValidation="false"
+              style="display:none">Mở thông tin giờ công</asp:LinkButton>
         <SweetSoft:ExtraModal runat="server" ID="mdlKbg20Manual" ClientIDMode="Static"
             Type="Primary" Size="ExtraLarge" Title="Thông tin giờ công">
           <ContentTemplate>
@@ -702,9 +705,9 @@
     <% if (LaGiaoDienKbg20) { %>
     <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-hour-split.css") %>?v=20261024p1" />
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-hour-input.js") %>?v=20261024p1"></script>
-    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261025ot1" />
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261025ot1"></script>
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261024p2"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261025parallelchoice3" />
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261025parallelchoice3"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261025pmfinal1"></script>
     <% } else { %>
     <script type="text/javascript">
         var KhaiBaoGioJs = (function ($) {

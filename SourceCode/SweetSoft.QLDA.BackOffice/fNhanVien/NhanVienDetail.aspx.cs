@@ -33,6 +33,46 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             set { ViewState["IdNhanVien"] = value; }
         }
         protected Guid CurrentDetailProjectId { get; set; }
+        // Chỉ thay cách xưng hô trên UI, không thay phân quyền đọc báo cáo của trang.
+        protected bool IsOwnEmployeeProfile { get { return CurrentIdNhanVien != Guid.Empty && CurrentIdNhanVien == SweetContext.Current.UserId; } }
+
+        protected string GetProjectStatusCss(object rawStatus)
+        {
+            byte code;
+            if (rawStatus == null || !byte.TryParse(Convert.ToString(rawStatus), out code)) return "";
+            switch ((DuAnStatus)code)
+            {
+                case DuAnStatus.ChuaBatDau: return "nvd-project-not-started";
+                case DuAnStatus.DangThucHien: return "nvd-project-in-progress";
+                case DuAnStatus.TamDung: return "nvd-project-paused";
+                case DuAnStatus.HoanThanh: return "nvd-project-complete";
+                case DuAnStatus.KetThuc: return "nvd-project-ended";
+                default: return "";
+            }
+        }
+        protected string GetProjectCardInsight(object item)
+        {
+            var project = item as NhanVienProjectSummaryDTO;
+            if (project == null) return "Chi tiết giờ công của dự án.";
+            if (project.DaKetToanDuAn) return "Các công việc phát sinh giờ đã được kết toán.";
+            if (project.LaDuAnKetThuc) return "Dự án đã kết thúc; giờ công vẫn còn chờ kết toán.";
+            if ((DuAnStatus)project.TrangThai == DuAnStatus.ChuaBatDau) return project.CoGioHeThong ? "Có dữ liệu giờ cần kiểm tra." : "Chưa phát sinh giờ công.";
+            if ((DuAnStatus)project.TrangThai == DuAnStatus.TamDung) return "Đang tạm dừng; các giờ đã ghi vẫn được bảo lưu.";
+            int pending = Math.Max(0, project.SoTaskLienQuan-project.SoTaskDaChot);
+            if (pending > 0) return "Còn " + pending + " công việc của nhân viên chưa được chốt giờ.";
+            return "Giờ công đang được cập nhật theo tiến độ dự án.";
+        }
+        protected string GetTaskWorkProgressText(object taskStatus, object daChot)
+        {
+            bool completed = daChot != null && Convert.ToBoolean(daChot);
+            if (completed) return "Giờ công đã được PM chốt";
+            int st;
+            if (!int.TryParse(Convert.ToString(taskStatus), out st)) return "Giờ công chưa chốt";
+            if (st == 2 || st == 3) return "Công việc hoàn thành · Chờ PM chốt giờ";
+            if (st == 4) return "Công việc chờ duyệt hoàn thành · Giờ chưa chốt";
+            if (st == 1) return "Công việc đang thực hiện · Giờ chưa chốt";
+            return "Công việc chưa bắt đầu · Giờ chưa chốt";
+        }
         public override bool IsLogin { get { return true; } }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -291,36 +331,60 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 return;
             }
 
-            ltrDetailTenDuAn.Text = project.TenDuAn ?? string.Empty;
-            ltrDetailMaDuAn.Text = project.MaDuAn ?? string.Empty;
-            ltrDetailVaiTro.Text = project.VaiTro ?? string.Empty;
-            ltrDetailTrangThai.Text = GetDuAnStatusText(project.TrangThai);
-            ltrDetailProjectTime.Text = FormatDateRange(project.ProjectStartDate, project.ProjectEndDate);
-            ltrDetailContribution.Text = project.ContributionPercent.ToString("0.0");
-            ltrHeSoCao.Text = "-";
-            ltrHeSoTrungBinh.Text = "-";
-            ltrHeSoThap.Text = "-";
+            // KBG 2.0: chỉ đọc báo cáo; không gọi HeSoDongGopManager và không sửa phiên giờ.
+            ltrDetailTenDuAn.Text = HttpUtility.HtmlEncode(project.TenDuAn ?? string.Empty);
+            ltrDetailMaDuAn.Text = HttpUtility.HtmlEncode(project.MaDuAn ?? string.Empty);
+            ltrDetailVaiTro.Text = HttpUtility.HtmlEncode(project.VaiTro ?? string.Empty);
+            ltrDetailTrangThai.Text = "<span class=\"project-status-tag " + GetProjectStatusCss(project.TrangThai) + "\">" + HttpUtility.HtmlEncode(GetDuAnStatusText(project.TrangThai)) + "</span>";
+            ltrDetailProjectTime.Text = (project.ProjectActualEndDate.HasValue ? "Kết thúc thực tế: " : "Dự kiến: ") +
+                FormatDateRange(project.ProjectStartDate,project.ProjectActualEndDate ?? project.ProjectEndDate);
+            ltrDetailContribution.Text = RenderProjectHours(project);
+            if(project.Phases.Count==0)
+                ltrDetailContribution.Text += "<div class=\"empty-detail mt-3\">Chưa có công việc được phân công hoặc phát sinh giờ công trong dự án này.</div>";
 
-            DataTable dtHeSo = HeSoDongGopManager.Instance.GetHeSoCuaDuAn(idDuAn);
-            if (dtHeSo != null && dtHeSo.Rows.Count > 0)
-            {
-                foreach (DataRow row in dtHeSo.Rows)
-                {
-                    if (row["DiemUuTien"] != DBNull.Value && row["HeSoDongGop"] != DBNull.Value)
-                    {
-                        int diemUuTien = Convert.ToInt32(row["DiemUuTien"]);
-                        // Ép về dấu chấm cho chuẩn giao diện
-                        string heSo = Convert.ToDecimal(row["HeSoDongGop"]).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
-
-                        if (diemUuTien == 3) ltrHeSoCao.Text = heSo;
-                        else if (diemUuTien == 2) ltrHeSoTrungBinh.Text = heSo;
-                        else if (diemUuTien == 1) ltrHeSoThap.Text = heSo;
-                    }
-                }
-            }
             rptDetailPhases.DataSource = project.Phases;
             rptDetailPhases.DataBind();
             upProjectDetail.Update();
+        }
+
+        private static string RenderProjectHours(NhanVienProjectDTO project)
+        {
+            Func<string,string,string,string,string> cell = (title,value,notes,css) =>
+                "<div class=\"nvd-detail-metric "+css+"\"><div class=\"nvd-metric-name\">"+
+                HttpUtility.HtmlEncode(title)+"</div><strong>"+HttpUtility.HtmlEncode(value)+
+                "</strong><small>"+HttpUtility.HtmlEncode(notes)+"</small></div>";
+            var html = new System.Text.StringBuilder();
+            html.Append("<div class=\"nvd-detail-metrics\">");
+            html.Append(cell("Giờ hệ thống ghi nhận",project.GioHeThongText,
+                "Theo lịch "+project.GioHanhChinhText+" · Tăng ca "+project.GioTangCaText,""));
+            html.Append(cell("Giờ của nhân viên được PM chốt",project.GioPmChotText,
+                "Theo lịch "+project.GioPmThuongText+" · Tăng ca "+project.GioPmTangCaText,"nvd-detail-metric--final"));
+            html.Append("</div><div class=\"nvd-detail-self-report\"><span>Nhân viên đã báo</span><strong>")
+                .Append(HttpUtility.HtmlEncode(project.GioTuKhaiText)).Append("</strong><small>Theo lịch ")
+                .Append(HttpUtility.HtmlEncode(project.GioTuKhaiThuongText)).Append(" · Tăng ca ")
+                .Append(HttpUtility.HtmlEncode(project.GioTuKhaiTangCaText)).Append("</small></div>");
+            int total = project.SoTaskLienQuan;
+            int done = project.SoTaskDaChot;
+            int pending = Math.Max(0,total-done);
+            int percent = total <= 0 ? 0 : Math.Min(100,(int)Math.Round(100.0*done/total));
+            html.Append("<div class=\"nvd-work-progress\"><div class=\"nvd-work-progress-head\"><strong>Tiến độ chốt giờ của nhân viên</strong><span>")
+                .Append(done).Append("/").Append(total).Append(" công việc</span></div>")
+                .Append("<div class=\"nvd-work-progress-track\"><span class=\"nvd-work-progress-fill\" style=\"width:")
+                .Append(percent.ToString(System.Globalization.CultureInfo.InvariantCulture)).Append("%\"></span></div>")
+                .Append("<div class=\"nvd-work-progress-note\">");
+            if (total == 0) html.Append("Chưa có công việc liên quan phát sinh giờ công.");
+            else if (pending > 0) html.Append("Còn ").Append(pending).Append(" công việc của nhân viên chưa được PM chốt. Có thể xem các dòng tương ứng ở bên dưới.");
+            else html.Append("Tất cả công việc liên quan của nhân viên đã được chốt giờ.");
+            html.Append("</div></div><div class=\"nvd-detail-status\"><span class=\"nvd-time-state ")
+                .Append(project.TrangThaiGioCss).Append("\">")
+                .Append(HttpUtility.HtmlEncode(project.TinhTrangGioText)).Append("</span>")
+                .Append("<span>Toàn dự án: ").Append(HttpUtility.HtmlEncode(project.TienDoChotText)).Append("</span>");
+            if(project.HienThiTyTrong)
+                html.Append("<span class=\"nvd-share\">Tỷ trọng giờ công đã quyết toán: <strong>")
+                    .Append(HttpUtility.HtmlEncode(project.TyTrongText)).Append("</strong></span>");
+            html.Append("</div><details class=\"nvd-help-details\"><summary>Giải thích trạng thái và phạm vi giờ công</summary><div>")
+                .Append(HttpUtility.HtmlEncode(project.GhiChuGioText)).Append("</div></details>");
+            return html.ToString();
         }
 
         private void UpdateSearchTags()
@@ -506,38 +570,57 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
             return false;
         }
 
+        /// <summary>
+        /// Badge trang thai cong viec: dung dung bang mau CtrlTask (0/1/4/2/3).
+        /// Trang thai 3 su dung badge Hoan thanh mau xanh + ghi chu tre han mau do rieng.
+        /// Khong su dung he so dong gop / tinh lai gio cong.
+        /// </summary>
         protected string GetTaskStatusDisplay(object status, object plannedEndDate, object actualEndDate)
         {
-            if (IsTaskCompletedLate(status, plannedEndDate, actualEndDate))
+            int code;
+            if (!int.TryParse(Convert.ToString(status), out code)) code = -1;
+            string css;
+            string text;
+            switch (code)
+            {
+                case 0: css = "badge-status-todo"; text = "Chưa bắt đầu"; break;
+                case 1: css = "badge-status-doing"; text = "Đang thực hiện"; break;
+                case 2: css = "badge-status-done"; text = "Hoàn thành"; break;
+                case 3: css = "badge-status-done"; text = "Hoàn thành"; break;
+                case 4: css = "badge-status-review"; text = "Chờ duyệt"; break;
+                default: css = "badge-status-todo"; text = "Chưa xác định"; break;
+            }
+            string html = "<span class=\"nvd-task-status " + css + "\">" + HttpUtility.HtmlEncode(text) + "</span>";
+            // Trường hợp dữ liệu có trạng thái 2 nhưng ngày thực tế > kế hoạch:
+            // vẫn giữ cảnh báo trễ từ giao diện trước, không đổi trạng thái trong DB.
+            if (code == 3 || (code == 2 && IsTaskCompletedLate(status, plannedEndDate, actualEndDate)))
             {
                 int lateDays = 0;
+                DateTime planned, actual;
                 if (plannedEndDate != null && actualEndDate != null &&
-                    DateTime.TryParse(plannedEndDate.ToString(), out DateTime plannedEnd) &&
-                    DateTime.TryParse(actualEndDate.ToString(), out DateTime actualEnd))
-                {
-                    if (plannedEnd.Year > 1900 && actualEnd.Year > 1900)
-                    {
-                        lateDays = (actualEnd.Date - plannedEnd.Date).Days;
-                    }
-                }
-
-                // Nếu có ngày cụ thể thì hiển thị số ngày, nếu không thì cứ báo "Hoàn thành trễ"
-                if (lateDays > 0)
-                    return string.Format("Hoàn thành trễ ({0} ngày)", lateDays);
-                else
-                    return "Hoàn thành trễ";
+                    plannedEndDate != DBNull.Value && actualEndDate != DBNull.Value &&
+                    DateTime.TryParse(Convert.ToString(plannedEndDate), out planned) &&
+                    DateTime.TryParse(Convert.ToString(actualEndDate), out actual) &&
+                    planned.Year > 1900 && actual.Year > 1900)
+                    lateDays = (actual.Date - planned.Date).Days;
+                html += "<span class=\"nvd-task-late-note\">(Trễ hạn" +
+                    (lateDays > 0 ? " · " + lateDays + " ngày" : "") + ")</span>";
             }
-
-            return GetTaskStatusBadge(status);
+            return html;
         }
+        // Tương thích cho những chỗ cũ còn gọi class trạng thái. UI V3 dùng GetTaskStatusDisplay.
         protected string GetTaskStatusWrapperClass(object status, object plannedEndDate, object actualEndDate)
         {
-            if (IsTaskCompletedLate(status, plannedEndDate, actualEndDate))
+            int code;
+            if (!int.TryParse(Convert.ToString(status), out code)) code = -1;
+            switch (code)
             {
-                return "ui-status-wrapper task-status-late";
+                case 1: return "nvd-task-status badge-status-doing";
+                case 2:
+                case 3: return "nvd-task-status badge-status-done";
+                case 4: return "nvd-task-status badge-status-review";
+                default: return "nvd-task-status badge-status-todo";
             }
-
-            return "ui-status-wrapper";
         }
 
         protected bool HasTasks(object tasksObj)
@@ -550,6 +633,12 @@ namespace SweetSoft.QLDA.BackOffice.fNhanVien
                 return enumerator.MoveNext();
             }
             return false;
+        }
+
+        protected string FormatProjectPeriod(object start,object planned,object actual)
+        {
+            bool hasActual=actual!=null && actual!=DBNull.Value;
+            return FormatDateRange(start,hasActual?actual:planned)+(hasActual?" · Thực tế":" · Dự kiến");
         }
 
         protected string FormatDateSafe(object dateObj, string defaultEmptyText = "")

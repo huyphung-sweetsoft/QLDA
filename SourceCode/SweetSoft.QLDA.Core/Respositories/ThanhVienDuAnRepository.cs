@@ -73,216 +73,180 @@ namespace SweetSoft.QLDA.Core.Respositories
             dt.Load(reader);
             return dt;
         }
+        // Lấy cả dự án đã tham gia và dự án có lịch sử KBG 2.0.
+        // KHÔNG JOIN số giờ vào danh sách dự án để tránh nhân bản tổng do nhiều vai trò / task.
+        private const string SqlDuAnCuaNhanVien = @"
+;WITH ScopeDuAn AS (
+ SELECT d.IdDuAn,d.MaDuAn,d.TenDuAn,d.TrangThai AS TrangThaiDuAn,
+        d.NgayBatDau AS ProjectStartDate,d.NgayDuKienHoanThanh AS ProjectEndDate,
+        d.NgayHoanThanhThucTe AS ProjectActualEndDate,
+        CASE WHEN EXISTS(SELECT 1 FROM dbo.TblThanhVienDuAn tv
+                WHERE tv.IdDuAn=d.IdDuAn AND tv.IdNhanVien=@EmpId AND ISNULL(tv.DaXoa,0)=0)
+             THEN 1 ELSE 0 END AS IsCurrentMember,
+        (SELECT TOP (1) v.TenVaiTro FROM dbo.TblThanhVienDuAn tv
+         LEFT JOIN dbo.TblVaiTroDuAn v ON v.IdVaiTroDuAn=tv.IdVaiTroDuAn
+         WHERE tv.IdDuAn=d.IdDuAn AND tv.IdNhanVien=@EmpId
+         ORDER BY CASE WHEN ISNULL(tv.DaXoa,0)=0 THEN 0 ELSE 1 END,tv.NgayTao DESC) AS VaiTro
+ FROM dbo.TblDuAn d
+ WHERE ISNULL(d.DaXoa,0)=0 AND
+ (EXISTS (SELECT 1 FROM dbo.TblThanhVienDuAn tv WHERE tv.IdDuAn=d.IdDuAn AND tv.IdNhanVien=@EmpId)
+  OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p WHERE p.IdDuAn=d.IdDuAn AND p.IdNhanVien=@EmpId)
+  OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat x WHERE x.IdDuAn=d.IdDuAn AND x.IdNhanVien=@EmpId)
+  OR EXISTS(SELECT 1 FROM dbo.TblCongViec t JOIN dbo.TblCongViec_NhanVien a ON a.IdCongViec=t.IdCongViec
+            WHERE t.IdDuAn=d.IdDuAn AND a.IdNhanVien=@EmpId))
+)
+SELECT * FROM ScopeDuAn WHERE
+(@SearchStatusId IS NULL OR TrangThaiDuAn=@SearchStatusId)
+AND (@SearchKeyword=N'' OR TenDuAn LIKE N'%'+@SearchKeyword+N'%' OR MaDuAn LIKE N'%'+@SearchKeyword+N'%')
+ORDER BY ProjectStartDate DESC,MaDuAn ASC";
+
         public DataTable GetDanhSachDuAnCuaNhanVienData(Guid idNhanVien, string keyword, byte? statusId)
         {
-            string normalizedKeyword = (keyword ?? string.Empty).Trim();
-
-            string sql = @"
-                DECLARE @IdNhanVien UNIQUEIDENTIFIER = @EmpId;
-                DECLARE @Keyword NVARCHAR(500) = @SearchKeyword;
-                DECLARE @StatusId TINYINT = @SearchStatusId;
-
-                ;WITH MyProjects AS (
-                    SELECT da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn, da.NgayBatDau AS ProjectStartDate,
-                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro
-                    FROM TblDuAn da
-                    INNER JOIN TblThanhVienDuAn tv ON tv.IdDuAn = da.IdDuAn
-                    INNER JOIN TblVaiTroDuAn vt ON vt.IdVaiTroDuAn = tv.IdVaiTroDuAn
-                    WHERE tv.IdNhanVien = @IdNhanVien AND tv.DaXoa = 0 AND da.DaXoa = 0
-                      AND (@StatusId IS NULL OR da.TrangThai = @StatusId)
-                      AND (@Keyword = N'' OR da.TenDuAn LIKE N'%' + @Keyword + N'%')
-                ),
-                AssignedLeafTasks AS (
-                    SELECT DISTINCT cv.IdCongViec, cv.IdDuAn, cv.IdGiaiDoanDuAn
-                    FROM TblCongViec_NhanVien cvnv
-                    INNER JOIN TblCongViec cv ON cvnv.IdCongViec = cv.IdCongViec
-                    INNER JOIN MyProjects mp ON cv.IdDuAn = mp.IdDuAn
-                    WHERE cvnv.IdNhanVien = @IdNhanVien AND cv.DaXoa = 0 AND cv.IdGiaiDoanDuAn IS NOT NULL AND cv.IdCongViecCha IS NOT NULL
-                      AND NOT EXISTS (SELECT 1 FROM TblCongViec child WHERE child.IdCongViecCha = cv.IdCongViec AND child.DaXoa = 0) 
-                ),
-                RelevantPhases AS (
-                    SELECT DISTINCT IdDuAn, IdGiaiDoanDuAn FROM AssignedLeafTasks
-                ),
-                RelevantLeafTasks AS (
-    SELECT
-        cv.IdCongViec,
-        cv.IdDuAn,
-        cv.ThoiHanNgay,
-        ISNULL(ut.DiemUuTien, 1) AS DiemUuTien,
-        hs.HeSoDongGop
-    FROM TblCongViec cv
-    INNER JOIN RelevantPhases rp
-        ON cv.IdDuAn = rp.IdDuAn
-       AND cv.IdGiaiDoanDuAn = rp.IdGiaiDoanDuAn
-
-    INNER JOIN TblGiaiDoanDuAn gd
-        ON gd.IdGiaiDoanDuAn = cv.IdGiaiDoanDuAn
-       AND gd.IdDuAn = cv.IdDuAn
-       AND gd.DaXoa = 0
-
-    LEFT JOIN TblDoUuTien ut
-        ON cv.IdDoUuTien = ut.IdDoUuTien
-
-    LEFT JOIN TblHeSoDongGop hs
-        ON hs.IdDuAn = cv.IdDuAn
-       AND hs.IdDoUuTien = cv.IdDoUuTien
-       AND hs.DaXoa = 0
-
-    WHERE cv.DaXoa = 0
-      AND cv.IdCongViecCha IS NOT NULL
-      AND NOT EXISTS (
-          SELECT 1
-          FROM TblCongViec child
-          WHERE child.IdCongViecCha = cv.IdCongViec
-            AND child.DaXoa = 0
-      )
-),
-                TaskStats AS (
-    SELECT
-        t.IdCongViec,
-        t.IdDuAn,
-        t.ThoiHanNgay,
-        t.DiemUuTien,
-        t.HeSoDongGop,
-        COUNT(a.IdNhanVien) AS AssigneeCount,
-        MAX(
-            CASE
-                WHEN a.IdNhanVien = @IdNhanVien
-                THEN 1
-                ELSE 0
-            END
-        ) AS IsMyTask
-    FROM RelevantLeafTasks t
-    LEFT JOIN TblCongViec_NhanVien a
-        ON a.IdCongViec = t.IdCongViec
-    GROUP BY
-        t.IdCongViec,
-        t.IdDuAn,
-        t.ThoiHanNgay,
-        t.DiemUuTien,
-        t.HeSoDongGop
-),
-               ProjectContribution AS (
-    SELECT
-        IdDuAn,
-
-        SUM(
-            CAST(ISNULL(ThoiHanNgay, 0) AS DECIMAL(18,4))
-            * ISNULL(HeSoDongGop, 0)
-        ) AS Total_E_All_Employees,
-
-        SUM(
-            CASE
-                WHEN IsMyTask = 1
-                THEN
-                    (
-                        CAST(ISNULL(ThoiHanNgay, 0) AS DECIMAL(18,4))
-                        * ISNULL(HeSoDongGop, 0)
-                    )
-                    / NULLIF(AssigneeCount, 0)
-                ELSE 0
-            END
-        ) AS Total_E_My_Employee
-
-    FROM TaskStats
-    GROUP BY IdDuAn
-)
-                SELECT mp.IdDuAn, mp.MaDuAn, mp.TenDuAn, mp.VaiTro, mp.TrangThaiDuAn, mp.ProjectStartDate, mp.ProjectEndDate,
-                       ISNULL(pc.Total_E_All_Employees, 0) AS Total_E_All_Employees,
-                       ISNULL(pc.Total_E_My_Employee, 0) AS Total_E_My_Employee
-                FROM MyProjects mp
-                LEFT JOIN ProjectContribution pc ON pc.IdDuAn = mp.IdDuAn
-                ORDER BY mp.ProjectStartDate DESC, mp.MaDuAn ASC;";
-
-            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
-            cmd.AddParameter("@EmpId", idNhanVien, DbType.Guid);
-            cmd.AddParameter("@SearchKeyword", normalizedKeyword, DbType.String);
-            cmd.AddParameter("@SearchStatusId", statusId.HasValue ? (object)statusId.Value : DBNull.Value, DbType.Byte);
-
-            DataSet ds = DataService.GetDataSet(cmd);
-            return (ds != null && ds.Tables.Count > 0) ? ds.Tables[0] : new DataTable();
+            QueryCommand cmd=new QueryCommand(SqlDuAnCuaNhanVien, DataService.Provider.Name);
+            cmd.AddParameter("@EmpId",idNhanVien,DbType.Guid);
+            cmd.AddParameter("@SearchKeyword",(keyword??string.Empty).Trim(),DbType.String);
+            cmd.AddParameter("@SearchStatusId",statusId.HasValue?(object)statusId.Value:DBNull.Value,DbType.Byte);
+            DataSet ds=DataService.GetDataSet(cmd);
+            return ds!=null && ds.Tables.Count>0?ds.Tables[0]:new DataTable();
         }
 
-        public DataTable GetChiTietDuAnCuaNhanVienData(Guid idNhanVien, Guid idDuAn)
+        public DataTable GetChiTietDuAnCuaNhanVienData(Guid idNhanVien,Guid idDuAn)
         {
-            const string sql = @"
-                DECLARE @IdNhanVien UNIQUEIDENTIFIER = @EmpId;
-                DECLARE @IdDuAn UNIQUEIDENTIFIER = @ProjectId;
+            const string sql=@"
+;WITH Project AS (
+ SELECT d.IdDuAn,d.MaDuAn,d.TenDuAn,d.TrangThai AS TrangThaiDuAn,
+        d.NgayBatDau AS ProjectStartDate,d.NgayDuKienHoanThanh AS ProjectEndDate,
+        d.NgayHoanThanhThucTe AS ProjectActualEndDate,
+        CASE WHEN EXISTS(SELECT 1 FROM dbo.TblThanhVienDuAn tv
+                          WHERE tv.IdDuAn=d.IdDuAn AND tv.IdNhanVien=@EmpId AND ISNULL(tv.DaXoa,0)=0)
+             THEN 1 ELSE 0 END IsCurrentMember,
+        (SELECT TOP(1) v.TenVaiTro FROM dbo.TblThanhVienDuAn tv
+         LEFT JOIN dbo.TblVaiTroDuAn v ON v.IdVaiTroDuAn=tv.IdVaiTroDuAn
+         WHERE tv.IdDuAn=d.IdDuAn AND tv.IdNhanVien=@EmpId
+         ORDER BY CASE WHEN ISNULL(tv.DaXoa,0)=0 THEN 0 ELSE 1 END,tv.NgayTao DESC) AS VaiTro
+ FROM dbo.TblDuAn d WHERE d.IdDuAn=@ProjectId AND ISNULL(d.DaXoa,0)=0 AND
+ (EXISTS(SELECT 1 FROM dbo.TblThanhVienDuAn tv WHERE tv.IdDuAn=d.IdDuAn AND tv.IdNhanVien=@EmpId)
+  OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p WHERE p.IdDuAn=d.IdDuAn AND p.IdNhanVien=@EmpId)
+  OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat s WHERE s.IdDuAn=d.IdDuAn AND s.IdNhanVien=@EmpId)
+  OR EXISTS(SELECT 1 FROM dbo.TblCongViec t JOIN dbo.TblCongViec_NhanVien a ON a.IdCongViec=t.IdCongViec
+            WHERE t.IdDuAn=d.IdDuAn AND a.IdNhanVien=@EmpId))
+), MyTasks AS (
+ SELECT t.IdCongViec,t.IdDuAn,t.IdGiaiDoanDuAn FROM dbo.TblCongViec t
+ WHERE t.IdDuAn=@ProjectId AND
+ (EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a WHERE a.IdCongViec=t.IdCongViec AND a.IdNhanVien=@EmpId)
+ OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p WHERE p.IdDuAn=t.IdDuAn AND p.IdCongViec=t.IdCongViec AND p.IdNhanVien=@EmpId)
+ OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat s WHERE s.IdDuAn=t.IdDuAn AND s.IdCongViec=t.IdCongViec AND s.IdNhanVien=@EmpId))
+)
+SELECT d.*,t.IdCongViec AS IdTask,t.IdGiaiDoanDuAn AS IdPhase,
+       COALESCE(g.TenGiaiDoanTuyChinh,root.TenCongViec,N'Ngoài giai đoạn') AS TenPhase,
+       COALESCE(root.MaCongViec,N'—') AS MaPhase,
+       t.MaCongViec AS MaTask,t.TenCongViec AS TenTask,
+       t.NgayBatDau,t.NgayKetThuc,t.NgayHoanThanhThucTe,
+       ISNULL(t.ThoiHanNgay,0) AS ThoiHanNgay,ISNULL(u.DiemUuTien,1) AS DiemUuTien,
+       ISNULL(u.TenDoUuTien,N'Thấp') AS TenDoUuTien,
+       parent.MaCongViec AS MaTaskCha,parent.TenCongViec AS TenTaskCha,
+       t.TrangThai AS TrangThaiTask,t.LyDoTre
+FROM Project d
+LEFT JOIN MyTasks m ON m.IdDuAn=d.IdDuAn
+LEFT JOIN dbo.TblCongViec t ON t.IdCongViec=m.IdCongViec
+LEFT JOIN dbo.TblGiaiDoanDuAn g ON g.IdGiaiDoanDuAn=t.IdGiaiDoanDuAn
+LEFT JOIN dbo.TblCongViec root ON root.IdGiaiDoanDuAn=t.IdGiaiDoanDuAn AND root.IdDuAn=t.IdDuAn AND root.IdCongViecCha IS NULL
+LEFT JOIN dbo.TblCongViec parent ON parent.IdCongViec=t.IdCongViecCha
+LEFT JOIN dbo.TblDoUuTien u ON u.IdDoUuTien=t.IdDoUuTien
+ORDER BY t.IdGiaiDoanDuAn,t.MaCongViec";
+            QueryCommand cmd=new QueryCommand(sql,DataService.Provider.Name);
+            cmd.AddParameter("@EmpId",idNhanVien,DbType.Guid);
+            cmd.AddParameter("@ProjectId",idDuAn,DbType.Guid);
+            DataSet ds=DataService.GetDataSet(cmd);
+            return ds!=null&&ds.Tables.Count>0?ds.Tables[0]:new DataTable();
+        }
 
-                ;WITH MyProject AS (
-                    SELECT da.IdDuAn, da.MaDuAn, da.TenDuAn, da.TrangThai AS TrangThaiDuAn, da.NgayBatDau AS ProjectStartDate,
-                           ISNULL(da.NgayHoanThanhThucTe, da.NgayDuKienHoanThanh) AS ProjectEndDate, vt.TenVaiTro AS VaiTro
-                    FROM TblDuAn da
-                    INNER JOIN TblThanhVienDuAn tv ON tv.IdDuAn = da.IdDuAn
-                    INNER JOIN TblVaiTroDuAn vt ON vt.IdVaiTroDuAn = tv.IdVaiTroDuAn
-                    WHERE tv.IdNhanVien = @IdNhanVien AND tv.DaXoa = 0 AND da.DaXoa = 0 AND da.IdDuAn = @IdDuAn
-                ),
-                MyAssignedTasks AS (
-                    SELECT DISTINCT cv.IdDuAn, cv.IdGiaiDoanDuAn
-                    FROM TblCongViec_NhanVien cvnv
-                    INNER JOIN TblCongViec cv ON cvnv.IdCongViec = cv.IdCongViec
-                    WHERE cvnv.IdNhanVien = @IdNhanVien AND cv.IdDuAn = @IdDuAn AND cv.DaXoa = 0 AND cv.IdGiaiDoanDuAn IS NOT NULL AND cv.IdCongViecCha IS NOT NULL
-                      AND NOT EXISTS (SELECT 1 FROM TblCongViec child WHERE child.IdCongViecCha = cv.IdCongViec AND child.DaXoa = 0)
-                ),
-                RelevantPhases AS (
-                    SELECT DISTINCT IdDuAn, IdGiaiDoanDuAn FROM MyAssignedTasks
-                ),
-                AllLeafTasks AS (
-                    SELECT cv.IdDuAn, gd.IdGiaiDoanDuAn AS IdPhase, root.MaCongViec AS MaPhase,
-                           CASE WHEN NULLIF(LTRIM(RTRIM(gd.TenGiaiDoanTuyChinh)), N'') IS NOT NULL THEN gd.TenGiaiDoanTuyChinh ELSE root.TenCongViec END AS TenPhase,
-                           parent.MaCongViec AS MaTaskCha, parent.TenCongViec AS TenTaskCha,
-                           cv.IdCongViec AS IdTask, cv.MaCongViec AS MaTask, cv.TenCongViec AS TenTask,
-                           cv.NgayBatDau, cv.NgayKetThuc, cv.NgayHoanThanhThucTe, cv.ThoiHanNgay, cv.TrangThai AS TrangThaiTask, cv.LyDoTre,
-                           ISNULL(ut.DiemUuTien, 1) AS DiemUuTien, ISNULL(ut.TenDoUuTien, N'Thấp') AS TenDoUuTien, hsProject.HeSoDongGop AS HeSoDongGop
-                    FROM TblCongViec cv
-                    INNER JOIN RelevantPhases rp ON cv.IdDuAn = rp.IdDuAn AND cv.IdGiaiDoanDuAn = rp.IdGiaiDoanDuAn
-                    INNER JOIN MyProject mp ON mp.IdDuAn = cv.IdDuAn
-                    INNER JOIN TblGiaiDoanDuAn gd ON gd.IdGiaiDoanDuAn = cv.IdGiaiDoanDuAn AND gd.IdDuAn = cv.IdDuAn AND gd.DaXoa = 0  
-                    INNER JOIN TblCongViec root ON root.IdDuAn = cv.IdDuAn AND root.IdGiaiDoanDuAn = gd.IdGiaiDoanDuAn AND root.IdCongViecCha IS NULL AND root.DaXoa = 0
-                    LEFT JOIN TblCongViec parent ON cv.IdCongViecCha = parent.IdCongViec
-                    LEFT JOIN TblDoUuTien ut ON cv.IdDoUuTien = ut.IdDoUuTien
-                    LEFT JOIN TblHeSoDongGop hsProject ON hsProject.IdDuAn = cv.IdDuAn AND hsProject.IdDoUuTien = cv.IdDoUuTien AND hsProject.DaXoa = 0
-                    WHERE cv.IdDuAn = @IdDuAn AND cv.DaXoa = 0 AND cv.IdCongViecCha IS NOT NULL
-                      AND NOT EXISTS (SELECT 1 FROM TblCongViec child WHERE child.IdCongViecCha = cv.IdCongViec AND child.DaXoa = 0)
-                ),
-                TaskAssignees AS (
-                    SELECT a.IdCongViec, COUNT(a.IdNhanVien) AS AssigneeCount, MAX(CASE WHEN a.IdNhanVien = @IdNhanVien THEN 1 ELSE 0 END) AS IsMyTask
-                    FROM TblCongViec_NhanVien a
-                    INNER JOIN AllLeafTasks t ON a.IdCongViec = t.IdTask
-                    GROUP BY a.IdCongViec
-                )
-                SELECT mp.IdDuAn, mp.MaDuAn, mp.TenDuAn, mp.VaiTro, mp.TrangThaiDuAn, mp.ProjectStartDate, mp.ProjectEndDate,
-                       t.IdPhase, t.MaPhase, t.TenPhase, t.MaTaskCha, t.TenTaskCha, t.IdTask, t.MaTask, t.TenTask,
-                       t.NgayBatDau, t.NgayKetThuc, t.NgayHoanThanhThucTe, t.ThoiHanNgay, t.DiemUuTien, t.TenDoUuTien, t.TrangThaiTask, t.HeSoDongGop, t.LyDoTre,
-                       ISNULL(ta.AssigneeCount, 0) AS AssigneeCount, ISNULL(ta.IsMyTask, 0) AS IsMyTask
-                FROM MyProject mp
-                LEFT JOIN AllLeafTasks t ON mp.IdDuAn = t.IdDuAn
-                LEFT JOIN TaskAssignees ta ON t.IdTask = ta.IdCongViec
-                ORDER BY t.IdPhase, t.MaTask;";
-
-            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
-            cmd.AddParameter("@EmpId", idNhanVien, DbType.Guid);
-            cmd.AddParameter("@ProjectId", idDuAn, DbType.Guid);
-
-            DataSet ds = DataService.GetDataSet(cmd);
-            return (ds != null && ds.Tables.Count > 0) ? ds.Tables[0] : new DataTable();
+        /// <summary>
+        /// Một dòng cho mỗi người/công việc, bao gồm người đã bị gỡ phân công.
+        /// Giờ hệ thống chỉ lấy bảng KhoangTinh (KHÔNG tính lại từ thời gian mở phiên).
+        /// Sự kiện gần nhất quyết định trạng thái PM chốt; dữ liệu tự khai xét theo lượt hiện tại.
+        /// </summary>
+        public DataTable GetGioCongNhanVienV2Data(Guid idNhanVien,Guid? idDuAn)
+        {
+            const string sql=@"
+;WITH DuAnScope AS (
+ SELECT d.IdDuAn FROM dbo.TblDuAn d WHERE ISNULL(d.DaXoa,0)=0
+ AND (@ProjectId IS NULL OR d.IdDuAn=@ProjectId)
+ AND (EXISTS(SELECT 1 FROM dbo.TblThanhVienDuAn v WHERE v.IdDuAn=d.IdDuAn AND v.IdNhanVien=@EmpId)
+ OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p WHERE p.IdDuAn=d.IdDuAn AND p.IdNhanVien=@EmpId)
+ OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat s WHERE s.IdDuAn=d.IdDuAn AND s.IdNhanVien=@EmpId)
+ OR EXISTS(SELECT 1 FROM dbo.TblCongViec t JOIN dbo.TblCongViec_NhanVien a ON a.IdCongViec=t.IdCongViec
+           WHERE t.IdDuAn=d.IdDuAn AND a.IdNhanVien=@EmpId))
+), Tasks AS (
+ SELECT t.IdDuAn,t.IdCongViec,t.IdGiaiDoanDuAn,t.TrangThai,t.LanThucHien,t.DaXoa
+ FROM dbo.TblCongViec t INNER JOIN DuAnScope d ON d.IdDuAn=t.IdDuAn
+ WHERE ISNULL(t.DaXoa,0)=0 OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p WHERE p.IdDuAn=t.IdDuAn AND p.IdCongViec=t.IdCongViec)
+  OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat s WHERE s.IdDuAn=t.IdDuAn AND s.IdCongViec=t.IdCongViec)
+), People AS (
+ SELECT t.IdDuAn,t.IdCongViec,a.IdNhanVien FROM Tasks t JOIN dbo.TblCongViec_NhanVien a ON a.IdCongViec=t.IdCongViec
+ UNION
+ SELECT p.IdDuAn,p.IdCongViec,p.IdNhanVien FROM dbo.TblKhaiBaoGioPhien p JOIN Tasks t ON t.IdDuAn=p.IdDuAn AND t.IdCongViec=p.IdCongViec
+ UNION
+ SELECT s.IdDuAn,s.IdCongViec,s.IdNhanVien FROM dbo.TblKhaiBaoGioDoiSoat s JOIN Tasks t ON t.IdDuAn=s.IdDuAn AND t.IdCongViec=s.IdCongViec
+ WHERE s.LoaiSuKien IN(0,1,2,3,5)
+), TimeByPerson AS (
+ SELECT p.IdDuAn,p.IdCongViec,p.IdNhanVien,
+ SUM(CASE WHEN p.LoaiGio=1 THEN CAST(k.SoGiay AS bigint) ELSE CAST(0 AS bigint) END) AS Thuong,
+ SUM(CASE WHEN p.LoaiGio=2 THEN CAST(k.SoGiay AS bigint) ELSE CAST(0 AS bigint) END) AS TangCa,
+ MAX(CASE WHEN p.KetThucLuc IS NULL THEN 1 ELSE 0 END) AS DangMo
+ FROM dbo.TblKhaiBaoGioPhien p JOIN Tasks t ON t.IdDuAn=p.IdDuAn AND t.IdCongViec=p.IdCongViec
+ LEFT JOIN dbo.TblKhaiBaoGioKhoangTinh k ON k.IdPhien=p.IdPhien
+ GROUP BY p.IdDuAn,p.IdCongViec,p.IdNhanVien
+), LastEvent AS (
+ SELECT s.IdDuAn,s.IdCongViec,s.IdNhanVien,s.LoaiSuKien,s.IdPmChot,
+ s.SoPhutThuongPmChot,s.SoPhutTangCaPmChot,s.LanThucHien,
+ ROW_NUMBER() OVER(PARTITION BY s.IdDuAn,s.IdCongViec,s.IdNhanVien
+ ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) AS rn
+ FROM dbo.TblKhaiBaoGioDoiSoat s JOIN Tasks t ON t.IdDuAn=s.IdDuAn AND t.IdCongViec=s.IdCongViec
+), LastReport AS (
+ SELECT s.IdDuAn,s.IdCongViec,s.IdNhanVien,s.LoaiSuKien,s.SoPhutThuongTuKhai,s.SoPhutTangCaTuKhai,s.LanThucHien,
+ ROW_NUMBER() OVER(PARTITION BY s.IdDuAn,s.IdCongViec,s.IdNhanVien
+ ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC,s.IdDoiSoat DESC) rn
+ FROM dbo.TblKhaiBaoGioDoiSoat s JOIN Tasks t ON t.IdDuAn=s.IdDuAn AND t.IdCongViec=s.IdCongViec
+ WHERE s.LoaiSuKien IN(1,2,3,5)
+)
+SELECT t.IdDuAn,t.IdCongViec,t.IdGiaiDoanDuAn,t.TrangThai AS TrangThaiTask,
+       p.IdNhanVien,ISNULL(x.Thuong,0) AS GiayThuong,ISNULL(x.TangCa,0) AS GiayTangCa,
+       ISNULL(x.DangMo,0) AS CoPhienDangMo,
+       CASE WHEN x.IdNhanVien IS NOT NULL THEN 1 ELSE 0 END AS CoPhien,
+       CASE WHEN r.LanThucHien=t.LanThucHien AND r.LoaiSuKien IN(1,3,5) THEN r.SoPhutThuongTuKhai END AS PhutThuongTuKhai,
+       CASE WHEN r.LanThucHien=t.LanThucHien AND r.LoaiSuKien IN(1,3,5) THEN r.SoPhutTangCaTuKhai END AS PhutTangCaTuKhai,
+       CASE WHEN e.LoaiSuKien=4 AND e.IdPmChot IS NOT NULL AND e.LanThucHien=t.LanThucHien
+           AND e.SoPhutThuongPmChot>=0 AND e.SoPhutTangCaPmChot>=0
+           THEN e.SoPhutThuongPmChot END AS PhutThuongPmChot,
+       CASE WHEN e.LoaiSuKien=4 AND e.IdPmChot IS NOT NULL AND e.LanThucHien=t.LanThucHien
+           AND e.SoPhutThuongPmChot>=0 AND e.SoPhutTangCaPmChot>=0
+           THEN e.SoPhutTangCaPmChot END AS PhutTangCaPmChot,
+       CASE WHEN e.LoaiSuKien=4 AND e.IdPmChot IS NOT NULL AND e.LanThucHien=t.LanThucHien
+           AND e.SoPhutThuongPmChot>=0 AND e.SoPhutTangCaPmChot>=0 THEN 1 ELSE 0 END AS DaPmChot,
+       CASE WHEN EXISTS (SELECT 1 FROM LastEvent outsideEvent WHERE outsideEvent.IdDuAn=t.IdDuAn
+           AND outsideEvent.IdCongViec=t.IdCongViec AND outsideEvent.rn=1 AND outsideEvent.LoaiSuKien=4
+           AND NOT EXISTS(SELECT 1 FROM People authorized WHERE authorized.IdDuAn=t.IdDuAn
+                 AND authorized.IdCongViec=t.IdCongViec AND authorized.IdNhanVien=outsideEvent.IdNhanVien))
+           THEN 1 ELSE 0 END AS CoPmChotNgoaiDanhSach
+FROM People p JOIN Tasks t ON t.IdDuAn=p.IdDuAn AND t.IdCongViec=p.IdCongViec
+LEFT JOIN TimeByPerson x ON x.IdDuAn=p.IdDuAn AND x.IdCongViec=p.IdCongViec AND x.IdNhanVien=p.IdNhanVien
+LEFT JOIN LastEvent e ON e.IdDuAn=p.IdDuAn AND e.IdCongViec=p.IdCongViec AND e.IdNhanVien=p.IdNhanVien AND e.rn=1
+LEFT JOIN LastReport r ON r.IdDuAn=p.IdDuAn AND r.IdCongViec=p.IdCongViec AND r.IdNhanVien=p.IdNhanVien AND r.rn=1
+ORDER BY t.IdDuAn,t.IdCongViec,p.IdNhanVien";
+            QueryCommand cmd=new QueryCommand(sql,DataService.Provider.Name);
+            cmd.AddParameter("@EmpId",idNhanVien,DbType.Guid);
+            cmd.AddParameter("@ProjectId",idDuAn.HasValue?(object)idDuAn.Value:DBNull.Value,DbType.Guid);
+            DataSet ds=DataService.GetDataSet(cmd);
+            return ds!=null&&ds.Tables.Count>0?ds.Tables[0]:new DataTable();
         }
 
         public int CountDuAnCuaNhanVien(Guid idNhanVien)
         {
-            const string sql = @"
-                SELECT COUNT(DISTINCT da.IdDuAn)
-                FROM TblDuAn da
-                INNER JOIN TblThanhVienDuAn tv ON da.IdDuAn = tv.IdDuAn
-                WHERE tv.IdNhanVien = @EmpId AND tv.DaXoa = 0 AND da.DaXoa = 0;";
-
-            QueryCommand cmd = new QueryCommand(sql, DataService.Provider.Name);
-            cmd.AddParameter("@EmpId", idNhanVien, DbType.Guid);
-
-            object result = DataService.ExecuteScalar(cmd);
-            if (result == null || result == DBNull.Value) return 0;
-            return Convert.ToInt32(result);
+            DataTable dt=GetDanhSachDuAnCuaNhanVienData(idNhanVien,null,null);
+            return dt.Rows.Count;
         }
+
         public TblThanhVienDuAn Update(TblThanhVienDuAn thanhVienDuAn, string description = null)
         {
             Guid id = Guid.Parse(thanhVienDuAn.GetColumnValue("IdThanhVienDuAn").ToString());

@@ -61,11 +61,11 @@
             window.toastr[severity](text);
         else if(window.console)window.console.warn('KBG20:',text);
     }
-    function apiFailure(message,status) {var e=new Error(message||'Lỗi API.');e.status=status||0;return e;}
+    function apiFailure(message,status) {var e=new Error(message||'Không kết nối được với dịch vụ giờ công.');e.status=status||0;return e;}
     function getJson(response) {
         var contentType=response.headers.get('content-type')||'';
         if(contentType.toLowerCase().indexOf('application/json')<0)
-            return Promise.reject(apiFailure('Máy chủ trả về trang lỗi thay vì JSON (HTTP '+response.status+').',response.status));
+            return Promise.reject(apiFailure('Máy chủ chưa cung cấp dữ liệu giờ công (HTTP '+response.status+'). Vui lòng liên hệ quản trị viên nếu lỗi tiếp diễn.',response.status));
         return response.json().then(function(obj){
             if(!response.ok||obj.ok===false)throw apiFailure(obj.error||obj.message||('HTTP '+response.status),response.status);
             return obj;
@@ -101,7 +101,7 @@
             var content=document.getElementById('kbg20StartWarningText');
             var yes=document.getElementById('kbg20StartWarningYes');
             var no=document.getElementById('kbg20StartWarningNo');
-            if(!content||!yes||!no){warningBusy=false;notify('Thiếu ExtraModal xác nhận. Đã hủy thao tác.','error');resolve(false);return;}
+            if(!content||!yes||!no){warningBusy=false;notify('Không mở được hộp thoại xác nhận. Thao tác chưa được thực hiện; vui lòng tải lại trang.','error');resolve(false);return;}
             content.textContent=message||'Bạn có chắc chắn muốn thực hiện?';
             var decided=false;
             function finish(value){if(decided)return;decided=true;warningBusy=false;
@@ -373,6 +373,7 @@
         else if(timer){
             sub.textContent=timer.counting?(regular?'Đang tính giờ làm theo lịch':'Đang tính giờ tăng ca'):'Đang mở · '+idleClockStatus(type);
             sub.setAttribute('data-timer-status',timer.id);
+
         } else sub.textContent=(regular?task.startedRegular:task.startedOvertime)||Number(regular?task.regular:task.overtime)>0
             ?'Tổng thời gian đã ghi':'Chưa ghi '+(regular?'giờ làm theo lịch':'giờ tăng ca');
         if (!timer && isUpcoming) {
@@ -426,6 +427,49 @@
         else if(status===2)row(cell,node('span','kbg20-dot2-personal is-withdrawn','Đã rút báo hoàn thành'));
         else row(cell,node('span','kbg20-dot2-personal is-not-reported','Chưa báo hoàn thành'));
     }
+    function nguonStart(phien){
+        if(!phien)return null;
+        var source=Number(phien.source);
+        if(source===2){
+            var task=phien.triggerTaskCode?('['+phien.triggerTaskCode+'] '+(phien.triggerTaskName||'')):'công việc con (chưa có thông tin)';
+            var actor=phien.triggerActor||'người kích hoạt chưa xác định';
+            return {title:'Tự động',detail:'Tự động bắt đầu khi '+actor+' bắt đầu '+task+'.'};
+        }
+        if(source===1)return {title:'Thủ công',detail:'Phiên đồng hồ này được bắt đầu bằng thao tác thủ công của nhân viên.'};
+        return null;
+    }
+    // Tooltip noi bo: chung cho nguon Start va badge lam som, khong dung title mac dinh.
+    var kbgTip=null,kbgTipTarget=null;
+    function hideKbgTip(){if(kbgTip)kbgTip.hidden=true;kbgTipTarget=null;}
+    function positionKbgTip(){
+        if(!kbgTip||!kbgTipTarget||kbgTip.hidden)return;
+        var r=kbgTipTarget.getBoundingClientRect(),w=kbgTip.offsetWidth,h=kbgTip.offsetHeight;
+        var left=Math.min(Math.max(10,r.left+(r.width-w)/2),Math.max(10,window.innerWidth-w-10));
+        var up=r.top>=h+12,top=up?r.top-h-8:r.bottom+8;
+        if(!up&&top+h>window.innerHeight-8)top=Math.max(8,window.innerHeight-h-8);
+        kbgTip.style.left=Math.round(left)+'px';kbgTip.style.top=Math.round(top)+'px';
+    }
+    function showKbgTip(target,heading,detail){
+        if(!kbgTip){kbgTip=node('div','kbg20-ux-smart-tooltip');kbgTip.hidden=true;document.body.appendChild(kbgTip);}
+        kbgTip.textContent='';row(kbgTip,node('strong','',heading));row(kbgTip,node('p','',detail));
+        kbgTipTarget=target;kbgTip.hidden=false;positionKbgTip();
+    }
+    window.addEventListener('scroll',positionKbgTip,true);
+    window.addEventListener('resize',positionKbgTip);
+    function ganTooltipNho(el,heading,detail){
+        if(!el||!detail)return;
+        el.removeAttribute('title');el.setAttribute('tabindex','0');
+        el.setAttribute('aria-label',heading+'. '+detail);
+        el.addEventListener('mouseenter',function(){showKbgTip(el,heading,detail);});
+        el.addEventListener('mouseleave',function(){if(kbgTipTarget===el)hideKbgTip();});
+        el.addEventListener('focus',function(){showKbgTip(el,heading,detail);});
+        el.addEventListener('blur',function(){if(kbgTipTarget===el)hideKbgTip();});
+    }
+    function ganNhanNguon(host,phien,loai){
+        var src=nguonStart(phien);if(!src)return;
+        var badge=row(host,node('span','kbg20-v41-source-badge'+(Number(phien.source)===2?' is-auto':' is-manual'),src.title));
+        ganTooltipNho(badge,'Nguồn bắt đầu · '+(loai||'Phiên giờ')+' · '+src.title,src.detail);
+    }
     function renderTaskRow(task,isUpcoming){
         var t=timerOf(task.id,1),ot=timerOf(task.id,2);
         var item=node('article','kbg20-v41-task-row kbg20-v41-taskgrid'+
@@ -436,8 +480,9 @@
         row(name,node('strong','kbg20-v41-taskcode',task.code||'CV'));
         row(name,node('strong','kbg20-v41-tasktext',task.name||'Chưa đặt tên công việc'));
         if(task.isEarly){
-            var early=row(name,node('span','kbg20-d6-badge is-early','Bắt đầu sớm'));
-            early.title=earlyStartTooltip(task);
+            var early=row(name,node('span','kbg20-d6-badge is-early'+(task.earlyInferred?' is-inferred':''),
+                task.earlyInferred?'Bắt đầu sớm?':'Bắt đầu sớm'));
+            ganTooltipNho(early,task.earlyInferred?'Có dấu hiệu bắt đầu sớm':'Bắt đầu sớm',earlyStartTooltip(task));
         } else if(state.earlyStart && state.earlyStart.allowed && task.startDay &&
                   state.workCalendar && task.startDay>state.workCalendar.day &&
                   task.status===0){
@@ -448,7 +493,19 @@
         else if(isUpcoming)meta='Theo kế hoạch · chưa đến ngày bắt đầu';
         else if(task.assigned)meta='Công việc được phân công cho bạn';
         else meta='Đồng hồ đang mở từ dữ liệu trước';
-        row(identity,node('small','kbg20-v41-task-note',meta));
+        var metaLine=row(identity,node('div','kbg20-v41-identity-meta'));
+        row(metaLine,node('small','kbg20-v41-task-note',meta));
+        // Nguon Start la thong tin cua PHIEN, thuoc cot Cong viec, khong dat vao cot dong ho.
+        if(t)ganNhanNguon(metaLine,t,'Giờ làm theo lịch');
+        if(ot)ganNhanNguon(metaLine,ot,'Giờ tăng ca');
+        // IdCongViec bat bien, khac MaCongViec/TenCongViec co the doi do reindex/edit.
+        // Khong fallback theo code/name khi response cu thieu taskId: tranh gan nham nguon.
+        var last=(state.history||[]).filter(function(p){return p.id&&p.taskId===task.id;})
+           .sort(function(a,b){return Number(b.started||0)-Number(a.started||0);})[0];
+        if(!t&&!ot&&last){var tag=nguonStart(last);if(tag){
+            var line=row(metaLine,node('small','kbg20-v41-source-history', 'Lần gần nhất: '+tag.title.toLowerCase()));
+            ganTooltipNho(line,'Nguồn bắt đầu lần gần nhất',tag.detail);
+        }}
         taskCell(item,'kbg20-v41-date','Ngày bắt đầu',task.start||'—');
         var duration=task.durationDays==null?'—':String(task.durationDays)+' ngày';
         taskCell(item,'kbg20-v41-duration','Thời hạn',duration);
@@ -482,6 +539,7 @@
         return item;
     }
     function renderTasks() {
+        hideKbgTip();
         tasksEl.textContent='';
         var tasks=getAllTasks();
         var tabs=document.querySelectorAll('#kbg20TaskFilters [data-task-filter]');
@@ -555,13 +613,18 @@
     function earlyStartTooltip(item){
         var when=item.earlyStarted?new Date(Number(item.earlyStarted)).toLocaleString('vi-VN',
             {timeZone:'Asia/Ho_Chi_Minh',hour12:false}):'không xác định';
-        return 'Bắt đầu sớm lúc '+when+' · Kế hoạch tại thời điểm Start: '+
-            (item.earlyPlan||'không xác định')+' · '+
-            (Number(item.earlyType)===2?'Giờ tăng ca':'Giờ làm theo lịch');
+        return 'Thời điểm bắt đầu: '+when+'. '+
+            (item.earlyInferred?'Dữ liệu cũ không có ảnh chụp ngày kế hoạch tại lúc bắt đầu; so sánh với kế hoạch hiện tại ('+
+                (item.earlyPlan||'không xác định')+'), nên đây chỉ là dấu hiệu tham khảo.':
+                'Ngày kế hoạch được lưu tại thời điểm bắt đầu: '+(item.earlyPlan||'không xác định')+'.')+
+            ' Loại phiên: '+(Number(item.earlyType)===2?'Giờ tăng ca.':'Giờ làm theo lịch.');
     }
     function historyBadgeItems(h){
         var items=[];
-        if(h.isEarly)items.push({text:'Bắt đầu sớm',type:'early',title:earlyStartTooltip(h)});
+        if(h.isEarly)items.push({text:h.earlyInferred?'Bắt đầu sớm?':'Bắt đầu sớm',type:h.earlyInferred?'early is-inferred':'early',title:earlyStartTooltip(h)});
+        var startModes=(h.startSources||[]),hasAuto=startModes.some(function(x){return Number(x.source)===2;}),hasManual=startModes.some(function(x){return Number(x.source)===1;});
+        if(hasAuto)items.push({text:'Tự động',type:'source-auto',title:startModes.filter(function(x){return Number(x.source)===2;}).map(function(x){return nguonStart(x).detail;}).join(' · ')});
+        if(hasManual)items.push({text:'Thủ công',type:'source-manual',title:'Có phiên được nhân viên trực tiếp bắt đầu trong ngày này.'});
         if(h.isOverdue)items.push({text:'Quá hạn',type:'overdue'});
         var ps=Number(h.personalStatus)||0;
         if(ps===1||ps===3||ps===5)items.push({text:'Đã báo hoàn thành',type:'reported'});
@@ -597,7 +660,7 @@
                 var wraps=row(name,node('span','kbg20-d6-badges'));
                 badges.forEach(function(flag){
                     var badge=row(wraps,node('span','kbg20-d6-badge is-'+flag.type,flag.text));
-                    if(flag.title)badge.title=flag.title;
+                    if(flag.title)ganTooltipNho(badge,flag.text,flag.title);
                 });
             }
             ['regular','overtime','total'].forEach(function(k){
@@ -635,11 +698,12 @@
             data.items.forEach(function(x,i){
                 var item=row(table,node('section','kbg20-ux-session-item'));
                 var head=row(item,node('div','kbg20-ux-session-head'));
-                row(head,node('strong','',String(i+1)+'. '+(Number(x.type)===2?'Giờ tăng ca':'Giờ hành chính')));
+                row(head,node('strong','',String(i+1)+'. '+(Number(x.type)===2?'Giờ tăng ca':'Giờ làm theo lịch')));
                 row(head,node('span','',x.ended==null?'Phiên đang mở':'Đã kết thúc'));
                 var grid=row(item,node('div','kbg20-ux-session-grid'));
                 function field(name,value){var f=row(grid,node('div',''));row(f,node('small','',name));row(f,node('strong','',value));}
                 field('Bắt đầu',localTime(x.started));
+                var origin=nguonStart(x);if(origin){field('Nguồn bắt đầu',origin.title);var explain=row(item,node('p','kbg20-v41-source-description',origin.detail));explain.title=origin.detail;}
                 field('Kết thúc',x.ended==null?'Chưa kết thúc':localTime(x.ended));
                 field('Đã kết toán trong ngày',clock(x.committedSeconds));
             });
@@ -738,13 +802,18 @@
                 if (viewMode === 'history' && !historyLoading) refreshHistory();
                 notify('', '');
             }).catch(function (err) {
-                if(!redirectAccessFailure(err))notify(err.message || 'Lỗi kết nối.', 'error');
+                if(!redirectAccessFailure(err))notify(err.message || 'Không tải được dữ liệu giờ công. Vui lòng kiểm tra kết nối rồi thử lại.', 'error');
             })
             .then(function(){
                 loading = false;
                 // Khi nhan workflow/thao tac xong trong luc polling, thuc hien refresh tiep.
                 // Chi cho 1 request tai mot thoi diem, khong bo yeu cau va khong spin retry.
                 if (refreshPending && !acting) refresh(true);
+                else if (pendingParallelStart && !acting && !parallelChoiceBusy) {
+                    // Click Start while 30s polling is fetching: defer once instead of a misleading warning.
+                    var next=pendingParallelStart;pendingParallelStart=null;
+                    checkOtherTimersAndStart(next.taskId,next.onProceed,next.action);
+                }
             });
     }
     // Called only after partner Ctrl Start/Complete/Review has saved successfully,
@@ -792,8 +861,8 @@
                         return confirmAction('Cảnh báo công việc phụ thuộc',res.message||'Công việc phụ thuộc chưa hoàn thành. Tiếp tục?')
                             .then(function(yes){if(!yes)return false;flags.confirmDependency=true;return perform();});
                     }
-                    notify((res.message || 'Đã xử lý.') + (res.warnings && res.warnings.length ?
-                        ' ' + res.warnings.join(' ') : ''),res.ok?'ok':'error');
+                    notify((res.message || 'Thao tác đã hoàn tất.') + (res.warnings && res.warnings.length ?
+                        ' Lưu ý: ' + res.warnings.join(' ') : ''),res.ok?'ok':'error');
                     if (res.ok) {
                         if(window.KbgFloatingTimer) window.KbgFloatingTimer.notifyChanged();
                         return true;
@@ -804,14 +873,32 @@
             acting=false;
             if (ok === true || refreshPending) refresh(true); else refreshUi();
         }).catch(function(err){
-            acting=false;notify(err.message || 'Thao tác thất bại.','error');
+            acting=false;notify(err.message || 'Không thực hiện được thao tác. Vui lòng thử lại.','error');
             if(refreshPending)refresh(true);else refreshUi();
         });
     }
     // Dot 8: preview tai server + Stop/Start CUNG 1 transaction. KHONG STOP voi fetch rieng.
-    var parallelChoiceBusy=false;
+    // Stop a single existing manual leaf session is a separate, explicitly requested action.
+    var parallelChoiceBusy=false,parallelTransferInFlight=false,pendingParallelStart=null;
+    var parallelModal=document.getElementById('mdlKbg20Parallel');
+    function onParallelModalHidden(){
+        // ExtraModal's header X, backdrop and Escape must release the UI lock too.
+        if(parallelTransferInFlight)return;
+        parallelChoiceBusy=false;
+        if(refreshPending && !acting)refresh(true);
+    }
+    if(parallelModal){
+        parallelModal.addEventListener('hidden.bs.modal',onParallelModalHidden);
+        var modalJq=window.jQuery||window.$;
+        if(modalJq&&modalJq.fn&&modalJq.fn.modal)
+            modalJq(parallelModal).off('hidden.bs.modal.kbg20ParallelReset')
+                .on('hidden.bs.modal.kbg20ParallelReset',onParallelModalHidden);
+    }
     function checkOtherTimersAndStart(taskId,onProceed,action){
-        if(parallelChoiceBusy||acting||loading){notify('Đang đồng bộ đồng hồ. Vui lòng thử lại sau.','warning');return;}
+        if(loading && !parallelChoiceBusy && !acting){
+            pendingParallelStart={taskId:taskId,onProceed:onProceed,action:action};return;
+        }
+        if(parallelChoiceBusy||acting){notify('Một thao tác đồng hồ đang được xử lý. Vui lòng hoàn tất thao tác hiện tại.','warning');return;}
         parallelChoiceBusy=true;
         var rootUrl=root.getAttribute('data-kbg20-floating-url')||'/fKhaiBaoGio/FloatingWorkTimer.ashx';
         Promise.all([
@@ -819,47 +906,87 @@
            window.fetch(url+'?view=switch-preview&projectId='+encodeURIComponent(fixedProjectId)+'&taskId='+encodeURIComponent(taskId),
              {credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}}).then(getJson)
         ]).then(function(pair){
-            var info=pair[0],eligibleIds=pair[1].eligibleIds||[];
-            var allow=new Set(eligibleIds.map(function(x){return String(x).toLowerCase();}));
-            var others=(info.timers||[]).filter(function(x){return x.taskId!==taskId;});
+            var info=pair[0],eligibleIds=(pair[1].eligibleIds||[]).map(function(x){return String(x).toLowerCase();});
+            var allow=new Set(eligibleIds);
+            var others=(info.timers||[]).filter(function(x){return String(x.taskId||'').toLowerCase()!==String(taskId).toLowerCase();});
             if(!others.length){parallelChoiceBusy=false;onProceed();return;}
-            var allowed=others.filter(function(x){return allow.has(String(x.id).toLowerCase());});
-            var protectedTimers=others.filter(function(x){return !allow.has(String(x.id).toLowerCase());});
+            var allowed=others.filter(function(x){return allow.has(String(x.id||'').toLowerCase());});
+            // Never stop a server-authorized timer which was missing from the displayed list.
+            // E.g. a stale floating widget response must fail safely, not silently stop an invisible timer.
+            if(allowed.length!==allow.size)throw new Error('Danh sách đồng hồ vừa thay đổi. Vui lòng tải lại trước khi chọn dừng.');
+            // Chi mo popup neu co dong ho thuc su duoc phep chon dung.
+            // Dong ho Task cha duoc bao ve van chay; khong can buoc xac nhan lua chon rong.
+            if(allowed.length===0){parallelChoiceBusy=false;onProceed();return;}
+            var protectedTimers=others.filter(function(x){return !allow.has(String(x.id||'').toLowerCase());});
             var place=document.getElementById('kbg20ParallelTasks');
-            if(!place)throw new Error('Thiếu ExtraModal đồng hồ song song.');
-            place.textContent='';
-            function renderGroup(title,timers,cls){
-                var header=row(place,node('strong','kbg20-ux-parallel-heading '+cls,title));
-                if(!timers.length)row(place,node('div','kbg20-ux-muted','Không có phiên.'));
-                timers.forEach(function(t){var cell=row(place,node('div','kbg20-ux-parallel-item '+cls));
-                    row(cell,node('strong','', '['+(t.code||'CV')+'] '+(t.name||'Công việc')));
-                    row(cell,node('small','',(t.projectName||'Dự án')+' · '+(Number(t.type)===2?'Tăng ca':'Giờ làm theo lịch')+
-                      ' · '+(t.counting?'Đang cộng giờ':'Phiên đang mở')));
-                });
-            }
-            renderGroup('Sẽ dừng (chỉ phiên thủ công của Task lá)',allowed,'can-stop');
-            renderGroup('Luôn giữ nguyên (Task cha/phiên tự động hoặc không phù hợp)',protectedTimers,'keep');
             var keep=document.getElementById('kbg20ParallelKeep');
             var stop=document.getElementById('kbg20ParallelStop');
-            var cancel=document.getElementById('kbg20ParallelCancel');
-            var task=(state.tasks||[]).find(function(x){return x.id===taskId;});
-            var canAtomic=task&&Number(task.status)===1 && allowed.length>0 && allowed.length===eligibleIds.length;
-            stop.disabled=!canAtomic;
-            stop.title=canAtomic?'Dừng đúng phiên được liệt kê và Start trong một giao dịch':'Chỉ có thể Dừng cũ + Start khi Task mới đang thực hiện và có phiên Task lá thủ công.';
+            var guide=document.getElementById('kbg20ParallelGuide');
+            var summary=document.getElementById('kbg20ParallelSummary');
+            if(!place||!keep||!stop||!summary)throw new Error('Không mở được popup quản lý đồng hồ. Vui lòng tải lại trang.');
+            place.textContent='';
+            var selectedStop=new Set();
+            function renderGroup(title,timers,cls){
+                if(!timers.length)return;
+                row(place,node('strong','kbg20-ux-parallel-heading '+cls,title));
+                timers.forEach(function(t){
+                    var cell=row(place,node('div','kbg20-ux-parallel-item '+cls));
+                    var titleText='['+(t.code||'CV')+'] '+(t.name||'Công việc');
+                    if(cls==='can-stop'&&t.id&&allow.has(String(t.id).toLowerCase())){
+                        var label=row(cell,node('label','kbg20-parallel-choice'));
+                        var checkbox=document.createElement('input');checkbox.type='checkbox';
+                        checkbox.value=String(t.id).toLowerCase();checkbox.setAttribute('aria-label','Dừng '+titleText);
+                        label.appendChild(checkbox);
+                        var main=row(label,node('span','kbg20-parallel-choice-content'));
+                        row(main,node('strong','',titleText));
+                        row(main,node('small','',(t.projectName||'Dự án')+' · '+(Number(t.type)===2?'Giờ tăng ca':'Giờ làm theo lịch')+
+                            ' · '+(t.counting?'Đang tính giờ':'Phiên vẫn đang mở')));
+                        checkbox.onchange=function(){
+                            if(checkbox.checked)selectedStop.add(checkbox.value);else selectedStop.delete(checkbox.value);
+                            updateSummary();
+                        };
+                    }else{
+                        row(cell,node('strong','',titleText));
+                        row(cell,node('small','',(t.projectName||'Dự án')+' · '+(Number(t.type)===2?'Giờ tăng ca':'Giờ làm theo lịch')+
+                            ' · Hệ thống tiếp tục theo dõi, không dừng từ popup này'));
+                    }
+                });
+            }
+            renderGroup('Các đồng hồ có thể dừng: tích chọn để dừng',allowed,'can-stop');
+            renderGroup('Đồng hồ được bảo vệ — luôn tiếp tục chạy',protectedTimers,'keep');
+            var task=(state.tasks||[]).find(function(x){return String(x.id||'').toLowerCase()===String(taskId).toLowerCase();});
+            var taskIsNew=task&&Number(task.status)===0;
+            var taskIsRunning=task&&Number(task.status)===1;
+            if(!taskIsNew&&!taskIsRunning)throw new Error('Trạng thái công việc đã thay đổi. Vui lòng tải lại trang.');
+            if(guide)guide.textContent=(taskIsNew?'Công việc mới chưa bắt đầu: sau khi chọn, hệ thống sẽ mở bước xác nhận bắt đầu công việc. ':
+                'Công việc đang thực hiện: hệ thống sẽ chuyển đồng hồ trong cùng giao dịch. ')+
+                'Chỉ những đồng hồ bạn được phép dừng mới có ô chọn. Dừng đồng hồ không có nghĩa là hoàn thành công việc.';
+            function updateSummary(){
+                var count=selectedStop.size,kept=allowed.length-count;
+                summary.textContent='Đã chọn dừng '+count+' đồng hồ · Giữ '+(kept+protectedTimers.length)+
+                    ' đồng hồ · Công việc mới sẽ bắt đầu tính giờ.';
+                keep.textContent=count?'Dừng '+count+' và chạy song song với phần còn lại':'Chạy song song (giữ các đồng hồ cũ)';
+                stop.disabled=allowed.length===0;
+                stop.title=allowed.length?'Dừng tất cả '+allowed.length+' đồng hồ được phép rồi bắt đầu Task mới':'Không có đồng hồ thủ công nào được phép dừng';
+            }
+            updateSummary();
             function close(){parallelChoiceBusy=false;closeExtraModal('mdlKbg20Parallel');}
-            cancel.onclick=close;
-            keep.onclick=function(){close();onProceed();};
-            stop.onclick=function(){
-                if(!canAtomic)return;
-                keep.disabled=true;stop.disabled=true;cancel.disabled=true;
+            function performSwitch(stopIds){
+                if(acting||loading||parallelTransferInFlight){notify('Một thao tác đồng hồ đang được xử lý. Vui lòng thử lại.','warning');return;}
+                if(stopIds.length===0){close();onProceed();return;}
+                // Task 0 must run its genuine TaskList/partner Start workflow; stopping before it
+                // as independent POSTs would leave old clocks stopped if workflow is cancelled.
+                if(taskIsNew){close();onProceed({stopIds:stopIds,eligibleIds:eligibleIds});return;}
+                keep.disabled=true;stop.disabled=true;parallelTransferInFlight=true;
                 var requestId;
-                try{requestId=guid();}catch(e){close();notify(e.message,'error');return;}
+                try{requestId=guid();}catch(e){parallelTransferInFlight=false;close();notify(e.message,'error');return;}
                 var flags={overdue:false,dependency:false};
                 function perform(){
                     var body=new URLSearchParams();body.set('action','switchStart');
                     body.set('projectId',fixedProjectId);body.set('taskId',taskId);
                     body.set('requestId',requestId);body.set('hourType',action==='overtime'?'2':'1');
-                    body.set('stopSessionIds',eligibleIds.join(','));
+                    body.set('stopSessionIds',stopIds.join(','));
+                    body.set('expectedSessionIds',eligibleIds.join(','));
                     body.set('confirmOverdue',String(flags.overdue));
                     body.set('confirmDependency',String(flags.dependency));
                     return window.fetch(url,{method:'POST',credentials:'same-origin',cache:'no-store',
@@ -874,20 +1001,21 @@
                         return true;
                     });
                 }
-                // Phải đóng modal trước khi mở modal cảnh báo phụ thuộc/quá hạn.
                 closeExtraModal('mdlKbg20Parallel');
-                perform().then(function(ok){parallelChoiceBusy=false;
-                    if(ok){notify('Đã dừng các phiên thủ công được chọn và Start Task mới.','ok');
+                perform().then(function(ok){parallelTransferInFlight=false;parallelChoiceBusy=false;
+                    if(ok){notify('Đã cập nhật các đồng hồ và bắt đầu công việc mới.','ok');
                         if(window.KbgFloatingTimer)window.KbgFloatingTimer.notifyChanged();refresh(true);}
-                    else notify('Đã hủy chuyển đồng hồ; không thay đổi dữ liệu.','info');
-                }).catch(function(e){parallelChoiceBusy=false;
-                    if(!redirectAccessFailure(e))notify('Không chuyển được đồng hồ: '+e.message,'error');refresh(true);
-                }).then(function(){keep.disabled=false;stop.disabled=false;cancel.disabled=false;});
-            };
-            try{openExtraModal('mdlKbg20Parallel','Xác nhận khi chạy nhiều công việc');}
+                    else notify('Đã hủy chuyển đồng hồ. Các phiên đang chạy không thay đổi.','info');
+                }).catch(function(e){parallelTransferInFlight=false;parallelChoiceBusy=false;
+                    if(!redirectAccessFailure(e))notify('Không thể chuyển đồng hồ: '+e.message,'error');refresh(true);
+                }).then(function(){keep.disabled=false;stop.disabled=allowed.length===0;});
+            }
+            keep.onclick=function(){performSwitch(Array.from(selectedStop));};
+            stop.onclick=function(){performSwitch(eligibleIds.slice());};
+            try{openExtraModal('mdlKbg20Parallel','Chọn đồng hồ khi bắt đầu công việc mới');}
             catch(e){parallelChoiceBusy=false;notify(e.message,'error');}
         }).catch(function(e){parallelChoiceBusy=false;
-            if(!redirectAccessFailure(e))notify('Không kiểm tra được đồng hồ khác; chưa Start: '+e.message,'error');
+            if(!redirectAccessFailure(e))notify('Chưa thể kiểm tra đồng hồ đang chạy: '+e.message,'error');
         });
     }
     // Wire the existing tab controller to the two visible tab buttons.
@@ -966,7 +1094,7 @@
             return;
         }
         if(action==='reportPersonal'||action==='withdrawPersonal'){
-            if(!window.Kbg20DoiSoatUI){notify('Popup bao xong chua duoc tai. Hay tai lai trang.','error');return;}
+            if(!window.Kbg20DoiSoatUI){notify('Không mở được popup Báo hoàn thành phần việc. Vui lòng tải lại trang.','error');return;}
             if(action==='reportPersonal')window.Kbg20DoiSoatUI.openReport(id);
             else window.Kbg20DoiSoatUI.openWithdraw(id);
             return;
@@ -974,7 +1102,7 @@
         // Bao xong ca nhan chi su dung 2 action rieng o tren.
         // Khong cho action Task chung 'complete/review' di qua bridge cua Tab 1.
         if(action==='complete' || action==='review') {
-            notify('Hãy thực hiện duyệt hoặc hoàn thành công việc trong TaskList.', 'error');
+            notify('Hãy duyệt hoặc xác nhận hoàn thành công việc tại Danh sách công việc.', 'error');
             return;
         }
         if(['start','overtime','stop'].indexOf(action)<0) {
@@ -984,26 +1112,26 @@
         var isWorkflow=state && state.workflowEnabled &&
             (action==='start'||action==='overtime') && task && task.status===0;
         if(isWorkflow) {
-            if(!task || !window.kbg20WorkflowPostback){notify('Không mở được xử lý công việc. Hãy tải lại trang.','error');return;}
+            if(!task || !window.kbg20WorkflowPostback){notify('Không mở được chức năng xử lý công việc. Vui lòng tải lại trang.','error');return;}
             if((action==='start'||action==='overtime') && task.startDay &&
                 state.workCalendar && task.startDay>state.workCalendar.day) {
                 if(!state.earlyStart || !state.earlyStart.allowed){
-                    notify('Chưa thể Start sớm: còn công việc đến hạn chưa báo hoàn thành.','error');return;
+                    notify('Chưa thể bắt đầu sớm vì vẫn còn phần việc đến hạn chưa báo hoàn thành.','error');return;
                 }
             }
             var late=(action==='start'||action==='overtime') && task.endDay &&
                 state.workCalendar && task.endDay<state.workCalendar.day;
             if(late){
                 confirmAction('Công việc quá hạn','Công việc đã quá hạn. Tiếp tục tính giờ trên Task mới?')
-                .then(function(yes){if(yes)checkOtherTimersAndStart(id,function(){
+                .then(function(yes){if(yes)checkOtherTimersAndStart(id,function(plan){
                     window.kbg20WorkflowPostback((action==='start'||action==='overtime')?'start':action,
-                        id,true,action==='overtime');
+                        id,true,action==='overtime',plan);
                 },action);});
                 return;
             }
-            checkOtherTimersAndStart(id,function(){
+            checkOtherTimersAndStart(id,function(plan){
                 window.kbg20WorkflowPostback((action==='start'||action==='overtime')?'start':action,
-                    id,late,action==='overtime');
+                    id,late,action==='overtime',plan);
             },action);
             return;
         }

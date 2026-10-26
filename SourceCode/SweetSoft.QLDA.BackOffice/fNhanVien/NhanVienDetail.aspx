@@ -51,6 +51,12 @@
            ============================================================ */
         .project-detail-overlay { z-index: 1060; }
         .project-detail-panel { z-index: 1070; background: #f4f5f7; }
+        /* Chỉ hạ lớp 2 side panel khi popup lý do trễ của ExtraModal mở; không thay đổi giao diện bình thường. */
+        body.nvd-delay-reason-active #sidePanelOverlay { z-index: 1010; }
+        body.nvd-delay-reason-active #projectSidePanel { z-index: 1020; }
+        body.nvd-delay-reason-active #projectDetailOverlay { z-index: 1025; }
+        body.nvd-delay-reason-active #projectDetailPanel { z-index: 1030; }
+
         .detail-project-header { background: #ffffff; border: 1px solid #e0e4e8; border-radius: 10px; padding: 18px; margin-bottom: 18px; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.03); }
         .detail-project-title { font-size: 18px; font-weight: 700; color: #232220; }
         .detail-project-code { color: #6c757d; font-size: 12px; }
@@ -72,21 +78,22 @@
         .task-sub-table tr:last-child td { border-bottom: none; }
         .task-row:hover { background-color: #f8fafd; }
         .task-row td:first-child { border-left: 3px solid transparent; transition: all 0.2s ease; }
-        .task-row[data-status="0"] td:first-child { border-left-color: #b5b5c3; }
-        .task-row[data-status="1"] td:first-child { border-left-color: #3699ff; }
-        .task-row[data-status="2"] td:first-child { border-left-color: #1bc5bd; }
-        .task-row[data-status="3"] td:first-child { border-left-color: #ffa800; }
+        .task-row[data-status="0"] td:first-child { border-left-color: #cbd5e1; }
+        .task-row[data-status="1"] td:first-child { border-left-color: #bae6fd; }
+        .task-row[data-status="2"] td:first-child, .task-row[data-status="3"] td:first-child { border-left-color: #bbf7d0; }
+        .task-row[data-status="4"] td:first-child { border-left-color: #fcd34d; }
         .ui-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap; }
         .ui-badge[data-prio="Cao"] { background: #ffe2e5; color: #f64e60; }
         .ui-badge[data-prio="Trung bình"] { background: #fff4de; color: #ffa800; }
         .ui-badge[data-prio="Thấp"] { background: #e1f0ff; color: #3699ff; }
-        .ui-status-wrapper { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap; }
-        .ui-status-wrapper[data-status="0"] { background: #f3f6f9; color: #7e8299; }
-        .ui-status-wrapper[data-status="1"] { background: #e1f0ff; color: #3699ff; }
-        .ui-status-wrapper[data-status="2"] { background: #c9f7f5; color: #1bc5bd; }
-        .ui-status-wrapper[data-status="3"] { background: #fff4de; color: #ffa800; }
-        .ui-status-wrapper span { background: transparent !important; padding: 0 !important; color: inherit !important; font-size: inherit !important; font-weight: inherit !important; border: none !important; }
-        .ui-status-wrapper.task-status-late { background: #ffe2e5; color: #dc3545; border: 1px solid #ffc5cc; }
+        /* Đồng bộ hoàn toàn trạng thái công việc theo CtrlTask mới nhất; riêng lý do trễ là dòng cảnh báo đỏ bên dưới badge hoàn thành xanh. */
+        .nvd-task-status { display:inline-flex; align-items:center; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap; line-height:1.2; border:1px solid transparent; }
+        .nvd-task-status.badge-status-todo { background-color:#f1f5f9 !important; color:#475569 !important; border-color:#cbd5e1 !important; }
+        .nvd-task-status.badge-status-doing { background-color:#e0f2fe !important; color:#0369a1 !important; border-color:#bae6fd !important; }
+        .nvd-task-status.badge-status-review { background-color:#fef3c7 !important; color:#92400e !important; border-color:#fcd34d !important; }
+        .nvd-task-status.badge-status-done { background-color:#dcfce7 !important; color:#15803d !important; border-color:#bbf7d0 !important; }
+        .nvd-task-late-note { display:block; margin-top:4px; font-size:11px; line-height:1.35; font-weight:700; color:#dc2626; }
+        .nvd-task-status-cell { min-width:116px; }
         .empty-detail { background: #ffffff; border: 1px dashed #d7dce1; border-radius: 8px; padding: 30px 20px; text-align: center; color: #7e8299; }
 
         /* ============================================================
@@ -332,6 +339,142 @@
         @media (max-width: 380px) {
             .nvd-info-grid, .nvd-address-grid { grid-template-columns: 1fr; }
         }
+
+        /* NhanVienDetail KBG 2.0 - selector/declarations kept on one line. */
+        .nvd-project-card { border-color:#e5ddf0; border-radius:12px; box-shadow:0 3px 12px rgba(65,36,104,.04); }
+        .nvd-project-card:hover { border-color:#a985d7; box-shadow:0 7px 18px rgba(95,52,153,.10); }
+        .nvd-project-card .project-summary-head { padding:16px 19px; }
+        .nvd-project-card .project-title { font-size:15px; color:#312544; margin:2px 0 6px; }
+        .nvd-status-stack { display:flex; gap:6px; justify-content:flex-end; align-items:flex-end; flex-direction:column; }
+        .nvd-time-state { display:inline-flex; align-items:center; padding:4px 9px; border-radius:7px; font-size:11px; font-weight:700; background:#f3eefb; color:#7040a9; border:1px solid #e6d7fa; white-space:nowrap; }
+        .nvd-time-final { background:#e8f8ee; color:#168249; border-color:#c8ebd8; }
+        .nvd-time-pending { background:#fff6e6; color:#ae6a10; border-color:#f5dfbd; }
+        .nvd-time-running { background:#f2eafa; color:#7543b2; border-color:#e6d7fa; }
+        .nvd-card-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin-top:13px; }
+        .nvd-metric { background:#faf8fd; border:1px solid #ece5f5; border-radius:9px; padding:9px 12px; min-width:0; }
+        .nvd-metric span { display:block; color:#81748e; font-size:11px; font-weight:600; }
+        .nvd-metric strong { display:block; color:#492378; font-size:18px; font-weight:750; margin:2px 0; white-space:nowrap; }
+        .nvd-metric small { display:block; font-size:10.5px; color:#7d788a; }
+        .nvd-card-footer { display:flex; align-items:center; gap:12px; justify-content:space-between; border-top:1px solid #eee8f3; padding-top:11px; margin-top:12px; }
+        .nvd-card-note { color:#81758b; font-size:11.5px; line-height:1.5; flex:1; }
+        .nvd-share { display:inline-block; margin-left:8px; font-weight:600; color:#5b2f92; }
+        .nvd-detail-heading { padding:16px; }
+        .nvd-detail-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:12px 0; }
+        .nvd-detail-metric { background:#f9f6fd; border:1px solid #e8ddf3; border-radius:9px; padding:12px; }
+        .nvd-detail-metric .nvd-metric-name { font-size:11px; font-weight:700; color:#7b6c89; }
+        .nvd-detail-metric strong { display:block; font-size:20px; font-weight:750; color:#4f2783; margin:4px 0; }
+        .nvd-detail-metric small { font-size:11px; color:#756d7f; }
+        .nvd-detail-status { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:11.5px; color:#776b80; line-height:1.5; }
+        .nvd-detail-status .nvd-share { margin-left:0; }
+        .nvd-phase { padding:0; overflow:hidden; border-radius:10px; }
+        .nvd-phase-summary { cursor:pointer; user-select:none; margin:0; border-radius:0; min-height:54px; }
+        .nvd-phase-summary:hover { background:#f0eafa; }
+        .nvd-phase-summary::marker { color:#6f42c1; }
+        .nvd-phase-hours { display:flex; flex-wrap:wrap; gap:9px; font-size:11px; color:#746484; }
+        .nvd-phase-hours strong { color:#502986; }
+        .nvd-task-scroll { overflow-x:auto; }
+        .nvd-task-table { min-width:820px; }
+        .nvd-task-table th:first-child { width:36%; }
+        .nvd-task-table th:nth-child(2) { width:16%; }
+        .nvd-task-table td { padding:12px 10px; }
+        .nvd-task-name a { text-decoration:none; font-size:12px; }
+        .nvd-task-name a:hover { text-decoration:underline; }
+        .nvd-task-mini { font-size:10px; color:#7f688e; margin-top:5px; }
+        .nvd-task-more { margin-top:5px; font-size:11px; color:#6b6574; }
+        .nvd-task-more summary { cursor:pointer; color:#7540a7; font-weight:600; }
+        .nvd-task-more div { padding:3px 0; line-height:1.45; }
+        .nvd-hours strong { display:block; font-size:13px; color:#4c287e; white-space:nowrap; }
+        .nvd-hours small { display:block; font-size:10.5px; color:#84798c; line-height:1.5; margin-top:3px; }
+        @media(max-width:720px) { .nvd-card-metrics { grid-template-columns:1fr 1fr; } .nvd-detail-metrics { grid-template-columns:1fr; } .nvd-card-footer { flex-direction:column; align-items:flex-start; } .nvd-status-stack { align-items:flex-start; } }
+
+
+        /* UX V2: Chỉ thay giao diện dự án; không tác động hồ sơ cá nhân và popup ExtraModal. */
+        .nvd-project-card { overflow:visible; }
+        .nvd-project-card .project-summary-head { border-radius:12px; }
+        .nvd-project-card:hover { border-color:#9b70cf; }
+        .project-status-tag.nvd-project-in-progress { color:#5e329c; background:#f1e9fc; border-color:#ddc9f5; }
+        .project-status-tag.nvd-project-complete { color:#188650; background:#eaf9f0; border-color:#cbecd9; }
+        .project-status-tag.nvd-project-paused { color:#98621c; background:#fff6e8; border-color:#f2debc; }
+        .project-status-tag.nvd-project-not-started { color:#737e90; background:#f1f4f8; border-color:#dfe5ed; }
+        .project-status-tag.nvd-project-ended { color:#596171; background:#eaedf4; border-color:#d5dbe6; }
+        .nvd-former-member { display:inline-flex; align-items:center; font-size:10.5px; line-height:1.4; color:#8155a7; margin-top:5px; padding:3px 8px; border:1px solid #e5d9f0; background:#faf6ff; border-radius:6px; }
+        .nvd-card-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
+        .nvd-metric-featured { padding:13px 14px; border-radius:11px; background:#f9f6fe; }
+        .nvd-metric-featured span { font-size:11.5px; color:#6d5983; font-weight:700; line-height:1.3; }
+        .nvd-metric-featured strong { font-size:23px; line-height:1.25; margin:5px 0 4px; color:#47227b; }
+        .nvd-metric-featured small { color:#756982; font-size:11px; line-height:1.4; }
+        .nvd-metric-final { border-color:#d9eadf; background:#f5fbf7; }
+        .nvd-metric-final span, .nvd-metric-final strong { color:#24754b; }
+        .nvd-card-report { display:flex; align-items:center; flex-wrap:wrap; column-gap:12px; row-gap:5px; padding:10px 12px; margin-top:9px; background:#fcfbfd; border:1px solid #e9e6ef; border-radius:8px; font-size:11.5px; color:#71677e; }
+        .nvd-card-report strong { color:#4f3273; font-size:14px; }
+        .nvd-card-report small { margin-left:auto; color:#81788c; font-size:11px; }
+        .nvd-card-footer { align-items:flex-start; }
+        .nvd-card-note { max-width:calc(100% - 116px); color:#766b83; line-height:1.55; font-size:11.5px; }
+        .nvd-help-details { margin-top:5px; font-size:11px; }
+        .nvd-help-details summary { cursor:pointer; display:inline-flex; color:#6d419b; font-weight:650; padding:3px 2px; }
+        .nvd-help-details div { margin-top:4px; padding:9px 11px; border:1px solid #e5dbf0; border-radius:7px; background:#faf7fe; color:#635773; }
+        .nvd-detail-topbar { min-height:62px; }
+        .nvd-detail-top-left { display:flex; flex-wrap:wrap; align-items:center; gap:12px; min-width:0; }
+        .nvd-back-btn { border:1px solid #d9c9eb; border-radius:8px; background:#faf6ff; color:#63348e; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; }
+        .nvd-back-btn:hover, .nvd-back-btn:focus-visible { background:#eadcf8; border-color:#b790d9; outline:0; }
+        .nvd-topbar-divider { height:24px; width:1px; background:#e2dbe9; }
+        .nvd-audience-hint { display:flex; align-items:center; flex-wrap:wrap; gap:9px; color:#655581; font-size:11.5px; padding:10px 13px; background:#f4edfc; border:1px solid #e4d6f5; border-radius:8px; margin-bottom:11px; }
+        .nvd-audience-hint strong { color:#582b89; font-size:12px; }
+        .nvd-audience-hint span { color:#776885; }
+        .nvd-detail-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        .nvd-detail-metric { padding:13px 14px; min-width:0; }
+        .nvd-detail-metric .nvd-metric-name { font-size:12px; }
+        .nvd-detail-metric strong { font-size:24px; line-height:1.25; margin:5px 0; }
+        .nvd-detail-metric small { display:block; line-height:1.5; }
+        .nvd-detail-metric--final { background:#f3fbf5; border-color:#cae9d3; }
+        .nvd-detail-metric--final .nvd-metric-name, .nvd-detail-metric--final strong { color:#26794d; }
+        .nvd-detail-self-report { display:flex; align-items:center; gap:11px; flex-wrap:wrap; padding:10px 13px; border:1px solid #e7e2ee; background:#fbfafc; border-radius:8px; margin-bottom:11px; font-size:12px; color:#695f77; }
+        .nvd-detail-self-report strong { font-size:16px; color:#4f2d79; }
+        .nvd-detail-self-report small { margin-left:auto; color:#786f83; }
+        .nvd-work-progress { display:flex; flex-direction:column; gap:7px; margin:10px 0; padding:12px 14px; border:1px solid #e4dcf0; background:#fbf9fe; border-radius:9px; }
+        .nvd-work-progress-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; }
+        .nvd-work-progress-head strong { color:#433454; }
+        .nvd-work-progress-head span { color:#633594; font-weight:700; }
+        .nvd-work-progress-track { background:#e7e0ef; height:7px; border-radius:20px; overflow:hidden; }
+        .nvd-work-progress-fill { display:block; height:100%; background:#7b4ac0; border-radius:20px; }
+        .nvd-work-progress-note { font-size:11.5px; color:#70667a; line-height:1.45; }
+        .nvd-detail-status { gap:10px; }
+        .nvd-tasks-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px 12px; margin-bottom:10px; border:1px solid #e5e0eb; background:#fff; border-radius:9px; }
+        .nvd-tasks-toolbar strong { color:#3c3248; font-size:13px; }
+        .nvd-tasks-toolbar small { display:block; font-size:11px; color:#8b8393; margin-top:2px; }
+        .nvd-pending-filter { cursor:pointer; border:1px solid #d7c2f1; border-radius:8px; padding:7px 10px; background:#fbf8ff; color:#69339d; font-size:11px; font-weight:700; white-space:nowrap; }
+        .nvd-pending-filter:hover, .nvd-pending-filter[aria-pressed="true"] { background:#f0e5fc; border-color:#a980d9; }
+        .nvd-filter-empty { background:#fff; border:1px dashed #ded4e9; border-radius:9px; padding:20px; font-size:12px; color:#665575; text-align:center; margin-bottom:10px; }
+        .nvd-filter-empty[hidden] { display:none !important; }
+        .nvd-phase-summary { gap:14px; padding:12px 14px; }
+        .nvd-phase-summary:focus-visible { outline:2px solid #956fc9; outline-offset:-2px; }
+        .nvd-task-table { min-width:850px; }
+        .nvd-task-table th { color:#645272; font-size:11.5px; background:#f5f0fb; border-bottom:1px solid #e4d7f1; }
+        .nvd-task-table td { vertical-align:top; }
+        .nvd-task-name a { color:#542a8d !important; font-size:12.5px; line-height:1.45; }
+        .nvd-task-progress { display:flex; align-items:flex-start; gap:6px; margin-top:6px; font-size:11px; line-height:1.45; color:#97651c; }
+        .nvd-task-progress i { flex-shrink:0; margin-top:2px; }
+        .nvd-task-progress-final { color:#29824f; }
+        .nvd-task-actions { display:flex; align-items:center; flex-wrap:wrap; gap:6px 12px; margin-top:6px; }
+        .nvd-reason-btn { background:#fff5f4; border:1px solid #f1cecc; color:#b33d3a; padding:5px 8px; font-size:11px; font-weight:650; border-radius:7px; cursor:pointer; }
+        .nvd-reason-btn:hover, .nvd-reason-btn:focus-visible { background:#fee8e6; border-color:#e9a9a6; outline:0; }
+        .nvd-task-more { margin-top:0; }
+        .nvd-task-more summary { display:list-item; line-height:1.7; }
+        .nvd-hours-guide { margin:-1px 0 12px; border:1px solid #e3d9ee; background:#fff; border-radius:9px; overflow:hidden; }
+        .nvd-hours-guide summary { display:flex; align-items:center; gap:6px; padding:9px 13px; color:#5c3286; cursor:pointer; font-size:12px; font-weight:700; list-style:none; }
+        .nvd-hours-guide summary::-webkit-details-marker { display:none; }
+        .nvd-hours-guide summary:hover, .nvd-hours-guide[open] summary { background:#f8f3fd; }
+        .nvd-guide-chevron { margin-left:auto; transition:transform .18s ease; font-size:10px; }
+        .nvd-hours-guide[open] .nvd-guide-chevron { transform:rotate(180deg); }
+        .nvd-hours-guide-content { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:12px; border-top:1px solid #e9e0f2; }
+        .nvd-hours-guide-content > div { background:#faf8fd; border:1px solid #eee6f4; padding:10px 11px; border-radius:7px; color:#5c5267; font-size:12px; line-height:1.55; }
+        .nvd-hours-guide-content strong { color:#50366c; }
+        .nvd-task-table th { font-size:12px; font-weight:700; }
+        .nvd-hours small { font-size:11.5px; line-height:1.55; color:#6c6274; }
+        .nvd-task-progress { font-size:11.5px; }
+        .nvd-hours-final strong { color:#23784b; }
+        @media(max-width:850px) { .nvd-hours-guide-content { grid-template-columns:1fr; } }
+        @media(max-width:720px) { .nvd-card-metrics { grid-template-columns:1fr; } .nvd-card-note { max-width:none; } .nvd-detail-metrics { grid-template-columns:1fr; } .nvd-card-footer { flex-direction:column; } .nvd-card-report small { margin-left:0; } .nvd-topbar-divider { display:none; } .nvd-work-progress-head { flex-wrap:wrap; } }
     </style>
 </asp:Content>
 
@@ -574,31 +717,35 @@
 
                                     <asp:Repeater ID="rptAllProjects" runat="server" OnItemCommand="rptAllProjects_ItemCommand">
                                         <ItemTemplate>
-                                            <div class="project-box">
-                                                <!-- PROJECT SUMMARY -->
+                                            <div class="project-box nvd-project-card">
                                                 <div class="project-summary-head">
-                                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
                                                         <div class="flex-grow-1 min-w-0">
-                                                            <div class="project-title"><%# Eval("TenDuAn") %></div>
-                                                            <div class="project-code"><%# Eval("MaDuAn") %></div>
-                                                            <div class="project-meta">
-                                                                <%# GetResourceText(BackEndResourceKeys.ROLE) %>: <strong><%# Eval("VaiTro") %></strong> <span class="mx-2">|</span>
-                                                                <%# GetResourceText(BackEndResourceKeys.PROJECT_TIME) %>: <strong><%# FormatDateRange(Eval("ProjectStartDate"), Eval("ProjectEndDate")) %></strong>
+                                                            <div class="project-code"><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("MaDuAn"))) %></div>
+                                                            <div class="project-title"><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("TenDuAn"))) %></div>
+                                                            <div class="project-meta"><i class="fas fa-user-tag me-1"></i><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("VaiTro"))) %>
+                                                                <span class="mx-1">·</span><i class="far fa-calendar me-1"></i><%# FormatProjectPeriod(Eval("ProjectStartDate"), Eval("ProjectEndDate"), Eval("ProjectActualEndDate")) %>
                                                             </div>
+                                                            <asp:PlaceHolder runat="server" Visible='<%# !Convert.ToBoolean(Eval("IsCurrentMember")) %>'><span class="nvd-former-member"><i class="fas fa-history me-1"></i>Đã từng tham gia dự án</span></asp:PlaceHolder>
                                                         </div>
-                                                        <div class="text-end flex-shrink-0">
-                                                            <div class="project-contribution">
-                                                                <%# GetResourceText(BackEndResourceKeys.CONTRIBUTION) %>: <%# Convert.ToDouble(Eval("ContributionPercent")).ToString("0.0") %>%
-                                                            </div>
-                                                            <div class="mt-2">
-                                                                <span class="project-status-tag"><%# GetDuAnStatusText(Eval("TrangThai")) %></span>
-                                                            </div>
+                                                        <div class="nvd-status-stack">
+                                                            <span class='project-status-tag <%# GetProjectStatusCss(Eval("TrangThai")) %>'><%# GetDuAnStatusText(Eval("TrangThai")) %></span>
+                                                            <span class='nvd-time-state <%# Eval("TrangThaiGioCss") %>'><%# Eval("TinhTrangGioText") %></span>
                                                         </div>
                                                     </div>
-                                                    <div class="text-end mt-3">
-                                                        <asp:LinkButton ID="btnViewProject" runat="server" CommandName="ViewProject" CommandArgument='<%# Eval("IdDuAn") %>' CssClass="btn btn-sm btn-outline-primary btn-project-detail">
-                                                            <i class="fas fa-eye me-1"></i>Xem chi tiết
-                                                        </asp:LinkButton>
+                                                    <div class="nvd-card-metrics">
+                                                        <div class="nvd-metric nvd-metric-featured"><span><i class="far fa-clock me-1"></i>Giờ hệ thống ghi nhận</span><strong><%# Eval("GioHeThongText") %></strong><small>Thời gian đã ghi, chưa tính phiên đang chạy</small></div>
+                                                        <div class="nvd-metric nvd-metric-featured nvd-metric-final"><span><i class="fas fa-check-circle me-1"></i>Giờ của nhân viên được PM chốt</span><strong><%# Eval("GioPmChotText") %></strong><small><%# Eval("SoTaskDaChot") %>/<%# Eval("SoTaskLienQuan") %> công việc của nhân viên đã chốt</small></div>
+                                                    </div>
+                                                    <div class="nvd-card-report"><span><i class="fas fa-file-signature me-1"></i>Giờ nhân viên tự khai</span><strong><%# Eval("GioTuKhaiText") %></strong><small><%# Eval("SoTaskCoTuKhai") %>/<%# Eval("SoTaskLienQuan") %> công việc có dữ liệu tự khai</small></div>
+                                                    <div class="nvd-card-footer">
+                                                        <div class="nvd-card-note"><i class="fas fa-info-circle me-1"></i><%# GetProjectCardInsight(Container.DataItem) %>
+                                                            <asp:PlaceHolder runat="server" Visible='<%# Convert.ToBoolean(Eval("HienThiTyTrong")) %>'>
+                                                                <span class="nvd-share"><i class="fas fa-chart-pie me-1"></i>Tỷ trọng giờ đã quyết toán: <strong><%# Eval("TyTrongText") %></strong></span>
+                                                            </asp:PlaceHolder>
+                                                            <details class="nvd-help-details"><summary>Vì sao số giờ khác nhau?</summary><div><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("GhiChuGioText"))) %></div></details>
+                                                        </div>
+                                                        <asp:LinkButton ID="btnViewProject" runat="server" CommandName="ViewProject" CommandArgument='<%# Eval("IdDuAn") %>' CssClass="btn btn-sm btn-outline-primary btn-project-detail"><i class="fas fa-eye me-1"></i>Xem chi tiết</asp:LinkButton>
                                                     </div>
                                                 </div>
                                             </div>
@@ -616,147 +763,80 @@
                 <div id="projectDetailOverlay" class="side-panel-overlay project-detail-overlay" onclick="closeProjectDetailPanel();"></div>
 
                 <div id="projectDetailPanel" class="side-panel project-detail-panel">
-                    <div class="side-panel-header">
-                        <h5 class="side-panel-title">
-                            <i class="fas fa-project-diagram text-primary me-2"></i>Chi tiết dự án
-                        </h5>
-                        <button type="button" class="btn-close-panel" onclick="closeProjectDetailPanel();">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div class="side-panel-header nvd-detail-topbar">
+                        <div class="nvd-detail-top-left">
+                            <button type="button" class="nvd-back-btn" onclick="closeProjectDetailPanel();" aria-label="Quay lại danh sách dự án"><i class="fas fa-arrow-left me-1"></i>Danh sách dự án</button>
+                            <span class="nvd-topbar-divider"></span>
+                            <h5 class="side-panel-title"><i class="fas fa-project-diagram text-primary me-2"></i>Chi tiết dự án</h5>
+                        </div>
+                        <button type="button" class="btn-close-panel" onclick="closeProjectDetailPanel();" aria-label="Đóng chi tiết dự án"><i class="fas fa-times"></i></button>
                     </div>
 
                     <div class="side-panel-body">
                         <asp:UpdatePanel ID="upProjectDetail" runat="server" UpdateMode="Conditional">
                             <ContentTemplate>
-                               <!-- =========================================
-                                     PROJECT INFO (BỔ SUNG HỆ SỐ ĐÓNG GÓP)
-                                     ========================================= -->
-                                <div class="detail-project-header">
-                                    <!-- 1. Tiêu đề và Trạng thái nằm cùng 1 dòng -->
-                                    <div class="mb-3 d-flex justify-content-between align-items-start">
+                                <div class="nvd-audience-hint"><i class="far fa-user-circle"></i><strong><%= IsOwnEmployeeProfile ? "Giờ công của bạn" : "Theo dõi giờ công nhân viên" %></strong><span><%= IsOwnEmployeeProfile ? "Xem số giờ đã ghi, đã báo và đã được PM chốt." : "Theo dõi mức độ chốt của nhân viên này; chi tiết theo từng công việc bên dưới." %></span></div>
+                                <div class="detail-project-header nvd-detail-heading">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                                         <div>
-                                            <div class="detail-project-title d-flex align-items-center gap-2">
-                                                <asp:Literal ID="ltrDetailTenDuAn" runat="server" />
-                                                <span class="project-status-tag" style="margin: 0; padding: 3px 10px; font-size: 11px;">
-                                                    <asp:Literal ID="ltrDetailTrangThai" runat="server" />
-                                                </span>
-                                            </div>
-                                            <div class="detail-project-code mt-1"><asp:Literal ID="ltrDetailMaDuAn" runat="server" /></div>
+                                            <div class="detail-project-code"><asp:Literal ID="ltrDetailMaDuAn" runat="server" /></div>
+                                            <div class="detail-project-title"><asp:Literal ID="ltrDetailTenDuAn" runat="server" /></div>
+                                            <div class="project-meta">Vai trò: <strong><asp:Literal ID="ltrDetailVaiTro" runat="server" /></strong> · Thời gian: <strong><asp:Literal ID="ltrDetailProjectTime" runat="server" /></strong></div>
                                         </div>
+                                        <asp:Literal ID="ltrDetailTrangThai" runat="server" />
                                     </div>
-                                    
-                                    <!-- 2. Khối 4 ô thông tin -->
-                                    <div class="row g-2">
-                                        <div class="col-md-6">
-                                            <div class="detail-info-item">
-                                                <span class="detail-info-label"><%= GetResourceText(BackEndResourceKeys.ROLE) %></span>
-                                                <span class="detail-info-value"><asp:Literal ID="ltrDetailVaiTro" runat="server" /></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="detail-info-item">
-                                                <span class="detail-info-label"><%= GetResourceText(BackEndResourceKeys.PROJECT_TIME) %></span>
-                                                <span class="detail-info-value"><asp:Literal ID="ltrDetailProjectTime" runat="server" /></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="detail-info-item">
-                                                <span class="detail-info-label"><%= GetResourceText(BackEndResourceKeys.CONTRIBUTION) %></span>
-                                                <span class="detail-info-value text-primary"><asp:Literal ID="ltrDetailContribution" runat="server" />%</span>
-                                            </div>
-                                        </div>
-                                        <!-- Ô thứ 4: Hiển thị bộ Hệ số đóng góp -->
-                                        <div class="col-md-6">
-                                            <div class="detail-info-item" style="justify-content: flex-start; padding: 8px 12px;">
-                                                <span class="detail-info-label mb-1">Hệ số đóng góp</span>
-                                                <div class="d-flex flex-wrap gap-2" style="font-size: 12px; line-height: 1.2;">
-                                                    <span class="text-danger fw-bold">Cao: <asp:Literal ID="ltrHeSoCao" runat="server" Text="-" /></span>
-                                                    <span class="text-warning fw-bold text-dark">Trung bình: <asp:Literal ID="ltrHeSoTrungBinh" runat="server" Text="-" /></span>
-                                                    <span class="text-info fw-bold">Thấp: <asp:Literal ID="ltrHeSoThap" runat="server" Text="-" /></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <asp:Literal ID="ltrDetailContribution" runat="server" />
                                 </div>
-
-                                <!-- =========================================
-                                     DETAIL PHASES
-                                     ========================================= -->
+                                <details class="nvd-hours-guide">
+                                    <summary><i class="far fa-question-circle me-1"></i>Phân biệt 3 loại giờ công <i class="fas fa-chevron-down nvd-guide-chevron" aria-hidden="true"></i></summary>
+                                    <div class="nvd-hours-guide-content">
+                                        <div><strong>Giờ hệ thống:</strong> Thời gian các đồng hồ đã được hệ thống ghi nhận, có thể chưa bao gồm phiên đang chạy.</div>
+                                        <div><strong>Giờ nhân viên báo:</strong> Số giờ nhân viên tự khai để đối soát, chưa đồng nghĩa PM đã chốt.</div>
+                                        <div><strong>Giờ PM chốt:</strong> Số giờ PM đã xác nhận trên các công việc được chốt. Công việc chưa chốt vẫn có thể còn giờ hệ thống hoặc giờ tự khai.</div>
+                                    </div>
+                                </details>
+                                <div class="nvd-tasks-toolbar"><div><strong><i class="fas fa-tasks me-1"></i>Công việc liên quan</strong><small>Nhấn tên giai đoạn để xem công việc, tình trạng giờ và lý do trễ hạn khi có.</small></div><button type="button" id="nvdPendingFilter" class="nvd-pending-filter" aria-pressed="false" onclick="nvdTogglePendingTasks(this);" title="Chỉ hiện các công việc chưa được PM chốt giờ"><i class="fas fa-filter me-1"></i>Chỉ xem chưa chốt</button></div>
+                                <div id="nvdPendingEmpty" class="nvd-filter-empty" hidden>Không có công việc chưa được PM chốt giờ trong danh sách này.</div>
                                 <asp:Repeater ID="rptDetailPhases" runat="server">
                                     <ItemTemplate>
-                                        <div class="phase-item">
-                                            <div class="phase-header-line">
-                                                <div class="phase-title-name">
-                                                    <i class="far fa-folder-open text-warning me-1"></i>
-                                                    <%# GetResourceText(BackEndResourceKeys.PHASE) %>: <%# Eval("MaPhase") %> <%# Eval("TenPhase") %>
-                                                    <span class="text-muted fw-normal ms-1">
-                                                        (<%# FormatDateRange(Eval("MinStartDate"), Eval("MaxEndDate")) %> | <%# GetResourceText(BackEndResourceKeys.DEADLINE) %>: <%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %>)
-                                                    </span>
+                                        <details class="phase-item nvd-phase">
+                                            <summary class="phase-header-line nvd-phase-summary">
+                                                <div class="phase-title-name"><i class="far fa-folder-open me-1"></i><%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("MaPhase"))) %> · <%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("TenPhase"))) %>
+                                                    <span class="text-muted fw-normal ms-1">(<%# Eval("SoTaskLienQuan") %> công việc)</span>
                                                 </div>
-                                                <div class="badge bg-light text-dark border">
-                                                    <%# GetResourceText(BackEndResourceKeys.CONTRIBUTION) %>: <%# Convert.ToDouble(Eval("ContributionPercent")).ToString("0.0") %>%
-                                                </div>
+                                                <div class="nvd-phase-hours"><span>Hệ thống: <strong><%# Eval("GioHeThongText") %></strong></span><span>PM chốt: <strong><%# Eval("GioPmChotText") %></strong></span></div>
+                                            </summary>
+                                            <div class="nvd-task-scroll">
+                                                <table class="task-sub-table nvd-task-table">
+                                                    <thead><tr><th>Công việc / xác nhận giờ</th><th>Trạng thái công việc</th><th>Giờ hệ thống</th><th>Nhân viên báo</th><th>PM đã chốt</th></tr></thead>
+                                                    <tbody>
+                                                        <asp:Repeater ID="rptDetailTasks" runat="server" DataSource='<%# Eval("MyTasks") %>'>
+                                                            <ItemTemplate>
+                                                                <tr class="task-row" data-status='<%# Eval("TrangThaiTask") %>' data-hour-final='<%# Convert.ToBoolean(Eval("DaChotTask")) ? "1" : "0" %>'>
+                                                                    <td class="nvd-task-name">
+                                                                        <a href='<%# GetTaskListUrl() %>' target="_blank" rel="noopener" class="fw-bold text-primary">[<%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("MaTask"))) %>] <%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("TenTask"))) %></a>
+                                                                        <div class='nvd-task-progress <%# Convert.ToBoolean(Eval("DaChotTask")) ? "nvd-task-progress-final" : "" %>'><i class='<%# Convert.ToBoolean(Eval("DaChotTask")) ? "fas fa-check-circle" : "far fa-clock" %>'></i><%# GetTaskWorkProgressText(Eval("TrangThaiTask"),Eval("DaChotTask")) %></div>
+                                                                        <div class="nvd-task-actions">
+                                                                            <asp:PlaceHolder runat="server" Visible='<%# IsTaskCompletedLate(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>'>
+                                                                                <button type="button" class="nvd-reason-btn" data-task-code="<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("MaTask"))) %>" data-task-name="<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("TenTask"))) %>" data-reason="<%# System.Web.HttpUtility.HtmlAttributeEncode(Convert.ToString(Eval("LyDoTreHan"))) %>" onclick="showDelayReasonFromButton(this);"><i class="far fa-file-alt me-1"></i>Xem lý do trễ</button>
+                                                                            </asp:PlaceHolder>
+                                                                            <details class="nvd-task-more"><summary>Thông tin công việc</summary>
+                                                                                <div>Bắt đầu: <%# FormatDateSafe(Eval("NgayBatDau"), "—") %> · Dự kiến: <%# FormatDateSafe(Eval("NgayKetThuc"), "—") %> · Thực tế: <%# FormatDateSafe(Eval("NgayHoanThanhThucTe"), "—") %></div>
+                                                                                <div>Ưu tiên: <%# System.Web.HttpUtility.HtmlEncode(Convert.ToString(Eval("TenDoUuTien"))) %> · <%# Eval("ThoiHanNgay") %> ngày</div>
+                                                                            </details>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="nvd-task-status-cell"><%# GetTaskStatusDisplay(Eval("TrangThaiTask"),Eval("NgayKetThuc"),Eval("NgayHoanThanhThucTe")) %></td>
+                                                                    <td class="nvd-hours"><strong><%# Eval("GioHeThongText") %></strong><small>Theo lịch <%# Eval("GioHanhChinhText") %> · Tăng ca <%# Eval("GioTangCaText") %></small></td>
+                                                                    <td class="nvd-hours"><strong><%# Eval("GioTuKhaiText") %></strong><small>Theo lịch <%# Eval("GioTuKhaiThuongText") %> · Tăng ca <%# Eval("GioTuKhaiTangCaText") %></small></td>
+                                                                    <td class="nvd-hours nvd-hours-final"><strong><%# Eval("GioPmChotText") %></strong><small><%# Convert.ToBoolean(Eval("DaChotTask")) ? "PM đã chốt" : "Chưa chốt giờ" %></small></td>
+                                                                </tr>
+                                                            </ItemTemplate>
+                                                        </asp:Repeater>
+                                                    </tbody>
+                                                </table>
                                             </div>
-
-                                            <table class="task-sub-table">
-                                                <!-- ĐÃ TỐI ƯU LẠI WIDTH CỦA CÁC CỘT ĐỂ NHƯỜNG CHỖ CHO TÊN TASK -->
-                                                <thead>
-                                                    <tr>
-                                                        <th style="width:70px;"><%# GetResourceText(BackEndResourceKeys.TASK_CODE) %></th>
-                                                        <th style="min-width:260px;"><%# GetResourceText(BackEndResourceKeys.TASK_NAME) %></th>
-                                                        <th class="text-center" style="width:95px;">Ngày bắt đầu</th>
-                                                        <th class="text-center" style="width:80px;"><%# GetResourceText(BackEndResourceKeys.DEADLINE) %></th>
-                                                        <th class="text-center" style="width:105px;">Ngày kết thúc dự kiến</th>
-                                                        <th class="text-center" style="width:105px;">Ngày kết thúc thực tế</th>
-                                                        <th class="text-center" style="width:90px;"><%# GetResourceText(BackEndResourceKeys.PRIORITY) %></th>
-                                                        <th class="text-center" style="width:115px;"><%# GetResourceText(BackEndResourceKeys.STATUS) %></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <asp:Repeater ID="rptDetailTasks" runat="server" DataSource='<%# Eval("MyTasks") %>'>
-                                                        <ItemTemplate>
-                                                            <tr class="task-row" data-status='<%# Eval("TrangThaiTask") %>'>
-                                                                <td><strong><%# Eval("MaTask") %></strong></td>
-                                                                <td>
-                                                                   <a href='<%# GetTaskListUrl() %>' target="_blank"
-                                                                       class="d-block fw-bold text-primary" style="text-decoration: none;" 
-                                                                       onmouseover="this.style.textDecoration='underline';" 
-                                                                       onmouseout="this.style.textDecoration='none';">
-                                                                        <%# Eval("TenTask") %>
-                                                                    </a>
-                                                                    <asp:PlaceHolder runat="server" Visible='<%# Eval("TenTaskCha") != null && !string.IsNullOrEmpty(Eval("TenTaskCha").ToString()) && Eval("TenTaskCha").ToString() != Eval("TenPhaseGoc").ToString() %>'>
-                                                                        <div class="text-muted mt-1" style="font-size:11.5px;">
-                                                                            <i class="fas fa-level-up-alt fa-rotate-90 me-1 text-secondary"></i>
-                                                                            <%# GetResourceText(BackEndResourceKeys.BELONG_TO_GROUP) %>: <%# Eval("MaTaskCha") %> - <%# Eval("TenTaskCha") %>
-                                                                        </div>
-                                                                    </asp:PlaceHolder>
-                                                                </td>
-                                                                <td class="text-center"><%# FormatDateSafe(Eval("NgayBatDau"), "—") %></td>
-                                                                <td class="text-center"><%# Eval("ThoiHanNgay") %> <%# GetResourceText(BackEndResourceKeys.DAY) %></td>
-                                                                <td class="text-center"><%# FormatDateSafe(Eval("NgayKetThuc"), "—") %></td>
-                                                                <td class="text-center"><%# FormatDateSafe(Eval("NgayHoanThanhThucTe"), "—") %></td>
-                                                                <td class="text-center"><span class="ui-badge" data-prio='<%# Eval("TenDoUuTien") %>'><%# Eval("TenDoUuTien") %></span></td>
-                                                                <td class="text-center">
-                                                                    <div class='<%# GetTaskStatusWrapperClass(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>' data-status='<%# Eval("TrangThaiTask") %>'>
-                                                                        <%# GetTaskStatusDisplay(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>
-                                                                    </div>
-                                                                   <!-- NÚT XEM LÝ DO TRỄ HẠN -->
-                                                                    <asp:PlaceHolder runat="server" Visible='<%# IsTaskCompletedLate(Eval("TrangThaiTask"), Eval("NgayKetThuc"), Eval("NgayHoanThanhThucTe")) %>'>
-                                                                        <div class="mt-1">
-                                                                           <a href="javascript:void(0);" 
-                                                                               onclick='<%# string.Format("showDelayReason(\"{0}\", {1}, {2})", Eval("MaTask"), System.Web.HttpUtility.JavaScriptStringEncode(Convert.ToString(Eval("TenTask")), true), System.Web.HttpUtility.JavaScriptStringEncode(Convert.ToString(Eval("LyDoTreHan")), true)) %>' 
-                                                                               class="text-danger" style="font-size: 11px; text-decoration: underline; font-weight: 600;">
-                                                                                <i class="fas fa-info-circle"></i> Xem lý do
-                                                                            </a>
-                                                                        </div>
-                                                                    </asp:PlaceHolder>
-                                                                </td>
-                                                            </tr>
-                                                        </ItemTemplate>
-                                                    </asp:Repeater>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                        </details>
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </ContentTemplate>
@@ -790,11 +870,50 @@
             setTimeout(function () { overlay.style.display = 'none'; }, 300);
         }
 
+        function nvdPreparePhases() {
+            var panel = document.getElementById('projectDetailPanel');
+            if (!panel) return;
+            var phases = panel.querySelectorAll('details.nvd-phase');
+            if (!phases.length) return;
+            // Chỉ mở giai đoạn đầu tiên khi một tập dữ liệu mới được render.
+            var anyReady = Array.prototype.some.call(phases, function (p) { return p.getAttribute('data-nvd-initialized') === '1'; });
+            if (!anyReady) {
+                Array.prototype.forEach.call(phases, function (p, i) { p.open = i === 0; p.setAttribute('data-nvd-initialized','1'); });
+            }
+        }
+        function nvdTogglePendingTasks(button) {
+            var panel = document.getElementById('projectDetailPanel');
+            if (!panel || !button) return;
+            var active = button.getAttribute('aria-pressed') !== 'true';
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            button.innerHTML = active ? '<i class="fas fa-times me-1"></i>Xem tất cả công việc' : '<i class="fas fa-filter me-1"></i>Chỉ xem chưa chốt';
+            var phases = panel.querySelectorAll('details.nvd-phase');
+            var any = false;
+            Array.prototype.forEach.call(phases, function (phase) {
+                var rows = phase.querySelectorAll('tr.task-row');
+                var visible = 0;
+                Array.prototype.forEach.call(rows, function (row) {
+                    var show = !active || row.getAttribute('data-hour-final') !== '1';
+                    row.style.display = show ? '' : 'none';
+                    if (show) visible++;
+                });
+                phase.style.display = !active || visible > 0 ? '' : 'none';
+                if (active && visible > 0) { any = true; phase.open = true; }
+            });
+            var empty = document.getElementById('nvdPendingEmpty');
+            if (empty) empty.hidden = !active || any;
+        }
+        function nvdResetTaskFilter() {
+            var button = document.getElementById('nvdPendingFilter');
+            if (button && button.getAttribute('aria-pressed') === 'true') nvdTogglePendingTasks(button);
+        }
         function openProjectDetailPanel() {
             var overlay = document.getElementById('projectDetailOverlay');
             var panel = document.getElementById('projectDetailPanel');
             if (!overlay || !panel) return;
             overlay.style.display = 'block';
+            nvdResetTaskFilter();
+            nvdPreparePhases();
             setTimeout(function () {
                 panel.classList.add('open');
                 var body = panel.querySelector('.side-panel-body');
@@ -988,16 +1107,29 @@
                 renderEmployeeMonthCalendar();
             });
         }
+        function showDelayReasonFromButton(button) {
+            if (!button) return;
+            showDelayReason(button.getAttribute('data-task-code') || '', button.getAttribute('data-task-name') || '', button.getAttribute('data-reason') || '');
+        }
+        // Popup lý do trễ dùng đúng SweetSoft:ExtraModal trong cpModalMain.
+        // Khi đóng bằng nút X, ESC hoặc backdrop, khôi phục độ nổi của hai side panel.
+        $(document).on('hidden.bs.modal', '#<%= mdlDelayReason.ClientID %>', function () {
+            document.body.classList.remove('nvd-delay-reason-active');
+        });
         function showDelayReason(taskCode, taskName, reason) {
-            // Ghép cả Mã và Tên task vào Header của Popup
-            $('#delayTaskCode').html('<span class="text-primary">[' + taskCode + ']</span> ' + taskName);
-
-            // Render lý do
-            $('#delayTaskReason').text(reason || 'Không có lý do được ghi nhận.');
-
-            // Gọi popup bằng ClientID của ExtraModal
-            var modalId = '#<%= mdlDelayReason.ClientID %>';
-            $(modalId).modal('show');
+            // Dùng .text() để dữ liệu lý do do người dùng nhập không bị diễn giải thành HTML.
+            $('#delayTaskCode').text('[' + taskCode + '] ' + taskName);
+            $('#delayTaskReason').text(reason && reason.trim() ? reason : 'Chưa có lý do được ghi nhận cho công việc này.');
+            var $modal = $('#<%= mdlDelayReason.ClientID %>');
+            if (!$modal.length) return;
+            // ExtraModal/Bootstrap giữ nguyên header, nút X, backdrop và animation mặc định.
+            document.body.classList.add('nvd-delay-reason-active');
+            try {
+                $modal.modal('show');
+            } catch (err) {
+                document.body.classList.remove('nvd-delay-reason-active');
+                throw err;
+            }
         }
     </script>
 </asp:Content>

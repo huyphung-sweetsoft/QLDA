@@ -1,4 +1,4 @@
-using SweetSoft.QLDA.BackOffice.Common;
+﻿using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -51,6 +51,9 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
         // Dot 8: chi truy van mot lan khi bind GridView, khong goi SQL tung row.
         private Dictionary<Guid, bool> _qlpmTrangThai = new Dictionary<Guid, bool>();
         private HashSet<Guid> _qlpmTaskCoGio = new HashSet<Guid>();
+        // Cach tinh dieu kien chot giong popup PM, luu theo task de RowDataBound khong truy van SQL.
+        private HashSet<Guid> _qlpmTaskDuocChot = new HashSet<Guid>();
+        private Dictionary<Guid, string> _qlpmLyDoChuaChot = new Dictionary<Guid, string>();
         protected readonly ControlHelpers _controlHelpers = new ControlHelpers();
 
         // Them CanhBao trong ExtraModal ma khong can ghi de *.designer.cs cua partner.
@@ -62,7 +65,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             {var found=TimControl(c,id);if(found!=null)return found;}
             return null;
         }
-        private bool HienCanhBaoKbg20(Guid taskId,string next)
+        private bool HienCanhBaoKbg20(Guid taskId,string next, bool tuThongBao=false)
         {
             if(!Kbg20TichHopTask.DuocKichHoat)return false;
             var task=TaskManager.Instance.FetchById(taskId);
@@ -88,12 +91,94 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             label.Text=System.Web.HttpUtility.HtmlEncode("["+task.MaCongViec+"] "+task.TenCongViec) +
                 "<br/>Chưa báo hoàn thành ("+missing.Count+" người): "+
                 System.Web.HttpUtility.HtmlEncode(string.Join(", ",missing.Select(x=>x.TenNhanVien)));
+
+            // Cảnh báo của KBG20: tách rõ bước GỬI hoàn thành và bước QUẢN LÝ DUYỆT.
+            // Không hướng dẫn nhân viên sang Bảng kê giờ công để báo phần việc.
+            var help = TimControl(this, "ltrKbg20WarningHelp") as System.Web.UI.WebControls.Literal;
+            if (help != null)
+            {
+                const string huongDanBaoGio =
+                    "Vào <strong>Tính giờ công việc</strong> → <strong>Theo dõi giờ làm</strong>, " +
+                    "chọn <strong>Báo hoàn thành phần việc</strong> để kiểm tra và xác nhận giờ " +
+                    "trước khi quản lý chốt giờ công.";
+                help.Text = next == "review"
+                    ? "<strong>Nếu tiếp tục:</strong> Mở cửa sổ xét duyệt để quản lý chọn " +
+                      "duyệt hoặc từ chối yêu cầu; <strong>chưa có quyết định nào được thực hiện</strong>." +
+                      "<br/><strong>Nhân viên chưa báo:</strong> Thời gian đã ghi vẫn được giữ. " + huongDanBaoGio +
+                      "<br/><strong>Lưu ý:</strong> Duyệt hoàn thành công việc không đồng nghĩa với chốt giờ công."
+                    : "<strong>Nếu tiếp tục:</strong> Gửi yêu cầu hoàn thành và dừng các đồng hồ " +
+                      "đang chạy trực tiếp trên công việc này của những nhân viên còn lại; " +
+                      "<strong>giờ đã ghi vẫn được giữ nguyên</strong>." +
+                      "<br/><strong>Nhân viên chưa báo:</strong> " + huongDanBaoGio +
+                      "<br/><strong>Lưu ý:</strong> Gửi yêu cầu không đồng nghĩa với duyệt công việc hoặc chốt giờ công.";
+            }
             ViewState["Kbg20WarningTask"]=taskId;
             ViewState["Kbg20WarningNext"]=next;
             ViewState["Kbg20WarningUsers"]=string.Join("|",missing.Select(x=>x.IdNhanVien.ToString("N")));
-            modal.OpenModal(true);
+            // Từ thông báo: Page_Load chạy trước khi MasterTemplate tải xong JS của ExtraModal.
+            // Mở cảnh báo sau khi CMSMasterJs + jQuery modal sẵn sàng, giống popup duyệt nhanh.
+            // Các thao tác trực tiếp trong TaskList giữ nguyên OpenModal chuẩn như trước.
+            ViewState["Kbg20WarningFromNotification"] = tuThongBao;
+            if (tuThongBao)
+                DangKyMoCanhBaoKbg20TuThongBao(modal.ClientID);
+            else
+                modal.OpenModal(true);
             return true;
         }
+
+        // Chỉ phục vụ mở hộp cảnh báo từ link thông báo khi TaskList vừa tải.
+        // Không tạo overlay riêng, không đổi khung ExtraModal hoặc logic duyệt Task.
+        private void DangKyMoCanhBaoKbg20TuThongBao(string modalClientId)
+        {
+            string selector = System.Web.HttpUtility.JavaScriptStringEncode("#" + modalClientId);
+            string title = System.Web.HttpUtility.JavaScriptStringEncode("Cảnh báo khi hoàn thành công việc");
+            string script = @"
+(function () {
+    var selector = '__SELECTOR__';
+    var title = '__TITLE__';
+    var opened = false;
+    var timer = null;
+    var tries = 0;
+    var maxTries = 400;
+
+    function getCms() {
+        try { if (typeof CMSMasterJs !== 'undefined' && CMSMasterJs) return CMSMasterJs; } catch (e) { }
+        try { if (window.CMSMasterJs) return window.CMSMasterJs; } catch (e) { }
+        return null;
+    }
+    function ready() {
+        if (opened) return;
+        tries++;
+        var cms = getCms();
+        var dollar = null;
+        try { if (typeof $ !== 'undefined') dollar = $; } catch (e) { }
+        if (cms && typeof cms.OpenDialog === 'function' &&
+            dollar && dollar.fn && typeof dollar.fn.modal === 'function' &&
+            document.querySelector(selector)) {
+            try {
+                cms.OpenDialog(selector, title);
+                opened = true;
+                if (timer !== null) { window.clearInterval(timer); timer = null; }
+            } catch (err) {
+                opened = true; // Không gọi lặp tạo nhiều overlay khi JS lỗi.
+                if (timer !== null) { window.clearInterval(timer); timer = null; }
+                if (window.console && window.console.error)
+                    window.console.error('Không thể mở cảnh báo giờ công từ thông báo.', err);
+            }
+        } else if (tries >= maxTries) {
+            if (timer !== null) { window.clearInterval(timer); timer = null; }
+            if (window.console && window.console.error)
+                window.console.error('Không thể mở cảnh báo: giao diện chưa tải đủ thành phần.', selector);
+        }
+    }
+    ready();
+    if (!opened && tries < maxTries) timer = window.setInterval(ready, 50);
+})();";
+            script = script.Replace("__SELECTOR__", selector).Replace("__TITLE__", title);
+            ScriptManager.RegisterStartupScript(Page, Page.GetType(),
+                "Kbg20WarningFromNotification_" + modalClientId, script, true);
+        }
+
         protected void btnKbg20WarningProceed_Click(object sender,EventArgs e)
         {
             Guid taskId;
@@ -105,18 +190,28 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             if(task==null || task.IdDuAn!=ProjectId ||
                 (next=="complete" && task.TrangThai!=1) ||
                 (next=="review" && (task.TrangThai!=4 || !IsPM)))
-            {ShowNotify("Task đã đổi trạng thái, vui lòng tải lại.",MSGType.Warning);return;}
+            {ShowNotify("Trạng thái công việc đã thay đổi. Vui lòng tải lại trang.",MSGType.Warning);return;}
             var missing=new Kbg20BaoXongManager().LayNhanVienChuaXacNhan(ProjectId,taskId,true);
             if(!string.Equals(Convert.ToString(ViewState["Kbg20WarningUsers"]),
                 string.Join("|",missing.Select(x=>x.IdNhanVien.ToString("N"))),StringComparison.Ordinal))
             {ShowNotify("Danh sách nhân viên chưa báo đã thay đổi. Vui lòng mở lại để xem cảnh báo mới.",MSGType.Warning);return;}
+            bool tuThongBao = ViewState["Kbg20WarningFromNotification"] is bool
+                && (bool)ViewState["Kbg20WarningFromNotification"];
             var modal=TimControl(this,"mdlKbg20Warning") as SweetSoft.QLDA.Controls.ExtraModal;
             if(modal!=null)modal.CloseModal();
             ViewState.Remove("Kbg20WarningTask");ViewState.Remove("Kbg20WarningNext");ViewState.Remove("Kbg20WarningUsers");
+            ViewState.Remove("Kbg20WarningFromNotification");
             if(next=="complete")CtrlFastCompleteTask1.OpenModal(taskId,task.MaCongViec,task.TenCongViec);
             else if(next=="review"){
                 var review=GetFastReviewTaskControl();
-                if(review!=null){review.IsPM=IsPM;review.OpenModal(ProjectId,taskId,task.MaCongViec,task.TenCongViec);}
+                if(review!=null){
+                    review.IsPM=IsPM;
+                    // Luồng từ thông báo phải chờ JS; luồng nhấn nút trong bảng giữ cách cũ.
+                    if (tuThongBao)
+                        review.OpenModalWhenDialogReady(ProjectId,taskId,task.MaCongViec,task.TenCongViec);
+                    else
+                        review.OpenModal(ProjectId,taskId,task.MaCongViec,task.TenCongViec);
+                }
             }
         }
 
@@ -316,7 +411,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                 return;
             }
 
-            if(HienCanhBaoKbg20(taskId,"review"))return;
+            if(HienCanhBaoKbg20(taskId,"review",true))return;
 
             CtrlFastReviewTask reviewControl = GetFastReviewTaskControl();
             if (reviewControl == null)
@@ -609,17 +704,68 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             // Dot 8: mot bulk SQL cho danh sach du an; neu module V2 tat thi nut khong duoc bat.
             _qlpmTrangThai = new Dictionary<Guid, bool>();
             _qlpmTaskCoGio = new HashSet<Guid>();
+            _qlpmTaskDuocChot = new HashSet<Guid>();
+            _qlpmLyDoChuaChot = new Dictionary<Guid, string>();
             if ((IsPM || IsAdministrator) && ProjectId != Guid.Empty && KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
             {
-                try {
-                    var pmReader=new Kbg20PmChotCongTaskManager();
-                    _qlpmTrangThai=pmReader.LayTrangThaiNhieuTask(ProjectId);
-                    _qlpmTaskCoGio=pmReader.LayTaskCoNhanVienHoacGio(ProjectId);
+                try
+                {
+                    var pmReader = new Kbg20PmChotCongTaskManager();
+                    _qlpmTrangThai = pmReader.LayTrangThaiNhieuTask(ProjectId);
+                    _qlpmTaskCoGio = pmReader.LayTaskCoNhanVienHoacGio(ProjectId);
+                    // Chi doc chi tiet cac task DA HOAN THANH, CO DU LIEU va CHUA CHOT.
+                    // Chua du dieu kien => khoa nut; khong can query trong RowDataBound.
+                    if (dtTasks != null)
+                    {
+                        foreach (DataRow row in dtTasks.Rows)
+                        {
+                            Guid idTask;
+                            int trangThai = Convert.ToInt32(row["TrangThai"]);
+                            if ((trangThai != 2 && trangThai != 3)
+                                || !Guid.TryParse(Convert.ToString(row["IdCongViec"]), out idTask)
+                                || idTask == Guid.Empty || !_qlpmTaskCoGio.Contains(idTask)) continue;
+                            bool daChot;
+                            if (!_qlpmTrangThai.TryGetValue(idTask, out daChot) || daChot) continue;
+                            try
+                            {
+                                var ban = pmReader.LayBanDuyet(ProjectId, idTask);
+                                if (ban.DaChotCong)
+                                {
+                                    _qlpmTrangThai[idTask] = true;
+                                    continue;
+                                }
+                                bool daCoBanPm = ban.NhanVien.Any(x => x.DaCoSuKienPmChot);
+                                if ((ban.TrangThaiTask == 2 || ban.TrangThaiTask == 3)
+                                    && ban.NhanVien.Count > 0 && !ban.CoPhienDangMo
+                                    && !daCoBanPm && ban.SoNhanVienChuaXacNhan == 0)
+                                {
+                                    _qlpmTaskDuocChot.Add(idTask);
+                                }
+                                else
+                                {
+                                    _qlpmLyDoChuaChot[idTask] = ban.CoPhienDangMo
+                                        ? "Còn đồng hồ đang chạy; chưa thể chốt giờ công."
+                                        : ban.SoNhanVienChuaXacNhan > 0
+                                            ? "Còn " + ban.SoNhanVienChuaXacNhan + " nhân viên chưa báo hoàn thành phần việc."
+                                        : daCoBanPm ? "Đã có kết quả chốt trước đó; cần kiểm tra dữ liệu."
+                                        : "Chưa đủ điều kiện chốt giờ công.";
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _qlpmLyDoChuaChot[idTask] = "Không đọc được dữ liệu đối soát; vui lòng thử lại.";
+                                System.Diagnostics.Trace.TraceError("KBG20: khong doc duoc dieu kien chot cua task " + idTask + ": " + ex);
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Khong de loi thong ke gio chan ca trang TaskList. Disabled nut va ghi log.
-                    System.Diagnostics.Trace.TraceError("QLDA dot 8: loi doc trang thai gio cong: " + ex);
+                    // Loi doc du lieu => tat nut, khong duoc suy doan la du dieu kien chot.
+                    _qlpmTrangThai.Clear();
+                    _qlpmTaskCoGio.Clear();
+                    _qlpmTaskDuocChot.Clear();
+                    System.Diagnostics.Trace.TraceError("KBG20: loi doc trang thai nut chot gio cong: " + ex);
                 }
             }
             grvData.DataSource = dtTasks;
@@ -925,7 +1071,25 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     if (taskPm == null || taskPm.IdDuAn != ProjectId || taskPm.DaXoa == true)
                     { ShowInvalidNotFoundData(); return; }
                     if (taskPm.TrangThai != 2 && taskPm.TrangThai != 3)
-                    { ShowNotify("Chỉ duyệt giờ công khi Task đã hoàn thành.", MSGType.Warning); Rebind(); return; }
+                    { ShowNotify("Chỉ chốt giờ công khi công việc đã hoàn thành.", MSGType.Warning); Rebind(); return; }
+                    // Kiểm tra lại từ SQL tại thời điểm click; không tin trạng thái của nút trên trình duyệt.
+                    Kbg20PmBanDuyet banHienTai;
+                    try { banHienTai = new Kbg20PmChotCongTaskManager().LayBanDuyet(ProjectId, idTaskPm); }
+                    catch (Exception ex)
+                    { System.Diagnostics.Trace.TraceError("KBG20: loi kiem tra nut chot gio cong: " + ex);
+                      ShowNotify("Không kiểm tra được dữ liệu giờ công. Vui lòng thử lại.", MSGType.Warning); Rebind(); return; }
+                    bool coBanPm = banHienTai.NhanVien.Any(x => x.DaCoSuKienPmChot);
+                    bool duocChotMoi = banHienTai.NhanVien.Count > 0 && !banHienTai.CoPhienDangMo
+                        && !coBanPm && banHienTai.SoNhanVienChuaXacNhan == 0;
+                    if (!banHienTai.DaChotCong && !duocChotMoi)
+                    {
+                        ShowNotify(banHienTai.CoPhienDangMo ? "Vẫn còn đồng hồ đang chạy trên công việc."
+                            : banHienTai.SoNhanVienChuaXacNhan > 0
+                                ? "Còn nhân viên chưa báo hoàn thành phần việc; chưa thể chốt giờ công."
+                            : coBanPm ? "Đã có bản chốt trước đó; cần kiểm tra dữ liệu giờ công."
+                            : "Công việc chưa đủ điều kiện chốt giờ công.", MSGType.Warning);
+                        Rebind(); return;
+                    }
                     CtrlDuyetGioCongTask1.OpenModal(ProjectId, idTaskPm);
                     break;
 
@@ -1146,8 +1310,7 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     e.Row.CssClass += " row-overdue-bg";
                 else if (finalSeverity == 1)
                     e.Row.CssClass += " row-warning-bg";
-                // Dot 8 hotfix: dung WebControl de ho tro SweetSoft:SmartLinkButton;
-                // khong cho loi truy van trang thai gio lam nut bien mat khoi GridView.
+                // Ba trang thai: chua the chot (khoa), du chot (!) va da chot (V).
                 WebControl btnPm = e.Row.FindControl("lbtDuyetCong") as WebControl;
                 if (btnPm != null)
                 {
@@ -1155,22 +1318,39 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
                     bool daChot = false;
                     int trangThai = Convert.ToInt32(rowView["TrangThai"]);
                     bool hoanThanh = trangThai == 2 || trangThai == 3;
-                    bool coDuLieu = Guid.TryParse(Convert.ToString(rowView["IdCongViec"]), out idTask)
-                        && _qlpmTrangThai.TryGetValue(idTask, out daChot);
+                    bool idHopLe = Guid.TryParse(Convert.ToString(rowView["IdCongViec"]), out idTask)
+                        && idTask != Guid.Empty;
+                    bool coDuLieu = idHopLe && _qlpmTrangThai.TryGetValue(idTask, out daChot);
                     bool coQuyen = this.IsPM || this.IsAdministrator;
-                    bool duocMo = coQuyen && hoanThanh && idTask != Guid.Empty && _qlpmTaskCoGio.Contains(idTask)
-                        && KhaiBaoGioManager.KhaiBaoGio20DaKichHoat();
-                    // Duoc mo popup du coDuLieu=false: backend doc lai trang thai/kiem tra quyen.
+                    bool moduleBat = KhaiBaoGioManager.KhaiBaoGio20DaKichHoat();
+                    bool daChotHopLe = coQuyen && moduleBat && hoanThanh && coDuLieu && daChot;
+                    bool duocChot = coQuyen && moduleBat && hoanThanh && coDuLieu && !daChot
+                        && _qlpmTaskDuocChot.Contains(idTask);
+                    bool duocMo = daChotHopLe || duocChot;
                     btnPm.Enabled = duocMo;
                     btnPm.CssClass = "btn-grid-action btn-qlpm-review text-decoration-none"
-                        + (!duocMo ? " is-disabled" : coDuLieu && daChot ? " is-final" : "");
-                    btnPm.ToolTip = !coQuyen ? "Chi PM/Quan tri vien moi duoc duyet gio cong"
-                        : !hoanThanh ? "Chi duyet gio cong khi cong viec da hoan thanh"
-                        : !_qlpmTaskCoGio.Contains(idTask) ? "Task chua co nhan vien hoac lich su gio cong de duyet"
-                        : !coDuLieu ? "Mo de kiem tra gio cong (chua dong bo trang thai)"
-                        : daChot ? "Da duyet gio cong - bam de xem" : "Chua duyet gio cong - bam de duyet";
-                    Label pending = e.Row.FindControl("lblPmPending") as Label;
-                    if (pending != null) pending.Visible = duocMo && coDuLieu && !daChot;
+                        + (!duocMo ? " is-disabled" : daChotHopLe ? " is-final" : "");
+                    btnPm.Attributes["aria-disabled"] = duocMo ? "false" : "true";
+                    string lyDoKhoa;
+                    btnPm.ToolTip = !coQuyen ? "Chỉ quản lý dự án hoặc quản trị viên mới được chốt giờ công."
+                        : !moduleBat ? "Tính giờ công việc chưa được kích hoạt."
+                        : !hoanThanh ? "Công việc chưa hoàn thành, chưa thể chốt giờ công."
+                        : daChotHopLe ? "Đã chốt giờ công — nhấn để xem hoặc điều chỉnh."
+                        : duocChot ? "Đủ điều kiện chốt giờ công — nhấn để chốt."
+                        : _qlpmLyDoChuaChot.TryGetValue(idTask, out lyDoKhoa) ? lyDoKhoa
+                        : !_qlpmTaskCoGio.Contains(idTask) ? "Chưa có nhân viên hoặc giờ công để chốt."
+                        : "Chưa đủ dữ liệu hợp lệ để chốt giờ công.";
+                    // Tooltip nam tren container de nut Disabled van co giai thich khi hover.
+                    var wrapPm = e.Row.FindControl("qlpmActionWrap") as System.Web.UI.HtmlControls.HtmlGenericControl;
+                    if (wrapPm != null) wrapPm.Attributes["title"] = btnPm.ToolTip;
+                    Label marker = e.Row.FindControl("lblPmPending") as Label;
+                    if (marker != null)
+                    {
+                        marker.Visible = duocMo;
+                        marker.Text = daChotHopLe ? "✓" : "!";
+                        marker.CssClass = daChotHopLe ? "btn-qlpm-final-mark" : "btn-qlpm-pending";
+                        marker.ToolTip = btnPm.ToolTip;
+                    }
                 }
                 LinkButton lbtAssign = (LinkButton)e.Row.FindControl("lbtAssign");
                 if (lbtAssign != null)
@@ -1181,10 +1361,23 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
 
         public override void ConfirmRequest(ConfirmResult e)
         {
-            if (e == null || !e.Submit)
+            if (e == null)
                 return;
 
             string commandName = (e.CommandName ?? string.Empty).Trim();
+
+            // Popup phan cong: ca Dong y VA Huy bo deu can den control con.
+            // Chi rieng lenh nay duoc chuyen tiep truoc khi kiem tra Submit.
+            // Dong y: bo thay doi va dong popup. Huy bo: giu popup, reset co JS.
+            if (commandName == "CONFIRM_DISCARD_TASK_ASSIGNMENT_CHANGES")
+            {
+                CtrlChonNhanVienTask1.ConfirmRequest(e);
+                return;
+            }
+
+            // Khong thay doi cach xu ly nut Huy bo cua cac chuc nang khac.
+            if (!e.Submit)
+                return;
 
             // Dieu phoi xac nhan theo dung chuc nang.
             // Khong duoc chuyen tiep tat ca xac nhan vao moi control.

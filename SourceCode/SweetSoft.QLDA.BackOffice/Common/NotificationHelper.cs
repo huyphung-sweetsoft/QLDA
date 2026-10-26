@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Web;
 using SweetSoft.QLDA.Core.Managers;
 using SweetSoft.QLDA.Core.EnumHelper;
@@ -87,10 +87,26 @@ namespace SweetSoft.QLDA.BackOffice.Common
 
             string actionName = duongDanLienKet.Trim();
 
-            // Thông báo báo/rút giờ công lưu link nội bộ để tự mở đúng popup.
-            // KHÔNG cho phép URL tùy ý hoặc đường dẫn khác trên website.
-            if (IsTrustedKbg20Link(actionName, idDuAn, idCongViec))
-                return actionName;
+            // KBG20: Thong bao PM chot/dieu chinh gio luu mot URL noi bo kem ma ban chot.
+            // Khong dien giai URL nay thanh ten action cua TaskList.
+            // Chi chap nhan duong dan dung trang KBG, dung du an/Task va GUID ban chot.
+            string applicationPath = (HttpRuntime.AppDomainAppVirtualPath ?? "/").TrimEnd('/');
+            string pmFinalPrefix = applicationPath + "/fKhaiBaoGio/KhaiBaoGio.aspx?";
+            if (actionName.StartsWith(pmFinalPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var query = HttpUtility.ParseQueryString(actionName.Substring(pmFinalPrefix.Length));
+                Guid linkProjectId, linkTaskId, linkEventId;
+                if (idDuAn.HasValue && idCongViec.HasValue &&
+                    Guid.TryParse(query["ProjectId"], out linkProjectId) &&
+                    Guid.TryParse(query["pmFinalTaskId"], out linkTaskId) &&
+                    Guid.TryParse(query["pmFinalEventId"], out linkEventId) &&
+                    linkProjectId == idDuAn.Value &&
+                    linkTaskId == idCongViec.Value &&
+                    linkEventId != Guid.Empty)
+                {
+                    return actionName;
+                }
+            }
 
             // Action này dùng ID bản ghi thông báo để mở popup kết quả lịch sử.
             // Chấp nhận tường minh để tránh rơi về URL trang Tasks nếu enum ở project
@@ -124,37 +140,6 @@ namespace SweetSoft.QLDA.BackOffice.Common
                 url = AppendQueryParameter(url, "notificationId", idThongBao.Value.ToString());
 
             return url;
-        }
-
-        private static bool IsTrustedKbg20Link(string link, Guid? projectId, Guid? taskId)
-        {
-            if (string.IsNullOrWhiteSpace(link) || !projectId.HasValue || projectId.Value == Guid.Empty ||
-                !link.StartsWith("/", StringComparison.Ordinal) || link.StartsWith("//", StringComparison.Ordinal) ||
-                link.IndexOf('\\') >= 0 || link.IndexOf('#') >= 0 ||
-                link.IndexOf('%') >= 0 || link.IndexOf("..", StringComparison.Ordinal) >= 0)
-                return false;
-
-            string siteRoot = (HttpRuntime.AppDomainAppVirtualPath ?? "/").TrimEnd('/');
-            string expectedPath = siteRoot + "/fKhaiBaoGio/KhaiBaoGio.aspx";
-            int queryAt = link.IndexOf('?');
-            if (queryAt <= 0 || !string.Equals(link.Substring(0, queryAt), expectedPath,
-                   StringComparison.OrdinalIgnoreCase))
-                return false;
-
-            var query = HttpUtility.ParseQueryString(link.Substring(queryAt + 1));
-            Guid linkedProject;
-            if (!Guid.TryParse(query["ProjectId"], out linkedProject) || linkedProject != projectId.Value)
-                return false;
-            // Neu notification co Task thi deep link khong duoc mo nham Task khac.
-            if (taskId.HasValue && taskId.Value != Guid.Empty)
-            {
-                Guid idTrongLink;
-                string ma = query["pmViewTaskId"] ?? query["reportTaskId"] ?? query["taskId"];
-                if (string.IsNullOrWhiteSpace(ma) || !Guid.TryParse(ma, out idTrongLink) ||
-                    idTrongLink != taskId.Value)
-                    return false;
-            }
-            return true;
         }
 
         private static string AppendQueryParameter(string url, string name, string value)

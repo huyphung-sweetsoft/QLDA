@@ -1,16 +1,15 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlDuyetGioCongTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlDuyetGioCongTask" %>
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="CtrlDuyetGioCongTask.ascx.cs" Inherits="SweetSoft.QLDA.BackOffice.fTasks.Controls.CtrlDuyetGioCongTask" %>
 <%@ Register Assembly="SweetSoft.QLDA.Controls" Namespace="SweetSoft.QLDA.Controls" TagPrefix="SweetSoft" %>
 <style>
-/* KBG20 | Compact workspace V3: all CSS rules are kept on a single line per selector. */
-#<%= mdlDuyetGioCong.ClientID %> .modal-dialog{width:min(1360px,calc(100vw - 28px))!important;max-width:calc(100vw - 28px)!important;margin:18px auto!important}
+/* KBG20 | Compact workspace V4: restore ExtraModal floating close button without clipping. */
+#<%= mdlDuyetGioCong.ClientID %> .modal-dialog{width:min(1360px,calc(100vw - 28px))!important;max-width:calc(100vw - 28px)!important;margin:16px auto!important}
 #<%= mdlDuyetGioCong.ClientID %> .modal-dialog:has(.qlpm-one){width:min(940px,calc(100vw - 28px))!important}
-#<%= mdlDuyetGioCong.ClientID %> .modal-content{max-height:calc(100dvh - 36px)!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;border-radius:11px!important}
-#<%= mdlDuyetGioCong.ClientID %> .modal-header{flex:0 0 auto!important;min-height:38px!important;padding:8px 15px!important;position:relative!important;z-index:3!important}
-#<%= mdlDuyetGioCong.ClientID %> .modal-header .close,#<%= mdlDuyetGioCong.ClientID %> .modal-header .btn-close{position:relative!important;z-index:6!important;opacity:1!important;visibility:visible!important;flex-shrink:0!important;cursor:pointer!important}
+#<%= mdlDuyetGioCong.ClientID %> .modal-content{max-height:calc(100dvh - 36px)!important;display:flex!important;flex-direction:column!important;overflow:visible!important;border-radius:11px!important}
+#<%= mdlDuyetGioCong.ClientID %> .modal-header{flex:0 0 auto!important;min-height:38px!important;padding:8px 15px!important;position:relative!important;z-index:3!important;overflow:visible!important;border-radius:11px 11px 0 0!important}
 #<%= mdlDuyetGioCong.ClientID %> .modal-body{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding:0!important}
 #<%= mdlDuyetGioCong.ClientID %> .modal-footer{position:relative;z-index:4;flex:0 0 auto!important;min-height:50px;background:#fff!important;border-top:1px solid #e7e3ef!important;padding:8px 14px!important;display:flex!important;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 #<%= mdlDuyetGioCong.ClientID %> .modal-footer .btn{margin:0!important;min-height:33px;font-size:12px;font-weight:650;border-radius:7px}
-.qlpm-shell{--qlpm-line:#e8e5ef;--qlpm-primary:#5a278f;display:flex;flex-direction:column;height:clamp(390px,68dvh,550px);max-height:calc(100dvh - 145px);min-height:0;overflow:hidden;color:#34364a;background:#fff;font-size:12.5px}
+.qlpm-shell{--qlpm-line:#e8e5ef;--qlpm-primary:#5a278f;display:flex;flex-direction:column;height:clamp(390px,75dvh,590px);max-height:calc(100dvh - 160px);min-height:0;overflow:hidden;color:#34364a;background:#fff;font-size:12.5px}
 .qlpm-overview{flex:none;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;padding:13px 18px;background:#fcfbfe;border-bottom:1px solid var(--qlpm-line)}
 .qlpm-task-top{display:flex;align-items:center;flex:1 1 52%;min-width:0}
 .qlpm-task-inline{display:flex;align-items:center;gap:7px 9px;min-width:0;flex-wrap:wrap}
@@ -71,9 +70,9 @@
 .qlpm-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 10px}
 .qlpm-time-column{min-width:0;border:1px solid #e7e2ed;border-radius:9px;padding:13px 14px;background:#fff}
 .qlpm-time-title{display:block;color:#424056;font-weight:800;font-size:12px;margin-bottom:7px}
-.qlpm-time-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.qlpm-time-meta span{display:inline-flex;gap:5px;align-items:center;padding:4px 7px;background:#f7f5fa;border-radius:5px;color:#77778b;font-size:10px;white-space:nowrap}
-.qlpm-time-meta b{color:#55406e;font-size:10.5px;font-weight:800}
+.qlpm-time-meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.qlpm-time-meta span{display:inline-flex;gap:6px;align-items:center;padding:5px 9px;background:#f7f5fa;border-radius:5px;color:#666b7f;font-size:11.5px;line-height:1.35;white-space:nowrap}
+.qlpm-time-meta b{color:#523070;font-size:12px;font-weight:800}
 .qlpm-time-group{display:flex;align-items:flex-end;gap:9px;width:100%}
 .qlpm-part{display:flex;flex-direction:column;gap:5px;flex:1 1 0;min-width:0;color:#787588;font-size:10.5px;font-weight:650}
 .qlpm-part span{padding-left:1px}
@@ -97,9 +96,10 @@
 .qlpm-footer-notice:not([hidden])+.qlpm-footer-total{display:none!important}
 .qlpm-one .qlpm-employee-grid{display:none}
 .qlpm-one .qlpm-employee-body{left:0}
+#<%= mdlDuyetGioCong.ClientID %> .modal-footer [id$="btnNhacBaoHoanThanh"].aspNetDisabled,#<%= mdlDuyetGioCong.ClientID %> .modal-footer [id$="btnNhacBaoHoanThanh"]:disabled{opacity:.48!important;filter:grayscale(.12);cursor:not-allowed!important;box-shadow:none!important;text-decoration:none!important}
 @media(max-width:1170px){.qlpm-overview{gap:9px}.qlpm-task-top{flex-basis:50%}.qlpm-summary{flex-basis:50%;gap:5px}.qlpm-stat{padding:6px}.qlpm-stat strong{font-size:14px}.qlpm-employee-grid{width:30%}.qlpm-employee-body{left:30%;padding:16px 18px}.qlpm-review-grid{gap:9px}.qlpm-time-column{padding:11px}}
-@media(max-width:920px){.qlpm-overview{flex-wrap:wrap;padding:9px 12px}.qlpm-task-top{flex:1 1 100%}.qlpm-summary{flex:1 1 100%}.qlpm-shell{height:clamp(350px,64dvh,540px)}.qlpm-employee-grid{width:33%}.qlpm-employee-body{left:33%;padding:14px}.qlpm-review-grid{gap:8px}.qlpm-time-column{padding:9px}.qlpm-time-meta span{padding:3px 5px}.qlpm-minutes-part{flex-basis:58px}.qlpm-list-actions{display:none}}
-@media(max-width:690px){#<%= mdlDuyetGioCong.ClientID %> .modal-dialog{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;margin:6px auto!important}#<%= mdlDuyetGioCong.ClientID %> .modal-content{max-height:calc(100dvh - 12px)!important}.qlpm-shell{height:calc(100dvh - 160px);min-height:300px;max-height:none}.qlpm-summary{grid-template-columns:.6fr 1fr 1fr}.qlpm-stat small{font-size:9.5px}.qlpm-employee-grid{width:100%;height:105px;overflow-x:auto;overflow-y:hidden;flex-direction:row;gap:7px;padding:8px;border-right:0;border-bottom:1px solid var(--qlpm-line)}.qlpm-employee-head{flex:0 0 235px;width:235px;min-width:235px;min-height:88px;height:88px;padding:7px}.qlpm-employee-body{top:105px;left:0;right:0;height:calc(100% - 105px);padding:12px}.qlpm-one .qlpm-employee-body{top:0;height:100%}.qlpm-review-grid{gap:7px}.qlpm-time-column{padding:8px}.qlpm-time-meta{gap:3px}.qlpm-time-meta span{font-size:9px}.qlpm-part input{height:37px!important;min-height:37px!important;font-size:13px!important}.qlpm-hint{font-size:9.5px;padding:6px 10px}.qlpm-footer-notice{flex-basis:100%;max-width:none}}
+@media(max-width:920px){.qlpm-overview{flex-wrap:wrap;padding:9px 12px}.qlpm-task-top{flex:1 1 100%}.qlpm-summary{flex:1 1 100%}.qlpm-shell{height:clamp(385px,72dvh,565px);max-height:calc(100dvh - 180px)}.qlpm-employee-grid{width:33%}.qlpm-employee-body{left:33%;padding:14px}.qlpm-review-grid{gap:8px}.qlpm-time-column{padding:9px}.qlpm-time-meta span{padding:4px 7px;font-size:10.75px}.qlpm-minutes-part{flex-basis:58px}.qlpm-list-actions{display:none}}
+@media(max-width:690px){#<%= mdlDuyetGioCong.ClientID %> .modal-dialog{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;margin:6px auto!important}#<%= mdlDuyetGioCong.ClientID %> .modal-content{max-height:calc(100dvh - 12px)!important}.qlpm-shell{height:calc(100dvh - 160px);min-height:300px;max-height:none}.qlpm-summary{grid-template-columns:.6fr 1fr 1fr}.qlpm-stat small{font-size:9.5px}.qlpm-employee-grid{width:100%;height:105px;overflow-x:auto;overflow-y:hidden;flex-direction:row;gap:7px;padding:8px;border-right:0;border-bottom:1px solid var(--qlpm-line)}.qlpm-employee-head{flex:0 0 235px;width:235px;min-width:235px;min-height:88px;height:88px;padding:7px}.qlpm-employee-body{top:105px;left:0;right:0;height:calc(100% - 105px);padding:12px}.qlpm-one .qlpm-employee-body{top:0;height:100%}.qlpm-review-grid{gap:7px}.qlpm-time-column{padding:8px}.qlpm-time-meta{gap:3px}.qlpm-time-meta span{font-size:10px;padding:3px 5px}.qlpm-part input{height:37px!important;min-height:37px!important;font-size:13px!important}.qlpm-hint{font-size:9.5px;padding:6px 10px}.qlpm-footer-notice{flex-basis:100%;max-width:none}}
 @media(max-width:430px){.qlpm-review-grid{grid-template-columns:1fr}.qlpm-stat{gap:4px}.qlpm-stat strong{font-size:12px}.qlpm-detail-name{font-size:14px}.qlpm-detail-step{display:none}.qlpm-reason textarea{min-height:76px!important}#<%= mdlDuyetGioCong.ClientID %> .modal-footer{padding:6px!important;gap:5px}#<%= mdlDuyetGioCong.ClientID %> .modal-footer .btn{font-size:10px!important;padding:5px 7px!important}}
 </style>
 <SweetSoft:ExtraModal ID="mdlDuyetGioCong" runat="server" Type="Primary" Title="Duyệt giờ công">
@@ -115,7 +115,7 @@
                         <div class="qlpm-task-top"><div class="qlpm-task-inline"><div class="qlpm-task-title"><asp:Literal ID="ltrTaskName" runat="server" /></div><div class="qlpm-context"><asp:Literal ID="ltrTaskStatus" runat="server" /><asp:Literal ID="ltrPmStatus" runat="server" /></div></div></div>
                         <div class="qlpm-summary">
                             <div class="qlpm-stat"><small>Nhân viên cần duyệt</small><strong><asp:Label ID="lblNhanVien" runat="server" /></strong></div>
-                            <div class="qlpm-stat"><small>Tổng giờ hành chính PM duyệt</small><strong id="qlpmSumHc"><asp:Label ID="lblTongHanhChinh" runat="server" /></strong></div>
+                            <div class="qlpm-stat"><small>Tổng giờ làm theo lịch PM duyệt</small><strong id="qlpmSumHc"><asp:Label ID="lblTongHanhChinh" runat="server" /></strong></div>
                             <div class="qlpm-stat"><small>Tổng giờ tăng ca PM duyệt</small><strong id="qlpmSumTc"><asp:Label ID="lblTongTangCa" runat="server" /></strong></div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
                                             <div class="qlpm-detail-bar"><div><span class="qlpm-detail-eyebrow">Giờ công nhân viên</span><h3 class="qlpm-detail-name"><%#: Eval("TenNhanVien") %></h3><span class="qlpm-detail-meta"><%#: Eval("Email") %> · <%# HienChucDanh(Eval("IdNhanVien")) %></span></div><span class="qlpm-detail-step">Nhân viên <%# Container.ItemIndex + 1 %></span></div>
                                             <div class="qlpm-section-heading"><strong><i class="fas fa-user-check"></i> PM xác nhận giờ công</strong><span>Đối chiếu hệ thống và giờ nhân viên đã báo</span></div>
                                             <div class="qlpm-review-grid">
-                                                <div class="qlpm-time-column"><span class="qlpm-time-title">Giờ hành chính</span><div class="qlpm-time-meta"><span>Hệ thống <b><%# HienGiay(Eval("GiayHanhChinhHeThong")) %></b></span><span>Nhân viên báo <b><%# HienPhutBao(Eval("PhutHanhChinhNhanVienBao"),Eval("DaRutBaoGanNhat")) %></b></span></div><div class="qlpm-time-group" aria-label="Giờ hành chính PM duyệt">
+                                                <div class="qlpm-time-column"><span class="qlpm-time-title">Giờ làm theo lịch</span><div class="qlpm-time-meta"><span>Hệ thống <b><%# HienGiay(Eval("GiayHanhChinhHeThong")) %></b></span><span>Nhân viên báo <b><%# HienPhutBao(Eval("PhutHanhChinhNhanVienBao"),Eval("DaRutBaoGanNhat")) %></b></span></div><div class="qlpm-time-group" aria-label="Giờ làm theo lịch PM duyệt">
                                                     <label class="qlpm-part"><span>Giờ</span><asp:TextBox ID="txtHanhChinh" runat="server" CssClass="form-control qlpm-hours qlpm-part-hours" Text='<%# GiaTriSuaGio(Eval("PhutHanhChinhDeXuat"),Eval("PhutHanhChinhPmDaChot")) %>' inputmode="numeric" MaxLength="4" /></label>
                                                     <label class="qlpm-part qlpm-minutes-part"><span>Phút</span><asp:TextBox ID="txtHanhChinhPhut" runat="server" CssClass="form-control qlpm-hours qlpm-part-minutes" Text='<%# GiaTriSuaPhut(Eval("PhutHanhChinhDeXuat"),Eval("PhutHanhChinhPmDaChot")) %>' inputmode="numeric" MaxLength="2" /></label>
                                                 </div></div>
@@ -155,7 +155,7 @@
                             </asp:Repeater>
                         </div>
                     </div>
-                    <div class="qlpm-hint"><i class="fas fa-info-circle"></i> PM nhập <strong>Giờ</strong> và <strong>Phút</strong> riêng như biểu mẫu Báo hoàn thành. <strong>0 giờ 00 phút</strong> hợp lệ; giới hạn <strong>9.999 giờ 59 phút</strong>. Chốt toàn bộ nhân viên một lần, không lưu từng người riêng.</div>
+                    <div class="qlpm-hint"><i class="fas fa-info-circle"></i> PM nhập <strong>Giờ</strong> và <strong>Phút</strong> riêng như biểu mẫu Báo hoàn thành. <strong>0 giờ 00 phút</strong> hợp lệ; giới hạn <strong>9.999 giờ 59 phút</strong>. Chốt lần đầu cho toàn bộ nhân viên. Sau khi chốt, quản lý chỉ được điều chỉnh từng người và phải nhập lý do; dữ liệu cũ luôn được giữ lại.</div>
                     <div class="qlpm-alert-anchor"></div>
                     <asp:Panel ID="pnlAlert" runat="server" CssClass="qlpm-alert" Visible="false"><asp:Label ID="lblAlert" runat="server" /></asp:Panel>
                 </asp:Panel>
@@ -167,6 +167,8 @@
             <span class="qlpm-footer-notice" hidden="hidden" aria-live="polite"></span><asp:Label ID="lblFooter" runat="server" CssClass="qlpm-footer-total" />
             <asp:LinkButton ID="btnLamMoiDuyet" runat="server" CssClass="btn btn-outline-secondary" OnClick="btnLamMoiDuyet_Click" CausesValidation="false"><i class="fas fa-sync-alt me-1"></i> Làm mới</asp:LinkButton>
             <asp:LinkButton ID="btnNhacBaoHoanThanh" runat="server" CssClass="btn btn-outline-warning" OnClick="btnNhacBaoHoanThanh_Click" CausesValidation="false"><i class="fas fa-bell me-1"></i> Gửi nhắc nhở</asp:LinkButton>
+            <asp:LinkButton ID="btnBatDauDieuChinh" runat="server" CssClass="btn btn-outline-primary" OnClick="btnBatDauDieuChinh_Click" CausesValidation="false"><i class="fas fa-pen me-1"></i> Điều chỉnh giờ đã chốt</asp:LinkButton>
+            <asp:LinkButton ID="btnLuuDieuChinh" runat="server" CssClass="btn btn-primary" OnClick="btnLuuDieuChinh_Click" CausesValidation="false" OnClientClick="if (!confirm('Lưu kết quả giờ công điều chỉnh? Bản chốt trước đó vẫn được giữ trong lịch sử.')) return false;"><i class="fas fa-check me-1"></i> Xác nhận điều chỉnh</asp:LinkButton>
             <asp:LinkButton ID="btnChotGioCong" runat="server" CssClass="btn btn-primary" OnClick="btnChotGioCong_Click" OnClientClick="if (!QldaPmHours.confirmOnce(this)) return false;"><i class="fas fa-check-double me-1"></i> Xác nhận duyệt giờ công</asp:LinkButton>
         </ContentTemplate></asp:UpdatePanel>
     </FooterTemplate>

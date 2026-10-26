@@ -19,15 +19,15 @@ namespace SweetSoft.QLDA.Core.Managers
         public static int LayLanHienTai(SqlConnection c, SqlTransaction tx, Guid project, Guid task)
         {
             using (var q = new SqlCommand(@"SELECT LanThucHien FROM dbo.TblCongViec
-                WHERE IdDuAn=@D AND IdCongViec=@T AND ISNULL(DaXoa,0)=0", c, tx))
+                WHERE IdDuAn=@D AND IdCongViec=@T", c, tx))
             {
                 q.Parameters.Add("@D", SqlDbType.UniqueIdentifier).Value = project;
                 q.Parameters.Add("@T", SqlDbType.UniqueIdentifier).Value = task;
                 var result = q.ExecuteScalar();
                 if (result == null || result == DBNull.Value)
-                    throw new InvalidOperationException("Khong tim thay Task de doc lan thuc hien.");
+                    throw new InvalidOperationException("Không tìm thấy công việc để xác định lượt thực hiện.");
                 int lan = Convert.ToInt32(result);
-                if (lan < 1) throw new InvalidOperationException("LanThucHien cua Task khong hop le.");
+                if (lan < 0) throw new InvalidOperationException("Lượt thực hiện của công việc không hợp lệ.");
                 return lan;
             }
         }
@@ -35,16 +35,16 @@ namespace SweetSoft.QLDA.Core.Managers
         public static void TangLuotTrongTransactionScope(SqlConnection c, Guid project, Guid task)
         {
             if (Transaction.Current == null)
-                throw new InvalidOperationException("Tang luot Task phai nam trong transaction chung.");
+                throw new InvalidOperationException("Không thể cập nhật lượt thực hiện cùng với trạng thái công việc.");
             using (var q = new SqlCommand(@"UPDATE dbo.TblCongViec
                 SET LanThucHien=LanThucHien+1
                 WHERE IdDuAn=@D AND IdCongViec=@T AND TrangThai=1
-                  AND ISNULL(DaXoa,0)=0 AND LanThucHien>=1 AND LanThucHien<2147483647", c))
+                  AND ISNULL(DaXoa,0)=0 AND LanThucHien>=0 AND LanThucHien<2147483647", c))
             {
                 q.Parameters.Add("@D", SqlDbType.UniqueIdentifier).Value = project;
                 q.Parameters.Add("@T", SqlDbType.UniqueIdentifier).Value = task;
                 if (q.ExecuteNonQuery() != 1)
-                    throw new DBConcurrencyException("Khong tang duoc luot thuc hien; da rollback tu choi Task.");
+                    throw new DBConcurrencyException("Không cập nhật được lượt thực hiện. Việc từ chối hoàn thành đã được hủy để bảo toàn dữ liệu.");
             }
         }
     }
@@ -85,7 +85,7 @@ namespace SweetSoft.QLDA.Core.Managers
         {
             var repo = new KhaiBaoGio20Repository();
             var builder = new SqlConnectionStringBuilder(repo.ChuoiKetNoi);
-            if (!builder.Enlist) throw new InvalidOperationException("KhaiBaoGio20.TenKetNoi phai co Enlist=true de dam bao rollback dong bo Task.");
+            if (!builder.Enlist) throw new InvalidOperationException("Cấu hình kết nối đối soát giờ công chưa hỗ trợ giao dịch đồng bộ. Vui lòng liên hệ quản trị viên.");
             var con = new SqlConnection(builder.ConnectionString);
             con.Open();
             return con;
@@ -115,7 +115,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 P(cmd,"@D",SqlDbType.UniqueIdentifier,duAn);
                 P(cmd,"@U",SqlDbType.UniqueIdentifier,nv);
                 if (cmd.ExecuteScalar() == null)
-                    throw new UnauthorizedAccessException("Ban khong co quyen doi soat task nay hoac task chua duoc PM duyet.");
+                    throw new UnauthorizedAccessException("Bạn không có quyền đối soát công việc này hoặc công việc chưa được PM duyệt hoàn thành.");
             }
         }
         private static Kbg20BanDoiSoat Read(IDataRecord r)
@@ -180,7 +180,7 @@ namespace SweetSoft.QLDA.Core.Managers
         // Session bai ghi gio da duoc chot truoc khi goi ham nay.
         public void TaoDotSauKhiPmDuyetTrongTransactionScope(Guid project, Guid task, DateTime nowUtc)
         {
-            if(Transaction.Current==null) throw new InvalidOperationException("Tao doi soat yeu cau transaction chung Task + KBG20.");
+            if(Transaction.Current==null) throw new InvalidOperationException("Không thể tạo bản đối soát đồng bộ với trạng thái công việc.");
             using(var c=Open())
             {
                 ProjectLock(c,project);
@@ -189,7 +189,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 {
                     P(check,"@T",SqlDbType.UniqueIdentifier,task);
                     P(check,"@D",SqlDbType.UniqueIdentifier,project);
-                    if(check.ExecuteScalar()==null) throw new InvalidOperationException("Task chua duoc PM xac nhan hoan thanh.");
+                    if(check.ExecuteScalar()==null) throw new InvalidOperationException("Công việc chưa được PM duyệt hoàn thành.");
                 }
                 using(var cmd=Cmd(c,@";WITH U AS (
                       SELECT DISTINCT IdNhanVien FROM dbo.TblCongViec_NhanVien WHERE IdCongViec=@T
@@ -225,8 +225,8 @@ namespace SweetSoft.QLDA.Core.Managers
         public int LuuTuKhai(Guid nv,Guid project,Guid task,int phutThuong,int phutTangCa,string lyDo,int expectedVersion)
         {
             if(phutThuong<0 || phutTangCa<0 || phutThuong>599999 || phutTangCa>599999)
-                throw new ArgumentOutOfRangeException("phutThuong", "So phut phai hop le va khong am.");
-            if(lyDo!=null && lyDo.Length>2000) throw new ArgumentException("Ly do dieu chinh qua 2000 ky tu.");
+                throw new ArgumentOutOfRangeException("phutThuong", "Số phút không hợp lệ. Vui lòng nhập số không âm trong giới hạn cho phép.");
+            if(lyDo!=null && lyDo.Length>2000) throw new ArgumentException("Lý do điều chỉnh không được vượt quá 2.000 ký tự.");
             using(var scope = new TransactionScope(TransactionScopeOption.Required,
                 new TransactionOptions { IsolationLevel=System.Transactions.IsolationLevel.ReadCommitted,
                     Timeout=TimeSpan.FromMinutes(2) }))
@@ -243,7 +243,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     P(lockPm,"@D",SqlDbType.UniqueIdentifier,project);
                     P(lockPm,"@T",SqlDbType.UniqueIdentifier,task);
                     if(lockPm.ExecuteScalar()!=null)
-                        throw new InvalidOperationException("Gio cong da duoc PM duyet, khong duoc sua gio tu khai.");
+                        throw new InvalidOperationException("PM đã chốt giờ công; bạn không thể sửa số giờ đã báo.");
                 }
                 Guid id; int lan; int version; long regular;long ot; DateTime snap;
                 using(var cmd=Cmd(c,@"SELECT TOP(1) IdDoiSoat,LanDoiSoat,PhienBan,
@@ -257,17 +257,17 @@ namespace SweetSoft.QLDA.Core.Managers
                     P(cmd,"@T",SqlDbType.UniqueIdentifier,task);
                     using(var r=cmd.ExecuteReader())
                     {
-                        if(!r.Read()) throw new InvalidOperationException("Chua co dot doi soat duoc PM duyet cho nhan vien nay.");
+                        if(!r.Read()) throw new InvalidOperationException("Chưa có bản giờ công đã được PM duyệt cho nhân viên này.");
                         id=r.GetGuid(0);lan=r.GetInt32(1);version=r.GetInt32(2);
                         regular=r.GetInt64(3);ot=r.GetInt64(4);snap=r.GetDateTime(5);
                     }
                 }
-                if(version!=expectedVersion) throw new DBConcurrencyException("Ban doi soat da duoc cap nhat. Vui long tai lai truoc khi luu.");
+                if(version!=expectedVersion) throw new DBConcurrencyException("Bản đối soát giờ công vừa được cập nhật. Vui lòng tải lại trước khi lưu.");
                 using(var cmd=Cmd(c,@"UPDATE dbo.TblKhaiBaoGioDoiSoat SET LaBanHienTai=0
                     WHERE IdDoiSoat=@I AND LaBanHienTai=1 AND PhienBan=@V"))
                 {
                     P(cmd,"@I",SqlDbType.UniqueIdentifier,id);P(cmd,"@V",SqlDbType.Int,version);
-                    if(cmd.ExecuteNonQuery()!=1) throw new DBConcurrencyException("Ban doi soat da thay doi.");
+                    if(cmd.ExecuteNonQuery()!=1) throw new DBConcurrencyException("Bản đối soát giờ công đã thay đổi. Vui lòng tải lại.");
                 }
                 using(var cmd=Cmd(c,@"INSERT dbo.TblKhaiBaoGioDoiSoat
                     (IdDoiSoat,IdNhanVien,IdCongViec,IdDuAn,LanDoiSoat,PhienBan,LaBanHienTai,
@@ -313,7 +313,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 cmd.Parameters.Add("@T", SqlDbType.UniqueIdentifier).Value = task;
                 var value = cmd.ExecuteScalar();
                 if (value == null || value == DBNull.Value)
-                    throw new InvalidOperationException("Cong viec khong ton tai, da bi xoa hoac khong thuoc du an.");
+                    throw new InvalidOperationException("Không thể xử lý vì công việc đã bị xóa hoặc không còn thuộc dự án.");
                 return Convert.ToInt32(value);
             }
         }
@@ -340,27 +340,47 @@ namespace SweetSoft.QLDA.Core.Managers
                 using (var con = repo.MoKetNoi())
                 {
                     if (LayTrangThaiTaskTrongGiaoDich(con, duAn, task) != 4)
-                        throw new InvalidOperationException("Task khong con o trang thai cho duyet.");
+                        throw new InvalidOperationException("Công việc không còn ở trạng thái Chờ duyệt. Vui lòng tải lại.");
                     luuTask();
                     if (LayTrangThaiTaskTrongGiaoDich(con, duAn, task) != 1)
-                        throw new InvalidOperationException("Tu choi Task khong chuyen ve Dang thuc hien.");
+                        throw new InvalidOperationException("Không thể từ chối: công việc chưa được chuyển về trạng thái Đang thực hiện.");
                     Kbg20LuotThucHien.TangLuotTrongTransactionScope(con, duAn, task);
                 }
                 scope.Complete();
             }
         }
+        // KBG20: Phai lay AppLock CUNG resource voi BaoXong/RutBao/SuaTuKhai
+        // TRUOC khi doc danh sach phan cong va snapshot gio cua nguoi gui.
+        // @LockOwner=Transaction: khoa duoc giu den luc TransactionScope commit/rollback,
+        // ke ca khi SqlConnection nay da Dispose. Dong connection ngay de khong
+        // giu nhieu connection dong thoi, han che leo thang distributed transaction.
+        private static void KhoaDuAnTruocKhiGuiHoanThanh(Guid duAn)
+        {
+            if (Transaction.Current == null)
+                throw new InvalidOperationException("Không thể kiểm tra báo hoàn thành ngoài giao dịch đồng bộ.");
+            var repo = new KhaiBaoGio20Repository();
+            if (!new SqlConnectionStringBuilder(repo.ChuoiKetNoi).Enlist)
+                throw new InvalidOperationException("Kết nối KhaiBaoGio phải tham gia giao dịch đồng bộ (Enlist=true).");
+            using (var con = repo.MoKetNoi())
+                repo.KhoaTheoDuAn(con, null, duAn);
+        }
+
         private static void LuuHoanThanhNoiBo(Guid duAn,Guid task,bool pmXacNhan,
             bool laDuyetTuChoDuyet, Action luuTask)
         {
             if (luuTask == null) throw new ArgumentNullException("luuTask");
             if (duAn == Guid.Empty || task == Guid.Empty)
-                throw new ArgumentException("Thieu du an hoac cong viec can hoan thanh.");
+                throw new ArgumentException("Thiếu thông tin dự án hoặc công việc cần hoàn thành.");
             // Feature tat: giu NGUYEN duong TaskList hien huu, khong can thiep nghiep vu cu.
             if (!DuocKichHoat) { luuTask(); return; }
             using (var scope = new TransactionScope(TransactionScopeOption.Required,
                 new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
                     Timeout = TimeSpan.FromMinutes(2) }))
             {
+                // Lay khoa TRUOC khi doc trang thai bao gio, danh sach nhan vien va Task.
+                // RutBao/BaoXong/SuaTuKhai va UpdateAssignments dung cung AppLock nay.
+                // Neu co thay doi dong thoi, yeu cau se doc snapshot moi sau khi cho khoa.
+                KhoaDuAnTruocKhiGuiHoanThanh(duAn);
                 // Nguoi GUI YEU CAU hoan thanh buoc phai tu bao hoan thanh phan viec.
                 // PM DUYET yeu cau da gui la mot duong khac (laDuyetTuChoDuyet=true).
                 if (!laDuyetTuChoDuyet)
@@ -368,13 +388,13 @@ namespace SweetSoft.QLDA.Core.Managers
                     var currentUser = SweetSoft.QLDA.Core.Infrastructure.SweetContext.Current;
                     Guid sender = currentUser != null ? currentUser.UserId : Guid.Empty;
                     if (sender == Guid.Empty)
-                        throw new UnauthorizedAccessException("Khong xac dinh duoc nguoi gui yeu cau hoan thanh.");
+                        throw new UnauthorizedAccessException("Không xác định được người gửi yêu cầu hoàn thành.");
                     if (!TaskManager.Instance.GetAssignedNhanVienIds(task).Contains(sender))
-                        throw new UnauthorizedAccessException("Ban chua duoc phan cong truc tiep tren Task nay.");
+                        throw new UnauthorizedAccessException("Bạn chưa được phân công trực tiếp vào công việc này.");
                     var currentHours = new Kbg20PmChotCongTaskManager().LayBanDuyet(duAn, task);
                     var mine = currentHours.NhanVien.FirstOrDefault(x=>x.IdNhanVien==sender);
                     if (mine == null || !mine.DaXacNhanGio)
-                        throw new InvalidOperationException("Ban phai Bao hoan thanh phan viec va khai gio hop le truoc khi gui yeu cau PM duyet.");
+                        throw new InvalidOperationException("Bạn cần báo hoàn thành phần việc và khai báo giờ công hợp lệ trước khi gửi yêu cầu duyệt hoàn thành công việc.");
                 }
                 var clock = new KhaiBaoGio20Manager();
                 // AppLock cua KBG20 + dong phien truc tiep task, TAT CA trong ambient transaction.
@@ -387,11 +407,11 @@ namespace SweetSoft.QLDA.Core.Managers
                     if (laDuyetTuChoDuyet)
                     {
                         if (truoc != 4)
-                            throw new InvalidOperationException("Cong viec khong con o trang thai Cho duyet. Vui long tai lai.");
+                            throw new InvalidOperationException("Công việc không còn ở trạng thái Chờ duyệt. Vui lòng tải lại.");
                     }
                     else if (truoc != 0 && truoc != 1)
                     {
-                        throw new InvalidOperationException("Cong viec da thay doi trang thai, khong the gui/hoan thanh lai. Vui long tai lai.");
+                        throw new InvalidOperationException("Trạng thái công việc đã thay đổi. Vui lòng tải lại trước khi gửi yêu cầu hoàn thành.");
                     }
 
                     // Giu nguyen tat ca validation, task.Save() va AutoSet* cua partner.
@@ -399,7 +419,7 @@ namespace SweetSoft.QLDA.Core.Managers
 
                     int sau = LayTrangThaiTaskTrongGiaoDich(con, duAn, task);
                     if (pmXacNhan ? (sau != 2 && sau != 3) : sau != 4)
-                        throw new InvalidOperationException("Luu trang thai cong viec khong dung quy trinh. Da huy thao tac va viec chot gio.");
+                        throw new InvalidOperationException("Không thể cập nhật trạng thái công việc theo đúng quy trình. Thao tác đã được hủy.");
                 }
                 // Event 0 (Task hoan thanh) khong phai event 4 PM CHOT CONG.
                 if (pmXacNhan)
@@ -448,7 +468,7 @@ namespace SweetSoft.QLDA.Core.Managers
                         loaiThongBao:ThongBaoTypes.CongViec,
                         idCongViec:taskId,idDuAn:duAn,duongDanLienKet:link,guiEmail:false);
                     if (thongBao == null)
-                        throw new InvalidOperationException("Khong tao duoc thong bao nhom sau commit.");
+                        throw new InvalidOperationException("Không tạo được thông báo sau khi hoàn tất thao tác.");
                 } catch(Exception ex) {
                     try { SweetSoft.QLDA.Core.SysManager.SysLogger.LogError(ex,
                         "KBG20 thong bao nhom task=" + taskId + ", nv=" + nv); }
@@ -547,25 +567,29 @@ namespace SweetSoft.QLDA.Core.Managers
             return ketQua;
         }
         public static void StartTaskVaGio(Guid duAn,Guid task,Guid nhanVien,Guid thaoTac,
-            bool quaHan,bool phuThuoc,bool laTangCa,Action luuTask)
+            bool quaHan,bool phuThuoc,bool laTangCa,Action luuTask,
+            IEnumerable<Guid> phienMuonDung = null, IEnumerable<Guid> phienKhiMoPopup = null)
         {
             if(luuTask==null) throw new ArgumentNullException("luuTask");
-            if(!DuocKichHoat) throw new InvalidOperationException("Chuc nang dong bo Task va KBG20 chua duoc bat tren TEST.");
+            if(!DuocKichHoat) throw new InvalidOperationException("Chức năng đồng bộ công việc và khai báo giờ chưa được kích hoạt.");
             using(var scope = new TransactionScope(TransactionScopeOption.Required,
                 new TransactionOptions { IsolationLevel=System.Transactions.IsolationLevel.ReadCommitted,
                     Timeout=TimeSpan.FromMinutes(2) }))
             {
                 var clock=new KhaiBaoGio20Manager();
-                using(clock.MoKhoaDuAnTrongTransactionScope(duAn))
+                var stops=phienMuonDung==null?new List<Guid>():phienMuonDung.ToList();
+                using(stops.Count>0
+                    ?clock.DungPhienDaChonTruocStartTaskTrongScope(nhanVien,duAn,task,stops,phienKhiMoPopup)
+                    :clock.MoKhoaDuAnTrongTransactionScope(duAn))
                 {
                     // Check lai ngay TRONG transaction, khong tin trang thai tren popup / ViewState.
                     var current=TaskManager.Instance.FetchById(task);
                     if(current==null || current.IdDuAn!=duAn || current.DaXoa==true || current.TrangThai!=0)
-                        throw new InvalidOperationException("Task da thay doi trang thai trong khi mo popup. Vui long tai lai.");
+                        throw new InvalidOperationException("Trạng thái công việc đã thay đổi trong khi mở popup. Vui lòng tải lại.");
                     // Cả giờ theo lịch và tăng ca đều xét Start sớm tại Manager trong
                     // cùng transaction; không chặn tăng ca theo DateTime.Today của IIS.
                     if(!TaskManager.Instance.GetAssignedNhanVienIds(task).Contains(nhanVien))
-                        throw new UnauthorizedAccessException("Ban khong con duoc phan cong truc tiep vao task.");
+                        throw new UnauthorizedAccessException("Bạn không còn được phân công trực tiếp vào công việc này.");
                     luuTask(); // Partner CtrlStartTask: 0->1, update cha nhu TaskList.
                     if(laTangCa)
                         clock.BatDauTangCaTrongTransactionScope(nhanVien,duAn,task,thaoTac);
@@ -598,6 +622,8 @@ namespace SweetSoft.QLDA.Core.Managers
         public string LyDo { get; set; }
         public DateTime NgayTaoUtc { get; set; }
         public bool DaPmChot { get; set; }
+        public bool DaXoa { get; set; }
+        public int TrangThaiTask { get; set; }
         // Event 3 co the la sua cua event 1 HOAC event 5; khong duoc danh dong.
         public bool CoGocXacNhanSauTask { get; set; }
         public bool DangBaoXong { get { return LoaiSuKien==1 || LoaiSuKien==3 || LoaiSuKien==5; } }
@@ -611,6 +637,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public long GiayTangCaHeThong { get; set; }
         public bool ConPhanCong { get; set; }
         public bool KhoaPm { get; set; }
+        public bool DaXoa { get; set; }
         public int TrangThaiTask { get; set; }
     }
     public sealed class Kbg20ViecChoXacNhanGio
@@ -657,7 +684,9 @@ namespace SweetSoft.QLDA.Core.Managers
                 CoGocXacNhanSauTask=r.FieldCount>12 && !r.IsDBNull(12) && Convert.ToBoolean(r.GetValue(12)),
                 LanThucHien=r.FieldCount>13 && !r.IsDBNull(13) ? Convert.ToInt32(r.GetValue(13)) : 1,
                 // LayTomTat them cot khoa PM SAU cot LanThucHien.
-                DaPmChot=r.FieldCount>14 && !r.IsDBNull(14) && Convert.ToBoolean(r.GetValue(14))
+                DaPmChot=r.FieldCount>14 && !r.IsDBNull(14) && Convert.ToBoolean(r.GetValue(14)),
+                DaXoa=r.FieldCount>15 && !r.IsDBNull(15) && Convert.ToBoolean(r.GetValue(15)),
+                TrangThaiTask=r.FieldCount>16 && !r.IsDBNull(16) ? Convert.ToInt32(r.GetValue(16)) : -1
             };
         }
         private static void Keys(SqlCommand cmd,Guid nv,Guid project,Guid task)
@@ -667,13 +696,13 @@ namespace SweetSoft.QLDA.Core.Managers
             P(cmd,"@T",SqlDbType.UniqueIdentifier,task);
         }
         private static void Valid(Guid nv,Guid project,Guid task)
-        { if(nv==Guid.Empty||project==Guid.Empty||task==Guid.Empty)throw new ArgumentException("Thieu nhan vien, du an hoac cong viec."); }
+        { if(nv==Guid.Empty||project==Guid.Empty||task==Guid.Empty)throw new ArgumentException("Thiếu thông tin nhân viên, dự án hoặc công việc."); }
         private static void ValidMinutes(int reg,int ot)
-        { if(reg<0||ot<0||reg>599999||ot>599999)throw new ArgumentException("So phut tu khai khong hop le."); }
+        { if(reg<0||ot<0||reg>599999||ot>599999)throw new ArgumentException("Số giờ/phút tự khai không hợp lệ. Vui lòng kiểm tra lại."); }
         private static void ValidReason(string reason,bool required)
         {
-            if(reason!=null&&reason.Length>2000)throw new ArgumentException("Ghi chu qua 2000 ky tu.");
-            if(required&&string.IsNullOrWhiteSpace(reason))throw new ArgumentException("Vui long nhap ly do rut bao.");
+            if(reason!=null&&reason.Length>2000)throw new ArgumentException("Ghi chú không được vượt quá 2.000 ký tự.");
+            if(required&&string.IsNullOrWhiteSpace(reason))throw new ArgumentException("Vui lòng nhập lý do rút báo hoàn thành phần việc.");
         }
         private void EnsureView(SqlConnection c,SqlTransaction tx,Guid nv,Guid project,Guid task)
         {
@@ -681,7 +710,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 AND (EXISTS(SELECT 1 FROM dbo.TblCongViec_NhanVien a WHERE a.IdCongViec=@T AND a.IdNhanVien=@U)
                   OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioPhien p WHERE p.IdCongViec=@T AND p.IdNhanVien=@U)
                   OR EXISTS(SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat s WHERE s.IdCongViec=@T AND s.IdNhanVien=@U))"))
-            { Keys(cmd,nv,project,task);if(cmd.ExecuteScalar()==null)throw new UnauthorizedAccessException("Khong co quyen xem gio cong nay."); }
+            { Keys(cmd,nv,project,task);if(cmd.ExecuteScalar()==null)throw new UnauthorizedAccessException("Bạn không có quyền xem giờ công này."); }
         }
         private static Kbg20BaoXongBanGhi Latest(SqlConnection c,SqlTransaction tx,Guid nv,Guid project,Guid task)
         {
@@ -692,6 +721,17 @@ namespace SweetSoft.QLDA.Core.Managers
                   AND s.LanThucHien=t.LanThucHien
                 ORDER BY s.LanDoiSoat DESC,s.PhienBan DESC,s.NgayTao DESC"))
             { Keys(cmd,nv,project,task);using(var r=cmd.ExecuteReader())return r.Read()?Read(r):null; }
+        }
+        private static void EnsureTaskNotDeleted(SqlConnection c,SqlTransaction tx,Guid project,Guid task)
+        {
+            using(var q=Cmd(c,tx,@"SELECT ISNULL(DaXoa,0) FROM dbo.TblCongViec WITH(UPDLOCK,HOLDLOCK)
+                WHERE IdDuAn=@D AND IdCongViec=@T"))
+            {
+                P(q,"@D",SqlDbType.UniqueIdentifier,project);P(q,"@T",SqlDbType.UniqueIdentifier,task);
+                object deleted=q.ExecuteScalar();
+                if(deleted==null || Convert.ToBoolean(deleted))
+                    throw new InvalidOperationException("Công việc đã xóa hoặc không còn tồn tại. Giờ đã ghi vẫn được giữ lại để xem, nhưng không thể sửa, rút hoặc báo hoàn thành thêm.");
+            }
         }
         private static bool LockedByPm(SqlConnection c,SqlTransaction tx,Guid nv,Guid project,Guid task)
         {
@@ -718,7 +758,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 WHERE IdThaoTac=@I AND IdNhanVien=@U AND IdDuAn=@D AND IdCongViec=@T"))
             { Keys(cmd,nv,project,task);P(cmd,"@I",SqlDbType.UniqueIdentifier,requestId);
               var x=cmd.ExecuteScalar();if(x==null)return false;
-              if(Convert.ToInt32(x)!=type)throw new DBConcurrencyException("Ma thao tac da duoc su dung cho hanh dong khac.");return true; }
+              if(Convert.ToInt32(x)!=type)throw new DBConcurrencyException("Mã thao tác đã được dùng cho một hành động khác. Vui lòng tải lại.");return true; }
         }
         private static long[] TotalSeconds(SqlConnection c,SqlTransaction tx,Guid nv,Guid task)
         {
@@ -743,7 +783,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 WHERE IdNhanVien=@U AND IdDuAn=@D AND IdCongViec=@T
                   AND LanDoiSoat=@L AND PhienBan=@V AND LaBanHienTai=1 AND LoaiSuKien IN (1,2,3,5)"))
             { Keys(cmd,nv,project,task);P(cmd,"@L",SqlDbType.Int,lan);P(cmd,"@V",SqlDbType.Int,version);
-              if(cmd.ExecuteNonQuery()!=1)throw new DBConcurrencyException("Lich su bao xong da thay doi. Vui long tai lai."); }
+              if(cmd.ExecuteNonQuery()!=1)throw new DBConcurrencyException("Lịch sử báo hoàn thành phần việc đã thay đổi. Vui lòng tải lại."); }
         }
         private static void Insert(SqlConnection c,SqlTransaction tx,Guid nv,Guid project,Guid task,
             Guid requestId,int type,int lan,int version,long[] system,int? regular,int? overtime,string note)
@@ -774,7 +814,7 @@ namespace SweetSoft.QLDA.Core.Managers
               CASE WHEN EXISTS (SELECT 1 FROM dbo.TblKhaiBaoGioDoiSoat lockrow
                   WHERE lockrow.IdNhanVien=s.IdNhanVien AND lockrow.IdDuAn=s.IdDuAn
                     AND lockrow.IdCongViec=s.IdCongViec AND lockrow.LoaiSuKien=4)
-                  THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS DaPmChot
+                  THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS DaPmChot, CAST(ISNULL(t.DaXoa,0) AS bit) AS DaXoa, t.TrangThai AS TrangThaiTask
               FROM dbo.TblKhaiBaoGioDoiSoat s
               JOIN dbo.TblCongViec t ON t.IdCongViec=s.IdCongViec
               WHERE s.IdNhanVien=@U AND s.IdDuAn=@D AND s.LoaiSuKien IN(1,2,3,4,5)
@@ -833,19 +873,20 @@ namespace SweetSoft.QLDA.Core.Managers
             int regular,int overtime,string note)
         {
             Valid(nv,project,task);ValidMinutes(regular,overtime);ValidReason(note,false);
-            if(requestId==Guid.Empty)throw new ArgumentException("Thieu ma thao tac.");
+            if(requestId==Guid.Empty)throw new ArgumentException("Thiếu mã thao tác. Vui lòng tải lại trang.");
             bool written=false;
             using(var c=repo.MoKetNoi()) using(var tx=c.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
             {
                 repo.KhoaTheoDuAn(c,tx,project);
+                EnsureTaskNotDeleted(c,tx,project,task);
                 if(RequestDone(c,tx,requestId,nv,project,task,5))
                 {var same=Latest(c,tx,nv,project,task);tx.Commit();return same;}
                 EnsureView(c,tx,nv,project,task);
                 var target=repo.LayCongViec(c,tx,task);
                 if(target==null || target.IdDuAn!=project ||
                    (target.TrangThai!=2 && target.TrangThai!=3 && target.TrangThai!=4))
-                    throw new InvalidOperationException("Task phai o trang thai Cho duyet/Da hoan thanh moi bao phan viec theo luong nay.");
-                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM da chot gio; chi duoc xem.");
+                    throw new InvalidOperationException("Chỉ có thể báo hoàn thành phần việc theo luồng này khi công việc đang Chờ duyệt hoặc Đã hoàn thành.");
+                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM đã chốt giờ công. Bạn chỉ có thể xem dữ liệu.");
                 var last=Latest(c,tx,nv,project,task);
                 if(last!=null && last.LoaiSuKien!=2 && !last.CoGocXacNhanSauTask)
                     throw new DBConcurrencyException("Đã báo hoàn thành phần việc. Hãy sửa giờ đã báo thay vì xác nhận giờ trùng.");
@@ -859,7 +900,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 using(var q=Cmd(c,tx,@"SELECT TOP 1 1 FROM dbo.TblKhaiBaoGioPhien WITH(HOLDLOCK)
                     WHERE IdDuAn=@D AND IdCongViec=@T AND IdNhanVien=@U AND KetThucLuc IS NULL"))
                 {Keys(q,nv,project,task);if(q.ExecuteScalar()!=null)
-                    throw new InvalidOperationException("Van con dong ho mo tren Task; khong duoc xac nhan gio.");}
+                    throw new InvalidOperationException("Công việc vẫn còn đồng hồ đang chạy. Hãy dừng hoặc hoàn tất các phiên liên quan trước khi xác nhận.");}
                 var total=TotalSeconds(c,tx,nv,task);
                 Insert(c,tx,nv,project,task,requestId,5,checked(MaxRound(c,tx,nv,project,task)+1),1,
                     total,regular,overtime,note);
@@ -877,9 +918,12 @@ namespace SweetSoft.QLDA.Core.Managers
             {
                 EnsureView(c,null,nv,project,task);
                 detail.ConPhanCong=repo.CoPhanCong(c,null,task,nv);
-                using(var st=Cmd(c,null,@"SELECT TrangThai FROM dbo.TblCongViec WHERE IdCongViec=@T AND IdDuAn=@D"))
+                using(var st=Cmd(c,null,@"SELECT TrangThai,CAST(ISNULL(DaXoa,0) AS bit) FROM dbo.TblCongViec WHERE IdCongViec=@T AND IdDuAn=@D"))
                 { P(st,"@T",SqlDbType.UniqueIdentifier,task);P(st,"@D",SqlDbType.UniqueIdentifier,project);
-                  var x=st.ExecuteScalar();if(x==null)throw new InvalidOperationException("Cong viec khong con hieu luc.");detail.TrangThaiTask=Convert.ToInt32(x); }
+                  using(var rd=st.ExecuteReader()) {
+                      if(!rd.Read())throw new InvalidOperationException("Không tìm thấy lịch sử công việc trong dự án.");
+                      detail.TrangThaiTask=Convert.ToInt32(rd.GetValue(0));detail.DaXoa=Convert.ToBoolean(rd.GetValue(1));
+                  } }
                 detail.KhoaPm=LockedByPm(c,null,nv,project,task);
                 using(var cmd=Cmd(c,null,@"SELECT "+Columns+@" FROM dbo.TblKhaiBaoGioDoiSoat s
                     JOIN dbo.TblCongViec t ON t.IdCongViec=s.IdCongViec
@@ -897,7 +941,7 @@ namespace SweetSoft.QLDA.Core.Managers
         public Kbg20BaoXongBanGhi BaoXong(Guid nv,Guid project,Guid task,Guid requestId,int regular,int overtime,string note)
         {
             Valid(nv,project,task);ValidMinutes(regular,overtime);ValidReason(note,false);
-            if(requestId==Guid.Empty)throw new ArgumentException("Thieu ma thao tac.");
+            if(requestId==Guid.Empty)throw new ArgumentException("Thiếu mã thao tác. Vui lòng tải lại trang.");
             // Cung mot hanh dong Bao hoan thanh: tren Task da cho duyet / hoan thanh
             // chi ghi bao ca nhan, khong Start/Stop dong ho, khong doi trang thai Task.
             using(var checkC=repo.MoKetNoi())
@@ -913,13 +957,14 @@ namespace SweetSoft.QLDA.Core.Managers
             using(var c=repo.MoKetNoi()) using(var tx=c.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
             {
                 repo.KhoaTheoDuAn(c,tx,project);
+                EnsureTaskNotDeleted(c,tx,project,task);
                 if(RequestDone(c,tx,requestId,nv,project,task,1))
                 {var saved=Latest(c,tx,nv,project,task);tx.Commit();return saved;}
                 var target=repo.LayCongViec(c,tx,task);
                 if(target==null||target.IdDuAn!=project||target.TrangThai!=1||target.ChoDuyet)
-                    throw new InvalidOperationException("Task khong o trang thai dang thuc hien hoac dang cho duyet chung.");
-                if(!repo.CoPhanCong(c,tx,task,nv))throw new UnauthorizedAccessException("Ban khong duoc phan cong truc tiep vao Task.");
-                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM da chot cong. Khong the bao xong lai.");
+                    throw new InvalidOperationException("Công việc không còn ở trạng thái Đang thực hiện để báo hoàn thành phần việc.");
+                if(!repo.CoPhanCong(c,tx,task,nv))throw new UnauthorizedAccessException("Bạn chưa được phân công trực tiếp vào công việc này.");
+                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM đã chốt giờ công. Không thể báo hoàn thành phần việc lần nữa.");
                 var last=Latest(c,tx,nv,project,task);
                 if(last!=null && last.LoaiSuKien!=2 && !last.CoGocXacNhanSauTask)
                     throw new DBConcurrencyException("Bạn đã báo hoàn thành phần việc. Vui lòng tải lại.");
@@ -936,21 +981,22 @@ namespace SweetSoft.QLDA.Core.Managers
         public Kbg20BaoXongBanGhi RutBao(Guid nv,Guid project,Guid task,Guid requestId,int expectedRound,int expectedVersion,string reason)
         {
             Valid(nv,project,task);ValidReason(reason,true);
-            if(requestId==Guid.Empty)throw new ArgumentException("Thieu ma thao tac.");
+            if(requestId==Guid.Empty)throw new ArgumentException("Thiếu mã thao tác. Vui lòng tải lại trang.");
             bool written=false;
             using(var c=repo.MoKetNoi()) using(var tx=c.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
             {
                 repo.KhoaTheoDuAn(c,tx,project);
+                EnsureTaskNotDeleted(c,tx,project,task);
                 if(RequestDone(c,tx,requestId,nv,project,task,2))
                 {var same=Latest(c,tx,nv,project,task);tx.Commit();return same;}
                 EnsureView(c,tx,nv,project,task);
                 var target=repo.LayCongViec(c,tx,task);
                 if(target==null || target.IdDuAn!=project || target.TrangThai!=1 || target.ChoDuyet)
-                    throw new InvalidOperationException("Task dang cho duyet/da hoan thanh, khong duoc rut bao de lam tiep. Chi co the sua gio truoc khi PM chot.");
-                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM da chot cong. Khong the rut bao.");
+                    throw new InvalidOperationException("Công việc đang Chờ duyệt hoặc Đã hoàn thành; bạn không thể rút báo để tiếp tục làm. Bạn chỉ có thể sửa giờ tự khai trước khi PM chốt.");
+                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM đã chốt giờ công. Không thể rút báo hoàn thành.");
                 var latest=Latest(c,tx,nv,project,task);
                 if(latest==null||!latest.DaBaoXongPhanViec||latest.Lan!=expectedRound||latest.PhienBan!=expectedVersion)
-                    throw new DBConcurrencyException("Trang thai bao xong da thay doi. Hay tai lai.");
+                    throw new DBConcurrencyException("Trạng thái báo hoàn thành đã thay đổi. Vui lòng tải lại.");
                 CancelCurrent(c,tx,nv,project,task,latest.Lan,latest.PhienBan);
                 Insert(c,tx,nv,project,task,requestId,2,latest.Lan,checked(latest.PhienBan+1),
                     new[]{latest.GiayThuong,latest.GiayTangCa},latest.PhutTuKhaiThuong,latest.PhutTuKhaiTangCa,reason);
@@ -962,22 +1008,25 @@ namespace SweetSoft.QLDA.Core.Managers
         public Kbg20BaoXongBanGhi SuaTuKhai(Guid nv,Guid project,Guid task,Guid requestId,int expectedRound,int expectedVersion,int regular,int overtime,string reason)
         {
             Valid(nv,project,task);ValidMinutes(regular,overtime);ValidReason(reason,false);
-            if(requestId==Guid.Empty)throw new ArgumentException("Thieu ma thao tac.");
+            if(requestId==Guid.Empty)throw new ArgumentException("Thiếu mã thao tác. Vui lòng tải lại trang.");
+            bool written=false;
             using(var c=repo.MoKetNoi()) using(var tx=c.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
             {
                 repo.KhoaTheoDuAn(c,tx,project);
+                EnsureTaskNotDeleted(c,tx,project,task);
                 if(RequestDone(c,tx,requestId,nv,project,task,3))
                 {var same=Latest(c,tx,nv,project,task);tx.Commit();return same;}
                 EnsureView(c,tx,nv,project,task);
-                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM da chot gio. Tab 3 chi duoc xem.");
+                if(LockedByPm(c,tx,nv,project,task))throw new InvalidOperationException("PM đã chốt giờ công. Bảng kê giờ công hiện chỉ cho phép xem.");
                 var latest=Latest(c,tx,nv,project,task);
                 if(latest==null||!latest.DangBaoXong||latest.Lan!=expectedRound||latest.PhienBan!=expectedVersion)
-                    throw new DBConcurrencyException("Ban tu khai da thay doi. Vui long tai lai.");
+                    throw new DBConcurrencyException("Số giờ tự khai đã được cập nhật từ nơi khác. Vui lòng tải lại trước khi sửa.");
                 CancelCurrent(c,tx,nv,project,task,latest.Lan,latest.PhienBan);
                 Insert(c,tx,nv,project,task,requestId,3,latest.Lan,checked(latest.PhienBan+1),
                     new[]{latest.GiayThuong,latest.GiayTangCa},regular,overtime,reason);
-                tx.Commit();
+                tx.Commit();written=true;
             }
+            if(written)NotifyPm(project,task,nv,3,DocTheoMaThaoTac(nv,project,task,requestId));
             return LayChiTiet(nv,project,task).HienTai;
         }
         private static void NotifyPm(Guid project,Guid task,Guid nv,int kind,Kbg20BaoXongBanGhi saved)
@@ -990,13 +1039,14 @@ namespace SweetSoft.QLDA.Core.Managers
                 var user=SweetSoft.QLDA.DataAccess.AspnetUser.FetchByID(nv);
                 string actor=user!=null&&!string.IsNullOrWhiteSpace(user.DisplayName)?user.DisplayName:"Nhân viên";
                 string label=cv==null?"công việc":("["+cv.MaCongViec+"] "+cv.TenCongViec);
-                string action=kind==2?"rút báo hoàn thành phần việc":kind==5?"báo hoàn thành phần việc":"báo hoàn thành phần việc";
+                string action=kind==2?"rút báo hoàn thành phần việc":kind==3?"điều chỉnh giờ đã báo":kind==5?"báo hoàn thành phần việc":"báo hoàn thành phần việc";
                 string reason=string.IsNullOrWhiteSpace(saved.LyDo)?"Không có":"Có ghi chú/lý do: "+saved.LyDo.Trim();
                 string fmtR=(saved.PhutTuKhaiThuong.HasValue?(saved.PhutTuKhaiThuong.Value/60)+"g "+(saved.PhutTuKhaiThuong.Value%60)+"p":"Chưa báo");
                 string fmtO=(saved.PhutTuKhaiTangCa.HasValue?(saved.PhutTuKhaiTangCa.Value/60)+"g "+(saved.PhutTuKhaiTangCa.Value%60)+"p":"Chưa báo");
                 string message=actor+" đã "+action+" đối với "+label+". " +
-                    "Giờ hành chính nhân viên báo: "+fmtR+"; giờ tăng ca nhân viên báo: "+fmtO+". " +reason+". " +
-                    "Đây là báo hoàn thành cá nhân, không phải duyệt hoàn thành Task chung. Nhấn để xem đầy đủ chi tiết và lịch sử.";
+                    "Giờ làm theo lịch nhân viên báo: "+fmtR+"; giờ tăng ca nhân viên báo: "+fmtO+". " +reason+". " +
+                    "Đây là báo cáo cá nhân, không phải duyệt hoàn thành công việc chung. Nhấn để xem phiên bản này và lịch sử. "+
+                    (kind==3?"PM cần tải lại popup duyệt giờ công nếu đã mở trước thời điểm điều chỉnh.":"");
                 string prefix=(System.Web.HttpRuntime.AppDomainAppVirtualPath??"/").TrimEnd('/');
                 string link=prefix+"/fKhaiBaoGio/KhaiBaoGio.aspx?ProjectId="+project.ToString("D")+
                    "&pmViewTaskId="+task.ToString("D")+"&pmViewEmployeeId="+nv.ToString("D")+
@@ -1005,7 +1055,7 @@ namespace SweetSoft.QLDA.Core.Managers
                     tieuDe:actor+" "+action+" · "+label,noiDung:message,
                     loaiThongBao:ThongBaoTypes.CongViec,idCongViec:task,idDuAn:project,
                     duongDanLienKet:link,guiEmail:false);
-                if(notice==null)throw new InvalidOperationException("Khong tao duoc thong bao PM sau commit.");
+                if(notice==null)throw new InvalidOperationException("Không tạo được thông báo cho PM sau khi lưu.");
             }
             catch(Exception ex)
             {
@@ -1040,9 +1090,12 @@ namespace SweetSoft.QLDA.Core.Managers
         public int? PhutHanhChinhPmDaChot { get; set; }
         public int? PhutTangCaPmDaChot { get; set; }
         public int LanDoiSoatLonNhat { get; set; }
+        public int PhienBanMoiNhat { get; set; }
+        public int LoaiSuKienMoiNhat { get; set; }
         public bool DaCoSuKienPmChot { get; set; }
         public bool PmLaSuKienMoiNhat { get; set; }
         public string GhiChuPmChot { get; set; }
+        public Guid? IdBanPmDaChot { get; set; }
     }
     public sealed class Kbg20PmBanDuyet
     {
@@ -1099,7 +1152,7 @@ namespace SweetSoft.QLDA.Core.Managers
                 ThamSo(q,"@T",System.Data.SqlDbType.UniqueIdentifier,idTask);
                 var value=q.ExecuteScalar();
                 if(value==null || (Convert.ToInt32(value)!=2 && Convert.ToInt32(value)!=3))
-                    throw new InvalidOperationException("Cong viec da thay doi hoac chua duoc PM xac nhan hoan thanh.");
+                    throw new InvalidOperationException("Trạng thái công việc đã thay đổi hoặc chưa được PM duyệt hoàn thành.");
             }
         }
         private const string SqlDanhSach = @"
@@ -1175,7 +1228,11 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
                  .Append('|').Append(n.PhutHanhChinhNhanVienBao.HasValue?n.PhutHanhChinhNhanVienBao.Value.ToString():"NULL")
                  .Append('|').Append(n.PhutTangCaNhanVienBao.HasValue?n.PhutTangCaNhanVienBao.Value.ToString():"NULL")
                  .Append('|').Append(n.LanDoiSoatLonNhat)
-                 .Append('|').Append(n.DaCoSuKienPmChot).Append('|').Append(n.PmLaSuKienMoiNhat);
+                 .Append('|').Append(n.PhienBanMoiNhat).Append('|').Append(n.LoaiSuKienMoiNhat)
+                 .Append('|').Append(n.DaCoSuKienPmChot).Append('|').Append(n.PmLaSuKienMoiNhat)
+                 .Append('|').Append(n.IdBanPmDaChot.HasValue?n.IdBanPmDaChot.Value.ToString("N"):"NULL")
+                 .Append('|').Append(n.PhutHanhChinhPmDaChot.HasValue?n.PhutHanhChinhPmDaChot.Value.ToString():"NULL")
+                 .Append('|').Append(n.PhutTangCaPmDaChot.HasValue?n.PhutTangCaPmDaChot.Value.ToString():"NULL");
             }
             using(var hash=System.Security.Cryptography.SHA256.Create())
                 return Convert.ToBase64String(hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(s.ToString())));
@@ -1190,7 +1247,7 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
                 ThamSo(q,"@T",System.Data.SqlDbType.UniqueIdentifier,task);
                 using(var r=q.ExecuteReader())
                 {
-                    if(!r.Read())throw new KeyNotFoundException("Khong tim thay cong viec trong du an.");
+                    if(!r.Read())throw new KeyNotFoundException("Không tìm thấy công việc trong dự án này.");
                     result.MaCongViec=r.IsDBNull(0)?"":r.GetString(0);
                     result.TenCongViec=r.IsDBNull(1)?"":r.GetString(1);
                     result.TrangThaiTask=Convert.ToInt32(r.GetValue(2));
@@ -1227,9 +1284,12 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
                         PhutHanhChinhPmDaChot=r.IsDBNull(7)?(int?)null:Convert.ToInt32(r.GetValue(7)),
                         PhutTangCaPmDaChot=r.IsDBNull(8)?(int?)null:Convert.ToInt32(r.GetValue(8)),
                         LanDoiSoatLonNhat=Convert.ToInt32(r.GetValue(9)),
+                        PhienBanMoiNhat=Convert.ToInt32(r.GetValue(13)),
+                        LoaiSuKienMoiNhat=Convert.ToInt32(r.GetValue(14)),
                         DaCoSuKienPmChot=!r.IsDBNull(10),
                         PmLaSuKienMoiNhat=Convert.ToInt32(r.GetValue(14))==4 && !r.IsDBNull(15) && !r.IsDBNull(7) && !r.IsDBNull(8),
-                        GhiChuPmChot=r.IsDBNull(11)?"":Convert.ToString(r.GetValue(11))
+                        GhiChuPmChot=r.IsDBNull(11)?"":Convert.ToString(r.GetValue(11)),
+                        IdBanPmDaChot=r.IsDBNull(10)?(Guid?)null:r.GetGuid(10)
                     };
                     n.PhutHanhChinhDeXuat=n.PhutHanhChinhNhanVienBao??PhutTuGiay(n.GiayHanhChinhHeThong);
                     n.PhutTangCaDeXuat=n.PhutTangCaNhanVienBao??PhutTuGiay(n.GiayTangCaHeThong);
@@ -1245,7 +1305,7 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
         }
         public Kbg20PmBanDuyet LayBanDuyet(Guid duAn,Guid task)
         {
-            if(duAn==Guid.Empty || task==Guid.Empty)throw new ArgumentException("Du an/task khong hop le.");
+            if(duAn==Guid.Empty || task==Guid.Empty)throw new ArgumentException("Thông tin dự án hoặc công việc không hợp lệ.");
             using(var c=new SweetSoft.QLDA.Core.Respositories.KhaiBaoGio20Repository().MoKetNoi())
                 return Doc(c,duAn,task);
         }
@@ -1266,30 +1326,33 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
             Guid idYeuCau,string dauDuLieu,IList<Kbg20PmDongDuyet> danhSach)
         {
             if(duAn==Guid.Empty || task==Guid.Empty || idPm==Guid.Empty || idYeuCau==Guid.Empty)
-                throw new ArgumentException("Thieu du an, cong viec, PM hoac ma yeu cau.");
+                throw new ArgumentException("Thiếu thông tin dự án, công việc, PM hoặc mã yêu cầu.");
             if(danhSach==null || danhSach.Count==0 || danhSach.Count>10000)
-                throw new InvalidOperationException("Danh sach nhan vien can chot khong hop le.");
-            if(string.IsNullOrWhiteSpace(dauDuLieu))throw new InvalidOperationException("Thieu phien ban du lieu popup.");
+                throw new InvalidOperationException("Danh sách nhân viên cần chốt giờ công không hợp lệ. Vui lòng tải lại popup.");
+            if(string.IsNullOrWhiteSpace(dauDuLieu))throw new InvalidOperationException("Thiếu phiên bản dữ liệu đối soát. Vui lòng tải lại popup.");
             if(!KhaiBaoGioManager.KhaiBaoGio20DaKichHoat())
-                throw new InvalidOperationException("KhaiBaoGio20 chua duoc bat; khong duoc phep chot cong.");
+                throw new InvalidOperationException("Chức năng chốt giờ công chưa được kích hoạt.");
             // Khong tin IsPM do browser, Core xac minh PM du an va caller la server-side.
             var pm=DuAnManager.Instance.LayIdNhanVienQuanLy(duAn);
             if(!laQuanTri && (!pm.HasValue || pm.Value!=idPm))
-                throw new UnauthorizedAccessException("Chi PM cua du an hoac quan tri vien duoc chot gio cong.");
+                throw new UnauthorizedAccessException("Chỉ PM dự án hoặc quản trị viên mới được chốt giờ công.");
             if(danhSach.Select(x=>x.IdNhanVien).Distinct().Count()!=danhSach.Count || danhSach.Any(x=>x.IdNhanVien==Guid.Empty))
-                throw new InvalidOperationException("Danh sach co nhan vien trung hoac Id khong hop le.");
+                throw new InvalidOperationException("Danh sách có nhân viên trùng hoặc mã nhân viên không hợp lệ.");
             foreach(var row in danhSach)
             {
                 if(row.PhutHanhChinh<0 || row.PhutTangCa<0 || row.PhutHanhChinh>GioiHanPhut || row.PhutTangCa>GioiHanPhut)
-                    throw new ArgumentOutOfRangeException("danhSach","So phut PM duyet phai khong am va nam trong gioi han.");
+                    throw new ArgumentOutOfRangeException("danhSach","Số phút PM duyệt phải không âm và nằm trong giới hạn cho phép.");
                 if(row.LyDoDieuChinh!=null && row.LyDoDieuChinh.Length>2000)
-                    throw new ArgumentException("Ghi chu thay doi qua 2000 ky tu.");
+                    throw new ArgumentException("Ghi chú điều chỉnh không được vượt quá 2.000 ký tự.");
             }
             // TransactionScope chi atomic neu SqlClient tu dong enlist ambient transaction.
             var connectionInfo=new System.Data.SqlClient.SqlConnectionStringBuilder(
                 new SweetSoft.QLDA.Core.Respositories.KhaiBaoGio20Repository().ChuoiKetNoi);
             if(!connectionInfo.Enlist)
-                throw new InvalidOperationException("KhaiBaoGio20.TenKetNoi phai dat Enlist=true de dam bao rollback tat ca nhan vien.");
+                throw new InvalidOperationException("Cấu hình kết nối đối soát không hỗ trợ rollback đồng bộ toàn bộ nhân viên.");
+            // Danh sach nguoi nhan chi gui sau khi TransactionScope da commit xong.
+            var recipients = new List<Tuple<Guid,Guid,int,int>>();
+            Kbg20PmBanDuyet committed = null;
             using(var scope=new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.Required,
                 new System.Transactions.TransactionOptions{ IsolationLevel=System.Transactions.IsolationLevel.ReadCommitted,
                     Timeout=TimeSpan.FromMinutes(2) }))
@@ -1302,37 +1365,39 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
                     var current=Doc(con,duAn,task);
                     // Bat buoc kiem tra o Core; caller khong duoc tu gan quyet dinh trang thai.
                     if(current.TrangThaiTask!=2 && current.TrangThaiTask!=3)
-                        throw new InvalidOperationException("Chi Task da hoan thanh (2/3) moi duoc chot gio cong.");
+                        throw new InvalidOperationException("Chỉ được chốt giờ công khi công việc đã hoàn thành.");
                     if(current.CoPhienDangMo || current.NhanVien.Count==0)
-                        throw new InvalidOperationException("Task con dong ho mo hoac khong co nhan vien can chot.");
+                        throw new InvalidOperationException("Công việc vẫn còn đồng hồ đang chạy hoặc không có nhân viên cần chốt giờ.");
                     if(current.NhanVien.Any(x=>!x.DaXacNhanGio))
-                        throw new InvalidOperationException("Con nhan vien chua bao hoan thanh phan viec: " +
+                        throw new InvalidOperationException("Vẫn còn nhân viên chưa báo hoàn thành phần việc: " +
                             string.Join(", ",current.NhanVien.Where(x=>!x.DaXacNhanGio).Select(x=>x.TenNhanVien)) +
                             ". Can bao hoan thanh phan viec truoc khi PM chot cong tap the.");
                     if(current.NhanVien.Any(x=>x.DaCoSuKienPmChot))
-                        throw new InvalidOperationException("Task da co du lieu PM chot cong. Khong cho ghi de/ghi mot phan.");
+                        throw new InvalidOperationException("Giờ công của công việc này đã được PM chốt. Không được chốt lại hoặc ghi đè một phần.");
                     if(!string.Equals(current.DauDuLieu,dauDuLieu,StringComparison.Ordinal))
-                        throw new DBConcurrencyException("Du lieu gio, bao xong hoac phan cong da thay doi. Vui long mo lai popup.");
+                        throw new DBConcurrencyException("Giờ công, bản báo hoàn thành hoặc phân công vừa thay đổi. Vui lòng mở lại popup để đối chiếu.");
                     var actual=current.NhanVien.Select(x=>x.IdNhanVien).OrderBy(x=>x).ToArray();
                     var requested=danhSach.Select(x=>x.IdNhanVien).OrderBy(x=>x).ToArray();
                     if(!actual.SequenceEqual(requested))
-                        throw new DBConcurrencyException("Danh sach nhan vien da thay doi, khong the chot mot phan.");
+                        throw new DBConcurrencyException("Danh sách nhân viên đã thay đổi. Hệ thống không chốt từng phần; vui lòng tải lại popup.");
                     DateTime nowUtc=DateTime.UtcNow;
                     foreach(var info in current.NhanVien)
                     {
                         var row=danhSach.Single(x=>x.IdNhanVien==info.IdNhanVien);
                         if((row.PhutHanhChinh!=info.PhutHanhChinhDeXuat || row.PhutTangCa!=info.PhutTangCaDeXuat)
                            && string.IsNullOrWhiteSpace(row.LyDoDieuChinh))
-                            throw new InvalidOperationException("Can nhap ly do khi dieu chinh gio cua "+info.TenNhanVien+".");
+                            throw new InvalidOperationException("Vui lòng nhập lý do khi điều chỉnh giờ công của "+info.TenNhanVien+".");
+                        Guid idBanChot = Guid.NewGuid();
                         using(var cmd=Lenh(con,@"INSERT dbo.TblKhaiBaoGioDoiSoat
                           (IdDoiSoat,IdNhanVien,IdCongViec,IdDuAn,LanDoiSoat,PhienBan,LaBanHienTai,
                            SoGiayThuongHeThong,SoGiayTangCaHeThong,SoPhutThuongTuKhai,SoPhutTangCaTuKhai,
                            SoPhutThuongPmChot,SoPhutTangCaPmChot,IdPmChot,
                            LyDoDieuChinh,ChotGioHeThongLuc,NguoiTao,NgayTao,LoaiSuKien,IdThaoTac,LanThucHien)
-                          VALUES(NEWID(),@U,@T,@D,@L,1,1,@GS,@GT,@BS,@BT,@PS,@PT,@PM,
+                          VALUES(@I,@U,@T,@D,@L,1,1,@GS,@GT,@BS,@BT,@PS,@PT,@PM,
                            @Reason,@At,@Actor,@At,4,@Request,
                            (SELECT LanThucHien FROM dbo.TblCongViec WHERE IdDuAn=@D AND IdCongViec=@T))"))
                         {
+                            ThamSo(cmd,"@I",System.Data.SqlDbType.UniqueIdentifier,idBanChot);
                             ThamSo(cmd,"@U",System.Data.SqlDbType.UniqueIdentifier,info.IdNhanVien);
                             ThamSo(cmd,"@T",System.Data.SqlDbType.UniqueIdentifier,task);
                             ThamSo(cmd,"@D",System.Data.SqlDbType.UniqueIdentifier,duAn);
@@ -1348,17 +1413,196 @@ ORDER BY COALESCE(NULLIF(u.DisplayName,N''),u.UserName,N'Nhân viên'),nv.IdNhan
                             ThamSo(cmd,"@At",System.Data.SqlDbType.DateTime2,nowUtc);
                             ThamSo(cmd,"@Actor",System.Data.SqlDbType.NVarChar,idPm.ToString("D"));
                             ThamSo(cmd,"@Request",System.Data.SqlDbType.UniqueIdentifier,MaThaoTacTheoNhanVien(idYeuCau,info.IdNhanVien));
-                            if(cmd.ExecuteNonQuery()!=1)throw new DBConcurrencyException("Khong ghi duoc du so nhan vien can chot.");
+                            if(cmd.ExecuteNonQuery()!=1)throw new DBConcurrencyException("Không lưu được đầy đủ giờ công của tất cả nhân viên. Thao tác đã được hủy.");
+                            recipients.Add(Tuple.Create(info.IdNhanVien,idBanChot,row.PhutHanhChinh,row.PhutTangCa));
                         }
                     }
                     // Doc lai ngay trong transaction va xac thuc day du moi nguoi duoc chot.
                     var finished=Doc(con,duAn,task);
                     if(!finished.DaChotCong || finished.NhanVien.Count!=current.NhanVien.Count)
-                        throw new InvalidOperationException("Khong hoan tat du cong tat ca nhan vien; da huy giao dich.");
+                        throw new InvalidOperationException("Không chốt đủ giờ công cho tất cả nhân viên. Toàn bộ thao tác đã được hủy.");
+                    committed = finished;
                     scope.Complete();
-                    return finished;
                 }
             }
+            GuiThongBaoSauChot(duAn,task,committed,recipients,false);
+            return committed;
+        }
+        // Dieu chinh sau khi chot la su kien PM LoaiSuKien=4 MOI, tuyet doi khong UPDATE gio ban cu.
+        public Kbg20PmBanDuyet DieuChinhGioDaChot(Guid duAn,Guid task,Guid idPm,bool laQuanTri,
+            Guid idYeuCau,string dauDuLieu,Kbg20PmDongDuyet thayDoi)
+        {
+            if(duAn==Guid.Empty || task==Guid.Empty || idPm==Guid.Empty || idYeuCau==Guid.Empty || thayDoi==null || thayDoi.IdNhanVien==Guid.Empty)
+                throw new ArgumentException("Thiếu thông tin điều chỉnh giờ công.");
+            if(!KhaiBaoGioManager.KhaiBaoGio20DaKichHoat()) throw new InvalidOperationException("Chức năng giờ công chưa được kích hoạt.");
+            var pm=DuAnManager.Instance.LayIdNhanVienQuanLy(duAn);
+            if(!laQuanTri && (!pm.HasValue || pm.Value!=idPm)) throw new UnauthorizedAccessException("Chỉ quản lý dự án hoặc quản trị viên được điều chỉnh giờ đã chốt.");
+            if(idPm==thayDoi.IdNhanVien && !laQuanTri) throw new UnauthorizedAccessException("Quản lý không tự điều chỉnh giờ công của chính mình; cần quản trị viên xác nhận.");
+            if(thayDoi.PhutHanhChinh<0 || thayDoi.PhutTangCa<0 || thayDoi.PhutHanhChinh>GioiHanPhut || thayDoi.PhutTangCa>GioiHanPhut)
+                throw new ArgumentOutOfRangeException("thayDoi","Số giờ được điều chỉnh không hợp lệ.");
+            string reason=(thayDoi.LyDoDieuChinh??"").Trim();
+            if(reason.Length==0 || reason.Length>2000) throw new InvalidOperationException("Bắt buộc ghi lý do điều chỉnh (tối đa 2.000 ký tự).");
+            if(string.IsNullOrEmpty(dauDuLieu)) throw new DBConcurrencyException("Vui lòng tải lại cửa sổ để đối chiếu dữ liệu mới nhất.");
+            var sb=new System.Data.SqlClient.SqlConnectionStringBuilder(new SweetSoft.QLDA.Core.Respositories.KhaiBaoGio20Repository().ChuoiKetNoi);
+            if(!sb.Enlist) throw new InvalidOperationException("Kết nối SQL không hỗ trợ giao dịch đồng bộ.");
+            Guid idBanMoi=Guid.NewGuid();Kbg20PmBanDuyet committed=null;
+            using(var scope=new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.Required,
+                new System.Transactions.TransactionOptions {IsolationLevel=System.Transactions.IsolationLevel.ReadCommitted,Timeout=TimeSpan.FromMinutes(2)}))
+            {
+                var repo=new SweetSoft.QLDA.Core.Respositories.KhaiBaoGio20Repository();
+                using(var con=repo.MoKetNoi())
+                {
+                    KhoaDuAn(con,duAn);KhoaTask(con,duAn,task);
+                    var current=Doc(con,duAn,task);
+                    if(!current.DaChotCong) throw new InvalidOperationException("Chỉ điều chỉnh khi toàn bộ giờ công của công việc đã được chốt.");
+                    if(!string.Equals(current.DauDuLieu,dauDuLieu,StringComparison.Ordinal))
+                        throw new DBConcurrencyException("Kết quả chốt giờ đã thay đổi. Vui lòng bấm Làm mới trước khi điều chỉnh.");
+                    var person=current.NhanVien.SingleOrDefault(x=>x.IdNhanVien==thayDoi.IdNhanVien);
+                    if(person==null || !person.IdBanPmDaChot.HasValue || !person.PmLaSuKienMoiNhat)
+                        throw new DBConcurrencyException("Không tìm thấy bản chốt hợp lệ của nhân viên.");
+                    if(person.PhutHanhChinhPmDaChot==thayDoi.PhutHanhChinh && person.PhutTangCaPmDaChot==thayDoi.PhutTangCa)
+                        throw new InvalidOperationException("Giờ điều chỉnh phải khác kết quả đang được chốt.");
+                    // Chuyen ban PM cu ra khoi hieu luc, nhung giu nguyen ban ghi lich su.
+                    using(var upd=Lenh(con,@"UPDATE dbo.TblKhaiBaoGioDoiSoat SET LaBanHienTai=0
+                        WHERE IdDoiSoat=@Old AND IdDuAn=@D AND IdCongViec=@T AND IdNhanVien=@U AND LoaiSuKien=4 AND LaBanHienTai=1"))
+                    {
+                        ThamSo(upd,"@Old",System.Data.SqlDbType.UniqueIdentifier,person.IdBanPmDaChot.Value);
+                        ThamSo(upd,"@D",System.Data.SqlDbType.UniqueIdentifier,duAn);
+                        ThamSo(upd,"@T",System.Data.SqlDbType.UniqueIdentifier,task);
+                        ThamSo(upd,"@U",System.Data.SqlDbType.UniqueIdentifier,thayDoi.IdNhanVien);
+                        if(upd.ExecuteNonQuery()!=1)throw new DBConcurrencyException("Bản chốt đã thay đổi. Vui lòng tải lại.");
+                    }
+                    using(var cmd=Lenh(con,@"INSERT dbo.TblKhaiBaoGioDoiSoat
+                        (IdDoiSoat,IdNhanVien,IdCongViec,IdDuAn,LanDoiSoat,PhienBan,LaBanHienTai,
+                         SoGiayThuongHeThong,SoGiayTangCaHeThong,SoPhutThuongTuKhai,SoPhutTangCaTuKhai,
+                         SoPhutThuongPmChot,SoPhutTangCaPmChot,IdPmChot,LyDoDieuChinh,
+                         ChotGioHeThongLuc,NguoiTao,NgayTao,LoaiSuKien,IdThaoTac,LanThucHien)
+                        VALUES(@I,@U,@T,@D,@L,1,1,@GS,@GT,@BS,@BT,@PS,@PT,@PM,@Reason,@At,@Actor,@At,4,@Request,@Lan)"))
+                    {
+                        DateTime now=DateTime.UtcNow;
+                        ThamSo(cmd,"@I",System.Data.SqlDbType.UniqueIdentifier,idBanMoi);
+                        ThamSo(cmd,"@U",System.Data.SqlDbType.UniqueIdentifier,thayDoi.IdNhanVien);
+                        ThamSo(cmd,"@T",System.Data.SqlDbType.UniqueIdentifier,task);
+                        ThamSo(cmd,"@D",System.Data.SqlDbType.UniqueIdentifier,duAn);
+                        ThamSo(cmd,"@L",System.Data.SqlDbType.Int,checked(person.LanDoiSoatLonNhat+1));
+                        ThamSo(cmd,"@GS",System.Data.SqlDbType.BigInt,person.GiayHanhChinhHeThong);
+                        ThamSo(cmd,"@GT",System.Data.SqlDbType.BigInt,person.GiayTangCaHeThong);
+                        ThamSo(cmd,"@BS",System.Data.SqlDbType.Int,person.PhutHanhChinhNhanVienBao);
+                        ThamSo(cmd,"@BT",System.Data.SqlDbType.Int,person.PhutTangCaNhanVienBao);
+                        ThamSo(cmd,"@PS",System.Data.SqlDbType.Int,thayDoi.PhutHanhChinh);
+                        ThamSo(cmd,"@PT",System.Data.SqlDbType.Int,thayDoi.PhutTangCa);
+                        ThamSo(cmd,"@PM",System.Data.SqlDbType.UniqueIdentifier,idPm);
+                        ThamSo(cmd,"@Reason",System.Data.SqlDbType.NVarChar,reason);
+                        ThamSo(cmd,"@At",System.Data.SqlDbType.DateTime2,now);
+                        ThamSo(cmd,"@Actor",System.Data.SqlDbType.NVarChar,idPm.ToString("D"));
+                        ThamSo(cmd,"@Request",System.Data.SqlDbType.UniqueIdentifier,MaThaoTacTheoNhanVien(idYeuCau,thayDoi.IdNhanVien));
+                        ThamSo(cmd,"@Lan",System.Data.SqlDbType.Int,current.LanThucHien);
+                        if(cmd.ExecuteNonQuery()!=1)throw new DBConcurrencyException("Không lưu được điều chỉnh giờ công.");
+                    }
+                    committed=Doc(con,duAn,task);
+                    var changed=committed.NhanVien.Single(x=>x.IdNhanVien==thayDoi.IdNhanVien);
+                    if(!committed.DaChotCong || !changed.IdBanPmDaChot.HasValue || changed.IdBanPmDaChot.Value!=idBanMoi)
+                        throw new InvalidOperationException("Không xác minh được kết quả điều chỉnh mới. Toàn bộ thao tác đã được hủy.");
+                    scope.Complete();
+                }
+            }
+            GuiThongBaoSauChot(duAn,task,committed,new List<Tuple<Guid,Guid,int,int>> {
+                Tuple.Create(thayDoi.IdNhanVien,idBanMoi,thayDoi.PhutHanhChinh,thayDoi.PhutTangCa)},true);
+            return committed;
+        }
+        // Thong bao phai gui SAU scope.Dispose() (sau commit), khong bao gio truoc khi luu.
+        // Gui that bai khong rollback gio da chot; ghi log de quan tri xu ly.
+        private static void GuiThongBaoSauChot(Guid project,Guid task,Kbg20PmBanDuyet result,
+            IEnumerable<Tuple<Guid,Guid,int,int>> recipients,bool dieuChinh)
+        {
+            if(result==null || recipients==null)return;
+            foreach(var r in recipients)
+            {
+                try
+                {
+                    string basePath=(System.Web.HttpRuntime.AppDomainAppVirtualPath??"/").TrimEnd('/');
+                    string link=basePath+"/fKhaiBaoGio/KhaiBaoGio.aspx?ProjectId="+project.ToString("D")+
+                        "&pmFinalTaskId="+task.ToString("D")+"&pmFinalEventId="+r.Item2.ToString("D");
+                    var notice = ThongBaoManager.Instance.Create(
+    userId: r.Item1,
+    tieuDe: dieuChinh
+        ? "Giờ công đã chốt của bạn được điều chỉnh"
+        : "Quản lý đã chốt giờ công của bạn",
+    noiDung: "Công việc [" + result.MaCongViec + "] " + result.TenCongViec + ". " +
+        "Giờ làm theo lịch: " + (r.Item3 / 60) + ":" +
+        (r.Item3 % 60).ToString("00") + "; tăng ca: " +
+        (r.Item4 / 60) + ":" +
+        (r.Item4 % 60).ToString("00") +
+        ". Nhấn để xem kết quả và lý do (nếu có).",
+    loaiThongBao: ThongBaoTypes.CongViec,
+    idCongViec: task,
+    idDuAn: project,
+    duongDanLienKet: link,
+    guiEmail: false);
+                    if (notice==null)System.Diagnostics.Trace.TraceError("KBG20_PM_NOTICE: Create tra null cho " + r.Item2);
+                }
+                catch(Exception ex){System.Diagnostics.Trace.TraceError("KBG20_PM_NOTICE: "+r.Item2+" "+ex);}
+            }
+        }
+        public sealed class Kbg20GioDaChot
+        {
+            public Guid IdBan {get;set;}
+            public Guid IdPm {get;set;}
+            public int PhutHanhChinh {get;set;}
+            public int PhutTangCa {get;set;}
+            public int? PhutNhanVienBaoHanhChinh {get;set;}
+            public int? PhutNhanVienBaoTangCa {get;set;}
+            public long GiayHanhChinhHeThong {get;set;}
+            public long GiayTangCaHeThong {get;set;}
+            public string LyDo {get;set;}
+            public DateTime NgayTaoUtc {get;set;}
+        }
+        public sealed class Kbg20ChiTietGioDaChot
+        {
+            public string MaCongViec {get;set;}
+            public string TenCongViec {get;set;}
+            public Kbg20GioDaChot BanDuocThongBao {get;set;}
+            public Kbg20GioDaChot BanMoiNhat {get;set;}
+            public List<Kbg20GioDaChot> LichSu {get;set;}=new List<Kbg20GioDaChot>();
+        }
+        // Chi doc du lieu theo nhan vien tu session; KHONG nhan id nguoi tu URL.
+        public Kbg20ChiTietGioDaChot LayKetQuaCaNhan(Guid nhanVien,Guid project,Guid task,Guid idThongBao)
+        {
+            if(nhanVien==Guid.Empty || project==Guid.Empty || task==Guid.Empty)throw new ArgumentException("Thiếu thông tin giờ công cần xem.");
+            var result=new Kbg20ChiTietGioDaChot();
+            using(var con=new SweetSoft.QLDA.Core.Respositories.KhaiBaoGio20Repository().MoKetNoi())
+            {
+                using(var cmd=Lenh(con,@"SELECT MaCongViec,TenCongViec FROM dbo.TblCongViec WHERE IdCongViec=@T AND IdDuAn=@D"))
+                {
+                    ThamSo(cmd,"@T",System.Data.SqlDbType.UniqueIdentifier,task);
+                    ThamSo(cmd,"@D",System.Data.SqlDbType.UniqueIdentifier,project);
+                    using(var rd=cmd.ExecuteReader())
+                    {if(!rd.Read())throw new KeyNotFoundException("Không tìm thấy công việc.");
+                     result.MaCongViec=Convert.ToString(rd.GetValue(0));result.TenCongViec=Convert.ToString(rd.GetValue(1));}
+                }
+                using(var cmd=Lenh(con,@"SELECT IdDoiSoat,IdPmChot,SoPhutThuongPmChot,SoPhutTangCaPmChot,
+                     SoPhutThuongTuKhai,SoPhutTangCaTuKhai,SoGiayThuongHeThong,SoGiayTangCaHeThong,
+                     LyDoDieuChinh,NgayTao FROM dbo.TblKhaiBaoGioDoiSoat
+                     WHERE IdDuAn=@D AND IdCongViec=@T AND IdNhanVien=@U AND LoaiSuKien=4
+                     ORDER BY LanDoiSoat DESC,PhienBan DESC,NgayTao DESC,IdDoiSoat DESC"))
+                {
+                    ThamSo(cmd,"@D",System.Data.SqlDbType.UniqueIdentifier,project);
+                    ThamSo(cmd,"@T",System.Data.SqlDbType.UniqueIdentifier,task);
+                    ThamSo(cmd,"@U",System.Data.SqlDbType.UniqueIdentifier,nhanVien);
+                    using(var rd=cmd.ExecuteReader())while(rd.Read())result.LichSu.Add(new Kbg20GioDaChot {
+                        IdBan=rd.GetGuid(0), IdPm=rd.GetGuid(1),PhutHanhChinh=rd.GetInt32(2),PhutTangCa=rd.GetInt32(3),
+                        PhutNhanVienBaoHanhChinh=rd.IsDBNull(4)?(int?)null:Convert.ToInt32(rd.GetValue(4)),
+                        PhutNhanVienBaoTangCa=rd.IsDBNull(5)?(int?)null:Convert.ToInt32(rd.GetValue(5)),
+                        GiayHanhChinhHeThong=Convert.ToInt64(rd.GetValue(6)),
+                        GiayTangCaHeThong=Convert.ToInt64(rd.GetValue(7)),
+                        LyDo=rd.IsDBNull(8)?"":Convert.ToString(rd.GetValue(8)),NgayTaoUtc=Convert.ToDateTime(rd.GetValue(9)) });
+                }
+            }
+            if(result.LichSu.Count==0)throw new KeyNotFoundException("Chưa có kết quả giờ công đã chốt của bạn.");
+            result.BanMoiNhat=result.LichSu[0];
+            result.BanDuocThongBao=idThongBao==Guid.Empty?result.BanMoiNhat:result.LichSu.FirstOrDefault(x=>x.IdBan==idThongBao);
+            if(result.BanDuocThongBao==null)throw new UnauthorizedAccessException("Thông báo không thuộc kết quả giờ công của bạn.");
+            return result;
         }
         /// <summary>Mot truy van cho ca GridView du an, khong N+1 SQL theo tung row.</summary>
         // Co nhan vien truc tiep HOAC lich su gio/doi soat: khong bo sot nguoi da go phan cong.

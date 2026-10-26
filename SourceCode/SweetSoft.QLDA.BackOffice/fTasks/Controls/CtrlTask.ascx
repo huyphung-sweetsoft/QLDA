@@ -18,8 +18,10 @@
     .qlpm-action-wrap .btn-qlpm-review:hover{background:#f3ebff!important;color:#4b1a79!important;border-color:#7a4baa!important;}
     .qlpm-action-wrap .btn-qlpm-review.is-final{color:#197a55!important;border-color:#86bea4!important;}
     .qlpm-action-wrap .btn-qlpm-review.is-disabled,.qlpm-action-wrap .btn-qlpm-review.aspNetDisabled{color:#a1a8b3!important;border-color:#d8dce3!important;background:#f9fafb!important;cursor:not-allowed;opacity:.65;pointer-events:none;}
-    .qlpm-action-wrap .btn-qlpm-pending{position:absolute;right:-4px;top:-7px;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:#fff1df;color:#bd6414;border:1px solid #ffe0b5;border-radius:50%;font-weight:900;font-size:10px;line-height:1;box-shadow:0 0 0 1px #fff;pointer-events:none;}
-    .qlpm-action-wrap:has(.is-disabled) .btn-qlpm-pending{display:none!important;}
+    .qlpm-action-wrap .btn-qlpm-pending,.qlpm-action-wrap .btn-qlpm-final-mark{position:absolute;right:-4px;top:-7px;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-weight:900;font-size:10px;line-height:1;box-shadow:0 0 0 1px #fff;pointer-events:none;}
+    .qlpm-action-wrap .btn-qlpm-pending{background:#fff1df;color:#bd6414;border:1px solid #ffe0b5;}
+    .qlpm-action-wrap .btn-qlpm-final-mark{background:#e4f7eb;color:#177a49;border:1px solid #9bd8b2;font-size:10.5px;}
+    .qlpm-action-wrap .is-disabled~.btn-qlpm-pending,.qlpm-action-wrap .is-disabled~.btn-qlpm-final-mark{display:none!important;}
 
     .card-body { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
     .table-task-grid { table-layout: fixed !important; word-wrap: break-word; min-width: 1000px !important; }
@@ -605,7 +607,7 @@
                             </SweetSoft:SmartLinkButton>
                             <SweetSoft:SmartLinkButton runat="server" VisibleConditionKey='<%# this.IsView %>' ID="lbtViewSchedule" CommandName="VIEW_SCHEDULE" CssClass="btn-grid-action text-decoration-none text-info" ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-calendar-alt">
                             </SweetSoft:SmartLinkButton>
-                            <span class="qlpm-action-wrap">
+                            <span runat="server" id="qlpmActionWrap" class="qlpm-action-wrap">
                                 <SweetSoft:SmartLinkButton runat="server" ID="lbtDuyetCong" CommandName="REVIEW_HOURS" CommandArgument='<%# Eval("IdCongViec") %>' VisibleConditionKey='<%# this.IsView || this.IsEdit || this.IsPM || this.IsAdministrator %>' ResourceKey='<%# BackEndResourceKeys.VIEW %>' ButtonIcon="fas fa-file-invoice" CssClass="btn-grid-action btn-qlpm-review text-decoration-none" CausesValidation="false" ToolTip="Duyệt giờ công">
                                 </SweetSoft:SmartLinkButton>
                                 <asp:Label ID="lblPmPending" runat="server" CssClass="btn-qlpm-pending" Text="!" Visible="false" />
@@ -645,7 +647,7 @@
                     <p style="margin:7px 0 0;white-space:pre-line;font-size:13px;line-height:1.6"><asp:Literal ID="ltrKbg20Warning" runat="server" /></p>
                     </div>
                 </div>
-                <p style="margin-top:11px;font-size:12px;color:#64748b">Nếu tiếp tục gửi hoặc duyệt hoàn thành Task chung, hệ thống sẽ chốt đồng hồ trực tiếp trên Task của những người còn lại. Giờ đã ghi được giữ nguyên; nhân viên chưa báo phải vào Tab 3 xác nhận giờ. Quyết định này không tự chốt giờ công PM.</p>
+                <p style="margin-top:13px;font-size:13px;line-height:1.7;color:#475569"><asp:Literal ID="ltrKbg20WarningHelp" runat="server" /></p>
             </div>
         </ContentTemplate>
         <FooterTemplate>
