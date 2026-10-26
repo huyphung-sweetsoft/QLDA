@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#f2f4f9">
+<title>Báo cáo tiến độ dự án · SweetSoft</title>
+<style>
+:root{color-scheme:light;--purple:#542e88;--purple-dark:#452172;--ink:#172033;--muted:#74829a;--line:#e2e8f0}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#f2f4f9;color:var(--ink);font-family:Arial,"Segoe UI",sans-serif}
+/* Classic centered card, like the original report access page. */
+.shell{position:relative;width:min(100%,455px);background:#fff;border:1px solid #e2e8f0;border-radius:15px;box-shadow:0 17px 48px rgba(15,23,42,.10);overflow:hidden}
+.inner{padding:33px 29px 0}
+.brand{position:relative;display:flex;justify-content:center;margin-bottom:17px}
+.brand-icon{width:49px;height:49px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#f2eafe;color:var(--purple);font-weight:800;font-size:25px;line-height:1}
+.secure-tag{position:absolute;right:17px;top:17px;display:inline-flex;align-items:center;gap:5px;padding:6px 9px;background:#f5fbf6;border:1px solid #d9ebde;border-radius:999px;color:#287a4a;font-size:10px;font-weight:750;white-space:nowrap}
+.secure-tag svg{width:12px;height:12px}
+h1{margin:0 0 9px;color:#182234;text-align:center;font-size:22px;line-height:1.35;font-weight:800}
+.desc{margin:0 auto 22px;max-width:370px;color:#6f829c;text-align:center;font-size:12.5px;line-height:1.65}
+#autoState{display:flex;align-items:center;justify-content:center;gap:10px;max-width:360px;margin:0 auto 24px;padding:13px 10px;background:#faf7ff;border:1px solid #eee3f9;border-radius:9px;color:#654482;font-size:12px;line-height:1.5;text-align:center}
+.spinner{width:18px;height:18px;flex:0 0 18px;border:2px solid #e1d2f2;border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#otpForm{display:none}
+.code-label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:9px;color:#182234;font-weight:750;font-size:11.5px}
+.code-label small{color:#9b8aad;font-size:10px;font-weight:650;letter-spacing:.15px}
+.otp-cells{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;max-width:100%;margin-bottom:10px}
+.otp-box{width:100%;min-width:0;height:54px;padding:0;border:1.5px solid #ded4eb;border-radius:8px;background:#fcfbff;color:var(--purple);font-size:23px;font-weight:800;text-align:center;outline:none;font-variant-numeric:tabular-nums;transition:border-color .16s,box-shadow .16s,background .16s}
+.otp-box:hover:not(:disabled){border-color:#bda4db}
+.otp-box:focus{border-color:#7341ac;box-shadow:0 0 0 3px rgba(113,55,179,.13);background:#fff}
+.otp-box:disabled{opacity:.7}
+.otp-cells.is-invalid .otp-box{border-color:#cf6682;background:#fff8fa}
+.otp-cells.shake{animation:shake .26s ease both}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.field-note{margin:0 0 19px;color:#94a0b2;font-size:10.5px;line-height:1.5;text-align:left}
+.unlock{width:100%;min-height:44px;border:0;border-radius:8px;background:var(--purple);color:#fff;font-weight:750;font-size:12.5px;display:flex;justify-content:center;align-items:center;gap:9px;cursor:pointer;transition:background .16s,transform .16s}
+.unlock:hover:not(:disabled){background:var(--purple-dark);transform:translateY(-1px)}
+.unlock:disabled{opacity:.65;cursor:wait;transform:none}
+.unlock .button-spinner{display:none;width:15px;height:15px;border:2px solid #ffffff59;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.unlock.is-loading .button-spinner{display:inline-block}
+.msg{min-height:18px;margin:10px 0 2px;color:#b42342;text-align:center;font-size:11px;line-height:1.5}
+.msg:empty{min-height:8px}
+.bottom{padding:17px 18px 22px;margin-top:14px;color:#96a4ba;text-align:center;font-size:10.5px;line-height:1.55}
+.bottom-brand{color:#6a538f;font-weight:750}
+@media(max-width:480px){body{padding:16px}.inner{padding:30px 20px 0}.shell{border-radius:13px}.secure-tag{right:12px;top:13px;font-size:9px;padding:5px 7px}.otp-cells{gap:6px}.otp-box{height:49px;font-size:21px}h1{font-size:20px}}
+@media(max-width:350px){.otp-cells{gap:4px}.otp-box{height:44px;font-size:19px}.secure-tag{right:9px;top:10px}}
+@media(prefers-reduced-motion:reduce){.otp-box,.unlock{transition:none}.spinner,.button-spinner{animation-duration:1.5s}.otp-cells.shake{animation:none}}
+</style>
+</head>
+<body>
+<main class="shell" aria-labelledby="pageTitle">
+  <span class="secure-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg> Bảo mật</span>
+  <section class="inner">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">S</span></div>
+    <h1 id="pageTitle">Báo cáo tiến độ dự án</h1>
+    <p class="desc" id="instruction">Đang kiểm tra quyền truy cập. Khách hàng nhập OTP 6 chữ số do người gửi cung cấp để xem báo cáo.</p>
+    <div id="autoState" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span>Đang kiểm tra quyền xem báo cáo của bạn…</span></div>
+    <form id="otpForm" autocomplete="off" novalidate>
+      <label class="code-label" for="otp0"><span>MÃ OTP</span><small>6 CHỮ SỐ</small></label>
+      <div class="otp-cells" id="otpCells" role="group" aria-label="Nhập mã OTP gồm 6 chữ số">
+        <input id="otp0" class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="6" aria-label="Chữ số OTP thứ nhất">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Chữ số OTP thứ hai">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Chữ số OTP thứ ba">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Chữ số OTP thứ tư">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Chữ số OTP thứ năm">
+        <input class="otp-box" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="1" aria-label="Chữ số OTP thứ sáu">
+      </div>
+      <p class="field-note">Có thể dán nguyên mã OTP 6 chữ số vào một ô.</p>
+      <button type="submit" id="unlockButton" class="unlock"><span class="button-spinner" aria-hidden="true"></span><span>Xác thực và xem báo cáo</span></button>
+    </form>
+    <div id="message" class="msg" role="status" aria-live="polite"></div>
+  </section>
+  <footer class="bottom"><span class="bottom-brand">SweetSoft</span> · Báo cáo chia sẻ có xác thực</footer>
+</main>
+<script>
+(function(){
+'use strict';
+var reportId='93871647f1824f19b48a0fd1d3277f53';
+var accessUrl='/GeneratedProgressReports/ProgressReportAccess.aspx';
+var form=document.getElementById('otpForm');
+var fields=Array.prototype.slice.call(document.querySelectorAll('.otp-box'));
+var group=document.getElementById('otpCells');
+var button=document.getElementById('unlockButton');
+var message=document.getElementById('message');
+var instruction=document.getElementById('instruction');
+var autoState=document.getElementById('autoState');
+var sending=false;
+function digits(v){return String(v||'').replace(/\D/g,'').slice(0,6);}
+function focusAt(i){var el=fields[Math.max(0,Math.min(i,5))];if(el){el.focus();el.select();}}
+function currentCode(){return fields.map(function(el){return el.value;}).join('');}
+function clearError(){message.textContent='';group.classList.remove('is-invalid','shake');}
+function clearCode(){fields.forEach(function(el){el.value='';});clearError();}
+function setBusy(v,automatic){sending=v;button.disabled=v;button.classList.toggle('is-loading',v&&!automatic);fields.forEach(function(el){el.disabled=v;});}
+function showForm(shouldFocus){autoState.style.display='none';form.style.display='block';if(shouldFocus){focusAt(0);}}
+function putDigits(start,raw){
+ var value=digits(raw);if(!value){fields[start].value='';return;}
+ for(var j=0;j<value.length && start+j<6;j++){fields[start+j].value=value.charAt(j);}
+ var next=start+value.length;
+ if(next<6)focusAt(next);else button.focus();
+ clearError();
+}
+fields.forEach(function(field,index){
+ field.addEventListener('input',function(){
+   var value=digits(field.value);
+   if(!value){field.value='';clearError();return;}
+   if(value.length>1){field.value='';putDigits(index===0?0:index,value);return;}
+   field.value=value;clearError();if(index<5)focusAt(index+1);else button.focus();
+ });
+ field.addEventListener('keydown',function(e){
+   if(e.key==='Backspace'){
+     e.preventDefault();if(field.value){field.value='';}else if(index>0){fields[index-1].value='';focusAt(index-1);}clearError();
+   }else if(e.key==='Delete'){field.value='';clearError();}
+   else if(e.key==='ArrowLeft' && index>0){e.preventDefault();focusAt(index-1);}
+   else if(e.key==='ArrowRight' && index<5){e.preventDefault();focusAt(index+1);}
+   else if(e.key==='Home'){e.preventDefault();focusAt(0);}
+   else if(e.key==='End'){e.preventDefault();focusAt(5);}
+ });
+ field.addEventListener('paste',function(e){
+   var value=digits(e.clipboardData && e.clipboardData.getData('text'));
+   if(!value)return;
+   e.preventDefault();putDigits(value.length===6?0:index,value);
+ });
+});
+function markInvalid(text){message.textContent=text;group.classList.remove('shake');void group.offsetWidth;group.classList.add('is-invalid','shake');focusAt(0);}
+async function openReport(otp,automatic){
+ if(sending)return;
+ var failed=false;
+ setBusy(true,automatic);
+ if(!automatic){message.textContent='Đang xác thực mã OTP…';group.classList.remove('is-invalid','shake');}
+ try{
+  var response=await fetch(accessUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},cache:'no-store',credentials:'same-origin',body:JSON.stringify({reportId:reportId,otp:otp||''})});
+  var contentType=(response.headers.get('content-type')||'').toLowerCase();
+  if(contentType.indexOf('application/json')<0){throw new Error('Máy chủ không trả JSON (HTTP '+response.status+'). Vui lòng liên hệ người quản trị.');}
+  var result=await response.json();
+  if(result && result.requiresOtp){showForm(false);instruction.textContent='Nhập OTP do người chia sẻ cung cấp để mở báo cáo tiến độ.';message.textContent='';return;}
+  if(!response.ok || !result || !result.success){throw new Error(result&&result.message?result.message:'Không thể xác thực mã OTP.');}
+  if(typeof result.html!=='string' || !result.html){throw new Error('Báo cáo chưa có nội dung.');}
+  document.open();document.write(result.html);document.close();return;
+ }catch(err){
+  showForm(false);
+  instruction.textContent='Nhập OTP do người chia sẻ cung cấp để mở báo cáo tiến độ.';
+  clearCode();
+  message.textContent=err.message||'Có lỗi xảy ra. Vui lòng thử lại.';
+  group.classList.add('is-invalid','shake');
+  failed=true;
+ }finally{setBusy(false,automatic);if(failed)focusAt(0);}
+}
+form.addEventListener('submit',function(e){
+ e.preventDefault();if(sending)return;
+ var otp=currentCode();
+ if(!/^[0-9]{6}$/.test(otp)){markInvalid('Vui lòng nhập đầy đủ 6 chữ số OTP.');return;}
+ openReport(otp,false);
+});
+openReport('',true);
+})();
+</script>
+</body>
+</html>

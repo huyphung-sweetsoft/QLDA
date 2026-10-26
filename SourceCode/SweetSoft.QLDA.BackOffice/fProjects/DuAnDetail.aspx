@@ -740,13 +740,16 @@
         .modal:has(#pdPersonalDetailModalBody) .pd-summary-row.is-total { border-color:#c7a9e9;background:#f6f1fc;box-shadow:inset 3px 0 #54218d; }
         .pd-ds-floating-preview .pd-detail-item { border:1px solid #d7dfe9;background:#fff; }
 
-        /* Phần việc của tôi: giờ công phía trên, trạng thái phía dưới ở mép phải. Không thay đổi bảng công hay popup chi tiết. */
-        #projectPersonalView .pd-personal-tasks .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:8px; }
-        #projectPersonalView .pd-personal-tasks .pd-personal-task-title, #projectPersonalView .pd-personal-meetings .pd-personal-item-title { flex:1 1 0;min-width:0; }
+        /* Ba bang ca nhan: cung chieu cao tung dong, gio cong tren - trang thai duoi. Khong cham popup chi tiet. */
+        #projectPersonalView .pd-personal-tasks .pd-personal-item, #projectPersonalView .pd-personal-meetings .pd-personal-item, #projectPersonalView .pd-personal-issues .pd-personal-item { box-sizing:border-box;height:116px;min-height:116px;max-height:116px;padding:9px 12px;overflow:hidden; }
+        #projectPersonalView .pd-personal-tasks .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-task-header, #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading, #projectPersonalView .pd-personal-issues .pd-personal-task-header, #projectPersonalView .pd-personal-issues .pd-personal-issue-heading { display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:nowrap;gap:8px;min-width:0; }
+        #projectPersonalView .pd-personal-tasks .pd-personal-task-title, #projectPersonalView .pd-personal-meetings .pd-personal-task-title, #projectPersonalView .pd-personal-meetings .pd-personal-item-title, #projectPersonalView .pd-personal-issues .pd-personal-task-title, #projectPersonalView .pd-personal-issues .pd-personal-item-title { flex:1 1 0;min-width:0; }
         #projectPersonalView .pd-personal-status-stack { display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:5px;min-width:0;margin-left:auto;white-space:nowrap; }
         #projectPersonalView .pd-personal-status-stack > .pd-personal-hours { margin:0;flex:none; }
         #projectPersonalView .pd-personal-status-stack > .pd-personal-tag { display:inline-flex;align-items:center;justify-content:center;margin:0;max-width:100%;font-size:10px;line-height:1.25; }
-        #projectPersonalView .pd-personal-meetings .pd-personal-meeting-flags:empty { display:none; }
+        #projectPersonalView .pd-personal-meetings .pd-personal-meeting-flags:empty, #projectPersonalView .pd-personal-issues .pd-personal-meta:empty { display:none; }
+        #projectPersonalView .pd-personal-meetings .pd-personal-meeting-heading { margin-bottom:4px; }
+        #projectPersonalView .pd-personal-meetings .pd-personal-meeting-line { margin-top:4px;line-height:1.35; }
         @media(max-width:560px) { #projectPersonalView .pd-personal-status-stack { gap:4px; } #projectPersonalView .pd-personal-status-stack > .pd-personal-tag { font-size:9.5px; } }
     </style>
     <script type="text/javascript">
@@ -866,23 +869,50 @@
 
     <script type="text/javascript">
         (function () {
-            // Chỉ sắp xếp nhãn trong 2 danh sách cá nhân; không thay nội dung hay trạng thái.
+            // Sap xep gio cong + trang thai trong 3 bang ca nhan, khong thay doi noi dung/logic.
             if (window.__pdPersonalStatusUnderHoursInstalled) return;
             window.__pdPersonalStatusUnderHoursInstalled = true;
+            function pickStatus(item, type) {
+                var selectors = type === 'task'
+                    ? ['.pd-personal-status-stack > .pd-personal-tag', '.pd-personal-task-heading > .pd-personal-tag', '.pd-personal-task-title .pd-personal-tag']
+                    : type === 'meeting'
+                        ? ['.pd-personal-status-stack > .pd-personal-tag', '[data-pd-meeting-status="1"]', '.pd-personal-task-heading > .pd-personal-tag', '.pd-personal-meeting-flags > .pd-personal-tag']
+                        : ['.pd-personal-status-stack > .pd-personal-tag', '[data-pd-issue-status]', '.pd-personal-task-heading > .pd-personal-tag', '.pd-personal-meta > .pd-personal-tag', '.pd-personal-issue-flags > .pd-personal-tag'];
+                for (var k = 0; k < selectors.length; k++) {
+                    var candidates = item.querySelectorAll(selectors[k]);
+                    for (var j = 0; j < candidates.length; j++) {
+                        var badge = candidates[j];
+                        var label = (badge.textContent || '').trim().toLowerCase();
+                        // Gia tri 'Online/Truc tiep' la hinh thuc hop, khong phai trang thai.
+                        if (type === 'meeting' && (label === 'online' || label === 'trực tiếp' || label === 'offline')) continue;
+                        // Quá hạn là cảnh báo tiến độ, không phải trạng thái công việc.
+                        if (type === 'task' && (label === 'quá hạn' || label === 'sắp hạn')) continue;
+                        return badge;
+                    }
+                }
+                return null;
+            }
             function arrangePersonalStatus() {
                 var view = document.getElementById('projectPersonalView');
                 if (!view) return;
-                var items = view.querySelectorAll('.pd-personal-tasks .pd-personal-item, .pd-personal-meetings .pd-personal-item');
+                var items = view.querySelectorAll('.pd-personal-tasks .pd-personal-item, .pd-personal-meetings .pd-personal-item, .pd-personal-issues .pd-personal-item');
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i];
-                    var isTask = !!item.closest('.pd-personal-tasks');
-                    var heading = item.querySelector(isTask ? '.pd-personal-task-header' : '.pd-personal-meeting-heading');
-                    if (!heading) continue;
-                    var status = isTask
-                        ? heading.querySelector('.pd-personal-task-heading > .pd-personal-tag')
-                        : heading.querySelector('[data-pd-meeting-status="1"], .pd-personal-meeting-flags > .pd-personal-tag, .pd-personal-task-heading > .pd-personal-tag');
-                    var hours = heading.querySelector('.pd-personal-hours') || item.querySelector('.pd-personal-hours');
-                    if (!status || !hours) continue;
+                    var type = item.closest('.pd-personal-tasks') ? 'task'
+                        : item.closest('.pd-personal-meetings') ? 'meeting' : 'issue';
+                    var hours = item.querySelector('.pd-personal-hours');
+                    var status = pickStatus(item, type);
+                    if (!hours || !status) continue; // Khong tu tao gio cong gia khi du lieu chua co.
+                    var heading = item.querySelector('.pd-personal-task-header, .pd-personal-meeting-heading, .pd-personal-issue-heading');
+                    if (!heading) {
+                        // Markup van de co the chi co ten va dong metadata; tao hang title/aside.
+                        var title = item.querySelector('.pd-personal-item-title');
+                        if (!title || !title.parentNode) continue;
+                        heading = document.createElement('div');
+                        heading.className = 'pd-personal-issue-heading';
+                        title.parentNode.insertBefore(heading, title);
+                        heading.appendChild(title);
+                    }
                     var stack = heading.querySelector('.pd-personal-status-stack');
                     if (!stack) {
                         stack = document.createElement('div');
