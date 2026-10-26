@@ -141,6 +141,15 @@ namespace SweetSoft.QLDA.BackOffice.fProjects.Controls
         protected global::System.Web.UI.WebControls.Literal litCount;
 
         /// <summary>
+        /// upMeetingResults control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upMeetingResults;
+
+        /// <summary>
         /// litMeetings control.
         /// </summary>
         /// <remarks>

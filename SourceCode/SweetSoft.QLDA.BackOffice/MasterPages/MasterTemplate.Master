@@ -143,7 +143,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link href="/Styles/css/icon.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/Boxicon.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/toastr.css" rel="stylesheet" type="text/css" />
-<link href="~/Styles/css/floating-work-timer.css?v=20261023dot7c1" rel="stylesheet" type="text/css" runat="server" />
+<link href="~/Styles/css/floating-work-timer.css" rel="stylesheet" type="text/css" runat="server" />
     <link href="/Styles/css/app.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/css/custom-style.css" rel="stylesheet" type="text/css" />
     <link href="/Styles/plugins/validationEngine/validationEngine.jquery.css" rel="stylesheet" type="text/css" />
@@ -1020,7 +1020,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <span class="server-message"><%= GetResourceText(BackEndResourceKeys.SYSTEM_IS_PROCESSING_YOUR_REQUEST) %></span>
         </div>
         <%-- Floating timer: chỉ đọc trạng thái, không tạo postback --%>
-        <script src="<%= ResolveUrl("~/Styles/js/floating-work-timer.js") %>?v=20261023dot7c1"></script>
+        <script src="<%= ResolveUrl("~/Styles/js/floating-work-timer.js") %>"></script>
         <%-- SignalR Dot 3: mot client tren moi trang Master, khong can cho Task. --%>
         <% if (SweetSoft.QLDA.BackOffice.Realtime.QldaRealtimeSettings.NotificationsEnabled) { %>
         <script src="<%= ResolveUrl("~/Scripts/jquery.signalR-2.4.3.min.js") %>"></script>
@@ -2771,7 +2771,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 if (window.QLDAPageNavigation) return;
                 var overlay = document.getElementById('qldaPageNavigateFeedback');
                 if (!overlay) return;
-                var state = { active: false, unloading: false, reason: '', showTimer: null, guardTimer: null };
+                var state = { active: false, unloading: false, pageLeaving: false, confirmationPending: false, reason: '', showTimer: null, guardTimer: null, cancelGuardTimer: null, focusGuardTimer: null, downloadIgnoreUntil: 0 };
                 var SHOW_DELAY = 180;
 
                 function clearTimer(name) { if (state[name]) window.clearTimeout(state[name]); state[name] = null; }
@@ -2785,9 +2785,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 function stop() {
                     state.active = false;
                     state.unloading = false;
+                    state.pageLeaving = false;
+                    state.confirmationPending = false;
                     state.reason = '';
                     clearTimer('showTimer');
                     clearTimer('guardTimer');
+                    clearTimer('cancelGuardTimer');
+                    clearTimer('focusGuardTimer');
                     overlay.classList.remove('is-visible');
                     overlay.hidden = true;
                 }
@@ -2801,6 +2805,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     // Aborted navigation / prevented form submit must never leave an uncloseable overlay.
                     state.guardTimer = window.setTimeout(stop, 45000);
                 }
+                // PDF/export postbacks send a file response: the current page does not navigate.
+                // Exclude just the marked download action; normal page transitions remain unchanged.
+                function isDownloadPostback() { return state.downloadIgnoreUntil > Date.now(); }
+                function markDownloadPostback() { state.downloadIgnoreUntil = Date.now() + 300000; stop(); }
+                function clearDownloadPostback() { state.downloadIgnoreUntil = 0; }
+                document.addEventListener('keydown', function (event) {
+                    // A manual browser refresh must continue to display the regular navigation feedback.
+                    if (event.key === 'F5' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'r')) clearDownloadPostback();
+                }, true);
                 function isActualPageLink(link) {
                     if (!link || link.closest('[data-qlda-page-nav-ignore], [data-qlda-modal-open], #qldaModalOpenFeedback')) return false;
                     if (link.hasAttribute('download') || (link.target && link.target.toLowerCase() !== '_self')) return false;
@@ -2816,6 +2829,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 }
                 document.addEventListener('click', function (event) {
                     if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                    var trigger = event.target && event.target.closest ? event.target.closest('a,button,input[type="submit"],input[type="button"]') : null;
+                    if (trigger && trigger.closest('[data-qlda-download-postback="true"]')) { markDownloadPostback(); return; }
+                    // Any subsequent click on a different control ends the download exception.
+                    if (trigger) clearDownloadPostback();
                     var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
                     if (!isActualPageLink(link)) return;
                     start(false, 'link');
@@ -2824,7 +2841,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 }, true);
 
                 document.addEventListener('submit', function (event) {
-                    if (event.defaultPrevented) return;
+                    if (event.defaultPrevented || isDownloadPostback() || (event.submitter && event.submitter.closest('[data-qlda-download-postback="true"]'))) return;
                     var form = event.target;
                     if (!form || !form.tagName || form.tagName.toLowerCase() !== 'form') return;
                     start(false, 'submit');
@@ -2843,14 +2860,53 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 attachAjaxManager();
                 if (window.Sys && Sys.Application) Sys.Application.add_load(attachAjaxManager);
 
-                window.addEventListener('beforeunload', function () {
-                    // Direct window.location changes and browser reload/back may have no clicked anchor.
+                function hasNativeLeaveConfirmation(event) {
+                    // Các trang có dữ liệu chưa lưu có thể yêu cầu trình duyệt hiển thị hộp xác nhận.
+                    // returnValue mặc định là true; chuỗi (kể cả chuỗi rỗng) hoặc false biểu thị đã yêu cầu hỏi.
+                    return !!(event && (event.defaultPrevented || typeof event.returnValue === 'string' || event.returnValue === false));
+                }
+                window.addEventListener('beforeunload', function (event) {
+                    // Tải PDF/tệp không phải là chuyển trang.
+                    if (isDownloadPostback()) { stop(); return; }
                     state.unloading = true;
-                    start(true);
+                    state.pageLeaving = false;
+                    state.confirmationPending = hasNativeLeaveConfirmation(event);
+                    if (state.confirmationPending) {
+                        // Người dùng chưa đồng ý rời trang: không che trang bằng animation.
+                        clearTimer('showTimer');
+                        overlay.classList.remove('is-visible');
+                        overlay.hidden = true;
+                    } else {
+                        // Không có hộp hỏi: giữ nguyên animation cho điều hướng thực tế.
+                        start(true);
+                    }
+                    // Khi chọn Hủy, trình duyệt KHÔNG phát pagehide/pageshow.
+                    // Timer tiếp tục chạy sau khi hộp xác nhận đóng; thu hồi overlay nếu vẫn ở trang cũ.
+                    clearTimer('cancelGuardTimer');
+                    state.cancelGuardTimer = window.setTimeout(function () {
+                        state.cancelGuardTimer = null;
+                        if (!state.pageLeaving) stop();
+                    }, state.confirmationPending ? 400 : 1000);
                 });
-                window.addEventListener('pageshow', stop);
-                // Restored back-forward cache pages must not retain a loading mask.
-                window.addEventListener('pagehide', function () { state.unloading = true; });
+                // Trên Chrome, focus thường trở lại cửa sổ sau khi bấm Hủy.
+                // Giữ thêm nhịp ngắn để pagehide có thể đánh dấu lượt rời trang đã được chấp thuận.
+                window.addEventListener('focus', function () {
+                    if (!state.unloading || state.pageLeaving) return;
+                    clearTimer('focusGuardTimer');
+                    state.focusGuardTimer = window.setTimeout(function () {
+                        state.focusGuardTimer = null;
+                        if (!state.pageLeaving) stop();
+                    }, 100);
+                });
+                window.addEventListener('pageshow', function () { clearDownloadPostback(); stop(); });
+                window.addEventListener('pagehide', function () {
+                    state.pageLeaving = true;
+                    state.unloading = true;
+                    clearTimer('cancelGuardTimer');
+                    clearTimer('focusGuardTimer');
+                    // Chỉ hiển thị animation sau khi người dùng đã đồng ý rời trang.
+                    if (state.confirmationPending) { state.confirmationPending = false; start(true, 'confirmed'); }
+                });
                 window.QLDAPageNavigation = { start: start, stop: stop, isActive: function () { return state.active; } };
             })();
         </script>
