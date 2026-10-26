@@ -1,4 +1,4 @@
-﻿using SweetSoft.QLDA.BackOffice.Common;
+using SweetSoft.QLDA.BackOffice.Common;
 using SweetSoft.QLDA.Controls;
 using SweetSoft.QLDA.Core.EnumHelper;
 using SweetSoft.QLDA.Core.EnumHelper.Defines;
@@ -771,6 +771,12 @@ namespace SweetSoft.QLDA.BackOffice.fTasks.Controls
             grvData.DataSource = dtTasks;
             grvData.DataBind();
             upMain.Update();
+        }
+
+        // Read-only refresh used by the TaskList UpdatePanel while the browser is idle.
+        protected void lbtTaskAutoRefresh_Click(object sender, EventArgs e)
+        {
+            Rebind();
         }
 
         public void btnSearch_ServerClick(object sender, EventArgs e)

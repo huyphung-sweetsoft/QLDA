@@ -24,6 +24,22 @@
     var taskFilter = 'today';
     var visibleCount = 6, pageSize = 6;
     var lastFetch = 0;
+    // A status change is reflected without F5; keep the live ticking DOM when data has not changed.
+    var visualKey = '';
+    // Nhiep chinh do Master (chuong) phat moi 30 giay; 90s chi la du phong neu Master mat nhip.
+    var AUTO_REFRESH_MS = 90000;
+    function visualSnapshot(data) {
+        // serverNow and each timer's running seconds change on every GET; they do not change actions/status.
+        // A new session id / Stop / changed Task / personal report DOES change the rendered table.
+        return JSON.stringify({
+            projects:data.projects || [], tasks:data.tasks || [],
+            timers:(data.timers || []).map(function(t){
+                return [t.id,t.taskId,t.type,t.counting,t.boundary,t.startMs,t.endMs,t.status];
+            }),
+            workCalendar:data.workCalendar || null,
+            workflowEnabled:data.workflowEnabled, earlyStart:data.earlyStart || null
+        });
+    }
     var viewMode = 'work', historyData = null, historyRequest = 0, historyLoading = false;
     var todayTaskTimes = Object.create(null), todayDataDay = '', todayRequest = 0;
 
@@ -339,10 +355,10 @@
                 String(d.projectId||'').toLowerCase()!==fixedProjectId.toLowerCase())return;
             var next=Object.create(null);
             (d.tasks||[]).forEach(function(t){next[t.id]={regular:Number(t.regular)||0,overtime:Number(t.overtime)||0};});
+            var todayChanged=todayDataDay!==day || JSON.stringify(todayTaskTimes)!==JSON.stringify(next);
             todayTaskTimes=next;todayDataDay=day;
-            // Dem va danh sach Today dung CUNG du lieu ngay thuc te.
-            // Khong load lai server va khong can thiep tab hien tai.
-            if(state && (taskFilter==='today' || taskFilter==='all'))renderTasks();
+            // Keep filter/search and do not rebuild rows for identical history data.
+            if(todayChanged && state && (taskFilter==='today' || taskFilter==='all'))renderTasks();
             else tasksEl.querySelectorAll('[data-today-task]').forEach(function(el){updateTodayLabel(el,el.getAttribute('data-today-task'),Number(el.getAttribute('data-today-type')));});
         }).catch(function(){
             if(request!==todayRequest)return;
@@ -789,9 +805,12 @@
                     todayTaskTimes = Object.create(null);
                     ++todayRequest;
                 }
+                var nextVisualKey=visualSnapshot(data);
+                var visualChanged=nextVisualKey!==visualKey;
                 state = data;
                 lastFetch = Date.now();
-                refreshUi();
+                visualKey=nextVisualKey;
+                if(visualChanged)refreshUi();
                 // Polling 30s: Tab 3 doc lai trang thai ca nhan, KHONG dong/mo lai ExtraModal.
                 if(viewMode==='manual' && window.Kbg20DoiSoatUI && window.Kbg20DoiSoatUI.renderTab)
                     window.Kbg20DoiSoatUI.renderTab();
@@ -837,7 +856,7 @@
     }
     function sendAction(action,id) {
         if (acting || loading || !state) return;
-        acting=true; refreshUi();
+        acting=true; visualKey=''; refreshUi();
         var requestId;
         try {requestId=guid();} catch(err) {acting=false; notify(err.message,'error');refreshUi();return;}
         var flags={confirmOverdue:false,confirmDependency:false};
@@ -1187,7 +1206,20 @@
              x.classList.toggle('is-current',active);
            });
         }
-        if(!loading && !acting && Date.now()-lastFetch>30000)refresh();
+        if(!document.hidden && !loading && !acting && Date.now()-lastFetch>AUTO_REFRESH_MS)refresh();
     },1000);
+    // Mot nhip polling chung voi chuong. Khong kiem tra unread-count > 0;
+    // so thong bao khong doi van phai cap nhat Task.
+    function refreshWhenVisible(force) {
+        if(document.hidden || !state) return;
+        if(force || Date.now()-lastFetch>3000) refresh(true);
+    }
+    document.addEventListener('qlda:notification-poll-complete',function(){
+        refreshWhenVisible(true);
+    });
+    // Chu dong kiem tra khi quay lai tab; khong bat them polling dinh ky.
+    window.addEventListener('focus',function(){refreshWhenVisible(false);});
+    window.addEventListener('pageshow',function(event){if(event.persisted)refreshWhenVisible(true);});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshWhenVisible(false);});
     refresh();
 })(window,document);

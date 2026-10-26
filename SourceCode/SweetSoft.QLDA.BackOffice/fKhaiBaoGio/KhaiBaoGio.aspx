@@ -194,7 +194,7 @@
         .kbg-project-shell { min-width:0; }
         .kbg20-feature-off { margin:12px 4px; padding:15px; border:1px solid #dcd4ed; background:#f8f5ff; border-radius:10px; color:#58338a; font-size:13px; }
     </style>
-    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261023dot6bfull1" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Styles/css/kbg20-page.css") %>?v=20261026stateSync1" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="cpMain" runat="server">
@@ -706,7 +706,7 @@
     <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-hour-split.css") %>?v=20261024p1" />
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-hour-input.js") %>?v=20261024p1"></script>
     <link rel="stylesheet" href="<%= ResolveUrl("~/Styles/css/kbg20-ux-hotfix.css") %>?v=20261025parallelchoice3" />
-    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261025parallelchoice3"></script>
+    <script src="<%= ResolveUrl("~/Styles/js/kbg20-page.js") %>?v=20261026stateSync1"></script>
     <script src="<%= ResolveUrl("~/Styles/js/kbg20-doi-soat.js") %>?v=20261025pmfinal1"></script>
     <% } else { %>
     <script type="text/javascript">

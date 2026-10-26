@@ -453,6 +453,8 @@
 <div class="card-body p-0 mt-2">
     <asp:UpdatePanel ID="upMain" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
+            <%-- Refresh TaskList without F5. Client only triggers when no modal, search or drag is active. --%>
+            <asp:LinkButton ID="lbtTaskAutoRefresh" runat="server" OnClick="lbtTaskAutoRefresh_Click" CausesValidation="false" Style="display:none" />
             <asp:HiddenField runat="server" ID="hfDeletingTaskId" />
             <asp:HiddenField runat="server" ID="hfDragPhaseId" />
             <asp:HiddenField runat="server" ID="hfDragTargetPhaseId" />
@@ -790,5 +792,95 @@
             }
             $(function () { restorePersistedScroll(); });
         })();
+    </script>
+
+    <script type="text/javascript">
+        // TaskList uses an ASP.NET UpdatePanel; refresh only when the user is not interacting.
+        (function (window, document) {
+            'use strict';
+            if (window.__qldaTaskListAutoRefreshBound) return;
+            window.__qldaTaskListAutoRefreshBound = true;
+            var EVENT_TARGET = '<%= lbtTaskAutoRefresh.UniqueID %>';
+            var PANEL_ID = '<%= upMain.ClientID %>';
+            var FALLBACK_MS = 90000;
+            var lastRefresh = Date.now(), lastPulse = Date.now(), lastInteraction = 0;
+            var pending = false, queuedPulse = false, saved = null;
+            function pageManager() {
+                return window.Sys && window.Sys.WebForms && window.Sys.WebForms.PageRequestManager
+                    ? window.Sys.WebForms.PageRequestManager.getInstance() : null;
+            }
+            function isBusy() {
+                var prm = pageManager();
+                var active = document.activeElement;
+                return document.hidden || pending || !prm || prm.get_isInAsyncPostBack() ||
+                    (Date.now() - lastInteraction < 8000) ||
+                    !!document.querySelector('.modal.show, .modal.in, [aria-modal="true"], .phase-dragging, .ui-sortable-helper') ||
+                    !!(active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName));
+            }
+            function captureState() {
+                var panel = document.getElementById(PANEL_ID);
+                var holder = panel && panel.closest('.card-body');
+                return {
+                    filters: typeof window.getTaskTreeState === 'function' ? window.getTaskTreeState() : null,
+                    x:window.pageXOffset || 0, y:window.pageYOffset || 0,
+                    holderX:holder ? holder.scrollLeft : 0,
+                    holderY:holder ? holder.scrollTop : 0
+                };
+            }
+            function restoreState(s) {
+                if (!s) return;
+                if (s.filters && window.jQuery) {
+                    window.jQuery('#btnFilterOverdue').toggleClass('active-filter',!!s.filters.overdueFiltered);
+                    window.jQuery('#btnFilterDueSoon').toggleClass('active-filter',!!s.filters.dueSoonFiltered);
+                    var btn = window.jQuery('#btnToggleTree');
+                    btn.toggleClass('active-filter',!!s.filters.collapsed);
+                    btn.find('i').toggleClass('fa-folder',!!s.filters.collapsed).toggleClass('fa-folder-open',!s.filters.collapsed);
+                    var text = s.filters.collapsed ? btn.attr('data-expand-text') : btn.attr('data-collapse-text');
+                    btn.find('#lblToggleText').text(String(text || '').replace(/\s+tất cả\s*$/i,'').trim());
+                    if (typeof window.applyTaskViewState === 'function') window.applyTaskViewState(false);
+                }
+                var panel=document.getElementById(PANEL_ID);
+                var holder=panel && panel.closest('.card-body');
+                if(holder){holder.scrollLeft=s.holderX;holder.scrollTop=s.holderY;}
+                window.scrollTo(s.x,s.y);
+            }
+            function refreshTaskList() {
+                if (!queuedPulse || isBusy()) return;
+                var panel=document.getElementById(PANEL_ID);
+                if (!panel || typeof window.__doPostBack !== 'function') return;
+                saved=captureState();pending=true;queuedPulse=false;
+                try { window.__doPostBack(EVENT_TARGET,''); }
+                catch (e) { pending=false;saved=null;queuedPulse=true;lastRefresh=Date.now(); }
+            }
+            function onResponse() {
+                var restore=pending ? saved : null;
+                pending=false;saved=null;lastRefresh=Date.now();
+                if (restore) {
+                    restoreState(restore);
+                    window.setTimeout(function(){restoreState(restore);},60);
+                }
+            }
+            function register() {
+                var prm=pageManager();
+                if (prm) prm.add_endRequest(onResponse);
+            }
+            document.addEventListener('pointerdown',function(e){
+                var p=document.getElementById(PANEL_ID);
+                if (p && p.contains(e.target)) lastInteraction=Date.now();
+            },true);
+            document.addEventListener('qlda:notification-poll-complete',function(){
+                lastPulse=Date.now();queuedPulse=true;refreshTaskList();
+            });
+            // Khong tao polling 30s rieng. Chi kiem tra hang doi moi 5s va fallback 90s.
+            window.setInterval(function(){
+                if(Date.now()-lastPulse>FALLBACK_MS && Date.now()-lastRefresh>FALLBACK_MS) {
+                    lastPulse=Date.now();queuedPulse=true;
+                }
+                refreshTaskList();
+            },5000);
+            window.addEventListener('focus',function(){refreshTaskList();});
+            document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshTaskList();});
+            register();
+        })(window,document);
     </script>
 </div>
